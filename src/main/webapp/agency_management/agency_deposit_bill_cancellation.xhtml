@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+
+    <h:body>
+        <ui:composition template="/agency_management/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+
+                    <h:panelGroup rendered="#{!agentPaymentReceiveSearchController.printPreview}" style="vertical-align: top;">
+                        <p:panelGrid layout="tabular" columns="2" class="w-100" style="vertical-align: top;">
+                            <p:panel header="Bill Detail">
+                                <p:panelGrid columns="2">
+                                    <h:outputLabel value="Agency Name:" ></h:outputLabel>
+                                    <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.fromInstitution.name }" ></h:outputLabel>                                        
+                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                    <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.deptId}" ></h:outputLabel>                                  
+                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                    <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.netTotal}" ></h:outputLabel>
+                                </p:panelGrid>
+                            </p:panel>
+                            <p:panel  >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Cancellation" ></p:outputLabel>
+                                </f:facet>
+                                <p:panelGrid columns="2" >
+                                    <p:outputLabel value="Cancel Payment Method" ></p:outputLabel>
+                                    <p:selectOneMenu   id="cmbPs" value="#{agentPaymentReceiveSearchController.paymentMethod}" 
+                                                       required="true"  >
+                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                    </p:selectOneMenu>
+                                    <p:outputLabel value="Comments" ></p:outputLabel>
+                                    <p:inputTextarea value="#{agentPaymentReceiveSearchController.comment}"/>  
+                                    <p:spacer ></p:spacer>
+                                    
+                                    <p:commandButton
+                                        styleClass="w-100 ui-button-warning"
+                                        ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.cancelAgencyDepositBill}"
+                                        onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                    return false;"/>
+                                </p:panelGrid>
+                            </p:panel>
+                        </p:panelGrid>
+
+
+
+
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{agentPaymentReceiveSearchController.printPreview}" >
+                        <bi:agency_payment_cancellation billController ="#{agentPaymentReceiveSearchController}"  
+                                  bill="#{agentPaymentReceiveSearchController.bill}" dup="false"/>  
+                    </h:panelGroup>
+
+                </h:form>   
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
+
+

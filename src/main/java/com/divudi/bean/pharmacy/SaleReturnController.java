@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
@@ -16,7 +17,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
@@ -64,6 +65,8 @@ public class SaleReturnController implements Serializable {
     @Inject
     private PharmacyController pharmacyController;
     @Inject
+    DrawerController drawerController;
+    @Inject
     private SessionController sessionController;
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -80,7 +83,7 @@ public class SaleReturnController implements Serializable {
     @EJB
     PaymentFacade paymentFacade;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
 
     PaymentMethodData paymentMethodData;
 
@@ -421,6 +424,7 @@ public class SaleReturnController implements Serializable {
 //        saveSaleComponent(b);
         //saveSaleComponent and billfees and billFeePayment
         Payment p = createPayment(b, b.getPaymentMethod());
+        drawerController.updateDrawerForOuts(p);
         saveSaleComponent(b, p);
 
         getReturnBill().getReturnCashBills().add(b);
@@ -606,11 +610,11 @@ public class SaleReturnController implements Serializable {
         this.paymentFacade = paymentFacade;
     }
 
-    public StaffBean getStaffBean() {
+    public StaffService getStaffBean() {
         return staffBean;
     }
 
-    public void setStaffBean(StaffBean staffBean) {
+    public void setStaffBean(StaffService staffBean) {
         this.staffBean = staffBean;
     }
 

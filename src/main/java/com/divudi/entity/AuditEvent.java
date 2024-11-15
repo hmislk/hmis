@@ -1,5 +1,6 @@
 package com.divudi.entity;
 
+import com.google.gson.Gson;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -8,6 +9,14 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Column;
+import javax.persistence.Transient;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import javax.persistence.Temporal;
 
 /**
  *
@@ -20,7 +29,9 @@ public class AuditEvent implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date eventDataTime;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date eventEndTime;
     private Long webUserId;
     @Column(columnDefinition = "CHAR(36)")
@@ -32,11 +43,18 @@ public class AuditEvent implements Serializable {
     private Long institutionId;
     private Long departmentId;
 
-    private String beforeEdit;
-    private String afterEdit;
+    @Lob
+    private String beforeJson;
+    @Lob
+    private String afterJson;
     private Long eventDuration;
     private String eventStatus;
     private String ipAddress;
+
+    private String entityType;
+
+    @Transient
+    private String difference;
 
     public Long getId() {
         return id;
@@ -69,6 +87,77 @@ public class AuditEvent implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.AuditEvent[ id=" + id + " ]";
+    }
+
+    public void calculateDifference() {
+        System.out.println("calculateDifference");
+        System.out.println("Before JSON: " + beforeJson);
+        System.out.println("After JSON: " + afterJson);
+        if (beforeJson == null || afterJson == null) {
+            this.difference = "One or both JSON values are null.";
+            return;
+        }
+        try {
+            Gson gson = new Gson();
+            Type type = new TypeToken<Map<String, Object>>() {
+            }.getType();
+
+            Map<String, Object> beforeMap = gson.fromJson(beforeJson, type);
+            Map<String, Object> afterMap = gson.fromJson(afterJson, type);
+
+            // Ensure JSON was parsed successfully
+            if (beforeMap == null || afterMap == null) {
+                this.difference = "Failed to parse JSON.";
+                System.out.println("Failed to parse JSON.");
+                return;
+            }
+
+            this.difference = formatDifference(getDifference(beforeMap, afterMap));
+        } catch (Exception e) {
+            e.printStackTrace();
+            this.difference = "Error calculating difference: " + e.getMessage();
+        }
+    }
+
+    private Map<String, String> getDifference(Map<String, Object> before, Map<String, Object> after) {
+        System.out.println("getDifference");
+        Map<String, String> diff = new HashMap<>();
+
+        // Create a new HashSet with the keys from 'before' to ensure it's modifiable
+        Set<String> allKeys = new HashSet<>(before.keySet());
+        allKeys.addAll(after.keySet()); // Now this operation is safe
+
+        for (String key : allKeys) {
+            System.out.println("key = " + key);
+            Object beforeValue = before.get(key);
+            Object afterValue = after.get(key);
+            if ((beforeValue == null && afterValue != null)
+                    || (beforeValue != null && !beforeValue.equals(afterValue))) {
+                diff.put(key, "Before: " + beforeValue + ", After: " + afterValue);
+                System.out.println("diff = " + diff);
+            }
+        }
+        return diff;
+    }
+
+    private String formatDifference(Map<String, String> diff) {
+        System.out.println("formatDifference");
+        System.out.println("diff = " + diff);
+
+        if (diff.isEmpty()) {
+            return "No differences found.";
+        }
+        StringBuilder sb = new StringBuilder();
+        diff.forEach((key, value) -> sb.append(key).append(": ").append(value).append("\n"));
+        System.out.println("sb = " + sb);
+        return sb.toString();
+    }
+
+    public String getDifference() {
+        if (difference == null) {
+            calculateDifference();
+        }
+        return difference;
     }
 
     public Date getEventDataTime() {
@@ -119,20 +208,20 @@ public class AuditEvent implements Serializable {
         this.departmentId = departmentId;
     }
 
-    public String getBeforeEdit() {
-        return beforeEdit;
+    public String getBeforeJson() {
+        return beforeJson;
     }
 
-    public void setBeforeEdit(String beforeEdit) {
-        this.beforeEdit = beforeEdit;
+    public void setBeforeJson(String beforeJson) {
+        this.beforeJson = beforeJson;
     }
 
-    public String getAfterEdit() {
-        return afterEdit;
+    public String getAfterJson() {
+        return afterJson;
     }
 
-    public void setAfterEdit(String afterEdit) {
-        this.afterEdit = afterEdit;
+    public void setAfterJson(String afterJson) {
+        this.afterJson = afterJson;
     }
 
     public Long getEventDuration() {
@@ -159,8 +248,6 @@ public class AuditEvent implements Serializable {
         this.ipAddress = ipAddress;
     }
 
-  
-
     public Date getEventEndTime() {
         return eventEndTime;
     }
@@ -175,6 +262,14 @@ public class AuditEvent implements Serializable {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getEntityType() {
+        return entityType;
+    }
+
+    public void setEntityType(String entityType) {
+        this.entityType = entityType;
     }
 
 }

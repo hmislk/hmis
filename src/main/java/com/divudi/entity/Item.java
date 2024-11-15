@@ -235,6 +235,7 @@ public class Item implements Serializable, Comparable<Item> {
     @ManyToOne
     private MeasurementUnit issueUnit;
     private Double issueUnitsPerPackUnit;
+    @ManyToOne
     private MeasurementUnit packUnit;
     private Double baseUnitsPerIssueUnit;
 
@@ -257,6 +258,8 @@ public class Item implements Serializable, Comparable<Item> {
     private String transCodeFromName;
     
     private boolean multipleReportsAllowed;
+    
+    private boolean alternativeReportAllowed;
     
     @Lob
     private String forGender;
@@ -1437,6 +1440,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setMultipleReportsAllowed(boolean multipleReportsAllowed) {
         this.multipleReportsAllowed = multipleReportsAllowed;
+    }
+
+    public boolean isAlternativeReportAllowed() {
+        return alternativeReportAllowed;
+    }
+
+    public void setAlternativeReportAllowed(boolean alternativeReportAllowed) {
+        this.alternativeReportAllowed = alternativeReportAllowed;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

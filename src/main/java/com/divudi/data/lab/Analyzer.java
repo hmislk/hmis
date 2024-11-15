@@ -18,6 +18,7 @@ public enum Analyzer {
     BioRadD10("Bio-Rad D10"),
     MindrayBC5150("Mindray BC 5150"),
     SmartLytePlus("SmartLyte Plus"),
+    SwelabLumi("Swelab Lumi"),
     MaglumiX3HL7("Maglumi X3 HL7");
 
     private final String label;

@@ -11,7 +11,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="controller" />
-        <cc:attribute name="bill" />
+        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="dup" />
     </cc:interface>
 
@@ -31,11 +31,11 @@
                     </div>
                     <div >
                         <h:outputLabel value="Phone :  #{cc.attrs.bill.department.telephone1} "/>
-                        <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
-                        <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                        <h:outputLabel value=" /" style="width: 20px; text-align: center;" rendered="#{!empty cc.attrs.bill.department.telephone2}"/>
+                        <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" rendered="#{!empty cc.attrs.bill.department.telephone2}"/>
                     </div>
                     <div >
-                        <h:outputLabel value="Fax : #{cc.attrs.bill.department.fax}"/>                                                 
+                        <h:outputLabel value="Fax : #{cc.attrs.bill.department.fax}" rendered="#{!empty cc.attrs.bill.department.fax}"/>                                                 
                     </div>
                     <div >
                         <h:outputLabel value="Email : #{cc.attrs.bill.department.email}"/>                                                 
@@ -48,8 +48,14 @@
 
                 <div class="" style=" text-align: center;font-weight: bold;font-size: 13pt">
                     <h:outputLabel value="PAYMENT VOUCHER" />
-                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" /> 
-                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                    <h:panelGroup>
+                        <br/>
+                        <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" /> 
+                    </h:panelGroup>
+                    <h:panelGroup>
+                         <br/>
+                       <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                    </h:panelGroup>
                 </div>
 
                 <div class="billline">
@@ -64,7 +70,7 @@
                             <td><h:outputLabel value="Bill ID" class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td style="text-align: center;" >:</td>
                             <td>
-                                <h:outputLabel value="#{cc.attrs.bill.id}" class="billDetailsFiveFive" ></h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetailsFiveFive" ></h:outputLabel>
                             </td>
                             <td width="2%" />
                             <td width="" ><h:outputLabel value="Payment Type" class="billDetailsFiveFive" ></h:outputLabel></td>
@@ -115,7 +121,7 @@
                             <td width="" ><h:outputLabel value="Speciality" class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td style="text-align: center;" >:</td>
                             <td width="">
-                                <h:outputLabel value="#{cc.attrs.controller.speciality.name}" class="billDetailsFiveFive" ></h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.staff.speciality.name}" class="billDetailsFiveFive" ></h:outputLabel>
                             </td>
                         </tr>
                     </table>
@@ -126,7 +132,7 @@
                     <br/>
                 </div>
                 <div class="billDetailsFiveFive" >
-                    <h:dataTable value="#{cc.attrs.controller.billItems}"
+                    <h:dataTable value="#{billBeanController.fetchBillItems(cc.attrs.bill)}"
                                  var="bip" style="margin: auto; padding: 1%; width: 100%; margin-right: 10%; " >
 
                         <p:column style="text-align: center; margin-left: 10%" >
@@ -179,36 +185,53 @@
 
                     <table style="width: 100%;"> 
 
-                        <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
-                            <tr>
-                                <td  style="text-align: left; width: 60%; font-size: 20px!important;
-                                     font-family:Verdana, Helvetica, sans-serif!important;
-                                     font-weight: bold;">
-                                    &nbsp;&nbsp;
-                                    <h:outputLabel value="Total" />
-                                </td>
-                                <td  style="text-align: right!important; width: 40%; padding-right: 32px; font-size: 20px!important;
-                                     font-family:Verdana, Helvetica, sans-serif!important;
-                                     font-weight: bold;">
-                                    <h:outputLabel value="#{-cc.attrs.bill.netTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </h:panelGroup>
 
-                        <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
-                            <tr>
-                                <td class="totalsBlock1" style="text-align: left; width: 60%;">
-                                    <h:outputLabel value="Total" />
-                                </td>
-                                <td  class="totalsBlock1" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                    <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </h:panelGroup>
+                        <tr>
+                            <td  style="text-align: left; width: 60%; font-size: 20px!important;
+                                 font-family:Verdana, Helvetica, sans-serif!important;
+                                 font-weight: bold;">
+                                &nbsp;&nbsp;
+                                <h:outputLabel value="Gross Total" />
+                            </td>
+                            <td  style="text-align: right!important; width: 40%; padding-right: 32px; font-size: 20px!important;
+                                 font-family:Verdana, Helvetica, sans-serif!important;
+                                 font-weight: bold;">
+                                <h:outputLabel value="#{-cc.attrs.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td  style="text-align: left; width: 60%; font-size: 20px!important;
+                                 font-family:Verdana, Helvetica, sans-serif!important;
+                                 font-weight: bold;">
+                                &nbsp;&nbsp;
+                                <h:outputLabel value="Withholding tax" />
+                            </td>
+                            <td  style="text-align: right!important; width: 40%; padding-right: 32px; font-size: 20px!important;
+                                 font-family:Verdana, Helvetica, sans-serif!important;
+                                 font-weight: bold;">
+                                <h:outputLabel value="#{-cc.attrs.bill.tax}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td  style="text-align: left; width: 60%; font-size: 20px!important;
+                                 font-family:Verdana, Helvetica, sans-serif!important;
+                                 font-weight: bold;">
+                                &nbsp;&nbsp;
+                                <h:outputLabel value="Net Total" />
+                            </td>
+                            <td  style="text-align: right!important; width: 40%; padding-right: 32px; font-size: 20px!important;
+                                 font-family:Verdana, Helvetica, sans-serif!important;
+                                 font-weight: bold;">
+                                <h:outputLabel value="#{-cc.attrs.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+
 
                     </table> 
                 </div>
@@ -219,7 +242,19 @@
                 </div>
 
                 <div class="footer" >
-                    <h:outputLabel value="casher :  #{sessionController.loggedUser.name}"/>
+                    <div class="row" >
+                        <div class="col-4" >
+                            <h:outputLabel value="Cashier :  #{cc.attrs.bill.creater.webUserPerson.name}"/>
+                        </div>
+                        <div class="col-4" >
+                            <br/>
+                            <h:outputLabel value="Payment Received  "/>
+                        </div>
+                        <div class="col-4" >
+                            <h:outputLabel value="Professional :  #{cc.attrs.bill.toStaff.person.nameWithTitle}"/>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </h:panelGroup>

@@ -9,7 +9,7 @@
     <cc:interface>
         <cc:attribute name="bill" />
         <cc:attribute name="billController" />
-        <cc:attribute name="dup" />
+        <cc:attribute name="dup" default="false"/>
     </cc:interface>
 
     <cc:implementation>
@@ -20,7 +20,6 @@
                 max-width: 5in;
                 padding: 0.5in;
                 margin: 0 auto;
-                border: 1px solid #000;
                 font-size: 1.1rem;
             }
 
@@ -31,8 +30,6 @@
                 text-decoration: underline;
                 margin-bottom: 20px;
             }
-
-
 
             .receipt-info, .receipt-details, .receipt-footer {
                 margin-bottom: 15px;
@@ -84,8 +81,9 @@
 
             <div class="receipt-header">
                 <h:outputLabel value="Collecting Centre Payment Cancellation" style="font-size: 1.2em"/>
+                <h:outputLabel rendered="#{cc.attrs.dup}" value="** Duplicate **" style="font-size: 0.8em"/>
             </div>
-
+            
             <div class="receipt-info">
                 <div>
                     <label>Receipt No:</label>
@@ -97,17 +95,16 @@
                 <div>
                     <label>Date:</label>
                     <span>                     
-                        <h:outputLabel value="#{cc.attrs.bill.billDate}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         </h:outputLabel>
                     </span>
                 </div> 
-
                 <div>
                     <label>Time:</label>
                     <span>                        
-                        <h:outputLabel value="#{cc.attrs.bill.billTime}">
-                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                         </h:outputLabel>
                     </span>
                 </div>
@@ -131,18 +128,24 @@
                         <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
                     </span>
                 </div>
-                <div>
+                <h:panelGroup rendered="#{cc.attrs.bill.bank ne null}">
+                    <div>
                     <label>Bank:</label>
                     <span>
-                        <h:outputLabel value="#{cc.attrs.bill.bank.name}" rendered="#{cc.attrs.bill.bank ne null}" />
+                        <h:outputLabel value="#{cc.attrs.bill.bank.name}"  />
                     </span>
                 </div>
-                <div rendered="#{cc.attrs.bill.chequeRefNo ne null}">
+                </h:panelGroup>
+                
+                <h:panelGroup rendered="#{cc.attrs.bill.chequeRefNo ne null}">
+                    <div >
                     <label>Cheque No:</label>
                     <span>
                         <h:outputLabel value="#{cc.attrs.bill.chequeRefNo}" />
                     </span>
                 </div>
+                </h:panelGroup>
+                
 
                 <div class="receipt-total">
                     <label>Total:</label>
@@ -152,15 +155,22 @@
                         </h:outputLabel>
                     </span>
                 </div>
-                <div class="signature">
-                    <label>Cashier</label>
-                    <span>
-                        <h:outputLabel value="#{cc.attrs.bill.creater.code}">
-                        </h:outputLabel>
-                    </span>
-                </div>
 
             </div>   
+
+            <div class="d-flex justify-content-between" style="font-size: 16px;">
+                <div class="d-flex gap-2">
+                    <label>Canceled by : </label>
+                    <label>#{cc.attrs.bill.creater.name}</label>
+                </div>
+                <div>
+                    <h:outputLabel value="#{sessionController.currentDate}" >
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                    </h:outputLabel>
+                </div>
+            </div>
+
+
 
         </div>
     </cc:implementation>

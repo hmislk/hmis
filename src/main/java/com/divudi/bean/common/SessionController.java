@@ -757,7 +757,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             JsfUtil.addErrorMessage("Please enter a username");
             return false;
         }
-        if (isFirstVisit()) {
+        if (getFirstLogin()) {
             prepareFirstVisit();
             return true;
         } else {
@@ -1472,28 +1472,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         return departmentFacade.findByJpql(sql, m);
     }
     
-    public List<Department> fillLoggableDepts(Institution site) {
-        WebUser e = getLoggedUser();
-        if (e == null) {
-            return new ArrayList<>();
-        }
-        String sql;
-        Map m = new HashMap();
-        m.put("wu", e);
-        sql = "select distinct wd.department "
-                + " from WebUserDepartment wd "
-                + " where wd.retired=false ";
-        if(site != null){
-            sql += "and wd.department.site=:site ";
-            m.put("site", site);
-        }    
-        sql+=  " and wd.department.retired=false "
-                + " and wd.webUser=:wu "
-                + " order by wd.department.name";
-        return departmentFacade.findByJpql(sql, m);
-    }
-
-
     private List<Department> fillLoggableSubDepts(Department loggableDept) {
         List<Department> ds = new ArrayList<>();
         ds.add(loggableDept);
@@ -1923,9 +1901,15 @@ public class SessionController implements Serializable, HttpSessionListener {
         thisLogin.setIpaddress(ip);
         thisLogin.setComputerName(host);
         // This should print null if the ID is not set.
-
+        
         if (thisLogin.getId() == null) {
-            getLoginsFacade().create(thisLogin);
+            try{
+                getLoginsFacade().create(thisLogin);
+            }catch(Exception e){
+                getLoginsFacade().edit(thisLogin);
+                System.err.println("e = " + e);
+            }
+            
         } else {
             getLoginsFacade().edit(thisLogin);
         }
@@ -2146,7 +2130,13 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public Boolean getFirstLogin() {
         if (firstLogin == null) {
-            firstLogin = isFirstVisit();
+            if(applicationController.getFirstLogin()==null){
+                firstLogin = isFirstVisit();
+                applicationController.setFirstLogin(firstLogin);
+            }else{
+                firstLogin=applicationController.getFirstLogin();
+            }
+            
         }
         return firstLogin;
     }
@@ -2263,10 +2253,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.loggedSite = loggedSite;
     }
 
-//    
-//    public List<Denomination> findDefaultDenominations() {
-//        return denominationController.getDenominations();
-//    }
+    
+    public List<Denomination> findDefaultDenominations() {
+        return denominationController.getDenominations();
+    }
 
     public Drawer getLoggedUserDrawer() {
         return loggedUserDrawer;

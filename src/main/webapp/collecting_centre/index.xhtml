@@ -102,6 +102,14 @@
                                         </h:panelGrid>
                                     </p:tab>
 
+                                    <p:tab rendered="#{webUserController.hasPrivilege('Developers')}" title="Developers">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Edit Collecting Centre Balance History Record"
+                                            action="/reportLab/report_collecting_center_balance?faces-redirect=true"
+                                            class="w-100 m-1"/>
+                                    </p:tab>
+
                                 </p:accordionPanel>
                             </h:form>
                         </div>

@@ -61,7 +61,7 @@
 
                             <p:spacer width="20" ></p:spacer>
 
-                            <h:outputLabel value="Site*"/>   
+                            <h:outputLabel value="Site"/>   
                             <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
@@ -290,10 +290,17 @@
                             </p:column>
 
                             <p:column headerText="Grand Total">
+                                <h:outputText value="#{summary.cashValue + summary.cardValue + summary.multiplePaymentMethodsValue + 
+                                                       summary.creditValue + summary.staffWelfareValue + summary.staffValue + summary.voucherValue + 
+                                                       summary.iouValue + summary.chequeValue + summary.slipValue + 
+                                                       summary.ewalletValue + summary.patientDepositValue + summary.patientPointsValue + summary.onlineSettlementValue}" 
+                                              style="text-align: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.cashValue + searchController.bundle.cardValue + searchController.bundle.multiplePaymentMethodsValue + 
                                                            searchController.bundle.creditValue + searchController.bundle.staffWelfareValue + searchController.bundle.staffValue + searchController.bundle.voucherValue + 
-                                                           searchController.bundle.iouValue + searchController.bundle.agentValue + searchController.bundle.chequeValue + searchController.bundle.slipValue + 
+                                                           searchController.bundle.iouValue + searchController.bundle.chequeValue + searchController.bundle.slipValue + 
                                                            searchController.bundle.ewalletValue + searchController.bundle.patientDepositValue + searchController.bundle.patientPointsValue + searchController.bundle.onlineSettlementValue}" 
                                                   style="text-align: right;">
                                         <f:convertNumber pattern="#,##0.00" />

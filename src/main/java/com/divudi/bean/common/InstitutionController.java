@@ -72,15 +72,15 @@ public class InstitutionController implements Serializable {
     private Boolean codeDisabled = false;
     private int managaeInstitutionIndex = -1;
     private List<Institution> sites;
-    
-    public void fillAllSites(){
+
+    public void fillAllSites() {
         sites = new ArrayList();
         String sql;
         HashMap hm = new HashMap();
         sql = "select c from Institution c "
                 + " where c.retired=false "
                 + " and c.institutionType =:type";
-        
+
         sql += " order by c.name";
         hm.put("type", InstitutionType.Site);
         sites = getFacade().findByJpql(sql, hm);
@@ -210,6 +210,14 @@ public class InstitutionController implements Serializable {
     }
 
     public List<Institution> completeInstitution(String qry, InstitutionType[] types) {
+        return completeInstitution(qry, types, null);
+    }
+
+    public List<Institution> completeInstitution(String qry, InstitutionType type, Institution parent) {
+        return completeInstitution(qry, new InstitutionType[]{type}, parent);
+    }
+
+    public List<Institution> completeInstitution(String qry, InstitutionType[] types, Institution parent) {
         String sql;
         HashMap hm = new HashMap();
         sql = "select c from Institution c "
@@ -222,6 +230,10 @@ public class InstitutionController implements Serializable {
             List<InstitutionType> lstTypes = Arrays.asList(types);
             hm.put("types", lstTypes);
             sql += "  and c.institutionType in :types";
+        }
+        if (parent != null) {
+            hm.put("parent", parent);
+            sql += "  and c.parentInstitution=:parent";
         }
         sql += " order by c.name";
         return getFacade().findByJpql(sql, hm);
@@ -276,7 +288,7 @@ public class InstitutionController implements Serializable {
     public List<Institution> completeCompany(String qry) {
         return completeInstitution(qry, InstitutionType.Company);
     }
-    
+
     public List<Institution> completeSite(String qry) {
         //Sites
         return completeInstitution(qry, InstitutionType.Site);
@@ -332,6 +344,10 @@ public class InstitutionController implements Serializable {
             banks = completeInstitution(null, InstitutionType.Bank);
         }
         return banks;
+    }
+
+    public List<Institution> getBranches(Institution bank) {
+        return completeInstitution(null, InstitutionType.branch, bank);
     }
 
     public Institution getInstitutionByName(String name, InstitutionType type) {
@@ -456,8 +472,8 @@ public class InstitutionController implements Serializable {
         codeDisabled = false;
         current = new Institution();
     }
-    
-     public void prepareAddSite() {
+
+    public void prepareAddSite() {
         codeDisabled = false;
         current = new Institution();
         current.setInstitutionType(InstitutionType.Site);
@@ -497,8 +513,7 @@ public class InstitutionController implements Serializable {
             getFacade().edit(ins);
         }
     }
-    
-    
+
     public void saveSelectedSite() {
         if (getCurrent().getInstitutionType() != InstitutionType.Site) {
             JsfUtil.addErrorMessage("Invalid Institution Type");
@@ -528,9 +543,6 @@ public class InstitutionController implements Serializable {
         }
         fillAllSites();
     }
-    
-    
-    
 
     public void saveSelected() {
         if (getCurrent().getInstitutionType() == null) {
@@ -561,8 +573,7 @@ public class InstitutionController implements Serializable {
         }
         fillItems();
     }
-    
-   
+
     public void saveSelectedAgency() {
         if (getAgency().getInstitutionType() == null) {
             JsfUtil.addErrorMessage("Select Institution Type");
@@ -681,6 +692,29 @@ public class InstitutionController implements Serializable {
         return getFacade().find(id);
     }
 
+    // Overloaded method to handle Integer input
+    public Institution findInstitution(Integer id) {
+        if (id == null) {
+            return null;
+        }
+        return findInstitution(Long.valueOf(id));
+    }
+
+    // Overloaded method to handle String input
+    public Institution findInstitution(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            Long longId = Long.parseLong(id);
+            return findInstitution(longId);
+        } catch (NumberFormatException e) {
+            // Handle the case where the string is not a valid long number
+            System.err.println("Invalid institution ID format: " + id);
+            return null;
+        }
+    }
+
     public void setSelectText(String selectText) {
         this.selectText = selectText;
     }
@@ -725,8 +759,8 @@ public class InstitutionController implements Serializable {
         current = null;
         getCurrent();
     }
-    
-      public void deleteSite() {
+
+    public void deleteSite() {
 
         if (getCurrent() != null) {
             getCurrent().setRetired(true);
@@ -737,7 +771,7 @@ public class InstitutionController implements Serializable {
         } else {
             JsfUtil.addSuccessMessage("Nothing to Delete");
         }
-        
+
         current = null;
         getCurrent();
         fillAllSites();
@@ -880,10 +914,10 @@ public class InstitutionController implements Serializable {
     }
 
     public List<Institution> getSites() {
-        if(sites == null){
+        if (sites == null) {
             fillAllSites();
         }
-        
+
         return sites;
     }
 

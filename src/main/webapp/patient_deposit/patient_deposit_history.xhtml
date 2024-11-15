@@ -13,7 +13,7 @@
                 xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
     <ui:define name="subcontent">
-        
+
         <h:panelGroup>
             <h:form>
                 <p:panel rendered="#{patientController.current.id eq null}" >
@@ -21,225 +21,255 @@
                         <h:outputLabel value="Find Patient" />
                     </f:facet>
                     <h:panelGrid columns="6" class="my-2 w-100">
-                           <h:outputLabel value="Name"  />
-                            <h:outputLabel value=":" />
-                                    <p:inputText  value="#{patientController.searchName}">
-                                    </p:inputText>
-                            
-                            <h:outputLabel value="Phone Number" />
-                             <h:outputLabel value=":" />
-                                    <p:inputText id="txtNewPtPhone" 
-                                                 autocomplete="off" 
-                                                 value="#{patientController.searchPhone}"
-                                                 validatorMessage="Please enter a valid phone number (numbers only)"
-                                                 >
-                                        <!--<f:validateRegex pattern="^[0-9]*$"/>-->
-                                    </p:inputText>
-                              <h:outputLabel value="MRN No" ></h:outputLabel>
-                              <h:outputLabel value=":" />
-                                    <p:inputText  autocomplete="off"  value="#{patientController.searchMrn}"></p:inputText>
-                                    
-                                    <p:commandButton id="btnSearch"
-                                                         value="Search"
-                                                         icon="fa-solid fa-search"
-                                                         action="#{patientController.searchPatientForPatientDepost()}" 
-                                                         ajax="false" 
-                                                         class="m-1 ui-button-warning" />
-                                    
-                                    
+                        <h:outputLabel value="Name"  />
+                        <h:outputLabel value=":" />
+                        <p:inputText  value="#{patientController.searchName}">
+                        </p:inputText>
+
+                        <h:outputLabel value="Phone Number" />
+                        <h:outputLabel value=":" />
+                        <p:inputText id="txtNewPtPhone" 
+                                     autocomplete="off" 
+                                     value="#{patientController.searchPhone}"
+                                     validatorMessage="Please enter a valid phone number (numbers only)"
+                                     >
+                            <!--<f:validateRegex pattern="^[0-9]*$"/>-->
+                        </p:inputText>
+                        <h:outputLabel value="MRN No" ></h:outputLabel>
+                        <h:outputLabel value=":" />
+                        <p:inputText  autocomplete="off"  value="#{patientController.searchMrn}"></p:inputText>
+
+                        <p:commandButton id="btnSearch"
+                                         value="Search"
+                                         icon="fa-solid fa-search"
+                                         action="#{patientController.searchPatientForPatientDepost()}" 
+                                         ajax="false" 
+                                         class="m-1 ui-button-warning" />
+
+
                     </h:panelGrid>
-                        <p:dataTable value="#{patientController.searchedPatients}" var="p" 
-                                             class="w-100 table table-sm table-striped"
-                                             paginatorAlwaysVisible="false"
-                                             paginator="true"
-                                             rows="10"
-                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             rowsPerPageTemplate="5,10,20"
-                                             >
-                                    <p:column headerText="Name" >
-                                        <p:outputLabel value="#{p.person.name}" ></p:outputLabel>
-                                        <br/>
-                                        <p:outputLabel rendered="#{p.person.sex == 'Male'}">
-                                            <i class="fas fa-mars" style="color: blue;  font-size: 24px;"></i>
-                                        </p:outputLabel>
+                    <p:dataTable value="#{patientController.searchedPatients}" var="p" 
+                                 class="w-100 table table-sm table-striped"
+                                 paginatorAlwaysVisible="false"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,20"
+                                 >
+                        <p:column headerText="Name" >
+                            <p:outputLabel value="#{p.person.name}" ></p:outputLabel>
+                            <br/>
+                            <p:outputLabel rendered="#{p.person.sex == 'Male'}">
+                                <i class="fas fa-mars" style="color: blue;  font-size: 24px;"></i>
+                            </p:outputLabel>
 
-                                        <p:outputLabel rendered="#{p.person.sex == 'Female'}">
-                                            <i class="fas fa-venus" style="color: pink; font-size: 24px;"></i>
-                                        </p:outputLabel>
-                                        <p:outputLabel value=" "></p:outputLabel>
-                                        <p:outputLabel value="#{p.person.ageAsString}"></p:outputLabel>
-                                        <br/>
-                                        <p:outputLabel value="#{p.person.phone}">
-                                        </p:outputLabel>
-                                        <p:outputLabel rendered="#{not empty p.person.phone and p.person.phone ne ''}" value=",&nbsp; "></p:outputLabel>
-                                        <br/>
-                                        <p:outputLabel value="#{p.person.address}"></p:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Actions">
-                                        <div class="row g-2">
-                                            <!-- Your p:commandButton elements here wrapped in col divs -->
-                                            <div class="col-auto m-2 ">
+                            <p:outputLabel rendered="#{p.person.sex == 'Female'}">
+                                <i class="fas fa-venus" style="color: pink; font-size: 24px;"></i>
+                            </p:outputLabel>
+                            <p:outputLabel value=" "></p:outputLabel>
+                            <p:outputLabel value="#{p.person.ageAsString}"></p:outputLabel>
+                            <br/>
+                            <p:outputLabel value="#{p.person.phone}">
+                            </p:outputLabel>
+                            <p:outputLabel rendered="#{not empty p.person.phone and p.person.phone ne ''}" value=",&nbsp; "></p:outputLabel>
+                            <br/>
+                            <p:outputLabel value="#{p.person.address}"></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Actions">
+                            <div class="row g-2">
+                                <!-- Your p:commandButton elements here wrapped in col divs -->
+                                <div class="col-auto m-2 ">
 
-                                                <p:commandButton value="Select" ajax="false" styleClass="mx-1 mb-2">
-                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
-                                                </p:commandButton>
-                                            </div>
-                                        </div>
-                                    </p:column>
+                                    <p:commandButton value="Select" ajax="false" styleClass="mx-1 mb-2">
+                                        <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </p:column>
 
 
-                                </p:dataTable>
+                    </p:dataTable>
                 </p:panel>
             </h:form>
-            
+
         </h:panelGroup>
-        
+
+
+
         <h:panelGroup rendered="#{patientController.current.id ne null}">
-             <h:form >
-            <p:panel header="Patient Deposit History" styleClass="w-100">
-                <p:panelGrid columns="4" styleClass="mb-2" columnClasses="col-md-2, col-md-4, col-md-2, col-md-4">
-                    <p:outputLabel value="From Date" />
-                    <p:datePicker  showTime="true" value="#{reportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+            <h:form >
+                <p:panel header="Patient Deposit History" styleClass="w-100">
+                    <div class="row">
+                        <div class="col-6">
+                            <common:patient patient="#{patientController.current}" class="w-100"/>
+                        </div>
+                        <div class="col-6">
+                            <p:panelGrid columns="4" styleClass="mb-2" columnClasses="col-md-2, col-md-4, col-md-2, col-md-4">
+                                <h:outputLabel value="From Date" />
+                                <p:datePicker  showTime="true" value="#{reportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                    <p:outputLabel value="To Date" />
-                    <p:datePicker showTime="true" value="#{reportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                </p:panelGrid>
+                                <h:outputLabel value="To Date" />
+                                <p:datePicker showTime="true" value="#{reportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </p:panelGrid>
 
-                <h:panelGrid columns="6" class="my-2">
-                    <p:commandButton 
-                    class="ui-button-warning" 
-                    ajax="false" 
-                    value="Process" 
-                    action="#{reportController.createPatientDepositSummary()}" 
-                    icon="fas fa-cogs" />
-                     <p:commandButton 
-                    class="mx-1 ui-button-info" 
-                    ajax="false" 
-                    value="Print" 
-                         icon="fas fa-print" >
-                         <p:printer target="tbl" />
-                     </p:commandButton>
-                      <p:commandButton 
-                    class="ui-button-success" 
-                    ajax="false" 
-                    value="Excel" 
-                          icon="fas fa-file-excel" >
-                          <p:dataExporter type="xlsx" fileName="Patient Deposit History #{sessionController.institution.name} - #{sessionController.department.name}" target="tbl" />
-                      </p:commandButton>
-                     <p:commandButton 
-                    class=" mx-1 ui-button-danger" 
-                    ajax="false" 
-                    value="PDF" 
-                          icon="fas fa-file-pdf" >
-<!--                          <p:dataExporter type="pdf" fileName="Patient Deposit History #{sessionController.institution.name} - #{sessionController.department.name}" target="tbl" />-->
-                      </p:commandButton>
-                </h:panelGrid>
-                
-
-                <h:panelGrid columns="2" styleClass="mt-4">
-                    <h:outputLabel value="From Date :" />
-                    <h:outputLabel value="#{reportController.fromDate}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                    </h:outputLabel>
-
-                    <h:outputLabel value="To Date :" />
-                    <h:outputLabel value="#{reportController.toDate}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                    </h:outputLabel>
-                </h:panelGrid>
-            </p:panel>
+                            <h:panelGrid columns="6" class="my-5">
+                                <p:commandButton 
+                                    class="ui-button-warning" 
+                                    ajax="false" 
+                                    value="Process" 
+                                    action="#{reportController.createPatientDepositSummary()}" 
+                                    icon="fas fa-cogs" />
+                                <p:commandButton 
+                                    class="mx-1 ui-button-info" 
+                                    ajax="false" 
+                                    value="Print" 
+                                    icon="fas fa-print" >
+                                    <p:printer target="tbl" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="ui-button-success" 
+                                    ajax="false" 
+                                    value="Excel" 
+                                    icon="fas fa-file-excel" >
+                                    <p:dataExporter type="xlsx" fileName="Patient Deposit History #{sessionController.institution.name} - #{sessionController.department.name}" target="tbl" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class=" mx-1 ui-button-danger" 
+                                    ajax="false" 
+                                    value="PDF" 
+                                    icon="fas fa-file-pdf" >
+          <!--                          <p:dataExporter type="pdf" fileName="Patient Deposit History #{sessionController.institution.name} - #{sessionController.department.name}" target="tbl" />-->
+                                </p:commandButton>
+                            </h:panelGrid>     
+                        </div>
+                    </div>
+                </p:panel>
 
 
-            <p:dataTable
-                id="tbl"
-                value="#{reportController.patientDepositHistories}" 
-                var="ptDH" 
-                paginator="true" 
-                rowKey="#{ptDH.id}"
-                rows="10" 
-                paginatorPosition="bottom"
-                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
-                rowsPerPageTemplate="5,10,20"
-                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
-                widgetVar="agentHistoryTable" 
-                sortMode="multiple"
-                reflow="true">
+                <p:dataTable
+                    id="tbl"
+                    value="#{reportController.patientDepositHistories}" 
+                    var="ptDH" 
+                    paginator="true" 
+                    rowKey="#{ptDH.id}"
+                    rows="10" 
+                    paginatorPosition="bottom"
+                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                    rowsPerPageTemplate="5,10,20"
+                    currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
+                    widgetVar="agentHistoryTable" 
+                    sortMode="multiple"
+                    reflow="true">
+
+                    <f:facet name="header">
+                        <h:outputFormat value="Patient Name &emsp;"/>
+                        <h:outputFormat value=": "/>
+                        <h:outputFormat value="#{patientController.current.person.nameWithTitle}"/> <br/>
+                        <h:outputLabel value="From Date &emsp;&emsp; &nbsp;" />
+                        <h:outputFormat value=": "/>
+                        <h:outputLabel value="#{reportController.fromDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputLabel><br/>
+                        <h:outputLabel value="To Date &emsp;&emsp;&emsp; &nbsp;&nbsp;" />
+                        <h:outputFormat value=": "/>
+                        <h:outputLabel value="#{reportController.toDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputLabel>
+                    </f:facet>
 
 
 
-                
 
+                    <p:column headerText="MRN" >
+                        <h:outputText value="#{ptDH.patientDeposit.patient.phn}" >
+                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" ></f:convertDateTime>
+                        </h:outputText>
+                    </p:column>
 
-                <p:column headerText="MRN" >
-                    <h:outputText value="#{ptDH.patientDeposit.patient.code}" >
-                        <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" ></f:convertDateTime>
-                    </h:outputText>
-                </p:column>
+                    <p:column headerText="Branch Name" >
+                        <h:outputText value="#{ptDH.bill.institution.name}" />
+                    </p:column>
 
-                <p:column headerText="Branch Name" >
-                    <h:outputText value="#{ptDH.bill.institution.name}" />
-                </p:column>
+                    <p:column headerText="Bill No" sortBy="#{ptDH.bill.deptId}" filterBy="#{ptDH.bill.deptId}" filterMatchMode="contains">
+                        <p:commandLink 
+                            value="#{ptDH.bill.deptId}" 
+                            ajax="false"
+                            action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
+                            <f:setPropertyActionListener value="#{ptDH.bill}" target="#{billSearch.bill}" />
+                        </p:commandLink>
 
-                <p:column headerText="Bill No" sortBy="#{ptDH.bill.deptId}" filterBy="#{ptDH.bill.deptId}" filterMatchMode="contains">
-                    <p:commandLink 
-                        value="#{ptDH.bill.deptId}" 
-                        ajax="false"
-                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
-                        <f:setPropertyActionListener value="#{ptDH.bill}" target="#{billSearch.bill}" />
-                    </p:commandLink>
-                    
-                    <p:badge value="#{ptDH.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{ptDH.bill.cancelled}" />
-                    <p:badge value="#{ptDH.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{ptDH.bill.refunded}" />
-                    
+                        
 <!--                    <p:commandLink value="Original Bill - #{agentHx.bill.deptId}" 
-                                   ajax="false"
-                                   rendered="#{agentHx.bill.billedBill}"
-                                   action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
-                        <f:setPropertyActionListener value="#{agentHx.bill.billedBill}" target="#{billSearch.bill}" />
-                    </p:commandLink>-->
+               ajax="false"
+               rendered="#{agentHx.bill.billedBill}"
+               action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
+    <f:setPropertyActionListener value="#{agentHx.bill.billedBill}" target="#{billSearch.bill}" />
+</p:commandLink>-->
 
-                </p:column>
+                    </p:column>
 
-                <p:column headerText="Status" >
-<!--                    <h:outputText value="#{agentHx.paidAmountToAgency}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputText>-->
-                </p:column>
+                    <p:column headerText="Status" >
+                        
+                        <p:badge value="#{ptDH.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{ptDH.bill.cancelled}" />
+                        <p:badge value="#{ptDH.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{ptDH.bill.refunded}" />
+                      
+                        <p:badge value="Cancelled" severity="danger" rendered="#{ptDH.bill.billTypeAtomic.billCategory eq 'CANCELLATION' and !ptDH.bill.cancelled}" />
+                        <p:badge value="Refunded" severity="warning" rendered="#{ptDH.bill.billTypeAtomic.billCategory eq 'REFUND' and !ptDH.bill.refunded}" />
 
-                <p:column headerText="Description" >
-                    <h:outputText value="#{ptDH.bill.billTypeAtomic.label}">
-                    </h:outputText>
-                </p:column>
+    <!--                    <h:outputText value="#{agentHx.paidAmountToAgency}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>-->
+                    </p:column>
 
-                <p:column headerText="Before Balance " >
-                    <h:outputText value="#{ptDH.balanceBeforeTransaction}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputText>
-                </p:column>
+                    <p:column headerText="Description" >
+                        <h:outputText value="#{ptDH.bill.billTypeAtomic.label}">
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Before Balance " >
+                        <h:outputText value="#{ptDH.balanceBeforeTransaction}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Credit" >
+                        <h:outputText value="#{ptDH.transactionValue}" rendered="#{ptDH.transactionValue gt 0}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+
+                        <f:facet name="footer">
+                            <h:outputText value="#{reportController.totalCredit}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+
+                    </p:column>
+
+                    <p:column headerText="Debit" >
+                        <h:outputText value="#{ptDH.transactionValue}" rendered="#{ptDH.transactionValue lt 0}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+
+                        <f:facet name="footer">
+                            <h:outputText value="#{reportController.totalDebit}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+
+
+                    </p:column>
+
+                    <p:column headerText="After Balance" >
+                        <h:outputText value="#{ptDH.balanceAfterTransaction}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </p:column>
+
+                </p:dataTable>
                 
-                 <p:column headerText="Credit" >
-                     <h:outputText value="#{ptDH.transactionValue}" rendered="#{ptDH.transactionValue gt 0}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputText>
-                </p:column>
-
-                <p:column headerText="Debit" >
-                    <h:outputText value="#{ptDH.transactionValue}" rendered="#{ptDH.transactionValue lt 0}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputText>
-                </p:column>
-
-                <p:column headerText="After Balance" >
-                    <h:outputText value="#{ptDH.balanceAfterTransaction}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputText>
-                </p:column>
-
-            </p:dataTable>
-
-        </h:form>
+            </h:form>
         </h:panelGroup>
-      
+
     </ui:define>
 
 </ui:composition>

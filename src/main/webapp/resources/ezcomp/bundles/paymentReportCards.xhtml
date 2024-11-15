@@ -21,7 +21,7 @@
                 <thead>
                     <tr class="text-light bg-dark">
                         <th class="text-light bg-dark">
-                            No Card Transactions Available
+                            <h:outputText value="No Data for #{cc.attrs.bundle.name}" ></h:outputText>
                         </th>
                     </tr>
                 </thead>
@@ -33,7 +33,7 @@
                 <thead>
                     <tr class="text-light bg-dark">
                         <th class="text-light bg-dark" colspan="6">
-                            Card Transaction Details
+                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
                         </th>
                         <th class="text-end text-light bg-dark">
                             <h:outputText value="#{cc.attrs.bundle.total}">
@@ -94,124 +94,6 @@
                 </tbody>
             </table>
         </h:panelGroup>
-
-
-        <!--
-                <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
-                    <f:facet name="header" >
-                        <h:outputText value="Card Trnasaction" ></h:outputText>
-                    </f:facet>
-                    <p:column>
-                        <f:facet name="header">
-                            <h:outputText value="Bil No" />
-                        </f:facet>
-                        <p:commandLink value="#{row.payment.bill.deptId}"   
-                                       ajax="false"
-                                       action="#{billSearch.navigateToViewBillByAtomicBillType()}"
-                                       >
-                            <f:setPropertyActionListener value="#{row.payment.bill}" target="#{billSearch.bill}" ></f:setPropertyActionListener>
-                        </p:commandLink>
-                    </p:column>
-                    <p:column>
-                        <f:facet name="header">
-                            <h:outputText value="Bill Class" />
-                        </f:facet>
-                        <h:outputText value="#{row.payment.bill.billClassType}" 
-                                      style="#{row.payment.bill.billClassType eq 'Bill' ? 'color: blue;' : 
-                 row.payment.bill.billClassType eq 'BilledBill' ? 'color: green;' : 
-                 row.payment.bill.billClassType eq 'CancelledBill' ? 'color: red;' : 
-                 row.payment.bill.billClassType eq 'RefundBill' ? 'color: orange;' : 
-                 row.payment.bill.billClassType eq 'PreBill' ? 'color: purple;' : 
-                 row.payment.bill.billClassType eq 'OtherBill' ? 'color: gray;' : ''}" />
-
-<h:outputText 
-rendered="#{row.payment.bill.cancelledBill ne null}" 
-value="#{row.payment.bill.cancelledBill.deptId}" 
-style="#{row.payment.bill.billClassType eq 'Bill' ? 'color: blue;' : 
-                 row.payment.bill.billClassType eq 'BilledBill' ? 'color: green;' : 
-                 row.payment.bill.billClassType eq 'CancelledBill' ? 'color: red;' : 
-                 row.payment.bill.billClassType eq 'RefundBill' ? 'color: orange;' : 
-                 row.payment.bill.billClassType eq 'PreBill' ? 'color: purple;' : 
-                 row.payment.bill.billClassType eq 'OtherBill' ? 'color: gray;' : ''}" />
-
-
-</p:column>
-<p:column>
-    <f:facet name="header">
-        <h:outputText value="Bill Type" />
-    </f:facet>
-    <h:outputText value="#{row.payment.bill.createdAt}"   >
-        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
-    </h:outputText>
-</p:column>
-<p:column>
-    <f:facet name="header">
-        <h:outputText value="Bill Type" />
-    </f:facet>
-    <h:outputText value="#{row.payment.bill.billTypeAtomic.label}"  />
-</p:column>
-<p:column>
-    <f:facet name="header">
-        <h:outputText value="Card Ref.Number" />
-    </f:facet>                
-    <h:outputText 
-        value="#{row.payment.creditCardRefNo}"/>
-</p:column>
-<p:column>
-    <f:facet name="header">
-        <h:outputText value="Card Ref.Number" />
-    </f:facet>                
-    <h:outputText 
-        value="#{row.payment.creditCardRefNo}"/>
-</p:column>
-<p:column>
-    <f:facet name="header">
-        <h:outputText value="Bank*" />
-    </f:facet>    
-    <h:outputText 
-        value="#{row.payment.bank.name}"/>
-</p:column>
-<p:column>
-    <f:facet name="header">
-        <h:outputText value="Fee" />
-    </f:facet>
-    <h:outputText value="#{row.payment.paidValue}"  >
-        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-    </h:outputText>
-</p:column>
-<p:column>
-    <f:facet name="header">
-        <h:outputText value="Referane Bill" />
-    </f:facet>
-    <h:outputText value="#{row.payment.bill.backwardReferenceBill.deptId}"  />
-    <h:outputText value="#{row.payment.bill.forwardReferenceBill.deptId}"  />
-    <h:outputText value="#{row.payment.bill.referenceBill.deptId}"  />
-    <h:outputText value="#{row.payment.bill.refundedBill.deptId}"  />
-    <h:outputText value="#{row.payment.bill.cancelledBill.deptId}"  />
-    <h:outputText value="#{row.payment.bill.billedBill.deptId}"  />
-</p:column>
-
-            <p:columnGroup type="footer">  
-                <p:row>    
-                    <p:column style=" text-align: left">
-                        <f:facet name="footer">
-                            <h:outputLabel value="Total"/>
-
-                        </f:facet>
-                    </p:column>
-                    <p:column colspan="4" style=" text-align: left;font">  
-                        <f:facet name="footer">
-                            <h:outputLabel value="#{cc.attrs.bundle.total}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
-                        </f:facet>
-                    </p:column>
-
-                </p:row>  
-            </p:columnGroup>  
-
-</p:dataTable>-->
-
 
 
     </cc:implementation>

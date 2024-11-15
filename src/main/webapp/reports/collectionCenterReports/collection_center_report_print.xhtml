@@ -29,7 +29,7 @@
                             <p:spacer width="50"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                                 <h:outputLabel value="To" for="toDate" class="mx-3"/>
                             </h:panelGroup>
                             <p:datePicker 
@@ -78,7 +78,7 @@
                             <p:selectOneMenu
                                 id="siteMenu"
                                 styleClass="w-100 form-control"  
-                                value="#{searchController.site}" 
+                                value="#{reportController.site}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
@@ -147,7 +147,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf491;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Laboratory" for="cmbLab" class="mx-3"/>
+                                <h:outputLabel value="Category" for="cmbLab" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu 
                                 class="form-control" 
@@ -191,32 +191,24 @@
                                 <h:outputText value="&#xf46d;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                                 <h:outputLabel value="Result Status" for="cmbOdrreq" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu
-                                value="#{reportController.status}"
-                                style=" max-width: 100%; overflow-x: auto; "
-                                class="w-100">
-                                <f:selectItem itemLabel="Select Status" />
-                                <f:selectItems value="#{enumController.billItemStatuses}" var="sts" itemLabel="#{sts.label}" itemValue="#{sts}" ></f:selectItems>
-                            </p:selectOneMenu>
+                            <h:panelGrid columns="1" class="w-100">
+                                <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" style="max-width:100%;" value="#{reportController.patientInvestigationStatus}">
+                                    <f:selectItem itemLabel="Any" />
+                                    <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
+                                </p:selectOneMenu>
+                            </h:panelGrid>
 
                         </h:panelGrid>
 
-                        <p:commandButton     
-                            ajax="false"
-                            value="Process*"
-                            style="width: 150px"
-                            class="ui-button-warning mx-2"
-                            icon="fas fa-cogs"
-                            action="#{reportController.listCcReportPrint()}"
-                            />
                         <p:commandButton     
                             ajax="false"
                             value="Process"
                             style="width: 150px"
                             class="ui-button-warning mx-2"
                             icon="fas fa-cogs"
-                            action="#{reportController.processCollectingCentreReportsToPrint()}"
+                            action="#{reportController.listCcReportPrint()}"
                             />
+
                         <p:commandButton 
                             icon="fa-solid fa-print"
                             class="mx-2 ui-button-info"
@@ -241,6 +233,28 @@
                         </p:commandButton>
 
                     </p:panel>
+                    
+                    <p:spacer height="5"></p:spacer>
+
+                    <h:panelGrid columns="2" class="my-4" >
+                        
+                        <h:outputLabel value="From Date :  "/>
+                        <h:outputLabel value="#{reportController.fromDate}"  >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputLabel>
+
+                        <h:outputLabel value="To Date :  "/>
+                        <h:outputLabel value="#{reportController.toDate}"  >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputLabel>
+
+                        <h:outputLabel value="Collection Center :  "/>
+                        <h:outputLabel value="#{reportController.collectingCentre.name}"  >
+                        </h:outputLabel>
+                    </h:panelGrid>
+
+                    <p:spacer height="5"></p:spacer>
+
 
                     <p:dataTable 
                         id="tblExport"
@@ -257,25 +271,43 @@
                         style="table-layout: fixed; width: 100%;">
 
                         <!-- Selection Box Column -->
-                        <p:column headerText="S.NO" >
+                        <p:column headerText="S.NO" width="3em" >
                             #{n+1}
                         </p:column>
-                        <p:column headerText="CC Code" >
+                        <p:column headerText="CC Code" width="3em">
                             <p:outputLabel value="#{patientInvestigation.billItem.bill.fromInstitution.code}"/>
                         </p:column>
-                        <p:column headerText="Leaf.No" >
+                        <p:column headerText="Leaf.No" width="5em" >
                             <p:outputLabel value="#{patientInvestigation.billItem.bill.referenceNumber}"/>
                         </p:column>
-                        <p:column headerText="PHN" >
+                        <p:column headerText="MRN" width="10em" >
                             #{patientInvestigation.billItem.bill.patient.phn}
                         </p:column>
-                        <!-- Bill Number Column with Icon and Colour -->
-                        <p:column headerText="Patient" >
+                        <p:column headerText="Patient" width="14em">
                             #{patientInvestigation.billItem.bill.patient.person.nameWithTitle}
                         </p:column>
-                        <p:column headerText="Invoice Number" >
-                            #{patientInvestigation.billItem.bill.deptId}
+                        <p:column headerText="Invoice Number" width="18em">
+                            <h:outputText value="#{patientInvestigation.billItem.bill.deptId}" />
+
+                            <p:commandButton 
+                                ajax="false" 
+                                title="Manage Bill"
+                                icon="pi pi-cog" 
+                                styleClass="ui-button-info m-1" 
+                                action="#{billSearch.navigateToManageCollectingCentreBill()}">
+                                <f:setPropertyActionListener target="#{billSearch.bill}" value="#{patientInvestigation.billItem.bill}"/>
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                ajax="false" 
+                                title="View Bill"
+                                icon="pi pi-eye" 
+                                styleClass="ui-button-success m-1" 
+                                action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                <f:setPropertyActionListener target="#{billSearch.bill}" value="#{patientInvestigation.billItem.bill}"/>
+                            </p:commandButton>
                         </p:column>
+
                         <p:column headerText="Order Date" >
                             <p:outputLabel value="#{patientInvestigation.investigation.createdAt}">
                                 <f:convertDateTime pattern="dd/mmyyyy HH:MM a"/>
@@ -285,8 +317,8 @@
                             <p:outputLabel value="#{patientInvestigation.billItem.bill.fromInstitution.route.name}">
                             </p:outputLabel>
                         </p:column>
-                        <p:column headerText="Reffering Doctor Name" >
-                            <p:outputLabel value="#{patientInvestigation.billItem.bill.referredBy.person.nameWithTitle}">
+                        <p:column headerText="Reffered By" >
+                            <p:outputLabel value="#{patientInvestigation.billItem.bill.referredInstituteOrDoctor}">
                             </p:outputLabel>
                         </p:column>
                         <p:column headerText="Service Name">
@@ -295,6 +327,8 @@
 
                         <p:column headerText="Status" >
                             <h:outputLabel value="#{patientInvestigation.status}"/>
+                            <p:badge value="Cancelled" severity="warning" rendered="#{patientInvestigation.billItem.bill.cancelled}" ></p:badge>
+                            <p:badge value="Refunded" severity="warning" rendered="#{patientInvestigation.billItem.bill.refunded}" ></p:badge>
                         </p:column>
                         <p:column headerText="Print" >
                             <h:outputLabel value="#{patientInvestigation.printingUser.name}"/>

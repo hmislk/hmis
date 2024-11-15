@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fas fa-search" />
+                                    <h:outputLabel value="Income/Expense Bill Search " class="m-1"/>
+                                </div>
+
+
+                            </div>
+
+                        </f:facet>
+
+
+                        <p:panelGrid layout="tabular" columns="5" id="searchKeyword" class="w-100">
+
+                            <h:outputLabel value="From Date"/>
+                            <p:datePicker 
+                                class="w-100 m-1" 
+                                inputStyleClass="w-100"
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
+                            </p:datePicker>
+                            <p:spacer ></p:spacer>
+                            <h:outputLabel value="To Date"/>
+                            <p:datePicker 
+                                class="w-100 m-1" 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
+                            </p:datePicker>
+
+                        </p:panelGrid>
+                        <p:panelGrid layout="tabular" columns="2" >
+
+                            <p:commandButton 
+                                icon="fas fa-search"
+                                id="btnSearch" 
+                                ajax="false" 
+                                value="Search" 
+                                class="ui-button-success w-100 mt-2"
+                                action="#{searchController.createPaymentHistoryTable()}"  >
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                id="btnExcel"
+                                icon="fa-solid fa-file-excel"
+                                ajax="false" 
+                                value="Download"
+                                class="w-100 mt-1">
+                                <p:dataExporter fileName="Income Bills" type="xls" target="tblBills" ></p:dataExporter>
+                            </p:commandButton>
+
+                        </p:panelGrid>
+
+
+
+                        <p:dataTable 
+                            rowIndexVar="i" 
+                            id="tblBills" 
+                            value="#{searchController.bills}" 
+                            var="bill"  
+                            style="min-width: 100%;"  
+                            rows ="10"
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,25,50"
+                            >
+                            <p:column 
+                                headerText="No" 
+                                filterBy="#{bill.id}" 
+                                filterMatchMode="contains"
+                                sortBy="#{bill.id}"
+                                rendered="false"
+                                styleClass="alignTop" 
+                                width="15">
+                                <h:outputLabel value="#{bill.id}"/>
+                            </p:column>
+                            <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">                                
+                                <div>
+                                    <p:commandLink 
+                                        id="billNo" 
+                                        ajax="false" 
+                                        value="#{bill.deptId}" 
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}"
+                                        style="color: #{(bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES') ? 'blue' : (bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME_CANCELLED' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES_CANCELLED') ? 'red' : 'black'};">
+                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    </p:commandLink>
+                                </div>
+
+                            </p:column>
+                            <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}">
+                                <h:panelGroup >
+                                    <p:outputLabel id="billTime1" value="#{bill.createdAt}" style="color: #{(bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES') ? 'blue' : (bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME_CANCELLED' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES_CANCELLED') ? 'red' : 'black'};">
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                    </p:outputLabel>
+
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Billed by" 
+                                      sortBy="#{bill.creater.name}" 
+                                      filterMatchMode="contains"
+                                      filterBy="#{bill.creater.name}">
+                                <h:outputLabel value="#{bill.creater.webUserPerson.name}" style="color: #{(bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES') ? 'blue' : (bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME_CANCELLED' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES_CANCELLED') ? 'red' : 'black'};"></h:outputLabel>
+<!--                                <h:panelGroup rendered="#{bill.cancelled or bill.refunded}" style="display: grid">
+                                    <h:outputLabel value="#{bill.cancelledBill.creater.webUserPerson.name}" style="color: red" rendered="#{bill.cancelled}"></h:outputLabel>
+                                    <h:outputLabel value="#{bill.refundedBill.creater.webUserPerson.name}" style="color: orange" rendered="#{bill.refunded}"></h:outputLabel>
+                                </h:panelGroup>-->
+                            </p:column>   
+
+                            <p:column headerText="Remarks" >  
+                                <p:badge rendered="#{bill.cancelledBill.billTypeAtomic eq 'SUPPLEMENTARY_INCOME_CANCELLED'}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
+                                <p:badge rendered="#{bill.cancelledBill.billTypeAtomic eq 'OPERATIONAL_EXPENSES_CANCELLED'}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
+                                <h:outputText value="#{(bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME_CANCELLED' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES_CANCELLED') ? bill.billedBill.deptId : ''}" style="color: red"/>
+                            </p:column>
+
+                            <p:column headerText="Bill Type">
+                                <p:badge rendered="#{bill.billTypeAtomic eq 'SUPPLEMENTARY_INCOME'}" value="Income Bill" severity="success" styleClass="mr-2"></p:badge>
+                                <p:badge rendered="#{bill.billTypeAtomic eq 'OPERATIONAL_EXPENSES'}" value="Expense Bill" severity="warning" styleClass="mr-2"></p:badge>
+                                <p:badge rendered="#{bill.billTypeAtomic eq 'SUPPLEMENTARY_INCOME_CANCELLED'}" value="Cancelled Income Bill" severity="danger" styleClass="mr-2"></p:badge>
+                                <p:badge rendered="#{bill.billTypeAtomic eq 'OPERATIONAL_EXPENSES_CANCELLED'}" value="Cancelled Expense Bill" severity="danger" styleClass="mr-2"></p:badge>
+
+                            </p:column>
+
+                            <p:column headerText="Value" sortBy="#{bill.total}" 
+                                      styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{bill.total}" style="color: #{(bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES') ? 'blue' : (bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME_CANCELLED' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES_CANCELLED') ? 'red' : 'black'};">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+
+                            <p:column headerText="Actions">
+                                <p:commandButton icon="pi pi-wallet" styleClass="m-1" ajax="false" title="Manage Bill" action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                </p:commandButton>
+                                <p:commandButton icon="pi pi-search" styleClass="m-1" ajax="false" title="View Bill" action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

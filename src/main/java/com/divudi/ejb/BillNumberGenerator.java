@@ -1335,11 +1335,9 @@ public class BillNumberGenerator {
             String detpCode = dep.getDepartmentCode();
             String toDeptCode = toDept.getDepartmentCode();
             String insCode = dep.getInstitution().getInstitutionCode();
-            String siteCode = dep.getSite().getInstitutionCode();
             String s = billSuffixTemplate.replace("{{department_code}}", detpCode)
                     .replace("{{to_department_code}}", toDeptCode)
-                    .replace("{{ins_code}}", insCode)
-                    .replace("{{site_code}}", siteCode);
+                    .replace("{{ins_code}}", insCode);
             System.out.println(s);
 
             StringBuilder result = new StringBuilder();
@@ -1489,10 +1487,8 @@ public class BillNumberGenerator {
             String billSuffixTemplate = configOptionApplicationController.getLongTextValueByKey("Bill Number Sufix Template for " + billType, template);
             String detpCode = dep.getDepartmentCode();
             String insCode = dep.getInstitution().getInstitutionCode();
-            String siteCode = dep.getSite().getInstitutionCode();
             String s = billSuffixTemplate.replace("{{department_code}}", detpCode)
-                    .replace("{{ins_code}}", insCode)
-                    .replace("{{site_code}}", siteCode);
+                    .replace("{{ins_code}}", insCode);
             System.out.println(s);
 
             StringBuilder result = new StringBuilder();

@@ -210,16 +210,17 @@
 
                                     <div class="row">
                                         <div class="col-3"><p:outputLabel value="Payment Method" /></div>
-                                        <div class="col-9"><p:selectOneMenu   id="cmbPs" value="#{pettyCashBillController.current.paymentMethod}">                                                                     
+                                        <div class="col-9">
+                                            <p:selectOneMenu   id="cmbPs" value="#{pettyCashBillController.current.paymentMethod}">                                                                     
                                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
-                                                <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                                <p:ajax process="cmbPs" update="creditCard cheque slip eWallet" event="change" />
                                             </p:selectOneMenu></div>
                                     </div>
                                         <!--<p:inputText value="#{pettyCashBillController.comment}" id="comment"/>-->
 
                                     <div class="row">
                                         <div class="col-3"></div>
-                                        <div class="col-9">
+                                        <div class="col-9 mt-2" >
                                             
                                             <h:panelGroup id="creditCard" style="display: #{pettyCashBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; " >
                                                 <pa:creditCard paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
@@ -231,6 +232,10 @@
 
                                             <h:panelGroup id="slip" style="display: #{pettyCashBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
                                                 <pa:slip paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            
+                                            <h:panelGroup id="eWallet" style="display: #{pettyCashBillController.current.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
+                                                <pa:ewallet_collect paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                         </div>
                                     </div>

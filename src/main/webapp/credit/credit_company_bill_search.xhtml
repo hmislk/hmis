@@ -7,48 +7,71 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/payments/pay_index.xhtml">
+            <ui:define name="admin">
                 <h:form>
                     <p:panel >
 
                         <f:facet name="header" >
                             <h:outputLabel value="CREDIT COMPANY PAYMENT BILL SEARCH "/>
-                            <h:panelGrid columns="5" >
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createCreditTable}" />
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-
-                                <h:outputLabel value="Bill No"/>
-                                <h:outputLabel value="Credit Company"/>
-                                <h:outputLabel value="Value"/>
-                                <h:outputLabel value="Bank"/>
-                                <h:outputLabel value="Check No"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}" />
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.netTotal}"  />   
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bank}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}"/>
-
-                            </h:panelGrid>
-
-                        </f:facet>                         
+                        </f:facet>   
 
 
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h:panelGrid columns="5" >
+                                    <h:outputLabel value="From Date" class="mx-2"/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel value="To Date" class="mx-2"/>
+                                    <h:outputLabel/><h:outputLabel/>
+                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="mx-2">      
+                                    </p:calendar>
+                                    <h:outputLabel/>
+                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="mx-2">                                                                              
+                                    </p:calendar>
+                                    <h:outputLabel/>
+                                    <p:commandButton 
+                                        id="btnSearch" 
+                                        ajax="false" 
+                                        value="Search" 
+                                        action="#{searchController.createCreditTable}" 
+                                        class="ui-button-warning mx-2 w-100"
+                                        icon="fas fa-search"/>
 
-                        <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill">
-                            <p:column>
-                                <p:commandButton ajax="false" value="View Bill" action="credit_company_bill_reprint" >
-                                    <f:setPropertyActionListener value="#{bill}" target="#{creditCompanyBillSearch.bill}"/>
-                                </p:commandButton>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel  value="#{bill.deptId}" />
+                                    <p:spacer height="5"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+
+                                    <h:outputLabel value="Bill No" class="mx-2"/>
+                                    <h:outputLabel value="Credit Company" class="mx-2"/>
+                                    <h:outputLabel value="Value" class="mx-2"/>
+                                    <h:outputLabel value="Bank" class="mx-2"/>
+                                    <h:outputLabel value="Check No" class="mx-2"/>
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="mx-2"/>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}" class="mx-2"/>
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.netTotal}"  class="mx-2"/>   
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bank}" class="mx-2"/>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="mx-2"/>
+
+                                </h:panelGrid>
+
+                            </div>
+
+                        </div>
+
+
+
+
+
+                        <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill" class="my-3">
+                            <p:column headerText="Bill No">
+                                <div>
+                                    <p:commandLink 
+                                        id="billNo" 
+                                        ajax="false" 
+                                        value="#{bill.deptId}" 
+                                        action="credit_company_bill_reprint">
+                                        <f:setPropertyActionListener value="#{bill}" target="#{creditCompanyBillSearch.bill}"/>
+                                    </p:commandLink>
+                                </div>
                             </p:column>
                             <p:column headerText="Credit Company">                               
                                 <h:outputLabel value="#{bill.fromInstitution.name}" />
@@ -76,11 +99,11 @@
                                     </h:outputLabel>
                                 </h:panelGroup>                                
                             </p:column>    
-                            <p:column headerText="PaymentScheme"  >                             
+                            <p:column headerText="Payment Scheme"  >                             
                                 <h:outputLabel value="#{bill.paymentScheme.name}" >                                       
                                 </h:outputLabel>                                   
                             </p:column>
-                            <p:column headerText="Paymentmethod" >                              
+                            <p:column headerText="Payment Method" >                              
                                 <h:outputLabel value="#{bill.paymentMethod}" >                                       
                                 </h:outputLabel>                                
                             </p:column>

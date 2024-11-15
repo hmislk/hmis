@@ -12,7 +12,7 @@
 
         <h:form>
             <p:growl id="msg"/>
-            <p:focus id="selectFocus" for="lstSelect" />
+            <p:focus id="selectFocus" for="acAmp" />
             <p:focus id="detailFocus" for="gpDetail" />
             <p:panel  >
                 <f:facet name="header" >
@@ -26,7 +26,7 @@
                             value="Add" 
                             action="#{ampController.prepareAdd()}"
                             class="w-25 ui-button-success"
-                            update="lstSelect gpDetail" 
+                            update="acAmp gpDetail" 
                             icon="fa fa-plus"
                             process="btnAdd"
                             >
@@ -38,25 +38,59 @@
                             onclick="if (!confirm('Are you sure you want to delete this record?'))
                                         return false;" action="#{ampController.delete()}"  
                             value="Delete" 
-                            update="lstSelect gpDetail msg" process="btnDelete"
+                            update="acAmp gpDetail msg" process="btnDelete"
                             class="m-1 ui-button-danger w-25">
 
                         </p:commandButton>
-                        <p:selectOneListbox 
-                            id="lstSelect" 
+
+
+                        <p:autoComplete 
+                            id="acAmp"
+                            class="w-100"
+                            inputStyleClass="w-100"
+                            completeMethod="#{ampController.completeAmp}"
+                            var="amp"
+                            itemLabel="#{amp.name}"
+                            itemValue="#{amp}"
+                            value="#{ampController.current}" 
+                            maxResults="10"
+                            minQueryLength="3"
+                            >
+                            <p:ajax 
+                                update="gpDetail" 
+                                process="acAmp"
+                                listener="#{pharmacyAdjustmentController.fillAmpStocks}">
+                            </p:ajax>
+                            <p:column headerText="Item"  style="padding: 3px;" >
+                                <h:outputText value="#{amp.name}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Stock" style="padding: 3px;" >
+                                <h:outputText value="#{stockController.departmentItemStock(sessionController.department, amp)}" ></h:outputText>
+                            </p:column>
+                        </p:autoComplete>
+
+<!--                        <p:selectOneListbox 
+                            id="acAmp" 
                             class="w-100"
                             filter="true"
                             filterMatchMode="contains"
                             value="#{ampController.current}" 
+                            var="amp"
                             >
                             <f:selectItems 
-                                value="#{ampController.items}" 
-                                var="myItem" 
-                                itemValue="#{myItem}" 
-                                itemLabel="#{myItem.name}" ></f:selectItems>
-                            <p:ajax update="gpDetail" process="lstSelect" >
-                            </p:ajax>
-                        </p:selectOneListbox>
+                                value="#{ampController.completeAmp}"
+                                var="myItem"
+                                itemValue="#{myItem}"
+                                itemLabel="#{myItem.code} - #{myItem.name}" >
+                            </f:selectItems>
+                            <p:column style="padding: 8px; width: 20px;" headerText="Code">
+                                <h:outputText value="#{amp.code}"/>
+                            </p:column>
+                            <p:column  style="padding: 8px;" headerText="Code">
+                                <h:outputText value="#{amp.name}"/>
+                            </p:column>
+                            <p:ajax update="gpDetail" process="acAmp" ></p:ajax>
+                        </p:selectOneListbox>-->
 
 
                     </div>
@@ -119,7 +153,7 @@
                                     <f:selectItem itemLabel="Select" ></f:selectItem>
                                     <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
                                 </p:selectOneMenu>
-                                
+
                                 <h:outputText value="No of days to mark as Short Expiary" >
                                 </h:outputText>
                                 <p:inputText 
@@ -144,7 +178,7 @@
                                 id="btnSave" 
                                 value="Save" 
                                 process="btnSave gpDetail" 
-                                update="lstSelect msg" 
+                                update="acAmp msg" 
                                 class=" m-1 ui-button-warning w-25"
                                 icon="fas fa-save"
                                 action="#{ampController.save}" 

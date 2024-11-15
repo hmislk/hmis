@@ -192,7 +192,7 @@ public class Drawer implements Serializable {
     public Double getTotalInHand() {
         return sumValues(onCallInHandValue, cashInHandValue, cardInHandValue, multiplePaymentMethodsInHandValue,
                 staffInHandValue, creditInHandValue, staffWelfareInHandValue, voucherInHandValue, iouInHandValue,
-                agentInHandValue, chequeInHandValue, slipInHandValue, ewalletInHandValue, patientDepositInHandValue,
+                agentInHandValue, chequeInHandValue, slipInHandValue, ewalletInHandValue,
                 patientPointsInHandValue, onlineSettlementInHandValue, noneInHandValue, youOweMeInHandValue);
     }
 
@@ -201,7 +201,7 @@ public class Drawer implements Serializable {
         return sumValues(onCallShortageOrExcess, cashShortageOrExcess, cardShortageOrExcess,
                 multiplePaymentMethodsShortageOrExcess, staffShortageOrExcess, creditShortageOrExcess,
                 staffWelfareShortageOrExcess, voucherShortageOrExcess, iouShortageOrExcess, agentShortageOrExcess,
-                chequeShortageOrExcess, slipShortageOrExcess, ewalletShortageOrExcess, patientDepositShortageOrExcess,
+                chequeShortageOrExcess, slipShortageOrExcess, ewalletShortageOrExcess, 
                 patientPointsShortageOrExcess, onlineSettlementShortageOrExcess, noneShortageOrExcess,
                 youOweMeShortageOrExcess);
     }
@@ -210,7 +210,7 @@ public class Drawer implements Serializable {
     public Double getTotalBalance() {
         return sumValues(onCallBalance, cashBalance, cardBalance, multiplePaymentMethodsBalance, staffBalance,
                 creditBalance, staffWelfareBalance, voucherBalance, iouBalance, agentBalance, chequeBalance,
-                slipBalance, ewalletBalance, patientDepositBalance, patientPointsBalance, onlineSettlementBalance,
+                slipBalance, ewalletBalance, patientPointsBalance, onlineSettlementBalance,
                 noneBalance, youOweMeBalance);
     }
 

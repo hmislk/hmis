@@ -170,7 +170,13 @@ public enum BillType {
     FinancialAuditingBill, // For broader auditing purposes, ensuring compliance with policies and regulatory requirements
     StaffCreditSettle,
     FUND_SHIFT_COMPONANT_HANDOVER_CREATE,
-    FUND_SHIFT_COMPONANT_HANDOVER_ACCEPT;
+    FUND_SHIFT_COMPONANT_HANDOVER_ACCEPT,
+    SUPPLEMENTARY_INCOME,
+    SUPPLEMENTARY_INCOME_CANCELLED,
+    OPERATIONAL_EXPENSES,
+    OPERATIONAL_EXPENSES_CANCELLED,
+    CHEQUE_PAID,
+    CHEQUE_REALIZED;
 
     public String getLabel() {
         switch (this) {
@@ -303,22 +309,22 @@ public enum BillType {
     }
 
     public String getCode() {
-    switch (this) {
-        case OpdBathcBill:
-            return "OBB";
-        case CollectingCentreBill:
-            return "CCB";
-        default:
-            String originalString = this.getLabel();
-            String[] words = originalString.split(" ");
+        switch (this) {
+            case OpdBathcBill:
+                return "OBB";
+            case CollectingCentreBill:
+                return "CCB";
+            default:
+                String originalString = this.getLabel();
+                String[] words = originalString.split(" ");
 
-            for (int i = 0; i < words.length && i < 3; i++) {
-                words[i] = words[i].substring(0, 1).toUpperCase() + words[i].substring(1);
-            }
+                for (int i = 0; i < words.length && i < 3; i++) {
+                    words[i] = words[i].substring(0, 1).toUpperCase() + words[i].substring(1);
+                }
 
-            return String.join("", words); 
+                return String.join("", words);
+        }
     }
-}
 
     private BillType parent = null;
 

@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -20,7 +21,7 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
@@ -92,6 +93,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     MembershipSchemeController membershipSchemeController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    DrawerController drawerController;
 
     @EJB
     private BillFacade billFacade;
@@ -116,10 +119,10 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     @EJB
     TokenFacade tokenFacade;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @EJB
     private StaffFacade staffFacade;
-    
+
 /////////////////////////
     Item selectedAlternative;
 
@@ -653,6 +656,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 paymentFacade.create(p);
                 ps.add(p);
             }
+            
         } else {
             Payment p = new Payment();
             p.setBill(bill);
@@ -702,6 +706,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
             ps.add(p);
         }
+        drawerController.updateDrawerForIns(ps);
         return ps;
     }
 
@@ -1685,8 +1690,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
     public void createOpdCancelRefundBillFeePayment(Bill bill, List<BillFee> billFees, Payment p) {
         calculateBillfeePaymentsForCancelRefundBill(billFees, p);
-
-        //JsfUtil.addSuccessMessage("Sucessfully Paid");
     }
 
     public Payment createPaymentForCancellationsforOPDBill(Bill bill, PaymentMethod pm) {
@@ -1700,9 +1703,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
-        
-        //System.out.println("pm = " + pm);
 
+        //System.out.println("pm = " + pm);
         if (pm == PaymentMethod.PatientDeposit) {
             //System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
             if (bill.getPatient().getRunningBalance() == null) {
@@ -1715,25 +1717,25 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             patientFacade.edit(bill.getPatient());
             //System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
         }
-        
+
         if (pm == PaymentMethod.Staff) {
             //System.out.println("PaymentMethod - Staff");
             //System.out.println("Before Balance = " + bill.getToStaff().getCurrentCreditValue());
-            bill.getToStaff().setCurrentCreditValue( bill.getToStaff().getCurrentCreditValue() - Math.abs(bill.getNetTotal()));
+            bill.getToStaff().setCurrentCreditValue(bill.getToStaff().getCurrentCreditValue() - Math.abs(bill.getNetTotal()));
             //System.out.println("After Balance = " + bill.getToStaff().getCurrentCreditValue());
             staffFacade.edit(bill.getToStaff());
             //System.out.println("Staff Credit Updated");
         }
-        
+
         //System.out.println("001");  
-        if (p.getId() == null) { 
+        if (p.getId() == null) {
             getPaymentFacade().create(p);
         }
         getPaymentFacade().edit(p);
         //System.out.println("End Payment");  
         return p;
     }
-    
+
     public Payment createPaymentForCollectingCenterBill(Bill bill) {
         Payment p = new Payment();
         p.setBill(bill);
@@ -1744,8 +1746,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         p.setDepartment(getSessionController().getDepartment());
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
-        
-        if (p.getId() == null) { 
+
+        if (p.getId() == null) {
             getPaymentFacade().create(p);
         }
         getPaymentFacade().edit(p);

@@ -104,6 +104,8 @@ public class BillFee implements Serializable {
     private BillItem referenceBillItem;
     int orderNo;
 
+    private boolean returned;
+    
     @Transient
     private double transSerial;
     @Transient
@@ -111,6 +113,8 @@ public class BillFee implements Serializable {
     @ManyToOne
     private PatientRoom referencePatientRoom;
 
+    
+    
     public PriceMatrix getPriceMatrix() {
         return priceMatrix;
     }
@@ -190,6 +194,19 @@ public class BillFee implements Serializable {
         feeMargin = 0 - billFee.getFeeMargin();
         feeAdjusted = 0 - billFee.getFeeAdjusted();
         paidValue = 0 - billFee.getPaidValue();
+    }
+
+    public void invertValue() {
+        feeValue = 0 - feeValue;
+        if (feeGrossValue != null) {
+            feeGrossValue = 0 - feeGrossValue;
+        }
+        feeDiscount = 0 - feeDiscount;
+        feeVat = 0 - feeVat;
+        feeVatPlusValue = 0 - feeVatPlusValue;
+        feeMargin = 0 - feeMargin;
+        feeAdjusted = 0 - feeAdjusted;
+        paidValue = 0 - paidValue;
     }
 
     public BillFee() {
@@ -705,6 +722,14 @@ public class BillFee implements Serializable {
 
     public void setCompletedPayment(Boolean completedPayment) {
         this.completedPayment = completedPayment;
+    }
+
+    public boolean isReturned() {
+        return returned;
+    }
+
+    public void setReturned(boolean returned) {
+        this.returned = returned;
     }
 
 }

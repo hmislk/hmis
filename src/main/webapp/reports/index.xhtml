@@ -76,10 +76,25 @@
                                             action="#{searchController.navigatToCashierDetails()}"
                                             value="3. Cashier Details" >
                                         </p:commandButton>
+                                        <p:commandButton  
+                                            class="w-100"  
+                                            ajax="false" 
+                                            action="#{searchController.navigateToListAllDrawers()}"
+                                            value="4. All Drawers" >
+                                        </p:commandButton>
+                                        <p:commandButton  
+                                            class="w-100"  
+                                            ajax="false" 
+                                            action="#{searchController.navigateToAllCashierHandovers()}"
+                                            value="5. Handovers" >
+                                        </p:commandButton>
+
+
                                     </div>
                                 </p:tab>
                                 <p:tab title="Collection Center Reports">
                                     <div class="d-grid gap-2">
+                                        <p:commandButton   class="w-100"  ajax="false" value="Courier Lab Reports Print" action="/reports/collectionCenterReports/courier_lab_report_print?faces-redirect=true"></p:commandButton>
                                         <p:commandButton   class="w-100"  ajax="false" value="1. Collection Center Reports Print" action="/reports/collectionCenterReports/collection_center_report_print?faces-redirect=true"></p:commandButton>
                                         <p:commandButton   class="w-100"  ajax="false" value="2. Collection Center Current Balance" action="/reports/collectionCenterReports/collection_center_current_balance_report?faces-redirect=true" ></p:commandButton>
                                         <p:commandButton   class="w-100"  ajax="false" value="2. Collection Center Balance" action="/reports/collectionCenterReports/collection_center_balance_report?faces-redirect=true" ></p:commandButton>
@@ -88,7 +103,7 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="5. Collection Center Wise Transaction Reports" action="/reports/collectionCenterReports/collection_center_wise_transaction_reports_1?faces-redirect=true"></p:commandButton>
                                         <p:commandButton   class="w-100"  ajax="false" value="6. Collection Center Statement" action="/reports/collectionCenterReports/collection_center_statement_report?faces-redirect=true"></p:commandButton>
                                         <p:commandButton   class="w-100"  ajax="false" value="7. Collection Center Wise Summary" action="/reports/collectionCenterReports/collection_center_wise_summary_report?faces-redirect=true"></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="8. Collection Center Test Wise Count" action="/reports/collectionCenterReports/collection_center_test_wise_count_report?faces-redirect=true"></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="8. Collection Center Test Wise Count" actionListener="#{reportController.makeNull()}" action="/reports/collectionCenterReports/collection_center_test_wise_count_report?faces-redirect=true"></p:commandButton>
                                         <p:commandButton   class="w-100"  ajax="false" value="9. Route Analysis" action="/reports/collectionCenterReports/route_analysis_report?faces-redirect=true"></p:commandButton>
                                         <p:commandButton   class="w-100"  ajax="false" value="10. Collction Centre Book" action="/reports/collectionCenterReports/collection_center_book_report?faces-redirect=true"></p:commandButton>
                                         <p:commandButton   class="w-100"  ajax="false" value="11. Collction Centre Book Wise Detail" ></p:commandButton>
@@ -105,11 +120,12 @@
                                 </p:tab>
                                 <p:tab title="Financial Reports">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="Daily return" action="/reports/financialReports/daily_return"/>
-                                        <p:commandButton   class="w-100"  ajax="false" value="Income Breakdown by Category"  action="/reports/financialReports/income_breakdown_by_category"/>
-                                        <p:commandButton   class="w-100"  ajax="false" value="Bills by Category" action="/reports/financialReports/bills_by_item_category"/>
-                                        <p:commandButton   class="w-100"  ajax="false" value="4. Service Category Wise Bill Details" action="/reports/financialReports/service_category_wise_bill_detail"/>
-                                        <p:commandButton   class="w-100"  ajax="false" value="5. Professional Fees Payment" action="/reports/financialReports/professional_fee_payment"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Daily return" action="/reports/financialReports/daily_return?faces-redirect=true"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Income Breakdown by Category"  action="/reports/financialReports/income_breakdown_by_category?faces-redirect=true"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Bills by Category" action="/reports/financialReports/bills_by_item_category?faces-redirect=true"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="4. Service Category Wise Bill Details" action="/reports/financialReports/service_category_wise_bill_detail?faces-redirect=true"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="4.1. Service Category Wise Bill Details OPD" action="/reports/financialReports/service_category_wise_bill_detail_OPD?faces-redirect=true"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="5. Professional Fees Payment" action="/reports/financialReports/professional_fee_payment?faces-redirect=true"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="6. Discount" action="#{reportController.navigateToDiscount()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="7. Outside Payments" action="#{reportController.navigateToOutsidePayment()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="8. Collection Center Wise Income" action="/reports/financialReports/collection_center_wise_income?faces-redirect=true"/>
@@ -124,32 +140,41 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="17. WHT" action="/reports/financialReports/wht?faces-redirect=true"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="18. Bill Wise Item Movement" action="/reports/financialReports/bill_wise_item_movement_report?faces-redirect=true" />
                                         <p:commandButton   class="w-100"  ajax="false" value="19. Debtor Settlement" />
-
-                                        <p:commandButton   class="w-100"  ajax="false" value="21. Staff Welfare" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="21. Staff Welfare" action="#{searchController.navigatToStaffWelfareBills()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="22. Profit Matrix" action="/reports/financialReports/profit_matrix_report?faces-redirect=true" />
                                         <p:commandButton   class="w-100"  ajax="false" value="23. Package Report" />
-
                                         <p:commandButton   class="w-100"  ajax="false" value="24. Debtor Analysis" />
-
+                                        <p:commandButton   class="w-100"  ajax="false" value="25. Drawer History By User" action="/reports/financialReports/drawer_history?faces-redirect=true"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="26. Drawer History" action="/reports/financialReports/all_users_drawer_history?faces-redirect=true"/>
+                                        <p:commandButton  
+                                            action="#{searchController.navigatToDepartmentRevenueReport}"
+                                            class="w-100"  
+                                            ajax="false" 
+                                            value="27. Department Revenue" >
+                                        </p:commandButton>
                                     </div>
                                 </p:tab>
                                 <p:tab title="Professional Payment Reports">
-                                    <p:commandButton   
-                                        class="w-100 my-2"  
-                                        ajax="false" 
-                                        action="/reports/profesional_payment_reports/professional_fees_opd?faces-redirect=true"
-                                        value="Professional Fees" />
-                                    <p:commandButton   
-                                        class="w-100 my-2"  
-                                        action="/reports/profesional_payment_reports/professional_fee_payments_opd?faces-redirect=true"
-                                        ajax="false" value="Professional Fee Payments" />
-                                    <p:commandButton   
-                                        class="w-100 my-2"  
-                                        action="/reports/profesional_payment_reports/professional_payments_opd?faces-redirect=true"
-                                        ajax="false" value="Professional Payments" />
-
-
+                                    <p:commandButton 
+                                        class="w-100 my-2" 
+                                        action="#{searchController.navigateToProfessionalFees}" 
+                                        value="Professional Fees" 
+                                        icon="fa fa-fw fa-cash-register"
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        class="w-100 my-2" 
+                                        action="#{searchController.navigateToProfessionalFeePayments}" 
+                                        value="Professional Fee Payments" 
+                                        icon="fa fa-credit-card" 
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        class="w-100 my-2" 
+                                        action="#{searchController.navigateToProfessionalPayments}" 
+                                        value="Professional Payments" 
+                                        icon="fa fa-user-circle"
+                                        ajax="false" />
                                 </p:tab>
+
 
                                 <p:tab title="HR Reports">
                                     <p:accordionPanel>
@@ -283,7 +308,8 @@
                                             ajax="false"
                                             value="Test Count Report"
                                             action="#{reportController.navigateToLabReportsTestCount()}"/>
-                                        <p:commandButton   class="w-100"  ajax="false" value="Collection Center Statement" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Test Wise Count" action="#{reportController.navigateToTestWiseCountReports()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Lab Bill Item List" action="#{patientInvestigationController.navigateToLabBillItemList()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Turn Around Time Details" action="#{reportController.navigateToTurnAroundTimeDetails()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Turn Around Time(Hourly)" action="#{reportController.navigateToTurnAroundTimeHourly}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="Peak Hour Statistics" action="#{reportController.navigateToLabPeakHourStatistics()}"/>
@@ -294,7 +320,7 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="External Laboratary Work load" action="#{reportController.navigateToExternalLaborataryWorkloadReport()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="Investigation Month End Summary" action="#{reportController.navigateToInvestigationMonthEndSummery()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="Investigation Month End Details" action="#{reportController.navigateToInvestigationMonthEndDetails()}"/>
-                                        
+
                                         <p:commandButton   class="w-100"  ajax="false" value="Lab Register" action="#{reportController.navigateToLabRegisterReport()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="Collection center statement" action="#{reportController.navigateToCollectionCenterStatement()}"/>
                                     </div>
@@ -323,7 +349,8 @@
 
                                 <p:tab title="QB Import Reports">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="1. QB Import Report" action ="/reports/QBImportReports/qb_import_report?faces-redirect=true"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="1. Daily Return Import Report " action ="/reports/qb/report_qb_day_income_with_out_professional?faces-redirect=true"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="2. Item Import Report" action ="/reports/qb/report_qb_item_list?faces-redirect=true"/>
                                     </div>
                                 </p:tab>
 

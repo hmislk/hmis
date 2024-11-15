@@ -8,7 +8,7 @@
 
     <body>
 
-        <ui:composition template="./../index.xhtml">
+        <ui:composition template="/reports/index.xhtml">
 
             <ui:define name="subcontent">
 
@@ -61,7 +61,7 @@
 
                             <p:spacer width="20" ></p:spacer>
 
-                            <h:outputLabel value="Site*"/>   
+                            <h:outputLabel value="Site"/>   
                             <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
@@ -293,7 +293,7 @@
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.cashValue + searchController.bundle.cardValue + searchController.bundle.multiplePaymentMethodsValue + 
                                                            searchController.bundle.creditValue + searchController.bundle.staffWelfareValue + searchController.bundle.staffValue + searchController.bundle.voucherValue + 
-                                                           searchController.bundle.iouValue + searchController.bundle.agentValue + searchController.bundle.chequeValue + searchController.bundle.slipValue + 
+                                                           searchController.bundle.iouValue + searchController.bundle.chequeValue + searchController.bundle.slipValue + 
                                                            searchController.bundle.ewalletValue + searchController.bundle.patientDepositValue + searchController.bundle.patientPointsValue + searchController.bundle.onlineSettlementValue}" 
                                                   style="text-align: right;">
                                         <f:convertNumber pattern="#,##0.00" />

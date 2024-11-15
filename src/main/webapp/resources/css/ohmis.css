@@ -3,6 +3,54 @@
     font-size: xx-large ;
 }
 
+/* Custom styles for PrimeFaces panels */
+
+/* Cancelled Panel - header */
+.custom-panel .ui-panel-titlebar {
+    background-color: #dc3545 !important;  /* Red header background */
+    color: white !important;               /* White header text */
+}
+
+/* Cancelled Panel - content */
+.custom-panel .ui-panel-content {
+    color: #dc3545 !important;  /* Red text for body */
+}
+
+/* Paid Booking Panel - header */
+.custom-panel-warning .ui-panel-titlebar {
+    background-color: #ffc107 !important;  /* Yellow header background */
+    color: white !important;               /* White header text */
+}
+
+/* Paid Booking Panel - content */
+.custom-panel-warning .ui-panel-content {
+    color: #ffc107 !important;  /* Yellow text for body */
+}
+
+/* Payment Settled Panel - header */
+.custom-panel-success .ui-panel-titlebar {
+    background-color: #28a745 !important;  /* Green header background */
+    color: white !important;               /* White header text */
+}
+
+/* Payment Settled Panel - content */
+.custom-panel-success .ui-panel-content {
+    color: #28a745 !important;  /* Green text for body */
+}
+
+/* Custom Danger Panel - header */
+.custom-panel-danger .ui-panel-titlebar {
+    background-color: #dc3545 !important;  /* Red header background for danger panel */
+    color: white !important;               /* White header text */
+}
+
+/* Custom Danger Panel - content */
+.custom-panel-danger .ui-panel-content {
+    color: #dc3545 !important;  /* Red text for danger panel content */
+}
+
+
+
 .row-warning {
     background-color: #fff3cd; /* Bootstrap warning color */
 }

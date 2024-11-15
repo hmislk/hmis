@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -93,6 +94,8 @@ public class PettyCashBillSearch implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     BillController billController;
+    @Inject
+    DrawerController drawerController;
     @EJB
     EjbApplication ejbApplication;
     private List<BillItem> tempbillItems;
@@ -271,7 +274,7 @@ public class PettyCashBillSearch implements Serializable {
         CancelledBill cb = new CancelledBill();
         if (getBill() != null) {
             cb.copy(getBill());
-            cb.invertValue(getBill());
+            cb.invertAndAssignValuesFromOtherBill(getBill());
 
             cb.setBilledBill(getBill());
 
@@ -289,7 +292,9 @@ public class PettyCashBillSearch implements Serializable {
         cb.setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_BILL_CANCELLATION);
         cb.setPaymentMethod(paymentMethod);
         cb.setComments(comment);
-
+        cb.setStaff(getBill().getStaff());
+        cb.setPerson(getBill().getPerson());
+        cb.setToDepartment(getBill().getToDepartment());
         return cb;
     }
 
@@ -370,6 +375,7 @@ public class PettyCashBillSearch implements Serializable {
                 WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
                 getSessionController().setLoggedUser(wb);
                 Payment p = pettyCashBillController.createPaymentForPettyCashBillCancellation(cb, paymentMethod);
+                drawerController.updateDrawerForIns(p);
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);

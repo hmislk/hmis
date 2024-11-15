@@ -13,6 +13,7 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CollectingCentrePaymentMethod;
 import com.divudi.data.HistoryType;
 import com.divudi.data.InstitutionType;
+import com.divudi.data.dto.AgentHistoryDTO;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
@@ -21,6 +22,9 @@ import com.divudi.entity.Payment;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.service.AgentHistoryService;
+import com.divudi.service.AuditService;
+import com.google.common.collect.HashBiMap;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,6 +36,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.apache.commons.lang3.SerializationUtils;
+import org.bouncycastle.jcajce.provider.digest.GOST3411;
 
 /**
  *
@@ -63,9 +69,13 @@ public class CollectingCentreController implements Serializable {
     AgentHistoryFacade agentHistoryFacade;
     @EJB
     BillFacade billFacade;
+    @EJB
+    AgentHistoryService agentHistoryService;
+    @EJB
+    AuditService auditService;
 
     private int ccManagementIndex = 0;
-    
+
     List<Institution> selectedItems;
     private Institution current;
     private List<Institution> items = null;
@@ -77,6 +87,10 @@ public class CollectingCentreController implements Serializable {
     private Institution institution;
     private Bill bill;
     private Payment payment;
+    private AgentHistory agentHistory;
+    private Object auditDataBefore;
+    private Object auditDataAfter;
+    private int activeIndex;
 
     public String navigateToPayToCollectingCentre() {
         bill = new Bill();
@@ -97,6 +111,150 @@ public class CollectingCentreController implements Serializable {
         bill.setBillType(BillType.CollectingCentrePaymentMadeBill);
         bill.setBillTypeAtomic(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
 
+    }
+
+    public String navigateToEditNextCollectingCentreBalanceEntry(AgentHistory agentHx) {
+        AgentHistory nahx = nextAgentHistory(agentHx);
+        if (nahx == null) {
+            JsfUtil.addErrorMessage("This is the Latest Record");
+            return null;
+        }
+        return navigateToEditCollectingCentreBalanceEntry(nahx);
+    }
+
+    public String navigateToEditPreviousCollectingCentreBalanceEntry(AgentHistory agentHx) {
+        AgentHistory nahx = previousAgentHistory(agentHx);
+        return navigateToEditCollectingCentreBalanceEntry(nahx);
+    }
+
+    public void fixStartingBalanceFromLastEntry() {
+        if (agentHistory == null) {
+            return;
+        }
+        AgentHistory previousAgentHistory = previousAgentHistory(agentHistory);
+        if (previousAgentHistory == null) {
+            return;
+        }
+        agentHistory.setBalanceBeforeTransaction(previousAgentHistory.getBalanceAfterTransaction());
+    }
+
+    public void fixEndingBalance() {
+        if (agentHistory == null) {
+            return;
+        }
+        agentHistory.setBalanceAfterTransaction(agentHistory.getBalanceBeforeTransaction() + agentHistory.getTransactionValue());
+    }
+
+    public String navigateToEditCollectingCentreBalanceEntry(AgentHistory agentHx) {
+        if (agentHx == null) {
+            JsfUtil.addErrorMessage("No history selected");
+            return "";
+        }
+        this.agentHistory = agentHx;
+        // Clone the object to preserve the original state
+        AgentHistoryDTO ahdto = new AgentHistoryDTO(agentHistory);
+        auditDataBefore = ahdto;
+        auditDataAfter = null;
+        return "/collecting_centre/dev/edit_history_record?faces-redirect=true";
+    }
+
+    public void saveAgentHistory() {
+        if (agentHistory == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        agentHistoryService.save(agentHistory, sessionController.getLoggedUser());
+        AgentHistoryDTO ahdto = new AgentHistoryDTO(agentHistory);
+        auditDataAfter = ahdto;
+
+        auditService.logAudit(
+                auditDataBefore,
+                auditDataAfter,
+                sessionController.getLoggedUser(),
+                AgentHistoryDTO.class.getSimpleName(),
+                "Update Agent History"
+        );
+        auditDataAfter = null;
+        auditDataBefore = null;
+    }
+
+    public String saveAgentHistoryAndNavigateBackToCcStatement() {
+        if (agentHistory == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        saveAgentHistory();
+        return "/reports/collectionCenterReports/collection_center_statement_report?faces-redirect=true";
+    }
+
+    public String saveAgentHistoryAndNavigateToNextRecord() {
+        if (agentHistory == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        saveAgentHistory();
+        return navigateToEditNextCollectingCentreBalanceEntry(agentHistory);
+    }
+
+    public AgentHistory nextAgentHistory(AgentHistory ahx) {
+        if (ahx == null || ahx.getAgency() == null || ahx.getId() == null) {
+            return null;
+        }
+        String jpql = "SELECT ah FROM AgentHistory ah "
+                + "WHERE ah.retired = :ret "
+                + "AND ah.agency = :agency "
+                + "AND ah.id > :thisid "
+                + // Note: '>' to get the next record
+                "ORDER BY ah.id ASC"; // Ascending order to get the next one
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("agency", ahx.getAgency());
+        params.put("thisid", ahx.getId());
+
+        return agentHistoryFacade.findFirstByJpql(jpql, params);
+    }
+
+    public AgentHistory previousAgentHistory(AgentHistory ahx) {
+        if (ahx == null || ahx.getAgency() == null || ahx.getId() == null) {
+            return null;
+        }
+        String jpql = "SELECT ah FROM AgentHistory ah "
+                + "WHERE ah.retired = :ret "
+                + "AND ah.agency = :agency "
+                + "AND ah.id < :thisid "
+                + // '<' to get the previous record
+                "ORDER BY ah.id DESC"; // Descending order to get the most recent previous one
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("agency", ahx.getAgency());
+        params.put("thisid", ahx.getId());
+
+        return agentHistoryFacade.findFirstByJpql(jpql, params);
+    }
+
+    public Double lastAgentBalance(Institution cc) {
+        AgentHistory ah = lastAgentHistory(cc);
+        if (ah == null) {
+            return 0.0;
+        }
+        return ah.getBalanceAfterTransaction();
+    }
+
+    public AgentHistory lastAgentHistory(Institution cc) {
+        if (cc == null || cc.getId() == null) {
+            return null;
+        }
+        String jpql = "SELECT ah FROM AgentHistory ah "
+                + "WHERE ah.retired = :ret "
+                + "AND ah.agency = :agency "
+                + "ORDER BY ah.id DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("agency", cc);
+        return agentHistoryFacade.findFirstByJpql(jpql, params);
     }
 
     public void settlePaymentBillToCollectingCentrePaymenMade() {
@@ -484,7 +642,37 @@ public class CollectingCentreController implements Serializable {
     public void setCcManagementIndex(int ccManagementIndex) {
         this.ccManagementIndex = ccManagementIndex;
     }
-    
-    
+
+    public AgentHistory getAgentHistory() {
+        return agentHistory;
+    }
+
+    public void setAgentHistory(AgentHistory agentHistory) {
+        this.agentHistory = agentHistory;
+    }
+
+    public Object getAuditDataBefore() {
+        return auditDataBefore;
+    }
+
+    public void setAuditDataBefore(Object auditDataBefore) {
+        this.auditDataBefore = auditDataBefore;
+    }
+
+    public Object getAuditDataAfter() {
+        return auditDataAfter;
+    }
+
+    public void setAuditDataAfter(Object auditDataAfter) {
+        this.auditDataAfter = auditDataAfter;
+    }
+
+    public int getActiveIndex() {
+        return activeIndex;
+    }
+
+    public void setActiveIndex(int activeIndex) {
+        this.activeIndex = activeIndex;
+    }
 
 }

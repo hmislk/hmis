@@ -1,7 +1,7 @@
- SELECT CONCAT('RENAME TABLE ', table_name, ' TO temp_', table_name, '; ', 
-              'RENAME TABLE temp_', table_name, ' TO ', UPPER(table_name), ';') 
- FROM information_schema.tables 
- WHERE table_schema = 'ruhunuDemo';
+--  SELECT CONCAT('RENAME TABLE ', table_name, ' TO temp_', table_name, '; ', 
+--               'RENAME TABLE temp_', table_name, ' TO ', UPPER(table_name), ';') 
+--  FROM information_schema.tables 
+--  WHERE table_schema = 'ruhunuDemo';
 
 RENAME TABLE adjustmentbillitem TO temp_adjustmentbillitem; RENAME TABLE temp_adjustmentbillitem TO ADJUSTMENTBILLITEM;
 RENAME TABLE agenthistory TO temp_agenthistory; RENAME TABLE temp_agenthistory TO AGENTHISTORY;
@@ -42,6 +42,7 @@ RENAME TABLE detailedfinancialbill TO temp_detailedfinancialbill; RENAME TABLE t
 RENAME TABLE doctorinstitution TO temp_doctorinstitution; RENAME TABLE temp_doctorinstitution TO DOCTORINSTITUTION;
 RENAME TABLE documenttemplate TO temp_documenttemplate; RENAME TABLE temp_documenttemplate TO DOCUMENTTEMPLATE;
 RENAME TABLE drawer TO temp_drawer; RENAME TABLE temp_drawer TO DRAWER;
+RENAME TABLE drawerentry TO temp_drawerentry; RENAME TABLE temp_drawerentry TO DRAWERENTRY;
 RENAME TABLE encountercomponent TO temp_encountercomponent; RENAME TABLE temp_encountercomponent TO ENCOUNTERCOMPONENT;
 RENAME TABLE encountercreditcompany TO temp_encountercreditcompany; RENAME TABLE temp_encountercreditcompany TO ENCOUNTERCREDITCOMPANY;
 RENAME TABLE familymember TO temp_familymember; RENAME TABLE temp_familymember TO FAMILYMEMBER;
@@ -166,3 +167,5 @@ RENAME TABLE webuserroleuser TO temp_webuserroleuser; RENAME TABLE temp_webuserr
 RENAME TABLE webuserroute TO temp_webuserroute; RENAME TABLE temp_webuserroute TO WEBUSERROUTE;
 RENAME TABLE webuser TO temp_webuser; RENAME TABLE temp_webuser TO WEBUSER;
 RENAME TABLE workingtime TO temp_workingtime; RENAME TABLE temp_workingtime TO WORKINGTIME;
+
+

@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
@@ -20,7 +21,7 @@ import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.EjbApplication;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -110,7 +111,7 @@ public class PharmacyBillSearch implements Serializable {
     List<Bill> searchRetaiBills;
     //////////////////
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
 
     @EJB
     BillFeeFacade billFeeFacade;
@@ -142,6 +143,8 @@ public class PharmacyBillSearch implements Serializable {
     InwardBeanController inwardBean;
     @Inject
     PharmacySaleController pharmacySaleController;
+    @Inject
+    DrawerController drawerController;
     
     public String navigatePharmacyReprintPo(){
         return "pharmacy_reprint_po?faces-redirect=true";
@@ -613,6 +616,22 @@ public class PharmacyBillSearch implements Serializable {
         bill.setTransTotalSaleValue(tmp);
         return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
     }
+    public String navigateToViewPharmacyBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return "";
+        }
+        double tmp = 0;
+        for (BillItem b : bill.getBillItems()) {
+            if (b.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+            double tmp2 = (b.getPharmaceuticalBillItem().getQty() * b.getPharmaceuticalBillItem().getRetailRate());
+            tmp += tmp2;
+        }
+        bill.setTransTotalSaleValue(tmp);
+        return "/pharmacy/pharmacy_reprint_bill?faces-redirect=true";
+    }
 
     public WebUser getUser() {
         return user;
@@ -964,7 +983,7 @@ public class PharmacyBillSearch implements Serializable {
         cb.setBilledBill(getBill());
         cb.copy(getBill());
         cb.setReferenceBill(getBill().getReferenceBill());
-        cb.invertValue(getBill());
+        cb.invertAndAssignValuesFromOtherBill(getBill());
 
         cb.setPaymentScheme(getBill().getPaymentScheme());
         cb.setPaymentMethod(getBill().getPaymentMethod());
@@ -985,7 +1004,7 @@ public class PharmacyBillSearch implements Serializable {
         RefundBill cb = new RefundBill();
         cb.invertQty();
         cb.copy(getBill());
-        cb.invertValue(getBill());
+        cb.invertAndAssignValuesFromOtherBill(getBill());
         cb.setRefundedBill(getBill());
         cb.setReferenceBill(getBill().getReferenceBill());
         cb.setForwardReferenceBill(getBill().getForwardReferenceBill());
@@ -1618,7 +1637,7 @@ public class PharmacyBillSearch implements Serializable {
 //            BillItem b = new BillItem();
 //            b.setBill(can);
 //            b.copy(nB.getBillItem());
-//            b.invertValue(nB.getBillItem());
+//            b.invertAndAssignValuesFromOtherBill(nB.getBillItem());
 //
 //            b.setReferanceBillItem(nB.getBillItem().getReferanceBillItem());
 //            b.setCreatedAt(new Date());
@@ -1626,7 +1645,7 @@ public class PharmacyBillSearch implements Serializable {
 //
 //            PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
 //            ph.copy(nB);
-//            ph.invertValue(nB);
+//            ph.invertAndAssignValuesFromOtherBill(nB);
 //
 //            getPharmaceuticalBillItemFacade().create(ph);
 //
@@ -1681,6 +1700,7 @@ public class PharmacyBillSearch implements Serializable {
 
             //for Payment,billFee and BillFeepayment
             Payment p = pharmacySaleController.createPayment(cb, paymentMethod);
+            drawerController.updateDrawerForOuts(p);
             pharmacyCancelBillItems(cb, p);
 
             getBill().setCancelled(true);
@@ -1760,6 +1780,7 @@ public class PharmacyBillSearch implements Serializable {
 
             //for Payment,billFee and BillFeepayment
             Payment p = pharmacySaleController.createPayment(cb, paymentMethod);
+            drawerController.updateDrawerForOuts(p);
             pharmacyCancelBillItems(cb, p);
 
             getBill().setCancelled(true);
@@ -3099,11 +3120,11 @@ public class PharmacyBillSearch implements Serializable {
         this.selectedBills = selectedBills;
     }
 
-    public StaffBean getStaffBean() {
+    public StaffService getStaffBean() {
         return staffBean;
     }
 
-    public void setStaffBean(StaffBean staffBean) {
+    public void setStaffBean(StaffService staffBean) {
         this.staffBean = staffBean;
     }
 

@@ -79,13 +79,13 @@
                 <div>
                     <label>Receipt No:</label>
                     <span>
-                        <h:outputLabel value="#{cc.attrs.bill.deptId}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}" />
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
                     </span>
                 </div>
                 <div>
                     <label>Date:</label>
                     <span>                    
-                        <h:outputLabel value="#{cc.attrs.bill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         </h:outputLabel>
                     </span>
@@ -93,7 +93,7 @@
                 <div>
                     <label>Time:</label>
                     <span>                        
-                        <h:outputLabel value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                         </h:outputLabel>
                     </span>
@@ -163,7 +163,7 @@
                     </div>
                     <div>
                         <h:outputLabel value="#{sessionController.currentDate}" >
-                            <f:convertDateTime pattern="dd/mm/yyyy hh:mm" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                         </h:outputLabel>
                     </div>
                 </div>

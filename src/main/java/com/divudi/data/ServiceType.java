@@ -12,7 +12,10 @@ public enum ServiceType {
     CHANNELLING("Channelling"),
     COLLECTING_CENTRE("Collecting Centre"),
     OTHER("Other"),
+    SETTLEMENT("Settlement"),
     INWARD("Inward"),
+    PATIENT_DEPOSIT("PATIENT DEPOSIT"),
+    COMPANY_CREDIT("COMPANY CREDIT"),
     AGENCY("Agency");  // Added new service type for agency-related transactions
 
     private final String label;

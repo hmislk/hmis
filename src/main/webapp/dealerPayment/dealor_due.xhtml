@@ -1,0 +1,185 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/dealerPayment/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header" > 
+                            <h:outputText styleClass="fas fa-file-invoice"/>
+                            <h:outputLabel class="mx-4" value="Supplier Bill Search"/>  
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-2">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar id="fromDate" value="#{supplierPaymentController.fromDate}" navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                            class="w-100" inputStyleClass="w-100">
+
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{supplierPaymentController.toDate}" navigator="false" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            class="w-100" inputStyleClass="w-100">
+
+                                </p:calendar>
+
+                                <p:commandButton 
+                                    value="List Pharmacy Credit Bills to Settle" 
+                                    action="#{supplierPaymentController.fillUnsettledCreditPharmacyBills}" 
+                                    ajax="false"  
+                                    icon="fas fa-prescription-bottle-alt" 
+                                    class="my-1 w-100 ui-button-info" />
+
+                                <p:commandButton 
+                                    value="List Store Credit Bills to Settle" 
+                                    action="#{supplierPaymentController.fillUnsettledCreditStoreBills()}" 
+                                    ajax="false"  
+                                    icon="fas fa-store-alt" 
+                                    class="my-1 w-100  ui-button-warning" />
+
+                                <p:commandButton 
+                                    value="List All Credit Bills to Settle"
+                                    action="#{supplierPaymentController.fillUnsettledCreditBills()}"
+                                    ajax="false"
+                                    icon="fas fa-file-invoice-dollar"
+                                    class="my-1 w-100  ui-button-danger" />
+                                
+                                 <p:commandButton 
+                                    value="List All Pharmacy Bills"
+                                    action="#{supplierPaymentController.fillAllCreditBills()}"
+                                    ajax="false"
+                                    icon="fas fa-file-invoice-dollar"
+                                    class="my-1 w-100  ui-button-success" />
+
+                                <p:separator></p:separator>
+
+                                <p:commandButton 
+                                    value="Navigate to Settle Selected Bills" 
+                                    action="#{supplierPaymentController.navigateToStartSupplierPaymentOfSelectedBills()}" 
+                                    ajax="false" 
+                                    icon="fas fa-hand-point-right" 
+                                    class="my-1 w-100  ui-button-primary" />
+
+                                <p:separator></p:separator>
+
+                                <p:commandButton 
+                                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                                    value="List GRNs to Settle Payment (Old Method for Developers to Cross Check)" 
+                                    action="#{supplierPaymentController.fillPharmacyDue}" 
+                                    ajax="false"  
+                                    icon="fas fa-history" 
+                                    class="my-1 w-100 ui-button-dark" />
+
+                                <p:separator ></p:separator>
+                            </div>
+                            <div class="col-10">
+                                <p:dataTable 
+                                    value="#{supplierPaymentController.bills}"
+                                    var="b"
+                                    rowKey="#{b.id}"
+                                    paginator="true" 
+                                    selectionMode="multiple"
+                                    rows="10"
+                                    selection="#{supplierPaymentController.selectedBills}"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15">
+
+                                    <p:column selectionBox="true" width="20">
+
+                                    </p:column>
+
+                                    <p:column headerText="Bill No" sortBy="#{b.deptId}" filterBy="#{b.deptId}">
+                                        <h:outputText value="#{b.deptId}" />
+                                    </p:column>
+
+                                    <p:column headerText="Date" sortBy="#{b.billDate}" filterBy="#{b.billDate}" filterMatchMode="exact">
+                                        <h:outputText value="#{b.billDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Supplier" sortBy="#{b.fromInstitution.name}" filterBy="#{b.fromInstitution.name}">
+                                        <h:outputText value="#{b.fromInstitution.name}" />
+                                    </p:column>
+
+                                    <p:column headerText="Bill Type" sortBy="#{b.billTypeAtomic.label}" filterBy="#{b.billTypeAtomic.label}">
+                                        <h:outputText value="#{b.billTypeAtomic.label}" />
+                                    </p:column>
+                                    
+                                    <p:column headerText="Invoice No"
+                                              filterMatchMode="contains"
+                                              sortBy="#{b.invoiceNumber}" filterBy="#{b.invoiceNumber}">
+                                        <h:outputText value="#{b.invoiceNumber}" />
+                                    </p:column>
+
+                                    <p:column  class="text-end" headerText="Total" sortBy="#{b.netTotal}" filterBy="#{b.netTotal}">
+                                        <h:outputText value="#{b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{supplierPaymentController.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column class="text-end" headerText="Returned" sortBy="#{b.refundAmount}" filterBy="#{b.refundAmount}">
+                                        <h:outputText value="#{b.refundAmount}">
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{supplierPaymentController.refundAmount}">
+                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column  class="text-end" headerText="Paid Total" sortBy="#{b.paidAmount}" filterBy="#{b.paidAmount}">
+                                        <h:outputText value="#{b.paidAmount}">
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{supplierPaymentController.paidAmount}">
+                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column  class="text-end" headerText="Balance" sortBy="#{b.balance}" filterBy="#{b.balance}">
+                                        <h:outputText value="#{b.balance}">
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{supplierPaymentController.balance}">
+                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column  headerText="Actions" >
+                                        <p:commandButton value="Pay" action="#{supplierPaymentController.navigateToStartSupplierPayment(b)}" ajax="false" >
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+
+                            </div>
+
+                        </div>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

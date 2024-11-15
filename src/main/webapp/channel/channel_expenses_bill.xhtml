@@ -10,56 +10,103 @@
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <ui:define name="content">
-        <h:panelGroup >
-            <h:form  >
+        <h:form  >
+            <h:panelGroup >
                 <p:panel rendered="#{!incomeExpensessBillController.printPreview}" >
                     <f:facet name="header" >
-                        <h:panelGrid columns="14"  >
-                            <h:outputLabel value="Cashier Transaction(Expenses)" />
-                            <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
-                            <p:selectOneMenu   id="cmbPs" value="#{incomeExpensessBillController.current.paymentMethod}">                                                                     
-                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
-                                <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
-                            </p:selectOneMenu>
-
-                            <h:panelGroup id="creditCard" style="display: #{incomeExpensessBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                <pa:creditCard paymentMethodData="#{incomeExpensessBillController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="cheque" style="display: #{incomeExpensessBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                <pa:cheque paymentMethodData="#{incomeExpensessBillController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="slip" style="display: #{incomeExpensessBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                <pa:slip paymentMethodData="#{incomeExpensessBillController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-
-                            <p:commandButton  value="Settle" action="#{incomeExpensessBillController.settleExpencesBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
-                            </p:commandButton>
-                            <p:commandButton value="New Bill" ajax="false" action="#{incomeExpensessBillController.prepareNewBill()}" >
-                            </p:commandButton>                            
-                        </h:panelGrid>
+                        <div class="d-flex justify-content-between">
+                            <h:outputLabel value="Cashier Transaction(Expenses)" class="mt-2"/>
+                            <div class="d-flex gap-2">
+                                <p:commandButton  
+                                    value="Settle" 
+                                    action="#{incomeExpensessBillController.settleExpencesBill}" 
+                                    ajax="false"  
+                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"
+                                    class="ui-button-success"
+                                    icon="fa fa-check">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="New Bill" 
+                                    ajax="false" 
+                                    action="#{incomeExpensessBillController.prepareNewBill()}"
+                                    icon="fa fa-plus"
+                                    class="ui-button-warning">
+                                </p:commandButton>
+                            </div>
+                        </div>
                     </f:facet>
 
+                    <p:panel>
+                        <div class="row my-2 d-flex align-items-center">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Payment" />
+                            </div>
+                            <div class="col-md-2">
+                                <p:selectOneMenu   id="cmbPs" value="#{incomeExpensessBillController.current.paymentMethod}">                                                                     
+                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                    <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
 
+                        <div class="row my-2">
+                            <div class="col-md-2"></div>
+                            <div class="col-md-7">
+                                <div>
+                                    <h:panelGroup id="paymentDetails">
+                                        <h:panelGroup id="creditCard" style="display: #{incomeExpensessBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                            <pa:creditCard paymentMethodData="#{incomeExpensessBillController.paymentMethodData}"/>
+                                        </h:panelGroup>
 
-                    <h:panelGrid columns="2">
-                        <p:outputLabel value="Expences Amount" />
-                        <p:inputText autocomplete="off" value="#{incomeExpensessBillController.amount}"/>
-                        <p:outputLabel value="Description"/>
-                        <p:inputTextarea value="#{incomeExpensessBillController.current.comments}"/>                              
-                    </h:panelGrid>
+                                        <h:panelGroup id="cheque" style="display: #{incomeExpensessBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                            <pa:cheque paymentMethodData="#{incomeExpensessBillController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="slip" style="display: #{incomeExpensessBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                            <pa:slip paymentMethodData="#{incomeExpensessBillController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row my-2">
+                            <div class="col-md-2"></div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Expences Amount" />
+                            </div>
+                            <div class="col-md-7">
+                                <p:inputText autocomplete="off" value="#{incomeExpensessBillController.amount}" class="w-100"/>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Description"/>
+                            </div>
+                            <div class="col-md-7">
+                                <p:inputTextarea value="#{incomeExpensessBillController.current.comments}" class="w-100"/>   
+                            </div>    
+                        </div>
+                    </p:panel>
                 </p:panel>
+            </h:panelGroup>
 
-                <p:panel rendered="#{incomeExpensessBillController.printPreview}" >
-                    <p:commandButton value="New Bill" ajax="false" action="#{incomeExpensessBillController.prepareNewBill()}" >
-                    </p:commandButton>
-                    <c:expenses   bill="#{incomeExpensessBillController.current}" billController="#{incomeExpensessBillController}" dup="false"/>
-                </p:panel>  
+            <p:panel rendered="#{incomeExpensessBillController.printPreview}" >
+                <p:commandButton 
+                    value="New Bill" 
+                    ajax="false" 
+                    action="#{incomeExpensessBillController.prepareNewBill()}" 
+                    icon="fa fa-plus"
+                    class="ui-button-warning my-2">
+                </p:commandButton>
+                <c:expenses   bill="#{incomeExpensessBillController.current}" billController="#{incomeExpensessBillController}" dup="false"/>
+            </p:panel>  
 
-            </h:form>
-        </h:panelGroup>
+        </h:form>
 
     </ui:define>
 

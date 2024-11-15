@@ -1170,7 +1170,7 @@ public class ItemController implements Serializable {
     }
 
     public Item addSampleComponent(Investigation tix) {
-        Item tmpSampleComponent=null;
+        Item tmpSampleComponent = null;
         List<Item> scs = findInvestigationSampleComponents(tix);
         if (scs == null || scs.isEmpty()) {
             tmpSampleComponent = new Item();
@@ -1182,14 +1182,14 @@ public class ItemController implements Serializable {
             getFacade().create(tmpSampleComponent);
         } else {
             if (scs.size() > 1) {
-                
+
                 tix.setHasMoreThanOneComponant(true);
                 getFacade().edit(tix);
             } else {
                 tix.setHasMoreThanOneComponant(false);
                 getFacade().edit(tix);
             }
-            tmpSampleComponent=tmpSampleComponent=scs.get(0);
+            tmpSampleComponent = tmpSampleComponent = scs.get(0);
         }
         return tmpSampleComponent;
     }
@@ -1307,7 +1307,7 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Marked as Fees Changable at Billing");
     }
-    
+
     public void updateSelectedItemCategory() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
@@ -1319,7 +1319,6 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("Category Updated Successfully");
     }
-    
 
     public void markSelectedItemsAsDiscountableAtBilling() {
         if (selectedList == null || selectedList.isEmpty()) {
@@ -1461,8 +1460,6 @@ public class ItemController implements Serializable {
         investigationsAndServices = null;
         getInvestigationsAndServices();
     }
-    
-    
 
     public List<Department> fillInstitutionDepatrments() {
         Map m = new HashMap();
@@ -2156,6 +2153,31 @@ public class ItemController implements Serializable {
         m.put("the", TheatreService.class);
 
         qryResults = getFacade().findByJpql(sql, m);
+
+        return qryResults;
+    }
+
+    public List<Item> getCategoryServicesAndInvestigations(Category cat) {
+        List<Item> qryResults;
+        Map<String, Object> params = new HashMap<>();
+        String sql;
+
+        sql = "SELECT c FROM Item c "
+                + "WHERE c.retired = false "
+                + "AND c.category = :cat "
+                + "AND (TYPE(c) = :type1 OR "
+                + "     TYPE(c) = :type2 OR "
+                + "     TYPE(c) = :type3 OR "
+                + "     TYPE(c) = :type4) "
+                + "ORDER BY c.name";
+
+        params.put("cat", cat);
+        params.put("type1", Service.class);
+        params.put("type2", Investigation.class);
+        params.put("type3", InwardService.class);
+        params.put("type4", TheatreService.class);
+
+        qryResults = getFacade().findByJpql(sql, params);
 
         return qryResults;
     }
@@ -3180,6 +3202,12 @@ public class ItemController implements Serializable {
 
         return insItems;
     }
+    
+    public void reloadItems(){
+        departmentItems=null;
+        institutionItems=null;
+        packaes=null;
+    }
 
     public List<ItemLight> getDepartmentItems() {
         if (departmentItems == null) {
@@ -3352,7 +3380,7 @@ public class ItemController implements Serializable {
             return findItemById(longId); // Reuse the existing method
         } catch (NumberFormatException e) {
 // Log the error if the string is not a valid Long
-                        return null;
+            return null;
         }
     }
 

@@ -18,24 +18,25 @@
 
                         <h:panelGrid columns="2" class="w-100">
                             <h:outputLabel value="From"/>
-                            <p:calendar 
+                            <p:datePicker
+
                                 class="w-100 " 
                                 inputStyleClass="w-100" 
                                 id="fromDate" 
                                 value="#{searchController.fromDate}" 
-                                navigator="false" 
+                                showTime="true"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            </p:calendar>
+                            </p:datePicker>
 
                             <h:outputLabel value="To"/>                                
-                            <p:calendar 
+                            <p:datePicker 
                                 class="w-100 " 
                                 inputStyleClass="w-100" 
                                 id="toDate" 
                                 value="#{searchController.toDate}" 
-                                navigator="false" 
+                                showTime="true"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            </p:calendar>
+                            </p:datePicker>
 
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
@@ -91,10 +92,16 @@
                                     <h:outputLabel value="Cash Book Entries"/>
                                 </f:facet>
 
-                                <p:column headerText="Payment Method" style="text-align: left;" 
-                                          filterBy="#{cb.paymentMethod}" filterMatchMode="contains"
-                                          sortBy="#{cb.paymentMethod}">
-                                    <p:outputLabel value="#{cb.paymentMethod}" ></p:outputLabel>
+                                <p:column headerText="Entry AT" sortBy="#{cb.createdAt}" style="text-align: left; padding-left: 1em;">
+                                    <p:outputLabel value="#{cb.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column  headerText="Summary Date" style="text-align: left;">
+                                    <p:outputLabel value="#{cb.cashbookDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                    </p:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Site" 
@@ -103,52 +110,50 @@
                                     <p:outputLabel value="#{cb.site.name}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:column rendered="false" headerText="Department Balance" style="text-align: left;">
-                                    <p:outputLabel value="#{cb.departmentBalance}" ></p:outputLabel>
+                                <p:column  headerText="Balance Before" style="text-align: left;">
+                                    <p:outputLabel value="#{cb.fromDepartmentBalanceBefore}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:column rendered="false" headerText="Institution Balance" style="text-align: left;" >
-                                    <p:outputLabel value="#{cb.institutionBalance}" ></p:outputLabel>
+                                <p:column headerText="Value" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.entryValue}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:column rendered="false" headerText="Site Balance" style="text-align: left;">
-                                    <p:outputLabel value=" #{cb.siteBalance}" ></p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Institution" sortBy="#{cb.institution}" style="text-align: right; padding-right: 20px;">
-                                    <p:outputLabel value="#{cb.institution.name}" ></p:outputLabel>
-                                </p:column>
-                                
-                                <p:column headerText="Department" sortBy="#{cb.department}" style="text-align: right; padding-right: 20px;">
-                                    <p:outputLabel value="#{cb.department.name}" ></p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Total" sortBy="#{cb.entryValue}" style="text-align: right; padding-right: 20px;">
-                                    <p:outputLabel value="#{cb.entryValue}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </p:outputLabel>
-                                </p:column>
-                                
-                                <p:column headerText="Department Balance" 
-                                          sortBy="#{cb.institutionBalance}" 
-                                          style="text-align: right; padding-right: 20px;">
-                                    <p:outputLabel value="#{cb.institutionBalance}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Created AT" sortBy="#{cb.createdAt}" style="text-align: right; padding-right: 20px;">
-                                    <p:outputLabel value="#{cb.createdAt}" >
-                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}  HH:mm a" ></f:convertDateTime>
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Creater" sortBy="#{cb.creater}"  style="text-align: right; padding-right: 20px;">
-                                    <p:outputLabel value="#{cb.creater.name}" >
-                                    </p:outputLabel>
+                                <p:column headerText="Balance After" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.fromDepartmentBalanceAfter}" ></p:outputLabel>
                                 </p:column>
 
                                 
+                                 <p:column  headerText="Cash Balance Before" style="text-align: left;">
+                                    <p:outputLabel value="#{cb.fromDepartmentCashBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Cash Value" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.cashValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Cash Balance After" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.fromDepartmentCashBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+                                
+                                 <p:column  headerText="Card Balance Before" style="text-align: left;">
+                                    <p:outputLabel value="#{cb.fromDepartmentCardBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Card Value" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.cardValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Card Balance After" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.fromDepartmentCardBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+
+
+
+
+
+
+
+
 
                             </p:dataTable>
                         </p:panel>

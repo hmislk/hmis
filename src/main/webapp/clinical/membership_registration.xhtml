@@ -52,7 +52,7 @@
                                     </f:facet>
 
                                     <h:panelGrid columns="1" >
-                                        <h:outputLabel value="Search by Name/Code/Phone/NIC/PHN" />
+                                        <h:outputLabel value="Search by Name/Code/Phone/NIC / Passport/PHN" />
                                         <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
                                                         value="#{patientController.current}" 
                                                         completeMethod="#{patientController.completePatientByNameOrCode}" 
@@ -66,7 +66,7 @@
                                             <p:column headerText="Age">
                                                 <h:outputLabel value="#{apt.age}" />
                                             </p:column>
-                                            <p:column headerText="NIC">
+                                            <p:column headerText="NIC / Passport">
                                                 <h:outputLabel value="#{apt.person.nic}"/>
                                             </p:column>
                                             <p:column headerText="Code">
@@ -149,7 +149,7 @@
                                                         <f:selectItem itemLabel="Select Sex"/>
                                                         <f:selectItems value="#{patientController.sexs}"/>
                                                     </p:selectOneMenu>
-                                                    <h:outputLabel value="NIC"/>
+                                                    <h:outputLabel value="NIC / Passport"/>
                                                     <p:inputText  value="#{patientController.current.person.nic}" />
                                                     <h:outputLabel value="Code"/>
                                                     <p:inputText value="#{patientController.current.code}"/>
@@ -198,7 +198,7 @@
                                                             <f:convertDateTime pattern="yyyy-MM-dd"/>
                                                     </h:outputLabel>
                                                     </p:column>
-                                                    <p:column headerText="NIC">
+                                                    <p:column headerText="NIC / Passport">
                                                         <h:outputLabel value="#{fm.nic}"></h:outputLabel>
                                                     </p:column>
                                                     <p:column headerText="Serial NO">
@@ -294,8 +294,8 @@
                                     <f:selectItems value="#{patientController.sexs}" />
                                 </p:selectOneMenu>
 
-                                <h:outputLabel value="NIC"/>
-                                <p:inputText value="#{patientController.familyMember.patient.person.nic}"  requiredMessage="please enter NIC no"/>
+                                <h:outputLabel value="NIC / Passport"/>
+                                <p:inputText value="#{patientController.familyMember.patient.person.nic}"  requiredMessage="please enter NIC / Passport no"/>
 
                                 <h:outputLabel value="Date of Birth"/>
                                 <p:calendar  value="#{patientController.familyMember.patient.person.dob}"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}"  requiredMessage="please enter date of birth"/>

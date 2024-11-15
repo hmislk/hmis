@@ -7,6 +7,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:view="http://xmlns.jcp.org/jsf/composite/ezcomp/view"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <h:body>
@@ -17,16 +18,20 @@
                     <p:panel >
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
-                                <p:outputLabel value="OPD Bill" class="mt-2"></p:outputLabel>
+                                <p:outputLabel value="View OPD Bill" class="mt-2"></p:outputLabel>
                             </div> 
                         </f:facet>
-
-
                         <div class="row">
 
                             <div class="col-12">
+                                <h:panelGroup rendered="#{billSearch.viewingBill.cancelled}" >
+                                    <p:outputLabel value="Cancelled" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{billSearch.viewingBill.refunded}" >
+                                    <p:outputLabel value="Refunded" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                </h:panelGroup>
 
-                                <p:tabView>
+                                <p:tabView orientation="left">
                                     <p:tab title="Print" >
                                         <div >
                                             <div class="d-flex m-1 justify-content-between">
@@ -40,13 +45,21 @@
                                                 </div>
 
                                                 <p:commandButton 
-                                                    value="Print Refund Bill" 
+                                                    value="Print Bill" 
                                                     class="ui-button-info m-1"
                                                     icon="fa fa-print"
                                                     style="float: right"
-                                                    rendered="#{billSearch.viewingBill.refunded}"
                                                     ajax="false">
-                                                    <p:printer target="refundPrint" />
+                                                    <p:printer target="groupPrint" />
+                                                </p:commandButton>
+                                                <p:commandButton 
+                                                    value="Print Refund Bill" 
+                                                    class="ui-button-info m-1"
+                                                    icon="fa fa-print"
+                                                    rendered="#{billSearch.viewingBill.refunded}"
+                                                    style="float: right"
+                                                    ajax="false">
+                                                    <p:printer target="gpPrintPanel" />
                                                 </p:commandButton>
                                             </div>
 
@@ -77,7 +90,7 @@
                                                 </div>
                                                 <div class="col-6">
                                                     <h:panelGroup rendered="#{billSearch.viewingBill.refunded}">
-                                                        <h:panelGroup id="refundPrint" >
+                                                        <h:panelGroup id="gpPrintPanel" >
                                                             <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
                                                                 <bi:opdPOSReturnBill bill="#{billSearch.viewingBill.refundedBill}" />
                                                             </h:panelGroup>
@@ -106,124 +119,40 @@
                                         </p:panel>
                                     </p:tab>
 
-                                    <p:tab title="Bill Details" >
-
+                                    <p:tab title="Batch Bill Details" >
                                         <p:panel>
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                                 <h:outputLabel value="Batch Bill Details" class="mx-4"></h:outputLabel>
+                                                <p:commandButton 
+                                                    value="View Batch Bill" 
+                                                    ajax="false"
+                                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{billSearch.viewingBill.backwardReferenceBill}" 
+                                                        target="#{billSearch.bill}" ></f:setPropertyActionListener>
+                                                </p:commandButton> 
                                             </f:facet>
-                                            <div class="row">
-                                                <div class="col-md-12">
-                                                    <div class="col-md-2"><h:outputLabel value="Batch Bill No" /></div>
-                                                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                    <div class="col-md-8"><h:outputLabel value="#{billSearch.viewingBill.backwardReferenceBill.deptId}" ></h:outputLabel></div>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-12">
-                                                    <p:commandButton 
-                                                        value="View Batch Bill" 
-                                                        ajax="false"
-                                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                                        <f:setPropertyActionListener 
-                                                            value="#{billSearch.viewingBill.backwardReferenceBill}" 
-                                                            target="#{billSearch.bill}" ></f:setPropertyActionListener>
-                                                    </p:commandButton>                                                    
-                                                </div>
-                                            </div>
-
+                                            <view:out bill="#{billSearch.viewingBill.backwardReferenceBill}"/>
                                         </p:panel>
+                                    </p:tab>
 
+                                    <p:tab title="Bill Details" >
                                         <p:panel>
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                                 <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                             </f:facet>
-                                            <div class="row">
-                                                <div class="col-md-12">
-
-
-
-
-                                                    <div class="row">
-                                                        <div class="col-md-2"><h:outputLabel value="Bill No" /></div>
-                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                        <div class="col-md-8"><h:outputLabel value="#{billSearch.viewingBill.deptId}" ></h:outputLabel></div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col-md-2"><h:outputLabel value="Payment Type " ></h:outputLabel></div>
-                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                        <div class="col-md-8"><h:outputLabel value="#{billSearch.viewingBill.paymentMethod}" /></div>
-
-                                                    </div>
-                                                    <h:panelGroup rendered="#{billSearch.viewingBill.chequeRefNo ne null}">
-                                                        <div class="row">
-                                                            <div class="col-md-2"><h:outputLabel value="Cheque No" /></div>
-                                                            <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                            <div class="col-md-8"><h:outputLabel value="#{billSearch.viewingBill.chequeRefNo}" ></h:outputLabel></div>
-                                                        </div>
-                                                    </h:panelGroup>
-
-
-                                                    <div class="row">
-                                                        <div class="col-md-2"><h:outputLabel value="Total" ></h:outputLabel></div>
-                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                        <div class="col-md-8"><h:outputLabel value="#{billSearch.viewingBill.total}" ></h:outputLabel></div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col-md-2"><h:outputLabel value="Discount" ></h:outputLabel></div>
-                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                        <div class="col-md-8"><h:outputLabel value="#{billSearch.viewingBill.discount}" ></h:outputLabel></div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col-md-2"><h:outputLabel value="Net Total" ></h:outputLabel></div>
-                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                        <div class="col-md-8"><h:outputLabel value="#{billSearch.viewingBill.netTotal}" ></h:outputLabel></div>
-                                                    </div>
-
-                                                    <p:separator/>
-                                                    <p:separator/>
-
-                                                    <div class="row">
-                                                        <div class="col-md-2"><h:outputLabel value="Credit Company" ></h:outputLabel></div>
-                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                        <div class="col-md-8"><p:autoComplete value="#{billSearch.viewingBill.creditCompany}" completeMethod="#{institutionController.completeIns}" var="i" itemLabel="#{i.name}"
-                                                                                              itemValue="#{i}" rendered="false"></p:autoComplete><h:outputLabel value="#{billSearch.viewingBill.creditCompany.name}" rendered="true"></h:outputLabel></div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col-md-2"><h:outputLabel value="Referred By" ></h:outputLabel></div>
-                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                        <div class="col-md-8"><h:outputLabel value="#{billSearch.viewingBill.referredBy.person.nameWithTitle}" ></h:outputLabel></div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col-md-2"><h:outputLabel value="Referring Institution" ></h:outputLabel></div>
-                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                        <div class="col-md-8"><h:outputLabel value="#{billSearch.viewingBill.referenceInstitution.name}" ></h:outputLabel></div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col-md-2"><h:outputLabel value="ID" ></h:outputLabel></div>
-                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                        <div class="col-md-8"><h:outputLabel value="#{billSearch.viewingBill.id}" ></h:outputLabel></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
+                                            <view:out bill="#{billSearch.viewingBill}"/>
                                         </p:panel>
                                     </p:tab>
                                     <p:tab title="Bill Items" >
 
                                         <p:dataTable value="#{billSearch.viewingBillItems}" var="bi" rowKey="#{bi.id}" >
-                                            <p:column >
+                                            <p:column headerText="ID" >
                                                 <h:outputText value="#{bi.id}" ></h:outputText>
                                             </p:column>
-                                            <p:column >
+                                            <p:column headerText="Item" >
                                                 <h:outputText value="#{bi.item.name}" ></h:outputText>
                                             </p:column>
                                             <p:column >
@@ -359,8 +288,94 @@
                                             </p:column>
                                         </p:dataTable>
                                     </p:tab>
-                                    <p:tab title="Cancellations &amp; Refunds" >
+                                    <p:tab title="Cancellations" >
+                                        <h:panelGroup rendered="#{not billSearch.viewingBill.cancelled}" >
+                                            <p:outputLabel value="Not Cancelled" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{billSearch.viewingBill.cancelled}" >
 
+                                            <p:commandButton
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="pi pi-eye"
+                                                value="View Cancelled Bill"
+                                                action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                <f:setPropertyActionListener 
+                                                    value="#{billSearch.viewingBill.cancelledBill}" 
+                                                    target="#{billSearch.bill}" />
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="pi pi-pencil"
+                                                value="Manage Cancelled Bill"
+                                                action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                                <f:setPropertyActionListener 
+                                                    value="#{billSearch.viewingBill.cancelledBill}"  
+                                                    target="#{billSearch.bill}" />
+                                            </p:commandButton>
+                                            <view:out bill="#{billSearch.viewingBill.cancelledBill}" ></view:out>
+                                        </h:panelGroup>
+                                    </p:tab>
+                                    <p:tab title="Refunded" >
+                                        <p:dataTable var="b" value="#{billSearch.refuendedBills}" scrollable="true" scrollHeight="200">
+                                            <p:column headerText="Bill No" style="width: 20em; padding: 6px;">
+                                                <h:outputText value="#{b.deptId}"/>
+                                            </p:column>
+                                            <p:column headerText="Refunded Date" style="width: 10em; padding: 6px;">
+                                                <h:outputText value="#{b.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Refunded Time" style="width: 7em; padding: 6px;">
+                                                <h:outputText value="#{b.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Refunded By" style="width: 9em; padding: 6px;">
+                                                <h:outputText value="#{b.creater.webUserPerson.name}"/>
+                                            </p:column>
+                                            <p:column headerText="Paid" style="width: 8em; padding: 6px;">
+                                                <h:outputText value="#{b.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="View Bill" style="width: 6em; padding: 6px;">
+                                                <p:commandButton ajax="false" value="View Bill" action="#{billReturnController.navigateToRefundBillViewFormOPDBillSearch()}">
+                                                    <f:setPropertyActionListener value="#{b}" target="#{billReturnController.newlyReturnedBill}"/>
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:dataTable>
+
+                                        <h:panelGroup rendered="#{not billSearch.viewingBill.refunded}" >
+                                            <p:outputLabel value="Not Refunded" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{billSearch.viewingBill.refunded}" >
+                                            <ui:repeat value="#{billSearch.viewingBill.refundBills}" var="rb" >
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    value="View Refund Bill"
+                                                    class="m-1"
+                                                    icon="pi pi-eye"
+                                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{rb}" 
+                                                        target="#{billSearch.bill}" />
+                                                </p:commandButton>
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    class="m-1"
+                                                    icon="pi pi-pencil"
+                                                    value="Manage Refund Bill"
+                                                    action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{rb}" 
+                                                        target="#{billSearch.bill}" />
+                                                </p:commandButton>
+
+                                                <view:out bill="#{rb}" ></view:out>
+                                            </ui:repeat>
+                                        </h:panelGroup>
                                     </p:tab>
                                 </p:tabView>
 

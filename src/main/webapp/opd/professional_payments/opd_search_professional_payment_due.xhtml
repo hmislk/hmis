@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
+
+    <h:body>
+
+        <ui:composition template="/payments/pay_index.xhtml">
+
+            <ui:define name="admin">
+                <h:form>
+                    <p:panel header="OPD Payments Due Search" >
+                        <f:facet name="header">
+                            <h:outputLabel value="OPD Payments Due Search"/>
+                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>
+
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="col-2">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" class="w-100" inputStyleClass="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{searchController.toDate}" class="my-1 w-100" inputStyleClass="my-1 w-100" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                </p:calendar>                                
+                                <p:commandButton
+                                    id="btnSearch"
+                                    ajax="false" 
+                                    value="Search" 
+                                    action="#{searchController.createDueFeeTableAll()}" 
+                                    icon="fas fa-search"
+                                    class="w-100 my-1 ui-button-warning"/>                                
+                                <p:commandButton ajax="false" value="Excel" class="w-100 ui-button-success"
+                                                 icon="fas fa-file-excel">
+                                    <p:dataExporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
+                                </p:commandButton>  
+
+                                <h:outputLabel value="OPD Bill No"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="my-1 w-100"/>
+                                <h:outputLabel value="BHT No"/>
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.bhtNo}" />
+                                <h:outputLabel value="Patient Name"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="my-1 w-100"/>
+                                <h:outputLabel value="Speciality"/> 
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" class="my-1 w-100"/>
+                                <h:outputLabel value="Doctor Name"/>      
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" class="my-1 w-100"/>
+                                <h:outputLabel value="Service Name"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" class="my-1 w-100"/>
+                                <h:outputLabel value="Charges"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}" class="my-1 w-100"/>
+
+                                <p:defaultCommand target="btnSearch" />
+
+                            </div>
+                            <div class="col-10">
+                                <p:dataTable rowIndexVar="i" 
+                                             id="tblFee" value="#{searchController.billFees}" 
+                                             var="bf"
+                                             style="min-width: 100%;"  
+                                             rows ="10"              
+                                             paginator="true"
+                                             paginatorPosition="bottom"
+                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             rowsPerPageTemplate="5,10,25,50">
+
+                                    <f:facet name="header">
+                                        #{searchController.total}
+                                    </f:facet>
+
+                                    <p:column headerText="No" styleClass="alignTop">
+                                        <h:outputLabel value="#{i+1}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Speciality">
+                                        <h:outputLabel value="#{bf.staff.speciality.name}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Doctor" >
+                                        <p:commandLink
+                                            action="#{staffPaymentBillController.navigateToStaffPaymentFromDuePayment(bf.staff)}"
+                                            value="#{bf.staff.person.name}">
+                                        </p:commandLink>
+                                    </p:column>
+
+                                    <p:column headerText="Patient" >
+                                        <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                   
+                                    </p:column>
+
+                                    <p:column headerText="Bill No">
+                                        <h:commandLink action="/opd/payment_staff_bill" >
+                                            <h:outputLabel value="#{bf.bill.deptId}">
+                                            </h:outputLabel>
+                                            <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                        </h:commandLink>
+                                    </p:column>
+
+                                    <p:column headerText="Payment Method">
+                                        <h:outputLabel value="#{bf.bill.paymentMethod}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Billed At" >
+                                        <h:outputLabel value="#{bf.bill.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                        </h:outputLabel>    
+                                    </p:column>
+
+
+                                    <p:column headerText="Test" >
+                                        <h:outputLabel value="#{bf.billItem.item.name}" />
+                                    </p:column>
+
+                                    <p:column headerText="Charge" styleClass="averageNumericColumn">
+                                        <h:outputLabel value="#{bf.feeValue}" />
+                                    </p:column>
+
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

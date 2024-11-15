@@ -19,11 +19,12 @@
                                 <p:outputLabel value="Discharge Date" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker 
-                                class="w-100"
+                            <p:calendar 
+                                class="w-100 " 
                                 inputStyleClass="w-100"
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>  
-
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
 
 
                             <p:spacer width="20"></p:spacer>
@@ -35,22 +36,23 @@
                                 <p:outputLabel value="Service Added Date" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker
-                                class="w-100"
-                                inputStyleClass="w-100"
-                                value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                value="#{searchController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf571;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Invoice Date" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker
-                                class="w-100"
+                            <p:calendar 
+                                class="w-100 " 
                                 inputStyleClass="w-100"
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
 
 
                             <p:spacer width="20"></p:spacer>
@@ -60,7 +62,7 @@
                                 <h:outputText value="&#xf084;" styleClass="fa mr-2" /> 
                                 <p:outputLabel value="Admission Type" for="institutionMenu" class="mx-3"></p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu id="institutionMenu" required="true" class="w-100">
+                            <p:selectOneMenu id="institutionMenu"  class="w-100">
                                 <f:selectItem itemLabel="Select Institution Type"/>
                                 <f:selectItems value="#{admissionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                 <!--                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>-->
@@ -71,7 +73,7 @@
                                 <h:outputText value="&#xf236;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Room Category" for="institutionMenu" class="mx-3"></p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu required="true" class="w-100" >
+                            <p:selectOneMenu  class="w-100" >
                                 <f:selectItem itemLabel="Select Room Category"/>
                                 <f:selectItems value="#{roomCategoryController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                 <!--                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>-->
@@ -168,7 +170,9 @@
 
 
                         <div class="d-flex align-items-center">
-                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process" icon="fas fa-cogs" >
+                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process"
+                                             action="#{searchController.createItemizedSalesReportOpd()}"
+                                             icon="fas fa-cogs" >
                             </p:commandButton>
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
@@ -179,9 +183,126 @@
                         </div>
 
 
+                        <div style="display: none;" >
+                            #{searchController.bundle.reportTemplateRows}
+                        </div>
 
 
-                        <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
+                        <p:dataTable id="tbl"
+                                     value="#{searchController.bundle.reportTemplateRows}"
+                                     var="row"
+                                     paginator="true"
+                                     rows="10"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,20"
+                                     rowKey="#{row.id}">
+                            <f:facet name="header" >
+                                <h:outputText value="#{searchController.bundle.name}" ></h:outputText>
+                            </f:facet>
+                            <f:facet name="footer" >
+                                <h:outputText value="Total" ></h:outputText>
+                                <p:spacer width="50" ></p:spacer>
+                                <h:outputText value="#{searchController.bundle.total}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                            </f:facet>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Category" />
+                                </f:facet>
+                                <h:outputText value="#{row.category.name}"  />
+                                <p:commandLink
+                                    class="mx-2"
+                                    rendered="#{row.category ne null}"
+                                    action="#{searchController.navigateToOpdBillItemList(row)}"
+                                    ajax="false">
+                                    <h:outputText title="View Category Details" value="&#xf02d;" styleClass="fa mr-2" />
+                                </p:commandLink>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Code" />
+                                </f:facet>
+                                <h:outputText value="#{row.item.code}"  />
+                                <p:commandLink
+                                    class="mx-2"
+                                    rendered="#{row.item ne null}"
+                                    action="#{searchController.navigateToOpdBillItemList(row)}">
+                                    <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa mr-2" />
+                                </p:commandLink>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Item / Service" />
+                                </f:facet>
+                                <h:outputText value="#{row.item.name}"  />
+                                <p:commandLink
+                                    class="mx-2"
+                                    rendered="#{row.item ne null}"
+                                    action="#{searchController.navigateToOpdBillItemList(row)}">
+                                    <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa mr-2" />
+                                </p:commandLink>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Count" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemCount}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Bill No" />
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.deptId}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Patient" />
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.patient.person.nameWithTitle}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Hospital Fee" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemHospitalFee}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Professional Fee" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemProfessionalFee}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Discount" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemDiscountAmount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Net Amount" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemNetTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+
+                        <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb11" rowIndexVar="i"
                                      rowKey="#{b}" 
                                      rows="#{searchController.rows}"
                                      selection="#{searchController.selectedTelephoneNumbers}"

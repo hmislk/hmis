@@ -28,7 +28,7 @@
                             </f:facet>
 
                             <p:panel header="Patient Detail" rendered="#{storeSaleBhtController.patientEncounter eq null}" class="w-100">                                        
-                                <h:outputLabel value="Type Patinet Name or BHT : "/>
+                                <h:outputLabel value="Type Patient Name or BHT"/>
                                 <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
                                                 value="#{storeSaleBhtController.patientEncounter}" 
                                                 completeMethod="#{admissionController.completePatient}"
@@ -46,7 +46,13 @@
                                     </p:column>
                                     <p:ajax event="itemSelect" process="acPt2" update="#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
                                 </p:autoComplete>  
-                                <p:commandButton value="Select" ajax="false" id="btnSelect"></p:commandButton>
+                                <p:commandButton 
+                                    value="Select" 
+                                    ajax="false" 
+                                    id="btnSelect" 
+                                    icon="fa fa-search" 
+                                    class="ui-button-warning">                             
+                                </p:commandButton>
 
                             </p:panel>
 
@@ -160,7 +166,7 @@
                                                             action="#{storeSaleBhtController.addBillItem}" 
                                                             process="@this acStock txtQty" 
                                                             update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('txtQty',view).clientId} acStock focusItem " 
-                                                            
+
                                                             class=""
                                                             > 
                                                         </p:commandButton>
@@ -172,7 +178,7 @@
                                             </p:panel>
 
                                         </h:panelGrid><!--//Add Medicines or Devices-->
-                                        
+
                                         <!--//Show Bill Items-->
                                         <h:panelGrid class="w-100"> 
                                             <p:panel>

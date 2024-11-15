@@ -101,6 +101,12 @@
                                 rows="5"
                                 id="valueInputLongText" value="#{configOptionController.option.optionValue}"
                                 rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}" autoResize="false"/>
+                            
+                            <!-- For DOUBLE -->
+                            <p:inputText 
+                                class="w-100" 
+                                id="valueInputDouble" value="#{configOptionController.option.optionValue}"
+                                rendered="#{configOptionController.option.valueType eq 'DOUBLE'}" />
 
                             <p:selectOneMenu 
                                 id="enumValueSelector"

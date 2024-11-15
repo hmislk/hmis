@@ -12,211 +12,304 @@
 
             <ui:define name="users"> 
 
-          
 
 
 
-                    <p:panel >
-                        <f:facet name="header" >
-                            <i class="fa fa-tachometer-alt"></i>
-                            <h:outputLabel class="mx-2" value="Manage Dashboards"/>
-                            <p:commandButton value="Save" ajax="false" action="#{drawerController.saveSelected()}" ></p:commandButton>
-                        </f:facet>
 
-                        <table  class="ui-datatable ui-widget w-100 m-3">
-                            <thead class="ui-datatable-thead">
-                                <tr>
-                                    <th class="ui-state-default">Payment Method</th>
-                                    <th class="ui-state-default">In-Hand Value</th>
-                                    <th class="ui-state-default">Shortage / Excess</th>
-                                </tr>
-                            </thead>
-                            <tbody class="ui-datatable-data ui-widget-content">
-                                <tr class="ui-widget-content">
-                                    <td><i class="pi pi-money-bill payment-icon"></i> Cash</td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.cashInHandValue}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.cashShortageOrExcess}" styleClass="#{drawerController.current.cashShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                </tr>
-                                <!-- Repeat for other payment methods -->
-                                <tr class="ui-widget-content">
-                                    <td><i class="pi pi-credit-card payment-icon"></i> Card</td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.cardInHandValue}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.cardShortageOrExcess}" styleClass="#{drawerController.current.cardShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                </tr>
-                                <!-- Staff Payment Row -->
-                                <tr class="ui-widget-content">
-                                    <td><i class="pi pi-users payment-icon"></i>Staff</td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.staffInHandValue}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.staffShortageOrExcess}" styleClass="#{drawerController.current.staffShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                </tr>
+                <p:panel >
+                    <f:facet name="header" >
+                        <i class="fa fa-tachometer-alt"></i>
+                        <h:outputLabel class="m-2" value="Manage Dashboards"/>
+                        <p:commandButton 
+                            value="Save" 
+                            ajax="false" 
+                            action="#{drawerController.saveSelected()}" 
+                            disabled="#{!drawerController.editDrawerAccess}"
+                            style="float: right;"
+                            icon="fas fa-save"
+                            class="ui-button-success">
+                        </p:commandButton>
+                    </f:facet>
 
-                                <!-- Voucher Payment Row -->
-                                <tr class="ui-widget-content">
-                                    <td><i class="pi pi-ticket payment-icon"></i>Voucher</td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.voucherInHandValue}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.voucherShortageOrExcess}" styleClass="#{drawerController.current.voucherShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                </tr>
+                    <table  class="ui-datatable ui-widget w-100 m-3">
+                        <thead class="ui-datatable-thead">
+                            <tr>
+                                <th class="ui-state-default">Payment Method</th>
+                                <th class="ui-state-default">In-Hand Value</th>
+                                <th class="ui-state-default">Shortage / Excess</th>
+                                <th class="ui-state-default">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody class="ui-datatable-data ui-widget-content">
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-money-bill payment-icon"></i> Cash</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.cashInHandValue}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.cashShortageOrExcess}" styleClass="#{drawerController.current.cashShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.cashBalance}" styleClass="#{drawerController.current.cashShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
+                            <!-- Card Payment Row -->
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-credit-card payment-icon"></i>&nbsp;Card</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.cardInHandValue}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.cardShortageOrExcess}" styleClass="#{drawerController.current.cardShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.cardBalance}" styleClass="#{drawerController.current.cardShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
 
-                                <!-- IOU Payment Row -->
-                                <tr class="ui-widget-content">
-                                    <td><i class="pi pi-file-o payment-icon"></i>IOU</td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.iouInHandValue}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.iouShortageOrExcess}" styleClass="#{drawerController.current.iouShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                </tr>
+                            <!-- Staff Payment Row -->
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-users payment-icon"></i>&nbsp;Staff</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.staffInHandValue}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.staffShortageOrExcess}" styleClass="#{drawerController.current.staffShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.staffBalance}" styleClass="#{drawerController.current.staffShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
+                            
+                            <!-- Credit Payment Row -->
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-tag payment-icon"></i>&nbsp;Credit</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.creditInHandValue}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.creditShortageOrExcess}" styleClass="#{drawerController.current.creditShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.creditBalance}" styleClass="#{drawerController.current.creditShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
 
-                                <!-- Agent Payment Row -->
-                                <tr class="ui-widget-content">
-                                    <td><i class="pi pi-user-plus payment-icon"></i>Agent</td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.agentInHandValue}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.agentShortageOrExcess}" styleClass="#{drawerController.current.agentShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                </tr>
-                                <!-- Cheque Payment Row -->
-                                <tr class="ui-widget-content">
-                                    <td><i class="pi pi-envelope payment-icon"></i>Cheque</td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.chequeInHandValue}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.chequeShortageOrExcess}" styleClass="#{drawerController.current.chequeShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                </tr>
+                            <!-- Voucher Payment Row -->
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-ticket payment-icon"></i>&nbsp;Voucher</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.voucherInHandValue}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.voucherShortageOrExcess}" styleClass="#{drawerController.current.voucherShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.voucherBalance}" styleClass="#{drawerController.current.voucherShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
 
-                                <!-- Slip Payment Row -->
-                                <tr class="ui-widget-content">
-                                    <td><i class="pi pi-file payment-icon"></i>Slip</td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.slipInHandValue}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.slipShortageOrExcess}" styleClass="#{drawerController.current.slipShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                </tr>
+                            <!-- IOU Payment Row -->
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-file-o payment-icon"></i>&nbsp;IOU</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.iouInHandValue}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.iouShortageOrExcess}" styleClass="#{drawerController.current.iouShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.iouBalance}" styleClass="#{drawerController.current.iouShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
 
-                                <!-- E-wallet Payment Row -->
-                                <tr class="ui-widget-content">
-                                    <td><i class="pi pi-wallet payment-icon"></i>E-wallet</td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.ewalletInHandValue}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.ewalletShortageOrExcess}" styleClass="#{drawerController.current.ewalletShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                </tr>
+                            <!-- Agent Payment Row -->
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-user-plus payment-icon"></i>&nbsp;Agent</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.agentInHandValue}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.agentShortageOrExcess}" styleClass="#{drawerController.current.agentShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.agentBalance}" styleClass="#{drawerController.current.agentShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
 
-                                <!-- Patient Deposit Payment Row -->
-                                <tr class="ui-widget-content">
-                                    <td><i class="pi pi-inbox payment-icon"></i>Patient Deposit</td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.patientDepositInHandValue}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.patientDepositShortageOrExcess}" styleClass="#{drawerController.current.patientDepositShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                </tr>
+                            <!-- Cheque Payment Row -->
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-envelope payment-icon"></i>&nbsp;Cheque</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.chequeInHandValue}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.chequeShortageOrExcess}" styleClass="#{drawerController.current.chequeShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.chequeBalance}" styleClass="#{drawerController.current.chequeShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
 
-                                <!-- Patient Points Payment Row -->
-                                <tr class="ui-widget-content">
-                                    <td><i class="pi pi-star payment-icon"></i>Patient Points</td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.patientPointsInHandValue}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                    <td class="centered">
-                                        <p:inputText value="#{drawerController.current.patientPointsShortageOrExcess}" styleClass="#{drawerController.current.patientPointsShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:inputText>
-                                    </td>
-                                </tr>
+                            <!-- Slip Payment Row -->
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-file payment-icon"></i>&nbsp;Slip</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.slipInHandValue}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.slipShortageOrExcess}" styleClass="#{drawerController.current.slipShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.slipBalance}" styleClass="#{drawerController.current.slipShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
 
-                            </tbody>
-                            <tfoot>
-                                <tr class="ui-widget-content">
-                                    <th class="ui-state-default">Total</th>
-                                    <th class="centered">
-                                        <p:outputLabel value="#{drawerController.current.totalInHand}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:outputLabel>
-                                    </th>
-                                    <th class="centered">
-                                        <p:outputLabel value="#{drawerController.current.totalShortageOrExcess}" styleClass="#{drawerController.current.totalShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:outputLabel>
-                                    </th>
-                                </tr>
-                            </tfoot>
-                        </table>
+                            <!-- E-wallet Payment Row -->
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-wallet payment-icon"></i>&nbsp;E-wallet</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.ewalletInHandValue}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.ewalletShortageOrExcess}" styleClass="#{drawerController.current.ewalletShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.ewalletBalance}" styleClass="#{drawerController.current.ewalletShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
+
+                            <!-- Patient Deposit Payment Row -->
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-inbox payment-icon"></i>&nbsp;Patient Deposit</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.patientDepositInHandValue}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.patientDepositShortageOrExcess}" styleClass="#{drawerController.current.patientDepositShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.patientDepositBalance}" styleClass="#{drawerController.current.patientDepositShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
+
+                            <!-- Patient Points Payment Row -->
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-star payment-icon"></i>&nbsp;Patient Points</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.patientPointsInHandValue}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.patientPointsShortageOrExcess}" styleClass="#{drawerController.current.patientPointsShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.patientPointsBalance}" styleClass="#{drawerController.current.patientPointsShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
 
 
 
-                    </p:panel>
+                        </tbody>
+                        <tfoot>
+                            <tr class="ui-widget-content">
+                                <th class="ui-state-default">Total</th>
+                                <th class="centered">
+                                    <p:outputLabel value="#{drawerController.current.totalInHand}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                </th>
+                                <th class="centered">
+                                    <p:outputLabel value="#{drawerController.current.totalShortageOrExcess}" styleClass="#{drawerController.current.totalShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                </th>
+                                <th class="centered">
+                                    <p:outputLabel value="#{drawerController.current.totalShortageOrExcess}" styleClass="#{drawerController.current.totalShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                </th>
+                            </tr>
+                        </tfoot>
+                    </table>
 
 
-              
+
+                </p:panel>
+
+
+
             </ui:define>
         </ui:composition>
     </h:body>

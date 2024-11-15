@@ -232,6 +232,15 @@ public class ChannelSearchController implements Serializable {
             return;
         }
     }
+    
+    public String navigateTocancelPaymentBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        printPreview = false;
+        return "/channel/channel_payment_staff_bill_cancel?faces-redirect=true;";
+    }
 
     private boolean errorCheck() {
         if (getBill().isCancelled()) {
@@ -283,7 +292,7 @@ public class ChannelSearchController implements Serializable {
         CancelledBill cb = new CancelledBill();
         if (getBill() != null) {
             cb.copy(getBill());
-            cb.invertValue(getBill());
+            cb.invertAndAssignValuesFromOtherBill(getBill());
 
             if (getBill().getBillType() == BillType.PaymentBill) {
                 cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PROCAN));

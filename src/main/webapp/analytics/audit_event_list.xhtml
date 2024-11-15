@@ -39,7 +39,6 @@
                                 <p:dataExporter fileName="All Bills" type="xls" target="tblBills" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
-
                         <p:dataTable rowIndexVar="i" id="tblBills" 
                                      value="#{auditEventController.items}"
                                      reflow="true"
@@ -49,33 +48,33 @@
                                      paginatorPosition="bottom"
                                      rows="10"
                                      paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15"
-                                     >
-                            <p:column headerText="ID"  >
-                                <h:outputLabel value="#{ae.id}">
-                                </h:outputLabel>
+                                     rowsPerPageTemplate="5,10,15">
+
+                            <p:column headerText="ID" rendered="false">
+                                <h:outputLabel value="#{ae.id}" />
                             </p:column>
-                            <p:column headerText="Name" sortBy="#{ae.eventTrigger}" filterBy="#{ae.eventTrigger}" filterMatchMode="contains" >
-                                <h:outputLabel value="#{ae.eventTrigger}"/>
+                            
+                             <p:column headerText="User ID">
+                                <h:outputLabel value="#{ae.webUserId}" />
                             </p:column>
-                            <p:column  headerText="Duration">
-                                <h:outputLabel value="#{ae.eventDuration}"/>
-                            </p:column>
-                            <p:column headerText="Status"  sortBy="#{ae.eventStatus}" filterBy="#{ae.eventStatus}" filterMatchMode="contains">
-                                <h:outputLabel value="#{ae.eventStatus}"/>
-                            </p:column>
-                            <p:column headerText="Start"  >
+
+                            <p:column headerText="Time">
                                 <h:outputLabel value="#{ae.eventDataTime}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="End"  >
-                                <h:outputLabel value="#{ae.eventEndTime}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
+                            <p:column headerText="Name" sortBy="#{ae.eventTrigger}" filterBy="#{ae.eventTrigger}" filterMatchMode="contains">
+                                <h:outputLabel value="#{ae.eventTrigger}" />
+                            </p:column>
+
+                            
+                            <p:column headerText="Changes" rendered="true">
+                                <h:outputLabel value="#{ae.difference}" />
+                            </p:column>
+
                         </p:dataTable>
+
 
 
 

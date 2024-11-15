@@ -13,53 +13,179 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Cashier Summary" class="m-1">
-                        <p:panelGrid columns="2" class="w-100 text-center">
-                            <p:panelGrid columns="2" class="w-100">
-                                <h:outputLabel value="From"/>
-                                <p:calendar 
-                                    class="w-100 " 
-                                    inputStyleClass="w-100" 
-                                    id="fromDate" 
-                                    value="#{searchController.fromDate}" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                </p:calendar>
-                                <h:outputLabel value="To"/>                                
-                                <p:calendar 
-                                    class="w-100 " 
-                                    inputStyleClass="w-100" 
-                                    id="toDate" 
-                                    value="#{searchController.toDate}" 
-                                    navigator="false" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                </p:calendar>
-                                <h:outputLabel value="User"/> 
-                                <p:autoComplete
-                                    completeMethod="#{webUserController.completeUser}"
-                                    class="w-100"
-                                    id="acStaff" 
-                                    inputStyleClass="w-100"
-                                    value="#{searchController.webUser}" 
-                                    var="user"
-                                    scrollHeight="450"
-                                    itemLabel="#{user.webUserPerson.name}" 
-                                    itemValue="#{user}" >
-                                    <p:column headerText="Username" >
-                                        <h:outputText value="#{user.name}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Name" >
-                                        <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
-                                    </p:column>
-                                </p:autoComplete>
-                            </p:panelGrid>
-                            <p:panelGrid columns="1"  >
-                                <p:commandButton  
-                                    value="Process" 
-                                    ajax="false"
-                                    action="#{searchController.generateCashierSummary}" 
-                                    class="ui-button-warning" icon="fas fa-cogs">
-                                </p:commandButton>
-                            </p:panelGrid>
-                        </p:panelGrid>
+
+                        <h:panelGrid columns="8" class="w-100">
+                            <h:outputLabel value="From"/>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="To"/>                                
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="false"
+                                    styleClass="w-100 form-control"  
+                                    value="#{searchController.department}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
+                                        var="d" 
+                                        itemLabel="#{d.name}" 
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+
+                            <h:outputLabel value="User"/> 
+                            <p:autoComplete
+                                completeMethod="#{webUserController.completeUser}"
+                                class="w-100"
+                                id="acStaff" 
+                                inputStyleClass="w-100"
+                                value="#{searchController.webUser}" 
+                                var="user"
+                                scrollHeight="450"
+                                itemLabel="#{user.webUserPerson.name}" 
+                                itemValue="#{user}" >
+                                <p:column headerText="Username" >
+                                    <h:outputText value="#{user.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Name" >
+                                    <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
+                                </p:column>
+                            </p:autoComplete>
+
+                            <p:spacer ></p:spacer>
+
+
+
+                        </h:panelGrid>
+
+                        <p:commandButton  
+                            value="Process" 
+                            ajax="false"
+                            action="#{searchController.generateCashierSummary}" 
+                            class="ui-button-warning my-2" icon="fas fa-cogs">
+                        </p:commandButton>
+
+
 
 
                         <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
@@ -69,6 +195,12 @@
                                 <ez:cashierSummaryOpd bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'cashierSummaryOpd'}"/>
                                 <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellations'}"/>
                                 <ez:opdServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceRefunds'}"/>
+                                
+
+                                <!-- Credit Sections -->
+                                <ez:opdServiceBilled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'cashierSummaryOpdCredit'}"/>
+                                <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellationsCredit'}"/>
+                                <ez:opdServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceRefundsCredit'}"/>
 
                                 <!-- Pharmacy Collections -->
                                 <ez:pharmacyCollection bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyCollection'}"/>
@@ -123,7 +255,15 @@
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{empty myBundle.reportTemplateRows}">
-                                <p:panel header="No #{myBundle.name}" ></p:panel>
+                                <table class="table w-100">
+                                    <thead>
+                                        <tr class="text-light bg-dark">
+                                            <th class="text-light bg-dark">
+                                                <h:outputText value="No Data for #{myBundle.name}" ></h:outputText>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                </table>
                             </h:panelGroup>
 
                         </ui:repeat>

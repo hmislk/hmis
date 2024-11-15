@@ -79,7 +79,26 @@
 
 
                     <h:panelGroup rendered="#{pettyCashBillSearch.printPreview}" >
-                        <bi:petty   bill="#{pettyCashBillSearch.bill}" billController="#{pettyCashBillSearch}" dup="false"/>
+                        <div class="d-flex justify-content-end">
+                            <p:commandButton value="Print" 
+                                             class="ui-button-info m-1"
+                                             icon="fa fa-print"
+                                             ajax="false">
+                                <p:printer target="cancelPettyBill" />
+                            </p:commandButton>
+                            <p:commandButton  
+                                class="ui-button-secondary d-flex justify-content-end mx-2"
+                                style="float: right"
+                                value="Back To Search"
+                                icon="fa-solid fa-arrow-left"
+                                action="/petty_cash_bill_search_own?faces-redirect=true"
+                                ajax="false">
+                            </p:commandButton>
+
+                        </div>
+                        <h:panelGroup id="cancelPettyBill">
+                            <bi:petty   bill="#{pettyCashBillSearch.bill}" billController="#{pettyCashBillSearch}" dup="false"/>
+                        </h:panelGroup>
                     </h:panelGroup>
 
 

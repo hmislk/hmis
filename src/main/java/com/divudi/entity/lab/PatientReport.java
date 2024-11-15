@@ -156,7 +156,9 @@ public class PatientReport implements Serializable {
     private String qrCodeContentsLink;
 
     @Enumerated(EnumType.ORDINAL)
-    PatientInvestigationStatus status;
+    private PatientInvestigationStatus status;
+    
+    private String sampleIDs;
 
     public PatientReport() {
         if (status == null) {
@@ -165,6 +167,8 @@ public class PatientReport implements Serializable {
         printed = false;
         approved = false;
     }
+    
+    
 
     public PatientReportItemValue getTemplateItem() {
 
@@ -782,6 +786,22 @@ public class PatientReport implements Serializable {
 
     public void setAutomatedInstitution(Institution automatedInstitution) {
         this.automatedInstitution = automatedInstitution;
+    }
+
+    public PatientInvestigationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PatientInvestigationStatus status) {
+        this.status = status;
+    }
+
+    public String getSampleIDs() {
+        return sampleIDs;
+    }
+
+    public void setSampleIDs(String sampleIDs) {
+        this.sampleIDs = sampleIDs;
     }
 
     static class PatientReportItemValueComparator implements Comparator<PatientReportItemValue> {

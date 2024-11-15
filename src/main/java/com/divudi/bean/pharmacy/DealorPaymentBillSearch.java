@@ -11,6 +11,8 @@ import com.divudi.bean.common.WebUserController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
@@ -24,6 +26,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Payment;
+import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
@@ -38,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -58,6 +62,8 @@ public class DealorPaymentBillSearch implements Serializable {
     private boolean printPreview = false;
     @EJB
     BillFeeFacade billFeeFacade;
+    @EJB
+    BillNumberGenerator billNumberGenerator;
     String txtSearch;
     BilledBill bill;
     List<BillEntry> billEntrys;
@@ -83,6 +89,9 @@ public class DealorPaymentBillSearch implements Serializable {
     SessionController sessionController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    BillBeanController billBeanController;
+
     @EJB
     EjbApplication ejbApplication;
     private List<BillItem> tempbillItems;
@@ -91,6 +100,7 @@ public class DealorPaymentBillSearch implements Serializable {
     @Temporal(TemporalType.TIME)
     private Date toDate;
     private String comment;
+    private double netTotal;
     WebUser user;
 
     public void approve() {
@@ -107,11 +117,16 @@ public class DealorPaymentBillSearch implements Serializable {
         newBill.setInstitution(sessionController.getInstitution());
         newBill.setDepartment(sessionController.getDepartment());
         newBill.setBillType(BillType.GrnPayment);
+        newBill.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT);
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT);
+        newBill.setDeptId(deptId);
+        newBill.setApproveAt(new Date());
+        newBill.setApproveUser(sessionController.getLoggedUser());
+        newBill.setApprovedAnyTest(true);
         billFacade.create(newBill);
 
         bill.setReferenceBill(newBill);
         billFacade.edit(bill);
-
 
         for (BillItem bi : getBillItems()) {
             BillItem newBi = new BillItem();
@@ -126,6 +141,33 @@ public class DealorPaymentBillSearch implements Serializable {
         }
 
         JsfUtil.addSuccessMessage("Succesfully Approved");
+    }
+
+    @Deprecated
+    public void fillDealorPaymentDone() {
+        bills = null;
+        netTotal = 0.0;
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select b from Bill b "
+                + " where b.retired=false "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.billType = :billTypes "
+                + " and b.billTypeAtomic = :bTA ";
+
+        params.put("billTypes", BillType.GrnPayment);
+        params.put("bTA", BillTypeAtomic.SUPPLIER_PAYMENT);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        Iterator<Bill> iterator = bills.iterator();
+        while (iterator.hasNext()) {
+            Bill b = iterator.next();
+            netTotal += b.getNetTotal();
+        }
     }
 
     public WebUser getUser() {
@@ -160,7 +202,6 @@ public class DealorPaymentBillSearch implements Serializable {
 //        }
 //        return userBills;
 //    }
-
 //    public List<Bill> getBillsOwn() {
 //        if (bills == null) {
 //            if (txtSearch == null || txtSearch.trim().equals("")) {
@@ -174,7 +215,6 @@ public class DealorPaymentBillSearch implements Serializable {
 //        }
 //        return bills;
 //    }
-
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
     }
@@ -241,8 +281,8 @@ public class DealorPaymentBillSearch implements Serializable {
 
         cb.setBilledBill(getBill());
         cb.copy(getBill());
-        cb.invertValue(getBill());
-
+        cb.invertAndAssignValuesFromOtherBill(getBill());
+        cb.setNetTotal(0 - Math.abs(cb.getNetTotal()));
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
 
@@ -250,18 +290,97 @@ public class DealorPaymentBillSearch implements Serializable {
         cb.setBillTime(new Date());
         cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
-
+        cb.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT_CANCELLED);
         cb.setPaymentMethod(getBill().getPaymentMethod());
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
         cb.setInstitution(getSessionController().getLoggedUser().getInstitution());
         cb.setComments(comment);
-        
-        if (cb.getId()==null) {
+
+        if (cb.getId() == null) {
             getBillFacade().create(cb);
         }
-
+        JsfUtil.addSuccessMessage("Successfully Cancelled");
         return cb;
+    }
+
+    public void returnBill() {
+        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+            if (errorCheck()) {
+                JsfUtil.addErrorMessage("Error in check, cannot proceed.");
+                return;
+            }
+
+            RefundBill rb = createRefundBill();
+            if (rb == null || rb.getId() == null) {
+                JsfUtil.addErrorMessage("Refund Bill creation failed.");
+                return;
+            }
+
+            Payment p = pharmacyDealorBill.createPayment(rb, getBill().getPaymentMethod());
+            if (p == null) {
+                JsfUtil.addErrorMessage("Payment creation failed.");
+                return;
+            }
+
+            returnBillItems(rb, p);
+            getBill().setRefunded(true);
+            getBill().setRefundedBill(rb);
+
+            try {
+                getBilledBillFacade().edit(getBill());
+                JsfUtil.addSuccessMessage("Returned");
+            } catch (Exception e) {
+                JsfUtil.addErrorMessage("Failed to update bill: " + e.getMessage());
+                return;
+            }
+
+            WebUser wb = getCashTransactionBean().saveBillCashInTransaction(rb, getSessionController().getLoggedUser());
+            if (wb != null) {
+                getSessionController().setLoggedUser(wb);
+                printPreview = true;
+                JsfUtil.addSuccessMessage("Successfully Returned");
+            } else {
+                JsfUtil.addErrorMessage("Cash transaction saving failed.");
+            }
+             JsfUtil.addSuccessMessage("Successfully Returned");
+        } else {
+            JsfUtil.addErrorMessage("No Bill to return");
+        }
+    }
+
+    private RefundBill createRefundBill() {
+        RefundBill rb = new RefundBill();
+
+        rb.setBilledBill(getBill());
+        rb.copy(getBill());
+        rb.invertAndAssignValuesFromOtherBill(getBill());
+        rb.setNetTotal(0 - Math.abs(rb.getNetTotal()));
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT_RETURNED);
+        rb.setDeptId(deptId);
+        rb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.GrnPayment, BillClassType.RefundBill, BillNumberSuffix.CRDCAN));
+
+        rb.setBillType(BillType.GrnPayment);
+        rb.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT_RETURNED);
+        System.out.println("BillTypeAtomic set to: " + rb.getBillTypeAtomic());
+
+        rb.setBillDate(new Date());
+        rb.setBillTime(new Date());
+        rb.setCreatedAt(new Date());
+        rb.setCreater(getSessionController().getLoggedUser());
+        rb.setPaymentMethod(getBill().getPaymentMethod());
+        rb.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        rb.setInstitution(getSessionController().getInstitution());
+        rb.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        rb.setComments(comment);
+
+        if (rb.getId() == null) {
+            getBillFacade().create(rb);
+        } else {
+            getBillFacade().edit(rb);
+        }
+
+        return rb;
     }
 
     private boolean errorCheck() {
@@ -334,7 +453,7 @@ public class DealorPaymentBillSearch implements Serializable {
     }
 
     @Inject
-    PharmacyDealorBill pharmacyDealorBill;
+    SupplierPaymentController pharmacyDealorBill;
 
     public void cancelBill() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
@@ -441,6 +560,25 @@ public class DealorPaymentBillSearch implements Serializable {
     }
 
     private void cancelBillItems(Bill can, Payment p) {
+        for (BillItem nB : getBillItems()) {
+            BillItem b = new BillItem();
+            b.setBill(can);
+            b.copy(nB);
+            b.invertValue(nB);
+            b.setReferenceBill(nB.getReferenceBill());
+
+            b.setCreatedAt(new Date());
+            b.setCreater(getSessionController().getLoggedUser());
+
+            if (b.getId() == null) {
+                getBillItemFacede().create(b);
+            }
+            pharmacyDealorBill.saveBillFee(b, p);
+            updateReferenceBill(b);
+        }
+    }
+
+    private void returnBillItems(Bill can, Payment p) {
         for (BillItem nB : getBillItems()) {
             BillItem b = new BillItem();
             b.setBill(can);
@@ -789,5 +927,13 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public void setCreditBean(CreditBean creditBean) {
         this.creditBean = creditBean;
+    }
+
+    public double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(double netTotal) {
+        this.netTotal = netTotal;
     }
 }

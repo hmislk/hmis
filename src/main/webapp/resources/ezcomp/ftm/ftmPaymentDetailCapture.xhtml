@@ -22,12 +22,12 @@
             <div class="d-flex">
                 <p:inputText 
                     autocomplete="off"
-                    onfocus="this.focus()"
+                    onfocus="this.select()"
                     value="#{financialTransactionController.currentPayment.paidValue}"  id="txtVal">
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
                 
-                <p:inputText class="mx-2" autocomplete="off" onfocus="this.focus()" value="#{financialTransactionController.currentPayment.chequeRefNo}" id="chequNo">
+                <p:inputText class="mx-2" autocomplete="off" onfocus="this.select()" value="#{financialTransactionController.currentPayment.chequeRefNo}" id="chequNo">
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
 
@@ -69,7 +69,7 @@
                                         class="m-2 form-control  mr-4" 
                                         value="#{denomination.count}"
                                         style="width: 5em;"
-                                        onfocus="this.focus();"
+                                        onfocus="this.select()"
                                         title="Please enter the amount for #{denomination.value}">
                                         <p:ajax 
                                             event="keyup" 
@@ -92,13 +92,13 @@
             id="eWallet"  rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'ewallet'}" >
 
             <div class="d-flex gap-2">
-                <p:inputText autocomplete="off" onfocus="this.focus()" placeholder="Value"  value="#{financialTransactionController.currentPayment.paidValue}"  />
-                <p:inputText autocomplete="off" onfocus="this.focus()" placeholder="Ref No" value="#{financialTransactionController.currentPayment.chequeRefNo}" />                                
+                <p:inputText autocomplete="off" onfocus="this.select()" placeholder="Value"  value="#{financialTransactionController.currentPayment.paidValue}"  />
+                <p:inputText autocomplete="off" onfocus="this.select()" placeholder="Ref No" value="#{financialTransactionController.currentPayment.chequeRefNo}" />                                
                 <p:selectOneMenu value="#{financialTransactionController.currentPayment.institution}" >
                     <f:selectItem itemLabel="Select Bank"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 </p:selectOneMenu>
-                <p:inputText autocomplete="off" onfocus="this.focus()" placeholder="Comments"  value="#{financialTransactionController.currentPayment.comments}" id="memo" />
+                <p:inputText autocomplete="off" onfocus="this.select()" placeholder="Comments"  value="#{financialTransactionController.currentPayment.comments}" id="memo" />
             </div>
 
 
@@ -109,7 +109,7 @@
             layout="block" 
             id="slip"  rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Slip'}" >
             <div class="d-flex gap-2">
-                <p:inputText autocomplete="off" onfocus="this.focus()"  value="#{financialTransactionController.currentPayment.paidValue}" >
+                <p:inputText autocomplete="off" onfocus="this.select()"  value="#{financialTransactionController.currentPayment.paidValue}" >
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
                 <p:selectOneMenu value="#{financialTransactionController.currentPayment.bank}" style="width: 10em;" >
@@ -120,7 +120,7 @@
                 <p:calendar value="#{financialTransactionController.currentPayment.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date" >                            
                     <p:ajax process="@this" ></p:ajax>
                 </p:calendar>
-                <p:inputText value="#{financialTransactionController.currentPayment.comments}" placeholder="Enter Slip Comments" onfocus="this.focus()" ></p:inputText>
+                <p:inputText value="#{financialTransactionController.currentPayment.comments}" placeholder="Enter Slip Comments" onfocus="this.select()" ></p:inputText>
                             </div>
         </h:panelGroup>
         <h:panelGroup
@@ -135,14 +135,14 @@
                 title="Value"
                 placeholder="Value"
                 value="#{financialTransactionController.currentPayment.paidValue}" 
-                onfocus="this.focus()">
+                onfocus="this.select()">
             </p:inputText>
             <p:inputText 
                 title="Reference No"
                 autocomplete="off"   
                 placeholder="Reference No"
                 value="#{financialTransactionController.currentPayment.creditCardRefNo}"  id="refno"
-                onfocus="this.focus()">
+                onfocus="this.select()">
                 <p:ajax process="@this" ></p:ajax>
             </p:inputText>                          
             <p:selectOneMenu value="#{financialTransactionController.currentPayment.institution}" filter="true" filterMatchMode="contains"  >
@@ -150,7 +150,7 @@
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 <p:ajax process="@this" ></p:ajax>
             </p:selectOneMenu>
-            <p:inputText value="#{financialTransactionController.currentPayment.comments}" placeholder="Enter Credit Card Comments" onfocus="this.focus()" ></p:inputText>
+            <p:inputText value="#{financialTransactionController.currentPayment.comments}" placeholder="Enter Credit Card Comments" onfocus="this.select()" ></p:inputText>
                     </h:panelGroup>
 
     </cc:implementation>

@@ -16,29 +16,29 @@
                         <f:facet name="header" >
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                     <h:outputLabel value="Reprint" class="mr-5"></h:outputLabel>
+                                    <h:outputLabel value="Reprint" class="mr-5"></h:outputLabel>
                                 </div>
                                 <div>
                                     <p:commandButton class="ui-button-info mx-2"
                                                      ajax="false"
                                                      value="Print"
-                                        icon="fas fa-print">
+                                                     icon="fas fa-print">
                                         <p:printer target="print" />
                                     </p:commandButton>
                                     <p:commandButton 
-                                class="my-1 ml-5" 
-                                ajax="false" 
-                                styleClass="ui-button-danger"
-                                value="To Cancel" 
-                                action="deposit_bill_cancellation?faces-redirect=true" 
-                                disabled="#{agentPaymentReceiveSearchController.bill.cancelled}" 
-                                icon="fa fa-times" >
-                            </p:commandButton>
+                                        class="my-1 ml-5" 
+                                        ajax="false" 
+                                        styleClass="ui-button-danger"
+                                        value="To Cancel" 
+                                        action="deposit_bill_cancellation?faces-redirect=true" 
+                                        disabled="#{agentPaymentReceiveSearchController.bill.cancelled}" 
+                                        icon="fa fa-times" >
+                                    </p:commandButton>
                                 </div>
                             </div>
-                           
+
                             <p:spacer width="20" ></p:spacer>
-                            
+
                         </f:facet>
 
                         <div class="row">

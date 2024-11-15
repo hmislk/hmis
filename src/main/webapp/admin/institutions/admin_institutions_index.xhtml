@@ -55,24 +55,35 @@
                                         <p:commandButton  
                                             styleClass="linkButton" 
                                             ajax="false" 
-                                            value="Manage Departments" 
+                                            value="Manage Departments (Own)" 
                                             action="#{navigationController.navigateToManageDepartment()}" 
                                             actionListener="#{departmentController.fillSearchItems()}" icon="fas fa-building"/>
-                                        
+
+                                        <p:commandButton  
+                                            styleClass="linkButton" 
+                                            ajax="false" 
+                                            value="Manage Departments (All)" 
+                                            action="#{navigationController.navigateToManageDepartmentAll()}" 
+                                            actionListener="#{departmentController.fillSearchItems()}" icon="fas fa-building"/>
+
+                                       
                                         <p:commandButton  
                                             styleClass="linkButton" 
                                             ajax="false" 
                                             value="Manage Sites" 
                                             action="#{navigationController.navigateToManageSite()}" 
-                                            actionListener="#{departmentController.fillSearchItems()}" icon="fas fa-building"/>
-                                        <p:commandButton styleClass="linkButton"  
-                                                         action="#{institutionController.toListInstitutions()}" 
-                                                         icon="bi bi-list" value="List Institutions">
+                                            actionListener="#{departmentController.fillSearchItems()}"
+                                            icon="fas fa-building"/>
+                                        <p:commandButton 
+                                            styleClass="linkButton"  
+                                            action="#{institutionController.toListInstitutions()}" 
+                                            icon="bi bi-list" value="List Institutions">
                                         </p:commandButton>
-                                        <p:commandButton styleClass="linkButton" 
-                                                         action="#{departmentController.toListDepartments()}" 
-                                                         icon="bi bi-list"
-                                                         value="List Departments">
+                                        <p:commandButton 
+                                            styleClass="linkButton" 
+                                            action="#{departmentController.toListDepartments()}" 
+                                            icon="bi bi-list"
+                                            value="List Departments">
                                         </p:commandButton>
                                         <p:commandButton styleClass="linkButton" icon="bi bi-building-fill" ajax="false" value="Institution Branch" action="#{navigationController.navigateToInstitutionBranch()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" icon="fa-solid fa-warehouse" action="#{navigationController.navigateToCollectingCenter()}" />
@@ -95,6 +106,11 @@
                                                          action="#{routeController.manageRoutes()}" 
                                                          icon="fas fa-map-location-dot"
                                                          value="Manage Routes">
+                                        </p:commandButton>
+                                        <p:commandButton styleClass="linkButton" 
+                                                         action="#{bankAccountController.manageBankAccounts()}" 
+                                                         icon="fas fa-money-check-dollar"
+                                                         value="Manage Bank Account">
                                         </p:commandButton>
                                     </div>
                                 </p:tab>

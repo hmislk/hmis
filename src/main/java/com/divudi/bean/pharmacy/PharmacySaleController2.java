@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
@@ -34,7 +35,7 @@ import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
@@ -115,7 +116,8 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     ConfigOptionController configOptionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-
+    @Inject
+    DrawerController drawerController;
     @Inject
     SessionController sessionController;
     @Inject
@@ -146,7 +148,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     @EJB
     BillNumberGenerator billNumberBean;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @EJB
     private UserStockContainerFacade userStockContainerFacade;
     @EJB
@@ -2100,7 +2102,8 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         savePreBillItemsFinally(tmpBillItems);
 
         saveSaleBill();
-        createPaymentsForBill(getSaleBill());
+        List<Payment> payments = createPaymentsForBill(getSaleBill());
+        drawerController.updateDrawerForIns(payments);
         saveSaleBillItems(tmpBillItems);
 
 //        getPreBill().getCashBillsPre().add(getSaleBill());
@@ -2871,11 +2874,11 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         this.cashTransactionBean = cashTransactionBean;
     }
 
-    public StaffBean getStaffBean() {
+    public StaffService getStaffBean() {
         return staffBean;
     }
 
-    public void setStaffBean(StaffBean staffBean) {
+    public void setStaffBean(StaffService staffBean) {
         this.staffBean = staffBean;
     }
 

@@ -5,6 +5,7 @@
 package com.divudi.entity;
 
 import com.divudi.data.Denomination;
+import com.divudi.data.PaymentHandover;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.entity.cashTransaction.CashBookEntry;
@@ -35,57 +36,57 @@ public class Payment implements Serializable {
     Long id;
 
     @ManyToOne
-    Bill bill;
+    private Bill bill;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date paymentDate;
 
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date writtenAt;
+    private Date writtenAt;
 
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date toRealizeAt;
+    private Date toRealizeAt;
 
     @Enumerated(EnumType.STRING)
-    PaymentMethod paymentMethod;
+    private PaymentMethod paymentMethod;
 
     boolean realized;
     @ManyToOne
     private Payment referancePayment;
 
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date realizedAt;
+    private Date realizedAt;
 
     @ManyToOne
-    WebUser realizer;
+    private WebUser realizer;
 
     @Lob
-    String realizeComments;
+    private String realizeComments;
 
     @ManyToOne
-    Institution bank;
+    private Institution bank;
 
     @Lob
-    String comments;
+    private String comments;
 
     @ManyToOne
-    WebUser creater;
+    private WebUser creater;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date createdAt;
+    private Date createdAt;
 
-    boolean retired;
+    private boolean retired;
 
     @ManyToOne
-    WebUser retirer;
+    private WebUser retirer;
 
     @ManyToOne
     private WebUser currentHolder;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date retiredAt;
+    private Date retiredAt;
 
-    String retireComments;
+    private String retireComments;
 
     private String chequeRefNo;
 
@@ -94,7 +95,7 @@ public class Payment implements Serializable {
 
     private String creditCardRefNo;
 
-    double paidValue;
+    private double paidValue;
 
     private int creditDurationInDays;
 
@@ -103,10 +104,10 @@ public class Payment implements Serializable {
     private String currencyDenominationsJson;
 
     @ManyToOne
-    Institution institution;
+    private Institution institution;
 
     @ManyToOne
-    Department department;
+    private Department department;
 
     @Transient
     @Deprecated
@@ -173,11 +174,39 @@ public class Payment implements Serializable {
     @ManyToOne
     private Bill cancelledBill;
 
+    @Transient
+    private PaymentHandover transientPaymentHandover;
+
+    // New attributes for marking a cheque as paid
+    @ManyToOne
+    private WebUser chequePayer;  // User who marked the cheque as paid
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date chequePaidAt;  // Timestamp when the cheque was marked as paid
+    private boolean chequePaid;  // Indicates if the cheque has been marked as paid
+    @ManyToOne
+    private Bill chequePaidBill;  // Reference to the Bill where the cheque was marked as paid
+
+    // New attributes for marking a cheque as realized
+    @ManyToOne
+    private WebUser chequeRealizer;  // User who marked the cheque as realized
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date chequeRealizedAt;  // Timestamp when the cheque was marked as realized
+    private boolean chequeRealized;  // Indicates if the cheque has been marked as realized
+    @ManyToOne
+    private Bill chequeRealizedBill;  // Reference to the Bill where the cheque was marked as realized
+
+    @ManyToOne
+    private Institution fromInstitution;
+    @ManyToOne
+    private Institution toInstitution;
+
     public Payment() {
         cashbookEntryStated = false;
         cashbookEntryCompleted = false;
         paymentRecordStated = false;
         paymentRecordCompleted = false;
+        chequeRealized = false;
+        chequePaid = false;
         paymentDate = new Date();
     }
 
@@ -410,6 +439,11 @@ public class Payment implements Serializable {
     }
 
     public Department getDepartment() {
+        if (department == null) {
+            if (bill != null) {
+                department = bill.getDepartment();
+            }
+        }
         return department;
     }
 
@@ -417,7 +451,7 @@ public class Payment implements Serializable {
         this.department = department;
     }
 
-    public Payment copyAttributes() {
+    public Payment createNewPaymentByCopyingAttributes() {
         Payment newPayment = new Payment();
         newPayment.setBill(this.bill);
         newPayment.setWrittenAt(this.writtenAt);
@@ -465,8 +499,26 @@ public class Payment implements Serializable {
         newPayment.setInstitution(this.institution);
         newPayment.setDepartment(this.department);
         newPayment.setReferancePayment(this);
-        // Note: ID is not copied to ensure the uniqueness of each entity
-        // newPayment.setId(this.id); // This line is intentionally commented out
+        newPayment.setBank(this.getBank());
+        newPayment.setChequeDate(this.getChequeDate());
+
+        newPayment.setChequePayer(this.chequePayer);
+        newPayment.setChequePaidAt(this.chequePaidAt);
+        newPayment.setChequePaid(this.chequePaid);
+        newPayment.setChequePaidBill(this.chequePaidBill);
+
+        newPayment.setChequeRealizer(this.chequeRealizer);
+        newPayment.setChequeRealizedAt(this.chequeRealizedAt);
+        newPayment.setChequeRealized(this.chequeRealized);
+        newPayment.setChequeRealizedBill(this.chequeRealizedBill);
+
+        newPayment.setCreditDurationInDays(this.creditDurationInDays);
+
+        newPayment.setReferenceNo(this.referenceNo);
+
+        newPayment.setFromInstitution(this.fromInstitution);
+        newPayment.setToInstitution(this.toInstitution);
+
         return newPayment;
     }
 
@@ -785,7 +837,93 @@ public class Payment implements Serializable {
     public void setHandingOverCompleted(boolean handingOverCompleted) {
         this.handingOverCompleted = handingOverCompleted;
     }
-    
-    
+
+    public PaymentHandover getTransientPaymentHandover() {
+        return transientPaymentHandover;
+    }
+
+    public void setTransientPaymentHandover(PaymentHandover transientPaymentHandover) {
+        this.transientPaymentHandover = transientPaymentHandover;
+    }
+
+    public WebUser getChequePayer() {
+        return chequePayer;
+    }
+
+    public void setChequePayer(WebUser chequePayer) {
+        this.chequePayer = chequePayer;
+    }
+
+    public Date getChequePaidAt() {
+        return chequePaidAt;
+    }
+
+    public void setChequePaidAt(Date chequePaidAt) {
+        this.chequePaidAt = chequePaidAt;
+    }
+
+    public boolean isChequePaid() {
+        return chequePaid;
+    }
+
+    public void setChequePaid(boolean chequePaid) {
+        this.chequePaid = chequePaid;
+    }
+
+    public WebUser getChequeRealizer() {
+        return chequeRealizer;
+    }
+
+    public void setChequeRealizer(WebUser chequeRealizer) {
+        this.chequeRealizer = chequeRealizer;
+    }
+
+    public Date getChequeRealizedAt() {
+        return chequeRealizedAt;
+    }
+
+    public void setChequeRealizedAt(Date chequeRealizedAt) {
+        this.chequeRealizedAt = chequeRealizedAt;
+    }
+
+    public boolean isChequeRealized() {
+        return chequeRealized;
+    }
+
+    public void setChequeRealized(boolean chequeRealized) {
+        this.chequeRealized = chequeRealized;
+    }
+
+    public Bill getChequePaidBill() {
+        return chequePaidBill;
+    }
+
+    public void setChequePaidBill(Bill chequePaidBill) {
+        this.chequePaidBill = chequePaidBill;
+    }
+
+    public Bill getChequeRealizedBill() {
+        return chequeRealizedBill;
+    }
+
+    public void setChequeRealizedBill(Bill chequeRealizedBill) {
+        this.chequeRealizedBill = chequeRealizedBill;
+    }
+
+    public Institution getFromInstitution() {
+        return fromInstitution;
+    }
+
+    public void setFromInstitution(Institution fromInstitution) {
+        this.fromInstitution = fromInstitution;
+    }
+
+    public Institution getToInstitution() {
+        return toInstitution;
+    }
+
+    public void setToInstitution(Institution toInstitution) {
+        this.toInstitution = toInstitution;
+    }
 
 }

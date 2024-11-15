@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="content">
+        <div class="row">
+            <div class="col-md-2">
+                <h:form>
+                    <p:panel header="Supplier Payments">
+                        <p:accordionPanel activeIndex="#{supplierPaymentController.tabIndex}">
+                            <p:ajax process="@this" ></p:ajax>
+                            <p:tab title="Pharmacy">
+                                <div class="d-grid gap-2">
+                                    <!-- Dealer Due Search -->
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Payments to Settle"
+                                        icon="fas fa-search-dollar"
+                                        styleClass="p-button-info"
+                                        action="#{supplierPaymentController.navigateToDealerDueSearch}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
+
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Settled Payments"
+                                        icon="fas fa-check-circle"
+                                        styleClass="p-button-success"
+                                        action="#{supplierPaymentController.navigateToSupplierPaymentDoneSearch}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Approved Payments"
+                                        icon="fas fa-check-circle"
+                                        styleClass="p-button-success"
+                                        action="#{supplierPaymentController.navigateToPaymentDoneSearch()}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
+
+
+                                </div>
+                            </p:tab>
+
+                            <!-- Payment Tab -->
+                            <p:tab 
+                                title="Developers"
+                                rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <div class="d-grid gap-2">
+
+                                    <!-- Dealer Due By Age -->
+                                    <p:commandButton class="w-100"
+                                                     ajax="false"
+                                                     value="Dealer Due By Age"
+                                                     icon="fas fa-hourglass-half"
+                                                     styleClass="p-button-info"
+                                                     action="#{supplierPaymentController.navigateToDealerDueByAge}"
+                                                     rendered="#{webUserController.hasPrivilege('PharmacyDealerDueByAge')}" />
+
+                                    <!-- By Dealer -->
+                                    <p:commandButton class="w-100"
+                                                     ajax="false"
+                                                     value="By Dealer"
+                                                     icon="fas fa-user-tie"
+                                                     styleClass="p-button-success"
+                                                     action="#{supplierPaymentController.navigateToByDealer}"
+                                                     rendered="#{webUserController.hasPrivilege('PharmacyPayment')}" />
+
+                                    <!-- By Bill -->
+                                    <p:commandButton class="w-100"
+                                                     ajax="false"
+                                                     value="By Bill"
+                                                     icon="fas fa-file-invoice-dollar"
+                                                     styleClass="p-button-success"
+                                                     action="#{supplierPaymentController.navigateToByBill}"
+                                                     rendered="#{webUserController.hasPrivilege('PharmacyPayment')}" />
+                                </div>
+                            </p:tab>
+
+                            <!-- Other Tab -->
+                            <p:tab title="Other">
+                                <div class="d-grid gap-2">
+                                    <!-- GRN Payment Approve -->
+                                    <p:commandButton class="w-100"
+                                                     ajax="false"
+                                                     value="GRN Payment Approve"
+                                                     icon="fas fa-thumbs-up"
+                                                     styleClass="p-button-warning"
+                                                     action="#{supplierPaymentController.navigateToGRNPaymentApprove}"
+                                                     rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentApprove')}" />
+
+                                    <!-- GRN Payment Done Search -->
+
+                                    <!-- Credit Dues and Access -->
+                                    <p:commandButton class="w-100"
+                                                     ajax="false"
+                                                     value="Credit Dues and Access"
+                                                     icon="fas fa-university"
+                                                     styleClass="p-button-danger"
+                                                     action="#{supplierPaymentController.navigateToCreditDuesAndAccess}"
+                                                     rendered="#{webUserController.hasPrivilege('PharmacyCreditDueAndAccess')}" />
+                                </div>
+                            </p:tab>
+
+                        </p:accordionPanel>
+                    </p:panel>
+                </h:form>
+            </div>
+            <div class="col-md-10">
+                <ui:insert name="subcontent">
+
+                </ui:insert>
+            </div>
+        </div>
+    </ui:define>
+</ui:composition>

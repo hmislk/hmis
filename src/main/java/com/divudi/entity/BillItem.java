@@ -159,12 +159,12 @@ public class BillItem implements Serializable {
     @Transient
     private double previousRecieveFreeQtyInUnit;
 
-    @Transient
-    private double totalHospitalFeeValueTransient;
-    @Transient
-    private double totalDoctorFeeValueTransient;
-    @Transient
-    private double totalProcedureFeeValueTransient;
+//    @Transient
+//    private double totalHospitalFeeValueTransient;
+//    @Transient
+//    private double totalDoctorFeeValueTransient;
+//    @Transient
+//    private double totalProcedureFeeValueTransient;
 
     @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER)
     private List<BillFee> billFees = new ArrayList<>();
@@ -190,11 +190,17 @@ public class BillItem implements Serializable {
     }
 
     public double getHospitalFee() {
+        System.out.println("getHospitalFee");
+        System.out.println("hospitalFee = " + hospitalFee);
         return hospitalFee;
     }
 
     public void setHospitalFee(double hospitalFee) {
+        System.out.println("setHospitalFee");
+        System.out.println("hospitalFee = " + hospitalFee);
+        System.out.println("this.hospitalFee before = " + this.hospitalFee);
         this.hospitalFee = hospitalFee;
+        System.out.println("this.hospitalFee after = " + this.hospitalFee);
     }
 
     public double getStaffFee() {
@@ -225,6 +231,7 @@ public class BillItem implements Serializable {
         item = billItem.getItem();
         sessionDate = billItem.getSessionDate();
         patientEncounter = billItem.getPatientEncounter();
+        patientInvestigation = billItem.getPatientInvestigation();
         inwardChargeType = billItem.getInwardChargeType();
         agentRefNo = billItem.getAgentRefNo();
         item = billItem.getItem();
@@ -929,49 +936,50 @@ public class BillItem implements Serializable {
         this.previousRecieveFreeQtyInUnit = previousRecieveFreeQtyInUnit;
     }
 
-    @Transient
-    private void calculateFeeTotals() {
-        totalHospitalFeeValueTransient = 0.0;
-        totalDoctorFeeValueTransient = 0.0;
-        totalProcedureFeeValueTransient = 0.0;
-        if (this.getBillFees() == null) {
-            return;
-        }
-        for (BillFee bf : this.getBillFees()) {
-            if (bf.getFee() == null) {
-                return;
-            }
-            if (bf.getFee().getFeeType() == null) {
-                return;
-            }
-            switch (bf.getFee().getFeeType()) {
-                case Staff:
-                    totalDoctorFeeValueTransient += bf.getFeeValue();
-                    break;
-                case OwnInstitution:
-                case Department:
-                case Service:
-                    totalHospitalFeeValueTransient += bf.getFeeValue();
-                default:
-                    throw new AssertionError();
-            }
-        }
-    }
+//    @Transient
+//    private void calculateFeeTotals() {
+//        totalHospitalFeeValueTransient = 0.0;
+//        totalDoctorFeeValueTransient = 0.0;
+//        totalProcedureFeeValueTransient = 0.0;
+//        if (this.getBillFees() == null) {
+//            return;
+//        }
+//        for (BillFee bf : this.getBillFees()) {
+//            if (bf.getFee() == null) {
+//                return;
+//            }
+//            if (bf.getFee().getFeeType() == null) {
+//                return;
+//            }
+//            switch (bf.getFee().getFeeType()) {
+//                case Staff:
+//                    totalDoctorFeeValueTransient += bf.getFeeValue();
+//                    break;
+//                case OwnInstitution:
+//                case Department:
+//                case Service:
+//                    totalHospitalFeeValueTransient += bf.getFeeValue();
+//                default:
+//                    throw new AssertionError();
+//            }
+//        }
+//    }
 
-    public double getTotalHospitalFeeValueTransient() {
-        calculateFeeTotals();
-        return totalHospitalFeeValueTransient;
-    }
-
-    public double getTotalDoctorFeeValueTransient() {
-        calculateFeeTotals();
-        return totalDoctorFeeValueTransient;
-    }
-
-    public double getTotalProcedureFeeValueTransient() {
-        calculateFeeTotals();
-        return totalProcedureFeeValueTransient;
-    }
+    
+//    public double getTotalHospitalFeeValueTransient() {
+//        calculateFeeTotals();
+//        return totalHospitalFeeValueTransient;
+//    }
+//
+//    public double getTotalDoctorFeeValueTransient() {
+//        calculateFeeTotals();
+//        return totalDoctorFeeValueTransient;
+//    }
+//
+//    public double getTotalProcedureFeeValueTransient() {
+//        calculateFeeTotals();
+//        return totalProcedureFeeValueTransient;
+//    }
 
     public double getOtherFee() {
         return otherFee;

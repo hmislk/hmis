@@ -737,7 +737,7 @@ public class StoreBillSearch implements Serializable {
         cb.setBilledBill(getBill());
         cb.copy(getBill());
         cb.setReferenceBill(getBill().getReferenceBill());
-        cb.invertValue(getBill());
+        cb.invertAndAssignValuesFromOtherBill(getBill());
 
         cb.setPaymentScheme(getBill().getPaymentScheme());
         cb.setPaymentMethod(getBill().getPaymentMethod());
@@ -1083,7 +1083,7 @@ public class StoreBillSearch implements Serializable {
 //            BillItem b = new BillItem();
 //            b.setBill(can);
 //            b.copy(nB.getBillItem());
-//            b.invertValue(nB.getBillItem());
+//            b.invertAndAssignValuesFromOtherBill(nB.getBillItem());
 //
 //            b.setReferanceBillItem(nB.getBillItem().getReferanceBillItem());
 //            b.setCreatedAt(new Date());
@@ -1091,7 +1091,7 @@ public class StoreBillSearch implements Serializable {
 //
 //            PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
 //            ph.copy(nB);
-//            ph.invertValue(nB);
+//            ph.invertAndAssignValuesFromOtherBill(nB);
 //
 //            getPharmaceuticalBillItemFacade().create(ph);
 //
@@ -1455,7 +1455,7 @@ public class StoreBillSearch implements Serializable {
         RefundBill cb = new RefundBill();
         cb.invertQty();
         cb.copy(getBill());
-        cb.invertValue(getBill());
+        cb.invertAndAssignValuesFromOtherBill(getBill());
         cb.setRefundedBill(getBill());
         cb.setReferenceBill(getBill().getReferenceBill());
         cb.setForwardReferenceBill(getBill().getForwardReferenceBill());

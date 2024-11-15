@@ -1,4 +1,3 @@
-
 /*
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
@@ -35,7 +34,7 @@ import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.ejb.ServiceSessionBean;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -83,6 +82,7 @@ import com.divudi.facade.PackageFeeFacade;
 import com.divudi.facade.PackegeFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -151,7 +151,9 @@ public class BillBeanController implements Serializable {
     @Inject
     SessionController sessionController;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
+    @EJB
+    BillService billService;
 
     public boolean checkAllowedPaymentMethod(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
         String sql = "Select s From AllowedPaymentMethod s"
@@ -1238,17 +1240,19 @@ public class BillBeanController implements Serializable {
         return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
+    @Deprecated //Use BillService > fetchBillItems
     public List<BillItem> fetchBillItems(Bill b) {
-        String jpql;
-        HashMap params = new HashMap();
-
-        jpql = "SELECT bi "
-                + " FROM BillItem bi "
-                + " WHERE bi.bill=:bl "
-                + " order by bi.id";
-
-        params.put("bl", b);
-        return getBillItemFacade().findByJpql(jpql, params);
+        return billService.fetchBillItems(b);
+//        String jpql;
+//        HashMap params = new HashMap();
+//
+//        jpql = "SELECT bi "
+//                + " FROM BillItem bi "
+//                + " WHERE bi.bill=:bl "
+//                + " order by bi.id";
+//
+//        params.put("bl", b);
+//        return getBillItemFacade().findByJpql(jpql, params);
     }
 
     public List<Category> fetchBilledOpdCategory(Date fromDate, Date toDate, Institution institution) {
@@ -1530,6 +1534,25 @@ public class BillBeanController implements Serializable {
         temMap.put("fromDate", fromDate);
         temMap.put("toDate", toDate);
         temMap.put("bTp", billType);
+        temMap.put("ins", institution);
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    public double calBillTotal(List<BillTypeAtomic> billTypeAtomics, Date fromDate, Date toDate, Institution institution) {
+        String sql;
+        sql = " SELECT sum(b.netTotal) "
+                + " FROM Bill b"
+                + " WHERE b.retired=false "
+                + " and b.billTypeAtomic in :btas "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.id";
+
+        Map temMap = new HashMap();
+        temMap.put("fromDate", fromDate);
+        temMap.put("toDate", toDate);
+        temMap.put("btas", billTypeAtomics);
         temMap.put("ins", institution);
 
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
@@ -2530,17 +2553,9 @@ public class BillBeanController implements Serializable {
         return tbs;
     }
 
+    @Deprecated //Use Bill Service
     public List<Bill> fetchIndividualBillsOfBatchBill(Bill batchBill) {
-        System.out.println("batchBill = " + batchBill);
-        String j = "Select b "
-                + " from Bill b "
-                + " where b.backwardReferenceBill=:bb ";
-        Map m = new HashMap();
-        m.put("bb", batchBill);
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
-        List<Bill> tbs = billFacade.findByJpql(j, m);
-        return tbs;
+        return billService.fetchIndividualBillsOfBatchBill(batchBill);
     }
 
     public List<Bill> fetchRefundBillsOfBilledBill(Bill billedBill) {
@@ -2757,7 +2772,7 @@ public class BillBeanController implements Serializable {
                 case MultiplePaymentMethods:
             }
 
-            p.setPaidValue( Math.abs(p.getBill().getNetTotal()));
+            p.setPaidValue(Math.abs(p.getBill().getNetTotal()));
             paymentFacade.create(p);
             ps.add(p);
         }
@@ -2959,6 +2974,8 @@ public class BillBeanController implements Serializable {
                 case Cash:
                     break;
                 case ewallet:
+                    p.setBank(paymentMethodData.getEwallet().getInstitution());
+                    p.setReferenceNo(paymentMethodData.getEwallet().getNo());
                     break;
                 case Agent:
                     break;
@@ -4231,6 +4248,7 @@ public class BillBeanController implements Serializable {
         return baseBillFeefromBillItem(billItem);
     }
 
+    @Deprecated // Use BillService > fetchBillFees(BillItem bi)
     public List<BillFee> findSavedBillFeefromBillItem(BillItem billItem) {
         String jpql = "select bf "
                 + "from BillFee bf "
@@ -4807,6 +4825,19 @@ public class BillBeanController implements Serializable {
                 + "where bf.bill=:bill "
                 + "order by bf.billItem.id";
         params.put("bill", bill);
+        fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
+        return fetchingBillFees;
+    }
+
+    public List<BillFee> fetchBillFees(BillItem billItem) {
+        List<BillFee> fetchingBillFees;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select bf "
+                + " from BillFee bf "
+                + "where bf.billItem=:bi "
+                + "order by bf.billItem.id";
+        params.put("bi", billItem);
         fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
         return fetchingBillFees;
     }

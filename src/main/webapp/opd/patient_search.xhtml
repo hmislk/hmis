@@ -29,7 +29,7 @@
                                             <p:inputText 
                                                 id="txtPhoneSearch"
                                                 value="#{patientController.searchPatientPhoneNumber}"
-                                                placeholder="Phone Number"
+                                                placeholder="Phone Number or PHN "
                                                 class="mx-2"
                                                 />
                                             <p:focus id="focusPhoneSearch" for="txtPhoneSearch" ></p:focus>
@@ -75,7 +75,7 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <h:outputLabel class="form form-label" value="NIC" ></h:outputLabel>
+                                    <h:outputLabel class="form form-label" value="NIC / Passport" ></h:outputLabel>
                                     <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchNic}"></p:inputText>
                                 </div>
 
@@ -110,43 +110,45 @@
                                 <div class="mb-3 w-100 d-flex align-items-center justify-content-between">
                                     <!-- First three buttons -->
                                     <div>
-                                        <p:commandButton value="New"
-                                                         action="#{patientController.navigateToAddNewPatientForOpd()}" 
-                                                         ajax="false"
-                                                         icon="fa-solid fa-plus"
-                                                         class="m-1 ui-button-success" />
+                                        <p:commandButton 
+                                            value="New"
+                                            action="#{patientController.navigateToAddNewPatientForOpd()}" 
+                                            ajax="false"
+                                            icon="fa-solid fa-plus"
+                                            class="m-1 ui-button-success" />
 
-                                        <p:commandButton id="btnSearch"
-                                                         value="Search"
-                                                         icon="fa-solid fa-search"
-                                                         action="#{patientController.searchPatientForOpd()}" 
-                                                         ajax="false" 
-                                                         class="m-1 ui-button-warning" />
+                                        <p:commandButton 
+                                            id="btnSearch"
+                                            value="Search"
+                                            icon="fa-solid fa-search"
+                                            action="#{patientController.searchPatientForOpd()}" 
+                                            ajax="false" 
+                                            class="m-1 ui-button-warning" />
                                         <p:defaultCommand target="btnSearch"> </p:defaultCommand>
 
-                                        <p:commandButton value="Clear" 
-                                                         action="#{patientController.clearSearchDetails()}"
-                                                         ajax="false" 
-                                                         icon="fa-solid fa-eraser" 
-                                                         class="m-1 ui-button-danger"/>
+                                        <p:commandButton 
+                                            value="Clear" 
+                                            action="#{patientController.clearSearchDetails()}"
+                                            ajax="false" 
+                                            icon="fa-solid fa-eraser" 
+                                            class="m-1 ui-button-danger"/>
                                     </div>
 
                                     <!-- Right-aligned controls -->
 
                                 </div>
 
-
-
-
-                                <p:dataTable value="#{patientController.searchedPatients}" var="p" 
-                                             class="w-100 table table-sm table-striped"
-                                             paginatorAlwaysVisible="false"
-                                             paginator="true"
-                                             rows="10"
-                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             rowsPerPageTemplate="5,10,20"
-                                             >
-                                    <p:column headerText="Name" >
+                                <p:dataTable 
+                                    value="#{patientController.searchedPatients}" 
+                                    var="p" 
+                                    class="w-100 table table-sm table-striped"
+                                    paginatorAlwaysVisible="false"
+                                    paginator="true"
+                                    rows="10"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,20"
+                                    >
+                                    <p:column headerText="Name" width="25%">
                                         <p:outputLabel value="#{p.person.name}" ></p:outputLabel>
                                         <br/>
                                         <p:outputLabel rendered="#{p.person.sex == 'Male'}">
@@ -168,34 +170,48 @@
                                     <p:column headerText="Actions">
                                         <div class="row g-2">
                                             <!-- Your p:commandButton elements here wrapped in col divs -->
-                                            <div class="col-auto m-2 ">
+                                            <div class="col-auto gap-2">
 
-                                                <p:commandButton value="Profile" action="#{patientController.navigateToOpdPatientProfile()}" ajax="false" styleClass="mx-1 mb-2">
+                                                <p:commandButton 
+                                                    value="Profile" 
+                                                    action="#{patientController.navigateToOpdPatientProfile()}" 
+                                                    ajax="false" 
+                                                    styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="Edit" 
-                                                                 action="#{patientController.navigateToOpdPatientEdit()}" ajax="false" styleClass="mx-1 mb-2">
+                                                <p:commandButton 
+                                                    value="Edit" 
+                                                    action="#{patientController.navigateToOpdPatientEdit()}" 
+                                                    ajax="false" 
+                                                    styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="OPD Bill" 
-                                                                 action="#{patientController.navigateToOpdBillFromOpdPatient()}" 
-                                                                 ajax="false" 
-                                                                 styleClass="mx-1 mb-2">
+                                                <p:commandButton 
+                                                    value="OPD Bill" 
+                                                    action="#{patientController.navigateToOpdBillFromOpdPatient()}" 
+                                                    ajax="false" 
+                                                    styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="OPD Billing for Cashier" action="#{patientController.navigateToBillingForCashierFromPatientProfile()}" ajax="false" styleClass="mx-1 mb-2">
+                                                <p:commandButton 
+                                                    value="OPD Billing for Cashier" 
+                                                    action="#{patientController.navigateToBillingForCashierFromPatientProfile()}" 
+                                                    ajax="false" 
+                                                    styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="Collecting Centre Billing"
-                                                                 action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}"
-                                                                 ajax="false"
-                                                                 styleClass="mx-1 mb-2">
+                                                <p:commandButton 
+                                                    value="Collecting Centre Billing"
+                                                    action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}"
+                                                    ajax="false"
+                                                    styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="OPD Package Bill" 
-                                                                 action="#{patientController.navigateToOpdPackageBillFromOpdPatient()}" 
-                                                                 ajax="false" 
-                                                                 styleClass="mx-1 mb-2">
+                                                <p:commandButton 
+                                                    value="OPD Package Bill" 
+                                                    action="#{patientController.navigateToOpdPackageBillFromOpdPatient()}" 
+                                                    ajax="false" 
+                                                    styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
                                                 <p:commandButton
@@ -205,54 +221,49 @@
                                                     styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="Inward Appointments"
-                                                                 action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
-                                                                 ajax="false"
-                                                                 styleClass="mx-1 mb-2">
+                                                <p:commandButton 
+                                                    value="Inward Appointments"
+                                                    action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
+                                                    ajax="false"
+                                                    styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="Accept Payments" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-1 mb-2">
+                                                <p:commandButton 
+                                                    value="Accept Payments" 
+                                                    action="#{patientController.toEmrPatientProfile()}" 
+                                                    ajax="false" 
+                                                    styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="Refunds" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-1 mb-2">
+                                                <p:commandButton 
+                                                    value="Refunds" 
+                                                    action="#{patientController.toEmrPatientProfile()}" 
+                                                    ajax="false" 
+                                                    styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="Lab Reports" action="#{searchController.navigateToPatientLabReports}" ajax="false" styleClass="mx-1 mb-2">
-                                                    <f:setPropertyActionListener value="#{p}"
-                                                                                 target="#{searchController.patient}" ></f:setPropertyActionListener>
+                                                <p:commandButton 
+                                                    value="Lab Reports" 
+                                                    action="#{searchController.navigateToPatientLabReports}" 
+                                                    ajax="false" 
+                                                    styleClass="mx-1 mb-2">
+                                                    <f:setPropertyActionListener value="#{p}" target="#{searchController.patient}" ></f:setPropertyActionListener>
                                                 </p:commandButton>
-
-
-                                                <!--                                                <p:commandButton value="Medical Pakage Billing"
-                                                                                                                 action="#{patientController.navigateToMedicalPakageBillingFromPatientProfile()}"
-                                                                                                                 ajax="false"
-                                                                                                                 styleClass="mx-1 mb-2">
-                                                                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
-                                                                                                </p:commandButton>
-                                                
-                                                                                                <p:commandButton value="Billing for Cashier"
-                                                                                                                 action="#{patientController.navigateToBillingForCashierFromPatientProfile()}"
-                                                                                                                 ajax="false"
-                                                                                                                 styleClass="mx-1 mb-2">
-                                                                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
-                                                                                                </p:commandButton>-->
-
-                                                <p:commandButton value="Receive Deposits"
-                                                                 action="#{patientDepositController.navigateToReciveDepositWithPatient(p)}"
-                                                                 ajax="false"
-                                                                 styleClass="mx-1 mb-2">
+                                                <p:commandButton 
+                                                    value="Receive Deposits"
+                                                    action="#{patientDepositController.navigateToReciveDepositWithPatient(p)}"
+                                                    ajax="false"
+                                                    styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                
-                                                <p:commandButton value="Patient Deposit History"
-                                                                 action="/patient_deposit/patient_deposit_history?faces-redirect=true"
-                                                                 actionListener="#{patientDepositController.clearDataForPatientDepositHistory()}"
-                                                                 ajax="false"
-                                                                 styleClass="mx-1 mb-2">
+                                                <p:commandButton 
+                                                    value="Patient Deposit History"
+                                                    action="/patient_deposit/patient_deposit_history?faces-redirect=true"
+                                                    actionListener="#{patientDepositController.clearDataForPatientDepositHistory()}"
+                                                    ajax="false"
+                                                    styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-
-
                                                 <p:commandButton 
                                                     value="Clinical Data"
                                                     action="#{patientController.toEmrPatientProfile}"
@@ -265,16 +276,12 @@
                                         </div>
                                     </p:column>
 
-
                                 </p:dataTable>
-
 
                             </div>
                         </div>
                     </h:form>
                 </p:panel>
-
-
 
                 <div class="container">
 

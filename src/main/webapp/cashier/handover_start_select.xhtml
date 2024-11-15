@@ -326,7 +326,7 @@
 
                                             <h:outputText 
                                                 rendered="#{financialTransactionController.selectedPaymentMethod eq 'ewallet'}"
-                                                value="#{financialTransactionController.selectedBundle.eWalletHandoverValue}">
+                                                value="#{financialTransactionController.selectedBundle.ewalletValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </h:panelGroup>
@@ -400,6 +400,12 @@
                                     ajax="false"
                                     action="#{financialTransactionController.selectAllForPaymentHandoverSelectionAtCreate()}" />
                                 <p:commandButton 
+                                    value="Unselect All" 
+                                    class="m-1 ui-button-warning" 
+                                    icon="pi pi-check" 
+                                    ajax="false"
+                                    action="#{financialTransactionController.unselectAllForPaymentHandoverSelection()}" />
+                                <p:commandButton 
                                     value="Update" 
                                     class="m-1 ui-button-info" 
                                     icon="pi pi-refresh" 
@@ -416,6 +422,8 @@
                                     </p:column>
                                     <p:column  headerText="Ref No">
                                         <h:outputText value="#{cardPayment.payment.creditCardRefNo}" ></h:outputText>
+                                        <h:outputText value="#{cardPayment.payment.chequeRefNo}" ></h:outputText>
+                                        <h:outputText value="#{cardPayment.payment.referenceNo}" ></h:outputText>
                                     </p:column>
                                     <p:column headerText="Value">
                                         <h:outputText value="#{cardPayment.payment.paidValue}" >
@@ -424,7 +432,7 @@
                                     </p:column>
                                     <p:column  headerText="Select to Handover">
                                         <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForHandover}" >
-                                            <p:ajax update="checkCardSelected" ></p:ajax>
+                                            <p:ajax process="checkCardSelected" ></p:ajax>
                                         </p:selectBooleanCheckbox>
                                     </p:column>
                                 </p:dataTable>

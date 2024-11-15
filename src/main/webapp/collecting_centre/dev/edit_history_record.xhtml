@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+
+    <h:body>
+        <ui:composition template="/collecting_centre/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panelGrid layout="tabular" columns="3" class="w-100">
+                        <f:facet name="header">
+                            <h:outputText value="Edit History Record" />
+                            <p:commandButton 
+                                value="Previous" 
+                                class="m-1"
+                                action="#{collectingCentreController.navigateToEditPreviousCollectingCentreBalanceEntry(collectingCentreController.agentHistory)}" 
+                                ajax="false" />
+                            <p:commandButton 
+                                value="Next"
+                                class="m-1"
+                                action="#{collectingCentreController.navigateToEditNextCollectingCentreBalanceEntry(collectingCentreController.agentHistory)}" 
+                                ajax="false" />
+                        </f:facet>
+
+                        <p:outputLabel value="Agency Name" />
+                        <p:outputLabel value="#{collectingCentreController.agentHistory.agency.name}" />
+                        <p:spacer></p:spacer>
+
+                        <p:outputLabel value="Agency Code" />
+                        <p:outputLabel value="#{collectingCentreController.agentHistory.agency.code}" />
+                        <p:spacer></p:spacer>
+
+                        <p:outputLabel value="Balance Before" />
+                        <p:inputText id="balanceBeforeTransaction" value="#{collectingCentreController.agentHistory.balanceBeforeTransaction}" />
+                        <p:commandButton value="Update Balance from Last Record"
+                                         action="#{collectingCentreController.fixStartingBalanceFromLastEntry}" 
+                                         ajax="false" />
+
+                        <p:outputLabel value="Transaction Value" for="transactionValue" />
+                        <p:inputText id="transactionValue" 
+                                     value="#{collectingCentreController.agentHistory.transactionValue}" />
+                        <p:spacer></p:spacer>
+
+                        <p:outputLabel value="Balance After" for="balanceAfterTransaction" />
+                        <p:inputText id="balanceAfterTransaction" 
+                                     value="#{collectingCentreController.agentHistory.balanceAfterTransaction}" />
+                        <p:commandButton 
+                            value="Fix Ending Balance" 
+                            action="#{collectingCentreController.fixEndingBalance}" 
+                            ajax="false" />
+
+                        <p:outputLabel value="History Type" for="historyType" />
+                        <p:selectOneMenu id="historyType" 
+                                         value="#{collectingCentreController.agentHistory.historyType}">
+                            <f:selectItems value="#{enumController.historyTypes}" 
+                                           var="type" itemLabel="#{type}" itemValue="#{type}" />
+                        </p:selectOneMenu>
+                        <p:spacer></p:spacer>
+
+                        <p:outputLabel value="Creater" />
+                        <p:outputLabel value="#{collectingCentreController.agentHistory.creater.webUserPerson.name}" />
+                        <p:spacer></p:spacer>
+
+                        <p:outputLabel value="Institution" for="institution" />
+                        <p:outputLabel id="institution" 
+                                       value="#{collectingCentreController.agentHistory.institution.name}" />
+                        <p:spacer></p:spacer>
+
+                        <p:outputLabel value="Department" for="department" />
+                        <p:outputLabel id="department" 
+                                       value="#{collectingCentreController.agentHistory.department.name}" />
+                        <p:spacer></p:spacer>
+
+                        <f:facet name="footer">
+                            <p:commandButton 
+                                value="Update History and Back to Statement" 
+                                ajax="false" 
+                                class="m-1"
+                                action="#{collectingCentreController.saveAgentHistoryAndNavigateBackToCcStatement()}" />
+                            <p:commandButton 
+                                value="Save and Next" 
+                                ajax="false" 
+                                class="m-1"
+                                action="#{collectingCentreController.saveAgentHistoryAndNavigateToNextRecord()}" />
+
+                            <p:commandButton   
+                                ajax="false" 
+                                value="Edit Collecting Centre"
+                                icon="pi pi-building"
+                                class="m-1"
+                                action="#{navigationController.navigateToCollectingCenter()}" >
+                                <f:setPropertyActionListener 
+                                    value="#{collectingCentreController.agentHistory.institution}" 
+                                    target="#{collectingCentreController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                        </f:facet>
+                    </p:panelGrid>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -226,6 +226,14 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
+                             <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Gross Value" />
+                                </f:facet>
+                                 <h:outputText value="#{row.itemTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
                             <p:column class="text-end">
                                 <f:facet name="header">
                                     <h:outputText value="Discount" />

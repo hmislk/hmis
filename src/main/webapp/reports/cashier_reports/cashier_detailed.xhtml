@@ -13,118 +13,229 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Cashier Details" class="m-1">
-                        <p:panelGrid columns="2" class="w-100 text-center">
-                            <p:panelGrid columns="2" class="w-100">
-                                <h:outputLabel value="From"/>
-                                <p:calendar 
-                                    class="w-100 " 
-                                    inputStyleClass="w-100" 
-                                    id="fromDate" 
-                                    value="#{searchController.fromDate}" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                </p:calendar>
-                                <h:outputLabel value="To"/>                                
-                                <p:calendar 
-                                    class="w-100 " 
-                                    inputStyleClass="w-100" 
-                                    id="toDate" 
-                                    value="#{searchController.toDate}" 
-                                    navigator="false" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                </p:calendar>
-                                <h:outputLabel value="User"/> 
-                                <p:autoComplete
-                                    completeMethod="#{webUserController.completeUser}"
-                                    class="w-100"
-                                    id="acStaff" 
-                                    inputStyleClass="w-100"
-                                    value="#{searchController.webUser}" 
-                                    var="user"
-                                    scrollHeight="450"
-                                    itemLabel="#{user.webUserPerson.name}" 
-                                    itemValue="#{user}" >
-                                    <p:column headerText="Username" >
-                                        <h:outputText value="#{user.name}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Name" >
-                                        <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
-                                    </p:column>
-                                </p:autoComplete>
-                            </p:panelGrid>
-                            <p:panelGrid columns="1"  >
-                                <p:commandButton  
-                                    value="Process" 
-                                    ajax="false"
-                                    action="#{searchController.generateCashierDetailed()}" 
-                                    class="ui-button-warning" icon="fas fa-cogs">
-                                </p:commandButton>
-                            </p:panelGrid>
-                        </p:panelGrid>
+
+                        <h:panelGrid columns="8" class="w-100">
+                            <h:outputLabel value="From"/>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="To"/>                                
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                            </h:panelGroup>
+
+                              
+
+
+                            <h:outputLabel value="User"/> 
+                            <p:autoComplete
+                                completeMethod="#{webUserController.completeUser}"
+                                class="w-100"
+                                id="acStaff" 
+                                inputStyleClass="w-100"
+                                value="#{searchController.webUser}" 
+                                var="user"
+                                scrollHeight="450"
+                                itemLabel="#{user.webUserPerson.name}" 
+                                itemValue="#{user}" >
+                                <p:column headerText="Username" >
+                                    <h:outputText value="#{user.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Name" >
+                                    <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
+                                </p:column>
+                            </p:autoComplete>
+
+                        </h:panelGrid>
+
+                        <p:commandButton  
+                            value="Process" 
+                            ajax="false"
+                            action="#{searchController.generateCashierDetailed()}" 
+                            class="ui-button-warning" icon="fas fa-cogs">
+                        </p:commandButton>
 
 
                         <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
-                            <h:panelGroup rendered="#{not empty myBundle.reportTemplateRows}">
 
+                            <ez:opdServiceBilled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceBilled'}"/>
+                            <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellations'}"/>
+                            <ez:opdServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceRefunds'}"/>
 
-                                <ez:opdServiceBilled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceBilled'}"/>
-                                <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellations'}"/>
-                                <ez:opdServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceRefunds'}"/>
+                            <!-- Credit Sections -->
+                            <ez:opdServiceBilled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'cashierSummaryOpdCredit'}"/>
+                            <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellationsCredit'}"/>
+                            <ez:opdServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceRefundsCredit'}"/>
 
-                                <!-- Pharmacy Collections -->
-                                <ez:pharmacyNonCreditBills bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyNonCreditBills'}"/>
-                                <ez:pharmacyServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyServiceCancellations'}"/>
-                                <ez:pharmacyServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyServiceRefunds'}"/>
+                            <!-- Pharmacy Collections -->
+                            <ez:pharmacyNonCreditBills bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyNonCreditBills'}"/>
+                            <ez:pharmacyServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyServiceCancellations'}"/>
+                            <ez:pharmacyServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyServiceRefunds'}"/>
 
-                                <!-- Professional Payments OPD -->
-                                <ez:professionalPaymentsOpd bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsOPD'}"/>
-                                <ez:professionalPaymentsOpdCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsOPDCancel'}"/>
+                            <!-- Professional Payments OPD -->
+                            <ez:professionalPaymentsOpd bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsOPD'}"/>
+                            <ez:professionalPaymentsOpdCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsOPDCancel'}"/>
 
-                                <!-- Professional Payments Inward -->
-                                <ez:professionalPaymentsInward bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsInward'}"/>
-                                <ez:professionalPaymentsInwardCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsInwardCancel'}"/>
+                            <!-- Professional Payments Inward -->
+                            <ez:professionalPaymentsInward bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsInward'}"/>
+                            <ez:professionalPaymentsInwardCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsInwardCancel'}"/>
 
-                                <!-- Petty Cash Payments -->
-                                <ez:pettyCashPayment bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PettyCashPayment'}"/>
-                                <ez:pettyCashPaymentCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PettyCashPaymentCancel'}"/>
+                            <!-- Petty Cash Payments -->
+                            <ez:pettyCashPayment bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PettyCashPayment'}"/>
+                            <ez:pettyCashPaymentCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PettyCashPaymentCancel'}"/>
 
-                                <!-- Inward Payments -->
-                                <ez:inwardPayments bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'InwardPayments'}"/>
-                                <ez:inwardPaymentsCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'InwardPaymentsCancel'}"/>
-                                <ez:inwardPaymentsRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'InwardPaymentsRefund'}"/>
+                            <!-- Inward Payments -->
+                            <ez:inwardPayments bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'InwardPayments'}"/>
+                            <ez:inwardPaymentsCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'InwardPaymentsCancel'}"/>
+                            <ez:inwardPaymentsRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'InwardPaymentsRefund'}"/>
 
-                                <!-- Credit Company Payments OPD -->
-                                <ez:creditCompanyPaymentOpReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPReceive'}"/>
-                                <ez:creditCompanyPaymentOpCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPCancel'}"/>
+                            <!-- Credit Company Payments OPD -->
+                            <ez:creditCompanyPaymentOpReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPReceive'}"/>
+                            <ez:creditCompanyPaymentOpCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPCancel'}"/>
 
-                                <!-- Credit Company Payments Inpatient -->
-                                <ez:creditCompanyPaymentIpReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPReceive'}"/>
-                                <ez:creditCompanyPaymentIpCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPReceive'}"/>
+                            <!-- Credit Company Payments Inpatient -->
+                            <ez:creditCompanyPaymentIpReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPReceive'}"/>
+                            <ez:creditCompanyPaymentIpCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPReceive'}"/>
 
-                                <!-- Patient Deposits -->
-                                <ez:patientDeposit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PatientDeposit'}"/>
-                                <ez:patientDepositCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PatientDepositCancel'}"/>
-                                <ez:patientDepositRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PatientDepositRefund'}"/>
+                            <!-- Patient Deposits -->
+                            <ez:patientDeposit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PatientDeposit'}"/>
+                            <ez:patientDepositCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PatientDepositCancel'}"/>
+                            <ez:patientDepositRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PatientDepositRefund'}"/>
 
-                                <!-- Collecting Centre Payments -->
-                                <ez:collectingCentrePaymentReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentReceive'}"/>
-                                <ez:collectingCentrePaymentCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentCancel'}"/>
+                            <!-- Collecting Centre Payments -->
+                            <ez:collectingCentrePaymentReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentReceive'}"/>
+                            <ez:collectingCentrePaymentCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentCancel'}"/>
 
-                                <!-- OPD Credits -->
-                                <ez:opdCredit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCredit'}"/>
-                                <ez:opdCreditCancelled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCreditCancelled'}"/>
-                                <ez:opdCreditRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCreditRefund'}"/>
+                            <!-- OPD Credits -->
+                            <ez:opdCredit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCredit'}"/>
+                            <ez:opdCreditCancelled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCreditCancelled'}"/>
+                            <ez:opdCreditRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCreditRefund'}"/>
 
-                                <!-- Pharmacy Credit Bills -->
-                                <ez:pharmacyCreditBills bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditBills'}"/>
-                                <ez:pharmacyCreditCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditCancel'}"/>
-                                <ez:pharmacyCreditRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditRefund'}"/>
+                            <!-- Pharmacy Credit Bills -->
+                            <ez:pharmacyCreditBills bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditBills'}"/>
+                            <ez:pharmacyCreditCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditCancel'}"/>
+                            <ez:pharmacyCreditRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditRefund'}"/>
 
-                                <p:splitterPanel ></p:splitterPanel>
-                            </h:panelGroup>
+                            <ez:agencyDeposits bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'AgencyDeposit'}"/>
 
-                            <h:panelGroup rendered="#{empty myBundle.reportTemplateRows}">
-                                <p:panel header="No #{myBundle.name}" ></p:panel>
-                            </h:panelGroup>
+                            <p:splitterPanel ></p:splitterPanel>
+
 
                         </ui:repeat>
 

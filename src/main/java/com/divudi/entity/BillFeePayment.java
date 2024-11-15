@@ -20,6 +20,7 @@ import javax.persistence.Temporal;
  * @author Sniper 619
  */
 @Entity
+@Deprecated
 public class BillFeePayment implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

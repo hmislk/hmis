@@ -1,6 +1,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -47,6 +48,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.service.ProfessionalPaymentService;
 import java.text.DecimalFormat;
 
 /**
@@ -81,6 +83,9 @@ public class StaffPaymentBillController implements Serializable {
     @EJB
     CashTransactionBean cashTransactionBean;
 
+    @EJB
+    ProfessionalPaymentService professionalPaymentService;
+
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -89,6 +94,8 @@ public class StaffPaymentBillController implements Serializable {
     private BillBeanController billBean;
     @Inject
     DrawerController drawerController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
 
     private List<BillComponent> billComponents;
     private List<BillItem> billItems;
@@ -106,6 +113,11 @@ public class StaffPaymentBillController implements Serializable {
     List<BillFee> payingBillFees;
     double totalDue;
     double totalPaying;
+    private double totalPayingWithoutWht;
+    private double withholdingTax;
+    private double totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute;
+    private Double withholdingTaxLimit;
+    private Double withholdingTaxPercentage;
 
     private Boolean printPreview = false;
     PaymentMethod paymentMethod;
@@ -159,7 +171,6 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     private void recreateModel() {
-
         billFees = null;
         billItems = null;
         printPreview = false;
@@ -170,18 +181,15 @@ public class StaffPaymentBillController implements Serializable {
         dueBillFees = null;
         payingBillFees = null;
         billFees = null;
-        /////////////////////    
-        fromDate = null;
-        toDate = null;
         current = null;
         selectText = "";
         currentStaff = null;
         totalDue = 0.0;
         totalPaying = 0.0;
+        withholdingTax = 0.0;
         printPreview = false;
         paymentMethod = PaymentMethod.Cash;
         speciality = null;
-
     }
 
     public StaffFacade getStaffFacade() {
@@ -276,11 +284,13 @@ public class StaffPaymentBillController implements Serializable {
                 + " where bf.retired=false "
                 + " and bf.bill.billTypeAtomic in :btcs "
                 + " and bf.bill.cancelled=:bc "
+                + " and bf.bill.refunded=:brfnd "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and (bf.feeValue - bf.paidValue) > 0 "
                 + " and bf.staff=:staff ";
         params.put("btcs", btcs);
         params.put("bc", false);
+        params.put("brfnd", false);
         params.put("fd", fromDate);
         params.put("td", toDate);
         params.put("staff", currentStaff);
@@ -312,7 +322,8 @@ public class StaffPaymentBillController implements Serializable {
             }
             dueBillFees.removeAll(removeingBillFees);
         }
-
+        calculateTotalPaymentsForTheProfessionalForCurrentMonthForCurrentInstitution();
+        peformeCalculations();
     }
 
     public void calculateDueFees() {
@@ -415,22 +426,50 @@ public class StaffPaymentBillController implements Serializable {
         }
     }
 
-    public void performCalculations() {
+    public void peformeCalculations() {
         calculateTotalDue();
-        calculateTotalPay();
+        calculatePaymentsSelected();
+        calculateWithholdingTax();
     }
 
-    public void calculateTotalPay() {
+    public void calculatePaymentsSelected() {
         totalPaying = 0;
-
         for (BillFee f : payingBillFees) {
-            //////// // System.out.println("totalPaying before " + totalPaying);
-            //////// // System.out.println("fee val is " + f.getFeeValue());
-            //////// // System.out.println("paid val is " + f.getPaidValue());
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
-            //////// // System.out.println("totalPaying after " + totalPaying);
         }
-        //////// // System.out.println("total pay is " + totalPaying);
+    }
+
+    public void calculateWithholdingTax() {
+        System.out.println("Calculating Withholding Tax:");
+        System.out.println("totalPaying = " + totalPaying);
+        System.out.println("Total Paid For Current Professional This Month: " + totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute);
+        if (totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute == 0.0) {
+            withholdingTax = 0.0;
+            totalPayingWithoutWht = totalPaying;
+            System.out.println("No previous payments found. Withholding Tax set to 0.");
+            return;
+        }
+        Double paidValue = Math.abs(totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute);
+        System.out.println("Paid Value: " + paidValue);
+        System.out.println("Withholding Tax Limit: " + getWithholdingTaxLimit());
+        if (getWithholdingTaxLimit() < paidValue) {
+            withholdingTax = totalPaying * (getWithholdingTaxPercentage() / 100);
+            System.out.println("Withholding Tax Percentage: " + getWithholdingTaxPercentage());
+            System.out.println("Withholding Tax Calculated: " + withholdingTax);
+        } else {
+            withholdingTax = 0.0; // Ensure withholdingTax is set to 0.0
+            System.out.println("Paid Value is less than Withholding Tax Limit. No Withholding Tax applied.");
+        }
+        totalPayingWithoutWht = totalPaying - withholdingTax;
+        System.out.println("Total Paying Without WHT: " + totalPayingWithoutWht);
+    }
+
+    public void calculateTotalPaymentsForTheProfessionalForCurrentMonthForCurrentInstitution() {
+        if (currentStaff == null) {
+            return;
+        }
+        totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute
+                = professionalPaymentService.findSumOfProfessionalPaymentsDone(sessionController.getInstitution(), currentStaff);
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -473,16 +512,6 @@ public class StaffPaymentBillController implements Serializable {
 
     public void setCurrentStaff(Staff currentStaff) {
         this.currentStaff = currentStaff;
-        dueBillFees = new ArrayList<BillFee>();
-        payingBillFees = new ArrayList<BillFee>();
-        totalPaying = 0.0;
-        totalDue = 0.0;
-        printPreview = false;
-
-        calculateDueFeesOpdForSelectedPeriod();
-//        calculateDueFees();
-        performCalculations();
-
     }
 
     public List<Bill> getSelectedItems() {
@@ -510,16 +539,17 @@ public class StaffPaymentBillController implements Serializable {
         tmp.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
-        tmp.setDepartment(getSessionController().getLoggedUser().getDepartment());
-
-        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.PaymentBill, BillClassType.BilledBill, BillNumberSuffix.PROPAY));
-        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PaymentBill, BillClassType.BilledBill, BillNumberSuffix.PROPAY));
+        tmp.setDepartment(getSessionController().getDepartment());
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+        tmp.setDeptId(deptId);
+        tmp.setInsId(deptId);
 
         tmp.setDiscount(0.0);
         tmp.setDiscountPercent(0.0);
 
-        tmp.setInstitution(getSessionController().getLoggedUser().getInstitution());
-        tmp.setNetTotal(0 - totalPaying);
+        tmp.setInstitution(getSessionController().getInstitution());
+        tmp.setNetTotal(0 - totalPayingWithoutWht);
+        tmp.setTax(withholdingTax);
         tmp.setPaymentMethod(paymentMethod);
         tmp.setStaff(currentStaff);
         tmp.setToStaff(currentStaff);
@@ -531,9 +561,16 @@ public class StaffPaymentBillController implements Serializable {
     public String navigateToStaffPaymentFromDuePayment(Staff s) {
         currentStaff = s;
         speciality = s.getSpeciality();
+        System.out.println("Staff = " + currentStaff);
+        System.out.println("Speciality = " + speciality);
         calculateDueFeesOpdForSelectedPeriod();
-//        calculateDueFees();
-        return "/payment_staff_bill?faces-redirect=true";
+        System.out.println("Due Bill Fees = " + dueBillFees);
+        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true";
+    }
+
+    public String navigateToViewOpdPayProfessionalPayments() {
+        recreateModel();
+        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true;";
     }
 
     private boolean errorCheck() {
@@ -541,7 +578,11 @@ public class StaffPaymentBillController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Staff Memeber");
             return true;
         }
-        performCalculations();
+        if (dueBillFees == null) {
+            JsfUtil.addErrorMessage("Please select payments to update");
+            return true;
+        }
+        peformeCalculations();
         if (totalPaying == 0) {
             JsfUtil.addErrorMessage("Please select payments to update");
             return true;
@@ -570,7 +611,16 @@ public class StaffPaymentBillController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        calculateTotalPay();
+        if (paymentMethod == PaymentMethod.Cash) {
+            double drawerBalance = financialTransactionController.getLoggedUserDrawer().getCashInHandValue();
+            double paymentAmount = getTotalPayingWithoutWht();
+
+            if (drawerBalance < paymentAmount) {
+                JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                return;
+            }
+        }
+        peformeCalculations();
         Bill newlyCreatedPaymentBill = createPaymentBill();
         current = newlyCreatedPaymentBill;
         getBillFacade().create(newlyCreatedPaymentBill);
@@ -627,12 +677,12 @@ public class StaffPaymentBillController implements Serializable {
         newlyCreatedPayingBillItem.setQty(1.0);
         newlyCreatedPayingBillItem.setRate(originalBillFee.getFeeValue());
         getBillItemFacade().create(newlyCreatedPayingBillItem);
-        
+
         BillFee newlyCreatedBillFee = saveBillFee(newlyCreatedPayingBillItem, p);
-        
+
         originalBillFee.setReferenceBillFee(newlyCreatedBillFee);
         getBillFeeFacade().edit(originalBillFee);
-        
+
         newPaymentBill.getBillItems().add(newlyCreatedPayingBillItem);
     }
 
@@ -666,13 +716,16 @@ public class StaffPaymentBillController implements Serializable {
         return current;
     }
 
-    public void setCurrent(Bill current) {
+    public void prepareToInitializeNewProfessionalPayment() {
         currentStaff = null;
-        dueBillFees = new ArrayList<BillFee>();
-        payingBillFees = new ArrayList<BillFee>();
+        dueBillFees = new ArrayList<>();
+        payingBillFees = new ArrayList<>();
         totalPaying = 0.0;
         totalDue = 0.0;
         recreateModel();
+    }
+
+    public void setCurrent(Bill current) {
         this.current = current;
     }
 
@@ -1129,6 +1182,55 @@ public class StaffPaymentBillController implements Serializable {
 
     public void setBillBean(BillBeanController billBean) {
         this.billBean = billBean;
+    }
+
+    public double getTotalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute() {
+        return totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute;
+    }
+
+    public void setTotalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute(double totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute) {
+        this.totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute = totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute;
+    }
+
+    public Double getWithholdingTaxLimit() {
+        if (withholdingTaxLimit == null) {
+            withholdingTaxLimit = configOptionApplicationController.getDoubleValueByKey("Withholding Tax Limit");
+            if (withholdingTaxLimit == null || withholdingTaxLimit == 0.0) {
+                withholdingTaxLimit = 100000.00;
+            }
+        }
+        return withholdingTaxLimit;
+    }
+
+    public void setWithholdingTaxLimit(Double withholdingTaxLimit) {
+        this.withholdingTaxLimit = withholdingTaxLimit;
+    }
+
+    public double getWithholdingTax() {
+        return withholdingTax;
+    }
+
+    public void setWithholdingTax(double withholdingTax) {
+        this.withholdingTax = withholdingTax;
+    }
+
+    public Double getWithholdingTaxPercentage() {
+        if (withholdingTaxPercentage == null) {
+            withholdingTaxPercentage = configOptionApplicationController.getDoubleValueByKey("Withholding Tax Percentage");
+        }
+        return withholdingTaxPercentage;
+    }
+
+    public void setWithholdingTaxPercentage(Double withholdingTaxPercentage) {
+        this.withholdingTaxPercentage = withholdingTaxPercentage;
+    }
+
+    public double getTotalPayingWithoutWht() {
+        return totalPayingWithoutWht;
+    }
+
+    public void setTotalPayingWithoutWht(double totalPayingWithoutWht) {
+        this.totalPayingWithoutWht = totalPayingWithoutWht;
     }
 
 }

@@ -146,6 +146,8 @@ public class WebUserController implements Serializable {
 
     private boolean grantAllPrivilegesToAllUsersForTesting = false;
 
+    private boolean skipDevelopersPrivilege = false;
+
     private List<UserNotification> userNotifications;
     private int userNotificationCount;
 
@@ -287,6 +289,11 @@ public class WebUserController implements Serializable {
         boolean hasPri = false;
         if (grantAllPrivilegesToAllUsersForTesting) {
             return true;
+        }
+        if (skipDevelopersPrivilege) {
+            if (privilege.equalsIgnoreCase("Developers")) {
+                return false;
+            }
         }
         if (getSessionController().getLoggedUser() == null) {
             return hasPri;
@@ -1151,6 +1158,14 @@ public class WebUserController implements Serializable {
         this.drawerController = drawerController;
     }
 
+    public boolean isSkipDevelopersPrivilege() {
+        return skipDevelopersPrivilege;
+    }
+
+    public void setSkipDevelopersPrivilege(boolean skipDevelopersPrivilege) {
+        this.skipDevelopersPrivilege = skipDevelopersPrivilege;
+    }
+
     @FacesConverter(forClass = WebUser.class)
     public static class WebUserControllerConverter implements Converter {
 
@@ -1209,7 +1224,5 @@ public class WebUserController implements Serializable {
     public void setUserNotificationCount(int userNotificationCount) {
         this.userNotificationCount = userNotificationCount;
     }
-    
-    
 
 }

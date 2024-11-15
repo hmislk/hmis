@@ -321,9 +321,9 @@
                                     <p:column headerText="Remarks" >  
                                         <h:panelGroup id="remark">
                                             <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
-                                            <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{bill.billTypeAtomic eq 'PACKAGE_OPD_BILL_WITH_PAYMENT'}" value="Package Bill"></p:badge>
-                                            <!--<p:badge rendered="#{bill.billTypeAtomic eq 'PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT'}" value="Package Batch Bill"></p:badge>-->
+                                            <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
+<!--<p:badge rendered="#{bill.billTypeAtomic eq 'PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT'}" value="Package Batch Bill"></p:badge>-->
                                         </h:panelGroup>
 
                                         <p:tooltip for="remark" value="df" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD - Display Bill Details in Tooltip')}" >
@@ -373,7 +373,7 @@
                                         </h:outputLabel>
                                     </p:column> 
 
-                                    <p:column headerText="Actions">
+                                    <p:column headerText="Actions" style="width: 12em;" >
                                         <p:commandButton icon="pi pi-wallet" styleClass="m-1" ajax="false" title="Manage Bill" action="#{billSearch.navigateToManageBillByAtomicBillType()}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandButton>

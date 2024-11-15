@@ -12,6 +12,9 @@
         <ui:composition template="/resources/template/template.xhtml">
             
             <ui:define name="content">
+                
+                <h1>File Has Moved to OPD Professional Payments Folder. This will be deleted soon</h1>
+                
                 <h:form>
                     <p:panel header="OPD Payments Due Search" >
                         <f:facet name="header">
@@ -83,7 +86,7 @@
                                         </p:column>
 
                                         <p:column headerText="Bill No">
-                                            <h:commandLink action="payment_staff_bill" >
+                                            <h:commandLink action="/opd/payment_staff_bill" >
                                                 <h:outputLabel value="#{bf.bill.deptId}">
                                                 </h:outputLabel>
                                                 <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>

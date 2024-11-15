@@ -15,6 +15,22 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
+        <h:panelGroup rendered="#{empty cc.attrs.bundle.reportTemplateRows}">
+            <table class="table w-100">
+                <thead>
+                    <tr class="text-light bg-dark">
+                        <th class="text-light bg-dark">
+                            <h:outputText value="No Data for #{cc.attrs.bundle.name}" ></h:outputText>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+        </h:panelGroup>
+        
+        <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
+        
+        </h:panelGroup>
+
         <p:dataTable 
             class="w-100 m-2"
             value="#{cc.attrs.bundle.reportTemplateRows}" 
@@ -222,17 +238,11 @@
             </p:column>
 
             <p:column headerText="Grand Total">
-                <h:outputText value="#{summary.cashValue + summary.cardValue + summary.multiplePaymentMethodsValue + 
-                                       summary.creditValue + summary.staffWelfareValue + summary.staffValue + summary.voucherValue + 
-                                       summary.iouValue + summary.agentValue + summary.chequeValue + summary.slipValue + 
-                                       summary.ewalletValue + summary.patientDepositValue + summary.patientPointsValue + summary.onlineSettlementValue}">
+                <h:outputText value="#{summary.total}">
                     <f:convertNumber pattern="#,##0.00" />
                 </h:outputText>
                 <f:facet name="footer">
-                    <h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cardValue + cc.attrs.bundle.multiplePaymentMethodsValue + 
-                                           cc.attrs.bundle.creditValue + cc.attrs.bundle.staffWelfareValue + cc.attrs.bundle.staffValue + cc.attrs.bundle.voucherValue + 
-                                           cc.attrs.bundle.iouValue + cc.attrs.bundle.agentValue + cc.attrs.bundle.chequeValue + cc.attrs.bundle.slipValue + 
-                                           cc.attrs.bundle.ewalletValue + cc.attrs.bundle.patientDepositValue + cc.attrs.bundle.patientPointsValue + cc.attrs.bundle.onlineSettlementValue}" 
+                    <h:outputText value="#{cc.attrs.bundle.total}" 
                                   style="text-align: right;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>

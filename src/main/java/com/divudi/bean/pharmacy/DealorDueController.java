@@ -38,6 +38,7 @@ import javax.persistence.TemporalType;
  */
 @Named
 @SessionScoped
+@Deprecated //Use SupplierPaymentController
 public class DealorDueController implements Serializable {
 
     @EJB
@@ -53,7 +54,7 @@ public class DealorDueController implements Serializable {
     @Inject
     private BillController billController;
     @Inject
-    private PharmacyDealorBill pharmacyDealorBill;
+    private SupplierPaymentController pharmacyDealorBill;
 
     private Date fromDate;
     private Date toDate;
@@ -61,6 +62,7 @@ public class DealorDueController implements Serializable {
     private List<String1Value5> dealorCreditAge;
     private List<String1Value5> filteredList;
     private List<Bill> bills;
+
 
     public void makeNull() {
         fromDate = null;
@@ -122,14 +124,12 @@ public class DealorDueController implements Serializable {
 
     }
 
-    
     public void fillUnsettledCreditPharmacyBills() {
-        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL , BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, };
+        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
     }
-    
-    
+
     @Deprecated
     public void fillPharmacyDue() {
         Date startTime = new Date();
@@ -141,7 +141,6 @@ public class DealorDueController implements Serializable {
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
         fillIDealorDue(billTypesListBilled, billTypesListReturn);
 
-        
     }
 
     public void fillPharmacyDue1() {
@@ -174,7 +173,6 @@ public class DealorDueController implements Serializable {
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
         fillIDealorDue(billTypesListBilled, billTypesListReturn);
 
-        
     }
 
     public void fillPharmacyStoreDue() {
@@ -186,7 +184,6 @@ public class DealorDueController implements Serializable {
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
         fillIDealorDue(billTypesListBilled, billTypesListReturn);
 
-        
     }
 
     private void fillIDealorDue(List<BillType> billTypeBilled, List<BillType> billTypeReturned) {
@@ -242,7 +239,6 @@ public class DealorDueController implements Serializable {
 
         createAgeTable(billTypesListBilled, billTypesListReturn);
 
-        
     }
 
     public void fillPharmacyDueAge() {
@@ -255,7 +251,6 @@ public class DealorDueController implements Serializable {
 
         createAgeTable(billTypesListBilled, billTypesListReturn);
 
-        
     }
 
     public void fillPharmacyStoreDueAge() {
@@ -267,7 +262,6 @@ public class DealorDueController implements Serializable {
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
         createAgeTable(billTypesListBilled, billTypesListReturn);
 
-        
     }
 
     private void createAgeTable(List<BillType> billTypesBilled, List<BillType> billTypesReturned) {
@@ -395,11 +389,11 @@ public class DealorDueController implements Serializable {
         this.billController = billController;
     }
 
-    public PharmacyDealorBill getPharmacyDealorBill() {
+    public SupplierPaymentController getPharmacyDealorBill() {
         return pharmacyDealorBill;
     }
 
-    public void setPharmacyDealorBill(PharmacyDealorBill pharmacyDealorBill) {
+    public void setPharmacyDealorBill(SupplierPaymentController pharmacyDealorBill) {
         this.pharmacyDealorBill = pharmacyDealorBill;
     }
 

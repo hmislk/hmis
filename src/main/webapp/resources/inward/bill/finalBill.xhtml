@@ -51,6 +51,20 @@
                     </h:panelGroup>
 
                     <table class="headingPrinting" >
+                        <h:panelGroup rendered="#{not empty configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}" >
+                            <tr >
+                                <td colspan="4">
+                                    <h:graphicImage 
+                                        style="width: 100%;"
+                                        class="mb-4"
+                                        url="#{configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}"
+                                        >
+                                    </h:graphicImage>
+                                </td>
+                            </tr>
+                        </h:panelGroup>
+
+
                         <tr>
                             <td colspan="4">
                                 <h:outputLabel class="mark" style="font-size: 18px;" value="**Hospital Bill**" rendered="#{cc.attrs.hosCopy eq true }"/>
@@ -60,7 +74,7 @@
                         </tr>
                         <tr>
                             <td colspan="4">
-                                <h:outputLabel style="font-size: 17px;" value="Invoice"/>
+                                <h:outputLabel style="font-size: 17px;" value="Tax Invoice"/>
                             </td>
                         </tr>
 
@@ -170,24 +184,24 @@
                         <div class="row">
                             <div class="row col-6 d-flex justify-content-between">
                                 <div class="col-5 d-flex justify-content-between">
-                                    <h:outputLabel value="Crdit Company " />
+                                    <h:outputLabel value="Credit Company " />
                                     <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
                                 </div>
                                 <div class="col-7" >
 
                                 </div>
                             </div>
-                            <div class="col-6 W-100 ">
-                                <div class="col-6 d-flex justify-content-between">
-                                    <div class="col-5 w-100 d-flex justify-content-between">
-                                        <h:outputLabel value="Vat Reg. No " />
-                                        <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                    </div>
-                                    <div class="col-7 d-flex w-100">
-
-                                    </div>
-                                </div>
-                            </div>
+                            <!--                            <div class="col-6 W-100 ">
+                                                            <div class="col-6 d-flex justify-content-between">
+                                                                <div class="col-5 w-100 d-flex justify-content-between">
+                                                                    <h:outputLabel value="Vat Reg. No " />
+                                                                    <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
+                                                                </div>
+                                                                <div class="col-7 d-flex w-100">
+                            
+                                                                </div>
+                                                            </div>
+                                                        </div>-->
                         </div>
 
                     </div>

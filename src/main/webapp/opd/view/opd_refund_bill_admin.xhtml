@@ -1,0 +1,225 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:view="http://xmlns.jcp.org/jsf/composite/ezcomp/view"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel class="text-danger bg-danger text-white">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <p:outputLabel value="View Refund OPD Bill" class="mt-2"></p:outputLabel>
+                            </div> 
+                            <p:commandButton value="Save" action="#{billSearch.saveViewingBillData()}" ajax="false" ></p:commandButton>
+                        </f:facet>
+                        <div class="row">
+
+                            <div class="col-12">
+                                <p:tabView orientation="left">
+                                    <p:tab title="Bill Details" >
+                                        <p:panel>
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
+                                                <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
+                                            </f:facet>
+                                            <view:out bill="#{billSearch.viewingBill}"/>
+                                            <p:splitter ></p:splitter>
+                                            <common:patient patient="#{billSearch.viewingBill.patient}" class="w-100"/>
+                                        </p:panel>
+                                    </p:tab>
+
+                                    <p:tab title="Original" >
+                                        <h:panelGrid columns="2" class="w-100">
+                                            <p:panel class="w-100">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
+                                                    <h:outputLabel value="Original Batch Bill Details" class="mx-4"></h:outputLabel>
+                                                    <p:commandButton 
+                                                        value="View Original Batch Bill" 
+                                                        ajax="false"
+                                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                        <f:setPropertyActionListener 
+                                                            value="#{billSearch.viewingBill.backwardReferenceBill}" 
+                                                            target="#{billSearch.bill}" ></f:setPropertyActionListener>
+                                                    </p:commandButton> 
+                                                    <p:commandButton 
+                                                        value="Admin" 
+                                                        icon="fa fa-shield-alt" 
+                                                        class="m-1 ui-button-danger" 
+                                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                                        ajax="false" 
+                                                        rendered="#{webUserController.hasPrivilege('Developers')}">
+                                                        <f:setPropertyActionListener 
+                                                            value="#{billSearch.viewingBill.referenceBill}" 
+                                                            target="#{billSearch.bill}" ></f:setPropertyActionListener>
+                                                    </p:commandButton>
+                                                </f:facet>
+                                                <view:out bill="#{billSearch.viewingBill.backwardReferenceBill}"/>
+                                            </p:panel>
+                                            <p:panel class="w-100">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
+                                                    <h:outputLabel value="Original Bill Details" class="mx-4"></h:outputLabel>
+                                                    <p:commandButton 
+                                                        value="View Original Bill" 
+                                                        ajax="false"
+                                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                        <f:setPropertyActionListener 
+                                                            value="#{billSearch.viewingBill.referenceBill}" 
+                                                            target="#{billSearch.bill}" ></f:setPropertyActionListener>
+                                                    </p:commandButton> 
+                                                    <p:commandButton 
+                                                        value="Admin" 
+                                                        icon="fa fa-shield-alt" 
+                                                        class="m-1 ui-button-danger" 
+                                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                                        ajax="false" 
+                                                        rendered="#{webUserController.hasPrivilege('Developers')}">
+                                                        <f:setPropertyActionListener 
+                                                            value="#{billSearch.viewingBill.referenceBill}" 
+                                                            target="#{billSearch.bill}" ></f:setPropertyActionListener>
+                                                    </p:commandButton>
+                                                </f:facet>
+                                                <view:out bill="#{billSearch.viewingBill.referenceBill}"/>
+                                            </p:panel>
+                                        </h:panelGrid>
+                                    </p:tab>
+                                    <p:tab title="Bill Items" >
+                                        <view:bill_item_list_edit editable="true" billItems="#{billSearch.viewingBillItems}"/>
+                                    </p:tab>
+                                    <p:tab title="Bill Fees" >
+                                        <view:bill_fee_list_edit editable="true" billFees="#{billSearch.viewingBillFees}" ></view:bill_fee_list_edit>
+                                    </p:tab>
+                                    <p:tab title="Bill Payments" >
+                                        <p:dataTable 
+                                            value="#{billSearch.viewingBillPayments}" 
+                                            var="p"
+                                            rowKey="#{p.id}" >
+                                            <p:column headerText="ID" >
+                                                <h:outputText value="#{p.id}" ></h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Payment Method" >
+                                                <h:outputText value="#{p.paymentMethod}" ></h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Value">
+                                                <h:outputText value="#{p.paidValue}" ></h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Actions">
+                                                <p:commandButton 
+                                                    value="View" 
+                                                    class="m-2"
+                                                    ajax="false"
+                                                    icon="fa fa-eye"
+                                                    action="#{billSearch.navigateToViewPayment()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{p}" 
+                                                        target="#{billSearch.payment}" ></f:setPropertyActionListener>
+                                                </p:commandButton>
+                                                <p:commandButton 
+                                                    value="Edit" 
+                                                    ajax="false"
+                                                    class="m-2"
+                                                    icon="fa fa-pencil"
+                                                    action="#{billSearch.navigateToEditPayment()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{p}" 
+                                                        target="#{billSearch.payment}" ></f:setPropertyActionListener>
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:tab>
+                                </p:tabView>
+                            </div>
+                        </div>
+
+                    </p:panel>
+                    <p:dialog header="Edit Bill" widgetVar="editBill" resizable="false" showEffect="fade" hideEffect="fade" width="800">
+                        <h:panelGroup id="printPnl" class="m-2" >
+                            <h:panelGrid columns="2" class="w-100">
+                                <h:panelGroup>
+                                    <h:outputLabel style="font-size: 18pt" value="Reffering Doctor"/>
+                                    <p:commandLink id="btnAddNewDoc" 
+                                                   type="button"  
+                                                   value="&nbsp;(+)" 
+                                                   oncomplete="PF('dlg').show();" 
+                                                   actionListener="#{doctorController.prepareAdd}" 
+                                                   process="btnAddNewDoc" 
+                                                   update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
+                                </h:panelGroup>
+                                <p:autoComplete forceSelection="true" 
+                                                id="cmbDoc" 
+                                                value="#{billSearch.referredBy}" 
+                                                completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                                itemLabel="#{ix.person.name}" 
+                                                itemValue="#{ix}" 
+                                                inputStyleClass="form-control w-100"
+                                                class="w-100" 
+                                                scrollHeight="500">
+                                    <p:column headerText="Name" style="padding: 2px;">
+                                        <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Code" style="padding: 2px;">
+                                        <h:outputText value="#{ix.code}" ></h:outputText>
+                                    </p:column>
+                                </p:autoComplete>
+                            </h:panelGrid>
+                        </h:panelGroup>
+                        <f:facet name="footer">
+                            <p:commandButton class="my-2" ajax="false" value="Save" action="#{billSearch.editBillDetails()}" />
+                        </f:facet>
+                    </p:dialog>
+                    <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true" class="p-2" showEffect="fade"  width="450">  
+                        <h:panelGrid columns="2" >  
+                            <p:outputLabel id="lblNameD" value="Name" ></p:outputLabel>
+                            <p:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></p:inputText>
+                            <p:outputLabel id="lblPhoneD" value="Phone" ></p:outputLabel>
+                            <p:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}"  ></p:inputText>
+                            <p:outputLabel id="lblFaxD" value="Fax" ></p:outputLabel>
+                            <p:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}"  ></p:inputText>
+                            <p:outputLabel id="lblMobileD" value="Mobile" ></p:outputLabel>
+                            <p:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  ></p:inputText>
+                            <p:outputLabel id="lblAddressD" value="Address" ></p:outputLabel>
+                            <p:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></p:inputText>
+                            <p:outputLabel value="Code"></p:outputLabel>   
+                            <p:inputText autocomplete="off" id="txtCodeD" value="#{doctorController.current.code}"  ></p:inputText>
+                            <p:outputLabel value="Speciality" ></p:outputLabel>
+                            <p:selectOneMenu id="cmbSpecialityD" value="#{doctorController.current.speciality}" >
+                                <f:selectItem itemLabel="Please select a speciality"/>
+                                <f:selectItems value="#{doctorSpecialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                            </p:selectOneMenu>
+                            <p:outputLabel id="lblRegD" value="Registration" ></p:outputLabel>
+                            <p:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}"  ></p:inputText>                 
+                            <p:outputLabel id="lblQuaD" value="Qualification" ></p:outputLabel>
+                            <p:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></p:inputText>   
+
+                            <p:commandButton 
+                                id="btnDocSave" 
+                                value="Add New" 
+                                ajax="false"
+                                process="btnDocSave panDoc" 
+                                update="msg panDoc cmbDoc " actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                            </p:commandButton>
+                        </h:panelGrid>  
+                    </p:dialog> 
+
+
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

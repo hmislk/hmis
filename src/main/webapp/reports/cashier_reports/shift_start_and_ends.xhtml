@@ -71,7 +71,7 @@
 
                             <p:spacer width="20" ></p:spacer>
 
-                            <h:outputLabel value="Site*"/>   
+                            <h:outputLabel value="Site"/>   
                             <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>

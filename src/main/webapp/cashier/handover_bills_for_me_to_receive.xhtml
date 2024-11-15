@@ -19,11 +19,19 @@
                         selectionMode="single"
                         selection="#{financialTransactionController.selectedBill}">
 
+                        <p:column headerText="ID" rendered="#{webUserController.hasPrivilege('Developers')}">
+                             <h:outputText value="#{bp.id}" />
+                        </p:column>
+                        
+                        <p:column headerText="Number">
+                            <h:outputText value="#{bp.insId}" />
+                        </p:column>
+
+
                         <p:column headerText="Username">
                             <h:outputText value="#{bp.fromWebUser.name}" />
                         </p:column>
 
-                        
                         <p:column headerText="Staff Name">
                             <h:outputText value="#{bp.staff.person.nameWithTitle}" />
                         </p:column>

@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/cashier/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form>
+
+                    <p:panel header="Cashbook Summery by Site" >
+
+                        <p:panelGrid columns="2" class="w-100" >
+                            <h:outputLabel value="From"/>
+                            <p:datePicker 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                value="#{cashBookEntryController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateFormat}" >
+                            </p:datePicker>
+
+                            <h:outputLabel value="To"/>                                
+                            <p:datePicker 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{cashBookEntryController.toDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateFormat}" >
+                            </p:datePicker>
+                            <p:commandButton  
+                                value="Process" 
+                                ajax="false"
+                                action="#{cashBookEntryController.generateDailyCashbookSummary}" 
+                                styleClass="ui-button-warning" icon="fas fa-cogs">
+                            </p:commandButton>
+
+                            <p:commandButton  
+                                value="Export to Excel" 
+                                ajax="false"
+                                onclick="exportTableToExcel('myTable', 'tableData')"
+                                styleClass="ui-button-success" icon="fas fa-file-excel">
+                            </p:commandButton>
+
+                        </p:panelGrid>
+
+
+
+
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+                        <table id="myTable" class="ui-widget ui-datatable table table-bordered" style="width: 100%; border-collapse: collapse;">
+                            <thead class="ui-datatable-header ui-widget-header">
+                                <tr>
+                                    <th rowspan="3" class="text-center">Date</th>
+                                    <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="ins">
+                                        <th colspan="9" class="text-center">#{ins.institution.name}</th>
+                                    </ui:repeat>
+                                </tr>
+                                <tr>
+                                    <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sis">
+                                        <ui:repeat value="#{sis.sites}" var="s">
+                                            <th colspan="3" class="text-center">#{s.name}</th>
+                                        </ui:repeat>
+                                    </ui:repeat>
+                                </tr>
+                                <tr>
+                                    <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sit">
+                                        <ui:repeat value="#{sit.sites}" var="s">
+                                            <th class="text-end">Starting Balance</th>
+                                            <th class="text-end">Value</th>
+                                            <th class="text-end">Ending Balance</th>
+                                        </ui:repeat>
+                                    </ui:repeat>
+                                </tr>
+                            </thead>
+                            <tbody class="ui-datatable-data ui-widget-content">
+                                <ui:repeat value="#{cashBookEntryController.dates}" var="date">
+                                    <tr>
+                                        <td class="text-center">
+                                            <h:outputText value="#{date}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+                                        </td>
+                                        <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sid">
+                                            <ui:repeat value="#{sid.sites}" var="s">
+                                                <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(date,s)}</td>
+                                                <td class="text-end">
+                                                    
+                                                    <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(date,s)}" >
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputText> 
+                                                </td>
+                                                <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(date,s)}</td>
+                                            </ui:repeat>
+                                        </ui:repeat>
+                                    </tr>
+                                </ui:repeat>
+                            </tbody>
+                        </table>
+
+                        <script>
+                                    function exportTableToExcel(tableID, filename) {
+                                        if (!filename || filename.trim() === "") {
+                                            filename = 'excel_data.xlsx';
+                                        }
+                                        if (!filename.endsWith('.xlsx')) {
+                                            filename += '.xlsx';
+                                        }
+
+                                        var table = document.getElementById(tableID);
+                                        var workbook = XLSX.utils.table_to_book(table, {sheet: "Sheet1"});
+                                        XLSX.writeFile(workbook, filename);
+                                    }
+                        </script>
+
+
+
+
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

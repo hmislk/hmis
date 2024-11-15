@@ -5,20 +5,16 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html">
-
-    <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
     </cc:interface>
-
-    <!-- IMPLEMENTATION -->
     <cc:implementation>
         <hr/>
         <table class="table w-100">
             <thead>
                 <tr class="text-light bg-dark">
                     <th class="text-light bg-dark" colspan="5">
-                        Collection for the Day
+                        <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
                     </th>
                     <th class="text-light bg-dark text-end">
                         <h:outputText value="#{cc.attrs.bundle.total}" >
@@ -29,24 +25,5 @@
             </thead>
         </table>
         <hr/>
-
-        <!--
-                <div class="row" >
-                    <div class="col" >
-                        <h1>
-                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
-                        </h1>
-        
-                    </div>
-                    <div class="col" >
-                        <h1>
-                            <h:outputText value="#{cc.attrs.bundle.total}" >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputText>
-                        </h1>
-        
-                    </div>
-                </div>-->
-
     </cc:implementation>
 </html>

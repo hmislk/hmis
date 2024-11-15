@@ -27,7 +27,7 @@ import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -151,7 +151,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     @Inject
     DepartmentController departmentController;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @Inject
     CategoryController categoryController;
     @Inject
@@ -241,7 +241,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
         fillAvailableAgentReferanceNumbers(collectingCentre);
-        opdItems = itemFeeManager.fillItemLightsForCc(collectingCentre);
+        if (collectingCentre.getFeeListType() != null) {
+            opdItems = itemFeeManager.fillItemLightsForCc(collectingCentre);
+        } else {
+            opdItems = fillOpdItems();
+        }
         itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
     }
 
@@ -454,7 +458,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         return billNumberGenerator;
     }
 
-    public StaffBean getStaffBean() {
+    public StaffService getStaffBean() {
         return staffBean;
     }
 
@@ -2174,7 +2178,10 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             }
 
             if (matchFound) {
-                FeeValue f = feeValueController.getCollectingCentreFeeValue(opdItem.getId(), collectingCentre);
+                FeeValue f = null;
+                if(collectingCentre.getFeeListType()!=null){
+                    f = feeValueController.getCollectingCentreFeeValue(opdItem.getId(), collectingCentre);
+                }
                 if (f != null) {
                     opdItem.setTotal(f.getTotalValueForLocals());
                     opdItem.setTotalForForeigner(f.getTotalValueForForeigners());

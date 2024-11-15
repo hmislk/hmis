@@ -46,7 +46,7 @@ public class SessionInstanceController implements Serializable {
     SessionController sessionController;
     @Inject
     ChannelScheduleController ChannelScheduleController;
-    
+
     @EJB
     private SessionInstanceFacade ejbFacade;
 
@@ -69,18 +69,41 @@ public class SessionInstanceController implements Serializable {
 
     public SessionInstanceController() {
     }
-    
-     public List<SessionInstance>  findSessionInstance(Institution institution ,Speciality speciality, Doctor consultant,  Date fromDate, Date toDate) {
+
+    public List<SessionInstance> findSessionInstance(Institution institution, Speciality speciality, Doctor consultant, Date fromDate, Date toDate) {
+        List<Speciality> specialities = new ArrayList<>();
+        if (speciality != null) {
+            specialities.add(speciality);
+        }
+        return findSessionInstance(institution, specialities, consultant, fromDate, toDate);
+    }
+
+    // Overloaded method with sessionDate parameter
+    public List<SessionInstance> findSessionInstance(Institution institution, List<Speciality> specialities, Doctor consultant, Date fromDate, Date toDate, Date sessionDate) {
+        System.out.println("findSessionInstance with sessionDate");
         List<SessionInstance> sessionInstances;
-        Date currentDate = new Date();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(currentDate);
-        calendar.add(Calendar.DAY_OF_MONTH, 2);
         Map<String, Object> m = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select i from "
-                + " SessionInstance i "
-                + " where i.retired=:ret "
-                + " and i.sessionDate BETWEEN :fd AND :td ");
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret ");
+        // Handle sessionDate equality check
+        if (sessionDate != null) {
+            jpql.append(" and i.sessionDate = :sd ");
+            m.put("sd", sessionDate);
+        } else {
+            // Handle date range if sessionDate is null
+            if (fromDate != null && toDate != null) {
+                jpql.append(" and i.sessionDate BETWEEN :fd AND :td ");
+                m.put("fd", fromDate);
+                m.put("td", toDate);
+            } else if (fromDate != null) {
+                jpql.append(" and i.sessionDate >= :fd ");
+                m.put("fd", fromDate);
+            } else if (toDate != null) {
+                jpql.append(" and i.sessionDate <= :td ");
+                m.put("td", toDate);
+            }
+        }
+
+        // Additional conditions for consultant, institution, and specialities
         if (consultant != null) {
             jpql.append(" and i.originatingSession.staff=:os");
             m.put("os", consultant);
@@ -89,17 +112,25 @@ public class SessionInstanceController implements Serializable {
             jpql.append(" and i.originatingSession.institution=:ins");
             m.put("ins", institution);
         }
-        if (speciality != null) {
+        if (specialities != null && !specialities.isEmpty()) {
             jpql.append(" and i.originatingSession.staff.speciality in :spe ");
-            m.put("spe", speciality);
+            m.put("spe", specialities);
         }
+
         m.put("ret", false);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+
         sessionInstances = ejbFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
-       return sessionInstances;
-        
-        
+
+        System.out.println("sessionInstances = " + sessionInstances);
+        return sessionInstances;
+    }
+
+// Original method calls the new method with null for sessionDate
+    public List<SessionInstance> findSessionInstance(Institution institution, List<Speciality> specialities, Doctor consultant, Date fromDate, Date toDate) {
+        return findSessionInstance(institution, specialities, consultant, fromDate, toDate, null);
     }
 
     public SessionInstanceFacade getFacade() {

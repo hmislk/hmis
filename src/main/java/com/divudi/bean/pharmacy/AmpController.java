@@ -10,6 +10,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.common.util.JsfUtil;
@@ -94,6 +95,8 @@ public class AmpController implements Serializable {
     CategoryController categoryController;
     @Inject
     VmpController vmpController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     private UploadedFile file;
 
     public UploadedFile getFile() {
@@ -711,6 +714,23 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("No Name");
             return;
         }
+        
+        int maxCodeLeanth = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item","4"));
+        
+        System.out.println("maxCodeLeanth = " + maxCodeLeanth);
+        System.out.println("Current Code length = " + current.getCode().trim().length());
+        
+        System.out.println(current.getCode().trim().length() < maxCodeLeanth);
+        
+        if (current.getCode().trim().length() < maxCodeLeanth){
+            JsfUtil.addErrorMessage("Minimum " + maxCodeLeanth + " characters are Required for Item Code");
+            return;
+        }
+        
+        if (checkItemCode(current.getCode(), current)) {
+            JsfUtil.addErrorMessage("This Code has Already been Used.");
+            return;
+        }
         if (current.getDepartmentType() == null) {
             current.setDepartmentType(DepartmentType.Pharmacy);
         }
@@ -742,6 +762,27 @@ public class AmpController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
             recreateModel();
             getItems();
+        }
+    }
+
+    public boolean checkItemCode(String code, Amp savingAmp) {
+        if(savingAmp==null){
+            return false;
+        }
+        Map m = new HashMap();
+        String jpql = "select c from Amp c "
+                + " where c.retired=false"
+                + " and (c.code is not null and c.code=:icode)";
+        if(savingAmp.getId()!=null){
+            jpql +=" and c.id <> :id ";
+            m.put("id", savingAmp.getId());
+        }
+        m.put("icode", code);
+        Amp amp = getFacade().findFirstByJpql(jpql, m);
+        if (amp == null) {
+            return false;
+        } else {
+            return true;
         }
     }
 
@@ -961,6 +1002,14 @@ public class AmpController implements Serializable {
 
     public void setItems(List<Amp> items) {
         this.items = items;
+    }
+
+    public ConfigOptionApplicationController getConfigOptionApplicationController() {
+        return configOptionApplicationController;
+    }
+
+    public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
+        this.configOptionApplicationController = configOptionApplicationController;
     }
 
     /**

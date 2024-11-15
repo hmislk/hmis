@@ -7,101 +7,127 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/payments/pay_index.xhtml">
+            <ui:define name="admin">
                 <h:form>
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
-                            <h:outputLabel value="Reprint" ></h:outputLabel>
-                            <hr/>
-                            <p:commandButton ajax="false" value="Cancel" action="channel_payment_staff_bill_cancel" disabled="#{channelSearchController.bill.cancelled eq true}" >                           
-                            </p:commandButton>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputLabel value="Reprint" ></h:outputLabel>
+                                </div>
+                                <div>
+                                    <p:commandButton
+                                        ajax="false" 
+                                        class="ui-button-danger" 
+                                        icon="fas fa-ban" 
+                                        value="To Cancel" 
+                                        action="#{channelSearchController.navigateTocancelPaymentBill()}"
+                                        disabled="#{channelSearchController.bill.cancelled eq true}" >                           
+                                    </p:commandButton>
+                                </div>
+                            </div>
                         </f:facet>
-
-                        <p:panel>
-                            <p:panelGrid columns="2" style="width: 100%;">
+                        <div class="row">
+                            <div class="col-md-6">
                                 <p:panel header="Patient Detail">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Staff ​Name:" ></h:outputLabel>
-                                        <h:outputLabel value="#{channelSearchController.bill.staff.person.nameWithTitle }" ></h:outputLabel>   
-                                        <h:outputLabel value="#{channelSearchController.bill.toStaff.person.nameWithTitle }" ></h:outputLabel>   
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa fa-user-circle"></h:outputText>
+                                        <h:outputLabel value="Staff Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <h:panelGrid columns="3" class="w-100" style="font-size: 12pt">
+                                        <h:outputLabel value="Staff ​Name" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{channelSearchController.bill.staff.person.nameWithTitle }" ></h:outputLabel>
+                                        <h:outputLabel value="Speciality" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{channelSearchController.bill.staff.speciality.name }" ></h:outputLabel>
+                                        <h:outputLabel value="Department" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{channelSearchController.bill.staff.department.name }" ></h:outputLabel>
+                                        <h:outputLabel value="Address" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{channelSearchController.bill.staff.person.address}" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Age" />
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{channelSearchController.bill.staff.person.ageAsString}"  />
                                         <h:outputLabel value="Phone" >
                                         </h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
                                         <h:outputLabel value="#{channelSearchController.bill.staff.person.phone}" >
                                         </h:outputLabel>
-                                        <h:outputLabel value="#{channelSearchController.bill.toStaff.person.phone}" >
-                                        </h:outputLabel>
-                                    </p:panelGrid>
+                                    </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="Bill Detail">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                            </div>
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-file-invoice"></h:outputText>
+                                        <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <h:panelGrid columns="3" class="w-100">
+                                        <h:outputLabel value="Bill No " ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
                                         <h:outputLabel value="#{channelSearchController.bill.deptId}" ></h:outputLabel>
-                                        <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                        <h:outputLabel value="Payment Type " ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
                                         <h:outputLabel value="#{channelSearchController.bill.paymentMethod}" ></h:outputLabel>
-                                        <h:outputLabel value="Paid amount :" ></h:outputLabel>
-                                        <h:outputLabel value="#{channelSearchController.bill.total}" ></h:outputLabel>
-                                    </p:panelGrid>
+                                        <h:outputLabel value="Paid Amount" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{-channelSearchController.bill.total}" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                    </h:panelGrid>
                                 </p:panel>
-                            </p:panelGrid>
+                            </div>
+                        </div>
 
-                            <p:panel header="Bill Fee Detail">
-                                <p:dataTable value="#{channelSearchController.billItems}" var="bip21" emptyMessage="No Items" >
-                                    <p:column headerText="Bill No">
-                                        <h:outputLabel value="#{bip21.referenceBill.deptId}" />
-                                    </p:column>
-                                    <p:column headerText="Date">
-                                        <h:outputLabel value="#{bip21.referenceBill.createdAt}" />
-                                    </p:column>
-                                    <p:column headerText="Test/Service">
-                                        <h:outputLabel value="#{bip21.paidForBillFee.billItem.item.name}" />
-                                    </p:column>
-                                    <p:column headerText="Fee" >
-                                        <h:outputLabel value="#{bip21.netValue}" />
-                                    </p:column>
-                                </p:dataTable>
-                            </p:panel>
+
+                        <p:panel header="Bill Fee Details" class="my-2">
+                            <p:dataTable value="#{channelSearchController.billItems}" var="bip21" emptyMessage="No Items" >
+                                <p:column headerText="Bill No">
+                                    <h:outputLabel value="#{bip21.referenceBill.deptId}" />
+                                </p:column>
+                                <p:column headerText="Date">
+                                    <h:outputLabel value="#{bip21.referenceBill.createdAt}" />
+                                </p:column>
+                                <p:column headerText="Test/Service">
+                                    <h:outputLabel value="#{bip21.paidForBillFee.billItem.item.name}" />
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Patient Name" ></h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bip21.referanceBillItem.bill.patient.person.name}" rendered="#{bip21.referanceBillItem.bill.patientEncounter eq null}"/>                                    
+                                    <h:outputLabel value="#{bip21.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}"/>                                                                                
+                                </p:column>
+                                <p:column headerText="Fee" >
+                                    <h:outputLabel value="#{bip21.netValue}" />
+                                </p:column>
+                            </p:dataTable>
                         </p:panel>
                     </p:panel>
-
-
-
                 </h:form>
-
                 <h:form >
-                    <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
-
-                    <h:panelGroup id="gpBillPreview">
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}">
-                            <bi:staff_payment_five_five_paper_without_headings controller="#{channelSearchController}" bill="#{channelSearchController.bill}" duplicate="true"/>
-                        </h:panelGroup>
-          
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}">
-                            <h:panelGroup rendered="#{!sessionController.loggedPreference.pharmacyBillPrabodha}">
-                                <bi:staffBill_1  controller="#{channelSearchController}" bill="#{channelSearchController.bill}" dup="true"/>
-                            </h:panelGroup>
-                        </h:panelGroup>
-
-
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}">
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha}" > 
-                                <bi:paymentReciptPosDouble controller="#{channelSearchController}" bill="#{channelSearchController.bill}" dup="true"/>
-                            </h:panelGroup>
-                        </h:panelGroup>
+                    <p:commandButton icon="fas fa-print"
+                                     class="ui-badge-info"
+                                     value="Print">
+                        <p:printer target="paybill" />
+                    </p:commandButton>
+                    <h:panelGroup id="paybill">
+                        <bi:A4PaperPamentChannelDoctor controller="#{channelSearchController}" bill="#{channelSearchController.bill}" dup="true"/>
                     </h:panelGroup>
-
-<!--                    <bi:staffBill  bill="#{channelSearchController.bill}" dup="true" controller="#{channelSearchController}" >
-                    </bi:staffBill>-->
-                    
                 </h:form>
-
             </ui:define>
-
-
-
         </ui:composition>
-
     </h:body>
 </html>

@@ -95,25 +95,29 @@
                                             <p:printer target="divPrint" />
                                         </p:commandButton>
                                         <p:spacer width="80" ></p:spacer>
-                                        <p:commandButton    value="Back to Report Search" 
-                                                            action="/lab/search_for_reporting_ondemand?faces-redirect=true" 
-                                                            icon="fa-solid fa-arrow-left"
-                                                            class="mx-1 ui-button-secondary"
-                                                            ajax="false"   >
+                                        <p:commandButton    
+                                            value="Back to Report Search" 
+                                            action="/lab/search_for_reporting_ondemand?faces-redirect=true" 
+                                            icon="fa-solid fa-arrow-left"
+                                            class="mx-1 ui-button-secondary"
+                                            ajax="false"   >
                                         </p:commandButton>
-                                        <p:commandButton    value="Patient Report Search" 
-                                                            icon="fa-solid fa-search"
-                                                            class=" ui-button-warning"
-                                                            action="#{patientReportController.patientReportSearch}" ajax="false" >
+                                        <p:commandButton    
+                                            value="Patient Report Search" 
+                                            icon="fa-solid fa-search"
+                                            class=" ui-button-warning"
+                                            action="#{patientReportController.patientReportSearch}" ajax="false" >
                                         </p:commandButton>
 
-                                        <p:commandButton    value="To Approve List" 
-                                                            icon="fa-solid fa-list"
-                                                            class="mx-1 ui-button-success"
-                                                            action="#{searchController.listReportsAwaitingApproval()}" ajax="false"   >
+                                        <p:commandButton    
+                                            value="To Approve List" 
+                                            icon="fa-solid fa-list"
+                                            class="mx-1 ui-button-success"
+                                            action="#{searchController.listReportsAwaitingApproval()}" ajax="false"   >
                                         </p:commandButton>
                                         <p:commandButton  
-                                            ajax="false" value="Back"
+                                            ajax="false" 
+                                            value="Back"
                                             action="/lab/generate_barcode_p?faces-redirect=true"
                                             icon="fa-solid fa-arrow-left"
                                             class=""
@@ -135,7 +139,7 @@
                                                    var="pvv"  
                                                    >
                                             <h:panelGroup rendered="#{pvv.investigationItem.ixItemType eq 'Value'}"  >
-                                                <tr>
+                                                <tr >
                                                     <td style="min-width: 200px!important;">
                                                         <h:outputLabel value="#{pvv.investigationItem.name}"></h:outputLabel>
                                                     </td>
@@ -168,10 +172,11 @@
                                     rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }">
                                     <p:panel header="Calculations " id="tblCals">
                                         <table >               
-                                            <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
-                                                        var="pvcal"  
+                                            <ui:repeat  
+                                                value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
+                                                var="pvcal"  
 
-                                                        >
+                                                >
 
                                                 <h:panelGroup   rendered="#{pvcal.investigationItem.ixItemType eq 'Calculation'}">
                                                     <tr>
@@ -179,10 +184,10 @@
                                                             <h:outputLabel value="#{pvcal.investigationItem.name}" ></h:outputLabel>
                                                         </td>
                                                         <td >
-                                                            <h:inputText autocomplete="off" value="#{pvcal.strValue}" disabled="#{patientReportController.currentPatientReport.approved}"
+                                                            <p:inputText autocomplete="off" value="#{pvcal.strValue}" disabled="#{patientReportController.currentPatientReport.approved}"
                                                                          rendered="#{pvcal.investigationItem.ixItemValueType eq 'Varchar'}" >
                                                                 <f:ajax execute="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></f:ajax>
-                                                            </h:inputText>
+                                                            </p:inputText>
                                                             <p:inputText autocomplete="off" value="#{pvcal.doubleValue}" disabled="#{patientReportController.currentPatientReport.approved}"
                                                                          rendered="#{pvcal.investigationItem.ixItemValueType eq 'Double'}" >
                                                                 <f:convertNumber pattern="0.0" ></f:convertNumber>
@@ -301,6 +306,9 @@
 
                                 <p:panel header="Report Details"  >
                                     <p:panelGrid columns="2" >
+                                        <p:outputLabel for="sampleIDs" value="sampleIDs" ></p:outputLabel>
+                                        <p:inputText id="sampleIDs" value="#{patientReportController.currentPatientReport.sampleIDs}" ></p:inputText>
+
                                         <p:outputLabel for="refIns" value="Referring Institution" ></p:outputLabel>
                                         <p:autoComplete 
                                             id="refIns" 
@@ -780,7 +788,7 @@
                                     <td>
                                         #{prv.investigationItem.ixItemType}
                                     </td>
-                                    
+
                                     <td>
                                         #{prv.investigationItem.retired}
                                     </td>

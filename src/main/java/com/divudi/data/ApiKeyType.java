@@ -12,5 +12,6 @@ public enum ApiKeyType {
     Clinical, 
     Config, 
     General, 
-    Admin;
+    Admin,
+    Token;
 }

@@ -12,6 +12,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.cashTransaction.CashTransaction;
+import com.divudi.entity.hr.BankAccount;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.pharmacy.StockVarientBillItem;
 import java.io.Serializable;
@@ -174,6 +175,10 @@ public class Bill implements Serializable {
     private double expenseTotal;
     //with minus tax and discount
     private double grnNetTotal;
+    
+    private double hospitalFee;
+    private double collctingCentreFee;
+    private double professionalFee;
 
     //Institution
     @ManyToOne(fetch = FetchType.LAZY)
@@ -251,7 +256,7 @@ public class Bill implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date checkeAt;
     //Retairing properties
-    boolean retired;
+    private boolean retired;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -289,8 +294,7 @@ public class Bill implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Bill backwardReferenceBill;
-    private double hospitalFee;
-    private double professionalFee;
+    
     @Transient
     private double tmpReturnTotal;
     @Transient
@@ -302,6 +306,8 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser fromWebUser;
     double claimableTotal;
+    
+    private BankAccount bankAccount;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date appointmentAt;
@@ -395,6 +401,11 @@ public class Bill implements Serializable {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
         }
+        completed=false;
+        retired=false;
+        reactivated=false;
+        refunded=false;
+        cancelled=false;
     }
 
     private void generateBillPrintFromBillTemplate() {
@@ -769,7 +780,7 @@ public class Bill implements Serializable {
         this.vat = vat;
     }
 
-    public void invertValue(Bill bill) {
+    public void invertAndAssignValuesFromOtherBill(Bill bill) {
         staffFee = 0 - bill.getStaffFee();
         performInstitutionFee = 0 - bill.getPerformInstitutionFee();
         billerFee = 0 - bill.getBillerFee();
@@ -801,7 +812,7 @@ public class Bill implements Serializable {
         totalStaffFee = 0 - bill.getTotalStaffFee();
     }
 
-    public void invertValue() {
+    public void invertValueOfThisBill() {
         staffFee = 0 - getStaffFee();
         performInstitutionFee = 0 - getPerformInstitutionFee();
         billerFee = 0 - getBillerFee();
@@ -866,6 +877,7 @@ public class Bill implements Serializable {
         vatPlusNetTotal = bill.getVatPlusNetTotal();
         sessionId = bill.getSessionId();
         ipOpOrCc = bill.getIpOpOrCc();
+        chequeRefNo = bill.getChequeRefNo();
         //      referenceBill=bill.getReferenceBill();
     }
 
@@ -2267,6 +2279,8 @@ public class Bill implements Serializable {
     public String getLocalNumber() {
         return localNumber;
     }
+    
+    
 
     public void setLocalNumber(String localNumber) {
         this.localNumber = localNumber;
@@ -2399,6 +2413,22 @@ public class Bill implements Serializable {
 
     public void setCompletedAt(Date completedAt) {
         this.completedAt = completedAt;
+    }
+
+    public BankAccount getBankAccount() {
+        return bankAccount;
+    }
+
+    public void setBankAccount(BankAccount bankAccount) {
+        this.bankAccount = bankAccount;
+    }
+
+    public double getCollctingCentreFee() {
+        return collctingCentreFee;
+    }
+
+    public void setCollctingCentreFee(double collctingCentreFee) {
+        this.collctingCentreFee = collctingCentreFee;
     }
 
     

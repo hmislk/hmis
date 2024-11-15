@@ -6,8 +6,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
-      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
-      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+      xmlns:view="http://xmlns.jcp.org/jsf/composite/ezcomp/view">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -28,40 +27,68 @@
 
                                 <p:tabView>
                                     <p:tab title="Print" >
-                                        <div >
-                                            <div class="d-flex m-1 justify-content-between">
-                                                <div>
-                                                    <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                                    <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
-                                                        <f:selectItem itemLabel="Please Select Paper Type" />
-                                                        <f:selectItems value="#{enumController.paperTypes}" />
-                                                    </p:selectOneMenu>
-                                                    <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                                        <div class="row">
+                                            <div class="col-md-6" >
+                                                <div class="d-flex m-1 justify-content-between">
+                                                    <div>
+                                                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                                        <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                                                            <f:selectItem itemLabel="Please Select Paper Type" />
+                                                            <f:selectItems value="#{enumController.paperTypes}" />
+                                                        </p:selectOneMenu>
+                                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                                                    </div>
+
+                                                    <p:commandButton 
+                                                        value="Print Refund Bill" 
+                                                        class="ui-button-info m-1"
+                                                        icon="fa fa-print"
+                                                        style="float: right"
+                                                        rendered="#{billSearch.viewingBill.refunded}"
+                                                        ajax="false">
+                                                        <p:printer target="refundPrint" />
+                                                    </p:commandButton>
                                                 </div>
 
-                                                <p:commandButton 
-                                                    value="Print Refund Bill" 
-                                                    class="ui-button-info m-1"
-                                                    icon="fa fa-print"
-                                                    style="float: right"
-                                                    rendered="#{billSearch.viewingBill.refunded}"
-                                                    ajax="false">
-                                                    <p:printer target="refundPrint" />
-                                                </p:commandButton>
+                                                <div class="d-flex gap-2">
+                                                    <bi:A4PaperPamentOPDDoctor controller="#{billSearch}" bill="#{billSearch.bill}" dup="false"/>
+                                                </div>
                                             </div>
-
-                                            <div class="d-flex gap-2">
-                                                <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{billSearch.viewingBill}" dup="false"/>
+                                            <div class="col-md-6" >
+                                                <view:out/>
+                                                <div class="d-flex m-1 justify-content-between">
+                                                    <p:commandButton 
+                                                        rendered="#{billSearch.viewingBill.cancelledBill ne null}"
+                                                        value="View Cancelled Bill"
+                                                        icon="pi pi-search"
+                                                        class="ui-button-danger"
+                                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}"
+                                                        >  
+                                                        <f:setPropertyActionListener value="#{billSearch.viewingBill.cancelledBill}" target="#{billSearch.bill}"/>
+                                                    </p:commandButton>
+                                                </div>
                                             </div>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="Patient Details" >
+                                    <p:tab title="Professional's Details" >
                                         <p:panel header="">
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
-                                                <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                                <h:outputLabel value="Professional's Details" class="mx-4"></h:outputLabel>
                                             </f:facet>
-                                            <common:patient patient="#{billSearch.viewingBill.patient}" class="w-100"/>
+                                            <p:panelGrid columns="2">
+                                                <p:outputLabel value="Code"/>
+                                                <p:outputLabel value="#{billSearch.bill.staff.code}"></p:outputLabel>
+                                                <p:outputLabel value="Name"/>
+                                                <p:outputLabel value="#{billSearch.bill.staff.person.nameWithTitle}"></p:outputLabel>
+                                                <p:outputLabel value="Speciality"/>
+                                                <p:outputLabel value="#{billSearch.bill.staff.speciality.name}"></p:outputLabel>
+                                                <p:outputLabel value="Address"/>
+                                                <p:outputLabel value="#{billSearch.bill.staff.person.address}"></p:outputLabel>
+                                                <p:outputLabel value="Mobile No."/>
+                                                <p:outputLabel value="#{billSearch.bill.staff.person.mobile}"></p:outputLabel>
+                                            </p:panelGrid>
+
                                         </p:panel>
                                     </p:tab>
 
@@ -183,7 +210,7 @@
                                                 <h:outputText value="#{bi.id}" ></h:outputText>
                                             </p:column>
                                             <p:column >
-                                                <h:outputText value="#{bi.item.name}" ></h:outputText>
+                                                <h:outputText value="#{bi.referanceBillItem.bill.patient.person.nameWithTitle}" ></h:outputText>
                                             </p:column>
                                             <p:column >
                                                 <h:outputText value="#{bi.qty}" ></h:outputText>

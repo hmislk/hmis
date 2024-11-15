@@ -15,11 +15,11 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="col" layout="block">
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.totalValue}"  id="txtVal"/>
-                    </h:panelGroup>
+        </h:panelGroup>
+        <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.totalValue}"  id="txtVal" class="w-25 mb-1" style="margin-left: 12px;"/>
         <div class="d-flex gap-2">
 
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.no}" id="refno" class=""/>                                
+            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.no}" id="refno" class="" placeholder="e-wallet No"/>                                
 
 
             <p:selectOneMenu value="#{cc.attrs.paymentMethodData.ewallet.institution}" >
@@ -27,8 +27,8 @@
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
             </p:selectOneMenu>
 
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.comment}" id="memo" class=""/>
-                        
+            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.comment}" id="memo" class="" placeholder="Enter e-wallet Comment"/>
+
         </div>
 
     </cc:implementation>

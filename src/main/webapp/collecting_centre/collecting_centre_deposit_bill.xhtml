@@ -79,7 +79,7 @@
                                         id="cmbPs" 
                                         class="w-100"
                                         value="#{agentAndCcPaymentController.current.paymentMethod}"> 
-                                        <f:selectItem itemLabel="Select Payment Method"></f:selectItem>
+                                        <f:selectItem itemLabel="Payment Method"></f:selectItem>
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                         <p:ajax process="@this" update="paymentDetails" event="change" />
                                     </p:selectOneMenu>
@@ -113,18 +113,6 @@
                                     <p:inputTextarea 
                                         class="w-100"
                                         value="#{agentAndCcPaymentController.current.comments}"/>    
-                                </div>
-                            </div>
-
-                            <div class="row mt-2">
-                                <div class="col-md-2">
-                                    <p:outputLabel value="Comment"/>
-                                </div>
-                                <div class="col-md-7">
-                                    <p:inputText 
-                                        class="w-100"
-                                        value="#{agentAndCcPaymentController.comment}" 
-                                        id="comment"/>
                                 </div>
                             </div>
                         </p:panel>

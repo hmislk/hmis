@@ -7,9 +7,9 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/credit/index_opd_due_access.xhtml">
-            <ui:define name="subcontent">
-                <h:form>            
+        <ui:composition template="/payments/pay_index.xhtml">
+            <ui:define name="admin">
+                <h:form class="my-4">            
                     <p:commandButton class="ui-button-warning mx-3" icon="fas fa-cogs" id="btnSearch" ajax="false" value="Process Due Age" action="#{creditCompanyDueController.createAgeTable()}"  />
                     <p:defaultCommand target="btnSearch"/>
                     

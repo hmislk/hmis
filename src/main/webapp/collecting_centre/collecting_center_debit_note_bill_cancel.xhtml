@@ -16,8 +16,11 @@
                                                required="true" disabled="true" >
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                             </p:selectOneMenu>
-                            <p:commandButton ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.collectingCenterDebitNoteCancelBill}" style="float: right;"  
-                                             rendered="#{agentPaymentReceiveSearchController.bill.billType eq 'CollectingCentreDebitNoteBill'}" onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                            <p:commandButton ajax="false" value="Cancel" 
+                                             action="#{agentPaymentReceiveSearchController.collectingCenterDebitNoteCancelBill(agentPaymentReceiveSearchController.bill)}" 
+                                             style="float: right;"  
+                                             rendered="#{agentPaymentReceiveSearchController.bill.billType eq 'CollectingCentreDebitNoteBill'}" 
+                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                          return false;"/>
                             
                         </p:panel>
@@ -44,7 +47,23 @@
                     </p:panel>
 
                     <p:panel rendered="#{agentPaymentReceiveSearchController.printPreview}" >
-                        <bi:agent billController ="#{agentPaymentReceiveSearchController}"  bill="#{agentPaymentReceiveSearchController.bill}" dup="false"/>  
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                    <p:commandButton 
+                                        value="Print" 
+                                        class="ui-button-info" 
+                                        icon="fas fa-print" 
+                                        ajax="false" 
+                                        action="#" >
+                                        <p:printer target="billPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+
+                        </f:facet>
+
+                        <h:panelGroup id="billPreview" class="d-flex justify-content-center">
+                        <bi:cc_debit_note_cancel bill="#{agentPaymentReceiveSearchController.bill}" dup="false"/>
+                        </h:panelGroup>
                     </p:panel>
 
 

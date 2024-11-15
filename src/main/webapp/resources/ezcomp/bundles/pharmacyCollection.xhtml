@@ -14,37 +14,51 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        <h:panelGroup rendered="#{empty cc.attrs.bundle.reportTemplateRows}">
+            <table class="table w-100">
+                <thead>
+                    <tr class="text-light bg-dark">
+                        <th class="text-light bg-dark">
+                            No Pharmacy Collection
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
 
 
-        <p:dataTable 
-            emptyMessage="No #{cc.attrs.bundle.name}"
-            var="row" value="#{cc.attrs.bundle.reportTemplateRows}" styleClass="w-100" rowStyleClass="#{row.department ne null ? 'table-primary' : 'table-light'}">
-            <f:facet name="header">
-                <p:row>
-                    <p:column colspan="2" styleClass="bg-dark text-light">
-                        <h:outputText value="Pharmacy Collection" />
-                        <h:outputText styleClass="text-end" value="#{cc.attrs.bundle.total}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputText>
-                    </p:column>
-                </p:row>
-                <p:row>
-                    <p:column headerText="Department" />
-                    <p:column headerText="Collection" styleClass="text-end" />
-                </p:row>
-            </f:facet>
+            <p:dataTable 
+                emptyMessage="No #{cc.attrs.bundle.name}"
+                var="row" value="#{cc.attrs.bundle.reportTemplateRows}" styleClass="w-100" rowStyleClass="#{row.department ne null ? 'table-primary' : 'table-light'}">
+                <f:facet name="header">
+                    <p:row>
+                        <p:column colspan="2" styleClass="bg-dark text-light">
+                            <h:outputText value="Pharmacy Collection" />
+                            <h:outputText styleClass="text-end" value="#{cc.attrs.bundle.total}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column headerText="Department" />
+                        <p:column headerText="Collection" styleClass="text-end" />
+                    </p:row>
+                </f:facet>
 
-            <p:column>
-                <h:outputText value="#{row.department.name}" />
-            </p:column>
-            <p:column styleClass="text-end">
-                <h:outputText value="#{row.rowValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:column>
-        </p:dataTable>
+                <p:column>
+                    <h:outputText value="#{row.department.name}" />
+                </p:column>
+                <p:column styleClass="text-end">
+                    <h:outputText value="#{row.rowValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </p:column>
+            </p:dataTable>
 
 
+        </h:panelGroup>
 
 
 

@@ -32,232 +32,421 @@
 
                         <p:tabView class="w-100" id="gpDetail" activeIndex="#{investigationController.adminTabIndex}" >
                             <p:tab title="Basic Details">
-                                <h:panelGrid id="gpDetailText" columns="3" class="w-100">
 
-                                    <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:inputText class="form-control"  autocomplete="off" id="txtName" 
-                                                 value="#{investigationController.current.name}"  >
-                                    </p:inputText>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText id="lblName" value="Name" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:inputText 
+                                            class="form-control"  
+                                            autocomplete="off" 
+                                            id="txtName" 
+                                            value="#{investigationController.current.name}"  >
+                                        </p:inputText>
+                                    </div>
+                                </div>
 
-                                    <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:inputText class="form-control"  autocomplete="off" id="txtAddress"  
-                                                 value="#{investigationController.current.printName}"  >
-                                    </p:inputText>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText id="lblAddress" value="Printing Name" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:inputText 
+                                            class="form-control"  
+                                            autocomplete="off" 
+                                            id="txtAddress"  
+                                            value="#{investigationController.current.printName}">
+                                        </p:inputText>
+                                    </div>
+                                </div>
 
-                                    <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:inputText class="form-control"  autocomplete="off" id="txtFullName"  
-                                                 value="#{investigationController.current.fullName}"  >
-                                    </p:inputText>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText id="lblFullName" value="Full Name" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:inputText 
+                                            class="form-control"  
+                                            autocomplete="off" 
+                                            id="txtFullName"  
+                                            value="#{investigationController.current.fullName}"  >
+                                        </p:inputText>
+                                    </div>
+                                </div>
 
-                                    <h:outputText  id="lblShortName" value="Short Name" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:inputText class="form-control"  autocomplete="off" id="txtShortName"  
-                                                 value="#{investigationController.current.shortName}"  >
-                                    </p:inputText>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText  id="lblShortName" value="Short Name" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:inputText 
+                                            class="form-control"  
+                                            autocomplete="off" 
+                                            id="txtShortName"  
+                                            value="#{investigationController.current.shortName}"  >
+                                        </p:inputText>
+                                    </div>
+                                </div>
 
-                                    <p:outputLabel value="Item Code"/>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:inputText class="form-control" autocomplete="off" value="#{investigationController.current.code}"/>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><p:outputLabel value="Item Code"/></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6"><p:inputText class="form-control" autocomplete="off" value="#{investigationController.current.code}"/></div>
+                                </div>
 
-                                    <p:outputLabel value="Discription"/>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:inputTextarea class="form-control" value="#{investigationController.current.comments}"/>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><p:outputLabel value="Discription"/></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6"><p:inputTextarea class="form-control" value="#{investigationController.current.comments}"/></div>
+                                </div>
 
-                                    <h:outputText value="Category" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu 
-                                        class="form-control" 
-                                        id="cmbCat" 
-                                        filter="true"
-                                        filterMatchMode="contains"
-                                        value="#{investigationController.current.category}" >
-                                        <f:selectItem itemLabel="Please select a category"/>
-                                        <f:selectItems 
-                                            value="#{investigationCategoryController.items}" 
-                                            var="cat" 
-                                            itemLabel="#{cat.name}" 
-                                            itemValue="#{cat}" />
-                                    </p:selectOneMenu>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Category" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectOneMenu 
+                                            class="form-control" 
+                                            id="cmbCat" 
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            value="#{investigationController.current.category}" >
+                                            <f:selectItem itemLabel="Please select a category"/>
+                                            <f:selectItems 
+                                                value="#{investigationCategoryController.items}" 
+                                                var="cat" 
+                                                itemLabel="#{cat.name}" 
+                                                itemValue="#{cat}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
 
-                                    <h:outputText value="Sample" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" id="cmbSample"  value="#{investigationController.current.sample}" filter="true" filterMatchMode="contains">
-                                        <f:selectItem itemLabel="Please select a Sample"/>
-                                        <f:selectItems value="#{sampleController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
-                                    </p:selectOneMenu>
+                                <div class="row mt-2">
+                                    <div class="col-md-3">
+                                        <h:outputText value="Sample" ></h:outputText>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <h:outputLabel value=" : " style="text-align: center"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p:selectOneMenu 
+                                            class="form-control" 
+                                            id="cmbSample"  
+                                            value="#{investigationController.current.sample}" 
+                                            filter="true" 
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Please select a Sample"/>
+                                            <f:selectItems 
+                                                value="#{sampleController.items}" 
+                                                var="s" 
+                                                itemLabel="#{s.name}" 
+                                                itemValue="#{s}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
 
-                                    <h:outputText value="Container" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" id="cmbTube"  value="#{investigationController.current.investigationTube}" filter="true" filterMatchMode="contains">
-                                        <f:selectItem itemLabel="Please select a Tube"/>
-                                        <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                    </p:selectOneMenu>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Container" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectOneMenu 
+                                            class="form-control" 
+                                            id="cmbTube"  
+                                            value="#{investigationController.current.investigationTube}" 
+                                            filter="true" 
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Please select a Tube"/>
+                                            <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
 
-                                    <h:outputText value="Analyzer" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" id="cmbmac" value="#{investigationController.current.machine}" filter="true" filterMatchMode="contains">
-                                        <f:selectItem itemLabel="Please select a Machine"/>
-                                        <f:selectItems value="#{machineController.items}" var="m" itemLabel="#{m.name}" itemValue="#{m}" />
-                                    </p:selectOneMenu>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Analyzer" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectOneMenu 
+                                            class="form-control" 
+                                            id="cmbmac" 
+                                            value="#{investigationController.current.machine}" 
+                                            filter="true" 
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Please select a Machine"/>
+                                            <f:selectItems value="#{machineController.items}" var="m" itemLabel="#{m.name}" itemValue="#{m}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
 
-                                    <h:outputText value="Priority" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" value="#{investigationController.current.priority}"    >
-                                        <f:selectItem itemLabel="Not Set" ></f:selectItem>
-                                        <f:selectItems value="#{enumController.priorities}" ></f:selectItems>
-                                    </p:selectOneMenu>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Priority" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectOneMenu 
+                                            class="form-control" 
+                                            value="#{investigationController.current.priority}"    >
+                                            <f:selectItem itemLabel="Not Set" ></f:selectItem>
+                                            <f:selectItems value="#{enumController.priorities}" ></f:selectItems>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
 
-                                    <p:outputLabel value="Report Category"/>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" value="#{investigationController.current.reportType}" >                               
-                                        <f:selectItem itemLabel="Select" />
-                                        <f:selectItems value="#{enumController.investigationReportTypes}" ></f:selectItems>
-                                    </p:selectOneMenu>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><p:outputLabel value="Report Category"/></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectOneMenu 
+                                            class="form-control" 
+                                            value="#{investigationController.current.reportType}" >                               
+                                            <f:selectItem itemLabel="Select" />
+                                            <f:selectItems value="#{enumController.investigationReportTypes}" ></f:selectItems>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
 
-                                    <h:outputText value="Report Format" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" id="cmbRf"  value="#{investigationController.current.reportFormat}" >
-                                        <f:selectItems value="#{reportFormatController.items}" var="rf1" itemLabel="#{rf1.name}" itemValue="#{rf1}" />
-                                    </p:selectOneMenu>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Report Format" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6"><p:selectOneMenu class="form-control" id="cmbRf"  value="#{investigationController.current.reportFormat}" >
+                                            <f:selectItems value="#{reportFormatController.items}" var="rf1" itemLabel="#{rf1.name}" itemValue="#{rf1}" />
+                                        </p:selectOneMenu></div>
+                                </div>
 
-                                    <h:outputText value="Serial Numbers" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control w-100" id="cmbSerial"  
-                                                     value="#{investigationController.current.sessionNumberType}" >
-                                        <f:selectItem itemLabel="Please select a Session Number Generation Strategy"/>
-                                        <f:selectItems value="#{enumController.sessionNumberTypes}" />
-                                    </p:selectOneMenu>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Serial Numbers" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectOneMenu 
+                                            class="form-control w-100" 
+                                            id="cmbSerial"  
+                                            value="#{investigationController.current.sessionNumberType}" >
+                                            <f:selectItem itemLabel="Please select a Session Number Generation Strategy"/>
+                                            <f:selectItems value="#{enumController.sessionNumberTypes}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Worksheet" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectOneMenu 
+                                            class="form-control" 
+                                            id="cmbWs"  
+                                            value="#{investigationController.current.worksheet }" >
+                                            <f:selectItem itemLabel="By Values"/>
+                                            <f:selectItems value="#{reportFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
 
-                                    <h:outputText value="Worksheet" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" id="cmbWs"  value="#{investigationController.current.worksheet }" >
-                                        <f:selectItem itemLabel="By Values"/>
-                                        <f:selectItems value="#{reportFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
-                                    </p:selectOneMenu>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Inward Category" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectOneMenu 
+                                            class="form-control" 
+                                            id="cmbInward" 
+                                            value="#{investigationController.current.inwardChargeType}" 
+                                            filter="true" 
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Please select Charge"/>
+                                            <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
 
-                                    <h:outputText value="Inward Category" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" id="cmbInward" value="#{investigationController.current.inwardChargeType}" filter="true" filterMatchMode="contains">
-                                        <f:selectItem itemLabel="Please select Charge"/>
-                                        <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
-                                    </p:selectOneMenu>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Is a Master Item" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectBooleanButton  
+                                            id="chkMasterItem" 
+                                            onLabel="THIS IS A MASTER ITEM."
+                                            offLabel="This is NOT a master item."
+                                            value="#{itemController.current.isMasterItem}" 
+                                            >
+                                        </p:selectBooleanButton>
+                                    </div>
+                                </div>
 
-                                    <h:outputText value="Is a Master Item" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectBooleanButton  
-                                        id="chkMasterItem" 
-                                        onLabel="THIS IS A MASTER ITEM."
-                                        offLabel="This is NOT a master item."
-                                        value="#{itemController.current.isMasterItem}" 
-                                        >
-                                    </p:selectBooleanButton>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Has a Report Format" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectBooleanCheckbox  
+                                            id="chkHasReport" 
+                                            itemLabel="Report Format" 
+                                            value="#{itemController.current.hasReportFormat}" >
+                                        </p:selectBooleanCheckbox>
+                                    </div>
+                                </div>
 
-                                    <h:outputText value="Has a Report Format" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectBooleanCheckbox  
-                                        id="chkHasReport" 
-                                        itemLabel="Report Format" 
-                                        value="#{itemController.current.hasReportFormat}" >
-                                    </p:selectBooleanCheckbox>
-                                    
-                                    <h:outputText value="Multiple Reports Allowed" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectBooleanCheckbox 
-                                        id="chkmultipleReportsAllowed" 
-                                        itemLabel="Reports Allowed" 
-                                        value="#{investigationController.current.multipleReportsAllowed}" >
-                                    </p:selectBooleanCheckbox>
-                                    
-                                    <h:outputText value="Master Item Reference" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:autoComplete 
-                                        value="#{itemController.current.masterItemReference}"
-                                        forceSelection="true" 
-                                        id="itemAsIx"
-                                        class="w-100"
-                                        inputStyleClass="form-control"
-                                        var="ix1"
-                                        completeMethod="#{itemController.completeMasterItems}"
-                                        itemLabel="#{ix1.name}" 
-                                        itemValue="#{ix1}" 
-                                        size="30"  
-                                        >
-                                    </p:autoComplete>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Multiple Reports Allowed" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6"> 
+                                        <p:selectBooleanCheckbox 
+                                            id="chkmultipleReportsAllowed" 
+                                            itemLabel="Reports Allowed" 
+                                            value="#{investigationController.current.multipleReportsAllowed}" >
+                                        </p:selectBooleanCheckbox>
+                                    </div>
+                                </div>
 
-                                    <p:selectBooleanCheckbox   id="chkBilledAs" value="#{investigationController.billedAs}" itemLabel="Billed as a seperate investigation"  >
-                                        <p:ajax event="change" process="@this" update="billedAsIx" />
-                                    </p:selectBooleanCheckbox>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:autoComplete
-                                        converter="ixcon" 
-                                        disabled="#{!investigationController.billedAs}" 
-                                        widgetVar="aIx1" 
-                                        class="w-100"
-                                        inputStyleClass="form-control"
-                                        id="billedAsIx" 
-                                        forceSelection="true"
-                                        value="#{investigationController.current.billedAs}"
-                                        completeMethod="#{investigationController.completeItem}" 
-                                        var="ix1" 
-                                        itemLabel="#{ix1.name}" 
-                                        itemValue="#{ix1}" 
-                                        size="30"  >
-                                    </p:autoComplete>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Alternative Report Allowed" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectBooleanCheckbox 
+                                            itemLabel="Reports Allowed" 
+                                            value="#{investigationController.current.alternativeReportAllowed}" >
+                                        </p:selectBooleanCheckbox>
+                                    </div>
+                                </div>
 
-                                    <p:selectBooleanCheckbox  
-                                        id="chkReportedAs" 
-                                        value="#{investigationController.reportedAs}" 
-                                        itemLabel="Reported as a seperate investigation" >
-                                        <p:ajax event="change" process="@this" update="reportedAsIx" />
-                                    </p:selectBooleanCheckbox>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:autoComplete 
-                                        converter="ixcon"
-                                        disabled="#{!investigationController.reportedAs}"
-                                        widgetVar="aIx2" 
-                                        id="reportedAsIx"
-                                        forceSelection="true"
-                                        value="#{investigationController.current.reportedAs}" 
-                                        completeMethod="#{investigationController.completeItem}" 
-                                        var="ix2" 
-                                        class="w-100"
-                                        inputStyleClass="form-control"
-                                        itemLabel="#{ix2.name}" 
-                                        itemValue="#{ix2}" 
-                                        size="30"  >
-                                        <p:column headerText="Name" >
-                                            <h:outputText value="#{ix2.name}" ></h:outputText>
-                                        </p:column>
-                                        <p:column headerText="Code">
-                                            <h:outputText value="#{ix2.code}" ></h:outputText>
-                                        </p:column>
-                                        <p:column headerText="ID">
-                                            <h:outputText value="#{ix2.id}" ></h:outputText>
-                                        </p:column>
-                                        <p:column headerText="Department">
-                                            <h:outputText value="#{ix2.department.name}" rendered="#{ix2.department ne null}"  ></h:outputText>
-                                        </p:column>
-                                    </p:autoComplete>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Master Item Reference" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:autoComplete 
+                                            value="#{itemController.current.masterItemReference}"
+                                            forceSelection="true" 
+                                            id="itemAsIx"
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            var="ix1"
+                                            completeMethod="#{itemController.completeMasterItems}"
+                                            itemLabel="#{ix1.name}" 
+                                            itemValue="#{ix1}" 
+                                            size="30"  
+                                            >
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
 
-                                    <h:outputText value="Institution" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" id="cmbIns"    value="#{investigationController.current.institution}" filter="true" filterMatchMode="contains">
-                                        <f:selectItem itemLabel="Please select a Institution"/>
-                                        <f:selectItems value="#{institutionController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                        <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
-                                    </p:selectOneMenu>
+                                <div class="row mt-2">
+                                    <div class="col-md-3">
+                                        <p:selectBooleanCheckbox   
+                                            id="chkBilledAs" 
+                                            value="#{investigationController.billedAs}" 
+                                            itemLabel="Billed as a seperate investigation"  >
+                                            <p:ajax event="change" process="@this" update="billedAsIx" />
+                                        </p:selectBooleanCheckbox>
+                                    </div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex gap-3">
+                                            <p:autoComplete
+                                                converter="ixcon" 
+                                                disabled="#{!investigationController.billedAs}" 
+                                                widgetVar="aIx1" 
+                                                class="w-100"
+                                                inputStyleClass="form-control"
+                                                id="billedAsIx" 
+                                                forceSelection="true"
+                                                value="#{investigationController.current.billedAs}"
+                                                completeMethod="#{investigationController.completeItem}" 
+                                                var="ix1" 
+                                                maxResults="15"
+                                                itemLabel="#{ix1.name}" 
+                                                itemValue="#{ix1}" 
+                                                size="30"  >
+                                            </p:autoComplete>
+                                            <p:commandButton 
+                                                icon="pi pi-cog" 
+                                                style="width: 70px;"
+                                                class="ui-button-warning"
+                                                disabled="true"
+                                                action="#{investigationController.navigateToManageInvestigation()}">
+                                                <f:setPropertyActionListener value="#{investigationController.current.billedAs}" target="#{investigationController.current}"  />
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                    <h:outputText value="Department" ></h:outputText>
-                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" id="cmbDep"  value="#{investigationController.current.department}" filter="true" filterMatchMode="contains">
-                                        <f:selectItem itemLabel="Please select a Department"/>
-                                        <f:selectItems value="#{investigationController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                    </p:selectOneMenu>
+                                <div class="row mt-2">
+                                    <div class="col-md-3">
+                                        <p:selectBooleanCheckbox  
+                                            id="chkReportedAs" 
+                                            value="#{investigationController.reportedAs}" 
+                                            itemLabel="Reported as a seperate investigation" >
+                                            <p:ajax event="change" process="@this" update="reportedAsIx" />
+                                        </p:selectBooleanCheckbox></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex gap-3">
+                                            <p:autoComplete 
+                                                converter="ixcon"
+                                                disabled="#{!investigationController.reportedAs}"
+                                                widgetVar="aIx2" 
+                                                id="reportedAsIx"
+                                                forceSelection="true"
+                                                value="#{investigationController.current.reportedAs}" 
+                                                completeMethod="#{investigationController.completeItem}" 
+                                                var="ix2"
+                                                class="w-100"
+                                                inputStyleClass="form-control"
+                                                itemLabel="#{ix2.name}" 
+                                                itemValue="#{ix2}" 
+                                                maxResults="15"
+                                                size="30"  >
+                                                <p:column headerText="Name" style="padding: 6px;">
+                                                    <h:outputText value="#{ix2.name}" ></h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Code" style="padding: 6px;">
+                                                    <h:outputText value="#{ix2.code}" ></h:outputText>
+                                                </p:column>
+                                                <p:column headerText="ID" style="padding: 6px;">
+                                                    <h:outputText value="#{ix2.id}" ></h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Department" style="padding: 6px;">
+                                                    <h:outputText value="#{ix2.department.name}" rendered="#{ix2.department ne null}"  ></h:outputText>
+                                                </p:column>
+                                            </p:autoComplete>
+                                            <p:commandButton 
+                                                icon="pi pi-cog" 
+                                                style="width: 70px;"
+                                                class="ui-button-warning"
+                                                disabled="#{investigationController.current.reportedAs eq null}"
+                                                action="#{investigationController.navigateToManageInvestigation()}">
+                                                <f:setPropertyActionListener value="#{investigationController.current.reportedAs}" target="#{investigationController.current}"  />
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                </h:panelGrid>
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Institution" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectOneMenu 
+                                            class="form-control" 
+                                            id="cmbIns"    
+                                            value="#{investigationController.current.institution}" 
+                                            filter="true" 
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Please select a Institution"/>
+                                            <f:selectItems value="#{institutionController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                            <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
+                                        </p:selectOneMenu></div>
+                                </div>
+
+
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Department" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectOneMenu 
+                                            class="form-control" 
+                                            id="cmbDep"  
+                                            value="#{investigationController.current.department}" 
+                                            filter="true" 
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Please select a Department"/>
+                                            <f:selectItems 
+                                                value="#{investigationController.institutionDepatrments}" 
+                                                var="cat" 
+                                                itemLabel="#{cat.name}" 
+                                                itemValue="#{cat}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
                             </p:tab>
                             <p:tab title="Pricing Details">
                                 <h:panelGrid columns="3" >
@@ -383,6 +572,7 @@
                                         ajax="false" 
                                         value="Manage Valuesets" 
                                         action="#{investigationController.navigateToManageValueSetsForAdmin()}" >
+                                        <f:setPropertyActionListener value="#{investigationController.current}" target="#{investigationItemController.currentInvestigation}" ></f:setPropertyActionListener>
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -406,6 +596,7 @@
                                         ajax="false" 
                                         value="Dynamic Labels" 
                                         action="/admin/lims/dynamic_labels?faces-redirect=true" >
+                                        <f:setPropertyActionListener value="#{investigationController.current}" target="#{investigationItemDynamicLabelController.investigation}" ></f:setPropertyActionListener>
                                     </p:commandButton>
 
                                     <p:commandButton                                         
@@ -427,6 +618,13 @@
                                         ajax="false" 
                                         action="#{investigationController.navigateToListInvestigation()}" 
                                         value="List of Investigations">
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton                                                 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        action="#{investigationController.navigateToEditFormatSinglePastData()}" 
+                                        value="Manage Past Data" >
                                     </p:commandButton>
                                 </h:panelGrid>
                             </p:tab>

@@ -4,26 +4,26 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form >
                     <p:panel>
+                        <f:facet name="header" >
+                            <p:outputLabel value="Change Prefeances and Save" ></p:outputLabel>
+                            <p:commandButton 
+                                id="btnSave" 
+                                style="float:right;"
+                                ajax="false" 
+                                value="Save" 
+                                icon="fas fa-save"
+                                class="ui-button-warning mx-2"
+                                action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
+                        </f:facet>
 
-
-                        <p:commandButton id="btnSave" 
-                                         ajax="false" 
-                                         value="Save" 
-                                         icon="fas fa-save"
-                                         class="ui-button-warning mx-2"
-                                         action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
-
-
-
-                        <p:panelGrid columns="2" >
+                        <p:panelGrid columns="2" layout="tabular" >
                             <h:outputLabel 
                                 value="Autodisplay Menu" ></h:outputLabel>
                             <p:selectBooleanButton 
@@ -37,6 +37,12 @@
 
 
 
+                    </p:panel>
+                    <p:panel header="Change for this Session" >
+                        <p:panelGrid columns="2" layout="tabular" >
+                            <p:outputLabel value="Developer Privilege" ></p:outputLabel>
+                            <p:selectBooleanButton offLabel="Off" onLabel="On" value="#{webUserController.skipDevelopersPrivilege}" ></p:selectBooleanButton>
+                        </p:panelGrid>
                     </p:panel>
                 </h:form>
 

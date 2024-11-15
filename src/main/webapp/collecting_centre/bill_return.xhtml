@@ -1,0 +1,167 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form >
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fas fa-money-bill"></h:outputText>
+                                    <h:outputLabel value="Collcting Centre Bill Return" class="mx-3"></h:outputLabel>
+                                </div>
+                                <div>
+                                    <h:outputLabel value="Refunding Total " class="mx-3"></h:outputLabel>
+                                    <h:outputLabel value=" : "></h:outputLabel>
+                                    <h:outputLabel id="refundingAmound" value="#{billReturnController.refundingTotalAmount}"  class="mx-3">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </div>
+                            </div>
+                        </f:facet>
+                      
+                        <p:growl ></p:growl>
+                        <div class="d-flex justify-content-end">
+                            <div class="d-flex gap-2">
+                                <p:selectOneMenu   
+                                    id="cmbPs" 
+                                    disabled="true"
+                                    value="#{billReturnController.paymentMethod}">
+                                    <f:selectItem itemLabel="Select paymentMethod"/>
+                                    <f:selectItems value="#{enumController.activePaymentMethods}"/>
+                                </p:selectOneMenu>
+                                <p:commandButton
+                                    value="To Return"
+                                    class="ui-button-warning"
+                                    process="@this" 
+                                    update="dlg" 
+                                    oncomplete="PF('dlg').show()"
+                                    >
+                                </p:commandButton>
+
+                                <p:dialog id="dlg" modal="true" widgetVar="dlg" header="Refund Comment" width="700" height="50">
+                                    <div>
+                                        <div class="d-flex gap-2">
+                                            <p:inputText value="#{billReturnController.refundComment}"  class="w-100"></p:inputText>
+                                            <p:commandButton 
+                                                id="btnSave" 
+                                                value="Refund" 
+                                                ajax="false"
+                                                class="ui-button-warning"
+                                                onclick="if (!confirm('Are You Sure You Want to Refund this Items?'))
+                                                            return false;"
+                                                action="#{billReturnController.settleCCReturnBill()}"
+                                                oncomplete="PF('dlg').hide();" >
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </p:dialog>
+
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-3">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                        <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <common:patient patient="#{billReturnController.originalBillToReturn.patient}" class="w-100"/>
+                                </p:panel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                        <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.deptId}" ></h:outputLabel>
+                                        <h:outputLabel value="Code :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.collectingCentre.code}" ></h:outputLabel>
+                                        <h:outputLabel value="Collcting Centre :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.collectingCentre.name}" ></h:outputLabel>
+                                        <h:outputLabel value="Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.total}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Discount :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.discount}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:panelGrid>
+                                </p:panel>
+                            </div>
+                            <div class="col-md-5">
+                                <p:panel id="panelItems">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-list-alt" class="mt-2"></h:outputText>
+                                        <h:outputLabel value="Bill Item Details" class="mx-2 mt-2"></h:outputLabel>
+                                        <p:commandButton
+                                            value="Select All"
+                                            id="selectAll"
+                                            rendered="#{billReturnController.selectAll}"
+                                            style="float: right;"
+                                            process="@this"
+                                            update=":#{p:resolveFirstComponentWithId('panelItems',view).clientId} :#{p:resolveFirstComponentWithId('refundingAmound',view).clientId}" 
+                                            action="#{billReturnController.selectAllItems()}">
+                                        </p:commandButton>
+                                        
+                                        <p:commandButton
+                                            value="Unselect All"
+                                            id="unSelectAll"
+                                            rendered="#{!billReturnController.selectAll}"
+                                            style="float: right;"
+                                            process="@this"
+                                            update=":#{p:resolveFirstComponentWithId('panelItems',view).clientId} :#{p:resolveFirstComponentWithId('refundingAmound',view).clientId}" 
+                                            action="#{billReturnController.unSelectAllItems()}">
+                                        </p:commandButton>
+                                        
+                                    </f:facet>
+                                    <p:dataTable 
+                                        id="billItems"
+                                        value="#{billReturnController.originalBillItemsAvailableToReturn}" 
+                                        var="obi"
+                                        selectionDisabled="#{obi.refunded}"
+                                        selection="#{billReturnController.originalBillItemsToSelectedToReturn}"
+                                        rowKey="#{obi.id}" >
+
+                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('refundingAmound',view).clientId} :#{p:resolveFirstComponentWithId('panelItems',view).clientId}" event="rowSelectCheckbox" listener="#{billReturnController.calculateRefundingAmount()}" />
+                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('refundingAmound',view).clientId} :#{p:resolveFirstComponentWithId('panelItems',view).clientId}" event="rowUnselectCheckbox" listener="#{billReturnController.calculateRefundingAmount()}"/>
+
+                                        <p:column selectionBox="true" width="20" >
+                                        </p:column>
+                                        <p:column headerText="Item Name">
+                                            <h:outputLabel value="#{obi.item.name}" ></h:outputLabel>
+                                        </p:column>
+                                        <p:column >
+                                            <p:tag styleClass="mr-2" icon="pi pi-exclamation-triangle" severity="warning" value="Refunded" rendered="#{obi.refunded}"></p:tag>
+                                        </p:column>
+                                        <p:column headerText="Item Value" style="width: 10em;">
+                                            <h:outputLabel value="#{obi.netValue}" class="mx-3 d-flex justify-content-end">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

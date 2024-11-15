@@ -132,36 +132,73 @@
                             <h:outputLabel value="#{reportController.toDate}"  >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
-
-                            <h:outputLabel value="CC Name :  "/>
-                            <h:outputLabel value="#{reportController.collectingCentre}"  ></h:outputLabel>
-
+                          
+                            <h:outputLabel value="CC Name :"/>
+                            <h:outputLabel value="#{reportController.collectingCentre.name}" ></h:outputLabel>
 
                         </h:panelGrid>
 
 
                         <p:dataTable value="#{reportController.testWiseCounts}" id="tblExport" var="c" rowIndexVar="rowIndex">
-                            <p:column headerText="S. No" >
+                            <p:column headerText="S. No" width="3em">
                                 <h:outputText value="#{rowIndex + 1}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Test Name" >
+                            <p:column headerText="Test Name">
                                 <h:outputText value="#{c.testName}" ></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Count" >
-                                <h:outputText value="#{c.count}" ></h:outputText>
+                            <p:column headerText="Count" width="10em">
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalCount}" >
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{c.count}" >
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Hos Fee" >
-                                <h:outputText value="#{c.hosFee}" ></h:outputText>
+                            <p:column headerText="Hos Fee" width="10em">
+                                <h:outputText value="#{c.hosFee}" > 
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalHosFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
-                            <p:column headerText="CC Fee" >
-                                <h:outputText value="#{c.ccFee}" ></h:outputText>
+
+                            <p:column headerText="CC Fee" width="10em">
+                                <h:outputText value="#{c.ccFee}" > 
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalCCFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
-                            <p:column headerText="Professional Fee" >
-                                <h:outputText value="#{c.proFee}" ></h:outputText>
+
+                            <p:column headerText="Professional Fee" width="10em">
+                                <h:outputText value="#{c.proFee}" > 
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalProFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
-                            <p:column headerText="Total Amount" >
-                                <h:outputText value="#{c.total}" ></h:outputText>
+
+                            <p:column headerText="Total Amount" width="10em">
+                                <h:outputText value="#{c.total}" > 
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalNetTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                         </p:dataTable>

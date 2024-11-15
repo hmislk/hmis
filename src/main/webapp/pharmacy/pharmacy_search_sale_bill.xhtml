@@ -74,20 +74,14 @@
                                         </h:outputLabel>
 
                                     </f:facet>
-                                    
-<!--                                    <p:column headerText="View">
-                                        <p:commandButton ajax="false" value="View Bill" disabled="#{bill.referenceBill eq null}"
-                                                         action="pharmacy_reprint_bill_sale">
-                                            <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>   
-                                        </p:commandButton>
-                                    </p:column>-->
 
                                     <p:column headerText="Bill No" >
-                                        <p:commandLink id="billNo" 
-                                                       ajax="false" 
-                                                       value="#{bill.deptId}" 
-                                                       disabled="#{bill.referenceBill eq null}"
-                                                       action="pharmacy_reprint_bill_sale">
+                                        <p:commandLink 
+                                            id="billNo" 
+                                            ajax="false" 
+                                            value="#{bill.deptId}" 
+                                            disabled="#{bill.referenceBill eq null}"
+                                            action="pharmacy_reprint_bill_sale">
                                             <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>  
                                         </p:commandLink>
                                     </p:column>
@@ -199,9 +193,27 @@
                                         <h:outputLabel value="#{bill.referredBy.person.nameWithTitle}" />
                                     </p:column>
 
-                                    <p:column headerText="Payment Method">
-                                        <h:outputLabel value="#{bill.paymentMethod}" /><br/>
-                                        <h:outputLabel value="#{bill.paymentScheme.name}" />
+                                    <p:column headerText="Payment Method" width="150">
+                                        <div class="d-flex justify-content-center">
+                                            <p:badge value="Multiple" severity="info" rendered="#{bill.paymentMethod eq 'MultiplePaymentMethods'}"></p:badge>
+                                            <p:badge value="#{bill.paymentMethod}" rendered="#{bill.paymentMethod ne 'MultiplePaymentMethods'}" severity="info" ></p:badge>
+                                        </div>
+
+                                        <div>
+                                            <p:badge value="#{bill.paymentScheme.name}" rendered="#{bill.paymentScheme ne null}"></p:badge>
+                                        </div>
+
+                                        <h:panelGroup rendered="#{bill.paymentMethod eq 'MultiplePaymentMethods'}" >
+                                            <ui:repeat value="#{searchController.getPaymentDetals(bill.referenceBill)}" var="payment">
+                                                <div class="d-flex mt-1">
+                                                    <p:badge value="#{payment.paymentMethod}" severity="warning" ></p:badge>
+                                                    <h:outputLabel value="-" style="width: 30px;" class="d-flex justify-content-center"/>
+                                                    <h:outputLabel value="#{payment.paidValue}" style="width: 70px;" class="d-flex justify-content-end" >
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel><br/>
+                                                </div>
+                                            </ui:repeat>
+                                        </h:panelGroup>
                                     </p:column>
 
                                     <p:column headerText="Gross Value"  >

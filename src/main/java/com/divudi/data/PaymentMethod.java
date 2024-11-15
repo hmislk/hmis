@@ -9,7 +9,7 @@ public enum PaymentMethod {
     OnCall("On Call", PaymentType.NONE, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
     Cash("Cash", PaymentType.NON_CREDIT, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.CREDIT_SETTLEMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
     Card("Credit Card", PaymentType.NON_CREDIT, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
-    MultiplePaymentMethods("Multiple Payment Methods", PaymentType.NONE, PaymentContext.ACCEPTING_PAYMENTS),
+    MultiplePaymentMethods("Multiple Payment Methods", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS),
     Staff("Staff Credit", PaymentType.CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
     Credit("Credit", PaymentType.CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.PURCHASES),
     Staff_Welfare("Staff Welfare", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
@@ -23,6 +23,7 @@ public enum PaymentMethod {
     PatientPoints("Patient Points", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
     OnlineSettlement("Online Settlement", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS),
     None("None", PaymentType.NONE, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.CREDIT_SETTLEMENTS),
+    @Deprecated
     YouOweMe("You Owe Me", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS); // Assuming deprecated
 
     private final String label;

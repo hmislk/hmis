@@ -1,0 +1,272 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="./../index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel   header="Department Revenue Report" class="m-1">
+
+                        <h:panelGrid columns="8" class="w-100">
+                            <h:outputLabel value="From"/>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="To"/>                                
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+                            
+                            <h:outputLabel value="Institution"/>                                
+                            <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
+                                <f:selectItem itemLabel="All Institution" ></f:selectItem>
+                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="Site"/>   
+                            <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites" ></f:selectItem>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
+                                <p:ajax event="itemSelect" process="@this" update="dept"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="Department"/>                                
+                            <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true" id="dept">
+                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInstitutionDepartments(searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="6" class="my-2 mb-3" >
+
+                            <p:commandButton  
+                                value="Process" 
+                                ajax="false"
+                                action="#{searchController.generateDepartmentRevenueReport()}" 
+                                class="ui-button-warning" icon="fas fa-cogs">
+                            </p:commandButton>
+
+                            <p:commandButton  
+                                value="Print" 
+                                ajax="false"
+                                class="ui-button-info mx-1" icon="fas fa-print">
+                                <p:printer target="printdata" />
+                            </p:commandButton>
+
+                            <p:commandButton  
+                                value="Excel" 
+                                ajax="false"
+                                class="ui-button-success" icon="fas fa-file-excel">
+                                <p:dataExporter type="xlsx" target="printdata" fileName="All Cashier Summury Report #{sessionController.currentDate} - #{sessionController.institution.name} #{sessionController.department.name}" />
+                            </p:commandButton>
+
+                            <p:commandButton  
+                                value="PDF" 
+                                ajax="false"
+                                class="ui-button-danger mx-1" icon="fas fa-file-pdf">
+                                <p:dataExporter type="pdf" target="printdata" fileName="All Cashier Summury Report #{sessionController.currentDate} - #{sessionController.institution.name} #{sessionController.department.name}" />
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                        <p:dataTable 
+                            value="#{searchController.bundle.reportTemplateRows}" var="summary"
+                            paginator="true" rows="10"
+                            id="printdata"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                            currentPageReportTemplate="(Page {currentPage} of {totalPages})"
+                            paginatorPosition="bottom">
+
+                            <p:column headerText="Institution" sortBy="#{summary.department.institution.name}" filterBy="#{summary.department.institution.name}" filterMatchMode="contains">
+                                <h:outputText value="#{summary.department.institution.name}" />
+                            </p:column>
+
+                            <p:column headerText="Department" sortBy="#{summary.department.name}" filterBy="#{summary.department.name}" filterMatchMode="contains">
+                                <h:outputText value="#{summary.department.name}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type" sortBy="#{summary.department.site.name}" filterBy="#{summary.department.site.name}" filterMatchMode="contains">
+                                <h:outputText value="#{summary.billTypeAtomic.label}" />
+                            </p:column>
+
+                            <p:column headerText="Cash" style="text-align: right; width: 9em;" rendered="#{searchController.bundle.hasCashTransaction}" >
+                                <h:outputText value="#{summary.cashValue}"  style="text-align: right;">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{searchController.bundle.cashValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Card" style="text-align: right; width: 9em;" rendered="#{searchController.bundle.hasCardTransaction}" >
+                                <h:outputText value="#{summary.cardValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.cardValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Credit" style="text-align: right; width: 9em;" rendered="#{searchController.bundle.hasCreditTransaction}" >
+                                <h:outputText value="#{summary.creditValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.creditValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <!-- Continuing from Credit -->
+                            <p:column headerText="Staff Welfare" style="text-align: right; width: 9em;" rendered="#{searchController.bundle.hasStaffWelfareTransaction}" >
+                                <h:outputText value="#{summary.staffWelfareValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.staffWelfareValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Voucher" style="text-align: right; width: 9em;" rendered="#{searchController.bundle.hasVoucherTransaction}" >
+                                <h:outputText value="#{summary.voucherValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.voucherValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="IOU" style="text-align: right; width: 9em;" rendered="#{searchController.bundle.hasIouTransaction}" >
+                                <h:outputText value="#{summary.iouValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.iouValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Agent" style="text-align: right; width: 9em;" rendered="#{searchController.bundle.hasAgentTransaction}" >
+                                <h:outputText value="#{summary.agentValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.agentValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Cheque" style="text-align: right; width: 9em;" rendered="#{searchController.bundle.hasChequeTransaction}" >
+                                <h:outputText value="#{summary.chequeValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.chequeValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Slip" style="text-align: right; width: 9em;" rendered="#{searchController.bundle.hasSlipTransaction}" >
+                                <h:outputText value="#{summary.slipValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.slipValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="eWallet" style="text-align: right; width: 9em;" rendered="#{searchController.bundle.hasEWalletTransaction}" >
+                                <h:outputText value="#{summary.ewalletValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.ewalletValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Patient Deposit" style="text-align: right; width: 9em;" rendered="#{searchController.bundle.hasPatientDepositTransaction}" >
+                                <h:outputText value="#{summary.patientDepositValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.patientDepositValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Patient Points" style="text-align: right; width: 9em;" rendered="#{searchController.bundle.hasPatientPointsTransaction}" >
+                                <h:outputText value="#{summary.patientPointsValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.patientPointsValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Online Settlement" style="text-align: right; width: 9em;" rendered="#{searchController.bundle.hasOnCallTransaction}" >
+                                <h:outputText value="#{summary.onlineSettlementValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.onlineSettlementValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

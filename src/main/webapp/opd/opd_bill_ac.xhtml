@@ -17,7 +17,7 @@
                 </h:panelGroup>
 
                 <h:form id="form" rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" >
-
+                    
                     <p:growl id="msg"  />
                     <p:panel class="m-0 p-0" >
                         <f:facet name="header" >
@@ -90,7 +90,14 @@
                                                                 process="@this" 
                                                                 update="viewPatient editPatient btnDone edit" />
                                                         </p:selectBooleanButton>
-                                                        <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(opdBillController.patient)}" rendered="#{opdBillController.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} " />
+                                                        <p:commandButton 
+                                                            id="btnDone" 
+                                                            alt="Save Patient Details" 
+                                                            class="ui-button-success" 
+                                                            icon="fas fa-check" 
+                                                            action="#{patientController.saveSelected(opdBillController.patient)}" 
+                                                            rendered="#{opdBillController.patientDetailsEditable}" 
+                                                            update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"  />
                                                     </h:panelGroup>
 
                                                 </h:panelGroup>
@@ -130,7 +137,7 @@
                                                         title="Add New Patient"
                                                         action="#{patientController.quickSearchNewPatient(opdBillController)}" 
                                                         process="btnAddNewPatient"
-                                                        update="ptImp selectPatient editPatient viewPatient"
+                                                        update="ptImp selectPatient editPatient viewPatient :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"
                                                         styleClass="btn-sm mx-1"/>
                                                 </h:panelGroup>
                                             </h:panelGroup>
@@ -349,7 +356,7 @@
                                                         </div>
 
                                                         <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                        <p:tooltip for="txtNic" value="NIC No"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                        <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
                                                         <p:tooltip for="dpDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>
                                                         <p:tooltip for="txtAddress" value="Address"  showDelay="0" hideDelay="0"></p:tooltip>
                                                         <p:tooltip for="txtMobile" value="Mobile Number"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -424,13 +431,23 @@
 
                                                     <h:outputLabel value="Account Balance " class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
                                                     <h:outputLabel value=" : " class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
-                                                    <h:outputText value="#{opdBillController.patient.runningBalance}" rendered="#{opdBillController.patient.hasAnAccount}">
+                                                    <h:outputText value="#{patientDepositController.checkDepositOfThePatient(opdBillController.patient, sessionController.department).balance}" rendered="#{opdBillController.patient.hasAnAccount}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
 
                                                     <h:outputLabel value="Area " class="mx-3"/>
                                                     <h:outputLabel value=" : " class="mx-3"/>
                                                     <h:outputText value="#{opdBillController.patient.person.area.name}" />
+
+                                                    
+                                                    <h:outputLabel value="Membership" class="mx-3" rendered="#{opdBillController.patient.person.membershipScheme ne null}"/>
+                                                    <h:outputLabel value=" : " class="mx-3" rendered="#{opdBillController.patient.person.membershipScheme ne null}"/>
+                                                    <h:outputText value="#{opdBillController.patient.person.membershipScheme.name}"  rendered="#{opdBillController.patient.person.membershipScheme ne null}"/>
+
+                                                    <h:outputLabel value="Discount Scheme " class="mx-3"  rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>
+                                                    <h:outputLabel value=" : " class="mx-3"  rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>
+                                                    <h:outputText value="#{opdBillController.patient.person.membershipScheme.paymentScheme.name}"   rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>
+
 
                                                 </h:panelGrid>
                                             </h:panelGroup>
@@ -593,7 +610,7 @@
                                                 class="w-100 mx-1 ui-button-success"
                                                 action="#{opdBillController.addToBill()}"  
                                                 process="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
-                                                update=" msg tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty focusLstIx">
+                                                update=" msg tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty focusLstIx :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}  :#{p:resolveFirstComponentWithId('patientDeposit',view).clientId} :#{p:resolveFirstComponentWithId('txtVal',view).clientId}">
                                             </p:commandButton>
                                             <p:focus rendered="#{opdBillController.patient.person.name ne null}" id="focusLstIx" for="acIx" ></p:focus>
 
@@ -1041,8 +1058,6 @@
                                                     class="ui-button-success mx-2 w-100">
                                                 </p:commandButton>
 
-
-
                                                 <p:commandButton 
                                                     style="float: right;"
                                                     value="Lookup" 
@@ -1203,7 +1218,7 @@
                                                 layout="block" 
                                                 id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                 >
-                                                <pa:multiple_payment_methods controller="#{opdBillController}" paymentMethods="#{enumController.paymentMethodsForOpdBilling}" class="w-100"/>
+                                                <pa:multiple_payment_methods controller="#{opdBillController}" paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}" class="w-100"/>
 
                                             </h:panelGroup>
 

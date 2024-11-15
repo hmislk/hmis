@@ -12,14 +12,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid columns="3">         
-            <h:outputLabel value="Bill No"/>
-            <h:outputLabel value="Item Name"/>
-            <h:outputLabel value="Item Code"/>
-            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
-        </h:panelGrid>
+
         <p:dataTable rowIndexVar="i"  value="#{searchController.bills}" var="bill" >
             <f:facet name="header">
                 <h:outputLabel value="ADJUST BILL SEARCH"/>
@@ -30,12 +23,12 @@
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </p:commandButton>
             </p:column>
-            <p:column headerText="BILL NO"  >                
+            <p:column headerText="Bill No"  >                
                 <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>                    
             </p:column>    
 
 
-            <p:column headerText="Billed at"  >
+            <p:column headerText="Billed At"  >
 
                 <h:outputLabel value="#{bill.createdAt}" >
                     <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
@@ -48,7 +41,7 @@
                     </h:outputLabel>
                 </h:panelGroup>               
             </p:column>                 
-            <p:column headerText="Billed by" >            
+            <p:column headerText="Billed By" >            
                 <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                 </h:outputLabel>                
                 <br/>

@@ -21,7 +21,7 @@
                 <thead>
                     <tr class="text-light bg-dark">
                         <th class="text-light bg-dark">
-                            No Patient Deposit Collection
+                            <h:outputText value="No Data for #{cc.attrs.bundle.name}" ></h:outputText>
                         </th>
                     </tr>
                 </thead>
@@ -33,7 +33,7 @@
                 <thead>
                     <tr class="text-light bg-dark">
                         <th class="text-light bg-dark" colspan="3">
-                            Patient Deposit Collection
+                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
                         </th>
                         <th class="text-end text-light bg-dark">
                             <h:outputText value="#{cc.attrs.bundle.total}">
@@ -42,9 +42,10 @@
                         </th>
                     </tr>
                     <tr>
-                        <th>Bil No</th>
-                        <th>Bill Type</th>
-                        <th class="text-end">Fee</th>
+                        <th>Bill No</th>
+                        <th>Patient</th>
+                        <th>Payment Method</th>
+                        <th class="text-end">Value</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,7 +55,10 @@
                                 <h:outputText value="#{row.bill.deptId}" />
                             </td>
                             <td>
-                                <h:outputText value="#{row.bill.billTypeAtomic.label}" />
+                                <h:outputText value="#{row.bill.patient.person.nameWithTitle}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{row.bill.paymentMethod}" />
                             </td>
                             <td class="text-end">
                                 <h:outputText value="#{row.bill.netTotal}">
@@ -64,57 +68,8 @@
                         </tr>
                     </ui:repeat>
                 </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2" class="text-right">Total:</td>
-                        <td class="text-end">
-                            <h:outputText value="#{cc.attrs.bundle.total}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </td>
-                    </tr>
-                </tfoot>
             </table>
         </h:panelGroup>
-
-
-        <!--
-                <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
-                    <f:facet name="header" >
-                        <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
-                    </f:facet>
-                    <p:column>
-                        <f:facet name="header">
-                            <h:outputText value="Bil No" />
-                        </f:facet>
-                        <h:outputText value="#{row.bill.deptId}"  />
-                    </p:column>
-                    <p:column>
-                        <f:facet name="header">
-                            <h:outputText value="Bill Type" />
-                        </f:facet>
-                        <h:outputText value="#{row.bill.billTypeAtomic.label}"  />
-                    </p:column>
-                    <p:column>
-                        <f:facet name="header">
-                            <h:outputText value="Fee" />
-                        </f:facet>
-                        <h:outputText value="#{row.bill.netTotal}"  >
-                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                        </h:outputText>
-                    </p:column>
-                      <p:column>
-                        <f:facet name="header">
-                            <h:outputText value="Fee" />
-                        </f:facet>
-                        <h:outputText value="#{row.bill.netTotal}"  >
-                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                        </h:outputText>
-                    </p:column>
-        
-                </p:dataTable>
-        -->
-
 
     </cc:implementation>
 </html>

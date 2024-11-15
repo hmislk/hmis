@@ -339,7 +339,7 @@
                                                     </div>
 
                                                     <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                    <p:tooltip for="txtNic" value="NIC No"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                    <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
                                                     <p:tooltip for="dpDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>
                                                     <p:tooltip for="txtAddress" value="Address"  showDelay="0" hideDelay="0"></p:tooltip>
                                                     <p:tooltip for="txtMobile" value="Mobile Number"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -412,11 +412,11 @@
                                                     styleClass="mr-2">
                                                 </p:badge>
 
-                                                <h:outputLabel value="Account Balance " class="mx-3" rendered="#{patientDepositController.patient.hasAnAccount}"/>
-                                                <h:outputLabel value=" : " class="mx-3" rendered="#{patientDepositController.patient.hasAnAccount}"/>
-                                                <h:outputText value="#{patientDepositController.patient.runningBalance}" rendered="#{patientDepositController.patient.hasAnAccount}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputText>
+                                                <h:outputLabel value="Account Balance " class="mx-3" rendered="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department) ne null}"/>
+                                                    <h:outputLabel value=" : " class="mx-3" rendered="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department) ne null}"/>
+                                                    <h:outputText value="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department).balance}" rendered="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department) ne null}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
 
                                                 <h:outputLabel value="Area " class="mx-3"/>
                                                 <h:outputLabel value=" : " class="mx-3"/>
@@ -449,7 +449,9 @@
                                             <h:outputLabel value="#{patientDepositController.current.id}" />
                                             <h:outputLabel value="Patient Deposit Balance" />
                                             <h:outputLabel value=":" />
-                                            <h:outputLabel value="#{patientDepositController.current.balance}" />
+                                            <h:outputLabel value="#{patientDepositController.current.balance}" >
+                                                 <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
                                         </h:panelGrid>
                                     </h:panelGroup>
                                 </div>
@@ -460,9 +462,9 @@
                                     <h:outputLabel value="Add New Patient Deposit" />
                                 </f:facet>
 
-                                <div class="d-flex flex-wrap w-100">
+                                <div class="d-flex flex-wrap w-100 gap-2">
                                     <p:selectOneMenu id="cmbPs" value="#{patientController.bill.paymentMethod}">
-                                        <f:selectItems value="#{enumController.paymentMethodsForPatientDeposit}"/>
+                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                         <p:ajax process="cmbPs" update="panelGroup creditCard cheque slip eWallet" event="change" />
                                     </p:selectOneMenu>
 
@@ -485,7 +487,7 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup id="eWallet" style="display: #{patientController.bill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
-                                        <pa:ewallet class="m-2" paymentMethodData="#{patientController.paymentMethodData}"/>
+                                        <pa:ewallet_collect class="m-2" paymentMethodData="#{patientController.paymentMethodData}" />
                                     </h:panelGroup>
                                 </div>
 
@@ -575,8 +577,7 @@
                                 <p:printer target="billPanel"></p:printer>
                             </p:commandButton>
                             <p:commandButton icon="fas fa-plus" class="mx-1" value="New Bill"
-                                             ajax="false" action="/payments/patient/receive?faces-redirect=true"
-                                             actionListener="#{patientDepositController.clearDataForPatientDeposit()}" >
+                                             ajax="false" action="#{patientDepositController.navigateToAddNewPatientDeposit()}" >
                             </p:commandButton>
                             <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-1 ui-button-warning"
                                              action="#{patientController.navigateToSearchPatients}"></p:commandButton>

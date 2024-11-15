@@ -8,7 +8,7 @@
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
 
     <h:body>
-        <ui:composition template="/collecting_centre/index.xhtml">
+        <ui:composition template="/agency_management/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
                     <p:panel >
@@ -16,29 +16,29 @@
                         <f:facet name="header" >
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                     <h:outputLabel value="Reprint" class="mr-5"></h:outputLabel>
+                                    <h:outputLabel value="Reprint" class="mr-5"></h:outputLabel>
                                 </div>
                                 <div>
                                     <p:commandButton class="ui-button-info mx-2"
                                                      ajax="false"
                                                      value="Print"
-                                        icon="fas fa-print">
+                                                     icon="fas fa-print">
                                         <p:printer target="print" />
                                     </p:commandButton>
                                     <p:commandButton 
-                                class="my-1 ml-5" 
-                                ajax="false" 
-                                styleClass="ui-button-danger"
-                                value="To Cancel" 
-                                action="deposit_bill_cancellation?faces-redirect=true" 
-                                disabled="#{agentPaymentReceiveSearchController.bill.cancelled}" 
-                                icon="fa fa-times" >
-                            </p:commandButton>
+                                        class="my-1 ml-5" 
+                                        ajax="false" 
+                                        styleClass="ui-button-danger"
+                                        value="To Cancel" 
+                                        action="#{agentPaymentReceiveSearchController.navigateToCancelAgentBillView()}"
+                                        disabled="#{agentPaymentReceiveSearchController.bill.cancelled}" 
+                                        icon="fa fa-times" >
+                                    </p:commandButton>
                                 </div>
                             </div>
-                           
+
                             <p:spacer width="20" ></p:spacer>
-                            
+
                         </f:facet>
 
                         <div class="row">
@@ -46,7 +46,7 @@
                                 <p:panelGrid columns="1" style="width: 100%;">
                                     <p:panel header="Bill Detail">
                                         <p:panelGrid columns="2">
-                                            <h:outputLabel value="Collecting Centre:" ></h:outputLabel>
+                                            <h:outputLabel value="Agency Centre:" ></h:outputLabel>
                                             <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.fromInstitution.name}" rendered="#{agentPaymentReceiveSearchController.bill.fromInstitution ne null}" ></h:outputLabel>                                        
                                             <h:outputLabel value="Bill No :" ></h:outputLabel>
                                             <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.deptId}" ></h:outputLabel>

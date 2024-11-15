@@ -26,7 +26,6 @@ import javax.persistence.Temporal;
  */
 @Entity
 @Inheritance
-
 public class Department implements Serializable {
 
     static final long serialVersionUID = 1L;

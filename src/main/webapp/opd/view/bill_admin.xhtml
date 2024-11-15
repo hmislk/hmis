@@ -1,0 +1,173 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:view="http://xmlns.jcp.org/jsf/composite/ezcomp/view"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <p:outputLabel value="Bill Administration" class="mt-2"></p:outputLabel>
+                                <p:commandButton value="Save" action="#{billSearch.saveViewingBillData()}" ajax="false" ></p:commandButton>
+                            </div> 
+                        </f:facet>
+                        <div class="row">
+
+                            <div class="col-12">
+                                <h:panelGroup rendered="#{billSearch.viewingBill.cancelled}" >
+                                    <p:outputLabel value="Cancelled" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{billSearch.viewingBill.refunded}" >
+                                    <p:outputLabel value="Refunded" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                </h:panelGroup>
+
+                                <p:tabView orientation="left">
+                                    <p:tab title="Bill Details" >
+                                        <p:panel>
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
+                                                <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
+                                            </f:facet>
+                                            <view:out bill="#{billSearch.viewingBill}"/>
+                                        </p:panel>
+                                    </p:tab>
+                                    <p:tab title="Bill Items" >
+                                        <view:bill_item_list_edit editable="true" billItems="#{billSearch.viewingBillItems}"/>
+                                    </p:tab>
+                                    <p:tab title="Bill Fees" >
+                                        <view:bill_fee_list_edit editable="true" billFees="#{billSearch.viewingBillFees}" ></view:bill_fee_list_edit>
+                                    </p:tab>
+                                    <p:tab title="Bill Payments" >
+                                        <p:dataTable 
+                                            value="#{billSearch.viewingBillPayments}" 
+                                            var="p"
+                                            rowKey="#{p.id}" >
+                                            <p:column headerText="ID" >
+                                                <h:outputText value="#{p.id}" ></h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Payment Method" >
+                                                <h:outputText value="#{p.paymentMethod}" ></h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Value">
+                                                <h:outputText value="#{p.paidValue}" ></h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Actions">
+                                                <p:commandButton 
+                                                    value="View" 
+                                                    class="m-2"
+                                                    ajax="false"
+                                                    icon="fa fa-eye"
+                                                    action="#{billSearch.navigateToViewPayment()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{p}" 
+                                                        target="#{billSearch.payment}" ></f:setPropertyActionListener>
+                                                </p:commandButton>
+                                                <p:commandButton 
+                                                    value="Edit" 
+                                                    ajax="false"
+                                                    class="m-2"
+                                                    icon="fa fa-pencil"
+                                                    action="#{billSearch.navigateToEditPayment()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{p}" 
+                                                        target="#{billSearch.payment}" ></f:setPropertyActionListener>
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:tab>
+                                    <p:tab title="Cancellations" >
+                                        <h:panelGroup rendered="#{not billSearch.viewingBill.cancelled}" >
+                                            <p:outputLabel value="Not Cancelled" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{billSearch.viewingBill.cancelled}" >
+
+                                            <p:commandButton
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="pi pi-eye"
+                                                value="View Cancelled Bill"
+                                                action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                <f:setPropertyActionListener 
+                                                    value="#{billSearch.viewingBill.cancelledBill}" 
+                                                    target="#{billSearch.bill}" />
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="pi pi-pencil"
+                                                value="Manage Cancelled Bill"
+                                                action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                                <f:setPropertyActionListener 
+                                                    value="#{billSearch.viewingBill.cancelledBill}"  
+                                                    target="#{billSearch.bill}" />
+                                            </p:commandButton>
+                                            <view:out bill="#{billSearch.viewingBill.cancelledBill}" ></view:out>
+                                        </h:panelGroup>
+                                    </p:tab>
+                                    <p:tab title="Refunded" >
+                                        <h:panelGroup rendered="#{not billSearch.viewingBill.refunded}" >
+                                            <p:outputLabel value="Not Refunded" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{billSearch.viewingBill.refunded}" >
+                                            <ui:repeat value="#{billSearch.viewingBill.refundBills}" var="rb" >
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    value="View Refund Bill"
+                                                    class="m-1"
+                                                    icon="pi pi-eye"
+                                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{rb}" 
+                                                        target="#{billSearch.bill}" />
+                                                </p:commandButton>
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    class="m-1"
+                                                    icon="pi pi-pencil"
+                                                    value="Manage Refund Bill"
+                                                    action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{rb}" 
+                                                        target="#{billSearch.bill}" />
+                                                </p:commandButton>
+
+                                                <view:out bill="#{rb}" ></view:out>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                    </p:tab>
+                                </p:tabView>
+
+
+
+
+
+
+                            </div>
+                        </div>
+
+                    </p:panel>
+                 
+
+
+
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

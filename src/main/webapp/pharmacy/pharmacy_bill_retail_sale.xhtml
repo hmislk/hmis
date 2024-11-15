@@ -15,7 +15,7 @@
             <ui:define name="content">
                 <h:form id="bill" >
                     <p:growl id="panelError" />
-                    <p:defaultCommand  target="btnAdd" />  
+                    <p:defaultCommand  target="btnAdd" /> 
                     <p:panel rendered="#{!pharmacySaleController.billPreview}">
                         <i class="fas fa-shopping-cart rounded-circle shadow-lg" style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;"></i>
                         <p:panel>
@@ -30,13 +30,15 @@
                             <f:facet name="header" >
                                 <h:outputText styleClass="fas fa-mortar-pestle" />
                                 <h:outputLabel value="Pharmacy Retail Bill (Sale 1)" class="mx-4"></h:outputLabel>
-                                <p:commandButton accesskey="n" 
-                                                 icon="fa fa-plus"
-                                                 value="New Bill"  
-                                                 style="float: right;"
-                                                 ajax="false" action="pharmacy_bill_retail_sale"
-                                                 class="mx-1 ui-button-warning"
-                                                 actionListener="#{pharmacySaleController.resetAll()}"  ></p:commandButton>
+                                <p:commandButton 
+                                    accesskey="n" 
+                                    icon="fa fa-plus"
+                                    value="New Bill"  
+                                    style="float: right;"
+                                    ajax="false" action="pharmacy_bill_retail_sale"
+                                    class="mx-1 ui-button-warning"
+                                    actionListener="#{pharmacySaleController.resetAll()}"  >
+                                </p:commandButton>
                                 <p:commandButton 
                                     ajax="false" 
                                     accesskey="s"
@@ -540,7 +542,7 @@
                                                                         layout="block" 
                                                                         id="multiplePaymentMethods"  rendered="#{pharmacySaleController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                                         >
-                                                                        <pa:multiple_payment_methods class="w-100" controller="#{pharmacySaleController}"/>
+                                                                        <pa:multiple_payment_methods class="w-100" controller="#{pharmacySaleController}" paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}"/>
 
                                                                     </h:panelGroup>
 
@@ -629,7 +631,9 @@
                     </p:panel>
                 </h:form>
                 <h:form>
+
                     <p:panel  rendered="#{pharmacySaleController.billPreview}" >
+
                         <p:commandButton id="nullButton3" value="No Action"
                                          action="#" style="display: none;" ></p:commandButton>
                         <!--<p:defaultCommand  target="btnPrint" />-->  
@@ -680,7 +684,7 @@
 
                         <h:panelGroup id="gpBillPreview" >
 
-                            <h:panelGroup   id="gpBillWithOutItem" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                            <h:panelGroup   id="gpBillWithOutItem" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosPaper',true)}">
                                 <div style="page-break-inside: avoid;">
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" style="page-break-after: always!important;"> 
                                         <phi:saleBill_without_item bill="#{pharmacySaleController.printBill}"></phi:saleBill_without_item>                                        
@@ -690,14 +694,13 @@
                                 <br/>
                                 <div style="page-break-inside: avoid;">
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" style="page-break-after: always!important;"> 
-
                                         <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
 
 
-                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosPaper(prabodha)',true)}"> 
                                 <div >
                                     <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
                                         <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
@@ -705,7 +708,7 @@
                                 </div>
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFivePaper',true)}"> 
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
                                         <phi:saleBill_five_five bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five>
@@ -713,7 +716,7 @@
                                 </div>
                             </h:panelGroup>                            
 
-                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper'}"> 
+                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
                                         <phi:saleBill_Header bill="#{pharmacySaleController.printBill}"></phi:saleBill_Header>

@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Drawer History" />
+                        </f:facet>
+
+                        <h:panelGrid columns="5" class="w-100">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From Date"  class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker  showTime="true"
+                                           class="w-100"
+                                           inputStyleClass="w-100"
+                                           value="#{drawerEntryController.fromDate}" 
+                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="To Date" class="mx-3" ></p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker showTime="true" 
+                                          class="w-100"
+                                          inputStyleClass="w-100"
+                                          value="#{drawerEntryController.toDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="User" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                value="#{drawerEntryController.webUser}"
+                                completeMethod="#{webUserController.completeUser}"
+                                var="w"
+                                class="w-100 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{w.webUserPerson.name}"
+                                itemValue="#{w}">
+                            </p:autoComplete>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton ajax="false" 
+                                             value="Process" 
+                                             action="#{drawerEntryController.prosessingCashierDrawerEntry()}"
+                                             icon="fas fa-cogs" 
+                                             class="ui-button-warning mx-1" >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" 
+                                             value="Print All" 
+                                             icon="fas fa-print" 
+                                             class="ui-button-info mx-1" >
+                                <p:printer target="tbl"/>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" 
+                                             value="Download" 
+                                             icon="fas fa-file-excel" 
+                                             class="ui-button-success mx-1" >
+                                <p:dataExporter fileName="Drawer History - #{drawerEntryController.webUser.name} - (#{drawerEntryController.fromDate} - #{drawerEntryController.fromDate})" type="xlsx" target="tbl" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" 
+                                             icon= "fas fa-file-pdf" 
+                                             ajax="false" 
+                                             value="PDF">
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                        <p:dataTable 
+                            class="mt-3"
+                            value="#{drawerEntryController.userDrawerEntry}" 
+                            var="drawerentry"
+                            id="tbl">
+
+                            <p:column headerText="Bill" style=" padding: 6px;">
+                                <p:commandLink 
+                                    value="#{drawerentry.bill.deptId}" 
+                                    ajax="false"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                    <f:setPropertyActionListener value="#{drawerentry.bill}" target="#{billSearch.bill}"/>
+                                </p:commandLink>
+                            </p:column>
+
+                            <p:column headerText="Create" style=" padding: 6px;">
+                                <h:outputText value="#{drawerentry.bill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Payment" style=" padding: 6px;">
+                                <h:outputText value="#{drawerentry.payment}" />
+                            </p:column>
+
+                            <p:column headerText="Payment Method" style=" padding: 6px; text-align: center;">
+                                <div class="d-flex justify-content-center">
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Cash'}"  value="#{drawerentry.paymentMethod}" severity="success" styleClass="mr-2"></p:badge>
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Card'}"  value="#{drawerentry.paymentMethod}" severity="warning" styleClass="mr-2"></p:badge>     
+                                    <p:badge rendered="#{not (drawerentry.paymentMethod eq 'Card' or drawerentry.paymentMethod eq 'Cash')}"  value="#{drawerentry.paymentMethod}" severity="info" styleClass="mr-2"></p:badge>    
+
+                                </div>
+
+                            </p:column>
+
+                            <p:column headerText="Department" style=" padding: 6px;">
+                                <h:outputText value="#{drawerentry.bill.fromDepartment.name}" />
+                            </p:column>
+
+                            <p:column headerText="Before in Hand" style="background-color: c4fcff; text-align: right; padding: 6px;">
+                                <p:outputLabel value="#{drawerentry.beforeInHandValue}" class="d-flex justify-content-end">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="After in Hand" style="background-color: c4fcff; text-align: right; padding: 6px;" >
+                                <p:outputLabel 
+                                    value="#{drawerentry.afterInHandValue}" class="d-flex justify-content-end">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Paid" style="text-align: right; padding: 6px;" >
+                                <p:outputLabel 
+                                    value="#{drawerentry.payment.paidValue}" class="d-flex justify-content-end" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Before Balance" style="background-color: b8ffc7; text-align: right; padding: 6px;" >
+                                <p:outputLabel 
+                                    value="#{drawerentry.beforeBalance}" class="d-flex justify-content-end" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="After Balance" style="background-color: b8ffc7; text-align: right; padding: 6px;">
+                                <p:outputLabel 
+                                    value="#{drawerentry.afterBalance}" class="d-flex justify-content-end" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </p:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -1,4 +1,4 @@
-# Open Hospital Management Information System
+# CareCode Open Hospital Management Information System
 
 ## Title
 

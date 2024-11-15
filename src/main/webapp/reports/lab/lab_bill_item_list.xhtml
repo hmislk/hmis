@@ -1,0 +1,404 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/reports/index.xhtml">
+        <ui:define name="subcontent">
+            <h:head>
+                <style>
+                    #{configOptionApplicationController.getLongTextValueByKey('CSS for Sample Container Sticker')}
+                </style>
+            </h:head>
+
+            <p:panel header="Lab Bill Items" style="overflow-x: scroll;">
+                <h:form>
+
+
+                    <h:panelGrid columns="6" class="w-100" >
+                        <h:panelGroup>
+                            <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                            <h:outputLabel class="mx-3 " value="Date Range for"/>
+                        </h:panelGroup>
+
+                        <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" value="#{patientInvestigationController.searchDateType}">
+                            <f:selectItems value="#{enumController.searchDateTypes}" var="st" itemValue="#{st}" itemLabel="#{st.label}"/>
+                        </p:selectOneMenu>
+
+                        <h:panelGroup class="mx-2">
+                            <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                            <h:outputLabel class="mx-3" value="From Date"/>
+                        </h:panelGroup>
+
+                        <p:datePicker inputStyleClass="w-100" id="fromDate" showTime="true" value="#{patientInvestigationController.fromDate}" class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                        <h:panelGroup class="mx-2">
+                            <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                            <h:outputLabel class="mx-3" value="To Date"/>
+                        </h:panelGroup>
+
+                        <p:datePicker id="toDate" inputStyleClass="w-100" showTime="true" value="#{patientInvestigationController.toDate}" class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                        <h:panelGroup >
+                            <h:outputText value="&#xf46d;" styleClass="fa mr-2" />
+                            <h:outputLabel class="mx-3" value="Status"/>
+                        </h:panelGroup>
+
+                        <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" style="max-width:100%;" value="#{patientInvestigationController.patientInvestigationStatus}">
+                            <f:selectItem itemLabel="Any" />
+                            <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
+                        </p:selectOneMenu>
+
+                        <h:panelGroup class="mx-2" >
+
+                            <h:outputText value="&#xf491;" styleClass="fa mr-2" />
+                            <h:outputLabel class="mx-3" value="Equipment"/>
+                        </h:panelGroup>
+
+
+                        <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" value="#{patientInvestigationController.equipment}">
+                            <f:selectItem itemLabel="Any" />
+                            <f:selectItems value="#{machineController.items}" var="e" itemLabel="#{e.name}" itemValue="#{e}"/>
+                        </p:selectOneMenu>
+
+                        <p:spacer ></p:spacer>
+                        <p:spacer ></p:spacer>
+
+
+
+
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                            <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                            id="cmbIns"
+                            styleClass="w-100 form-control" 
+                            value="#{patientInvestigationController.orderedInstitution}" 
+                            filter="true">
+                            <f:selectItem itemLabel="All Institutions" />
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                            <p:ajax process="cmbIns" update="cmbDept" />
+                        </p:selectOneMenu>
+
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                            <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                            id="siteMenu"
+                            styleClass="w-100 form-control"  
+                            value="#{patientInvestigationController.orderedSite}" 
+                            filter="true">
+                            <f:selectItem itemLabel="All Sites" />
+                            <f:selectItems value="#{institutionController.sites}" var="orderedSite" itemLabel="#{orderedSite.name}" itemValue="#{orderedSite}" />
+                            <p:ajax process="siteMenu" update="cmbDept" />
+                        </p:selectOneMenu>
+
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                            <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="cmbDept">
+
+                            <!-- Component 1: Without Institution and Site -->
+                            <p:selectOneMenu
+                                rendered="#{patientInvestigationController.orderedInstitution eq null and patientInvestigationController.orderedSite eq null}"
+                                styleClass="w-100 form-control"
+                                value="#{patientInvestigationController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 2: With Site Only -->
+                            <p:selectOneMenu
+                                rendered="#{patientInvestigationController.orderedInstitution eq null and patientInvestigationController.orderedSite ne null}"
+                                styleClass="w-100 form-control"
+                                value="#{patientInvestigationController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(patientInvestigationController.orderedSite)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 3: With Institution Only -->
+                            <p:selectOneMenu
+                                rendered="#{patientInvestigationController.orderedInstitution ne null and patientInvestigationController.orderedSite eq null}"
+                                styleClass="w-100 form-control"
+                                value="#{patientInvestigationController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(patientInvestigationController.orderedInstitution)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 4: With Both Institution and Site -->
+                            <p:selectOneMenu
+                                rendered="#{patientInvestigationController.orderedInstitution ne null and patientInvestigationController.orderedSite ne null}"
+                                styleClass="w-100 form-control"
+                                value="#{patientInvestigationController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(patientInvestigationController.orderedInstitution, patientInvestigationController.orderedSite)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                        </h:panelGroup>
+
+
+
+
+
+                    </h:panelGrid>
+
+                    <div class="my-3">
+                        <p:commandButton 
+                            ajax="false" 
+                            action="#{patientInvestigationController.listBillItemsForLabs()}" 
+                            value="Process" 
+                            style="width: 150px"
+                            icon="fas fa-cogs" 
+                            class="mx-2 ui-button-warning"
+                            />
+
+                        <p:commandButton 
+                            icon="fa-solid fa-print"
+                            class="mx-2 ui-button-info"
+                            style="width: 150px"
+                            ajax="false" 
+                            value="Print">
+                            <p:printer target="tbl" />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Excel" 
+                            style="width: 150px"
+                            icon="fas fa-file-excel" 
+                            class="ui-button-success mx-2"
+                            >
+                            <p:dataExporter fileName="cc_bill_item_list" target="tbl" type="xlsx" ></p:dataExporter>
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            class="mx-2 ui-button-danger" 
+                            style="width: 150px"
+                            icon="fa-solid fa-file-pdf"
+                            ajax="false" 
+                            value="PDF">
+                            <p:dataExporter type="pdf" target="tbl"  fileName="cc_bill_item_list" ></p:dataExporter>
+                        </p:commandButton>
+
+                    </div>
+                </h:form>
+
+            </p:panel>
+
+            <h:form prependId="false">
+
+                <p:dataTable  
+
+                    scrollWidth="100%"
+                    style="width:200em;"
+                    id="tbl"
+                    scrollable="true"
+                    value="#{patientInvestigationController.billItems}" 
+                    var="billItem" 
+                    paginator="true"
+                    rowKey="#{billItem.id}"
+                    paginatorPosition="bottom"
+                    rows="10"
+                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    rowsPerPageTemplate="10,25,50">
+
+                    <!-- Bill Number Column -->
+                    <p:column headerText="Bill Number"  filterBy="#{billItem.bill.deptId}" sortBy="#{billItem.bill.deptId}" filterMatchMode="contains">
+                        <h:outputLabel 
+                            value="#{billItem.bill.deptId}" >
+                        </h:outputLabel>
+                        <p:commandLink 
+                            ajax="false" 
+                            title="View Bill Details"
+                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                            <h:outputText 
+                                value="&#xf06e;" 
+                                escape="false"  
+                                styleClass="fa"/>
+                            <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
+                        </p:commandLink>
+                    </p:column>
+
+                    <!-- Bill Date Column -->
+                    <p:column headerText="Bill Date" filterBy="#{billItem.bill.createdAt}" sortBy="#{billItem.bill.createdAt}">
+                        <h:outputLabel value="#{billItem.bill.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                        </h:outputLabel>
+                    </p:column>
+
+
+                    <!-- Patient Name Column -->
+                    <p:column headerText="Patient Name" filterBy="#{billItem.bill.patient.person.nameWithTitle}" sortBy="#{billItem.bill.patient.person.nameWithTitle}">
+                        <h:outputLabel value="#{billItem.bill.patient.person.nameWithTitle}" />
+                    </p:column>
+
+                    <!-- Investigation Name Column -->
+                    <p:column headerText="Investigation" filterBy="#{billItem.item.name}" 
+                              sortBy="#{billItem.item.name}">
+                        <h:outputLabel value="#{billItem.item.name}" />
+                    </p:column>
+
+                    <!-- Status Column -->
+                    <p:column headerText="Status" filterBy="#{billItem.patientInvestigation.status}" sortBy="#{billItem.patientInvestigation.status}">
+                        <h:outputLabel value="#{patientInvestigationController.getPatientInvestigationFromBillItem(billItem).status}"/>
+                    </p:column>
+
+
+                    <!-- Collecting Centre Column -->
+<!--                    <p:column headerText="Collecting Centre" filterBy="#{billItem.bill.collectingCentre.name}" sortBy="#{billItem.bill.collectingCentre.name}">
+                        <h:outputLabel value="#{billItem.bill.collectingCentre.name}" />
+                    </p:column>-->
+
+                    <!-- Lab Institution Column -->
+                    <p:column headerText="Lab" filterBy="#{billItem.bill.toInstitution.name}" sortBy="#{billItem.bill.toInstitution.name}">
+                        <h:outputLabel value="#{billItem.bill.toInstitution.name}" />
+                    </p:column>
+
+                    <!-- Lab Department Column -->
+                    <p:column headerText="Lab Department" filterBy="#{billItem.bill.toDepartment.name}" sortBy="#{billItem.bill.toDepartment.name}">
+                        <h:outputLabel value="#{billItem.bill.toDepartment.name}" />
+                    </p:column>
+                    
+                     <!-- Billed Department Column -->
+                    <p:column headerText="Billed Department" filterBy="#{billItem.bill.department.name}" sortBy="#{billItem.bill.department.name}">
+                        <h:outputLabel value="#{billItem.bill.department.name}" />
+                    </p:column>
+
+                    <!-- Hospital Fee Column -->
+                    <p:column headerText="Hospital Fee">
+                        <h:outputLabel value="#{billItem.hospitalFee}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputText value="#{patientInvestigationController.hospitalFeeTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+
+                    <!-- Hospital Fee Column -->
+                    <p:column headerText="Staff Fee">
+                        <h:outputLabel value="#{billItem.staffFee}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputText value="#{patientInvestigationController.staffFeeTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+
+                    <!-- Gross Total Column -->
+                    <p:column headerText="Gross Total">
+                        <h:outputLabel value="#{billItem.grossValue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputText value="#{patientInvestigationController.grossFeeTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+
+                    <!-- Discount Column -->
+                    <p:column headerText="Discount">
+                        <h:outputLabel value="#{billItem.discount}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputText value="#{patientInvestigationController.discountTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+
+                    <!-- Net Total Column -->
+                    <p:column headerText="Net Total" sortBy="#{billItem.netValue}">
+                        <h:outputLabel value="#{billItem.netValue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputText value="#{patientInvestigationController.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+
+
+                    <!-- Bill Date Column -->
+                    <p:column headerText="Cancellation">
+                        <h:outputLabel 
+                            class="mx-3 ui-message-error"
+                            rendered="#{billItem.bill.cancelled}" 
+                            value="Cancelled">
+                        </h:outputLabel>
+                        <h:outputLabel
+                            class="mx-3 ui-message-error"
+                            rendered="#{billItem.bill.cancelled}" 
+                            value="#{billItem.bill.cancelledBill.deptId}">
+                        </h:outputLabel>
+                        <p:commandLink 
+                            class="mx-3 ui-message-error"
+                            ajax="false" 
+                            rendered="#{billItem.bill.cancelled}" 
+                            title="View Cancel Bill Details"
+                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                            <h:outputText 
+                                value="&#xf06e;" 
+                                escape="false"  
+                                styleClass="fa"/>
+                            <f:setPropertyActionListener value="#{billItem.bill.cancelledBill}" target="#{billSearch.bill}"/>
+                        </p:commandLink>
+                    </p:column>
+
+                    <p:column headerText="Refunded">
+                        <h:outputLabel 
+                            class="mx-3 ui-message-error"
+                            rendered="#{billItem.refunded}" 
+                            value="Refunded">
+                        </h:outputLabel>
+                        <h:outputLabel
+                            class="mx-3 ui-message-error"
+                            rendered="#{billItem.refunded}" 
+                            value="#{billItem.referanceBillItem}">
+                        </h:outputLabel>
+                    </p:column>
+
+                </p:dataTable>
+            </h:form>
+
+        </ui:define>
+    </ui:composition>
+</html>

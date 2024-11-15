@@ -12,8 +12,7 @@
         <ui:composition template="/collecting_centre/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-
-                    <h:panelGroup rendered="#{!agentPaymentReceiveSearchController.printPreview}" style="vertical-align: top;">
+                    <p:panel header="CC Payment Bill" rendered="#{!agentPaymentReceiveSearchController.printPreview}" style="vertical-align: top;">
                         <p:panelGrid layout="tabular" columns="2" class="w-100" style="vertical-align: top;">
                             <p:panel header="Bill Detail">
                                 <p:panelGrid columns="2">
@@ -39,13 +38,33 @@
                                                        value="#{agentPaymentReceiveSearchController.paymentMethod}" 
                                                        required="true"  >
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                        <p:ajax event="change" process="cmbPs" update="paymentDetails" ></p:ajax>
                                     </p:selectOneMenu>
+                                    
+                                     <p:outputLabel value="Cancellation" ></p:outputLabel>
+                                     <h:panelGroup id="paymentDetails">
+                                        <h:panelGroup id="creditCard"  rendered="#{agentPaymentReceiveSearchController.paymentMethod eq 'Card'}">
+                                            <pa:creditCard paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="cheque"  rendered="#{agentPaymentReceiveSearchController.paymentMethod eq 'Cheque'}">
+                                            <pa:cheque paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="slip" rendered="#{agentPaymentReceiveSearchController.paymentMethod eq 'Slip'}">
+                                            <pa:slip paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                       
+                                    </h:panelGroup>
+                                    
                                     <p:outputLabel value="Comments" ></p:outputLabel>
                                     <p:inputTextarea class="w-100" value="#{agentPaymentReceiveSearchController.comment}"/>  
                                     <p:spacer ></p:spacer>
                                     <p:commandButton
                                         value="Cancel Bill" 
                                         icon="fa fa-cancel"
+                                        ajax="false"
                                         style="float: right"
                                         class="ui-button-danger" 
                                         action="#{agentPaymentReceiveSearchController.cancelCollectingCentreDepositBill()}"
@@ -55,17 +74,28 @@
                             </p:panel>
                         </p:panelGrid>
 
+                    </p:panel>
 
+                    <p:panel rendered="#{agentPaymentReceiveSearchController.printPreview}" >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="CC Payment Cancel Bill" class="mt-2"></h:outputLabel>
+                                <p:commandButton 
+                                    class="ui-button-info"
+                                    ajax="false"
+                                    value="Print"
+                                    icon="fas fa-print">
+                                    <p:printer target="print" />
+                                </p:commandButton>
+                            </div>    
+                        </f:facet>
+                        <h:panelGroup id="print">
+                            <bi:cc_payment_cancellation
+                                billController ="#{agentPaymentReceiveSearchController}"  
+                                bill="#{agentPaymentReceiveSearchController.cancelledBill}" />  
+                        </h:panelGroup>
 
-
-                    </h:panelGroup>
-                    <h:panelGroup rendered="#{agentPaymentReceiveSearchController.printPreview}" >
-                        <bi:cc_payment_cancellation
-                            billController ="#{agentPaymentReceiveSearchController}"  
-                            bill="#{agentPaymentReceiveSearchController.bill}" />  
-                    </h:panelGroup>
-
-
+                    </p:panel>
                 </h:form>   
             </ui:define>
         </ui:composition>

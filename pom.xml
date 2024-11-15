@@ -11,6 +11,8 @@
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
+        <netbeans.compile.on.save>none</netbeans.compile.on.save>
+        <org-netbeans-modules-maven-j2ee.netbeans_2e_deploy_2e_on_2e_save>false</org-netbeans-modules-maven-j2ee.netbeans_2e_deploy_2e_on_2e_save>
     </properties>
     
     <dependencies>
@@ -100,6 +102,35 @@
             <version>2.2</version>
         </dependency>
 
+        <!-- iText 7 Core Dependency -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>kernel</artifactId>
+            <version>8.0.5</version> <!-- Use the latest version available -->
+        </dependency>
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>layout</artifactId>
+            <version>8.0.5</version>
+            <type>jar</type>
+        </dependency>
+
+        <!-- iText 7 HTML to PDF Dependency -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>html2pdf</artifactId>
+            <version>5.0.5</version> <!-- Use the latest version available -->
+        </dependency>
+
+
+        <!-- Add to your Maven dependencies -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.4.1</version>
+        </dependency>
+       
+
         
         <!-- Apache POI Core Dependency -->
         <dependency>
@@ -107,7 +138,7 @@
             <artifactId>poi</artifactId>
             <version>5.2.5</version>
         </dependency>
-
+        
         <!-- Apache POI OOXML Dependency -->
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -172,13 +203,11 @@
             <version>8.0.30</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.github.librepdf/openpdf -->
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
-            <version>2.0.3</version>
+            <version>1.4.1</version>
         </dependency>
-
 
         <!-- Log4j -->
         <dependency>
@@ -305,6 +334,12 @@
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-common</artifactId>
             <version>22.0.1</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itextpdf</artifactId>
+            <version>5.5.13.4</version>
             <type>jar</type>
         </dependency>
         <dependency>

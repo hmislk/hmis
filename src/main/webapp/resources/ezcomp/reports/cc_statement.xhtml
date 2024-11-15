@@ -153,9 +153,7 @@
                 sortMode="multiple"
                 reflow="true">
 
-
-
-                <p:column width="5rem" headerText="Bill Number*" sortBy="#{agentHx.bill.deptId}" filterBy="#{agentHx.bill.deptId}" filterMatchMode="contains">
+                <p:column width="7em" headerText="Bill Number*" sortBy="#{agentHx.bill.deptId}" filterBy="#{agentHx.bill.deptId}" filterMatchMode="contains">
                     <p:commandLink 
                         value="#{agentHx.bill.deptId}" 
                         ajax="false"
@@ -165,16 +163,15 @@
 
                     <p:badge value="#{agentHx.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{agentHx.bill.cancelled}" />
                     <p:badge value="#{agentHx.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{agentHx.bill.refunded}" />
-
-<!--                    <p:commandLink value="Original Bill - #{agentHx.bill.deptId}" 
-               ajax="false"
-               rendered="#{agentHx.bill.billedBill}"
-               action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
-    <f:setPropertyActionListener value="#{agentHx.bill.billedBill}" target="#{billSearch.bill}" />
-</p:commandLink>-->
-
                 </p:column>
 
+                <p:column  width="4em" headerText="Actions" rendered="#{webUserController.hasPrivilege('Developers')}">
+                    <p:commandButton 
+                        ajax="false"
+                        value="Edit"
+                        action="#{collectingCentreController.navigateToEditCollectingCentreBalanceEntry(agentHx)}" >
+                    </p:commandButton>
+                </p:column>
 
                 <p:column width="5rem" headerText="Data &nbsp; Time" sortBy="#{agentHx.createdAt}" filterBy="#{agentHx.createdAt}" filterMatchMode="contains">
                     <h:outputText value="#{agentHx.createdAt}" >
@@ -185,9 +182,20 @@
                 <p:column width="5rem" toggleable="true" headerText="Bill Type" sortBy="#{agentHx.bill.billTypeAtomic.label}" filterBy="#{agentHx.bill.billTypeAtomic.label}" filterMatchMode="contains">
                     <h:outputText value="#{agentHx.bill.billTypeAtomic.label}" />
                 </p:column>
-                <p:column toggleable="true" headerText="CC Code" sortBy="#{agentHx.bill.billTypeAtomic.label}" filterBy="#{agentHx.bill.billTypeAtomic.label}" filterMatchMode="contains">
-                    <h:outputText value="#{agentHx.bill.collectingCentre.code}" style="text-align: right; display: block;"/>
+                
+                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" width="5rem" toggleable="true" headerText="History Type" sortBy="#{agentHx.historyType}" filterBy="#{agentHx.historyType}" filterMatchMode="contains">
+                    <h:outputText value="#{agentHx.historyType}" />
                 </p:column>
+                
+                <p:column  width="7em"  toggleable="true" headerText="CC Code" sortBy="#{agentHx.bill.fromInstitution.code}" filterBy="#{agentHx.bill.fromInstitution.code}" filterMatchMode="contains">
+<!--                    <h:outputText value="#{agentHx.bill.collectingCentre.code}" style="text-align: right; display: block;"/>-->
+                    <h:outputText value="#{agentHx.bill.fromInstitution.code}" style="text-align: right; display: block;" />
+                </p:column>
+                
+                <p:column   toggleable="true" headerText="CC Name" sortBy="#{agentHx.bill.fromInstitution.name}" filterBy="#{agentHx.bill.fromInstitution.name}" filterMatchMode="contains">
+                    <h:outputText value="#{agentHx.bill.fromInstitution.name}" />
+                </p:column>
+                
                 <p:column width="5rem" toggleable="true" headerText="Leaf No." sortBy="#{agentHx.bill.referenceNumber}" filterBy="#{agentHx.bill.referenceNumber}" filterMatchMode="contains">
                     <h:outputText value="#{agentHx.bill.referenceNumber}" style="text-align: right; display: block;"/>
                     <h:outputText value="#{agentHx.bill.invoiceNumber}" style="text-align: right; display: block;"/>

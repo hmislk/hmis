@@ -177,6 +177,7 @@ public class MiddlewareController {
                     case MindrayBC5150:
                     case IndikoPlus:
                     case SmartLytePlus:
+                    case SwelabLumi:
                         return processResultsCommon(dataBundle);
                     default:
                         throw new IllegalArgumentException("Unsupported analyzer type: " + analyzerDetails.getAnalyzerName());

@@ -18,37 +18,39 @@
                             <div class="row mb-2">
                                 <div class="col-md-2">
                                     <h:panelGroup >
-                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" />
                                         <h:outputLabel value="From Date"  class="mx-3"/>
                                     </h:panelGroup>
                                 </div>
                                 <div class="col-md-4">
                                     <p:datePicker
+                                        showTime="true" 
                                         style=" max-width: 100%; overflow-x: auto; "
                                         class="w-100"
                                         inputStyleClass="w-100"
                                         value="#{reportController.fromDate}" 
-                                        pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </div>
                                 <div class="col-md-2">
                                     <h:panelGroup >
-                                        <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                                         <h:outputLabel value="To Date"  class="mx-3"/>
                                     </h:panelGroup>
                                 </div>
                                 <div class="col-md-4">
                                     <p:datePicker 
+                                        showTime="true" 
                                         style=" max-width: 100%; overflow-x: auto; "
                                         class="w-100"
                                         inputStyleClass="w-100"
                                         value="#{reportController.toDate}" 
-                                        pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </div>
                             </div>
                             <div class="row mb-2">
                                 <div class="col-md-2">
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                        <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
                                         <h:outputLabel value="Collection Center" for="cmbCCname" class="mx-3"/>
                                         <p:outputLabel  />
                                     </h:panelGroup>
@@ -135,7 +137,13 @@
 
                         <p:spacer height="5"></p:spacer>
 
-                        <p:dataTable id="tblExport" value="#{reportController.agentReferenceBooks}" var="a" rowIndexVar="i">
+                        <p:dataTable id="tblExport" value="#{reportController.agentReferenceBooks}" var="a" rowIndexVar="i"
+                                     paginator="true"
+                                     rows="10" 
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
                             <p:column headerText="S. No" width="5rem">
                                 <h:outputText value="#{i+1}" ></h:outputText>
                             </p:column>
@@ -145,51 +153,62 @@
                             <p:column headerText="CC Name" width="5rem">
                                 <h:outputText value="#{a.institution.name}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Contact Person" width="5rem">
-                                <h:outputText value="#{a.institution.contactPerson.nameWithTitle}" ></h:outputText>
+                            <p:column headerText="Contact Person" width="15rem">
+                                <h:outputText value="#{a.institution.ownerName}" ></h:outputText>
                             </p:column>
                             <p:column headerText="CC Phone No" width="5rem">
                                 <h:outputText value="#{a.institution.phone}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Contact Person E-mail" >
-                                <h:outputText value="#{a.institution.contactPerson.email}" ></h:outputText>
+                            <p:column headerText="E-mail" width="10rem">
+                                <h:outputText value="#{a.institution.email}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Address" width="5rem">
                                 <h:outputText value="#{a.institution.address}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Standard Credit" width="5rem">
-                                <h:outputText value="#{a.institution.standardCreditLimit}" ></h:outputText>
+                                <h:outputText value="#{a.institution.standardCreditLimit == 0 ? '0.00' : a.institution.standardCreditLimit}">
+                                <f:convertNumber pattern="###,###,###.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Allowed Credit" width="5rem">
-                                <h:outputText value="#{a.institution.allowedCreditLimit}" ></h:outputText>
+                                <h:outputText value="#{a.institution.allowedCreditLimit}" >
+                                <f:convertNumber pattern="###,###,###.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Max Credit " width="5rem" >
-                                <h:outputText value="#{a.institution.maxCreditLimit}" ></h:outputText>
+                                <h:outputText value="#{a.institution.maxCreditLimit}" >
+                                <f:convertNumber pattern="###,###,###.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Balance" width="5rem">
-                                <h:outputText value="#{a.institution.ballance}" ></h:outputText>
+                                <h:outputText value="#{a.institution.ballance == 0 ? '0.00' : a.institution.ballance}">
+                                <f:convertNumber pattern="###,###,###.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="CC Book No" width="5rem">
                                 <h:outputText value="#{a.strbookNumber}" ></h:outputText>
                             </p:column>
-
-                            <p:column headerText="Starting Reference Number" >
+                            <p:column headerText="Starting Reference Number" width="5rem">
                                 <h:outputText value="#{a.startingReferenceNumber}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Ending Reference Number" width="5rem">
                                 <h:outputText value="#{a.endingReferenceNumber}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Creater" width="5rem">
-                                <h:outputText value="#{a.creater}" ></h:outputText>
+                                <h:outputText value="#{a.creater.webUserPerson.name} (#{a.creater.name})" ></h:outputText>
                             </p:column>
                             <p:column headerText="Created Date" width="5rem">
-                                <h:outputText value="#{a.createdAt}" ></h:outputText>
+                                <h:outputText value="#{a.createdAt}" >
+                                    <f:convertDateTime pattern="yyyy MM dd hh.mm.ss a" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Editor" width="5rem">
-                                <h:outputText value="#{a.editor.name}" ></h:outputText>
+                                <h:outputText value="#{not empty a.editor ? a.editor.name.concat(' (').concat(a.editor.id).concat(')') : ''}" />
                             </p:column>
                             <p:column headerText="Edited Date" width="5rem">
-                                <h:outputText value="#{a.editedAt}" ></h:outputText>
+                                <h:outputText value="#{a.editedAt}" >
+                                    <f:convertDateTime pattern="yyyy MM dd hh.mm.ss a" />
+                                </h:outputText>
                             </p:column>
                         </p:dataTable>
 
