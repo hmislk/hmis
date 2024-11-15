@@ -9,55 +9,147 @@
     <ui:define name="subcontent">
 
         <p:panel header="Manage Report Template Background" >
-            <div class="row">
-                <div class="col-md-12">
+            <h:form id="formImage" enctype="multipart/form-data" rendered="true">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="d-flex">
+                            <div class="col-5"><h:outputLabel value="Template"/></div>
+                            <div class="col-7">
+                                <p:selectOneMenu  
+                                    id="lstSelect"  
+                                    class="w-100"
+                                    value="#{reportFormatController.current}" >
+                                    <f:selectItem itemLabel="Select Format"/>
+                                    <f:selectItems  
+                                        value="#{reportFormatController.items}" 
+                                        var="myItem" 
+                                        itemValue="#{myItem}" 
+                                        itemLabel="#{myItem.name}" >
+                                    </f:selectItems>
+                                    <p:ajax  process="lstSelect" update="priview"  ></p:ajax>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
 
+                        <div class="d-flex mt-2">
+                            <div class="col-5"><h:outputLabel class="w-100" value="Type"/></div>
+                            <div class="col-7">
+                                <p:selectOneMenu 
+                                    class="w-100"
+                                    value="#{reportFormatController.viewImageType}">
+                                    <f:selectItem itemValue="UPLOADIMAGE" itemLabel="Upload Image"/>
+                                    <f:selectItem itemValue="URL" itemLabel="URL Image"/>
+                                    <p:ajax process="@this" update="option" />
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
 
-                    <h:form id="formImage" enctype="multipart/form-data" rendered="true">
+                        <h:panelGroup id="option">
+                            <h:panelGroup id="uploadImage" rendered="#{reportFormatController.viewImageType eq 'UPLOADIMAGE'}">
+                                <div class="d-flex mt-2">
+                                    <div class="col-5"><h:outputLabel value="Image"/></div>
+                                    <div class="col-7">
 
-                        <p:outputLabel value="Name of the Template"/>
+                                        <p:fileUpload
+                                            id="fileUpload"
+                                            value="#{reportFormatController.uploadedFile}" 
+                                            auto="true"
+                                            skinSimple="true"
+                                            class="w-100"
+                                            mode="simple" 
+                                            process="fileUpload lstSelect"
+                                            update="priview"
+                                            multiple="false" 
+                                            accept="image/*"
+                                            listener="#{reportFormatController.uploadPhoto}" >
+                                        </p:fileUpload>
 
-                        <p:selectOneMenu  
-                            id="lstSelect"  
-                            value="#{reportFormatController.current}" 
-                            styleClass="listBox">
-                            <f:selectItems  value="#{reportFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                            <p:ajax  process="lstSelect" update="image"  >
-                            </p:ajax>
-                        </p:selectOneMenu>
-                        <p:fileUpload
-                            id="fileUpload"
-                            value="#{reportFormatController.uploadedFile}" 
-                            auto="true"
-                            mode="advanced" 
-                            process="@this fileUpload lstSelect"
-                            update="@form"
-                            multiple="false" 
-                            accept="image/*" 
-                            class="m-2" 
-                            title="Upload Image"
-                            listener="#{reportFormatController.uploadPhoto}" />
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+                            <h:panelGroup id="url" rendered="#{reportFormatController.viewImageType eq 'URL'}">
+                                <div class="d-flex mt-2">
+                                    <div class="col-5"><h:outputLabel value="Image URL"/></div>
+                                    <div class="col-7">
+                                        <p:inputTextarea 
+                                            class="w-100"
+                                            value="#{reportFormatController.fileUrl}">
+                                        </p:inputTextarea>
+                                    </div>
+                                </div>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    style="float: right;"
+                                    value="Upload URL Image"
+                                    class="ui-button-success mt-2"
+                                    action="#{reportFormatController.saveFileUrl()}"
+                                    icon="fas fa-upload">
+                                </p:commandButton>
+                            </h:panelGroup>
+                        </h:panelGroup>
 
-                       
-                        <p:commandButton ajax="false" value="Remove Format"
-                                         class="ui-button-danger"
-                                         icon="fas fa-trash"
-                                         action="#{reportFormatController.removeUploadedFile()}"></p:commandButton>
+                    </div>
+                    <div class="col-md-8">
+                        <p:panel id="priview">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <div class="col-5"><h:outputLabel value="Image Priview"/></div>
+                                    <div class="d-flex gap-3">
+                                        <h:outputLabel class="w-100 mt-2" value="Type"/>
+                                        <p:selectOneMenu class="w-100" style="width: 120px;" value="#{reportFormatController.viewImageType}">
+                                            <f:selectItem itemValue="UPLOADIMAGE" itemLabel="Upload Image"/>
+                                            <f:selectItem itemValue="URL" itemLabel="URL Image"/>
+                                            <p:ajax process="@this" update="view" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                            </f:facet>
 
-                        <p:graphicImage
-                            id="image"
-                            value="#{reportFormatController.image}" 
-                            cache="false" style="width: 100%; height: 100%; object-fit: cover;">
-                        </p:graphicImage>
+                            <h:panelGroup rendered="#{reportFormatController.current ne null}">
+                                <h:panelGroup id="view">
+                                    <h:panelGroup rendered="#{reportFormatController.upload.fileUrl ne null}">
+                                        <h:panelGroup rendered="#{reportFormatController.viewImageType eq 'URL'}">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Remove URL Format"
+                                                style="float: right;"
+                                                class="ui-button-danger mb-3"
+                                                icon="fas fa-trash"
+                                                action="#{reportFormatController.removeUrlFile()}">
+                                            </p:commandButton>
+                                            <p:graphicImage
 
-                    </h:form>
+                                                value="#{reportFormatController.upload.fileUrl}" 
+                                                cache="false" 
+                                                style="width: 100%; height: 100%; object-fit: cover; border: 1px solid">
+                                            </p:graphicImage>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
 
+                                    <h:panelGroup rendered="#{reportFormatController.viewImageType eq 'UPLOADIMAGE'}">
+                                        <h:panelGroup rendered="#{reportFormatController.image ne null}">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Remove Upload Format"
+                                                style="float: right;"
+                                                class="ui-button-danger mb-3"
+                                                icon="fas fa-trash"
+                                                action="#{reportFormatController.removeUploadedFile()}">
+                                            </p:commandButton>
+                                            <p:graphicImage
+                                                value="#{reportFormatController.image}" 
+                                                cache="false" 
+                                                style="width: 100%; height: 100%; object-fit: cover; border: 1px solid">
+                                            </p:graphicImage>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </h:panelGroup>
 
-
+                        </p:panel>
+                    </div>
                 </div>
-
-            </div>
-
+            </h:form>
         </p:panel>
 
     </ui:define>
