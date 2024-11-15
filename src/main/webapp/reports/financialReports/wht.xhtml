@@ -211,10 +211,10 @@
                             </p:commandButton>
                         </div>
                         <br />
-                        
+
 
                         <h:panelGroup >
-                            <p:panel header="Individual Receipts Wise WHT Report " rendered="#{searchController.reportType eq 'irs'}">
+                            <p:panel header="Individual Receipts Wise WHT Report " rendered="#{searchController.reportType eq 'individualReceipts'}">
 
                                 <h:panelGroup>
 
@@ -438,6 +438,20 @@
                                             </h:panelGroup>
                                         </div>
                                     </p:column>
+
+                                    <p:column title="Actions" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <p:commandButton 
+                                            value="Admin" 
+                                            icon="fa fa-shield-alt" 
+                                            class="m-1 ui-button-danger" 
+                                            style="width: 100px;"
+                                            action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                            ajax="false" 
+                                            >
+                                            <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                                        </p:commandButton>
+                                    </p:column>
+
                                 </p:dataTable>
 
                             </p:panel>
@@ -527,7 +541,7 @@
                             </p:panel>
                         </h:panelGroup>
 
-                        
+
                         <h:panelGroup >
                             <p:panel header="Consultant Vice Sumary report" rendered="#{searchController.reportType eq 'cr'}">
 
@@ -592,7 +606,7 @@
                                     scrollable="true"
                                     scrollWidth="100%">
 
-                                    
+
                                     <p:column headerText="Consultant Name">                        
                                         <h:outputText value="" ></h:outputText>    
                                     </p:column>
@@ -609,7 +623,7 @@
                                 <br />
                             </p:panel>
                         </h:panelGroup>
-                        
+
 
                     </p:panel>
                 </h:form>              

@@ -1072,7 +1072,7 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/cashier_summary?faces-redirect=true";
     }
-    
+
     public String navigatToStaffWelfareBills() {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
@@ -7988,9 +7988,8 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
         }
-        bundle = createBundleForBills(billTypesAtomics, institution, department, null, null, null, null);
+        bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null);
         bundle.calculateTotalNetTotalTaxByBills();
-        reportType = "irs";
     }
 
     public void processWhtMonthlySymmary() {
@@ -8684,7 +8683,28 @@ public class SearchController implements Serializable {
     }
 
     public ReportTemplateRowBundle createBundleForBills(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins, Department dep,
+            Institution ins,
+            Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
+        return createBundleForBills(
+                billTypesAtomics,
+                ins,
+                dep,
+                null,
+                fromIns,
+                fromDep,
+                toIns,
+                toDep
+        );
+    }
+
+    public ReportTemplateRowBundle createBundleForBills(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins,
+            Department dep,
+            Institution site,
             Institution fromIns,
             Department fromDep,
             Institution toIns,
@@ -8709,6 +8729,11 @@ public class SearchController implements Serializable {
         if (dep != null) {
             jpql += " and b.department=:dep ";
             params.put("dep", dep);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
         }
 
         if (toDep != null) {
@@ -12825,7 +12850,7 @@ public class SearchController implements Serializable {
         patientInvestigations = new ArrayList<>();
         return "/lab/search_for_reporting_ondemand?faces-redirect=true";
     }
-    
+
     public String navigateToListSingleUserBills() {
         processAllFinancialTransactionalBillListBySingleUserByIds();
         return "/cashier/shift_end_summary_bill_list";
@@ -12840,12 +12865,12 @@ public class SearchController implements Serializable {
         cashBookEntries = new ArrayList<>();
         return "/cashier/cash_book_summery_site";
     }
-    
+
     public String navigateToPatientReportSearch() {
         patientInvestigations = new ArrayList<>();
         return "/lab/patient_reports_search?faces-redirect=true";
     }
-    
+
     public String navigateToLabAnalytics() {
         patientInvestigations = new ArrayList<>();
         return "/reportLab/lab_summeries_index?faces-redirect=true";
@@ -12868,24 +12893,21 @@ public class SearchController implements Serializable {
     }
 
     public void createIncomeBreakdownByCategory() {
-        if(withProfessionalFee){
+        if (withProfessionalFee) {
             bundle = generateIncomeBreakdownByCategoryWithProfessionalFee();
-        }else{
+        } else {
             bundle = generateIncomeBreakdownByCategoryWithOutProfessionalFee();
         }
     }
-    
+
     public void generateStaffWelfareBillReport() {
         bundle = new ReportTemplateRowBundle();
         bundle.setName("Staff Welfare");
         bundle.setBundleType("billList");
-        
-        
-        
+
         List<PaymentMethod> staffPaymentMethods = new ArrayList<>();
         staffPaymentMethods.add(PaymentMethod.Staff_Welfare);
-        
-      
+
         List<BillTypeAtomic> opdBts = new ArrayList<>();
         opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -12899,10 +12921,7 @@ public class SearchController implements Serializable {
 
         bundle = generatePaymentMethodColumnsByBills(opdBts, staffPaymentMethods);
         bundle.calculateTotalByBills();
-       
 
-        
-        
     }
 
     public void generateDailyReturn() {
@@ -13212,10 +13231,6 @@ public class SearchController implements Serializable {
         opdServiceCollectionCredit.setName("OPD Bills - Credit");
         bundle.getBundles().add(opdServiceCollectionCredit);
         collectionForTheDay += getSafeTotal(opdServiceCollectionCredit);
-
-        
-        
-        
 
         // Generate OPD service cancellations for credit and add to the main bundle
         ReportTemplateRowBundle opdServiceCancellationsCredit = generatePaymentMethodColumnsByBills(opdCancellations, creditPaymentMethods);
@@ -14427,7 +14442,6 @@ public class SearchController implements Serializable {
         return oiBundle;
     }
 
-    
     public ReportTemplateRowBundle generateOpdProfessionalFees(String paymentStatusStr) {
         PaymentStatus paymentStatus = PaymentStatus.ALL;
         if (paymentStatusStr != null) {
