@@ -998,7 +998,7 @@ public class ReportTemplateRowBundle implements Serializable {
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
                 if (row != null) { 
-                    Double iteratingTotal = safeDouble(row.getTotal());
+                    Double iteratingTotal = safeDouble(row.getGrossTotal());
                     grossTotal += iteratingTotal;
 
                     Double iteratingDiscount = safeDouble(row.getDiscount());
