@@ -15899,6 +15899,16 @@ public class SearchController implements Serializable {
                 System.err.println("No Bill for this iteratingBillItem = " + iteratingBillItem);
                 continue;
             }
+            
+            if (iteratingBillItem.getBill() == null || iteratingBillItem.getBill().getPaymentMethod() == null) {
+                if (iteratingBillItem.getBill().getPaymentMethod() == null) {
+                    if (iteratingBillItem.getBill().getPatientEncounter() == null) {
+                        continue;
+                    }
+                }else{
+                    continue;
+                }
+            }
 
             String categoryName = iteratingBillItem.getItem() != null && iteratingBillItem.getItem().getCategory() != null ? iteratingBillItem.getItem().getCategory().getName() : "No Category";
             categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
