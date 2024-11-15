@@ -453,6 +453,11 @@ public class SearchController implements Serializable {
         return "/analytics/financial_transaction_summary_Users_PaymentMethod?faces-redirect=true";
     }
 
+    public String navigateToWhtReport() {
+        reportType = "individualReceipts";
+        return "/reports/financialReports/wht?faces-redirect=true";
+    }
+
     public String navigateToFinancialTransactionSummaryByDepartment() {
         department = sessionController.getDepartment();
         billSummaryRows = null;
@@ -8020,9 +8025,8 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
         }
         bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
-        bundle.calculateTotalNetTotalTaxByBills();
-        reportType = "mr";
-
+        bundle = bundle.createBundleByAggregatingMonthlyTotalsFromBills();
+        bundle.calculateTotalByRowTotals();
     }
 
     public void processWhtConsultantSymmary() {
@@ -8052,10 +8056,9 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
         }
-        bundle = createBundleForBills(billTypesAtomics, institution, department, null, null, null, null);
-        bundle.calculateTotalNetTotalTaxByBills();
-        reportType = "cr";
-
+        bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
+        bundle = bundle.createBundleByAggregatingConsultantTotalsFromBills();
+        bundle.calculateTotalByRowTotals();
     }
 
     public void updateToStaffForChannelProfessionalPaymentBills() {
