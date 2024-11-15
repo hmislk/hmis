@@ -225,7 +225,7 @@ public class ReportController implements Serializable {
     private String type;
     private String reportType;
     private Speciality speciality;
-    
+
     public void generateItemMovementByBillReport() {
         billAndItemDataRows = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
@@ -899,9 +899,9 @@ public class ReportController implements Serializable {
             jpql += " AND bi.patientInvestigation.investigation = :inv";
             m.put("inv", investigation);
         }
-        
-        if(item != null){
-             jpql += " AND bi.item = :item";
+
+        if (item != null) {
+            jpql += " AND bi.item = :item";
             m.put("item", item);
         }
 
@@ -967,7 +967,7 @@ public class ReportController implements Serializable {
 
         Map<String, Object> params = new HashMap<>();
 
-         if (institution != null) {
+        if (institution != null) {
             jpql += " AND bi.bill.institution = :ins";
             params.put("ins", institution);
         }
@@ -986,9 +986,9 @@ public class ReportController implements Serializable {
             jpql += " AND bi.patientInvestigation.investigation = :inv";
             params.put("inv", investigation);
         }
-        
-        if(item != null){
-             jpql += " AND bi.item = :item";
+
+        if (item != null) {
+            jpql += " AND bi.item = :item";
             params.put("item", item);
         }
 
@@ -1012,7 +1012,6 @@ public class ReportController implements Serializable {
             params.put("speci", speciality);
         }
 
-
         jpql += " AND bi.bill.createdAt between :fd and :td "
                 + " AND bi.bill.referredBy IS NOT NULL "
                 + " GROUP BY bi.bill.referredBy.person, bi";
@@ -1022,26 +1021,26 @@ public class ReportController implements Serializable {
         params.put("td", toDate);
 
         List<TestWiseCountReport> rawResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
+
         Map<String, TestWiseCountReport> resultMap = new HashMap<>();
-        
+
         for (TestWiseCountReport result : rawResults) {
             String doctorName = result.getDoctor().getNameWithTitle();
             TestWiseCountReport existingResult = resultMap.get(doctorName);
-            
+
             boolean isCancelled = result.getBillItem().getBill() instanceof CancelledBill;
             boolean isRefunded = result.getBillItem().getBill() instanceof RefundBill;
 
             if (existingResult == null) {
                 existingResult = result;
-            } else if(!(isCancelled || isRefunded)) {
+            } else if (!(isCancelled || isRefunded)) {
                 existingResult.setCount(existingResult.getCount() + result.getCount());
                 existingResult.setHosFee(existingResult.getHosFee() + result.getHosFee());
                 existingResult.setCcFee(existingResult.getCcFee() + result.getCcFee());
                 existingResult.setProFee(existingResult.getProFee() + result.getProFee());
                 existingResult.setTotal(existingResult.getTotal() + result.getTotal());
                 existingResult.setDiscount(existingResult.getDiscount() + result.getDiscount());
-            }else {
+            } else {
                 existingResult.setCount(existingResult.getCount() - Math.abs(result.getCount()));
                 existingResult.setHosFee(existingResult.getHosFee() - Math.abs(result.getHosFee()));
                 existingResult.setCcFee(existingResult.getCcFee() - Math.abs(result.getCcFee()));
@@ -2126,7 +2125,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=test_counts.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -2142,7 +2141,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Sale_Item_Count.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -2158,7 +2157,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=service_count.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -2288,8 +2287,6 @@ public class ReportController implements Serializable {
     public String navigateToTestWiseCountReports() {
         return "/reports/lab/test_wise_count_report?faces-redirect=true";
     }
-
-    
 
     public String navigateToAnnualTestStatistics() {
         if (institutionController.getItems() == null) {
@@ -3220,12 +3217,12 @@ public class ReportController implements Serializable {
 
         for (TestWiseCountReport twc : testWiseCounts) {
             totalCount += twc.getCount();
-            totalHosFee += (twc.getHosFee() + twc.getDiscount());
+            totalHosFee += (twc.getHosFee());
             totalCCFee += twc.getCcFee();
             totalProFee += twc.getProFee();
             totalNetTotal += twc.getTotal();
             totalDiscount += twc.getDiscount();
-            totalNetHosFee += twc.getHosFee();
+            totalNetHosFee += twc.getHosFee() - twc.getDiscount();
         }
     }
 
@@ -3568,7 +3565,5 @@ public class ReportController implements Serializable {
     public void setNetTotal(Double netTotal) {
         this.netTotal = netTotal;
     }
-
-    
 
 }

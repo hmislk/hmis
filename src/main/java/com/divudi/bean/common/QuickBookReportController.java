@@ -328,7 +328,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("Cash AR");
             qbf.setAmount(grantTot);
             qbf.setMemo("Sales");
-            sdf = new SimpleDateFormat("yyyyMMdd");
+            sdf = new SimpleDateFormat("MM/dd/yy");
             qbf.setDocNum(sdf.format(reportDate));
             qbf.setEditQbClass(false);
             qbf.setEditAccnt(true);
@@ -336,13 +336,14 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
+
+            qbf = new QuickBookFormat();
+            qbf.setRowType("ENDTRNS");
+            qbf.setEditQbClass(false);
+            qbf.setEditAccnt(false);
+            quickBookFormats.add(qbf);
         }
 
-        qbf = new QuickBookFormat();
-        qbf.setRowType("ENDTRNS");
-        qbf.setEditQbClass(false);
-        qbf.setEditAccnt(false);
-        quickBookFormats.add(qbf);
     }
 
     public void createQBFormatOpdDayCredit() {
@@ -1767,7 +1768,7 @@ public class QuickBookReportController implements Serializable {
         } else {
 
         }
-        
+
         if (pe != null) {
             jpql += " and bf.bill.patientEncounter=:bhtno ";
             temMap.put("bhtno", pe);
