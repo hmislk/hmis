@@ -8026,6 +8026,7 @@ public class SearchController implements Serializable {
         }
         bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
         bundle = bundle.createBundleByAggregatingMonthlyTotalsFromBills();
+        bundle.calculateTotalByRowTotals();
     }
 
     public void processWhtConsultantSymmary() {
@@ -8057,6 +8058,7 @@ public class SearchController implements Serializable {
         }
         bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
         bundle = bundle.createBundleByAggregatingConsultantTotalsFromBills();
+        bundle.calculateTotalByRowTotals();
     }
 
     public void updateToStaffForChannelProfessionalPaymentBills() {
