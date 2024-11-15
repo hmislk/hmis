@@ -109,6 +109,8 @@ public class QuickBookReportController implements Serializable {
     private ReportKeyWord reportKeyWord;
     private double grantTot;
 
+    private boolean withProfessionalFee;
+
     public QuickBookReportController() {
     }
 
@@ -326,7 +328,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("Cash AR");
             qbf.setAmount(grantTot);
             qbf.setMemo("Sales");
-            sdf = new SimpleDateFormat("yyyyMMdd");
+            sdf = new SimpleDateFormat("MM/dd/yy");
             qbf.setDocNum(sdf.format(reportDate));
             qbf.setEditQbClass(false);
             qbf.setEditAccnt(true);
@@ -334,13 +336,14 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
+
+            qbf = new QuickBookFormat();
+            qbf.setRowType("ENDTRNS");
+            qbf.setEditQbClass(false);
+            qbf.setEditAccnt(false);
+            quickBookFormats.add(qbf);
         }
 
-        qbf = new QuickBookFormat();
-        qbf.setRowType("ENDTRNS");
-        qbf.setEditQbClass(false);
-        qbf.setEditAccnt(false);
-        quickBookFormats.add(qbf);
     }
 
     public void createQBFormatOpdDayCredit() {
@@ -1340,11 +1343,16 @@ public class QuickBookReportController implements Serializable {
                 + " where bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod in :pms "
-                + " and bf.fee.feeType!=:ft "
                 + " and bi.bill.retired=false "
                 + " and bi.retired=false "
                 + " and bf.retired=false ";
 
+        if (!withProfessionalFee) {
+            jpql += " and bf.fee.feeType!=:ft ";
+            temMap.put("ft", FeeType.Staff);
+        } else {
+
+        }
         if (institution != null) {
             jpql += " and bi.bill.institution=:ins ";
             temMap.put("ins", institution);
@@ -1369,7 +1377,6 @@ public class QuickBookReportController implements Serializable {
         jpql += " group by c, i, bi.bill.billClassType, bf.fee "
                 + " order by c.name, i.name, bf.fee.feeType ";
 
-        temMap.put("ft", FeeType.Staff);
         temMap.put("toDate", td);
         temMap.put("fromDate", fd);
 
@@ -1741,9 +1748,9 @@ public class QuickBookReportController implements Serializable {
     }
 
     public List<QuickBookFormat> fetchInwardOpdServiceWithoutPro(Date fd, Date td, PatientEncounter pe, AdmissionType admissionType, PaymentMethod paymentMethod, Institution cc) {
-        String sql;
-        Map m = new HashMap();
-        sql = "select bf.billItem.item.category, "
+        String jpql;
+        Map temMap = new HashMap();
+        jpql = "select bf.billItem.item.category, "
                 + " bf.billItem.item, "
                 + " count(bf.billItem.bill), "
                 + " sum(bf.feeValue),"
@@ -1753,38 +1760,43 @@ public class QuickBookReportController implements Serializable {
                 + " and bf.bill.patientEncounter.discharged=true "
                 + " and bf.bill.patientEncounter.dateOfDischarge between :fd and :td "
                 + " and bf.billItem.retired=false "
-                + " and bf.fee.feeType!=:ftp "
                 + " and bf.bill.billType=:billType ";
 
+        if (!withProfessionalFee) {
+            jpql += " and bf.fee.feeType!=:ft ";
+            temMap.put("ft", FeeType.Staff);
+        } else {
+
+        }
+
         if (pe != null) {
-            sql += " and bf.bill.patientEncounter=:bhtno ";
-            m.put("bhtno", pe);
+            jpql += " and bf.bill.patientEncounter=:bhtno ";
+            temMap.put("bhtno", pe);
         }
 
         if (admissionType != null) {
-            sql = sql + " and bf.bill.patientEncounter.admissionType=:at ";
-            m.put("at", admissionType);
+            jpql = jpql + " and bf.bill.patientEncounter.admissionType=:at ";
+            temMap.put("at", admissionType);
 
         }
 
         if (paymentMethod != null) {
-            sql = sql + " and bf.bill.patientEncounter.paymentMethod=:bt ";
-            m.put("bt", paymentMethod);
+            jpql = jpql + " and bf.bill.patientEncounter.paymentMethod=:bt ";
+            temMap.put("bt", paymentMethod);
         }
 
         if (cc != null) {
-            sql = sql + " and bf.bill.patientEncounter.creditCompany=:cc ";
-            m.put("cc", cc);
+            jpql = jpql + " and bf.bill.patientEncounter.creditCompany=:cc ";
+            temMap.put("cc", cc);
         }
 
-        sql = sql + " group by bf.billItem.item, bf.billItem.bill.billClassType "
+        jpql = jpql + " group by bf.billItem.item, bf.billItem.bill.billClassType "
                 + " order by bf.billItem.item.category.name, bf.billItem.item.name";
 
-        m.put("ftp", FeeType.Staff);
-        m.put("billType", BillType.InwardBill);
-        m.put("fd", getCommonFunctions().getStartOfDay(fd));
-        m.put("td", getCommonFunctions().getEndOfDay(td));
-        List<Object[]> results = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+        temMap.put("billType", BillType.InwardBill);
+        temMap.put("fd", getCommonFunctions().getStartOfDay(fd));
+        temMap.put("td", getCommonFunctions().getEndOfDay(td));
+        List<Object[]> results = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
 
         System.out.println("results.size() = " + results.size());
         grantTot = 0.0;
@@ -2975,6 +2987,14 @@ public class QuickBookReportController implements Serializable {
 
     public void setSite(Institution site) {
         this.site = site;
+    }
+
+    public boolean isWithProfessionalFee() {
+        return withProfessionalFee;
+    }
+
+    public void setWithProfessionalFee(boolean withProfessionalFee) {
+        this.withProfessionalFee = withProfessionalFee;
     }
 
 }

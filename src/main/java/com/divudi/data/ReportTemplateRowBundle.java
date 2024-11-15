@@ -373,6 +373,7 @@ public class ReportTemplateRowBundle implements Serializable {
 
         // Collect the aggregated monthly totals into a list
         List<ReportTemplateRow> monthlyTotalRows = new ArrayList<>(monthlyTotalsMap.values());
+        monthlyTotalRows.sort(Comparator.comparing(ReportTemplateRow::getDate));
         newlyCreatedBundle.setReportTemplateRows(monthlyTotalRows);
         return newlyCreatedBundle;
     }
@@ -417,6 +418,12 @@ public class ReportTemplateRowBundle implements Serializable {
 
         // Collect the aggregated staff totals into a list
         List<ReportTemplateRow> staffTotalRows = new ArrayList<>(staffTotalsMap.values());
+        // Sort the list by staff name
+        Collections.sort(staffTotalRows, new Comparator<ReportTemplateRow>() {
+            public int compare(ReportTemplateRow r1, ReportTemplateRow r2) {
+                return r1.getStaff().getPerson().getName().compareTo(r2.getStaff().getPerson().getName());
+            }
+        });
         newlyCreatedBundle.setReportTemplateRows(staffTotalRows);
         return newlyCreatedBundle;
     }
@@ -979,6 +986,30 @@ public class ReportTemplateRowBundle implements Serializable {
                 }
                 Double amount = safeDouble(row.getBill().getNetTotal());
                 total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalByRowTotals() {
+        total = 0.0;        // Ensure all counters are reset before starting calculations
+        grossTotal = 0.0;
+        discount = 0.0;
+        tax = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row != null) { 
+                    Double iteratingTotal = safeDouble(row.getGrossTotal());
+                    grossTotal += iteratingTotal;
+
+                    Double iteratingDiscount = safeDouble(row.getDiscount());
+                    discount += iteratingDiscount;
+
+                    Double iteratingTax = safeDouble(row.getTax());
+                    tax += iteratingTax;
+
+                    Double iteratingNetTotal = safeDouble(row.getTotal()); // assuming you meant to use getTotal here as well for the net total calculation
+                    total += iteratingNetTotal;
+                }
             }
         }
     }
