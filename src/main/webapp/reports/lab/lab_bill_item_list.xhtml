@@ -356,18 +356,7 @@
                             rendered="#{billItem.bill.cancelled}" 
                             value="#{billItem.bill.cancelledBill.deptId}">
                         </h:outputLabel>
-                        <p:commandLink 
-                            class="mx-3 ui-message-error"
-                            ajax="false" 
-                            rendered="#{billItem.bill.cancelled}" 
-                            title="View Cancel Bill Details"
-                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                            <h:outputText 
-                                value="&#xf06e;" 
-                                escape="false"  
-                                styleClass="fa"/>
-                            <f:setPropertyActionListener value="#{billItem.bill.cancelledBill}" target="#{billSearch.bill}"/>
-                        </p:commandLink>
+
                     </p:column>
 
                     <p:column headerText="Refunded">
@@ -384,7 +373,6 @@
                     </p:column>
 
                     <p:column headerText="Actions" exportable="false" >
-
                         <p:commandButton 
                             value="View" 
                             icon="fa fa-eye" 
@@ -394,6 +382,17 @@
                             ajax="false">
                             <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
                         </p:commandButton>
+                        <p:commandButton 
+                            value="View Cancel Bill Details" 
+                            icon="fa fa-ban" 
+                            class="m-1 ui-button-danger" 
+                            style="width: 100px;"
+                            action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                            ajax="false" 
+                            rendered="#{billItem.bill.cancelled}">
+                            <f:setPropertyActionListener value="#{billItem.bill.cancelledBill}" target="#{billSearch.bill}"/>
+                        </p:commandButton>
+
 
                         <p:commandButton 
                             value="Manage" 
