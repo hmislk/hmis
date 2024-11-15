@@ -21,7 +21,8 @@
                                              action="#{dealorPaymentBillSearch.approve()}"
                                              disabled="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment' 
                                                          or dealorPaymentBillSearch.bill.cancelled
-                                                         or dealorPaymentBillSearch.bill.referenceBill ne null }">                           
+                                                         or dealorPaymentBillSearch.bill.referenceBill ne null }"
+                                              rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}">                           
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Return" class="ui-button-warning mx-1"
@@ -39,15 +40,17 @@
                                              rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}" >                           
                             </p:commandButton>
                             <p:inputText id="com" value="#{dealorPaymentBillSearch.comment}" placeholder="Comment" style="float: left; margin-right: 5px;"/>
-                            <p:commandButton ajax="false" value="Back To Approval List" style="width: 150px; float: right;"
-                                             action="search_dealor_payment_pharmacy">                           
+                            <p:commandButton ajax="false" value="Back To List"
+                                             class="ui-button-warning mx-2" icon="fas fa-arrow-left"
+                                             style="width: 150px; float: right;"
+                                             action="search_dealor_payment?faces-redirect=true">                           
                             </p:commandButton>
                         </f:facet>
 
                     </p:panel>
 
                     <p:panel>                                
-                        <p:commandButton value="Print" ajax="false" action="#" disabled="#{dealorPaymentBillSearch.bill.billType eq 'GrnPaymentPre'}" >
+                        <p:commandButton value="Print" ajax="false" action="#"  >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>                    
                         <p:panel   id="gpBillPreview">
