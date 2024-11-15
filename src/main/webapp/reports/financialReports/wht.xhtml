@@ -330,6 +330,7 @@
                                               sortBy="#{row.bill.creater.webUserPerson.name}" 
                                               filterBy="#{row.bill.creater.webUserPerson.name}">
                                         <p:outputLabel value="#{row.bill.creater.webUserPerson.name}" />
+                                        <p:outputLabel value="&nbsp;(#{row.bill.creater.name})" />
                                     </p:column>
 
                                     <p:column headerText="Date" width="10em" style="text-align: left;" rendered="false">
