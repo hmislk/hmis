@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+
+            <ui:define name="subcontent">
+
+                <h:form >
+
+                    <p:panel   header="Cash Bill Search" class="m-1">
+
+                        <h:panelGrid columns="8" class="w-100">
+                            <h:outputLabel value="From"/>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="To"/>                                
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
+
+                            <h:outputLabel value="Department"/>                                
+                            <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
+                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="3" class="my-2" >
+
+                            <p:commandButton  
+                                value="Process" 
+                                ajax="false"
+                                class="ui-button-warning" icon="fas fa-cogs">
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Download Excel" 
+                                ajax="false" 
+                                class="mx-2 ui-button-success" 
+                                icon="fa fa-file-excel">
+                                <p:dataExporter target="tblCashier" fileName="All_Cashier_Summary" type="xlsx" ></p:dataExporter>
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+
+
+                        <p:dataTable value="#{searchController.bundle.reportTemplateRows}" var="summary"
+                                     paginator="true" rows="10" id="tblCashier"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate="(Page {currentPage} of {totalPages})"
+                                     paginatorPosition="top"
+                                     rowIndexVar="i">
+
+
+
+                            <p:column headerText="No" >
+                                <h:outputText value="#{i+1}" />
+                            </p:column>
+
+                            <p:column headerText="Bill No" sortBy="#{summary.department.site.name}" filterBy="#{summary.department.site.name}">
+                                <h:outputText value="#{summary.department.site.name}" />
+                            </p:column>
+
+                            <p:column headerText="Department" sortBy="#{summary.department.name}" filterBy="#{summary.department.name}">
+                                <h:outputText value="#{summary.department.name}" />
+                            </p:column>
+
+                            <p:column headerText="Comment" sortBy="#{summary.date}" filterBy="#{summary.date}">
+                                
+                            </p:column>
+
+                            <p:column headerText="Cash In value" 
+                                      style="text-align: left;">
+                                
+                            </p:column>
+
+                            <p:column headerText="Cash Out value" >
+                                
+                            </p:column>
+
+                            <p:column headerText="Transaction" >
+                                
+                            </p:column>
+
+                            
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>
