@@ -1930,15 +1930,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         originalBill.setCancelled(true);
         originalBill.setCancelledBill(individualCancelltionBill);
         billService.saveBill(originalBill);
-
-//        if (originalBill.getPaymentMethod() == PaymentMethod.Credit) {
-//            if (originalBill.getToStaff() != null) {
-//                staffService.updateStaffCredit(originalBill.getToStaff(), 0 - (originalBill.getNetTotal() + getBill().getVat()));
-//                JsfUtil.addSuccessMessage("Staff Credit Updated");
-//                individualCancelltionBill.setFromStaff(originalBill.getToStaff());
-//                getBillFacade().edit(individualCancelltionBill);
-//            }
-//        }
     }
 
     public List<Payment> createPaymentForOpdBatchBillCancellation(Bill cancellationBatchBill, PaymentMethod pm) {
