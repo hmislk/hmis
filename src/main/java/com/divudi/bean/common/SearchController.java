@@ -12906,7 +12906,11 @@ public class SearchController implements Serializable {
     }
 
     public void createItemizedSalesReport() {
-        bundle = generateItemizedSalesReport();
+        if (withProfessionalFee) {
+            bundle = generateItemizedSalesReport("Itemized Sales Report - With Professional Fee","itemized_sales_report_with_professional_fee");
+        }else{
+            bundle = generateItemizedSalesReport("Itemized Sales Report - Without Professional Fee","itemized_sales_report_without_professional_fee");
+        }
     }
 
     public void createIncomeBreakdownByCategory() {
@@ -14815,7 +14819,10 @@ public class SearchController implements Serializable {
 //
 //        return oiBundle;
 //    }
-    public ReportTemplateRowBundle generateItemizedSalesReport() {
+    public ReportTemplateRowBundle generateItemizedSalesReport(String bundleName, String bundleType) {
+        //System.out.println("Bundle Name = " + bundleName);
+        //System.out.println("Bundle Type = " + bundleType);
+        
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -14944,8 +14951,8 @@ public class SearchController implements Serializable {
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         billItemsToItamizedSaleReport(oiBundle, bis);
 
-        oiBundle.setName("Itemized Sales Report");
-        oiBundle.setBundleType("itemized_sales_report");
+        oiBundle.setName(bundleName);
+        oiBundle.setBundleType(bundleType);
 
         oiBundle.getReportTemplateRows().stream()
                 .forEach(rtr -> {
