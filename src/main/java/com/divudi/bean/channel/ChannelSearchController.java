@@ -232,6 +232,15 @@ public class ChannelSearchController implements Serializable {
             return;
         }
     }
+    
+    public String navigateTocancelPaymentBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        printPreview = false;
+        return "/channel/channel_payment_staff_bill_cancel?faces-redirect=true;";
+    }
 
     private boolean errorCheck() {
         if (getBill().isCancelled()) {

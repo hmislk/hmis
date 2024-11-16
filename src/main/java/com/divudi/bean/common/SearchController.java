@@ -12817,10 +12817,9 @@ public class SearchController implements Serializable {
 
     public String navigateToLabReportSearch() {
         patientInvestigations = new ArrayList<>();
-//        getReportKeyWord().setDepartment(getSessionController().getLoggedUser().getDepartment());
         return "/lab/search_for_reporting_ondemand?faces-redirect=true";
     }
-
+    
     public String navigateToListSingleUserBills() {
         processAllFinancialTransactionalBillListBySingleUserByIds();
         return "/cashier/shift_end_summary_bill_list";
@@ -12834,6 +12833,16 @@ public class SearchController implements Serializable {
     public String navigateToListCashBookEntrySiteSummary() {
         cashBookEntries = new ArrayList<>();
         return "/cashier/cash_book_summery_site";
+    }
+    
+    public String navigateToPatientReportSearch() {
+        patientInvestigations = new ArrayList<>();
+        return "/lab/patient_reports_search?faces-redirect=true";
+    }
+    
+    public String navigateToLabAnalytics() {
+        patientInvestigations = new ArrayList<>();
+        return "/reportLab/lab_summeries_index?faces-redirect=true";
     }
 
     public void genarateCashBookEntries() {
@@ -14132,8 +14141,8 @@ public class SearchController implements Serializable {
                 switch (visitType) {
                     case "Any":
                         System.out.println("Credit Any");
-                        jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm)";
-                        m.put("apm", allMethods);
+                        jpql += " AND (bi.bill.paymentMethod in :cpm OR bi.bill.patientEncounter.paymentMethod in :cpm)";
+                        m.put("cpm", creditPaymentMethods);
                         break;
                     case "OP":
                         System.out.println("Credit OP");
@@ -14159,7 +14168,7 @@ public class SearchController implements Serializable {
                         System.out.println("Credit Any");
                         System.out.println("Credit Any");
                         jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm)";
-                        m.put("apm", allMethods);
+                        m.put("apm", nonCreditPaymentMethods);
                         break;
                     case "OP":
                         System.out.println("Credit OP");
