@@ -557,7 +557,7 @@
                                         <f:convertDateTime pattern="yyyy MMMMM" ></f:convertDateTime>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Total Amount">
+                                <p:column headerText="Total Amount" style="text-align: right;" >
                                     <h:outputText value="#{row.grossTotal}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputText>
@@ -567,7 +567,7 @@
                                         </h:outputText>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Holding Tax" width="">
+                                <p:column headerText="Holding Tax"  style="text-align: right;" >
                                     <h:outputText value="#{row.tax}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputText>
@@ -577,7 +577,7 @@
                                         </h:outputText>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Net Amount" >
+                                <p:column headerText="Net Amount"  style="text-align: right;" >
                                     <h:outputText value="#{row.total}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputText>
@@ -653,7 +653,7 @@
                                 <p:column headerText="Consultant Name">                        
                                     <h:outputText value="#{row.staff.person.nameWithTitle}" ></h:outputText>    
                                 </p:column>
-                                <p:column headerText="Total Amount">
+                                <p:column headerText="Total Amount"  style="text-align: right;" >
                                     <h:outputText value="#{row.grossTotal}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputText>
@@ -663,7 +663,7 @@
                                         </h:outputText>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Holding Tax" >
+                                <p:column headerText="Holding Tax"  style="text-align: right;" >
                                     <h:outputText value="#{row.tax}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputText>
@@ -673,7 +673,7 @@
                                         </h:outputText>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Net Amount" >
+                                <p:column headerText="Net Amount"  style="text-align: right;" >
                                     <h:outputText value="#{row.total}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputText>
