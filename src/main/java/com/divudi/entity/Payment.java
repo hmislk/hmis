@@ -481,6 +481,10 @@ public class Payment implements Serializable {
         return newPayment;
     }
 
+    public void invertValues() {
+        paidValue = 0 - paidValue;
+    }
+    
     public Payment clonePaymentForNewBill() {
         Payment newPayment = new Payment();
         newPayment.setWrittenAt(this.writtenAt);
