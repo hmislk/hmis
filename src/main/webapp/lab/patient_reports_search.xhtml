@@ -81,7 +81,7 @@
                                             </p:selectOneMenu>
                                         </h:panelGrid>
 
-                                        <h:panelGrid columns="1" class="w-100">
+                                        <h:panelGrid columns="1" class="w-100" rendered="false">
                                             <h:outputLabel class="w-100" value="By Collection Center"/>
                                             <p:autoComplete 
                                                 converter="deal" 
@@ -103,13 +103,15 @@
                                     </h:panelGrid>
                                 </div>
                                 <div class="col-2">
+                                    
                                     <p:commandButton 
                                         ajax="false" 
-                                        action="#{patientInvestigationController.searchPatientInvestigations}" 
+                                        action="#{patientInvestigationController.searchPatientReportsInBillingDepartment}" 
                                         value="Search Reports" 
                                         icon="fas fa-file-medical" 
                                         styleClass="my-1 ui-button-danger w-100">
                                     </p:commandButton>
+                                    
                                     <p:commandButton 
                                         ajax="false" 
                                         action="#{patientInvestigationController.clearFilters}" 
@@ -117,9 +119,10 @@
                                         icon="fas fa-eraser" 
                                         styleClass="ui-button-secondary my-1 w-100">
                                     </p:commandButton>
+                                    
                                 </div>
                             </div>
-
+                
                             <p:dataTable  
                                 id="tblBills" 
                                 value="#{patientInvestigationController.items}" 
