@@ -1072,6 +1072,12 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/cashier_summary?faces-redirect=true";
     }
+    
+    public String navigatToStaffWelfareBills() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/staff_welfare?faces-redirect=true";
+    }
 
     public String navigatToShiftEndSummary() {
         resetAllFiltersExceptDateRange();
@@ -12867,6 +12873,36 @@ public class SearchController implements Serializable {
         }else{
             bundle = generateIncomeBreakdownByCategoryWithOutProfessionalFee();
         }
+    }
+    
+    public void generateStaffWelfareBillReport() {
+        bundle = new ReportTemplateRowBundle();
+        bundle.setName("Staff Welfare");
+        bundle.setBundleType("billList");
+        
+        
+        
+        List<PaymentMethod> staffPaymentMethods = new ArrayList<>();
+        staffPaymentMethods.add(PaymentMethod.Staff_Welfare);
+        
+      
+        List<BillTypeAtomic> opdBts = new ArrayList<>();
+        opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+        bundle = generatePaymentMethodColumnsByBills(opdBts, staffPaymentMethods);
+        bundle.calculateTotalByBills();
+       
+
+        
+        
     }
 
     public void generateDailyReturn() {
