@@ -3690,7 +3690,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public void setPatient(Patient patient) {
         this.patient = patient;
         selectPaymentSchemeAsPerPatientMembership();
-        
     }
 
     private void selectPaymentSchemeAsPerPatientMembership() {
