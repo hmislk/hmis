@@ -1257,16 +1257,19 @@ public class ReportController implements Serializable {
 
         if (bis.size() == 1) {
             voucherItem = billItemFacade.findFirstByJpql(jpql, m);
-            if (voucherItem.getBill().getNetTotal() < b.getNetTotal()) {
-                voucherItem.getBill().setAdjustedTotal(Math.abs(b.getNetTotal()) - Math.abs(voucherItem.getBill().getNetTotal()));
+            voucherItem.getBill().setNetTotal(voucherItem.getNetValue());
+            if (voucherItem.getNetValue() < b.getNetTotal()) {
+                voucherItem.getBill().setAdjustedTotal(Math.abs(voucherItem.getNetValue()));
+                voucherItem.getBill().setBalance(Math.abs(b.getNetTotal()) - Math.abs(voucherItem.getNetValue()));
             }
         } else if (bis.size() > 1) {
             Double NetTotal = 0.0;
             for (BillItem bi : bis) {
                 voucherItem = bi;
-                NetTotal += voucherItem.getBill().getNetTotal();
+                NetTotal += voucherItem.getNetValue();
             }
             voucherItem.getBill().setNetTotal(NetTotal);
+            voucherItem.getBill().setBalance(Math.abs(b.getNetTotal()) - Math.abs(voucherItem.getBill().getNetTotal()));
         }
 
         return voucherItem;
