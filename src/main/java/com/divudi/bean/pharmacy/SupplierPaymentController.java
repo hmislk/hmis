@@ -667,7 +667,7 @@ public class SupplierPaymentController implements Serializable {
 
         // Ensure dates are not null
         if (chequeFromDate == null || chequeToDate == null) {
-            throw new IllegalArgumentException("fromDate and toDate must be set");
+            JsfUtil.addErrorMessage("cheque From Date and cheque To Date must be set");
         }
 
         // Build JPQL query
