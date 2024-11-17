@@ -167,6 +167,16 @@
                                 >
                             </p:selectBooleanButton>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <i class="fas fa-credit-card" style="color: green; font-size: 18px;"></i>                                       
+                                <h:outputLabel value="Payment Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100" value="#{searchController.methodType}">
+                                <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                <f:selectItem itemValue="Credit" itemLabel="Credit"/>
+                                <f:selectItem itemValue="NonCredit" itemLabel="Non Credit"/>
+                            </p:selectOneMenu>
+
                         </h:panelGrid><br />
 
                         <div class="d-flex align-items-center mb-2">
@@ -177,12 +187,22 @@
                                 action="#{searchController.createItemizedSalesReport()}"
                                 icon="fas fa-cogs" >
                             </p:commandButton>
+                            
+                            <p:commandButton 
+                                    value="Download PDF" 
+                                    ajax="false" 
+                                    icon="pi pi-file-pdf" 
+                                    class="ui-button-info  m-1"
+                                    style="background-color: #17a2b8; border-color: #17a2b8;" 
+                                    onclick="PrimeFaces.monitorDownload(start, stop);">
+                                    <p:fileDownload value="#{searchController.bundleAsPdf}" />
+                                </p:commandButton>
+                            
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
-                            </p:commandButton>
+                            
                         </div>
 
                         <div style="display: none;" >
