@@ -20,6 +20,7 @@ import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.ReportTemplate;
+import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
@@ -372,7 +373,58 @@ public class ReportTemplateRowBundle implements Serializable {
 
         // Collect the aggregated monthly totals into a list
         List<ReportTemplateRow> monthlyTotalRows = new ArrayList<>(monthlyTotalsMap.values());
+        monthlyTotalRows.sort(Comparator.comparing(ReportTemplateRow::getDate));
         newlyCreatedBundle.setReportTemplateRows(monthlyTotalRows);
+        return newlyCreatedBundle;
+    }
+
+    public ReportTemplateRowBundle createBundleByAggregatingConsultantTotalsFromBills() {
+        ReportTemplateRowBundle newlyCreatedBundle = new ReportTemplateRowBundle();
+        Map<Long, ReportTemplateRow> staffTotalsMap = new HashMap<>();
+
+        for (ReportTemplateRow row : this.getReportTemplateRows()) {
+            if (row.getBill() == null) {
+                continue;
+            }
+
+            // Extract financial data from the bill
+            Double grossTotal = row.getBill().getTotal();
+            Double tax = row.getBill().getTax();
+            Double netTotal = row.getBill().getNetTotal();
+            Staff staff = row.getBill().getStaff();
+
+            if (staff == null) {
+                continue; // Skip if no staff assigned
+            }
+
+            Long staffId = staff.getId();
+
+            // Retrieve or create the ReportTemplateRow for the current staff
+            ReportTemplateRow staffRow = staffTotalsMap.get(staffId);
+            if (staffRow == null) {
+                staffRow = new ReportTemplateRow();
+                staffRow.setStaff(staff);
+                staffRow.setTotal(0.0);
+                staffRow.setTax(0.0);
+                staffRow.setGrossTotal(0.0);
+                staffTotalsMap.put(staffId, staffRow);
+            }
+
+            // Aggregate the totals
+            staffRow.setTotal(staffRow.getTotal() + netTotal);
+            staffRow.setTax(staffRow.getTax() + tax);
+            staffRow.setGrossTotal(staffRow.getGrossTotal() + grossTotal);
+        }
+
+        // Collect the aggregated staff totals into a list
+        List<ReportTemplateRow> staffTotalRows = new ArrayList<>(staffTotalsMap.values());
+        // Sort the list by staff name
+        Collections.sort(staffTotalRows, new Comparator<ReportTemplateRow>() {
+            public int compare(ReportTemplateRow r1, ReportTemplateRow r2) {
+                return r1.getStaff().getPerson().getName().compareTo(r2.getStaff().getPerson().getName());
+            }
+        });
+        newlyCreatedBundle.setReportTemplateRows(staffTotalRows);
         return newlyCreatedBundle;
     }
 
@@ -934,6 +986,30 @@ public class ReportTemplateRowBundle implements Serializable {
                 }
                 Double amount = safeDouble(row.getBill().getNetTotal());
                 total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalByRowTotals() {
+        total = 0.0;        // Ensure all counters are reset before starting calculations
+        grossTotal = 0.0;
+        discount = 0.0;
+        tax = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row != null) { 
+                    Double iteratingTotal = safeDouble(row.getGrossTotal());
+                    grossTotal += iteratingTotal;
+
+                    Double iteratingDiscount = safeDouble(row.getDiscount());
+                    discount += iteratingDiscount;
+
+                    Double iteratingTax = safeDouble(row.getTax());
+                    tax += iteratingTax;
+
+                    Double iteratingNetTotal = safeDouble(row.getTotal()); // assuming you meant to use getTotal here as well for the net total calculation
+                    total += iteratingNetTotal;
+                }
             }
         }
     }

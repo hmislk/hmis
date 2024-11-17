@@ -8026,6 +8026,7 @@ public class SearchController implements Serializable {
         }
         bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
         bundle = bundle.createBundleByAggregatingMonthlyTotalsFromBills();
+        bundle.calculateTotalByRowTotals();
     }
 
     public void processWhtConsultantSymmary() {
@@ -8055,8 +8056,9 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
         }
-        bundle = createBundleForBills(billTypesAtomics, institution, department, null, null, null, null);
-        bundle.calculateTotalNetTotalTaxByBills();
+        bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
+        bundle = bundle.createBundleByAggregatingConsultantTotalsFromBills();
+        bundle.calculateTotalByRowTotals();
     }
 
     public void updateToStaffForChannelProfessionalPaymentBills() {
@@ -12903,8 +12905,12 @@ public class SearchController implements Serializable {
         bundle = generateItemizedSalesSummary();
     }
 
-    public void createItemizedSalesReportOpd() {
-        bundle = generateItemizedSalesReportOpd();
+    public void createItemizedSalesReport() {
+        if (withProfessionalFee) {
+            bundle = generateItemizedSalesReport("Itemized Sales Report - With Professional Fee","itemized_sales_report_with_professional_fee");
+        }else{
+            bundle = generateItemizedSalesReport("Itemized Sales Report - Without Professional Fee","itemized_sales_report_without_professional_fee");
+        }
     }
 
     public void createIncomeBreakdownByCategory() {
@@ -14813,7 +14819,10 @@ public class SearchController implements Serializable {
 //
 //        return oiBundle;
 //    }
-    public ReportTemplateRowBundle generateItemizedSalesReportOpd() {
+    public ReportTemplateRowBundle generateItemizedSalesReport(String bundleName, String bundleType) {
+        //System.out.println("Bundle Name = " + bundleName);
+        //System.out.println("Bundle Type = " + bundleType);
+        
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -14823,11 +14832,97 @@ public class SearchController implements Serializable {
         m.put("br", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+
+        List<BillTypeAtomic> btas = new ArrayList();
+
+        List<BillTypeAtomic> obtas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        List<BillTypeAtomic> ibtas = BillTypeAtomic.findByServiceType(ServiceType.INWARD);
+
+        if (null != visitType) {
+            switch (visitType) {
+                case "Any":
+                    System.out.println("Any");
+                    btas.addAll(obtas);
+                    btas.addAll(ibtas);
+                    break;
+                case "OP":
+                    System.out.println("OPD");
+                    btas.addAll(obtas);
+                    break;
+                case "IP":
+                    System.out.println("IP");
+                    btas.addAll(ibtas);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         oiBundle.setDescription("Bill Types Listed: " + btas);
         if (!btas.isEmpty()) {
             jpql += " and bi.bill.billTypeAtomic in :bts ";
             m.put("bts", btas);
+        }
+
+        List<PaymentMethod> creditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.CREDIT);
+        List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
+
+        List<PaymentMethod> allMethods = new ArrayDeque();
+        allMethods.addAll(creditPaymentMethods);
+        allMethods.addAll(nonCreditPaymentMethods);
+
+        if ("Any".equals(methodType)) {
+            System.out.println("Any");
+        } else if ("Credit".equals(methodType)) {
+            System.out.println("Credit");
+
+            if (null != visitType) {
+                switch (visitType) {
+                    case "Any":
+                        System.out.println("Credit Any");
+                        jpql += " AND (bi.bill.paymentMethod in :cpm OR bi.bill.patientEncounter.paymentMethod in :cpm)";
+                        m.put("cpm", creditPaymentMethods);
+                        break;
+                    case "OP":
+                        System.out.println("Credit OP");
+                        jpql += " AND bi.bill.paymentMethod in :cpm ";
+                        m.put("cpm", creditPaymentMethods);
+                        break;
+                    case "IP":
+                        System.out.println("Credit IP");
+                        jpql += " AND bi.bill.patientEncounter.paymentMethod in :cpm ";
+                        m.put("cpm", creditPaymentMethods);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+        } else if ("NonCredit".equals(methodType)) {
+            System.out.println("Non Credit");
+
+            if (null != visitType) {
+                switch (visitType) {
+                    case "Any":
+                        System.out.println("NonCredit Any");
+                        jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm)";
+                        m.put("apm", nonCreditPaymentMethods);
+                        break;
+                    case "OP":
+                        System.out.println("NonCredit OP");
+                        jpql += " AND bi.bill.paymentMethod in :ncpm ";
+                        m.put("ncpm", nonCreditPaymentMethods);
+                        break;
+                    case "IP":
+                        System.out.println("NonCredit IP");
+                        jpql += " AND bi.bill.patientEncounter.paymentMethod in :ncpm ";
+                        m.put("ncpm", nonCreditPaymentMethods);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
         }
 
         if (department != null) {
@@ -14850,13 +14945,14 @@ public class SearchController implements Serializable {
             jpql += " and bi.item=:item ";
             m.put("item", item);
         }
+
         System.out.println("jpql = " + jpql);
         System.out.println("m = " + m);
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         billItemsToItamizedSaleReport(oiBundle, bis);
 
-        oiBundle.setName("Itemized Sales Report");
-        oiBundle.setBundleType("itemized_sales_report");
+        oiBundle.setName(bundleName);
+        oiBundle.setBundleType(bundleType);
 
         oiBundle.getReportTemplateRows().stream()
                 .forEach(rtr -> {
@@ -15810,6 +15906,16 @@ public class SearchController implements Serializable {
                 System.err.println("No Bill for this iteratingBillItem = " + iteratingBillItem);
                 continue;
             }
+            
+            if (iteratingBillItem.getBill() == null || iteratingBillItem.getBill().getPaymentMethod() == null) {
+                if (iteratingBillItem.getBill().getPaymentMethod() == null) {
+                    if (iteratingBillItem.getBill().getPatientEncounter() == null) {
+                        continue;
+                    }
+                }else{
+                    continue;
+                }
+            }
 
             String categoryName = iteratingBillItem.getItem() != null && iteratingBillItem.getItem().getCategory() != null ? iteratingBillItem.getItem().getCategory().getName() : "No Category";
             categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
@@ -16189,11 +16295,20 @@ public class SearchController implements Serializable {
         double totalOpdServiceCollection = 0.0;
 
         for (BillItem bi : billItems) {
-            System.out.println("Processing BillItem: " + bi);
+            //System.out.println("BillItem : " + bi);
+            //System.out.println("Bill : " + bi.getBill());
+            //System.out.println("PaymentMethod : " + bi.getBill().getPaymentMethod());
 
-            if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
-                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
-                continue;
+            if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
+                if (bi.getBill().getPaymentMethod() == null) {
+                    if (bi.getBill().getPatientEncounter() == null) {
+                        continue;
+                    }
+                    
+                }else{
+                    continue;
+                }
+
             }
 
             String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null
@@ -16202,8 +16317,8 @@ public class SearchController implements Serializable {
             String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
             String itemKey = categoryName + "->" + itemName;
 
-            System.out.println("Item Key: " + itemKey);
-            System.out.println("Category: " + categoryName + ", Item: " + itemName);
+            //System.out.println("Item Key: " + itemKey);
+            //System.out.println("Category: " + categoryName + ", Item: " + itemName);
 
             categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
             itemSummaryMap.putIfAbsent(itemKey, new ReportTemplateRow());
@@ -16254,12 +16369,12 @@ public class SearchController implements Serializable {
 
         // Add category rows and item summary rows, then each individual detailed bill item row within each item
         categoryMap.forEach((categoryName, catRow) -> {
-            System.out.println("Adding category row to bundle: " + categoryName);
+            //System.out.println("Adding category row to bundle: " + categoryName);
             rowsToAdd.add(catRow);
             itemSummaryMap.entrySet().stream()
                     .filter(entry -> entry.getKey().startsWith(categoryName + "->"))
                     .forEach(entry -> {
-                        System.out.println("Adding item summary row to bundle under category " + categoryName + ": " + entry.getValue().getItem().getName());
+                        //System.out.println("Adding item summary row to bundle under category " + categoryName + ": " + entry.getValue().getItem().getName());
                         rowsToAdd.add(entry.getValue());
                         List<ReportTemplateRow> billItemRows = detailedBillItemRows.get(entry.getKey());
                         billItemRows.forEach(rowsToAdd::add);

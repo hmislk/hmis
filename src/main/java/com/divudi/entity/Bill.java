@@ -792,6 +792,7 @@ public class Bill implements Serializable {
         discountPercent = 0 - bill.getDiscountPercent();
         paidAmount = 0 - bill.getPaidAmount();
         balance = 0 - bill.getBalance();
+        tax= 0- tax;
         cashPaid = 0 - bill.getCashPaid();
         cashBalance = 0 - bill.getCashBalance();
         saleValue = 0 - bill.getSaleValue();
