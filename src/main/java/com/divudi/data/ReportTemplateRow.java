@@ -140,6 +140,7 @@ public class ReportTemplateRow implements Serializable {
     private Double grossTotal;
     private Double discount;
     private Double total;
+    private Double tax;
 
     private Double hospitalTotal;
     private Double staffTotal;
@@ -1291,6 +1292,14 @@ public class ReportTemplateRow implements Serializable {
 
     public void setBillClassType(BillClassType billClassType) {
         this.billClassType = billClassType;
+    }
+
+    public Double getTax() {
+        return tax;
+    }
+
+    public void setTax(Double tax) {
+        this.tax = tax;
     }
     
     

@@ -97,13 +97,17 @@
             <p:separator/>
 
             <h:outputLabel value="Total" ></h:outputLabel>
-            <h:outputLabel value="#{cc.attrs.bill.total}" ></h:outputLabel>
+            <h:inputText value="#{cc.attrs.bill.total}" ></h:inputText>
 
             <h:outputLabel value="Discount" ></h:outputLabel>
-            <h:outputLabel value="#{cc.attrs.bill.discount}" ></h:outputLabel>
+            <h:inputText value="#{cc.attrs.bill.discount}" ></h:inputText>
+            
+             <h:outputLabel value="Tax" ></h:outputLabel>
+             <h:inputText value="#{cc.attrs.bill.tax}" ></h:inputText>
 
             <h:outputLabel value="Net Total" ></h:outputLabel>
-            <h:outputLabel value="#{cc.attrs.bill.netTotal}" ></h:outputLabel>
+            <h:inputText value="#{cc.attrs.bill.netTotal}" ></h:inputText>
+            
 
             <p:separator/>
             <p:separator/>
