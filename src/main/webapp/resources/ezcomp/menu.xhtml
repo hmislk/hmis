@@ -530,7 +530,8 @@
                         ajax="false" 
                         action="/lab/receive?faces-redirect=true" 
                         actionListener="#{patientInvestigationController.toPrintWorksheets()}" 
-                        value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" >
+                        value="Worksheets" 
+                        rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" >
                     </p:menuitem>
 
                     <p:menuitem 
@@ -543,9 +544,15 @@
                     <p:menuitem 
                         ajax="false" 
                         action="#{searchController.navigateToPatientReportSearch()}" 
-                        value="Report Search" 
-                        rendered="#{webUserController.hasPrivilege('LabReportPrint')}" >
+                        value="Report Search by Billing Department" >
                     </p:menuitem>
+                    
+<!--                    <p:menuitem 
+                        ajax="false" 
+                        action="#{searchController.navigateToPatientReportSearch()}" 
+                        value="Report Search by Billing Department" 
+                        rendered="#{webUserController.hasPrivilege('LabReportPrint')}" >
+                    </p:menuitem>-->
 
                     <p:menuitem 
                         ajax="false" 

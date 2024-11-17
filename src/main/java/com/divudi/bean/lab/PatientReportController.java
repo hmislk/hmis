@@ -50,13 +50,7 @@ import com.divudi.entity.lab.PatientSample;
 import com.divudi.entity.lab.PatientSampleComponant;
 import com.divudi.entity.lab.ReportFormat;
 import com.divudi.facade.ClinicalFindingValueFacade;
-import com.itextpdf.text.DocumentException;
-
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -77,37 +71,16 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.primefaces.event.CellEditEvent;
-import org.xhtmlrenderer.pdf.ITextRenderer;
 import javax.faces.context.FacesContext;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
-import javax.faces.context.ExternalContext;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.persistence.TemporalType;
-import javax.servlet.http.HttpSession;
 import org.primefaces.model.StreamedContent;
 
 /**
@@ -362,6 +335,12 @@ public class PatientReportController implements Serializable {
         m.put("pi", pi);
         m.put("ret", false);
         return getFacade().findByJpql(j, m);
+    }
+    
+    public int approvedPatientReportCount(PatientInvestigation pi){
+        int reportCount = 0;
+        reportCount = approvedPatientReports(pi).size();
+        return reportCount;
     }
 
     public String toViewMyReports() {

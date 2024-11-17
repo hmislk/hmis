@@ -1,6 +1,5 @@
 package com.divudi.service;
 
-import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Agent;
@@ -135,7 +134,7 @@ public class PaymentService {
                     p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
                     break;
                 case Cash:
-                    p.setPaidValue(paymentMethodData.getCash().getTotalValue());
+                    p.setPaidValue(bill.getNetTotal());
                     break;
                 case ewallet:
 
