@@ -1084,6 +1084,12 @@ public class SearchController implements Serializable {
         return "/reports/financialReports/staff_welfare?faces-redirect=true";
     }
 
+    public String navigateToPackageReport() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/package_report?faces-redirect=true";
+    }
+
     public String navigatToShiftEndSummary() {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
@@ -12907,9 +12913,9 @@ public class SearchController implements Serializable {
 
     public void createItemizedSalesReport() {
         if (withProfessionalFee) {
-            bundle = generateItemizedSalesReport("Itemized Sales Report - With Professional Fee","itemized_sales_report_with_professional_fee");
-        }else{
-            bundle = generateItemizedSalesReport("Itemized Sales Report - Without Professional Fee","itemized_sales_report_without_professional_fee");
+            bundle = generateItemizedSalesReport("Itemized Sales Report - With Professional Fee", "itemized_sales_report_with_professional_fee");
+        } else {
+            bundle = generateItemizedSalesReport("Itemized Sales Report - Without Professional Fee", "itemized_sales_report_without_professional_fee");
         }
     }
 
@@ -14822,7 +14828,7 @@ public class SearchController implements Serializable {
     public ReportTemplateRowBundle generateItemizedSalesReport(String bundleName, String bundleType) {
         //System.out.println("Bundle Name = " + bundleName);
         //System.out.println("Bundle Type = " + bundleType);
-        
+
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -15906,13 +15912,13 @@ public class SearchController implements Serializable {
                 System.err.println("No Bill for this iteratingBillItem = " + iteratingBillItem);
                 continue;
             }
-            
+
             if (iteratingBillItem.getBill() == null || iteratingBillItem.getBill().getPaymentMethod() == null) {
                 if (iteratingBillItem.getBill().getPaymentMethod() == null) {
                     if (iteratingBillItem.getBill().getPatientEncounter() == null) {
                         continue;
                     }
-                }else{
+                } else {
                     continue;
                 }
             }
@@ -16304,8 +16310,8 @@ public class SearchController implements Serializable {
                     if (bi.getBill().getPatientEncounter() == null) {
                         continue;
                     }
-                    
-                }else{
+
+                } else {
                     continue;
                 }
 
@@ -16319,7 +16325,6 @@ public class SearchController implements Serializable {
 
             //System.out.println("Item Key: " + itemKey);
             //System.out.println("Category: " + categoryName + ", Item: " + itemName);
-
             categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
             itemSummaryMap.putIfAbsent(itemKey, new ReportTemplateRow());
             detailedBillItemRows.putIfAbsent(itemKey, new ArrayList<>());
