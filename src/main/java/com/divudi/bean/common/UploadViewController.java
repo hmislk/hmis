@@ -76,7 +76,7 @@ public class UploadViewController {
         
         String url = "";
         if (u == null) {
-            
+
         } else {
             url = u.getFileUrl();
         }
