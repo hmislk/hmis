@@ -85,6 +85,7 @@ import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.layout.Canvas;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.Style;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.LineSeparator;
@@ -826,6 +827,12 @@ public class PdfController {
             case "income_breakdown_by_category_with_out_professional_fee":
                 populateTableForIncomeByCategoryWithoutProfessionalFee(document, addingBundle);
                 break;
+            case "itemized_sales_report_with_professional_fee":
+                populateTableForItemizedSalesReportWithProfessionalFee(document, addingBundle);
+                break;
+            case "itemized_sales_report_without_professional_fee":
+                populateTableForItemizedSalesReportWithoutProfessionalFee(document, addingBundle);
+                break;
             default:
                 table.addCell(new Cell().add(new Paragraph("Data for unknown type"))); // Default handling for unknown types
                 break;
@@ -1213,7 +1220,6 @@ public class PdfController {
         }
     }
 
-    
     private void populateTableForIncomeByCategoryWithoutProfessionalFee(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
 
@@ -1255,6 +1261,108 @@ public class PdfController {
             Paragraph noDataParagraph = new Paragraph("No Data for " + addingBundle.getName());
             document.add(noDataParagraph);
         }
+    }
+
+    private void populateTableForItemizedSalesReportWithProfessionalFee(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle != null && addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
+            document.add(new Paragraph(addingBundle.getName()));
+            document.add(new Paragraph(commonFunctionsController.getDateTimeFormat(searchController.getFromDate()) + " to " + commonFunctionsController.getDateTimeFormat(searchController.getToDate())));
+
+            Table table = new Table(new float[]{40, 10, 60, 10, 20, 20, 10, 10, 10, 10});
+            table.setWidth(UnitValue.createPercentValue(100));
+
+            Style cellStyle = new Style().setFontSize(8);  // Set font size
+            
+            // Add headers
+            String[] headers = {"Category", "Code", "Item/Service", "Count", "Bill No", "Patient", "Hospital Fee", "Professional Fee", "Discount", "Net Amount"};
+            for (String header : headers) {
+                table.addHeaderCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(header)));
+                table.addStyle(cellStyle);
+            }
+
+            table.addFooterCell(new com.itextpdf.layout.element.Cell(1, 9).add(new Paragraph("Total")));
+            table.addFooterCell(new Paragraph(String.format("%.2f", addingBundle.getTotal())));
+
+            // Populate table with data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(row.getCategory() != null && row.getCategory().getName() != null ? row.getCategory().getName() : "")));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(row.getItem() != null && row.getItem().getCode() != null ? row.getItem().getCode() : "")));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(row.getItem() != null && row.getItem().getName() != null ? row.getItem().getName() : "")));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.valueOf(row.getItemCount()))));
+
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(row.getBillItem() != null && row.getBillItem().getBill() != null && row.getBillItem().getBill().getDeptId() != null ? row.getBillItem().getBill().getDeptId() : "")));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(row.getBillItem() != null && row.getBillItem().getBill() != null && row.getBillItem().getBill().getPatient() != null && row.getBillItem().getBill().getPatient().getPerson() != null ? row.getBillItem().getBill().getPatient().getPerson().getNameWithTitle() : "")));
+
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.format("%.2f", row.getItemHospitalFee() != null ? row.getItemHospitalFee() : 0))));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.format("%.2f", row.getItemProfessionalFee())))); // Format as string     
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.format("%.2f", row.getItemDiscountAmount() != null ? row.getItemDiscountAmount() : 0))));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.format("%.2f", row.getItemNetTotal() != null ? row.getItemNetTotal() : 0))));
+            }
+            
+            table.getChildren().forEach(element -> {
+                if (element instanceof Cell) {
+                    ((Cell) element).addStyle(cellStyle);
+                }
+            });
+
+            // Add the table to the document
+            document.add(table);
+        } else {
+            // Add a paragraph for no data
+            Paragraph noDataParagraph = new Paragraph("No Data for " + (addingBundle != null ? addingBundle.getName() : "unknown"));
+            document.add(noDataParagraph);
+        }
+
+    }
+
+    private void populateTableForItemizedSalesReportWithoutProfessionalFee(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle != null && addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
+            document.add(new Paragraph(addingBundle.getName()));
+            document.add(new Paragraph(commonFunctionsController.getDateTimeFormat(searchController.getFromDate()) + " to " + commonFunctionsController.getDateTimeFormat(searchController.getToDate())));
+
+            Table table = new Table(new float[]{40, 10, 60, 10, 20, 20, 10, 10, 10});
+            table.setWidth(UnitValue.createPercentValue(100));
+            Style cellStyle = new Style().setFontSize(8);  // Set font size
+
+            // Add headers
+            String[] headers = {"Category", "Code", "Item/Service", "Count", "Bill No", "Patient", "Hospital Fee", "Discount", "Net Amount"};
+            for (String header : headers) {
+                table.addHeaderCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(header)));
+                table.addStyle(cellStyle);
+            }
+
+            table.addFooterCell(new com.itextpdf.layout.element.Cell(1, 8).add(new Paragraph("Total")));
+            table.addFooterCell(new Paragraph(String.format("%.2f", addingBundle.getTotal())));
+
+            // Populate table with data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(row.getCategory() != null && row.getCategory().getName() != null ? row.getCategory().getName() : "")));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(row.getItem() != null && row.getItem().getCode() != null ? row.getItem().getCode() : "")));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(row.getItem() != null && row.getItem().getName() != null ? row.getItem().getName() : "")));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.valueOf(row.getItemCount()))));
+
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(row.getBillItem() != null && row.getBillItem().getBill() != null && row.getBillItem().getBill().getDeptId() != null ? row.getBillItem().getBill().getDeptId() : "")));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(row.getBillItem() != null && row.getBillItem().getBill() != null && row.getBillItem().getBill().getPatient() != null && row.getBillItem().getBill().getPatient().getPerson() != null ? row.getBillItem().getBill().getPatient().getPerson().getNameWithTitle() : "")));
+
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.format("%.2f", row.getItemHospitalFee() != null ? row.getItemHospitalFee() : 0))));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.format("%.2f", row.getItemDiscountAmount() != null ? row.getItemDiscountAmount() : 0))));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.format("%.2f", row.getItemNetTotal() != null ? row.getItemNetTotal() : 0))));
+            }
+
+            table.getChildren().forEach(element -> {
+                if (element instanceof Cell) {
+                    ((Cell) element).addStyle(cellStyle);
+                }
+            });
+
+            // Add the table to the document
+            document.add(table);
+        } else {
+            // Add a paragraph for no data
+            Paragraph noDataParagraph = new Paragraph("No Data for " + (addingBundle != null ? addingBundle.getName() : "unknown"));
+            document.add(noDataParagraph);
+        }
+
     }
 
     private void populateTableForDepartmentCollection(Document document, ReportTemplateRowBundle addingBundle) {
