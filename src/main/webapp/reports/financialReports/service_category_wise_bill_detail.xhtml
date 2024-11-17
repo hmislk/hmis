@@ -167,6 +167,16 @@
                                 >
                             </p:selectBooleanButton>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <i class="fas fa-credit-card" style="color: green; font-size: 18px;"></i>                                       
+                                <h:outputLabel value="Payment Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100" value="#{searchController.methodType}">
+                                <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                <f:selectItem itemValue="Credit" itemLabel="Credit"/>
+                                <f:selectItem itemValue="NonCredit" itemLabel="Non Credit"/>
+                            </p:selectOneMenu>
+
                         </h:panelGrid><br />
 
                         <div class="d-flex align-items-center mb-2">

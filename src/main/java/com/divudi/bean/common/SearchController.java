@@ -14825,7 +14825,7 @@ public class SearchController implements Serializable {
         m.put("br", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        
+
         List<BillTypeAtomic> btas = new ArrayList();
 
         List<BillTypeAtomic> obtas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
@@ -14857,6 +14857,67 @@ public class SearchController implements Serializable {
             m.put("bts", btas);
         }
 
+        List<PaymentMethod> creditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.CREDIT);
+        List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
+
+        List<PaymentMethod> allMethods = new ArrayDeque();
+        allMethods.addAll(creditPaymentMethods);
+        allMethods.addAll(nonCreditPaymentMethods);
+
+        if ("Any".equals(methodType)) {
+            //System.out.println("Any");
+        } else if ("Credit".equals(methodType)) {
+            //System.out.println("Credit");
+
+            if (null != visitType) {
+                switch (visitType) {
+                    case "Any":
+                        //System.out.println("Credit Any");
+                        jpql += " AND (bi.bill.paymentMethod in :cpm OR bi.bill.patientEncounter.paymentMethod in :cpm)";
+                        m.put("cpm", creditPaymentMethods);
+                        break;
+                    case "OP":
+                       // System.out.println("Credit OP");
+                        jpql += " AND bi.bill.paymentMethod in :cpm ";
+                        m.put("cpm", creditPaymentMethods);
+                        break;
+                    case "IP":
+                        //System.out.println("Credit IP");
+                        jpql += " AND bi.bill.patientEncounter.paymentMethod in :cpm ";
+                        m.put("cpm", creditPaymentMethods);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+        } else if ("NonCredit".equals(methodType)) {
+            //System.out.println("Non Credit");
+
+            if (null != visitType) {
+                switch (visitType) {
+                    case "Any":
+                        //System.out.println("NonCredit Any");
+                        jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm)";
+                        m.put("apm", nonCreditPaymentMethods);
+                        break;
+                    case "OP":
+                        //System.out.println("NonCredit OP");
+                        jpql += " AND bi.bill.paymentMethod in :ncpm ";
+                        m.put("ncpm", nonCreditPaymentMethods);
+                        break;
+                    case "IP":
+                        //System.out.println("NonCredit IP");
+                        jpql += " AND bi.bill.patientEncounter.paymentMethod in :ncpm ";
+                        m.put("ncpm", nonCreditPaymentMethods);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+        }
+
         if (department != null) {
             jpql += " and bi.bill.department=:dep ";
             m.put("dep", department);
@@ -14877,9 +14938,7 @@ public class SearchController implements Serializable {
             jpql += " and bi.item=:item ";
             m.put("item", item);
         }
-        
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
+
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         billItemsToItamizedSaleReport(oiBundle, bis);
 
@@ -16217,11 +16276,20 @@ public class SearchController implements Serializable {
         double totalOpdServiceCollection = 0.0;
 
         for (BillItem bi : billItems) {
-            System.out.println("Processing BillItem: " + bi);
+            //System.out.println("BillItem : " + bi);
+            //System.out.println("Bill : " + bi.getBill());
+            //System.out.println("PaymentMethod : " + bi.getBill().getPaymentMethod());
 
-            if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
-                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
-                continue;
+            if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
+                if (bi.getBill().getPaymentMethod() == null) {
+                    if (bi.getBill().getPatientEncounter() == null) {
+                        continue;
+                    }
+                    
+                }else{
+                    continue;
+                }
+
             }
 
             String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null
@@ -16230,8 +16298,8 @@ public class SearchController implements Serializable {
             String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
             String itemKey = categoryName + "->" + itemName;
 
-            System.out.println("Item Key: " + itemKey);
-            System.out.println("Category: " + categoryName + ", Item: " + itemName);
+            //System.out.println("Item Key: " + itemKey);
+            //System.out.println("Category: " + categoryName + ", Item: " + itemName);
 
             categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
             itemSummaryMap.putIfAbsent(itemKey, new ReportTemplateRow());
@@ -16282,12 +16350,12 @@ public class SearchController implements Serializable {
 
         // Add category rows and item summary rows, then each individual detailed bill item row within each item
         categoryMap.forEach((categoryName, catRow) -> {
-            System.out.println("Adding category row to bundle: " + categoryName);
+            //System.out.println("Adding category row to bundle: " + categoryName);
             rowsToAdd.add(catRow);
             itemSummaryMap.entrySet().stream()
                     .filter(entry -> entry.getKey().startsWith(categoryName + "->"))
                     .forEach(entry -> {
-                        System.out.println("Adding item summary row to bundle under category " + categoryName + ": " + entry.getValue().getItem().getName());
+                        //System.out.println("Adding item summary row to bundle under category " + categoryName + ": " + entry.getValue().getItem().getName());
                         rowsToAdd.add(entry.getValue());
                         List<ReportTemplateRow> billItemRows = detailedBillItemRows.get(entry.getKey());
                         billItemRows.forEach(rowsToAdd::add);
