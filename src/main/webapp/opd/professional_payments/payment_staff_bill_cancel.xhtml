@@ -21,7 +21,12 @@
                                     <div class="d-flex align-items-center" style="width: 50%">
                                         <p:inputText class="w-100" placeholder="Enter a Reason to Cancel" style="width: 100%" value="#{billSearch.comment}"/>
                                 <p:spacer width="20%"></p:spacer>
-                                <p:commandButton value="Cancel" ajax="false" class="ui-button-danger mx-1" icon="fas fa-ban" action="#{billSearch.cancelProfessionalPaymentBill()}" >
+                                <p:commandButton 
+                                    value="Cancel" 
+                                    ajax="false" 
+                                    class="ui-button-danger mx-1" 
+                                    icon="fas fa-ban" 
+                                    action="#{billSearch.cancelProfessionalPaymentBill()}" >
                             </p:commandButton> 
                                </div>
                               </div>
