@@ -14825,7 +14825,6 @@ public class SearchController implements Serializable {
         m.put("br", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-
         List<BillTypeAtomic> btas = new ArrayList();
 
         List<BillTypeAtomic> obtas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
@@ -14834,16 +14833,16 @@ public class SearchController implements Serializable {
         if (null != visitType) {
             switch (visitType) {
                 case "Any":
-                    System.out.println("Any");
+                    //System.out.println("Any");
                     btas.addAll(obtas);
                     btas.addAll(ibtas);
                     break;
                 case "OP":
-                    System.out.println("OPD");
+                    //System.out.println("OPD");
                     btas.addAll(obtas);
                     break;
                 case "IP":
-                    System.out.println("IP");
+                    //System.out.println("IP");
                     btas.addAll(ibtas);
                     break;
                 default:
@@ -14865,24 +14864,24 @@ public class SearchController implements Serializable {
         allMethods.addAll(nonCreditPaymentMethods);
 
         if ("Any".equals(methodType)) {
-            System.out.println("Any");
+           // System.out.println("Any");
         } else if ("Credit".equals(methodType)) {
-            System.out.println("Credit");
+            //System.out.println("Credit");
 
             if (null != visitType) {
                 switch (visitType) {
                     case "Any":
-                        System.out.println("Credit Any");
+                        //System.out.println("Credit Any");
                         jpql += " AND (bi.bill.paymentMethod in :cpm OR bi.bill.patientEncounter.paymentMethod in :cpm)";
                         m.put("cpm", creditPaymentMethods);
                         break;
                     case "OP":
-                        System.out.println("Credit OP");
+                        //System.out.println("Credit OP");
                         jpql += " AND bi.bill.paymentMethod in :cpm ";
                         m.put("cpm", creditPaymentMethods);
                         break;
                     case "IP":
-                        System.out.println("Credit IP");
+                        //System.out.println("Credit IP");
                         jpql += " AND bi.bill.patientEncounter.paymentMethod in :cpm ";
                         m.put("cpm", creditPaymentMethods);
                         break;
@@ -14892,22 +14891,22 @@ public class SearchController implements Serializable {
             }
 
         } else if ("NonCredit".equals(methodType)) {
-            System.out.println("Non Credit");
+            //System.out.println("Non Credit");
 
             if (null != visitType) {
                 switch (visitType) {
                     case "Any":
-                        System.out.println("NonCredit Any");
+                        //System.out.println("NonCredit Any");
                         jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm)";
                         m.put("apm", nonCreditPaymentMethods);
                         break;
                     case "OP":
-                        System.out.println("NonCredit OP");
+                       // System.out.println("NonCredit OP");
                         jpql += " AND bi.bill.paymentMethod in :ncpm ";
                         m.put("ncpm", nonCreditPaymentMethods);
                         break;
                     case "IP":
-                        System.out.println("NonCredit IP");
+                        //System.out.println("NonCredit IP");
                         jpql += " AND bi.bill.patientEncounter.paymentMethod in :ncpm ";
                         m.put("ncpm", nonCreditPaymentMethods);
                         break;
