@@ -12903,8 +12903,8 @@ public class SearchController implements Serializable {
         bundle = generateItemizedSalesSummary();
     }
 
-    public void createItemizedSalesReportOpd() {
-        bundle = generateItemizedSalesReportOpd();
+    public void createItemizedSalesReport() {
+        bundle = generateItemizedSalesReport();
     }
 
     public void createIncomeBreakdownByCategory() {
@@ -14813,7 +14813,7 @@ public class SearchController implements Serializable {
 //
 //        return oiBundle;
 //    }
-    public ReportTemplateRowBundle generateItemizedSalesReportOpd() {
+    public ReportTemplateRowBundle generateItemizedSalesReport() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -14823,7 +14823,32 @@ public class SearchController implements Serializable {
         m.put("br", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        
+        List<BillTypeAtomic> btas = new ArrayList();
+
+        List<BillTypeAtomic> obtas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        List<BillTypeAtomic> ibtas = BillTypeAtomic.findByServiceType(ServiceType.INWARD);
+
+        if (null != visitType) {
+            switch (visitType) {
+                case "Any":
+                    System.out.println("Any");
+                    btas.addAll(obtas);
+                    btas.addAll(ibtas);
+                    break;
+                case "OP":
+                    System.out.println("OPD");
+                    btas.addAll(obtas);
+                    break;
+                case "IP":
+                    System.out.println("IP");
+                    btas.addAll(ibtas);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         oiBundle.setDescription("Bill Types Listed: " + btas);
         if (!btas.isEmpty()) {
             jpql += " and bi.bill.billTypeAtomic in :bts ";
@@ -14850,6 +14875,7 @@ public class SearchController implements Serializable {
             jpql += " and bi.item=:item ";
             m.put("item", item);
         }
+        
         System.out.println("jpql = " + jpql);
         System.out.println("m = " + m);
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
