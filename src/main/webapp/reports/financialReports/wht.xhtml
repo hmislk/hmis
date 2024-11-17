@@ -554,7 +554,9 @@
 
 
                         <h:panelGroup >
-                            <p:panel header="Consultant Vice Sumary report" rendered="#{searchController.reportType eq 'cr'}">
+                            <p:panel 
+                                header="Consultant Vice Sumary report" 
+                                rendered="#{searchController.reportType eq 'consultantSummary'}">
 
                                 <h:panelGroup>
 
@@ -619,17 +621,23 @@
 
 
                                     <p:column headerText="Consultant Name">                        
-                                        <h:outputText value="" ></h:outputText>    
+                                        <h:outputText value="#{row.staff.person.nameWithTitle}" ></h:outputText>    
                                     </p:column>
                                     <p:column headerText="Total Amount">
-                                        <h:outputText value="" ></h:outputText>
+                                        <h:outputText value="#{row.grossTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Holding Tax" width="">
-                                        <h:outputText value="" ></h:outputText>
+                                    <p:column headerText="Holding Tax" >
+                                        <h:outputText value="#{row.tax}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Net Amount" >
-                                        <h:outputText value="" ></h:outputText>
-                                    </p:column>                       
+                                        <h:outputText value="#{row.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>                          
                                 </p:dataTable>
                                 <br />
                             </p:panel>
