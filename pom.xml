@@ -183,10 +183,11 @@
             <version>8.0.30</version>
         </dependency>
 
+        <!-- OpenPDF -->
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
-            <version>1.3.24</version>
+            <version>1.4.2</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.lowagie</groupId>
@@ -308,12 +309,6 @@
             <groupId>com.itextpdf</groupId>
             <artifactId>html2pdf</artifactId>
             <version>5.0.5</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.itextpdf</groupId>
-                    <artifactId>itextpdf</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.itextpdf</groupId>
