@@ -661,6 +661,7 @@ public class SupplierPaymentController implements Serializable {
 
     }
 
+    @Deprecated
     public void fillAllCreditBillssettledByChequeDate() {
         bills = null;
         netTotal = 0.0;
@@ -715,6 +716,70 @@ public class SupplierPaymentController implements Serializable {
             netTotal += b.getNetTotal();
         }
 
+    }
+
+    public void fillPharmacySupplierPaymentsByChequDate() {
+        List<InstitutionType> institutionTypes = new ArrayList<>();
+        institutionTypes.add(InstitutionType.Dealer);
+        createSupplierPaymentTableByChequDate(institutionTypes);
+    }
+
+    public void fillAllSupplierPaymentsByChequDate() {
+        createSupplierPaymentTableByChequDate(null);
+    }
+
+    public void createSupplierPaymentTableByChequDate(List<InstitutionType> institutionTypes) {
+        bills = null;
+        netTotal = 0.0;
+
+        // Ensure dates are not null
+        if (chequeFromDate == null || chequeToDate == null) {
+            JsfUtil.addErrorMessage("cheque From Date and cheque To Date must be set");
+        }
+
+        // Build JPQL query
+        StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.refunded = false "
+                + "AND b.chequeDate BETWEEN :chequeFromDate AND :chequeToDate "
+                + "AND (b.billType = :billType OR b.billTypeAtomic = :billTypeAtomic) ");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("chequeFromDate", chequeFromDate);
+        params.put("chequeToDate", chequeToDate);
+        params.put("billType", BillType.GrnPaymentPre);
+        params.put("billTypeAtomic", BillTypeAtomic.SUPPLIER_PAYMENT);
+
+        if (institutionTypes != null) {
+            jpql.append(" and b.toInstitution.institutionType in :insTps ");
+            params.put("insTps", institutionTypes);
+        }
+
+        if (chequeNo != null && !chequeNo.trim().isEmpty()) {
+            jpql.append("AND b.chequeRefNo = :chequeRefNo ");
+            params.put("chequeRefNo", chequeNo);
+        }
+        if (toInstitution != null) {
+            jpql.append("AND b.toInstitution = :supplier ");
+            params.put("supplier", toInstitution);
+        }
+        if (bank != null) {
+            jpql.append("AND b.bank = :bank ");
+            params.put("bank", bank);
+        }
+
+        jpql.append("AND b.billType <> :excludeBillType ");
+        params.put("excludeBillType", BillType.GrnPayment);
+        jpql.append("ORDER BY b.chequeDate");
+
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        Iterator<Bill> iterator = bills.iterator();
+        while (iterator.hasNext()) {
+            Bill b = iterator.next();
+            netTotal += b.getNetTotal();
+        }
     }
 
     public void fillDealorPaymentDone() {

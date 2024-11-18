@@ -79,7 +79,7 @@
                                              ajax="false" value="List Pharmacy Payment to Settle" 
                                              class="my-1 w-100 ui-button-success" 
                                              icon="fas fa-pills"
-                                             action="#{supplierPaymentController.fillAllCreditBillssettledByChequeDate()}"/>
+                                             action="#{supplierPaymentController.fillPharmacySupplierPaymentsByChequDate()}"/>
 
                             <p:commandButton ajax="false" 
                                              class="my-1 w-100 ui-button-info" 
@@ -90,7 +90,7 @@
                             <p:commandButton ajax="false" value="List All Payments to Settle" 
                                              class="my-1 w-100 ui-button-warning" 
                                              icon="fas fa-search-dollar"
-                                             action="#{supplierPaymentController.fillSupplierPayments()}"/>
+                                             action="#{supplierPaymentController.fillAllSupplierPaymentsByChequDate()}"/>
                         </h:panelGrid>
                         <div class="col-12">
                             <p:dataTable 
