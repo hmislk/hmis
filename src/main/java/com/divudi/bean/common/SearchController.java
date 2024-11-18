@@ -14870,7 +14870,6 @@ public class SearchController implements Serializable {
         allMethods.addAll(nonCreditPaymentMethods);
 
         if ("Any".equals(methodType)) {
-            //System.out.println("Any");
         } else if ("Credit".equals(methodType)) {
             //System.out.println("Credit");
 
@@ -14907,7 +14906,6 @@ public class SearchController implements Serializable {
                         m.put("apm", nonCreditPaymentMethods);
                         break;
                     case "OP":
-                        //System.out.println("NonCredit OP");
                         jpql += " AND bi.bill.paymentMethod in :ncpm ";
                         m.put("ncpm", nonCreditPaymentMethods);
                         break;
@@ -14944,8 +14942,6 @@ public class SearchController implements Serializable {
             m.put("item", item);
         }
 
-        //System.out.println("jpql = " + jpql);
-        //System.out.println("m = " + m);
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         billItemsToItamizedSaleReport(oiBundle, bis);
 
