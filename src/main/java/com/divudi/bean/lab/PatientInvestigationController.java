@@ -2457,8 +2457,61 @@ public class PatientInvestigationController implements Serializable {
         }
     }
 
+    public void searchPatientReportsInBillingDepartment() {
+        System.out.println("type = " + type);
+        
+        StringBuilder jpql = new StringBuilder();
+        Map<String, Object> params = new HashMap<>();
+
+        jpql.append("SELECT i ")
+                .append(" FROM PatientInvestigation i ")
+                .append(" WHERE i.retired = :ret ")
+                .append(" AND i.billItem.bill.department = :od ");
+
+        params.put("ret", false);
+        params.put("od", sessionController.getDepartment());
+
+        searchDateType = SearchDateType.ORDERED_DATE;
+
+        switch (searchDateType) {
+            case ORDERED_DATE:
+                jpql.append(" AND i.billItem.bill.createdAt BETWEEN :fd AND :td ");
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+        }
+
+        if (collectionCenter != null) {
+            jpql.append(" AND (i.billItem.bill.collectingCentre = :cc OR i.billItem.bill.fromInstitution = :cc) ");
+            params.put("cc", getCollectionCenter());
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql.append(" AND i.billItem.bill.patient.person.name LIKE :patientName ");
+            params.put("patientName", "%" + patientName.trim() + "%");
+        }
+
+        if (type != null && !type.trim().isEmpty()) {
+            jpql.append(" AND i.billItem.bill.ipOpOrCc=:tp ");
+            params.put("tp", type.trim());
+        }
+
+        if (referringDoctor != null) {
+            jpql.append(" AND i.billItem.bill.referringDoctor = :rf ");
+            params.put("rf", getReferringDoctor());
+        }
+
+        if (itemName != null && !itemName.trim().isEmpty()) {
+            jpql.append(" AND i.billItem.item.name LIKE :item "); // Ensure correct column name
+            params.put("item", "%" + itemName.trim() + "%");
+        }
+
+        jpql.append("ORDER BY i.id DESC");
+
+        items = getFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
     public void searchPatientInvestigationsForCourier() {
-        listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
@@ -3057,7 +3110,7 @@ public class PatientInvestigationController implements Serializable {
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         // Starting from BillItem and joining to PatientInvestigation if needed
-        jpql = "SELECT b "
+        jpql = "SELECT DISTINCT b "
                 + " FROM BillItem b "
                 + " LEFT JOIN b.patientInvestigation i "
                 + " WHERE b.retired = :ret "
@@ -3173,9 +3226,6 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND b.bill.department = :department ";
             params.put("department", getDepartment());
         }
-
-        jpql += " and type(b.item) = :invType ";
-        params.put("invType", Investigation.class);
 
         jpql += " AND b.bill.billTypeAtomic in :bts ";
         params.put("bts", btas);

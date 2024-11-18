@@ -1561,8 +1561,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         getSessionController().setLoggedUser(wb);
     }
 
-    
-
     public void cancellAll() {
 
         if (bills == null) {
@@ -1932,15 +1930,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         originalBill.setCancelled(true);
         originalBill.setCancelledBill(individualCancelltionBill);
         billService.saveBill(originalBill);
-
-//        if (originalBill.getPaymentMethod() == PaymentMethod.Credit) {
-//            if (originalBill.getToStaff() != null) {
-//                staffService.updateStaffCredit(originalBill.getToStaff(), 0 - (originalBill.getNetTotal() + getBill().getVat()));
-//                JsfUtil.addSuccessMessage("Staff Credit Updated");
-//                individualCancelltionBill.setFromStaff(originalBill.getToStaff());
-//                getBillFacade().edit(individualCancelltionBill);
-//            }
-//        }
     }
 
     public List<Payment> createPaymentForOpdBatchBillCancellation(Bill cancellationBatchBill, PaymentMethod pm) {
@@ -1950,6 +1939,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             if (originalBillPayments != null) {
                 for (Payment originalBillPayment : originalBillPayments) {
                     Payment p = originalBillPayment.clonePaymentForNewBill();
+                    p.invertValues();
                     p.setBill(cancellationBatchBill);
                     p.setInstitution(getSessionController().getInstitution());
                     p.setDepartment(getSessionController().getDepartment());
@@ -1995,7 +1985,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     case YouOweMe:
                     case MultiplePaymentMethods:
                 }
-
+                p.setPaidValue(0 - Math.abs(p.getPaidValue()));
                 paymentFacade.create(p);
                 ps.add(p);
             }
@@ -2033,7 +2023,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 case MultiplePaymentMethods:
             }
 
-            p.setPaidValue(p.getBill().getNetTotal());
+            p.setPaidValue(0 - Math.abs(p.getBill().getNetTotal()));
             paymentFacade.create(p);
             ps.add(p);
         }
