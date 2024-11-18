@@ -12880,11 +12880,8 @@ public class SearchController implements Serializable {
         bundle.setName("Staff Welfare");
         bundle.setBundleType("billList");
         
-        
-        
         List<PaymentMethod> staffPaymentMethods = new ArrayList<>();
         staffPaymentMethods.add(PaymentMethod.Staff_Welfare);
-        
       
         List<BillTypeAtomic> opdBts = new ArrayList<>();
         opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
@@ -12895,14 +12892,9 @@ public class SearchController implements Serializable {
         opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
         opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
 
         bundle = generatePaymentMethodColumnsByBills(opdBts, staffPaymentMethods);
         bundle.calculateTotalByBills();
-       
-
-        
-        
     }
 
     public void generateDailyReturn() {
