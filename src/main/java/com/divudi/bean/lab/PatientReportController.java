@@ -336,6 +336,12 @@ public class PatientReportController implements Serializable {
         m.put("ret", false);
         return getFacade().findByJpql(j, m);
     }
+    
+    public int approvedPatientReportCount(PatientInvestigation pi){
+        int reportCount = 0;
+        reportCount = approvedPatientReports(pi).size();
+        return reportCount;
+    }
 
     public String toViewMyReports() {
         String j = "select r from PatientReport r "
