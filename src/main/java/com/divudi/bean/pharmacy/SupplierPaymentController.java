@@ -195,6 +195,7 @@ public class SupplierPaymentController implements Serializable {
         return "/credit/index_pharmacy_due_access?faces-redirect=true";
     }
 
+    @Deprecated
     public void fillPharmacySupplierPayments() {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.SUPPLIER_PAYMENT);
@@ -721,6 +722,12 @@ public class SupplierPaymentController implements Serializable {
     public void fillPharmacySupplierPaymentsByChequDate() {
         List<InstitutionType> institutionTypes = new ArrayList<>();
         institutionTypes.add(InstitutionType.Dealer);
+        createSupplierPaymentTableByChequDate(institutionTypes);
+    }
+
+    public void fillStoreSupplierPaymentByChequeDate() {
+        List<InstitutionType> institutionTypes = new ArrayList<>();
+        institutionTypes.add(InstitutionType.StoreDealor);
         createSupplierPaymentTableByChequDate(institutionTypes);
     }
 
