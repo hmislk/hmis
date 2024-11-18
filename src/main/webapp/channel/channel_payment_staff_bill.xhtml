@@ -244,7 +244,9 @@
                                     <h:outputLabel id="lblPay"  value="#{channelStaffPaymentBillController.totalPaying }" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>  
+                                    
                                 </h:panelGrid>
+                                
                             </p:panel>      
 
                             <div class="w-50" >
@@ -261,7 +263,9 @@
                         </h:form>
 
                     </p:panel>
+                    
                 </h:panelGroup>
+                
                 <h:form>
                     <p:panel id="pnlprintBill" rendered="#{channelStaffPaymentBillController.printPreview}">
 
@@ -296,10 +300,13 @@
                         </h:panelGroup>
 
                     </p:panel>
+                    
                 </h:form>
+                
             </ui:define>
 
         </ui:composition>
 
     </h:body>
+    
 </html>
