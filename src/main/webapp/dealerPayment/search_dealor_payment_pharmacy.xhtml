@@ -46,18 +46,18 @@
                                                  ajax="false" value="List Pharmacy Payment to Settle" 
                                                  class="my-1 w-100 ui-button-success" 
                                                  icon="fas fa-pills"
-                                                 action="#{supplierPaymentController.fillAllCreditBillssettled()}"/>
+                                                 action="#{supplierPaymentController.fillPharmacySupplierPayment()}"/>
 
                                 <p:commandButton ajax="false" 
                                                  class="my-1 w-100 ui-button-info" 
                                                  icon="fas fa-store"
                                                  value="List Store Payments to Settle"
-                                                 action="#{supplierPaymentController.fillStoreSupplierPayments()}"/>
+                                                 action="#{supplierPaymentController.fillStoreSupplierPayment()}"/>
 
                                 <p:commandButton ajax="false" value="List All Payments to Settle" 
                                                  class="my-1 w-100 ui-button-warning" 
                                                  icon="fas fa-search-dollar"
-                                                 action="#{supplierPaymentController.fillSupplierPayments()}"/>
+                                                 action="#{supplierPaymentController.fillAllSupplierPayment()}"/>
 
 
                                 <h:outputLabel value="Cheque From Date"/>

@@ -598,14 +598,30 @@ public class SupplierPaymentController implements Serializable {
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
+    
+    public void fillPharmacySupplierPayment() {
+        List<InstitutionType> institutionTypes = new ArrayList<>();
+        institutionTypes.add(InstitutionType.Dealer);
+        fillAllCreditBillssettled(institutionTypes);
+    }
 
-    public void fillAllCreditBillssettled() {
+    public void fillStoreSupplierPayment() {
+        List<InstitutionType> institutionTypes = new ArrayList<>();
+        institutionTypes.add(InstitutionType.StoreDealor);
+        fillAllCreditBillssettled(institutionTypes);
+    }
+
+    public void fillAllSupplierPayment() {
+        fillAllCreditBillssettled(null);
+    }
+
+    public void fillAllCreditBillssettled(List<InstitutionType> institutionTypes) {
         bills = null;
         netTotal = 0.0;
 
         // Ensure dates are not null
         if (fromDate == null || toDate == null) {
-            throw new IllegalArgumentException("fromDate and toDate must be set");
+            JsfUtil.addErrorMessage("From Date and To Date Empty");
         }
 
         // Build JPQL query
@@ -623,6 +639,11 @@ public class SupplierPaymentController implements Serializable {
         params.put("billType", BillType.GrnPaymentPre);
         params.put("billTypeAtomic", BillTypeAtomic.SUPPLIER_PAYMENT);
 
+        if (institutionTypes != null) {
+            jpql.append(" and b.toInstitution.institutionType in :insTps ");
+            params.put("insTps", institutionTypes);
+        }
+        
         // Append optional filters if they are provided
         if (chequeFromDate != null && chequeToDate != null) {
             jpql.append("AND b.chequeDate BETWEEN :chequeFromDate AND :chequeToDate ");
@@ -645,15 +666,12 @@ public class SupplierPaymentController implements Serializable {
 
         jpql.append("AND b.billType <> :excludeBillType ");
         params.put("excludeBillType", BillType.GrnPayment);
-        jpql.append("ORDER BY b.id");
+        jpql.append("ORDER BY b.chequeDate");
 
         // Execute query
         bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
         // Calculate net total
-//        netTotal = bills.stream()
-//                .mapToDouble(Bill::getNetTotal)
-//                .sum();
         Iterator<Bill> iterator = bills.iterator();
         while (iterator.hasNext()) {
             Bill b = iterator.next();
@@ -669,7 +687,7 @@ public class SupplierPaymentController implements Serializable {
 
         // Ensure dates are not null
         if (chequeFromDate == null || chequeToDate == null) {
-            JsfUtil.addErrorMessage("cheque From Date and cheque To Date must be set");
+            JsfUtil.addErrorMessage("Cheque From Date and Cheque To Date Empty");
         }
 
         // Build JPQL query
@@ -741,7 +759,7 @@ public class SupplierPaymentController implements Serializable {
 
         // Ensure dates are not null
         if (chequeFromDate == null || chequeToDate == null) {
-            JsfUtil.addErrorMessage("cheque From Date and cheque To Date must be set");
+            JsfUtil.addErrorMessage("Cheque From Date and Cheque To Date Empty");
         }
 
         // Build JPQL query
