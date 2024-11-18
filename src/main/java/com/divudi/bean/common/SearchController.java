@@ -14834,16 +14834,16 @@ public class SearchController implements Serializable {
         if (null != visitType) {
             switch (visitType) {
                 case "Any":
-                    System.out.println("Any");
+                    //System.out.println("Any");
                     btas.addAll(obtas);
                     btas.addAll(ibtas);
                     break;
                 case "OP":
-                    System.out.println("OPD");
+                    //System.out.println("OPD");
                     btas.addAll(obtas);
                     break;
                 case "IP":
-                    System.out.println("IP");
+                    //System.out.println("IP");
                     btas.addAll(ibtas);
                     break;
                 default:
@@ -14865,7 +14865,7 @@ public class SearchController implements Serializable {
         allMethods.addAll(nonCreditPaymentMethods);
 
         if ("Any".equals(methodType)) {
-            //System.out.println("Any");
+           // System.out.println("Any");
         } else if ("Credit".equals(methodType)) {
             //System.out.println("Credit");
 
@@ -14877,7 +14877,7 @@ public class SearchController implements Serializable {
                         m.put("cpm", creditPaymentMethods);
                         break;
                     case "OP":
-                       // System.out.println("Credit OP");
+                        //System.out.println("Credit OP");
                         jpql += " AND bi.bill.paymentMethod in :cpm ";
                         m.put("cpm", creditPaymentMethods);
                         break;
@@ -14902,7 +14902,7 @@ public class SearchController implements Serializable {
                         m.put("apm", nonCreditPaymentMethods);
                         break;
                     case "OP":
-                        //System.out.println("NonCredit OP");
+                       // System.out.println("NonCredit OP");
                         jpql += " AND bi.bill.paymentMethod in :ncpm ";
                         m.put("ncpm", nonCreditPaymentMethods);
                         break;
@@ -14939,6 +14939,8 @@ public class SearchController implements Serializable {
             m.put("item", item);
         }
 
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         billItemsToItamizedSaleReport(oiBundle, bis);
 
@@ -15896,6 +15898,16 @@ public class SearchController implements Serializable {
             if (iteratingBillItem.getBill() == null) {
                 System.err.println("No Bill for this iteratingBillItem = " + iteratingBillItem);
                 continue;
+            }
+            
+            if (iteratingBillItem.getBill() == null || iteratingBillItem.getBill().getPaymentMethod() == null) {
+                if (iteratingBillItem.getBill().getPaymentMethod() == null) {
+                    if (iteratingBillItem.getBill().getPatientEncounter() == null) {
+                        continue;
+                    }
+                }else{
+                    continue;
+                }
             }
 
             String categoryName = iteratingBillItem.getItem() != null && iteratingBillItem.getItem().getCategory() != null ? iteratingBillItem.getItem().getCategory().getName() : "No Category";
