@@ -20,10 +20,10 @@
     <h:body>
 
         <f:metadata>
-            <f:viewParam name="fromDate" value="#{bookingControllerViewScope.fromDate}">
+            <f:viewParam name="fromDate" value="#{clinicController.fromDate}">
                 <f:converter converterId="javax.faces.DateTime"/>
             </f:viewParam>
-            <f:viewParam name="toDate" value="#{bookingControllerViewScope.toDate}">
+            <f:viewParam name="toDate" value="#{clinicController.toDate}">
                 <f:converter converterId="javax.faces.DateTime"/>
             </f:viewParam>
         </f:metadata>
@@ -34,7 +34,7 @@
             <ui:define name="content">
 
 
-                <h:panelGroup rendered="#{!bookingControllerViewScope.printPreview}" >
+                <h:panelGroup rendered="#{!clinicController.printPreview}" >
                     <h:form >
                         <div class="container-fluid" >
                             <div class="row bg-light my-2 py-2 shadow-sm navbar" >
@@ -42,26 +42,26 @@
                                     <div class="d-flex align-items-center w-100">
                                         <div class="d-flex align-items-center ">
                                             <p:outputLabel value="From"></p:outputLabel>
-                                            <p:calendar id="fromDate" value="#{bookingControllerViewScope.fromDate}" size="10" class="mx-2"></p:calendar>
+                                            <p:calendar id="fromDate" value="#{clinicController.fromDate}" size="10" class="mx-2"></p:calendar>
                                             <p:outputLabel value="To" ></p:outputLabel>
-                                            <p:calendar id="toDate" value="#{bookingControllerViewScope.toDate}" size="10"  class="mx-2"></p:calendar>
+                                            <p:calendar id="toDate" value="#{clinicController.toDate}" size="10"  class="mx-2"></p:calendar>
                                         </div>
 
                                         <div class="d-flex align-items-center w-100">
-                                            <p:inputText id="txtFilter" class="w-100" value="#{bookingControllerViewScope.sessionInstanceFilter}" placeholder="Search">
+                                            <p:inputText id="txtFilter" class="w-100" value="#{clinicController.sessionInstanceFilter}" placeholder="Search">
                                                 <p:ajax event="keyup" process="@this" update="groupFilteredSessions gdManageBookings panelBookingDetails" 
-                                                        listener="#{bookingControllerViewScope.listAndFilterSessionInstances()}"></p:ajax>
+                                                        listener="#{clinicController.listAndFilterSessionInstances()}"></p:ajax>
                                             </p:inputText>
 
                                         </div>
 
                                         <div class="d-flex align-items-center w-100">
 
-                                            <p:commandButton value="Today" action="#{bookingControllerViewScope.addToDayToToDateNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+1" action="#{bookingControllerViewScope.addSingleDateToToDateNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+2" action="#{bookingControllerViewScope.addTwoDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+7" action="#{bookingControllerViewScope.addSevenDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+1 Month" action="#{bookingControllerViewScope.addMonthNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="Today" action="#{clinicController.addToDayToToDateNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+1" action="#{clinicController.addSingleDateToToDateNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+2" action="#{clinicController.addTwoDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+7" action="#{clinicController.addSevenDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+1 Month" action="#{clinicController.addMonthNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
 
                                         </div>
                                     </div>
@@ -82,7 +82,7 @@
                                                 title="Completed" 
                                                 icon="fa fa-check"
                                                 styleClass="ui-button-secondary mx-1" 
-                                                action="#{bookingControllerViewScope.listCompleted()}" />
+                                                action="#{clinicController.listCompleted()}" />
 
                                             <!-- View Ongoing Session Data Button -->
                                             <p:commandButton 
@@ -90,7 +90,7 @@
                                                 title="Ongoing" 
                                                 icon="fa fa-sync-alt" 
                                                 styleClass="ui-button-success mx-1" 
-                                                action="#{bookingControllerViewScope.listOngoing()}" />
+                                                action="#{clinicController.listOngoing()}" />
 
                                             <!-- View Pending Session Data Button -->
                                             <p:commandButton 
@@ -98,7 +98,7 @@
                                                 title="Pending" 
                                                 icon="fa fa-hourglass-half" 
                                                 styleClass="ui-button-warning mx-1" 
-                                                action="#{bookingControllerViewScope.listPending()}" />
+                                                action="#{clinicController.listPending()}" />
 
                                             <!-- View Cancelled Session Data Button -->
                                             <p:commandButton 
@@ -106,7 +106,7 @@
                                                 title="Cancelled" 
                                                 icon="fa fa-times-circle" 
                                                 styleClass="ui-button-danger mx-1" 
-                                                action="#{bookingControllerViewScope.listCancelled()}" />
+                                                action="#{clinicController.listCancelled()}" />
 
                                             <!-- List All Session Data Button -->
                                             <p:commandButton 
@@ -114,7 +114,7 @@
                                                 title="All" 
                                                 icon="fa fa-list" 
                                                 styleClass="ui-button-primary mx-1" 
-                                                action="#{bookingControllerViewScope.listAll}" />
+                                                action="#{clinicController.listAll}" />
 
                                         </div>
                                     </div>
@@ -126,10 +126,10 @@
                                 <div class="col-7" >
                                     <h:panelGroup id="groupFilteredSessions" >
                                         <p:dataTable 
-                                            value="#{bookingControllerViewScope.sessionInstancesFiltered}"
+                                            value="#{clinicController.sessionInstancesFiltered}"
                                             var="s"
                                             selectionMode="single"
-                                            selection="#{bookingControllerViewScope.selectedSessionInstance}"
+                                            selection="#{clinicController.selectedSessionInstance}"
                                             rowKey="#{s.id}"
                                             class="w-100">
 
@@ -137,7 +137,7 @@
                                                 event="rowSelect" 
                                                 process="@this"
                                                 update=":#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId} :#{p:resolveFirstComponentWithId('gdManageBookings',view).clientId} :#{p:resolveFirstComponentWithId('gpAdditionalItems',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId}"
-                                                listener="#{bookingControllerViewScope.sessionInstanceSelected()}" />
+                                                listener="#{clinicController.sessionInstanceSelected()}" />
 
 
 
@@ -230,14 +230,14 @@
                                                                 <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - s.bookedPatientCount}" severity="danger"></p:badge>
                                                             </h:panelGroup>
                                                             <h:panelGroup rendered="#{s.cancelPatientCount ne null}" >
-                                                                <p:badge value="#{s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s))- s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount) > 3}"></p:badge>
-                                                                <p:badge value="#{s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{3 >= (s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)) and (s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)) > 0}" severity="warning"></p:badge>
-                                                                <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)}" severity="danger"></p:badge>
+                                                                <p:badge value="#{s.maxNo - ((s.bookedPatientCount + clinicController.totalReservedNumberCount(s))- s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{s.maxNo - ((s.bookedPatientCount + clinicController.totalReservedNumberCount(s)) - s.cancelPatientCount) > 3}"></p:badge>
+                                                                <p:badge value="#{s.maxNo - ((s.bookedPatientCount + clinicController.totalReservedNumberCount(s)) - s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{3 >= (s.maxNo - ((s.bookedPatientCount + clinicController.totalReservedNumberCount(s)) - s.cancelPatientCount)) and (s.maxNo - ((s.bookedPatientCount + clinicController.totalReservedNumberCount(s)) - s.cancelPatientCount)) > 0}" severity="warning"></p:badge>
+                                                                <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - ((s.bookedPatientCount + clinicController.totalReservedNumberCount(s)) - s.cancelPatientCount)}" severity="danger"></p:badge>
                                                             </h:panelGroup>                                  
                                                         </div>
                                                         <!--                                                        <div class="text-center">
                                                                                                                     <h:outputLabel style="font-weight: bolder" value="N"/><br/>
-                                                                                                                    <p:badge value="#{((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.reservedBookingCount) + 1}" size="large" styleClass="mr-2"></p:badge>
+                                                                                                                    <p:badge value="#{((s.bookedPatientCount + clinicController.totalReservedNumberCount(s)) - s.reservedBookingCount) + 1}" size="large" styleClass="mr-2"></p:badge>
                                                                                                                 </div>-->
                                                         <div class="text-center">
                                                             <h:outputLabel style="font-weight: bolder" value="N"/><br/>
@@ -268,7 +268,7 @@
                                                                         icon="fas fa-cog"
                                                                         immediate="true"
                                                                         styleClass="rounded-button ui-button-secondary mr-2"
-                                                                        action="#{bookingControllerViewScope.navigateToManageSessionInstance(s)}" 
+                                                                        action="#{clinicController.navigateToManageSessionInstance(s)}" 
                                                                         ajax="false" >
                                                                     </p:commandButton>
                                                                 </span>
@@ -287,19 +287,19 @@
                                     <div class="sticky-top shadow " style="max-height: 100vh; overflow-y: auto;z-index: 100;">
                                         <common:patient_details_view_scope
                                             editable="#{true}"
-                                            controller="#{bookingControllerViewScope}"/>
+                                            controller="#{clinicController}"/>
 
                                         <h:panelGroup id="gpAdditionalItems" >
-                                            <p:panel header="Additional Items" rendered="#{not empty bookingControllerViewScope.itemsAvailableToAddToBooking}">
+                                            <p:panel header="Additional Items" rendered="#{not empty clinicController.itemsAvailableToAddToBooking}">
                                                 <p:row >
                                                     <p:column >
                                                         <p:outputLabel  value="Item" ></p:outputLabel>
                                                     </p:column>
                                                     <p:column >
-                                                        <p:selectOneMenu class="w-75 mx-1" autoWidth="false" id="lstItems" value="#{bookingControllerViewScope.itemToAddToBooking}" >
+                                                        <p:selectOneMenu class="w-75 mx-1" autoWidth="false" id="lstItems" value="#{clinicController.itemToAddToBooking}" >
                                                             <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                            <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
-                                                            <p:ajax event="change" process="lstItems" update="totalsPanel :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillBaseFees}" ></p:ajax>
+                                                            <f:selectItems  value="#{clinicController.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
+                                                            <p:ajax event="change" process="lstItems" update="totalsPanel :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{clinicController.fillBaseFees}" ></p:ajax>
                                                         </p:selectOneMenu>
                                                     </p:column>
                                                     <p:column >
@@ -309,7 +309,7 @@
                                                             value="Add Item" 
                                                             icon="fas fa-plus"
                                                             class="ui-button-success"
-                                                            action="#{bookingControllerViewScope.addItemToBooking}"
+                                                            action="#{clinicController.addItemToBooking}"
                                                             update="changeItemfees totalsPanel paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
                                                             ></p:commandButton>
                                                     </p:column>
@@ -318,13 +318,13 @@
                                                 <h:panelGroup id="lstAddedItems" >
                                                     <p:dataTable
                                                         class="w-100"
-                                                        value="#{bookingControllerViewScope.itemsAddedToBooking}" var="item" rendered="#{not empty bookingControllerViewScope.itemsAddedToBooking}" >
+                                                        value="#{clinicController.itemsAddedToBooking}" var="item" rendered="#{not empty clinicController.itemsAddedToBooking}" >
                                                         <p:column headerText="Item">
                                                             <h:outputText value="#{item.name}" ></h:outputText>
                                                         </p:column>
                                                         <p:column headerText="Fees">
                                                             <h:panelGroup  id="changeItemfees">
-                                                                <ui:repeat  value="#{bookingControllerViewScope.addedItemFees}" var="itemFee" rendered="#{not empty bookingControllerViewScope.itemsAddedToBooking}">
+                                                                <ui:repeat  value="#{clinicController.addedItemFees}" var="itemFee" rendered="#{not empty clinicController.itemsAddedToBooking}">
                                                                     <h:panelGroup class="row" rendered="#{itemFee.item.id eq item.id}" layout="block" >
                                                                         <h:panelGroup class="col-6" layout="block" >
                                                                             <p:outputLabel value="#{itemFee.name}"/>
@@ -333,27 +333,27 @@
                                                                             <p:inputText 
                                                                                 id="txtFeeValueForLocal"
                                                                                 onfocus="this.select();"  
-                                                                                rendered="#{!bookingControllerViewScope.foriegn}" 
+                                                                                rendered="#{!clinicController.foriegn}" 
                                                                                 value="#{itemFee.fee}" 
                                                                                 class="w-100 m-1 text-end">
                                                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                                 <p:ajax 
                                                                                     event="blur" 
                                                                                     process="txtFeeValueForLocal" 
-                                                                                    listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotal}"
+                                                                                    listener="#{clinicController.calculateSelectedBillSessionTotal}"
                                                                                     update=":#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}  :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId}  :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId}" >
                                                                                 </p:ajax>
                                                                             </p:inputText>
                                                                             <p:inputText 
                                                                                 id="txtFeeValueForForeigner"
                                                                                 onfocus="this.select();" 
-                                                                                rendered="#{bookingControllerViewScope.foriegn}" 
+                                                                                rendered="#{clinicController.foriegn}" 
                                                                                 value="#{itemFee.ffee}" 
                                                                                 class="w-100 m-1 text-end">
                                                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                                 <p:ajax 
                                                                                     event="blur" 
-                                                                                    listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotal}"
+                                                                                    listener="#{clinicController.calculateSelectedBillSessionTotal}"
                                                                                     process="txtFeeValueForForeigner" 
                                                                                     update=":#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId}" >
                                                                                 </p:ajax>
@@ -368,7 +368,7 @@
                                                                 id="btnRemoveAdditem" 
                                                                 icon="fas fa-trash" 
                                                                 class="ui-button-danger" 
-                                                                action="#{bookingControllerViewScope.removeAddedAditionalItems(item)}" 
+                                                                action="#{clinicController.removeAddedAditionalItems(item)}" 
                                                                 process="btnRemoveAdditem" 
                                                                 update=":#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId}"/>
                                                         </p:column>
@@ -382,64 +382,13 @@
                                                 <p:row>
                                                     <p:column  colspan="2" >
                                                         <h:outputText styleClass="fa-solid fa-money-bill-wave"/>
-                                                        <h:outputText class="mx-4" value="Payment Details"/>
-                                                    </p:column>
-                                                </p:row>
-                                            </f:facet>
-                                            <f:facet name="footer">
-                                                <p:row>
-                                                    <p:column colspan="4" >
-                                                        <p:commandButton
-                                                            id="btnAdd"
-                                                            value="Add Normal Booking"
-                                                            ajax="false"
-                                                            update="gpThisBookingDetails"
-                                                            class="ui-button-info "
-                                                            icon="pi pi-check"
-                                                            action="#{bookingControllerViewScope.addNormalChannelBooking}" >
-                                                        </p:commandButton>
-                                                        <p:spacer height="1" width="10" ></p:spacer>
-                                                        <p:spacer height="1" width="10" ></p:spacer>
-                                                        <p:selectOneMenu value="#{bookingControllerViewScope.selectedReserverdBookingNumber}" >
-                                                            <f:selectItem itemLabel="Next Number" ></f:selectItem>
-                                                            <f:selectItems value="#{bookingControllerViewScope.reservedBookingNumbers}" ></f:selectItems>
-                                                        </p:selectOneMenu>
-                                                        <p:commandButton
-                                                            id="btnAddReserved"
-                                                            value="Add Reserved Booking"
-                                                            ajax="false"
-                                                            update="gpThisBookingDetails"
-                                                            class="ui-button-warning m-2"
-                                                            icon="pi pi-bookmark"
-                                                            action="#{bookingControllerViewScope.addReservedChannelBooking}" > <!-- Assuming a different action for reserved booking -->
-                                                        </p:commandButton>
-                                                        <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
-                                                            <p:commandButton 
-                                                                value="Mark Foreigner" 
-                                                                class="mx-2"
-                                                                action="#{bookingControllerViewScope.markAsForeigner}" 
-                                                                rendered="#{!bookingControllerViewScope.foriegn}" 
-                                                                process="@this" 
-                                                                update="gpLocalForeign totalsPanel panelBookingDetails" 
-                                                                >
-                                                            </p:commandButton>
-                                                            <p:commandButton 
-                                                                value="Mark Local" 
-                                                                class="mx-2"
-                                                                action="#{bookingControllerViewScope.markAsLocal}" 
-                                                                rendered="#{bookingControllerViewScope.foriegn}" 
-                                                                process="@this" 
-                                                                update="gpLocalForeign totalsPanel panelBookingDetails" 
-                                                                >
-                                                            </p:commandButton>
-
-                                                        </h:panelGroup>
-
+                                                        <h:outputText class="mx-4" value="Booking"/>
                                                     </p:column>
                                                 </p:row>
                                             </f:facet>
 
-                                            <h:panelGroup  id="panelPaymentMethod">
+
+                                            <h:panelGroup  id="panelPaymentMethod" rendered="#{configOptionApplicationController.getBooleanValueByKey('No Payments for Clinic Booking')}">
                                                 <p:panelGrid columns="2" layout="tabular" class="w-100">
                                                     <p:outputLabel value="Payment Method"/>
                                                     <h:panelGroup>
@@ -449,14 +398,14 @@
                                                             id="cmbPs"
                                                             filter="true"
                                                             filterMatchMode="contains"
-                                                            value="#{bookingControllerViewScope.paymentMethod}">
+                                                            value="#{clinicController.paymentMethod}">
                                                             <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                                             <f:selectItems value="#{enumController.paymentMethodsForChanneling}"/>
                                                             <p:ajax 
                                                                 process="@this"
                                                                 update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems" 
                                                                 event="change" 
-                                                                listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotal()}" />
+                                                                listener="#{clinicController.calculateSelectedBillSessionTotal()}" />
                                                         </p:selectOneMenu>
                                                         <h:outputScript>
                                                             $(document.getElementById('form:cmbPs_focus')).keypress(function (event) {
@@ -477,7 +426,7 @@
                                                         class="w-100" 
                                                         autoWidth="false" 
                                                         id="cmbPs2" 
-                                                        value="#{bookingControllerViewScope.paymentScheme}">
+                                                        value="#{clinicController.paymentScheme}">
                                                         <f:selectItem itemLabel="Select Discount Scheme"/>
                                                         <f:selectItems 
                                                             value="#{paymentSchemeController.paymentSchemesForChannel}"
@@ -488,7 +437,7 @@
                                                             process="@this"
                                                             update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems"
                                                             event="change"
-                                                            listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotal()}"/>
+                                                            listener="#{clinicController.calculateSelectedBillSessionTotal()}"/>
                                                     </p:selectOneMenu>
 
 
@@ -496,24 +445,71 @@
 
                                             </h:panelGroup>
 
-
-
-                                            <h:panelGroup  id="totalsPanel">
+                                            <h:panelGroup  id="totalsPanel"  rendered="#{not configOptionApplicationController.getBooleanValueByKey('No Payments for Clinic Booking')}">
                                                 <p:panelGrid columns="2" layout="tabular" class="w-100">
                                                     <h:outputText value="Total:" />
-                                                    <h:outputText value="#{bookingControllerViewScope.feeTotalForSelectedBill}">
+                                                    <h:outputText value="#{clinicController.feeTotalForSelectedBill}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                     <h:outputText value="Discount:" />
-                                                    <h:outputText value="#{bookingControllerViewScope.feeDiscountForSelectedBill}">
+                                                    <h:outputText value="#{clinicController.feeDiscountForSelectedBill}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                     <h:outputText value="Net Total:" />
-                                                    <h:outputText value="#{bookingControllerViewScope.feeNetTotalForSelectedBill}">
+                                                    <h:outputText value="#{clinicController.feeNetTotalForSelectedBill}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </p:panelGrid>
                                             </h:panelGroup>
+
+
+                                            <p:row>
+                                                <p:column colspan="4" >
+                                                    <p:commandButton
+                                                        id="btnAddFirst"
+                                                        value="Add Fitst Booking"
+                                                        ajax="false"
+                                                        update="gpThisBookingDetails"
+                                                        class="ui-button-danger "
+                                                        icon="pi pi-check"
+                                                        action="#{clinicController.addNormalFirstVisit}" >
+                                                    </p:commandButton>
+                                                    <p:spacer height="1" width="10" ></p:spacer>
+                                                    <p:commandButton
+                                                        id="btnAddSubsequent"
+                                                        value="Add Subsequent Booking"
+                                                        ajax="false"
+                                                        update="gpThisBookingDetails"
+                                                        class="ui-button-info "
+                                                        icon="pi pi-check"
+                                                        action="#{clinicController.addNormalSubsequentVisit()}" >
+                                                    </p:commandButton>
+                                                    <p:spacer height="1" width="10" ></p:spacer>
+                                                    <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                        <p:commandButton 
+                                                            value="Mark Foreigner" 
+                                                            class="mx-2"
+                                                            action="#{clinicController.markAsForeigner}" 
+                                                            rendered="#{!clinicController.foriegn}" 
+                                                            process="@this" 
+                                                            update="gpLocalForeign totalsPanel panelBookingDetails" 
+                                                            >
+                                                        </p:commandButton>
+                                                        <p:commandButton 
+                                                            value="Mark Local" 
+                                                            class="mx-2"
+                                                            action="#{clinicController.markAsLocal}" 
+                                                            rendered="#{clinicController.foriegn}" 
+                                                            process="@this" 
+                                                            update="gpLocalForeign totalsPanel panelBookingDetails" 
+                                                            >
+                                                        </p:commandButton>
+
+                                                    </h:panelGroup>
+
+                                                </p:column>
+                                            </p:row>
+
 
                                             <p:panelGrid id="gdManageBookings" class="w-100 m-2" columns="2"  >
 
@@ -522,22 +518,22 @@
                                             <h:panelGroup id="paymentDetails" class="payment-details">
                                                 <!-- Cash Payment Method -->
                                                 <p:panelGrid layout="tabular" columns="2" class="w-100" >
-                                                    <p:outputLabel value="Tenderd Amount" rendered="#{bookingControllerViewScope.paymentMethod eq 'Cash'}"/>
-                                                    <h:panelGroup class="w-100 my-2" style="font-weight: bolder" rendered="#{bookingControllerViewScope.paymentMethod eq 'Cash'}">
+                                                    <p:outputLabel value="Tenderd Amount" rendered="#{clinicController.paymentMethod eq 'Cash'}"/>
+                                                    <h:panelGroup class="w-100 my-2" style="font-weight: bolder" rendered="#{clinicController.paymentMethod eq 'Cash'}">
                                                         <p:inputText 
                                                             class="w-100 text-end"
                                                             id="paid" 
-                                                            onfocus="this.select();" value="#{bookingControllerViewScope.strTenderedValue}">
+                                                            onfocus="this.select();" value="#{clinicController.strTenderedValue}">
                                                             <p:ajax event="keyup" process="paid" update="balance"/>
                                                             <p:ajax event="blur" update="paid"/>
                                                         </p:inputText>
                                                     </h:panelGroup>
-                                                    <p:outputLabel value="Balance" rendered="#{bookingControllerViewScope.paymentMethod eq 'Cash'}"/>
-                                                    <h:panelGroup id="balance" class="w-100 my-2" style="font-weight: bolder" rendered="#{bookingControllerViewScope.paymentMethod eq 'Cash'}">
+                                                    <p:outputLabel value="Balance" rendered="#{clinicController.paymentMethod eq 'Cash'}"/>
+                                                    <h:panelGroup id="balance" class="w-100 my-2" style="font-weight: bolder" rendered="#{clinicController.paymentMethod eq 'Cash'}">
                                                         <p:inputText
                                                             readonly="true"
                                                             class="w-100 text-end"
-                                                            value="#{-bookingControllerViewScope.cashBalance}">
+                                                            value="#{-clinicController.cashBalance}">
                                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                         </p:inputText>
                                                     </h:panelGroup>
@@ -551,17 +547,17 @@
                                                 <p:panelGrid 
                                                     layout="tabular"
                                                     columns="1" 
-                                                    rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}" >
+                                                    rendered="#{clinicController.paymentMethod eq 'Agent'}" >
                                                     <f:facet name="header">
                                                         <div class="d-flex align-items-center justify-content-between">
                                                             <h:outputLabel id="agent" value="Agent" />
                                                             <div>
                                                                 <p:outputLabel class="mx-2" value="Credit Limit" />
-                                                                <p:outputLabel id="creditLimitofagency" value="#{bookingControllerViewScope.institution.allowedCreditLimit}"></p:outputLabel>
+                                                                <p:outputLabel id="creditLimitofagency" value="#{clinicController.institution.allowedCreditLimit}"></p:outputLabel>
                                                             </div>
                                                             <div class=" mx-4">
                                                                 <p:outputLabel class="mx-2" value="Agent Balance" />
-                                                                <h:outputLabel id="balance2" value="#{empty bookingControllerViewScope.institution.ballance ? '00.00' : bookingControllerViewScope.institution.ballance}" />
+                                                                <h:outputLabel id="balance2" value="#{empty clinicController.institution.ballance ? '00.00' : clinicController.institution.ballance}" />
                                                             </div>
                                                         </div>
                                                     </f:facet>
@@ -572,9 +568,9 @@
                                                         </p:column>
                                                         <p:column>
                                                             <p:autoComplete class="w-75 mx-2" id="agent2" forceSelection="true"
-                                                                            value="#{bookingControllerViewScope.institution}" completeMethod="#{agencyController.completeAgency}" var="ix"
+                                                                            value="#{clinicController.institution}" completeMethod="#{agencyController.completeAgency}" var="ix"
                                                                             itemLabel="#{ix.name}" itemValue="#{ix}" size="38">
-                                                                <f:ajax event="itemSelect" execute="@this" render="balance2 creditLimitofagency totalsPanel agRefLbl agRefTxt :#{p:resolveFirstComponentWithId('agRefLbl',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks',view).clientId} gdManageBookings" listener="#{bookingControllerViewScope.validateAgentBalance()}"/>
+                                                                <f:ajax event="itemSelect" execute="@this" render="balance2 creditLimitofagency totalsPanel agRefLbl agRefTxt :#{p:resolveFirstComponentWithId('agRefLbl',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks',view).clientId} gdManageBookings" listener="#{clinicController.validateAgentBalance()}"/>
                                                                 <p:column>#{ix.institutionCode}</p:column>
                                                                 <p:column>#{ix.name}</p:column>
                                                             </p:autoComplete>
@@ -585,13 +581,13 @@
                                                             <p:outputLabel for="agRefTxt" value="Agent Ref No" />
                                                         </p:column>
                                                         <p:column>
-                                                            <p:inputText size="38" class="mx-2" autocomplete="off" id="agRefTxt" value="#{bookingControllerViewScope.agentRefNo}" />
+                                                            <p:inputText size="38" class="mx-2" autocomplete="off" id="agRefTxt" value="#{clinicController.agentRefNo}" />
                                                         </p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column colspan="2">
                                                             <p:dataTable class="w-100" id="tblAgentBooks" emptyMessage="No Reference Books"
-                                                                         value="#{bookingControllerViewScope.institution.agentReferenceBooks}" var="a">
+                                                                         value="#{clinicController.institution.agentReferenceBooks}" var="a">
                                                                 <f:facet name="header">
                                                                     <p:outputLabel value="Agent Reference Number Details" />
                                                                 </f:facet>
@@ -611,7 +607,7 @@
                                                 </p:panelGrid>
 
                                                 <!-- Card Payment Method -->
-                                                <p:panelGrid layout="tabular" columns="1" class="w-100" rendered="#{bookingControllerViewScope.paymentMethod eq 'Card'}">
+                                                <p:panelGrid layout="tabular" columns="1" class="w-100" rendered="#{clinicController.paymentMethod eq 'Card'}">
                                                     <f:facet name="header">
                                                         <div class="d-flex align-items-center justify-content-between">
                                                             <h:outputLabel id="card" value="Card" />
@@ -623,7 +619,7 @@
                                                             <p:outputLabel id="creditCardbnkLbl" value="Select Bank" />
                                                         </p:column>
                                                         <p:column>
-                                                            <p:selectOneMenu class="w-75 mx-2" autoWidth="false" id="creditCardSlc" filter="true" filterMatchMode="contains" value="#{bookingControllerViewScope.paymentMethodData.creditCard.institution}">
+                                                            <p:selectOneMenu class="w-75 mx-2" autoWidth="false" id="creditCardSlc" filter="true" filterMatchMode="contains" value="#{clinicController.paymentMethodData.creditCard.institution}">
                                                                 <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
                                                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
                                                             </p:selectOneMenu>
@@ -634,13 +630,13 @@
                                                             <p:outputLabel for="creditCardTxt" value="Card Ref. No" />
                                                         </p:column>
                                                         <p:column>
-                                                            <p:inputText class="w-75 mx-2" id="creditCardTxt" autocomplete="off" value="#{bookingControllerViewScope.paymentMethodData.creditCard.no}" />
+                                                            <p:inputText class="w-75 mx-2" id="creditCardTxt" autocomplete="off" value="#{clinicController.paymentMethodData.creditCard.no}" />
                                                         </p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
                                                 <!-- Cheque Payment Method -->
-                                                <p:panelGrid columns="1" class="w-100" rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}">
+                                                <p:panelGrid columns="1" class="w-100" rendered="#{clinicController.paymentMethod eq 'Cheque'}">
                                                     <f:facet name="header">
                                                         <h:outputLabel value="Cheque Payment" />
                                                     </f:facet>
@@ -650,7 +646,7 @@
                                                             <p:outputLabel id="lblCheque" value="Cheque No" />
                                                         </p:column>
                                                         <p:column>
-                                                            <p:inputText size="38" class="mx-2" id="chequeNo" autocomplete="off" value="#{bookingControllerViewScope.paymentMethodData.cheque.no}" />
+                                                            <p:inputText size="38" class="mx-2" id="chequeNo" autocomplete="off" value="#{clinicController.paymentMethodData.cheque.no}" />
                                                         </p:column>
                                                     </p:row>
                                                     <p:row>
@@ -658,7 +654,7 @@
                                                             <p:outputLabel id="lblBank" value="Select Bank" />
                                                         </p:column>
                                                         <p:column>
-                                                            <p:selectOneMenu class="mx-2" style="width: 335px" autoWidth="false" id="bankSel" value="#{bookingControllerViewScope.paymentMethodData.cheque.institution}">
+                                                            <p:selectOneMenu class="mx-2" style="width: 335px" autoWidth="false" id="bankSel" value="#{clinicController.paymentMethodData.cheque.institution}">
                                                                 <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
                                                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
                                                             </p:selectOneMenu>
@@ -669,13 +665,13 @@
                                                             <p:outputLabel id="lblChequeDate" value="Cheque Date" />
                                                         </p:column>
                                                         <p:column>
-                                                            <p:calendar class="mx-2" size="38" id="ChequeDate" value="#{bookingControllerViewScope.paymentMethodData.cheque.date}" pattern="dd MMMM yyyy" />
+                                                            <p:calendar class="mx-2" size="38" id="ChequeDate" value="#{clinicController.paymentMethodData.cheque.date}" pattern="dd MMMM yyyy" />
                                                         </p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
                                                 <!-- Staff Payment Method -->
-                                                <p:panelGrid columns="1" class="w-100" rendered="#{bookingControllerViewScope.paymentMethod eq 'Staff'}">
+                                                <p:panelGrid columns="1" class="w-100" rendered="#{clinicController.paymentMethod eq 'Staff'}">
                                                     <f:facet name="header">
                                                         <p:outputLabel id="staff" value="Staff" />
                                                     </f:facet>
@@ -684,7 +680,7 @@
 
                                                         <p:column>
                                                             <h:panelGroup id="autoStaff">
-                                                                <p:autoComplete minQueryLength="2" forceSelection="true" value="#{bookingControllerViewScope.toStaff}" id="creditStaff"
+                                                                <p:autoComplete minQueryLength="2" forceSelection="true" value="#{clinicController.toStaff}" id="creditStaff"
                                                                                 completeMethod="#{staffController.completeStaff}" var="mys" class="w-100"
                                                                                 placeholder="Staff (Type at least 4 letters to search)" inputStyleClass="form-control"
                                                                                 itemLabel="#{mys.person.name}" itemValue="#{mys}" size="10">
@@ -711,7 +707,7 @@
                                                 </p:panelGrid>
 
                                                 <!-- Slip Payment Method -->
-                                                <p:panelGrid columns="2" rendered="#{bookingControllerViewScope.paymentMethod eq 'Slip'}">
+                                                <p:panelGrid columns="2" rendered="#{clinicController.paymentMethod eq 'Slip'}">
                                                     <p:row>
                                                         <p:column colspan="2">
                                                             <h:outputLabel value="Slip Payment" />
@@ -722,7 +718,7 @@
                                                             <p:outputLabel id="slipLblBank" value="Select Bank" />
                                                         </p:column>
                                                         <p:column>
-                                                            <p:selectOneMenu class="w-75" autoWidth="false" id="slipSelBank" value="#{bookingControllerViewScope.paymentMethodData.slip.institution}">
+                                                            <p:selectOneMenu class="w-75" autoWidth="false" id="slipSelBank" value="#{clinicController.paymentMethodData.slip.institution}">
                                                                 <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
                                                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
                                                             </p:selectOneMenu>
@@ -733,22 +729,22 @@
                                                             <p:outputLabel id="slipLblDate" value="Slip Date" />
                                                         </p:column>
                                                         <p:column>
-                                                            <p:datePicker class="w-100" showTime="true" showButtonBar="true" timeInput="true" id="date" value="#{bookingControllerViewScope.paymentMethodData.slip.date}" pattern="dd MMMM yyyy" />
+                                                            <p:datePicker class="w-100" showTime="true" showButtonBar="true" timeInput="true" id="date" value="#{clinicController.paymentMethodData.slip.date}" pattern="dd MMMM yyyy" />
                                                         </p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
                                                 <!-- Multiple Payment Methods -->
-                                                <p:panelGrid columns="1" rendered="#{bookingControllerViewScope.paymentMethod eq 'MultiplePaymentMethods'}">
+                                                <p:panelGrid columns="1" rendered="#{clinicController.paymentMethod eq 'MultiplePaymentMethods'}">
                                                     <p:row>
                                                         <p:column>
-                                                            <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" class="w-100" />
+                                                            <pa:multiple_payment_methods controller="#{clinicController}" class="w-100" />
                                                         </p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
                                                 <!-- Credit Payment Method -->
-                                                <p:panelGrid columns="1" rendered="#{bookingControllerViewScope.paymentMethod eq 'Credit'}">
+                                                <p:panelGrid columns="1" rendered="#{clinicController.paymentMethod eq 'Credit'}">
                                                     <p:row>
                                                         <p:column>
                                                             <h:panelGroup class="row" layout="block">
@@ -756,9 +752,9 @@
                                                                     <div class="row">
                                                                         <div class="col-12 d-flex">
                                                                             <p:autoComplete id="creditCompany" class="w-100 -mx-2" inputStyleClass="form-control" forceSelection="true"
-                                                                                            value="#{bookingControllerViewScope.creditCompany}" completeMethod="#{creditCompanyController.completeCredit}" var="ix"
+                                                                                            value="#{clinicController.creditCompany}" completeMethod="#{creditCompanyController.completeCredit}" var="ix"
                                                                                             minQueryLength="4" placeholder="Company (Type at least 4 letters to search)" itemLabel="#{ix.name}" itemValue="#{ix}" size="10">
-                                                                                <f:ajax event="itemSelect" listener="#{bookingControllerViewScope.calTotals()}" execute="@this" render=":#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}" />
+                                                                                <f:ajax event="itemSelect" listener="#{clinicController.calTotals()}" execute="@this" render=":#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}" />
                                                                             </p:autoComplete>
                                                                             <p:commandLink id="btnAddNewCreditCom" value="(+)" class="mx-3 mt-1" title="Add New Credit Company"
                                                                                            ajax="false" action="#{navigationController.navigateToCreditCompany()}" actionListener="#{creditCompanyController.prepareAdd()}" />
@@ -786,7 +782,7 @@
                                                 <p:outputLabel for="refIns" value="Institution" ></p:outputLabel>
                                                 <p:autoComplete id="refIns" 
                                                                 forceSelection="true" 
-                                                                value="#{bookingControllerViewScope.referredByInstitution}"
+                                                                value="#{clinicController.referredByInstitution}"
                                                                 completeMethod="#{institutionController.completeIns}"
                                                                 var="ri" 
                                                                 itemLabel="#{ri.name}" 
@@ -815,7 +811,7 @@
 
                                                 <p:autoComplete forceSelection="true" 
                                                                 id="cmbDoc" 
-                                                                value="#{bookingControllerViewScope.referredBy}" 
+                                                                value="#{clinicController.referredBy}" 
                                                                 completeMethod="#{doctorController.completeDoctor}" var="ix" 
                                                                 itemLabel="#{ix.person.name}" 
                                                                 itemValue="#{ix}" 
@@ -842,7 +838,7 @@
                                                 <p:autoComplete id="creditCom" 
                                                                 forceSelection="true" 
                                                                 class="w-100"
-                                                                value="#{bookingControllerViewScope.collectingCentre}"  
+                                                                value="#{clinicController.collectingCentre}"  
                                                                 completeMethod="#{institutionController.completeCollectingCenter}" 
                                                                 var="ix" 
                                                                 placeholder="Type at least 4 letters to search"
@@ -872,20 +868,20 @@
                                                 </f:facet>
 
                                                 <p:outputLabel value="Speciality" />
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.staff.speciality.name}" />
+                                                <p:outputLabel value="#{clinicController.selectedSessionInstance.staff.speciality.name}" />
 
 
                                                 <p:outputLabel value="Consultant" />
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.staff.person.nameWithTitle}" />
+                                                <p:outputLabel value="#{clinicController.selectedSessionInstance.staff.person.nameWithTitle}" />
 
 
                                                 <p:outputLabel value="Session" />
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.name}" />
+                                                <p:outputLabel value="#{clinicController.selectedSessionInstance.name}" />
 
 
                                                 <p:outputLabel value="Date" />
 
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.sessionDate}">
+                                                <p:outputLabel value="#{clinicController.selectedSessionInstance.sessionDate}">
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                                 </p:outputLabel>
 
@@ -893,7 +889,7 @@
 
                                                 <p:outputLabel value="Time" />
 
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.startingTime}">
+                                                <p:outputLabel value="#{clinicController.selectedSessionInstance.originatingSession.startingTime}">
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                                 </p:outputLabel>
 
@@ -901,7 +897,7 @@
 
                                                 <p:outputLabel value="Reserved Numbers" />
 
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.reserveNumbers}">
+                                                <p:outputLabel value="#{clinicController.selectedSessionInstance.originatingSession.reserveNumbers}">
                                                 </p:outputLabel>
 
 
@@ -909,18 +905,18 @@
                                                 <p:outputLabel value="Total Fee" />
 
                                                 <h:panelGroup id="gpFeeTotal">
-                                                    <p:outputLabel  rendered="#{!bookingControllerViewScope.foriegn}"
-                                                                    value="#{bookingControllerViewScope.feeTotalForSelectedBill}">
+                                                    <p:outputLabel  rendered="#{!clinicController.foriegn}"
+                                                                    value="#{clinicController.feeTotalForSelectedBill}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </p:outputLabel>
-                                                    <p:outputLabel rendered="#{bookingControllerViewScope.foriegn}"
-                                                                   value="#{bookingControllerViewScope.feeTotalForSelectedBill}">
+                                                    <p:outputLabel rendered="#{clinicController.foriegn}"
+                                                                   value="#{clinicController.feeTotalForSelectedBill}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </p:outputLabel>
                                                 </h:panelGroup>
                                             </p:panelGrid>
 
-                                            <p:dataTable value="#{bookingControllerViewScope.selectedItemFeesWithouZeros}" var="i" >
+                                            <p:dataTable value="#{clinicController.selectedItemFeesWithouZeros}" var="i" >
                                                 <p:column headerText="Name">
                                                     <h:outputLabel value="#{i.item.name}"/> 
                                                     <h:outputLabel class="mr-4" value="("/> 
@@ -943,13 +939,13 @@
                                                     </h:panelGroup>
                                                 </p:column>
 
-                                                <p:column headerText="Fee" rendered="#{!bookingControllerViewScope.foriegn}">
+                                                <p:column headerText="Fee" rendered="#{!clinicController.foriegn}">
                                                     <h:outputText value="#{i.fee}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputText>
                                                 </p:column>
 
-                                                <p:column headerText="Fee" rendered="#{bookingControllerViewScope.foriegn}">
+                                                <p:column headerText="Fee" rendered="#{clinicController.foriegn}">
                                                     <h:outputText value="#{i.ffee}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputText>
@@ -999,7 +995,7 @@
                 </h:panelGroup>
 
 
-                <h:panelGroup rendered="#{bookingControllerViewScope.printPreview}" >
+                <h:panelGroup rendered="#{clinicController.printPreview}" >
 
                     <h:form>
 
@@ -1014,7 +1010,7 @@
                                                 class="ui-button-info"
                                                 icon="fa fa-print"
                                                 action="#"
-                                                disabled="#{bookingControllerViewScope.printingBill.balance ne 0.0 or !bookingControllerViewScope.settleSucessFully or bookingControllerViewScope.printingBill.paymentMethod eq 'OnCall'}">
+                                                disabled="#{clinicController.printingBill.balance ne 0.0 or !clinicController.settleSucessFully or clinicController.printingBill.paymentMethod eq 'OnCall'}">
                                                 <p:printer 
                                                     target="gpBillPreview" >
                                                 </p:printer>
@@ -1024,7 +1020,7 @@
 
                                             <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
                                             <p:selectOneMenu 
-                                                value="#{bookingControllerViewScope.departmentPreference.channelBillPaperType}" 
+                                                value="#{clinicController.departmentPreference.channelBillPaperType}" 
                                                 class="m-1" 
                                                 style="width: 13em;">
                                                 <f:selectItem itemLabel="Please Select Paper Type" />
@@ -1043,7 +1039,7 @@
                                                 value="Back" 
                                                 icon="fa fa-redo" 
                                                 class="ui-button-success" 
-                                                action="#{bookingControllerViewScope.navigateBackToBookingsFromBillSession()}" 
+                                                action="#{clinicController.navigateBackToBookingsFromBillSession()}" 
                                                 ajax="false" />
                                         </div>
                                     </div>
@@ -1052,19 +1048,19 @@
                             <div class="col-md-8">
                                 <div >
                                     <h:panelGroup id="gpBillPreview">
-                                        <ui:repeat value="#{bookingControllerViewScope.departmentPreference.channellingBillCopiesList}" var="copy">
+                                        <ui:repeat value="#{clinicController.departmentPreference.channellingBillCopiesList}" var="copy">
 
                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Bill is PosPaper',true)}">
-                                                <ez:bmsChannelBill  bill="#{bookingControllerViewScope.printingBill}"/>
+                                                <ez:bmsChannelBill  bill="#{clinicController.printingBill}"/>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Bill is FiveFivePaper',true)}">
-                                                <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.printingBill}" payments="#{bookingControllerViewScope.payments}"/>
+                                                <ez:bms5x5ChannelBill bill="#{clinicController.printingBill}" payments="#{clinicController.payments}"/>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Bill is FiveFIvePaperCustom2',true)}">
-                                                <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.printingBill}" paymentMethodData="#{bookingControllerViewScope.paymentMethodData}" payments="#{bookingControllerViewScope.payments}"/>
+                                                <ez:fivefivePapaerCustom2 bill="#{clinicController.printingBill}" paymentMethodData="#{clinicController.paymentMethodData}" payments="#{clinicController.payments}"/>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Bill is FiveFivePrintedPaper',true)}">
-                                                <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.printingBill}" paymentMethodData="#{bookingControllerViewScope.paymentMethodData}" payments="#{bookingControllerViewScope.payments}"/>
+                                                <ez:bms5x5WIthoutHeaderChannelBill bill="#{clinicController.printingBill}" paymentMethodData="#{clinicController.paymentMethodData}" payments="#{clinicController.payments}"/>
                                             </h:panelGroup>
 
                                         </ui:repeat>
