@@ -2458,7 +2458,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void searchPatientReportsInBillingDepartment() {
-        System.out.println("type = " + type);
         
         StringBuilder jpql = new StringBuilder();
         Map<String, Object> params = new HashMap<>();
@@ -2497,7 +2496,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (referringDoctor != null) {
-            jpql.append(" AND i.billItem.bill.referringDoctor = :rf ");
+            jpql.append(" AND i.billItem.bill.referredBy = :rf ");
             params.put("rf", getReferringDoctor());
         }
 
