@@ -183,12 +183,18 @@
             <version>8.0.30</version>
         </dependency>
 
+        <!-- OpenPDF -->
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
-            <version>1.3.43</version>
+            <version>1.4.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.lowagie</groupId>
+                    <artifactId>itext</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-
 
         <!-- Log4j -->
         <dependency>
@@ -219,7 +225,7 @@
             <type>jar</type>
         </dependency>
         
-<!--        <dependency>
+        <!--        <dependency>
             <groupId>org.primefaces.extensions</groupId>
             <artifactId>primefaces-extensions</artifactId>
             <version>14.0.6</version>  or the version compatible with your PrimeFaces version 
@@ -303,7 +309,6 @@
             <groupId>com.itextpdf</groupId>
             <artifactId>html2pdf</artifactId>
             <version>5.0.5</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.itextpdf</groupId>
