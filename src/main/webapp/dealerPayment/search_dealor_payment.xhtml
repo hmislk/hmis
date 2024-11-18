@@ -183,7 +183,7 @@
                                                      update="@form" 
                                                      action="#{dealorPaymentBillSearch.approve()}"
                                                      disabled="#{bill.referenceBill.billType eq 'GrnPayment'}"
-                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill?'))
+                                                     onclick="if (!confirm('Are you sure! you want to Approve This Cheque?'))
                                                                  return false;">
                                         <f:setPropertyActionListener value="#{bill}" 
                                                                      target="#{dealorPaymentBillSearch.bill}"/>
