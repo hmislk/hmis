@@ -1,6 +1,5 @@
 package com.divudi.bean.common;
 
-import ca.uhn.fhir.model.api.IElement;
 import com.divudi.bean.hr.StaffImageController;
 import com.divudi.bean.lab.CommonReportItemController;
 import com.divudi.bean.lab.PatientInvestigationController;
@@ -63,7 +62,7 @@ import org.primefaces.model.StreamedContent;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.Objects;
-import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
+
 import java.util.Optional;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +70,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.image.ImageData;
@@ -80,9 +81,7 @@ import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
-import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.*;
-import com.itextpdf.layout.Canvas;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.Style;
@@ -93,7 +92,6 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
-import com.itextpdf.text.pdf.qrcode.BitMatrix;
 import java.util.function.Supplier;
 import javax.inject.Inject;
 
@@ -114,11 +112,42 @@ public class PdfController {
     PatientInvestigationController patientInvestigationController;
     @Inject
     SearchController searchController;
+    @Inject
+    CommonFunctionsController commonFunctionsController;
 
     /**
      * Creates a new instance of PdfController
      */
     public PdfController() {
+    }
+     public StreamedContent createPdfForBundle(ReportTemplateRowBundle rootBundle) throws IOException {
+        if (rootBundle == null) {
+            return null;
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        if (rootBundle.getBundles() == null || rootBundle.getBundles().isEmpty()) {
+            addDataToPdf(document, rootBundle, rootBundle.getBundleType());
+        } else {
+            for (ReportTemplateRowBundle childBundle : rootBundle.getBundles()) {
+                addDataToPdf(document, childBundle, childBundle.getBundleType());
+            }
+        }
+
+        document.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        return DefaultStreamedContent.builder()
+                .name("Bundle_Report.pdf")
+                .contentType("application/pdf")
+                .stream(() -> inputStream)
+                .build();
     }
 
     public StreamedContent createPdfForPatientReport(PatientReport report) throws IOException {
@@ -739,35 +768,7 @@ public class PdfController {
         return null;
     }
 
-    public StreamedContent createPdfForBundle(ReportTemplateRowBundle rootBundle) throws IOException {
-        if (rootBundle == null) {
-            return null;
-        }
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PdfWriter writer = new PdfWriter(outputStream);
-        PdfDocument pdf = new PdfDocument(writer);
-        Document document = new Document(pdf);
-
-        if (rootBundle.getBundles() == null || rootBundle.getBundles().isEmpty()) {
-            addDataToPdf(document, rootBundle, rootBundle.getBundleType());
-        } else {
-            for (ReportTemplateRowBundle childBundle : rootBundle.getBundles()) {
-                addDataToPdf(document, childBundle, childBundle.getBundleType());
-            }
-        }
-
-        document.close();
-
-        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-
-        // Set the downloading file
-        return DefaultStreamedContent.builder()
-                .name("Bundle_Report.pdf")
-                .contentType("application/pdf")
-                .stream(() -> inputStream)
-                .build();
-    }
+   
 
     private void addDataToPdf(Document document, ReportTemplateRowBundle addingBundle, String type) {
         if (type == null || type.isEmpty()) {
@@ -1172,8 +1173,7 @@ public class PdfController {
             document.add(noDataParagraph);
         }
     }
-    @Inject
-    CommonFunctionsController commonFunctionsController;
+    
 
     private void populateTableForIncomeByCategoryWithProfessionalFee(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
