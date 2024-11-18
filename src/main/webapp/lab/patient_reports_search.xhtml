@@ -10,17 +10,18 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form >
-                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('LabReportPrint')}">
-                        <na:not_authorize />
-                    </h:panelGroup>
 
-                    <h:panelGroup rendered="#{webUserController.hasPrivilege('LabReportPrint')}" >
-                        <p:panel>
-                            <f:facet name="header">
-                                <h:outputLabel value="Search Patient Report" ></h:outputLabel>
-                            </f:facet>
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('LabReportPrint')}">
+                    <na:not_authorize />
+                </h:panelGroup>
 
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('LabReportPrint')}" >
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Search Patient Report" ></h:outputLabel>
+                        </f:facet>
+
+                        <h:form >
                             <div class="row">
                                 <div class="col-10">
                                     <h:panelGrid columns="4" class="w-100" style="font-weight: bolder">
@@ -103,7 +104,6 @@
                                     </h:panelGrid>
                                 </div>
                                 <div class="col-2">
-                                    
                                     <p:commandButton 
                                         ajax="false" 
                                         action="#{patientInvestigationController.searchPatientReportsInBillingDepartment}" 
@@ -111,18 +111,19 @@
                                         icon="fas fa-file-medical" 
                                         styleClass="my-1 ui-button-danger w-100">
                                     </p:commandButton>
-                                    
+                                  
                                     <p:commandButton 
-                                        ajax="false" 
+                                        ajax="false"
                                         action="#{patientInvestigationController.clearFilters}" 
                                         value="Clear"  
                                         icon="fas fa-eraser" 
                                         styleClass="ui-button-secondary my-1 w-100">
                                     </p:commandButton>
-                                    
+
                                 </div>
                             </div>
-                
+                        </h:form>
+                        <h:form >
                             <p:dataTable  
                                 id="tblBills" 
                                 value="#{patientInvestigationController.items}" 
@@ -137,42 +138,53 @@
                                 rowsPerPageTemplate="50,100,250"
                                 >
 
-                                <p:column headerText="No" style="vertical-align: top; width: 3em; padding: 8px;">
+                                <p:column headerText="No" style="vertical-align: top; width: 3em; padding: 8px;" styleClass="#{pi.billItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
                                     <h:outputLabel value="#{rowIndex + 1}" />
                                 </p:column>
 
-                                <p:column headerText="Type" style="vertical-align: top; width: 4em; padding: 8px;">
+                                <p:column headerText="Type" style="vertical-align: top; width: 4em; padding: 8px;" styleClass="#{pi.billItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
                                     <p:badge value="OP" styleClass="ui-badge-info" rendered="#{pi.billItem.bill.ipOpOrCc eq 'OP'}" />
                                     <p:badge value="CC" styleClass="ui-badge-warning" rendered="#{pi.billItem.bill.ipOpOrCc eq 'CC'}" />
                                     <p:badge value="IP" styleClass="ui-badge-danger" rendered="#{pi.billItem.bill.ipOpOrCc eq 'IP'}" />
                                 </p:column>
-
-                                <p:column style="vertical-align: top; padding: 8px; width: 16em;" headerText="Bill No" styleClass="alignTop" >
-                                    <h:outputLabel 
-                                        id="lblBillNo" 
-                                        value="#{pi.billItem.bill.deptId}" 
-                                        styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}">
+                                
+                                <p:column headerText="Bill At" style="vertical-align: top; width: 10em; padding: 8px;" styleClass="#{pi.billItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <h:outputLabel value="#{pi.billItem.bill.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column  style="vertical-align: top; padding: 8px; width: 24em;" headerText="Patient" styleClass="alignTop" >
-                                    <h:outputLabel value="#{pi.billItem.bill.patient.person.nameWithTitle}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}"></h:outputLabel>
-                                    <h:commandLink 
-                                        rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}"
-                                        value="#{pi.billItem.bill.patient.person.nameWithTitle}" 
-                                        action="patient" 
-                                        style="text-decoration:underline;"
-                                        styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"
-                                        >
-                                        <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
-                                    </h:commandLink>
+                                <p:column style="vertical-align: top; padding: 8px; width: 22em;" headerText="Bill No" styleClass="#{pi.billItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputLabel 
+                                            id="lblBillNo" 
+                                            value="#{pi.billItem.bill.deptId}" 
+                                            styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}">
+                                        </h:outputLabel>
+                                        <div>
+                                            <p:badge value="Cancelled" styleClass="ui-badge-danger" rendered="#{pi.billItem.bill.cancelled}" />
+                                            <p:badge value="Refunded" styleClass="ui-badge-warning" rendered="#{pi.billItem.bill.refunded}" />
+                                        </div>
+                                    </div>
                                 </p:column>
 
-                                <p:column  style="vertical-align: top; padding: 8px; width: 12em;" headerText="Patient Age" styleClass="alignTop" >
+                                <p:column  style="vertical-align: top; padding: 8px; width: 24em;" headerText="Patient" styleClass="#{pi.billItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <h:outputLabel value="#{pi.billItem.bill.patient.person.nameWithTitle}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}"></h:outputLabel>
+
+                                    <h:commandLink  
+                                        value="#{pi.billItem.bill.patient.person.nameWithTitle}" 
+                                        action="#{patientController.navigateToOpdPatientEditFromId()}" 
+                                        rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                        <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
+                                    </h:commandLink>
+
+                                </p:column>
+
+                                <p:column  style="vertical-align: top; padding: 8px; width: 12em;" headerText="Patient Age" styleClass="#{pi.billItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
                                     <h:outputLabel value="#{pi.billItem.bill.patient.age}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column style="vertical-align: top; padding: 8px;;" headerText="Investigation"  styleClass="alignTop" >
+                                <p:column style="vertical-align: top; padding: 8px;;" headerText="Investigation" styleClass="#{pi.billItem.bill.cancelled ? 'ui-messages-fatal' : ''}" >
                                     <h:outputLabel 
                                         rendered="#{not webUserController.hasPrivilege('Developers')}" 
                                         value="#{pi.investigation.name}">
@@ -186,66 +198,85 @@
                                 </p:column>
 
 
-                                <p:column  style="vertical-align: top; width: 10em; padding: 8px;" >
+                                <p:column  style="vertical-align: top; width: 15em; padding: 8px;"  styleClass="#{pi.billItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <div class="d-flex justify-content-between">
                                             <h:outputText value="Status" style="text-align: center; display: block; width: 10em" />
                                             <h:outputText value="Action" style="text-align: center; display: block; width: 10em" />
                                         </div>
                                     </f:facet>
-                                    <ui:repeat value="#{patientReportController.approvedPatientReports(pi)}" var="dpr">
-                                        <div class="d-flex justify-content-between">
-                                            <div style="text-align: center; display: block; width: 10em">
-                                                <div class="d-flex justify-content-center">
-                                                    <p:badge value="not Created" styleClass="ui-badge-danger" rendered="#{dpr.id eq null }"/>
-                                                    <p:badge value="Created" styleClass="ui-badge-warning" rendered="#{!dpr.approved}"/>
-                                                    <p:badge value="Approved" styleClass="ui-badge-success" rendered="#{dpr.approved}"/>
-                                                </div> 
-                                            </div>
-                                            <div style="display: flex; justify-content: center; align-items: center; flex-direction: row; width: 10em" class="gap-3">
-                                                <p:commandLink 
-                                                    id="cmdOldReportPrint1" 
-                                                    ajax="false" 
-                                                    action="/collecting_centre/courier/patient_report_print?faces-redirect=true" 
-                                                    disabled="#{!dpr.approved}" 
-                                                    rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
-                                                    <p:graphicImage library="image" style="height: 25px; width: 25px;" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
-                                                    <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}">
-                                                    </f:setPropertyActionListener>
-                                                </p:commandLink>
-                                                <p:commandLink 
-                                                    id="cmdOldReportPrint2" 
-                                                    ajax="false" 
-                                                    action="/collecting_centre/courier/patient_report_print?faces-redirect=true" 
-                                                    disabled="#{!dpr.approved or dpr.pi.billItem.bill.backwardReferenceBill.balance ne 0}" 
-                                                    rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
-                                                    <p:graphicImage style="height: 25px; width: 25px;" library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
-                                                    <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}">
-                                                    </f:setPropertyActionListener>
-                                                </p:commandLink>
-                                                <p:graphicImage 
-                                                    rendered="false"
-                                                    id="imgPrinted" 
-                                                    library="image" 
-                                                    name="print_ok.png" 
-                                                    style="height: 25px; width: 25px; #{dpr.approved ? '':'opacity: 0.1;'}" >
-                                                </p:graphicImage>
-                                            </div>
+                                    <h:panelGroup rendered="#{pi.billItem.bill.cancelled}">
+                                        <p:badge value="Cancelled" styleClass="ui-badge-danger" style="text-align: center; display: block; width: 10em"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{!pi.billItem.bill.cancelled}" >
 
-                                        </div>
+                                        <h:panelGroup rendered="#{patientReportController.approvedPatientReportCount(pi) eq 0 }" >
+                                            <p:badge value="Processing" style="text-align: center; display: block; width: 10em; color: 229799 "/>
+                                        </h:panelGroup>
 
-                                    </ui:repeat>
+                                        <h:panelGroup rendered="#{patientReportController.approvedPatientReportCount(pi) ne 0 }" >
+                                            <ui:repeat value="#{patientReportController.approvedPatientReports(pi)}" var="dpr">
+                                                <div class="d-flex justify-content-between my-1">
+                                                    <div>
+                                                        <div class="d-flex justify-content-center mt-1">
+                                                            <p:badge value="Created" styleClass="ui-badge-info" rendered="#{!dpr.approved and !dpr.dataEntered}" style="text-align: center; display: block; width: 10em"/>
+                                                            <p:badge value="Panding" styleClass="ui-badge-warning" rendered="#{!dpr.approved and dpr.dataEntered}" style="text-align: center; display: block; width: 10em"/>
+                                                            <p:badge value="Approved" styleClass="ui-badge-success" rendered="#{dpr.approved}" style="text-align: center; display: block; width: 10em"/>
+                                                        </div> 
+                                                    </div>
+                                                    <div style="display: flex; justify-content: center; align-items: center; flex-direction: row; width: 10em" class="gap-3">
+
+                                                        <p:graphicImage 
+                                                            id="imgApproved" 
+                                                            library="image" 
+                                                            rendered="#{dpr.approved}"
+                                                            name="approved_icon.png" 
+                                                            style="height: 20px; width: 20px;" >
+                                                        </p:graphicImage>
+                                                        
+                                                        <p:graphicImage 
+                                                            id="imgnotApproved" 
+                                                            library="image" 
+                                                            rendered="#{!dpr.approved}"
+                                                            name="Cancel.png" 
+                                                            style="height: 20px; width: 20px;" >
+                                                        </p:graphicImage>
+
+                                                        <!-- Print Report CommandLink 1 -->
+
+                                                        <p:commandLink 
+                                                            id="cmdOldReportPrint1" 
+                                                            ajax="false"
+                                                            disabled="#{!dpr.approved}" 
+                                                            action="/lab/patient_report_print?faces-redirect=true" 
+                                                            rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
+                                                            <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" style="height: 25px; width: 25px;"/>
+                                                            <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
+                                                        </p:commandLink>
+
+                                                        <!-- Print Report CommandLink 2 -->
+                                                        <p:commandLink 
+                                                            id="cmdOldReportPrint2" 
+                                                            ajax="false"
+                                                            action="/lab/patient_report_print?faces-redirect=true" 
+                                                            disabled="#{!dpr.approved or dpr.patientInvestigation.billItem.bill.backwardReferenceBill.balance ne 0}" 
+                                                            rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
+                                                            <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" style="height: 25px; width: 25px;"/>
+                                                            <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
+                                                        </p:commandLink>
+
+                                                    </div>
+                                                </div>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
                                 </p:column>
 
                             </p:dataTable>
-
-                        </p:panel>
-                    </h:panelGroup>
-                </h:form>
+                        </h:form>
+                    </p:panel>
+                </h:panelGroup>
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>
