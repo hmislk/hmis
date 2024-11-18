@@ -17,7 +17,7 @@
                 </h:panelGroup>
 
                 <h:form id="form" rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" >
-
+                    
                     <p:growl id="msg"  />
                     <p:panel class="m-0 p-0" >
                         <f:facet name="header" >
@@ -90,7 +90,14 @@
                                                                 process="@this" 
                                                                 update="viewPatient editPatient btnDone edit" />
                                                         </p:selectBooleanButton>
-                                                        <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(opdBillController.patient)}" rendered="#{opdBillController.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} " />
+                                                        <p:commandButton 
+                                                            id="btnDone" 
+                                                            alt="Save Patient Details" 
+                                                            class="ui-button-success" 
+                                                            icon="fas fa-check" 
+                                                            action="#{patientController.saveSelected(opdBillController.patient)}" 
+                                                            rendered="#{opdBillController.patientDetailsEditable}" 
+                                                            update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"  />
                                                     </h:panelGroup>
 
                                                 </h:panelGroup>
@@ -130,7 +137,7 @@
                                                         title="Add New Patient"
                                                         action="#{patientController.quickSearchNewPatient(opdBillController)}" 
                                                         process="btnAddNewPatient"
-                                                        update="ptImp selectPatient editPatient viewPatient"
+                                                        update="ptImp selectPatient editPatient viewPatient :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"
                                                         styleClass="btn-sm mx-1"/>
                                                 </h:panelGroup>
                                             </h:panelGroup>
@@ -431,6 +438,16 @@
                                                     <h:outputLabel value="Area " class="mx-3"/>
                                                     <h:outputLabel value=" : " class="mx-3"/>
                                                     <h:outputText value="#{opdBillController.patient.person.area.name}" />
+
+                                                    
+                                                    <h:outputLabel value="Membership" class="mx-3" rendered="#{opdBillController.patient.person.membershipScheme ne null}"/>
+                                                    <h:outputLabel value=" : " class="mx-3" rendered="#{opdBillController.patient.person.membershipScheme ne null}"/>
+                                                    <h:outputText value="#{opdBillController.patient.person.membershipScheme.name}"  rendered="#{opdBillController.patient.person.membershipScheme ne null}"/>
+
+                                                    <h:outputLabel value="Discount Scheme " class="mx-3"  rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>
+                                                    <h:outputLabel value=" : " class="mx-3"  rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>
+                                                    <h:outputText value="#{opdBillController.patient.person.membershipScheme.paymentScheme.name}"   rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>
+
 
                                                 </h:panelGrid>
                                             </h:panelGroup>
@@ -1040,8 +1057,6 @@
                                                                 return false;"
                                                     class="ui-button-success mx-2 w-100">
                                                 </p:commandButton>
-
-
 
                                                 <p:commandButton 
                                                     style="float: right;"

@@ -66,10 +66,6 @@
                         <p:spacer ></p:spacer>
                         <p:spacer ></p:spacer>
 
-
-
-
-
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
                             <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
@@ -239,16 +235,7 @@
                         <h:outputLabel 
                             value="#{billItem.bill.deptId}" >
                         </h:outputLabel>
-                        <p:commandLink 
-                            ajax="false" 
-                            title="View Bill Details"
-                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                            <h:outputText 
-                                value="&#xf06e;" 
-                                escape="false"  
-                                styleClass="fa"/>
-                            <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
-                        </p:commandLink>
+
                     </p:column>
 
                     <!-- Bill Date Column -->
@@ -290,8 +277,8 @@
                     <p:column headerText="Lab Department" filterBy="#{billItem.bill.toDepartment.name}" sortBy="#{billItem.bill.toDepartment.name}">
                         <h:outputLabel value="#{billItem.bill.toDepartment.name}" />
                     </p:column>
-                    
-                     <!-- Billed Department Column -->
+
+                    <!-- Billed Department Column -->
                     <p:column headerText="Billed Department" filterBy="#{billItem.bill.department.name}" sortBy="#{billItem.bill.department.name}">
                         <h:outputLabel value="#{billItem.bill.department.name}" />
                     </p:column>
@@ -369,18 +356,7 @@
                             rendered="#{billItem.bill.cancelled}" 
                             value="#{billItem.bill.cancelledBill.deptId}">
                         </h:outputLabel>
-                        <p:commandLink 
-                            class="mx-3 ui-message-error"
-                            ajax="false" 
-                            rendered="#{billItem.bill.cancelled}" 
-                            title="View Cancel Bill Details"
-                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                            <h:outputText 
-                                value="&#xf06e;" 
-                                escape="false"  
-                                styleClass="fa"/>
-                            <f:setPropertyActionListener value="#{billItem.bill.cancelledBill}" target="#{billSearch.bill}"/>
-                        </p:commandLink>
+
                     </p:column>
 
                     <p:column headerText="Refunded">
@@ -394,6 +370,50 @@
                             rendered="#{billItem.refunded}" 
                             value="#{billItem.referanceBillItem}">
                         </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Actions" exportable="false" >
+                        <p:commandButton 
+                            value="View" 
+                            icon="fa fa-eye" 
+                            class="m-1 ui-button-info"
+                            style="width: 100px;"
+                            action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                            ajax="false">
+                            <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
+                        </p:commandButton>
+                        <p:commandButton 
+                            value="View Cancel Bill Details" 
+                            icon="fa fa-ban" 
+                            class="m-1 ui-button-danger" 
+                            style="width: 100px;"
+                            action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                            ajax="false" 
+                            rendered="#{billItem.bill.cancelled}">
+                            <f:setPropertyActionListener value="#{billItem.bill.cancelledBill}" target="#{billSearch.bill}"/>
+                        </p:commandButton>
+
+
+                        <p:commandButton 
+                            value="Manage" 
+                            icon="fa fa-tools" 
+                            class="m-1 ui-button-warning" 
+                            style="width: 100px;"
+                            action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
+                            ajax="false">
+                            <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Admin" 
+                            icon="fa fa-shield-alt" 
+                            class="m-1 ui-button-danger" 
+                            style="width: 100px;"
+                            action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                            ajax="false" 
+                            rendered="#{webUserController.hasPrivilege('Developers')}">
+                            <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
+                        </p:commandButton>
                     </p:column>
 
                 </p:dataTable>

@@ -61,6 +61,7 @@ public class Upload implements Serializable {
     byte[] baImage;
     String fileName;
     String fileType;
+    private String fileUrl;
     
     @ManyToOne
     private Category category;
@@ -271,6 +272,14 @@ public class Upload implements Serializable {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
 }

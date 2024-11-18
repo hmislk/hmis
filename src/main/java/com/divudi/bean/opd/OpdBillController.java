@@ -3428,6 +3428,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     case Credit:
                         p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
                         p.setComments(cd.getPaymentMethodData().getCredit().getComment());
+                        break;
                     case PatientDeposit:
                         if (getPatient().getRunningBalance() != null) {
                             getPatient().setRunningBalance(getPatient().getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
@@ -3435,10 +3436,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                             getPatient().setRunningBalance(0.0 - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
                         }
                         getPatientFacade().edit(getPatient());
+                        break;
                     case Slip:
                         p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
                         p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
                         p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        break;
                     case OnCall:
                     case OnlineSettlement:
                     case Staff:
@@ -3447,6 +3450,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                             staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
                             JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
                         }
+                        break;
                     case YouOweMe:
                     case MultiplePaymentMethods:
                 }
@@ -3485,11 +3489,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 case Credit:
                     p.setReferenceNo(paymentMethodData.getCredit().getReferralNo());
                     p.setComments(paymentMethodData.getCredit().getComment());
+                    break;
                 case PatientDeposit:
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
                     p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
                     p.setRealizedAt(paymentMethodData.getSlip().getDate());
+                    break;
                 case OnCall:
                 case OnlineSettlement:
                 case Staff:
@@ -3689,6 +3695,19 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
+        selectPaymentSchemeAsPerPatientMembership();
+    }
+
+    private void selectPaymentSchemeAsPerPatientMembership() {
+        if (patient == null) {
+            return;
+        }
+        if(patient.getPerson().getMembershipScheme()==null){
+            paymentScheme=null;
+        }else{
+            paymentScheme = patient.getPerson().getMembershipScheme().getPaymentScheme();
+        }
+        listnerForPaymentMethodChange();
     }
 
     public Doctor getReferredBy() {
