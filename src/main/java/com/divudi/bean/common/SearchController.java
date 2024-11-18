@@ -12906,7 +12906,11 @@ public class SearchController implements Serializable {
     }
 
     public void createItemizedSalesReport() {
-        bundle = generateItemizedSalesReport();
+        if (withProfessionalFee) {
+            bundle = generateItemizedSalesReport("Itemized Sales Report - With Professional Fee","itemized_sales_report_with_professional_fee");
+        }else{
+            bundle = generateItemizedSalesReport("Itemized Sales Report - Without Professional Fee","itemized_sales_report_without_professional_fee");
+        }
     }
 
     public void createIncomeBreakdownByCategory() {
@@ -14815,7 +14819,8 @@ public class SearchController implements Serializable {
 //
 //        return oiBundle;
 //    }
-    public ReportTemplateRowBundle generateItemizedSalesReport() {
+
+    public ReportTemplateRowBundle generateItemizedSalesReport(String bundleName, String bundleType) {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -14865,7 +14870,6 @@ public class SearchController implements Serializable {
         allMethods.addAll(nonCreditPaymentMethods);
 
         if ("Any".equals(methodType)) {
-           // System.out.println("Any");
         } else if ("Credit".equals(methodType)) {
             //System.out.println("Credit");
 
@@ -14902,7 +14906,6 @@ public class SearchController implements Serializable {
                         m.put("apm", nonCreditPaymentMethods);
                         break;
                     case "OP":
-                       // System.out.println("NonCredit OP");
                         jpql += " AND bi.bill.paymentMethod in :ncpm ";
                         m.put("ncpm", nonCreditPaymentMethods);
                         break;
@@ -14939,13 +14942,11 @@ public class SearchController implements Serializable {
             m.put("item", item);
         }
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         billItemsToItamizedSaleReport(oiBundle, bis);
 
-        oiBundle.setName("Itemized Sales Report");
-        oiBundle.setBundleType("itemized_sales_report");
+        oiBundle.setName(bundleName);
+        oiBundle.setBundleType(bundleType);
 
         oiBundle.getReportTemplateRows().stream()
                 .forEach(rtr -> {
