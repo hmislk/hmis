@@ -1,9 +1,23 @@
 package com.divudi.bean.common;
 
-import ca.uhn.fhir.model.api.IElement;
 import com.divudi.bean.hr.StaffImageController;
 import com.divudi.bean.lab.CommonReportItemController;
 import com.divudi.bean.lab.PatientInvestigationController;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import javax.inject.Named;
+import javax.enterprise.context.RequestScoped;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+import com.divudi.entity.lab.PatientReport;
+import com.divudi.data.ReportTemplateRowBundle;
+import javax.inject.Inject;
+
+
+
+import ca.uhn.fhir.model.api.IElement;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ReportItemType;
@@ -44,22 +58,11 @@ import static com.divudi.data.ReportItemType.SampledTime;
 import static com.divudi.data.ReportItemType.Speciman;
 import static com.divudi.data.ReportItemType.VisitType;
 import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.entity.Category;
 import com.divudi.entity.lab.CommonReportItem;
 import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.lab.PatientSampleComponant;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import javax.inject.Named;
-import javax.enterprise.context.RequestScoped;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.Objects;
@@ -95,7 +98,6 @@ import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.text.pdf.qrcode.BitMatrix;
 import java.util.function.Supplier;
-import javax.inject.Inject;
 
 /**
  *
@@ -114,11 +116,42 @@ public class PdfController {
     PatientInvestigationController patientInvestigationController;
     @Inject
     SearchController searchController;
+    @Inject
+    CommonFunctionsController commonFunctionsController;
 
     /**
      * Creates a new instance of PdfController
      */
     public PdfController() {
+    }
+     public StreamedContent createPdfForBundle(ReportTemplateRowBundle rootBundle) throws IOException {
+         if (rootBundle == null) {
+            return null;
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        if (rootBundle.getBundles() == null || rootBundle.getBundles().isEmpty()) {
+            addDataToPdf(document, rootBundle, rootBundle.getBundleType());
+        } else {
+            for (ReportTemplateRowBundle childBundle : rootBundle.getBundles()) {
+                addDataToPdf(document, childBundle, childBundle.getBundleType());
+            }
+        }
+
+        document.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        return DefaultStreamedContent.builder()
+                .name("Bundle_Report.pdf")
+                .contentType("application/pdf")
+                .stream(() -> inputStream)
+                .build();
     }
 
     public StreamedContent createPdfForPatientReport(PatientReport report) throws IOException {
@@ -739,36 +772,6 @@ public class PdfController {
         return null;
     }
 
-    public StreamedContent createPdfForBundle(ReportTemplateRowBundle rootBundle) throws IOException {
-        if (rootBundle == null) {
-            return null;
-        }
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PdfWriter writer = new PdfWriter(outputStream);
-        PdfDocument pdf = new PdfDocument(writer);
-        Document document = new Document(pdf);
-
-        if (rootBundle.getBundles() == null || rootBundle.getBundles().isEmpty()) {
-            addDataToPdf(document, rootBundle, rootBundle.getBundleType());
-        } else {
-            for (ReportTemplateRowBundle childBundle : rootBundle.getBundles()) {
-                addDataToPdf(document, childBundle, childBundle.getBundleType());
-            }
-        }
-
-        document.close();
-
-        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-
-        // Set the downloading file
-        return DefaultStreamedContent.builder()
-                .name("Bundle_Report.pdf")
-                .contentType("application/pdf")
-                .stream(() -> inputStream)
-                .build();
-    }
-
     private void addDataToPdf(Document document, ReportTemplateRowBundle addingBundle, String type) {
         if (type == null || type.isEmpty()) {
             type = "BillList";
@@ -1172,9 +1175,7 @@ public class PdfController {
             document.add(noDataParagraph);
         }
     }
-    @Inject
-    CommonFunctionsController commonFunctionsController;
-
+    
     private void populateTableForIncomeByCategoryWithProfessionalFee(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
 
