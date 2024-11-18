@@ -71,4 +71,16 @@ public class UploadViewController {
         return uploadFacade.findFirstByJpql(jpql, m);
     }
 
+    public String getReportTemplate(String id) {
+        Upload u = findCategoryUploadById(id);
+        
+        String url = "";
+        if (u == null) {
+
+        } else {
+            url = u.getFileUrl();
+        }
+        return url;
+    }
+
 }

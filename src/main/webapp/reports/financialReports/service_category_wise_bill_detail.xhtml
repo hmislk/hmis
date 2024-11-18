@@ -20,16 +20,13 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:calendar 
-                                class="w-100 " 
+                                class="w-100 "  
                                 inputStyleClass="w-100"
                                 value="#{searchController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
 
-
                             <p:spacer width="20"></p:spacer>
-
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf271;" styleClass="fa mr-2" />
@@ -54,9 +51,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
 
-
                             <p:spacer width="20"></p:spacer>
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf084;" styleClass="fa mr-2" /> 
@@ -68,7 +63,6 @@
                                 <!--                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>-->
                             </p:selectOneMenu>
 
-
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf236;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Room Category" for="institutionMenu" class="mx-3"></p:outputLabel>
@@ -79,9 +73,7 @@
                                 <!--                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>-->
                             </p:selectOneMenu>
 
-
                             <p:spacer width="20"></p:spacer>
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf59c;" styleClass="fa mr-2" />
@@ -95,12 +87,13 @@
                                 filter="true"
                                 >
                                 <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{departmentController.items}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}"></f:selectItems>
+                                <f:selectItems 
+                                    value="#{departmentController.items}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}">
+                                </f:selectItems>
                             </p:selectOneMenu>
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf571;" styleClass="fa mr-2" />
@@ -112,23 +105,24 @@
                                 filter="true"
                                 >
                                 <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{departmentController.items}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}"></f:selectItems>
+                                <f:selectItems 
+                                    value="#{departmentController.items}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}"></f:selectItems>
                             </p:selectOneMenu>
 
-
                             <p:spacer width="20"></p:spacer>
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Visit Type" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="Select visit type"/>
+                            <p:selectOneMenu class="w-100" value="#{searchController.visitType}">
+                                <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
                             </p:selectOneMenu>
 
 
@@ -141,9 +135,7 @@
                                 <f:selectItem itemLabel="Select service group"/>
                             </p:selectOneMenu>
 
-
                             <p:spacer width="20"></p:spacer>
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf059;" styleClass="fa mr-2" />
@@ -154,7 +146,6 @@
                                 <f:selectItem itemLabel="Select service name"/>
                             </p:selectOneMenu>
 
-
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Type" class="mx-3" >
@@ -164,38 +155,70 @@
                                 <f:selectItem itemLabel="Select type"/>
                             </p:selectOneMenu>
 
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
+                            <p:selectBooleanButton
+                                onLabel="With Professional Fee" 
+                                offLabel="without Professional Fee" 
+                                value="#{searchController.withProfessionalFee}"
+                                onIcon="pi pi-check" 
+                                class="w-100"
+                                offIcon="pi pi-times" 
+                                >
+                            </p:selectBooleanButton>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <i class="fas fa-credit-card" style="color: green; font-size: 18px;"></i>                                       
+                                <h:outputLabel value="Payment Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100" value="#{searchController.methodType}">
+                                <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                <f:selectItem itemValue="Credit" itemLabel="Credit"/>
+                                <f:selectItem itemValue="NonCredit" itemLabel="Non Credit"/>
+                            </p:selectOneMenu>
 
                         </h:panelGrid><br />
 
-
-
-                        <div class="d-flex align-items-center">
-                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process"
-                                             action="#{searchController.createItemizedSalesReportOpd()}"
-                                             icon="fas fa-cogs" >
+                        <div class="d-flex align-items-center mb-2">
+                            <p:commandButton 
+                                class="ui-button-warning mx-1" 
+                                ajax="false" 
+                                value="Process"
+                                action="#{searchController.createItemizedSalesReport()}"
+                                icon="fas fa-cogs" >
                             </p:commandButton>
+                            
+                            <p:commandButton 
+                                    value="Download PDF" 
+                                    ajax="false" 
+                                    icon="pi pi-file-pdf" 
+                                    class="ui-button-info  m-1"
+                                    style="background-color: #17a2b8; border-color: #17a2b8;" 
+                                    onclick="PrimeFaces.monitorDownload(start, stop);">
+                                    <p:fileDownload value="#{searchController.bundleAsPdf}" />
+                                </p:commandButton>
+                            
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
-                            </p:commandButton>
+                            
                         </div>
-
 
                         <div style="display: none;" >
                             #{searchController.bundle.reportTemplateRows}
                         </div>
 
-
-                        <p:dataTable id="tbl"
-                                     value="#{searchController.bundle.reportTemplateRows}"
-                                     var="row"
-                                     paginator="true"
-                                     rows="10"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,20"
-                                     rowKey="#{row.id}">
+                        <p:dataTable 
+                            id="tbl"
+                            value="#{searchController.bundle.reportTemplateRows}"
+                            var="row"
+                            paginator="true"
+                            rows="10"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,20"
+                            rowKey="#{row.id}">
                             <f:facet name="header" >
                                 <h:outputText value="#{searchController.bundle.name}" ></h:outputText>
                             </f:facet>
@@ -275,7 +298,7 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column class="text-end">
+                            <p:column class="text-end" rendered="#{searchController.withProfessionalFee}">
                                 <f:facet name="header">
                                     <h:outputText value="Professional Fee" />
                                 </f:facet>
@@ -306,6 +329,7 @@
                                      rowKey="#{b}" 
                                      rows="#{searchController.rows}"
                                      selection="#{searchController.selectedTelephoneNumbers}"
+                                     paginatorPosition="bottom"
                                      paginator="true"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
