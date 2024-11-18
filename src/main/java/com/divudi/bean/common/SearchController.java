@@ -14825,6 +14825,7 @@ public class SearchController implements Serializable {
         m.put("br", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
+
         List<BillTypeAtomic> btas = new ArrayList();
 
         List<BillTypeAtomic> obtas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
