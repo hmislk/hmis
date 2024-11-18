@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
@@ -23,12 +24,14 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
+import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -65,6 +68,8 @@ public class ChannelSearchController implements Serializable {
     CashTransactionBean cashTransactionBean;
     @EJB
     BillNumberGenerator billNumberBean;
+    @EJB
+    private PaymentFacade paymentFacade;
 
     /**
      * Controllers
@@ -81,6 +86,8 @@ public class ChannelSearchController implements Serializable {
     BillController billController;
     @Inject
     CommonController commonController;
+    @Inject
+    DrawerController drawerController;
     /**
      * Properties
      */
@@ -218,6 +225,8 @@ public class ChannelSearchController implements Serializable {
             getBillFacade().create(cb);
             cancelBillItems(cb);
             cancelPaymentItems(bill);
+            Payment cancellationPayment = createPaymentForCancellationsAndRefunds(cb,paymentMethod);
+            drawerController.updateDrawerForIns(cancellationPayment);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
@@ -231,6 +240,25 @@ public class ChannelSearchController implements Serializable {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
+    }
+    public Payment createPaymentForCancellationsAndRefunds(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        double valueToSet = 0 - Math.abs(bill.getNetTotal());
+        p.setPaidValue(valueToSet);
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+        if (p.getId() == null) {
+            getPaymentFacade().create(p);
+        }
+        getPaymentFacade().edit(p);
     }
     
     public String navigateTocancelPaymentBill() {
@@ -645,6 +673,14 @@ public class ChannelSearchController implements Serializable {
 
     public void setTxtSearchPhone(String txtSearchPhone) {
         this.txtSearchPhone = txtSearchPhone;
+    }
+
+    public PaymentFacade getPaymentFacade() {
+        return paymentFacade;
+    }
+
+    public void setPaymentFacade(PaymentFacade paymentFacade) {
+        this.paymentFacade = paymentFacade;
     }
 
 }
