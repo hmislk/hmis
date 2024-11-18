@@ -268,13 +268,13 @@
                 <f:facet name="header">
                     <h:outputText value="Staff Name"/>
                 </f:facet>
-                <h:outputText value="#{row.bill.staff.person.name}"/>
+                <h:outputText value="#{row.bill.toStaff.person.name}"/>
             </p:column>
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Staff Code"/>
                 </f:facet>
-                <h:outputText value="#{row.bill.staff.code}"/>
+                <h:outputText value="#{row.bill.toStaff.code}"/>
             </p:column>
             <p:column width="2em">
                 <f:facet name="header">
@@ -335,7 +335,7 @@
                 <f:facet name="header">
                     <h:outputText value="Balance Amount"/>
                 </f:facet>
-                <h:outputText value="#{row.bill.balance}">
+                <h:outputText value="#{row.bill.toStaff.annualWelfareUtilized}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputText>
             </p:column>
