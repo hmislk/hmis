@@ -120,10 +120,11 @@
                                         <f:setPropertyActionListener target="#{dealorPaymentBillSearch.bill}" value="#{bill}"/>
                                     </h:commandLink>
                                     <br/>
-                                    <h:commandLink rendered="#{bill.referenceBill.cancelled}" style="color: red;">
-                                        #{bill.referenceBill.cancelledBill.deptId}
-                                        <f:setPropertyActionListener target="#{dealorPaymentBillSearch.bill.referenceBill.cancelledBill}" value="#{bill}"/>
+                                    <h:commandLink action="reprint_bill_dealor" rendered="#{bill.referenceBill.cancelled}" style="color: red;">
+                                        <h:outputText value="#{bill.referenceBill.cancelledBill.deptId}" />
+                                        <f:setPropertyActionListener target="#{dealorPaymentBillSearch.bill.cancelledBill}" value="#{bill}" />
                                     </h:commandLink>
+
                                 </p:column>
                                 <p:column headerText="Supplier Name">                             
                                     <h:outputLabel value="#{bill.toInstitution.name}" />
