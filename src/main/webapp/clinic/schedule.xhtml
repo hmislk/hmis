@@ -14,7 +14,7 @@
 
                 <p:panel >
                     <f:facet name="header" >
-                        <h:outputText value="Channel Schedule Management" ></h:outputText>
+                        <h:outputText value="Clinic Schedule Management" ></h:outputText>
                     </f:facet>
                     <div class="row">
                         <div class="col-2">
@@ -22,26 +22,26 @@
                                 <div class="d-grid gap-2 m-1">
                                     <p:commandButton  
                                         ajax="false" 
-                                        value="Channel Schedule Management" 
-                                        action="#{channelScheduleController.navigateToChannelSchedule}"
+                                        value="Clinic Schedule Management" 
+                                        action="#{clinicScheduleController.navigateToClinicSchedule}"
                                         icon="fa fa-calendar-alt"
                                         styleClass="ui-button-success" />
                                     <p:commandButton  
                                         ajax="false" 
-                                        value="Channel Session Management" 
-                                        action="#{channelScheduleController.navigateToChannelScheduleManagement}"
+                                        value="Clinic Session Management" 
+                                        action="#{clinicScheduleController.navigateToChannelScheduleManagement}"
                                         icon="fa fa-users"
                                         styleClass="ui-button-info" />
                                     <p:commandButton 
                                         ajax="false" 
-                                        value="Channel Activity Management" 
+                                        value="Clinic Activity Management" 
                                         action="#{appointmentActivityController.navigateToManageAppointmentActivities()}"
                                         icon="fa fa-tasks"
                                         styleClass="ui-button-warning" />
                                     <p:commandButton 
                                         ajax="false" 
-                                        value="Channel Scheduling for All Doctors" 
-                                        action="#{channelScheduleController.channelSheduleForAllDoctor(null)}"
+                                        value="Clinic Scheduling for All Doctors" 
+                                        action="#{clinicScheduleController.channelSheduleForAllDoctor(null)}"
                                         icon="fa fa-user-md"
                                         styleClass="ui-button-primary" />
                                 </div>
