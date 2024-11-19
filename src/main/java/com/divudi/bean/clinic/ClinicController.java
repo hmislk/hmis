@@ -3474,7 +3474,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         return false;
     }
 
-    public void addNormalChannelBooking() {
+    public void addNormalFirstVisit() {
         if (billingStarted) {
             return;
         }
@@ -3484,14 +3484,31 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             billingStarted = false;
             return;
         }
-        addChannelBooking(false);
+        addChannelBooking(false, true);
 
         fillBillSessions();
         billingStarted = false;
 
     }
 
-    public void addReservedChannelBooking() {
+    public void addNormalSubsequentVisit() {
+        if (billingStarted) {
+            return;
+        }
+        billingStarted = true;
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("Please select a Session");
+            billingStarted = false;
+            return;
+        }
+        addChannelBooking(false, false);
+
+        fillBillSessions();
+        billingStarted = false;
+
+    }
+
+    public void addReservedChannelBookingFirstVisit() {
         if (billingStarted) {
             return;
         }
@@ -3501,12 +3518,27 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             return;
         }
         boolean reservedBooking = true;
-        addChannelBooking(reservedBooking);
+        addChannelBooking(reservedBooking, true);
         fillBillSessions();
         billingStarted = false;
     }
 
-    public void addChannelBooking(boolean reservedBooking) {
+    public void addReservedChannelBookingSubsequentVisit() {
+        if (billingStarted) {
+            return;
+        }
+        billingStarted = true;
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("Please select a Session Instance");
+            return;
+        }
+        boolean reservedBooking = true;
+        addChannelBooking(reservedBooking, false);
+        fillBillSessions();
+        billingStarted = false;
+    }
+
+    public void addChannelBooking(boolean reservedBooking, boolean firstVisit) {
         errorText = "";
         if (patient == null) {
             JsfUtil.addErrorMessage("Please select a patient");
@@ -3517,12 +3549,16 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             settleSucessFully = false;
             return;
         }
-        if (paymentMethodErrorPresent()) {
-            JsfUtil.addErrorMessage("Please Enter Payment Details");
-            settleSucessFully = false;
-            return;
+        if (!configOptionApplicationController.getBooleanValueByKey("No Payments for Clinic Booking")) {
+            if (paymentMethodErrorPresent()) {
+                JsfUtil.addErrorMessage("Please Enter Payment Details");
+                settleSucessFully = false;
+                return;
+            }
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Channelling Patients Cannot Be Added After the Channel Has Been Completed")) {
+
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Channelling Patients Cannot Be Added After the Channel Has Been Completed")) {
             if (selectedSessionInstance.isCompleted()) {
                 JsfUtil.addErrorMessage("This Session Has Been Completed");
                 settleSucessFully = false;
@@ -3530,7 +3566,8 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Channel Scan Sessions Require Item Presence")) {
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Channel Scan Sessions Require Item Presence")) {
             if (!(itemsAvailableToAddToBooking.isEmpty())) {
                 if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
                     JsfUtil.addErrorMessage("There is No Item Added");
@@ -3540,7 +3577,8 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Channel Hearing Test Sessions Require Item Presence")) {
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Channel Hearing Test Sessions Require Item Presence")) {
             if (!(itemsAvailableToAddToBooking.isEmpty())) {
                 if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
                     JsfUtil.addErrorMessage("There is No Item Added");
@@ -3550,7 +3588,8 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Channel EEG Sessions Require Item Presence")) {
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Channel EEG Sessions Require Item Presence")) {
             if (!(itemsAvailableToAddToBooking.isEmpty())) {
                 if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
                     JsfUtil.addErrorMessage("There is No Item Added");
@@ -3560,7 +3599,8 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Channel Items Sessions Need to Have a Referance Doctor")) {
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Channel Items Sessions Need to Have a Referance Doctor")) {
             if (!(itemsAddedToBooking == null || itemsAddedToBooking.isEmpty())) {
                 if (referredBy == null) {
                     JsfUtil.addErrorMessage("Referring Doctor is required");
@@ -3570,7 +3610,8 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             }
         }
 
-        if (selectedSessionInstance.getMaxNo() != 0) {
+        if (selectedSessionInstance.getMaxNo()
+                != 0) {
             if (selectedSessionInstance.getBookedPatientCount() != null) {
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
@@ -3596,7 +3637,8 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Allow Tenderd amount for channel booking")) {
             if (paymentMethod == PaymentMethod.Cash) {
                 if (strTenderedValue.isEmpty()) {
                     JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
@@ -3629,7 +3671,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         }
 
         saveSelected(patient);
-        printingBill = saveBilledBill(reservedBooking);
+        printingBill = saveBilledBill(reservedBooking, firstVisit);
 
         if (printingBill.getBillTypeAtomic()
                 .getBillFinanceType() == BillFinanceType.CASH_IN) {
@@ -3653,7 +3695,8 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         settleSucessFully = true;
         printPreview = true;
 
-        JsfUtil.addSuccessMessage("Channel Booking Added.");
+        JsfUtil.addSuccessMessage(
+                "Channel Booking Added.");
     }
 
     public long totalReservedNumberCount(SessionInstance s) {
@@ -5475,7 +5518,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
 
     }
 
-    private Bill saveBilledBill(boolean forReservedNumbers) {
+    private Bill saveBilledBill(boolean forReservedNumbers, boolean firstVisit) {
         Bill savingBill = createBill();
         BillItem savingBillItemForSession = createSessionItem(savingBill);
 
@@ -5488,7 +5531,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         }
         BillSession savingBillSession;
 
-        savingBillSession = createBillSession(savingBill, savingBillItemForSession, forReservedNumbers);
+        savingBillSession = createBillSession(savingBill, savingBillItemForSession, forReservedNumbers, firstVisit);
 
         List<BillFee> savingBillFees = new ArrayList<>();
 
@@ -5640,7 +5683,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         }
 
         BillSession savingBillSession;
-        savingBillSession = createBillSession(savingBill, savingBillItem, false);
+        savingBillSession = createBillSession(savingBill, savingBillItem, true, false);
 
         BillSession bs = new BillSession();
         bs.setAbsent(false);
@@ -6332,54 +6375,56 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         bill.setNetTotal(getSelectedSessionInstance().getOriginatingSession().getTotal());
         bill.setPaymentMethod(paymentMethod);
         bill.setPatient(getPatient());
-        switch (paymentMethod) {
-            case OnCall:
-                bill.setBillType(BillType.ChannelOnCall);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
-                break;
+        if (!configOptionApplicationController.getBooleanValueByKey("No Payments for Clinic Booking")) {
+            switch (paymentMethod) {
+                case OnCall:
+                    bill.setBillType(BillType.ChannelOnCall);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+                    break;
 
-            case Cash:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-                break;
+                case Cash:
+                    bill.setBillType(BillType.ChannelCash);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    break;
 
-            case Card:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-                break;
+                case Card:
+                    bill.setBillType(BillType.ChannelCash);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    break;
 
-            case Cheque:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-                break;
+                case Cheque:
+                    bill.setBillType(BillType.ChannelCash);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    break;
 
-            case Slip:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-                break;
-            case Agent:
-                bill.setBillType(BillType.ChannelAgent);
-                bill.setCreditCompany(institution);
-                bill.setAgentRefNo(agentRefNo);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-                break;
-            case Staff:
-                bill.setBillType(BillType.ChannelStaff);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
-                break;
-            case Credit:
-                bill.setBillType(BillType.ChannelCredit);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
-                break;
-            case OnlineSettlement:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
-                break;
+                case Slip:
+                    bill.setBillType(BillType.ChannelCash);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    break;
+                case Agent:
+                    bill.setBillType(BillType.ChannelAgent);
+                    bill.setCreditCompany(institution);
+                    bill.setAgentRefNo(agentRefNo);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    break;
+                case Staff:
+                    bill.setBillType(BillType.ChannelStaff);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+                    break;
+                case Credit:
+                    bill.setBillType(BillType.ChannelCredit);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+                    break;
+                case OnlineSettlement:
+                    bill.setBillType(BillType.ChannelCash);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
+                    break;
 
-            case MultiplePaymentMethods:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-                break;
+                case MultiplePaymentMethods:
+                    bill.setBillType(BillType.ChannelCash);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    break;
+            }
         }
 //        String insId = generateBillNumberInsId(bill);
 //
@@ -6582,12 +6627,17 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         return bi;
     }
 
-    private BillSession createBillSession(Bill bill, BillItem billItem, boolean forReservedNumbers) {
+    private BillSession createBillSession(Bill bill, BillItem billItem, boolean forReservedNumbers, boolean firstVisit) {
         BillSession bs = new BillSession();
         bs.setAbsent(false);
         bs.setBill(bill);
         bs.setReservedBooking(forReservedNumbers);
         bs.setBillItem(billItem);
+        if (firstVisit) {
+            bs.setFirstVisit(true);
+        } else {
+            bs.setFirstVisit(false);
+        }
         bs.setCreatedAt(new Date());
         bs.setCreater(getSessionController().getLoggedUser());
         bs.setDepartment(getSelectedSessionInstance().getOriginatingSession().getDepartment());
