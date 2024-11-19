@@ -147,12 +147,13 @@
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Type" class="mx-3" >
-                                </p:outputLabel>
+                                <i class="fas fa-credit-card" style="color: green; font-size: 18px;"></i>                                       
+                                <h:outputLabel value="Payment Type" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="Select type"/>
+                            <p:selectOneMenu class="w-100" value="#{searchController.methodType}">
+                                <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                <f:selectItem itemValue="Credit" itemLabel="Credit"/>
+                                <f:selectItem itemValue="NonCredit" itemLabel="Non Credit"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="50" ></p:spacer>
@@ -167,15 +168,7 @@
                                 >
                             </p:selectBooleanButton>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <i class="fas fa-credit-card" style="color: green; font-size: 18px;"></i>                                       
-                                <h:outputLabel value="Payment Type" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu class="w-100" value="#{searchController.methodType}">
-                                <f:selectItem itemValue="Any" itemLabel="Any"/>
-                                <f:selectItem itemValue="Credit" itemLabel="Credit"/>
-                                <f:selectItem itemValue="NonCredit" itemLabel="Non Credit"/>
-                            </p:selectOneMenu>
+                            
 
                         </h:panelGrid><br />
 
