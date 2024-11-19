@@ -14860,7 +14860,7 @@ public class SearchController implements Serializable {
 //
 //        return oiBundle;
 //    }
-    public ReportTemplateRowBundle generateItemizedSalesReportOpd() {
+    public ReportTemplateRowBundle generateItemizedSalesReport(String bundleName, String bundleType) {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
                 + " from BillItem bi "
