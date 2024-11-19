@@ -66,6 +66,7 @@
                                     forceSelection="true"
                                     completeMethod="#{dealerController.completeDealor}" 
                                     var="vt" 
+                                    maxResults="20"
                                     itemLabel="#{vt.name}" 
                                     itemValue="#{vt}" />
                                 <h:outputLabel value="Purchasing Institution"/>
@@ -104,7 +105,8 @@
                                         <h:panelGroup
                                             class="row my-1"
                                             layout="block" 
-                                            id="cash"  rendered="#{pharmacyPurchaseController.bill.paymentMethod eq 'Cash'}" >
+                                            id="cash"  
+                                            rendered="#{pharmacyPurchaseController.bill.paymentMethod eq 'Cash'}" >
                                             <p:inputText class="mx-1" style="width: 200px;" value="#{pharmacyPurchaseController.bill.netTotal}" id="txtNetTotal"/>
                                             <p:inputText value="#{pharmacyPurchaseController.bill.comments}" placeholder="Enter a Comment" style="width: 200px;"     id="comment"/>
                                         </h:panelGroup>
@@ -160,12 +162,13 @@
                                         forceSelection="true"
                                         completeMethod="#{itemController.completeAmpAndAmppItem}" 
                                         var="vt" 
+                                        maxResults="20"
                                         itemLabel="#{vt.name}" 
                                         itemValue="#{vt}" >
-                                        <p:column headerText="Item">
+                                        <p:column headerText="Item" style="padding: 6px;">
                                             <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Code" >
+                                        <p:column headerText="Code" style="padding: 6px;">
                                             <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                         </p:column>
                                         <p:ajax 
@@ -295,13 +298,13 @@
                                     var="vt" 
                                     itemLabel="#{vt.name}" 
                                     itemValue="#{vt}" >
-                                    <p:column headerText="Item" >
+                                    <p:column headerText="Item" style="padding: 6px;">
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Code" >
+                                    <p:column headerText="Code" style="padding: 6px;">
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Pack Size" >
+                                    <p:column headerText="Pack Size" style="padding: 6px;">
                                         <p:outputLabel 
                                             value=" X #{vt.dblValue}" 
                                             rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            

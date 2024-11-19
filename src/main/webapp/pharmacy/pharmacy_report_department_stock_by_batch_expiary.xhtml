@@ -92,6 +92,13 @@
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
+                                
+                                <p:column headerText="Supplier">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Supplier"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.lastPurchaseBillItem.bill.fromInstitution.name}" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
 
                                 <p:column headerText="Purchase Rate" 
                                           style="text-align: right;"
