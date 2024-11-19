@@ -12873,7 +12873,7 @@ public class SearchController implements Serializable {
     }
 
     public void createItemizedSalesReportOpd() {
-        bundle = generateItemizedSalesReportOpd();
+        //bundle = generateItemizedSalesReportOpd();
     }
 
     public void createIncomeBreakdownByCategory() {
@@ -14400,7 +14400,10 @@ public class SearchController implements Serializable {
         List<PaymentMethod> allMethods = new ArrayDeque();
         allMethods.addAll(creditPaymentMethods);
         allMethods.addAll(nonCreditPaymentMethods);
-
+        
+        System.out.println("methodType = " + methodType);
+        System.out.println("visitType = " + visitType);
+        
         if ("Any".equals(methodType)) {
             System.out.println("Any");
         } else if ("Credit".equals(methodType)) {
@@ -14410,8 +14413,8 @@ public class SearchController implements Serializable {
                 switch (visitType) {
                     case "Any":
                         System.out.println("Credit Any");
-                        jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm)";
-                        m.put("apm", allMethods);
+                        jpql += " AND (bi.bill.paymentMethod in :cpm OR bi.bill.patientEncounter.paymentMethod in :cpm)";
+                        m.put("cpm", creditPaymentMethods);
                         break;
                     case "OP":
                         System.out.println("Credit OP");
@@ -14434,18 +14437,17 @@ public class SearchController implements Serializable {
             if (null != visitType) {
                 switch (visitType) {
                     case "Any":
-                        System.out.println("Credit Any");
-                        System.out.println("Credit Any");
-                        jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm)";
-                        m.put("apm", allMethods);
+                        System.out.println("NonCredit Any");
+                        jpql += " AND (bi.bill.paymentMethod in :ncpm OR bi.bill.patientEncounter.paymentMethod in :ncpm)";
+                        m.put("ncpm", nonCreditPaymentMethods);
                         break;
                     case "OP":
-                        System.out.println("Credit OP");
+                        System.out.println("NonCredit OP");
                         jpql += " AND bi.bill.paymentMethod in :ncpm ";
                         m.put("ncpm", nonCreditPaymentMethods);
                         break;
                     case "IP":
-                        System.out.println("Credit IP");
+                        System.out.println("NonCredit IP");
                         jpql += " AND bi.bill.patientEncounter.paymentMethod in :ncpm ";
                         m.put("ncpm", nonCreditPaymentMethods);
                         break;
