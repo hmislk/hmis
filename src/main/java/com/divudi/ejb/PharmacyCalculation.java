@@ -673,6 +673,7 @@ public class PharmacyCalculation implements Serializable {
         itemBatch.setPurcahseRate(purchase);
         itemBatch.setRetailsaleRate(retail);
         itemBatch.setWholesaleRate(wholesale);
+        itemBatch.setLastPurchaseBillItem(tmp);
         HashMap hash = new HashMap();
         String sql;
 
