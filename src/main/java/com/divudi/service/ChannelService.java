@@ -137,6 +137,16 @@ public class ChannelService {
             b.getSingleBillSession().setRetireComments("Online Agent Payment NOT completed");
             b.getSingleBillSession().setRetiredAt(new Date());
             billSessionFacade.edit(b.getSingleBillSession());
+            b.getSingleBillItem().setRetired(true);
+            b.getSingleBillItem().setRetireComments("Online Agent Payment NOT completed");
+            billItemFacade.edit(b.getSingleBillItem());
+            if(b.getBillFees() != null){
+                for(BillFee bf : b.getBillFees()){
+                    bf.setRetired(true);
+                    bf.setRetireComments("Online Agent Payment NOT completed");
+                    billFeeFacade.edit(bf);
+                }
+            }
         }
     }
 
@@ -261,7 +271,7 @@ public class ChannelService {
         this.billSessionFacade = billSessionFacade;
     }
 
-    public void saveSelected(Patient p) {
+    public void saveOrUpdatePatientDetails(Patient p) {
         if (p == null) {
             return;
         }
@@ -284,29 +294,18 @@ public class ChannelService {
     }
 
     public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
-        saveSelected(patient);
-        Bill savingBill = createAgentInitialBookingBill(patient, session);
-        BillItem savingBillItemForSession = createSessionItem(savingBill, refNo, session);
-        savingBill.setAgentRefNo(refNo);
-        savingBill.setCreditCompany(creditCompany);
+        saveOrUpdatePatientDetails(patient);
+        Bill savingTemporaryBill = createAgentInitialBookingBill(patient, session);
+        BillItem savingBillItemForSession = createSessionItem(savingTemporaryBill, refNo, session);
+        savingTemporaryBill.setAgentRefNo(refNo);
+        savingTemporaryBill.setCreditCompany(creditCompany);
 
-//        PriceMatrix priceMatrix;
-//        if (itemsAddedToBooking != null || itemsAddedToBooking.isEmpty()) {
-//            for (Item ai : itemsAddedToBooking) {
-//                BillItem aBillItem = createAdditionalItem(savingBill, ai);
-//                additionalBillItems.add(aBillItem);
-//            }
-//        }
-        BillSession savingBillSession;
-
-        savingBillSession = createBillSession(savingBill, savingBillItemForSession, forReservedNumbers, session);
-        System.out.println(savingBillSession);
+        BillSession savingTemporaryBillSession = createBillSession(savingTemporaryBill, savingBillItemForSession, forReservedNumbers, session);
+        System.out.println(savingTemporaryBillSession);
 
         List<BillFee> savingBillFees = new ArrayList<>();
 
-//        priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
-////        System.out.println("priceMatrix = " + priceMatrix);
-        List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(savingBill, savingBillItemForSession, false, null);
+        List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(savingTemporaryBill, savingBillItemForSession, false, null);
 
         List<BillFee> savingBillFeesFromAdditionalItems = new ArrayList<>();
 
@@ -330,18 +329,18 @@ public class ChannelService {
         getBillItemFacade().edit(savingBillItemForSession);
         savingBillItemForSession.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItemForSession));
         savingBillItemForSession.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItemForSession));
-        savingBillItemForSession.setBillSession(savingBillSession);
+        savingBillItemForSession.setBillSession(savingTemporaryBillSession);
 
-        getBillSessionFacade().edit(savingBillSession);
-        savingBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBill));
-        savingBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBill));
-        savingBill.setSingleBillItem(savingBillItemForSession);
-        savingBill.setSingleBillSession(savingBillSession);
-        savingBill.setBillItems(savingBillItems);
-        savingBill.setBillFees(savingBillFees);
+        getBillSessionFacade().edit(savingTemporaryBillSession);
+        savingTemporaryBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingTemporaryBill));
+        savingTemporaryBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingTemporaryBill));
+        savingTemporaryBill.setSingleBillItem(savingBillItemForSession);
+        savingTemporaryBill.setSingleBillSession(savingTemporaryBillSession);
+        savingTemporaryBill.setBillItems(savingBillItems);
+        savingTemporaryBill.setBillFees(savingBillFees);
         // savingBill.setCashPaid(cashPaid);
         // savingBill.setCashBalance(cashBalance);
-        savingBill.setBalance(savingBill.getNetTotal());
+        savingTemporaryBill.setBalance(savingTemporaryBill.getNetTotal());
 
 //        if (savingBill.getBillType() == BillType.ChannelAgent) {
 //            updateBallance(savingBill.getCreditCompany(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItemForSession, savingBillSession, savingBillItemForSession.getAgentRefNo());
@@ -355,9 +354,7 @@ public class ChannelService {
 //        } else if (savingBill.getBillType() == BillType.ChannelStaff) {
 //            savingBill.setBalance(0.0);
 //            savingBillSession.setPaidBillSession(savingBillSession);
-//        }
-        savingBill.setSingleBillItem(savingBillItemForSession);
-        savingBill.setSingleBillSession(savingBillSession);
+//        } 
 //        if (referredBy != null) {
 //            savingBill.setReferredBy(referredBy);
 //        }
@@ -377,11 +374,11 @@ public class ChannelService {
 //            }
 //        }
 
-        calculateBillTotalsFromBillFees(savingBill, savingBillFees);
+        calculateBillTotalsFromBillFees(savingTemporaryBill, savingBillFees);
 
-        getBillFacade().edit(savingBill);
-        getBillSessionFacade().edit(savingBillSession);
-        return savingBill;
+        getBillFacade().edit(savingTemporaryBill);
+        getBillSessionFacade().edit(savingTemporaryBillSession);
+        return savingTemporaryBill;
     }
 
     public List<ItemFee> findServiceSessionFees(ServiceSession ss) {
