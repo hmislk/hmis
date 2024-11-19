@@ -823,6 +823,7 @@ public class SupplierPaymentController implements Serializable {
     public void fillDealorPaymentDone() {
         bills = null;
         netTotal = 0.0;
+        supplierPaymentStatus = "Any";
         String jpql;
         Map params = new HashMap();
 
@@ -849,6 +850,7 @@ public class SupplierPaymentController implements Serializable {
     public void fillDealorPaymentCanceled() {
         bills = null;
         netTotal = 0.0;
+        supplierPaymentStatus = "Canceled";
         String jpql;
         Map params = new HashMap();
 

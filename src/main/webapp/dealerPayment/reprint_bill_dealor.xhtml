@@ -22,7 +22,7 @@
                                              disabled="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment' 
                                                          or dealorPaymentBillSearch.bill.cancelled
                                                          or dealorPaymentBillSearch.bill.referenceBill ne null }"
-                                              rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}">                           
+                                             rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}">                           
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Return" class="ui-button-warning mx-1"
@@ -39,11 +39,18 @@
                                                          or dealorPaymentBillSearch.bill.refunded}" 
                                              rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}" >                           
                             </p:commandButton>
-                            <p:inputText id="com" value="#{dealorPaymentBillSearch.comment}" placeholder="Comment" style="float: left; margin-right: 5px;"/>
+                           
                             <p:commandButton ajax="false" value="Back To List"
                                              class="ui-button-warning mx-2" icon="fas fa-arrow-left"
                                              style="width: 150px; float: right;"
+                                             rendered="#{dealorPaymentBillSearch.bill.billType ne 'GrnPayment'}"
                                              action="search_dealor_payment?faces-redirect=true">                           
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Back"
+                                             class="ui-button-warning mx-2" icon="fas fa-arrow-left"
+                                             style="width: 150px; float: right;"
+                                             rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}"
+                                             action="dealor_payment_done?faces-redirect=true">                           
                             </p:commandButton>
                         </f:facet>
 
@@ -56,7 +63,11 @@
                         <p:panel   id="gpBillPreview">
 
                             <!--<bi:grn_payment billItems="#{dealorPaymentBillSearch.billItems}" bill="#{dealorPaymentBillSearch.bill}"/>--> 
-                            <bi:grnCheque billController ="#{dealorPaymentBillSearch}"  bill="#{dealorPaymentBillSearch.bill}" dup="false"/> 
+                            <bi:grnCheque 
+                                billController="#{dealorPaymentBillSearch}"  
+                                bill="#{dealorPaymentBillSearch.bill}" 
+                                dup="#{false}" />
+
 
                         </p:panel>
                     </p:panel>
