@@ -12873,7 +12873,7 @@ public class SearchController implements Serializable {
     }
 
     public void createItemizedSalesReportOpd() {
-        bundle = generateItemizedSalesReportOpd();
+//        bundle = generateItemizedSalesReportOpd();
     }
 
     public void createIncomeBreakdownByCategory() {
