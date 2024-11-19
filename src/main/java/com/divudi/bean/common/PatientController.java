@@ -1990,26 +1990,21 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void quickSearchPatientLongPhoneNumber(ControllerWithPatient controller) {
-        System.out.println("quickSearchPatientLongPhoneNumber");
         boolean checkOnlyNumeric = CommonFunctions.checkOnlyNumeric(quickSearchPhoneNumber);
         Patient patientSearched = null;
         boolean usePHN = false;
         String j;
-        System.out.println("checkOnlyNumeric = " + checkOnlyNumeric);
         Map m = new HashMap();
 
         if (checkOnlyNumeric) {
-            System.out.println("Run checkOnlyNumeric");
             j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp)";
             Long searchedPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
             m.put("pp", searchedPhoneNumber);
             quickSearchPatientList = getFacade().findByJpql(j, m);
         } else {
-            System.out.println("Run PHN");
             quickSearchPatientList = findPatientUsingPhnNumber(quickSearchPhoneNumber);
             usePHN = true;
         }
-        System.out.println("quickSearchPatientList = " + quickSearchPatientList);
         opdBillController.setPaymentMethod(null);
         if (quickSearchPatientList == null) {
             JsfUtil.addErrorMessage("No Patient found !");
