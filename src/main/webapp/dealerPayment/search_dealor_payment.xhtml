@@ -71,7 +71,17 @@
                             <p:inputText autocomplete="off" 
                                          value="#{supplierPaymentController.chequeNo}"
                                          class="w-100"/>
-
+                            <h:outputLabel value="Status"/>
+                            <p:selectOneMenu id="statusSelect" 
+                                             value="#{supplierPaymentController.supplierPaymentStatus}" 
+                                             class="form-control w-100">
+                                <f:selectItem itemLabel="Select status" noSelectionOption="true"/>
+                                <f:selectItems value="#{supplierPaymentController.supplierPaymentStatusList}" 
+                                               var="inst"  
+                                               itemValue="#{inst}"/>
+                                <p:tooltip value="Select the status for the cheque."/>
+                                <p:ajax process="@this"/>
+                            </p:selectOneMenu>
 
                         </h:panelGrid>
                         <h:panelGrid columns="3">

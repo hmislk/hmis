@@ -127,6 +127,8 @@ public class SupplierPaymentController implements Serializable {
     @Inject
     CommonController commonController;
     private int tabIndex = 0;
+    private List<String> supplierPaymentStatusList;
+    private String supplierPaymentStatus;
 
     public String navigateToDealerPaymentIndex() {
         return "/dealerPayment/index?faces-redirect=true";
@@ -598,7 +600,7 @@ public class SupplierPaymentController implements Serializable {
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
-    
+
     public void fillPharmacySupplierPayment() {
         List<InstitutionType> institutionTypes = new ArrayList<>();
         institutionTypes.add(InstitutionType.Dealer);
@@ -643,7 +645,7 @@ public class SupplierPaymentController implements Serializable {
             jpql.append(" and b.toInstitution.institutionType in :insTps ");
             params.put("insTps", institutionTypes);
         }
-        
+
         // Append optional filters if they are provided
         if (chequeFromDate != null && chequeToDate != null) {
             jpql.append("AND b.chequeDate BETWEEN :chequeFromDate AND :chequeToDate ");
@@ -779,6 +781,15 @@ public class SupplierPaymentController implements Serializable {
         if (institutionTypes != null) {
             jpql.append(" and b.toInstitution.institutionType in :insTps ");
             params.put("insTps", institutionTypes);
+        }
+
+        if (supplierPaymentStatus != null && !supplierPaymentStatus.equals("Any")) {
+            if (supplierPaymentStatus.equals("Pending")) {
+                jpql.append(" AND b.referenceBill IS NULL ");
+            } else if (supplierPaymentStatus.equals("Approved")) {
+                jpql.append(" AND b.referenceBill.billType = :approvedBillType ");
+                params.put("approvedBillType", BillType.GrnPayment);
+            }
         }
 
         if (chequeNo != null && !chequeNo.trim().isEmpty()) {
@@ -1212,6 +1223,7 @@ public class SupplierPaymentController implements Serializable {
      * Creates a new instance of pharmacyDealorBill
      */
     public SupplierPaymentController() {
+        this.supplierPaymentStatusList = Arrays.asList("Pending", "Approved", "Any");
     }
 
     public boolean isPrintPreview() {
@@ -1537,6 +1549,22 @@ public class SupplierPaymentController implements Serializable {
 
     public void setBank(Institution bank) {
         this.bank = bank;
+    }
+
+    public List<String> getSupplierPaymentStatusList() {
+        return supplierPaymentStatusList;
+    }
+
+    public void setSupplierPaymentStatusList(List<String> supplierPaymentStatusList) {
+        this.supplierPaymentStatusList = supplierPaymentStatusList;
+    }
+
+    public String getSupplierPaymentStatus() {
+        return supplierPaymentStatus;
+    }
+
+    public void setSupplierPaymentStatus(String supplierPaymentStatus) {
+        this.supplierPaymentStatus = supplierPaymentStatus;
     }
 
 }
