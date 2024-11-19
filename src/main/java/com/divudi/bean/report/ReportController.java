@@ -895,10 +895,10 @@ public class ReportController implements Serializable {
             m.put("cat", category);
         }
 
-        if (investigation != null) {
-            jpql += " AND bi.patientInvestigation.investigation = :inv";
-            m.put("inv", investigation);
-        }
+//        if (investigation != null) {
+//            jpql += " AND bi.patientInvestigation.investigation = :inv";
+//            m.put("inv", investigation);
+//        }
 
         if (item != null) {
             jpql += " AND bi.item = :item";
