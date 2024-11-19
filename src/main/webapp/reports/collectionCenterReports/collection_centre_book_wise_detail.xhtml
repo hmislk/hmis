@@ -107,22 +107,27 @@
                             </div>
                         </div>
 
+Bill No Book Ref. No Patient Creator Created Date Bill Value
 
 
-
-                        <p:dataTable id="tbl" value="#{collectingCentreController.ccBooks}" var="c" >
-                           
-                            <p:column headerText="Book Ref. No" width="5rem">
-                                <h:outputText value="#{c.bookNumber}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Collecting Centre" width="5rem">
-                                <h:outputText value="#{c.institution.name}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Issued Date" width="5rem">
+                        <p:dataTable id="tbl" value="#{collectingCentreController.bills}" var="c" >
+                            <p:column headerText="Date" width="5rem">
                                 <h:outputText value="#{c.createdAt}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Issued By" width="5rem">
+                            <p:column headerText="Bill No" width="5rem">
+                                <h:outputText value="#{c.deptId}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Referance No." width="5rem">
+                                <h:outputText value="#{c.referenceNumber}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Patient" width="5rem">
+                                <h:outputText value="#{c.patient.person.nameWithTitle}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="User" width="5rem">
                                 <h:outputText value="#{c.creater.webUserPerson.name}" ></h:outputText>
+                            </p:column>
+                              <p:column headerText="Bill Value" width="5rem">
+                                  <h:outputText value="#{c.netTotal}" ></h:outputText>
                             </p:column>
                             
 

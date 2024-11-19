@@ -84,6 +84,7 @@ public class CollectingCentreController implements Serializable {
     private Institution collectingCentre;
     private Institution institution;
     private Bill bill;
+    private List<Bill> bills;
     private Payment payment;
     private AgentHistory agentHistory;
     private Object auditDataBefore;
@@ -185,7 +186,7 @@ public class CollectingCentreController implements Serializable {
     
     public void processCollectingCentreBookWiseDetail(){
         //TO DO - Add Logic
-        ccBooks = new ArrayList<>();
+        bills = new ArrayList<>();
     }
     
     public String saveAgentHistoryAndNavigateBackToCcStatement() {
@@ -700,6 +701,14 @@ public class CollectingCentreController implements Serializable {
 
     public void setCcBooks(List<AgentReferenceBook> ccBooks) {
         this.ccBooks = ccBooks;
+    }
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
     }
     
     
