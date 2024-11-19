@@ -22,7 +22,7 @@
                                 showTime="true" 
                                 value="#{reportController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                            <p:spacer ></p:spacer>
+                            <p:spacer width="2em"></p:spacer>
                             <h:panelGroup >
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                                 <h:outputLabel class="mx-1" value="To Date"/>
@@ -33,7 +33,7 @@
                                 showTime="true" 
                                 value="#{reportController.toDate}" 
                                 class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                            <p:spacer ></p:spacer>
+                            <p:spacer width="2em"></p:spacer>
                             <h:panelGroup  >
                                 <i class="fa fa-cog" aria-hidden="true"></i>
                                 <h:outputLabel value="Type" class="mx-1"/>
@@ -63,7 +63,7 @@
                                                itemValue="#{i}" ></f:selectItems>
                                 <p:ajax process="@this" update="cmbDept" ></p:ajax>
                             </p:selectOneMenu>
-                            <p:spacer ></p:spacer>
+                            <p:spacer width="2em"></p:spacer>
 
                             <h:panelGroup >
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
@@ -79,7 +79,7 @@
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
                                 <p:ajax process="@this" update="cmbDept" ></p:ajax>
                             </p:selectOneMenu>
-                            <p:spacer ></p:spacer>
+                            <p:spacer width="2em"></p:spacer>
 
 
 
@@ -167,11 +167,7 @@
                                 <p:column style="padding: 4px!important">#{pta.name}</p:column>
                                 <p:column style="padding: 4px!important">#{pta.parentCategory}</p:column>                                        
                             </p:autoComplete>
-                            <p:spacer ></p:spacer>
-
-                            <p:spacer ></p:spacer>
-
-
+                            <p:spacer width="2em"></p:spacer>
                             <h:panelGroup>
                                 <i class="fa fa-bars" aria-hidden="true" ></i>
                                 <h:outputLabel class="mx-1" value="Service Name"/>
@@ -197,9 +193,12 @@
                                     <p:column style="padding: 4px!important">#{i.code}</p:column>                                        
                                 </p:autoComplete>
 
-                                <p:selectOneMenu value="#{reportController.item}" rendered="#{reportController.category ne null}" >
+                                <p:selectOneMenu 
+                                    value="#{reportController.item}"
+                                    styleClass="w-100"
+                                    rendered="#{reportController.category ne null}" >
                                     <f:selectItem itemLabel="Select" ></f:selectItem>
-                                    <f:selectItems value="#{itemController.servicesPlusInvestigationsOfSelectedCategory(reportController.category)}"
+                                    <f:selectItems value="#{itemController.getServicesPlusInvestigationsOfSelectedCategory(reportController.category)}"
                                                    var="i"
                                                    itemLabel="#{i.name}"
                                                    itemValue="#{i}" >
@@ -208,12 +207,13 @@
 
                             </h:panelGroup>
 
-                            <h:panelGroup class="mx-2">
+                            <p:spacer width="2em"></p:spacer>
+
+                            <h:panelGroup>
                                 <h:outputText value="&#xf46d;" styleClass="fa mr-2" />
                                 <h:outputLabel class="mx-1" value="Visit Type"/>
                             </h:panelGroup>
-                            <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
+
 
                             <p:selectOneMenu class="w-100" value="#{reportController.type}">
                                 <f:selectItem itemLabel="Any"/>
@@ -223,11 +223,14 @@
                                 <p:ajax process="@this" update="creditCom ccCom pnlaa" event="itemSelect" />
                             </p:selectOneMenu>
 
+
                             <h:panelGroup class="my-3" >
                                 <i class="fa fa-id-badge" aria-hidden="true"></i>
                                 <h:outputLabel value="Speciality" class="mx-1"/>
 
                             </h:panelGroup>
+
+
 
                             <p:selectOneMenu 
                                 id="speciality"
@@ -241,29 +244,59 @@
                                                itemValue="#{d}" ></f:selectItems>
                                 <p:ajax process="@this" update="consultant pnlaa" event="itemSelect" />
                             </p:selectOneMenu>
+                            <p:spacer width="10"></p:spacer>
 
-                            <h:panelGroup class="mx-2">
+                            <h:panelGroup>
                                 <i class="fa fa-user-md" aria-hidden="true"></i>
                                 <h:outputLabel class="mx-1" value="Consultant"/>
                             </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="consultant"
-                                style="width: 100%"
-                                value="#{reportController.doctor}" 
-                                filter="true"
-                                filterMatchMode="contains">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{doctorController.fillDoctorsIncludingConsultantsWithSpeciality(reportController.speciality)}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}" ></f:selectItems>
-                            </p:selectOneMenu>
 
+                            <h:panelGroup id="consultant">
+                                <p:selectOneMenu 
+                                    rendered="#{reportController.speciality ne null}"
+                                    style="width: 100%"
+                                    value="#{reportController.doctor}" 
+                                    filter="true"
+                                    filterMatchMode="contains">
+                                    <f:selectItem itemLabel="All" ></f:selectItem>
+                                    <f:selectItems value="#{doctorController.fillDoctorsIncludingConsultantsWithSpeciality(reportController.speciality)}"
+                                                   var="d"
+                                                   itemLabel="#{d.name}"
+                                                   itemValue="#{d}" ></f:selectItems>
+                                </p:selectOneMenu>
+
+                                <p:autoComplete 
+                                    rendered="#{reportController.speciality eq null}"
+                                    forceSelection="true" 
+                                    id="cmbDoc" 
+                                    value="#{reportController.doctor}" 
+                                    completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                    itemLabel="#{ix.person.name}" 
+                                    itemValue="#{ix}" 
+                                    inputStyleClass="form-control"
+                                    class="w-100" 
+                                    scrollHeight="500">
+                                    <p:column headerText="Name" style="padding: 2px;">
+                                        <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Code" style="padding: 2px;">
+                                        <h:outputText value="#{ix.code}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Speciality" style="padding: 2px;">
+                                        <h:outputText value="#{ix.speciality.name}" ></h:outputText>
+                                    </p:column>
+                                </p:autoComplete>
+
+                            </h:panelGroup>
+
+
+                            <p:spacer ></p:spacer>
                             <h:panelGroup id="ccCom" rendered="#{reportController.type eq 'CC'}">
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Collecting Center" class="mx-1"></p:outputLabel>
-
                             </h:panelGroup>
+
+
 
                             <p:autoComplete 
                                 id="creditCom" 
@@ -416,33 +449,39 @@
 
                         </h:panelGroup>
 
-                        <p:dataTable id="tbl" value="#{reportController.testWiseCounts}" var="item" rowIndexVar="rowIndex"
-                                     paginator="true"
-                                     rows="10"
-                                     paginatorPosition="bottom"
-                                     class="my-3"
+                        <p:dataTable 
+                            id="tbl" 
+                            value="#{reportController.testWiseCounts}" 
+                            var="item" 
+                            rowIndexVar="rowIndex"
+                            paginator="true"
+                            rows="10"
+                            paginatorPosition="bottom"
+                            class="my-3"
 
-                                     >
-                            <p:column headerText="S. NO" width="5rem">
+                            >
+                            <p:column headerText="S. NO" width="1em">
                                 <h:outputText value="#{rowIndex+1}" />
                             </p:column>
 
-                            <p:column headerText="Referring Doctor " width="5rem">
+                            <p:column headerText="Referring Doctor " width="12em">
                                 <h:outputText value="#{item.doctor.nameWithTitle}" />
                             </p:column>
 
-                            <p:column headerText="Agent Name" width="5rem">
+                            <p:column headerText="Item" width="4em">
                                 <h:outputText value="" />
                             </p:column>
 
-                            <p:column headerText="Count" width="5rem">
+                            <p:column headerText="Count" width="1em" class="text-end">
                                 <h:outputText value="#{item.count}" />
                                 <f:facet name="footer">
-                                    <h:outputText value="#{reportController.totalCount}" ></h:outputText>
+                                    <h:outputText value="#{reportController.totalCount}" >
+                                        <f:convertNumber pattern="#0" ></f:convertNumber>
+                                    </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Gross Amount" width="5rem">
+                            <p:column headerText="Gross Amount" class="text-end">
                                 <h:outputText value="#{item.hosFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -453,7 +492,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="CC Amount" width="5rem">
+                            <p:column headerText="CC Amount"  class="text-end">
                                 <h:outputText value="#{item.ccFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -464,7 +503,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Discount Amount " width="5rem">
+                            <p:column headerText="Discount Amount "  class="text-end">
                                 <h:outputText value="#{item.discount}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -475,7 +514,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Professional Amount " width="5rem">
+                            <p:column headerText="Professional Amount "  class="text-end">
                                 <h:outputText value="#{item.proFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -486,7 +525,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Net Amount" width="5rem">
+                            <p:column headerText="Net Amount"  class="text-end">
                                 <h:outputText value="#{item.total}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -585,11 +624,11 @@
                                      class="my-3"
 
                                      >
-                            <p:column headerText="S.No" width="0.5rem">
+                            <p:column headerText="S.No" width="0.5em">
                                 <h:outputText value="#{rowIndex+1}" />
                             </p:column>
 
-                            <p:column headerText="Invoice No" width="8rem">
+                            <p:column headerText="Invoice No" width="8em">
                                 <h:outputText value="#{bi.bill.deptId}" />
                                 <h:outputLabel 
                                     class="mx-1 ui-message-error"
@@ -613,25 +652,25 @@
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Referring Doctor" width="5rem">
+                            <p:column headerText="Referring Doctor" width="4em">
                                 <h:outputText value="#{bi.bill.referredBy.person.nameWithTitle}" />
                             </p:column>
 
-                            <p:column headerText="Service Name" width="5rem">
+                            <p:column headerText="Service Name" width="4em">
                                 <h:outputText value="#{bi.item.name}" />
                             </p:column>
 
-                            <p:column headerText="Date " width="5rem">
+                            <p:column headerText="Date " width="4em">
                                 <h:outputText value="#{bi.bill.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Status" width="5rem">
+                            <p:column headerText="Status" width="4em">
                                 <h:outputText value="#{patientInvestigationController.getPatientInvestigationFromBillItem(bi).status}" />
                             </p:column>
 
-                            <p:column headerText="CC Amt" width="5rem">
+                            <p:column headerText="CC Amt" width="4em">
                                 <h:outputText value="#{bi.collectingCentreFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -642,7 +681,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Hos Amt" width="5rem">
+                            <p:column headerText="Hos Amt" width="4em">
                                 <h:outputText value="#{bi.hospitalFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -653,7 +692,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Pro Amt" width="5rem">
+                            <p:column headerText="Pro Amt" width="4em">
                                 <h:outputText value="#{bi.staffFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -664,7 +703,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Dis Amt" width="5rem">
+                            <p:column headerText="Dis Amt" width="4em">
                                 <h:outputText value="#{bi.discount}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -675,7 +714,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Net Amt" width="5rem">
+                            <p:column headerText="Net Amt" width="4em">
                                 <h:outputText value="#{bi.netValue}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
