@@ -79,18 +79,18 @@
                                              ajax="false" value="List Pharmacy Payment to Settle" 
                                              class="my-1 w-100 ui-button-success" 
                                              icon="fas fa-pills"
-                                             action="#{supplierPaymentController.fillAllCreditBillssettledByChequeDate()}"/>
+                                             action="#{supplierPaymentController.fillPharmacySupplierPaymentsByChequDate()}"/>
 
                             <p:commandButton ajax="false" 
                                              class="my-1 w-100 ui-button-info" 
                                              icon="fas fa-store"
                                              value="List Store Payments to Settle"
-                                             action="#{supplierPaymentController.fillStoreSupplierPayments()}"/>
+                                             action="#{supplierPaymentController.fillStoreSupplierPaymentByChequeDate()}"/>
 
                             <p:commandButton ajax="false" value="List All Payments to Settle" 
                                              class="my-1 w-100 ui-button-warning" 
                                              icon="fas fa-search-dollar"
-                                             action="#{supplierPaymentController.fillSupplierPayments()}"/>
+                                             action="#{supplierPaymentController.fillAllSupplierPaymentsByChequDate()}"/>
                         </h:panelGrid>
                         <div class="col-12">
                             <p:dataTable 
@@ -183,7 +183,7 @@
                                                      update="@form" 
                                                      action="#{dealorPaymentBillSearch.approve()}"
                                                      disabled="#{bill.referenceBill.billType eq 'GrnPayment'}"
-                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill?'))
+                                                     onclick="if (!confirm('Are you sure! you want to Approve This Cheque?'))
                                                                  return false;">
                                         <f:setPropertyActionListener value="#{bill}" 
                                                                      target="#{dealorPaymentBillSearch.bill}"/>
