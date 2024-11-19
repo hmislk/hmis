@@ -1384,6 +1384,42 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    
+    public void createRowValuesFromBillItems() {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                System.out.println("Processing row: " + row);
+                System.out.println("row.getBill() = " + row.getBill());
+
+                if (row.getBillItem()== null) {
+                    System.out.println("Skipping row, as bill is null.");
+                    continue;
+                }
+
+
+                // Setting values
+                row.setGrossTotal(row.getBillItem().getGrossValue());
+                row.setDiscount(row.getBillItem().getDiscount());
+                row.setTotal(row.getBillItem().getNetValue());
+                row.setHospitalTotal(row.getHospitalTotal());
+                row.setStaffTotal(row.getBillItem().getStaffFee());
+                row.setCcTotal(row.getBillItem().getCollectingCentreFee());
+
+                // Debugging after setting
+                System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
+                System.out.println("row.getDiscount() = " + row.getDiscount());
+                System.out.println("row.getTotal() = " + row.getTotal());
+                System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
+                System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
+                System.out.println("row.getCcTotal() = " + row.getCcTotal());
+            }
+        } else {
+            System.out.println("No reportTemplateRows to process.");
+        }
+    }
+
+    
+    
     private void resetTotalsAndFlags() {
         this.cashValue = this.cardValue = this.multiplePaymentMethodsValue = this.staffValue
                 = this.creditValue = this.staffWelfareValue = this.voucherValue = this.iouValue
