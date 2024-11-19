@@ -264,7 +264,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private Department department;
 
     private boolean reGenerateePhn;
-    
+
     /**
      *
      *
@@ -982,7 +982,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         reGenerateePhn = webUserController.hasPrivilege("EditData");
-        
+
         return "/opd/patient_edit?faces-redirect=true;";
     }
 
@@ -1990,26 +1990,38 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void quickSearchPatientLongPhoneNumber(ControllerWithPatient controller) {
+        boolean checkOnlyNumeric = CommonFunctions.checkOnlyNumeric(quickSearchPhoneNumber);
         Patient patientSearched = null;
+        boolean usePHN = false;
         String j;
         Map m = new HashMap();
-        j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp)";
-        Long searchedPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
-        m.put("pp", searchedPhoneNumber);
-        quickSearchPatientList = getFacade().findByJpql(j, m);
+
+        if (checkOnlyNumeric) {
+            j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp)";
+            Long searchedPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
+            m.put("pp", searchedPhoneNumber);
+            quickSearchPatientList = getFacade().findByJpql(j, m);
+        } else {
+            quickSearchPatientList = findPatientUsingPhnNumber(quickSearchPhoneNumber);
+            usePHN = true;
+        }
         opdBillController.setPaymentMethod(null);
         if (quickSearchPatientList == null) {
             JsfUtil.addErrorMessage("No Patient found !");
             controller.setPatient(null);
-            controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
-            controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
+            if (!usePHN) {
+                controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
+                controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
+            }
             controller.setPatientDetailsEditable(true);
             return;
         } else if (quickSearchPatientList.isEmpty()) {
             JsfUtil.addErrorMessage("No Patient found !");
             controller.setPatient(null);
-            controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
-            controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
+            if (!usePHN) {
+                controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
+                controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
+            }
             controller.setPatientDetailsEditable(true);
             return;
         } else if (quickSearchPatientList.size() == 1) {
@@ -2661,7 +2673,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToAddNewPatientForOpd() {
         current = null;
         getCurrent();
-        
+
         reGenerateePhn = true;
         return "/opd/patient_edit?faces-redirect=true;";
     }
@@ -2905,7 +2917,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
 
         //System.out.println("Use PHN = " + usePHN);
-
         if (searchedPatients == null || searchedPatients.isEmpty()) {
             if (usePHN) {
                 //System.out.println("Use PHN");
@@ -4187,8 +4198,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void setReGenerateePhn(boolean reGenerateePhn) {
         this.reGenerateePhn = reGenerateePhn;
     }
-
-   
 
     /**
      *
