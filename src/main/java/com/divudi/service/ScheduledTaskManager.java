@@ -24,7 +24,6 @@ public class ScheduledTaskManager {
         try {
             channelService.retireNonSettledOnlineBills();
             // Optionally, add logging here
-            System.out.println("retireNonSettledOnlineBills executed at " + new Date());
         } catch (Exception e) {
             // Handle exceptions appropriately
             e.printStackTrace();
