@@ -26,6 +26,7 @@
                                         completeMethod="#{institutionController.completeSuppliers}" 
                                         styleClass="noPrintButton"
                                         forceSelection="true"
+                                        placeholder="Supplier"
                                         class="mx-2"
                                         var="w" itemLabel="#{w.name}" itemValue="#{w}"
                                         value="#{pharmacyReturnwithouttresing.toInstitution}" 
@@ -36,7 +37,10 @@
 
                                     </p:autoComplete>
 
-                                    <p:inputText value="#{pharmacyReturnwithouttresing.preBill.comments}" id="com"/>
+                                    <p:inputText 
+                                        value="#{pharmacyReturnwithouttresing.preBill.comments}" 
+                                        placeholder="Comment"
+                                        id="com"/>
 
                                                                                                             <p:spacer width="30"/>
                                     <p:commandButton  accesskey="s" value="To Return" 
