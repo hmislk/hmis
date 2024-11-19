@@ -1079,6 +1079,12 @@ public class SearchController implements Serializable {
         return "/reports/financialReports/staff_welfare?faces-redirect=true";
     }
 
+    public String navigateToPackageReport() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/package_report?faces-redirect=true";
+    }
+
     public String navigatToShiftEndSummary() {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
