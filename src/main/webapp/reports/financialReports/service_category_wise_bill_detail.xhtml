@@ -16,7 +16,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Discharge Date" class="mx-3" >
+                                <p:outputLabel value="From Date" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:calendar 
@@ -30,7 +30,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf271;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Service Added Date" class="mx-3" >
+                                <p:outputLabel value="To Date" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:calendar 
@@ -80,51 +80,49 @@
                                 <p:outputLabel value="Service Department" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu 
+                            
+                            <p:autoComplete 
+                                completeMethod="#{departmentController.completeDept}" 
+                                var="dept"
                                 class="w-100"
-                                id="cmdDepartment"
-                                value="#{reportController.department}" 
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems 
-                                    value="#{departmentController.items}"
-                                    var="d"
-                                    itemLabel="#{d.name}"
-                                    itemValue="#{d}">
-                                </f:selectItems>
-                            </p:selectOneMenu>
+                                maxlength="3"
+                                maxResults="15"
+                                placeholder="Select Service Department"
+                                inputStyleClass="w-100"
+                                itemLabel="#{dept.name}"
+                                itemValue="#{dept}">
+                            </p:autoComplete>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf571;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Billed Department" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu 
+
+                            <p:autoComplete 
+                                value="#{searchController.billedDepartment}"
+                                completeMethod="#{departmentController.completeDept}" 
+                                var="dept"
                                 class="w-100"
-                                filter="true"
+                                maxlength="3"
+                                placeholder="Select Billed Department"
+                                maxResults="15"
+                                inputStyleClass="w-100"
+                                itemLabel="#{dept.name}"
+                                itemValue="#{dept}">
+                            </p:autoComplete>
+
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
+                            <p:selectBooleanButton
+                                onLabel="With Professional Fee" 
+                                offLabel="without Professional Fee" 
+                                value="#{searchController.withProfessionalFee}"
+                                onIcon="pi pi-check" 
+                                class="w-100"
+                                offIcon="pi pi-times" 
                                 >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems 
-                                    value="#{departmentController.items}"
-                                    var="d"
-                                    itemLabel="#{d.name}"
-                                    itemValue="#{d}"></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <p:spacer width="20"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf007;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Visit Type" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu class="w-100" value="#{searchController.visitType}">
-                                <f:selectItem itemValue="Any" itemLabel="Any"/>
-                                <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
-                                <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
-                            </p:selectOneMenu>
-
+                            </p:selectBooleanButton>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0c0;" styleClass="fa mr-2" />
@@ -147,25 +145,17 @@
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Type" class="mx-3" >
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Visit Type" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="Select type"/>
+                            <p:selectOneMenu class="w-100" value="#{searchController.visitType}">
+                                <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
                             </p:selectOneMenu>
 
-                            <p:spacer width="50" ></p:spacer>
-                            <p:spacer width="50" ></p:spacer>
-                            <p:selectBooleanButton
-                                onLabel="With Professional Fee" 
-                                offLabel="without Professional Fee" 
-                                value="#{searchController.withProfessionalFee}"
-                                onIcon="pi pi-check" 
-                                class="w-100"
-                                offIcon="pi pi-times" 
-                                >
-                            </p:selectBooleanButton>
+                            <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <i class="fas fa-credit-card" style="color: green; font-size: 18px;"></i>                                       
@@ -178,7 +168,7 @@
                             </p:selectOneMenu>
 
                         </h:panelGrid><br />
-
+                        
                         <div class="d-flex align-items-center mb-2">
                             <p:commandButton 
                                 class="ui-button-warning mx-1" 
@@ -187,22 +177,22 @@
                                 action="#{searchController.createItemizedSalesReport()}"
                                 icon="fas fa-cogs" >
                             </p:commandButton>
-                            
+
                             <p:commandButton 
-                                    value="Download PDF" 
-                                    ajax="false" 
-                                    icon="pi pi-file-pdf" 
-                                    class="ui-button-info  m-1"
-                                    style="background-color: #17a2b8; border-color: #17a2b8;" 
-                                    onclick="PrimeFaces.monitorDownload(start, stop);">
-                                    <p:fileDownload value="#{searchController.bundleAsPdf}" />
-                                </p:commandButton>
-                            
+                                value="Download PDF" 
+                                ajax="false" 
+                                icon="pi pi-file-pdf" 
+                                class="ui-button-info  m-1"
+                                style="background-color: #17a2b8; border-color: #17a2b8;" 
+                                onclick="PrimeFaces.monitorDownload(start, stop);">
+                                <p:fileDownload value="#{searchController.bundleAsPdf}" />
+                            </p:commandButton>
+
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
                             </p:commandButton>
-                            
+
                         </div>
 
                         <div style="display: none;" >

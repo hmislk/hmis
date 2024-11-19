@@ -1,8 +1,10 @@
 package com.divudi.service;
 
+import java.util.Date;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
+import javax.ejb.Startup;
 
 /**
  *
@@ -11,6 +13,7 @@ import javax.ejb.Singleton;
  * 
  */
 @Singleton
+@Startup
 public class ScheduledTaskManager {
 
     @EJB
