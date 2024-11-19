@@ -348,6 +348,9 @@ public class SearchController implements Serializable {
 
     private Drawer drawer;
 
+    private Department serviceDepartment;
+    private Department billedDepartment;
+
     public String navigateToUserDrawerDashboard() {
         Drawer d = drawerController.getUsersDrawer(drawer.getDrawerUser());
         drawerController.setCurrent(d);
@@ -2168,6 +2171,22 @@ public class SearchController implements Serializable {
 
     public void setDrawer(Drawer drawer) {
         this.drawer = drawer;
+    }
+
+    public Department getServiceDepartment() {
+        return serviceDepartment;
+    }
+
+    public void setServiceDepartment(Department serviceDepartment) {
+        this.serviceDepartment = serviceDepartment;
+    }
+
+    public Department getBilledDepartment() {
+        return billedDepartment;
+    }
+
+    public void setBilledDepartment(Department billedDepartment) {
+        this.billedDepartment = billedDepartment;
     }
 
     public class billsWithbill {
@@ -14994,7 +15013,7 @@ public class SearchController implements Serializable {
                     + " and bi.bill.billTypeAtomic in :bts ";
 
             mIP.put("bts", btasIP);
-
+            
             // Apply payment method filter for IP bills
             if (!"Any".equals(methodType)) {
                 if ("Credit".equals(methodType)) {
@@ -16378,7 +16397,7 @@ public class SearchController implements Serializable {
                     if (bi.getBill().getPatientEncounter() == null) {
                         continue;
                     }
-                }else{
+                } else {
                     continue;
                 }
             }
