@@ -14,12 +14,6 @@
                         <f:facet name="header" >
                             <h:outputText styleClass="fa-solid fa-file-invoice"/>
                             <h:outputLabel value="Supplier Payment Done Search" class="mx-4"/> 
-                            <h:panelGroup>
-                                <p:commandButton action="/dealerPayment/dealor_due_pharmacy?faces-redirect=true"
-                                                 value="Back Due Search"
-                                                 class="ui-button-"
-                                                 style="float: right;"></p:commandButton>
-                            </h:panelGroup>
                         </f:facet>
                         <div class="row">
                             <div class="col-2">
@@ -67,7 +61,7 @@
 
                             </div>
                             <div class="col-10">
-                                <h:panelGroup >
+                                <h:panelGroup rendered="#{supplierPaymentController.supplierPaymentStatus eq 'Any'}" >
                                     <p:dataTable 
                                         id="tblBills" 
                                         value="#{supplierPaymentController.bills}" 
@@ -111,11 +105,7 @@
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>                                    
                                             <br/>
-                                            
-                                            <h:outputLabel value="#{bill.createdAt}" rendered="#{bill.billTypeAtomic ne 'SUPPLIER_PAYMENT'}">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                            
+
                                             <h:panelGroup rendered="#{bill.cancelled }" >
                                                 <h:outputLabel style="color: red;" value="Cancelled at " />
                                                 <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
@@ -133,10 +123,7 @@
                                         <p:column headerText="Approved by" >                               
                                             <h:outputLabel value="#{bill.approveUser.webUserPerson.name}" >                                      
                                             </h:outputLabel>   
-                                            
-                                            
-                                            <h:outputLabel value="#{bill.creater.webUserPerson.name}" rendered="#{bill.billTypeAtomic ne 'SUPPLIER_PAYMENT'}">
-                                            </h:outputLabel>
+
                                             <br/>
                                             <h:panelGroup rendered="#{bill.cancelled}" >
                                                 <h:outputLabel style="color: red;" value="Cancelled By " />
@@ -169,9 +156,7 @@
                                         <p:column headerText="Bank" >                                
                                             <h:outputLabel value="#{bill.bank.name}" >                                        
                                             </h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel  value="#{bill.billType}" >
-                                            </h:outputLabel>
+
                                         </p:column>
                                         <p:column headerText="Cheque Date" sortBy="#{bill.chequeDate}" filterBy="#{bill.chequeDate}"  filterMatchMode="contains">                                
                                             <h:outputLabel value="#{bill.chequeDate}" >
@@ -185,7 +170,7 @@
                                         <p:column headerText="Comments" >                                
                                             <h:outputLabel  value="#{bill.comments}">
                                             </h:outputLabel>
-                                            
+
                                             <br/>
                                             <h:panelGroup rendered="#{bill.refunded}" >
                                                 <h:outputLabel style="color: orange;" rendered="#{bill.refunded}" value="#{bill.refundedBill.comments}" >
@@ -199,15 +184,91 @@
                                             <br/>
 
                                         </p:column>
-                                        <p:column headerText="Status" rendered="#{bill.billTypeAtomic eq 'SUPPLIER_PAYMENT_CANCELLED'}">                                
-                                            <p:badge value="Canceled" severity="danger" rendered="#{bill.billTypeAtomic eq 'SUPPLIER_PAYMENT_CANCELLED'}" />
-                                        </p:column>
-                                        <p:column headerText="Action" rendered="#{bill.billTypeAtomic eq 'SUPPLIER_PAYMENT'}">
+
+                                        <p:column headerText="Action" >
                                             <p:commandButton ajax="false" value="Manage" action="reprint_bill_dealor" class="ui-button-info" style="width: 100px;">
                                                 <f:setPropertyActionListener value="#{bill}" target="#{dealorPaymentBillSearch.bill}"/>
                                             </p:commandButton>
 
                                         </p:column> 
+                                    </p:dataTable>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{supplierPaymentController.supplierPaymentStatus eq 'Canceled'}" >
+                                    <p:dataTable 
+                                        id="tblCBills" 
+                                        value="#{supplierPaymentController.bills}" 
+                                        var="bill"  
+                                        paginatorPosition="bottom"
+                                        rows="10"
+                                        paginator="true"
+                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        rowsPerPageTemplate="5,10,15"
+                                        >
+
+                                        <p:column headerText="Bill No" >                                
+                                            <h:commandLink action="reprint_bill_dealor" >
+                                                #{bill.deptId}"  
+                                                <f:setPropertyActionListener target="#{dealorPaymentBillSearch.bill.cancelledBill}" value="#{bill}"/>
+                                            </h:commandLink>
+
+                                        </p:column>
+                                        <p:column headerText="Supplier Name">                             
+                                            <h:outputLabel value="#{bill.toInstitution.name}" />
+                                        </p:column>   
+
+                                        <p:column headerText="Department">                             
+                                            <h:outputLabel value="#{bill.department.name}" />
+                                        </p:column>
+
+                                        <p:column headerText="Created at"  >                                            
+                                            <h:outputLabel value="#{bill.createdAt}">
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Created by" >                                           
+                                            <h:outputLabel value="#{bill.creater.webUserPerson.name}" rendered="#{bill.billTypeAtomic ne 'SUPPLIER_PAYMENT'}">
+                                            </h:outputLabel>
+                                        </p:column> 
+
+                                        <p:column headerText="Payment Method" >                                
+                                            <h:outputLabel value="#{bill.paymentMethod}" >                                       
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Net Value" >                             
+                                            <h:outputLabel value="#{bill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{supplierPaymentController.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column headerText="Bank" >                                
+                                            <h:outputLabel value="#{bill.bank.name}" >                                        
+                                            </h:outputLabel>
+                                            <br/>
+
+                                        </p:column>
+                                        <p:column headerText="Cheque Date" sortBy="#{bill.chequeDate}" filterBy="#{bill.chequeDate}"  filterMatchMode="contains">                                
+                                            <h:outputLabel value="#{bill.chequeDate}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Cheque No" sortBy="#{bill.chequeRefNo}" filterBy="#{bill.chequeRefNo}"  filterMatchMode="contains">                                
+                                            <h:outputLabel value="#{bill.chequeRefNo}" >
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Comments" >                                
+                                            <h:outputLabel  value="#{bill.comments}">
+                                            </h:outputLabel>
+
+                                        </p:column>
+                                        <p:column headerText="Status">                                
+                                            <p:badge value="Canceled" severity="danger" rendered="#{bill.billTypeAtomic eq 'SUPPLIER_PAYMENT_CANCELLED'}" />
+                                        </p:column>
+
                                     </p:dataTable>
                                 </h:panelGroup>
                             </div>

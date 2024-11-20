@@ -59,39 +59,88 @@
                 <f:facet name="header">
                     <h:outputText value="Staff Name"/>
                 </f:facet>
-                <h:outputText value="#{row.bill.toStaff.person.name}"/>
+                <h:outputText value="#{row.billItem.bill.toStaff.person.name}"/>
             </p:column>
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Staff Code"/>
                 </f:facet>
-                <h:outputText value="#{row.bill.toStaff.code}"/>
+                <h:outputText value="#{row.billItem.bill.toStaff.code}"/>
             </p:column>
             <p:column width="2em">
                 <f:facet name="header">
                     <h:outputText value="MRNO"/>
                 </f:facet>
-                <h:outputText value="#{row.bill.patient.phn}"/>
+                <h:outputText value="#{row.billItem.bill.patient.phn}"/>
             </p:column>
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Bill No"/>
                 </f:facet>
-                <h:outputText value="#{row.bill.deptId}"/>
+                <h:outputText value="#{row.billItem.bill.deptId}"/>
             </p:column>
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Date"/>
                 </f:facet>
-                <p:outputLabel value="#{row.bill.billDate}">
+                <p:outputLabel value="#{row.billItem.bill.billDate}">
                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                </p:outputLabel>
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Item"/>
+                </f:facet>
+                <p:outputLabel value="#{row.billItem.item.name}">
+                </p:outputLabel>
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Qty"/>
+                </f:facet>
+                <p:outputLabel value="#{row.billItem.qty}">
+                </p:outputLabel>
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Free Qty"/>
+                </f:facet>
+                <p:outputLabel value="#{row.billItem.remainingQty}">
+                </p:outputLabel>
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Rate"/>
+                </f:facet>
+                <p:outputLabel value="#{row.billItem.rate}">
+                </p:outputLabel>
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="MRP"/>
+                </f:facet>
+                <p:outputLabel value="#{row.billItem.netRate}">
+                </p:outputLabel>
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Expiry Date"/>
+                </f:facet>
+                <p:outputLabel value="#{row.billItem.item.expiryDate}">
+                </p:outputLabel>
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Batch Code"/>
+                </f:facet>
+                <p:outputLabel value="#{row.billItem.item.code}">
                 </p:outputLabel>
             </p:column>
             <p:column class="text-end">
                 <f:facet name="header">
                     <h:outputText value="Total Amount"/>
                 </f:facet>
-                <h:outputText value="#{row.bill.billTotal}">
+                <h:outputText value="#{row.billItem.bill.billTotal}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputText>
             </p:column>
@@ -99,7 +148,7 @@
                 <f:facet name="header">
                     <h:outputText value="Discount Amount"/>
                 </f:facet>
-                <h:outputText value="#{row.bill.discount}">
+                <h:outputText value="#{row.billItem.bill.discount}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputText>
             </p:column>
@@ -107,7 +156,7 @@
                 <f:facet name="header">
                     <h:outputText value="Net Total"/>
                 </f:facet>
-                <h:outputText value="#{row.bill.netTotal}">
+                <h:outputText value="#{row.billItem.bill.netTotal}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputText>
                 <f:facet name="footer">
@@ -120,13 +169,12 @@
                 <f:facet name="header">
                     <h:outputText value="Balance Amount"/>
                 </f:facet>
-                <h:outputText value="#{row.bill.toStaff.annualWelfareUtilized}">
+                <h:outputText value="#{row.billItem.bill.toStaff.annualWelfareUtilized}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputText>
             </p:column>
         </p:dataTable>
     </h:panelGroup>
-
 
 </cc:implementation>
 </html>

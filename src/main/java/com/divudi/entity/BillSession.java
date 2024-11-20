@@ -50,6 +50,8 @@ public class BillSession implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date completedAt;
 
+    private Boolean firstVisit;
+    
     @ManyToOne
     private WebUser markedToCancelBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -580,6 +582,14 @@ public class BillSession implements Serializable {
     public String getSerialNoStr() {
         serialNoStr = serialNo + "";
         return serialNoStr;
+    }
+
+    public Boolean getFirstVisit() {
+        return firstVisit;
+    }
+
+    public void setFirstVisit(Boolean firstVisit) {
+        this.firstVisit = firstVisit;
     }
 
    

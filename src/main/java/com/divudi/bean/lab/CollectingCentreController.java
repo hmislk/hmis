@@ -19,12 +19,14 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Payment;
+import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.service.AgentHistoryService;
 import com.divudi.service.AuditService;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -82,11 +84,14 @@ public class CollectingCentreController implements Serializable {
     private Institution collectingCentre;
     private Institution institution;
     private Bill bill;
+    private List<Bill> bills;
     private Payment payment;
     private AgentHistory agentHistory;
     private Object auditDataBefore;
     private Object auditDataAfter;
     private int activeIndex;
+    private String bookNumber;
+    private List<AgentReferenceBook> ccBooks;
 
     public String navigateToPayToCollectingCentre() {
         bill = new Bill();
@@ -141,6 +146,10 @@ public class CollectingCentreController implements Serializable {
         agentHistory.setBalanceAfterTransaction(agentHistory.getBalanceBeforeTransaction() + agentHistory.getTransactionValue());
     }
 
+    public String navigateToCollectionCentreBookWiseDetail() {
+        return "/reports/collectionCenterReports/collection_centre_book_wise_detail?faces-redirect=true";
+    }
+
     public String navigateToEditCollectingCentreBalanceEntry(AgentHistory agentHx) {
         if (agentHx == null) {
             JsfUtil.addErrorMessage("No history selected");
@@ -174,6 +183,12 @@ public class CollectingCentreController implements Serializable {
         auditDataBefore = null;
     }
 
+    
+    public void processCollectingCentreBookWiseDetail(){
+        //TO DO - Add Logic
+        bills = new ArrayList<>();
+    }
+    
     public String saveAgentHistoryAndNavigateBackToCcStatement() {
         if (agentHistory == null) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -303,6 +318,7 @@ public class CollectingCentreController implements Serializable {
 
     }
 
+    @Deprecated // replace with #{institutionController.completeCollectingCenter}
     public List<Institution> completeCollecting(String query) {
         List<Institution> suggestions;
         String jpql;
@@ -670,5 +686,31 @@ public class CollectingCentreController implements Serializable {
     public void setActiveIndex(int activeIndex) {
         this.activeIndex = activeIndex;
     }
+
+    public String getBookNumber() {
+        return bookNumber;
+    }
+
+    public void setBookNumber(String bookNumber) {
+        this.bookNumber = bookNumber;
+    }
+
+    public List<AgentReferenceBook> getCcBooks() {
+        return ccBooks;
+    }
+
+    public void setCcBooks(List<AgentReferenceBook> ccBooks) {
+        this.ccBooks = ccBooks;
+    }
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+    
+    
 
 }
