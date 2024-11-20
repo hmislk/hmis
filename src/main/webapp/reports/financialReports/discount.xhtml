@@ -218,10 +218,10 @@
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
+                                <f:selectItems value="#{paymentSchemeController.allPaymentSchemes}"
                                                var="i"
-                                               itemLabel=""
-                                               itemValue=""
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}"
                                                ></f:selectItems>
                             </p:selectOneMenu>
 
@@ -262,10 +262,10 @@
                                 filter="true"
                                 class="w-100 ">
                                 <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var=""
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
+                                <f:selectItems value="#{admissionTypeController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
@@ -279,10 +279,10 @@
                                 filter="true"
                                 class="w-100 ">
                                 <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var=""
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
+                                <f:selectItems value="#{serviceController.category.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">

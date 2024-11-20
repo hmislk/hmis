@@ -202,6 +202,9 @@
                                 <p:column headerText="Bill Type" >                                
                                     <h:outputLabel value="#{bill.billTypeAtomic}"/>
                                 </p:column>
+                                <p:column headerText="Payment Method" >                                
+                                    <h:outputLabel value="#{bill.paymentMethod}"/>
+                                </p:column>
                                 <p:column headerText="Date/Time">
                                     <p:outputLabel value="#{bill.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
