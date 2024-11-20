@@ -34,17 +34,7 @@
 
                     <cc:implementation>
                         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-                        <div class="d-flex justify-content-end">
-                            <p:commandButton 
-                                style="width: 100px" 
-                                value="Back" 
-                                ajax="false" 
-                                rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}"
-                                action="#{supplierPaymentController.navigateToPaymentDoneSearch()}"  
-                                class="ui-button-info mb-2 mx-2">
-                            </p:commandButton>
-                            
-                        </div>
+                        
                         <div class="posbill noBorder summeryBorder" >
 
                             <div class="institutionName">

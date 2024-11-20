@@ -787,8 +787,10 @@ public class SupplierPaymentController implements Serializable {
             if (supplierPaymentStatus.equals("Pending")) {
                 jpql.append(" AND b.referenceBill IS NULL ");
             } else if (supplierPaymentStatus.equals("Approved")) {
-                jpql.append(" AND b.referenceBill.billType = :approvedBillType ");
+                jpql.append(" AND b.referenceBill.billType = :approvedBillType AND b.referenceBill.cancelled = false ");
                 params.put("approvedBillType", BillType.GrnPayment);
+            } else if (supplierPaymentStatus.equals("Canceled")) {
+                jpql.append(" AND b.referenceBill.cancelled = true ");
             }
         }
 
@@ -821,6 +823,7 @@ public class SupplierPaymentController implements Serializable {
     public void fillDealorPaymentDone() {
         bills = null;
         netTotal = 0.0;
+        supplierPaymentStatus = "Any";
         String jpql;
         Map params = new HashMap();
 
@@ -847,6 +850,7 @@ public class SupplierPaymentController implements Serializable {
     public void fillDealorPaymentCanceled() {
         bills = null;
         netTotal = 0.0;
+        supplierPaymentStatus = "Canceled";
         String jpql;
         Map params = new HashMap();
 
@@ -1223,7 +1227,7 @@ public class SupplierPaymentController implements Serializable {
      * Creates a new instance of pharmacyDealorBill
      */
     public SupplierPaymentController() {
-        this.supplierPaymentStatusList = Arrays.asList("Pending", "Approved", "Any");
+        this.supplierPaymentStatusList = Arrays.asList("Pending", "Approved", "Canceled", "Any");
     }
 
     public boolean isPrintPreview() {

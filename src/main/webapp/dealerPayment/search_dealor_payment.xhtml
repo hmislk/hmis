@@ -116,10 +116,15 @@
 
                                 <p:column headerText="Bill No" > 
                                     <h:commandLink action="reprint_bill_dealor">
-                                        <h:outputLabel value="#{bill.deptId}"  >
-                                        </h:outputLabel>                                    
+                                        #{bill.deptId}"                               
                                         <f:setPropertyActionListener target="#{dealorPaymentBillSearch.bill}" value="#{bill}"/>
                                     </h:commandLink>
+                                    <br/>
+                                    <h:outputText value="#{bill.referenceBill.cancelledBill.deptId}" 
+                                                  style="color: red;"
+                                                  rendered="#{bill.referenceBill.cancelled}"
+                                                  />
+
                                 </p:column>
                                 <p:column headerText="Supplier Name">                             
                                     <h:outputLabel value="#{bill.toInstitution.name}" />
@@ -185,7 +190,8 @@
                                 </p:column>
                                 <p:column headerText="Status">                                
                                     <p:badge value="Pending..." rendered="#{bill.referenceBill.billType == null}"/>
-                                    <p:badge value="Approved" rendered="#{bill.referenceBill.billType eq 'GrnPayment'}" severity="success"/>
+                                    <p:badge value="Approved" rendered="#{bill.referenceBill.billType eq 'GrnPayment' and !bill.referenceBill.cancelled}" severity="success"/>
+                                    <p:badge value="Canceled" rendered="#{bill.referenceBill.cancelled}" severity="danger"/>
                                 </p:column> 
                                 <p:column headerText="Action">
                                     <p:commandButton ajax="false" 
