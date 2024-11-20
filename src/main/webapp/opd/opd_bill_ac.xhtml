@@ -1026,7 +1026,6 @@
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Payment Details" class="mx-4"></h:outputText>
                                     </f:facet>
-                                    #{opdBillController.paymentMethod}
                                     <div class="row my-1"  >
                                         <div class="col-5" >
                                             <p:selectOneMenu   
@@ -1494,7 +1493,8 @@
                                                 action="#{navigationController.navigateToCollectingCenter()}"
                                                 actionListener="#{collectingCentreController.prepareAdd()}"  />  
                                         </h:panelGroup>
-                                        <p:autoComplete id="creditCom" 
+                                        <p:autoComplete 
+                                            id="creditCom" 
                                                         forceSelection="true" 
                                                         class="w-100"
                                                         value="#{opdBillController.collectingCentre}"  
@@ -1519,18 +1519,11 @@
                                     </h:panelGrid>
                                 </p:panel>
 
-
-
-
                             </div>
                         </div>
                     </p:panel>
 
-
-
-
                 </h:form>
-
 
             </ui:define>
 
