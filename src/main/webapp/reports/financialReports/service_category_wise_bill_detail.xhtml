@@ -80,18 +80,19 @@
                                 <p:outputLabel value="Service Department" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            
                             <p:autoComplete 
+                                value="#{searchController.serviceDepartment}"
                                 completeMethod="#{departmentController.completeDept}" 
                                 var="dept"
                                 class="w-100"
-                                maxlength="3"
+                                minQueryLength="3"
+                                placeholder="Select Billed Department"
                                 maxResults="15"
-                                placeholder="Select Service Department"
                                 inputStyleClass="w-100"
                                 itemLabel="#{dept.name}"
                                 itemValue="#{dept}">
                             </p:autoComplete>
+                            
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf571;" styleClass="fa mr-2" />
