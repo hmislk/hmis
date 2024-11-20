@@ -12873,10 +12873,10 @@ public class SearchController implements Serializable {
     public void createItemizedSalesReport() {
         bundle = generateItemizedSalesReport();
         if (withProfessionalFee) {
-            bundle.setName("Itemized Sales Report - With Professional Fee");
+            bundle.setName("Service Category Wise Bill Detail - With Professional Fee");
             bundle.setBundleType("itemized_sales_report_with_professional_fee");
         } else {
-            bundle.setName("Itemized Sales Report - Without Professional Fee");
+            bundle.setName("Service Category Wise Bill Detail - Without Professional Fee");
             bundle.setBundleType("itemized_sales_report_without_professional_fee");
         }
 
