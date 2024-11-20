@@ -35,20 +35,11 @@ public abstract class AbstractFacade<T> {
     private Class<T> entityClass;
 
     public void executeNativeSql(String sql) throws Exception {
-        EntityManager em = getEntityManager();
         try {
-            // Begin transaction if not managed by container
-            em.getTransaction().begin();
-
             // Execute the native SQL query
-            Query query = em.createNativeQuery(sql);
+            Query query = getEntityManager().createNativeQuery(sql);
             query.executeUpdate();
-
-            // Commit transaction
-            em.getTransaction().commit();
         } catch (Exception e) {
-            // Rollback transaction in case of error
-            em.getTransaction().rollback();
             throw e; // Rethrow exception to be handled in calling method
         }
     }
