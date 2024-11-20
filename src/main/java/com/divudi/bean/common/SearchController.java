@@ -3400,6 +3400,10 @@ public class SearchController implements Serializable {
         totalOfOtherPayments = 0.0;
         billCount = 0.0;
         totalPaying = 0.0;
+        serviceDepartment = null;
+        billedDepartment = null;
+        visitType = null;
+        methodType = null;
     }
 
     public void resetTotals() {
@@ -14979,10 +14983,16 @@ public class SearchController implements Serializable {
             }
 
             // Additional filters
-            if (department != null) {
-                jpqlOP += " and bi.bill.department=:dep ";
-                mOP.put("dep", department);
+            if (billedDepartment != null) {
+                jpqlOP += " and bi.bill.department=:dept ";
+                mOP.put("dept", billedDepartment);
             }
+
+            if (serviceDepartment != null) {
+                jpqlOP += " and bi.bill.toDepartment=:serDept ";
+                mOP.put("serDept", serviceDepartment);
+            }
+
             if (institution != null) {
                 jpqlOP += " and bi.bill.department.institution=:ins ";
                 mOP.put("ins", institution);
@@ -15013,7 +15023,7 @@ public class SearchController implements Serializable {
                     + " and bi.bill.billTypeAtomic in :bts ";
 
             mIP.put("bts", btasIP);
-            
+
             // Apply payment method filter for IP bills
             if (!"Any".equals(methodType)) {
                 if ("Credit".equals(methodType)) {
@@ -15026,10 +15036,16 @@ public class SearchController implements Serializable {
             }
 
             // Additional filters
-            if (department != null) {
-                jpqlIP += " and bi.bill.department=:dep ";
-                mIP.put("dep", department);
+            if (billedDepartment != null) {
+                jpqlIP += " and bi.bill.department=:dept ";
+                mIP.put("dept", billedDepartment);
             }
+
+            if (serviceDepartment != null) {
+                jpqlIP += " and bi.bill.toDepartment=:serDept ";
+                mIP.put("serDept", serviceDepartment);
+            }
+
             if (institution != null) {
                 jpqlIP += " and bi.bill.department.institution=:ins ";
                 mIP.put("ins", institution);
@@ -15217,13 +15233,13 @@ public class SearchController implements Serializable {
             jpql += " and bi.bill.department.site=:site ";
             m.put("site", site);
         }
+        
 //        System.out.println("btas = " + btas);
 //        System.out.println("m = " + m);
 //        System.out.println("jpql = " + jpql);
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-//        System.out.println("bis = " + bis);
+        System.out.println("bis = " + bis);
         billItemsToBundleForOpdUnderCategory(opdServiceCollection, bis, paymentType);
-//        bundle.getBundles().add(opdServiceCollection);
 
         if (paymentType == PaymentType.CREDIT) {
             opdServiceCollection.setName("OPD Service Collection - Credit");
@@ -15777,6 +15793,11 @@ public class SearchController implements Serializable {
         Map<String, ReportTemplateRow> itemMap = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         double totalOpdServiceCollection = 0.0;
+        double totalGrossValue = 0.0;
+        double totalHospitalFee = 0.0;
+        double totalSiscount = 0.0;
+        double totalStaffFee = 0.0;
+        long totalQuantity = 0l;
 
         for (BillItem bi : billItems) {
             System.out.println("Processing BillItem: " + bi);
@@ -15856,6 +15877,22 @@ public class SearchController implements Serializable {
 
             // Accumulate the total collection
             totalOpdServiceCollection += netValue;
+            System.out.println("Accumulated total OPD service collection: " + totalOpdServiceCollection);
+
+            totalGrossValue += grossValue;
+            System.out.println("Accumulated total gross value: " + totalGrossValue);
+
+            totalHospitalFee += hospitalFee;
+            System.out.println("Accumulated total hospital fee: " + totalHospitalFee);
+
+            totalSiscount += discount;
+            System.out.println("Accumulated total discount: " + totalSiscount);
+
+            totalStaffFee += staffFee;
+            System.out.println("Accumulated total staff fee: " + totalStaffFee);
+
+            totalQuantity += quantity;
+            System.out.println("Accumulated total quantity: " + totalQuantity);
 
             // Update the rows with the adjusted values
             updateRow(categoryRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
@@ -15876,7 +15913,15 @@ public class SearchController implements Serializable {
         });
 
         rtrb.getReportTemplateRows().addAll(rowsToAdd);
+        System.out.println("Added rows to ReportTemplateRowBundle. Total rows added: " + rowsToAdd.size());
+
         rtrb.setTotal(totalOpdServiceCollection);
+        rtrb.setGrossTotal(totalGrossValue);
+        rtrb.setHospitalTotal(totalHospitalFee);
+        rtrb.setStaffTotal(totalStaffFee);
+        rtrb.setDiscount(totalSiscount);
+        rtrb.setCount(totalQuantity);
+
     }
 
     public void billItemsToBundleForOpdUnderCategoryWithoutProfessionalFee(ReportTemplateRowBundle rtrb, List<BillItem> billItems, PaymentType paymentType) {
@@ -15885,6 +15930,11 @@ public class SearchController implements Serializable {
         Map<String, ReportTemplateRow> itemMap = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         double totalOpdServiceCollection = 0.0;
+        double totalGrossValue = 0.0;
+        double totalHospitalFee = 0.0;
+        double totalSiscount = 0.0;
+        double totalStaffFee = 0.0;
+        long totalQuantity = 0l;
 
         for (BillItem bi : billItems) {
             System.out.println("Processing BillItem: " + bi);
@@ -15959,6 +16009,23 @@ public class SearchController implements Serializable {
             // Accumulate the total collection
             totalOpdServiceCollection += hospitalFee - discount;
 
+            System.out.println("Accumulated total OPD service collection: " + totalOpdServiceCollection);
+
+            totalGrossValue += grossValue;
+            System.out.println("Accumulated total gross value: " + totalGrossValue);
+
+            totalHospitalFee += hospitalFee;
+            System.out.println("Accumulated total hospital fee: " + totalHospitalFee);
+
+            totalSiscount += discount;
+            System.out.println("Accumulated total discount: " + totalSiscount);
+
+            totalStaffFee += staffFee;
+            System.out.println("Accumulated total staff fee: " + totalStaffFee);
+
+            totalQuantity += quantity;
+            System.out.println("Accumulated total quantity: " + totalQuantity);
+
             //System.out.println("hospitalFee = " + hospitalFee);
             // Update the rows with the adjusted values
             updateRow(categoryRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
@@ -15981,6 +16048,13 @@ public class SearchController implements Serializable {
         System.out.println("Total collected: " + totalOpdServiceCollection);
         rtrb.getReportTemplateRows().addAll(rowsToAdd);
         rtrb.setTotal(totalOpdServiceCollection);
+
+        rtrb.setGrossTotal(totalGrossValue);
+        rtrb.setHospitalTotal(totalHospitalFee);
+        rtrb.setStaffTotal(totalStaffFee);
+        rtrb.setDiscount(totalSiscount);
+        rtrb.setCount(totalQuantity);
+
     }
 
     public void billToBundleForPatientDeposits(ReportTemplateRowBundle rtrb, List<Bill> bills) {
@@ -16485,12 +16559,25 @@ public class SearchController implements Serializable {
         double discountTotal = 0.0;
         double staffTotal = 0.0;
         double netTotal = 0.0;
+
+        System.out.println("Starting billItemsToBundleForOpd method");
+        System.out.println("Initial state - count: " + count + ", grossTotal: " + grossTotal
+                + ", hospitalTotal: " + hospitalTotal + ", discountTotal: " + discountTotal
+                + ", staffTotal: " + staffTotal + ", netTotal: " + netTotal);
+
         for (BillItem bi : billItems) {
             System.out.println("Processing BillItem: " + bi);
+            System.out.println("BillItem Details - FeeValue: " + bi.getFeeValue()
+                    + ", HospitalFee: " + bi.getHospitalFee()
+                    + ", Discount: " + bi.getDiscount()
+                    + ", StaffFee: " + bi.getStaffFee()
+                    + ", NetValue: " + bi.getNetValue());
+
             ReportTemplateRow row = new ReportTemplateRow(bi);
             switch (bi.getBill().getBillClassType()) {
                 case CancelledBill:
                 case RefundBill:
+                    System.out.println("Handling Cancelled or Refund Bill");
                     count--;
                     grossTotal -= Math.abs(bi.getFeeValue());
                     hospitalTotal -= Math.abs(bi.getHospitalFee());
@@ -16500,6 +16587,7 @@ public class SearchController implements Serializable {
                     break;
                 case BilledBill:
                 case Bill:
+                    System.out.println("Handling Billed or Bill");
                     count++;
                     grossTotal += Math.abs(bi.getFeeValue());
                     hospitalTotal += Math.abs(bi.getHospitalFee());
@@ -16508,9 +16596,15 @@ public class SearchController implements Serializable {
                     netTotal += Math.abs(bi.getNetValue());
                     break;
                 default:
-                    // Do nothing for other types of bills
-                    continue;  // Skip processing for unrecognized or unhandled bill types
+                    System.out.println("Unrecognized BillClassType: " + bi.getBill().getBillClassType());
+                    continue; // Skip processing for unrecognized or unhandled bill types
             }
+            System.out.println("Updated state after BillItem - count: " + count
+                    + ", grossTotal: " + grossTotal
+                    + ", hospitalTotal: " + hospitalTotal
+                    + ", discountTotal: " + discountTotal
+                    + ", staffTotal: " + staffTotal
+                    + ", netTotal: " + netTotal);
             rowsToAdd.add(row);
         }
 
@@ -16520,26 +16614,43 @@ public class SearchController implements Serializable {
         biBundle.setHospitalTotal(hospitalTotal);
         biBundle.setStaffTotal(staffTotal);
         biBundle.setDiscount(discountTotal);
+
+        System.out.println("Final state - count: " + count + ", grossTotal: " + grossTotal
+                + ", hospitalTotal: " + hospitalTotal + ", discountTotal: " + discountTotal
+                + ", staffTotal: " + staffTotal + ", netTotal: " + netTotal);
+
+        System.out.println("Completed billItemsToBundleForOpd method");
         return biBundle;
     }
 
     private void updateRow(ReportTemplateRow row, long count, double total, double hospitalFee, double discount, double professionalFee, double netTotal) {
+        System.out.println("Starting updateRow method");
+        System.out.println("Initial values - Count: " + count + ", Total: " + total
+                + ", HospitalFee: " + hospitalFee + ", Discount: " + discount
+                + ", ProfessionalFee: " + professionalFee + ", NetTotal: " + netTotal);
+
         if (row.getItemCount() == null) {
+            System.out.println("ItemCount is null. Initializing to 0.");
             row.setItemCount(0L);
         }
         if (row.getItemTotal() == null) {
+            System.out.println("ItemTotal is null. Initializing to 0.0.");
             row.setItemTotal(0.0);
         }
         if (row.getItemHospitalFee() == null) {
+            System.out.println("ItemHospitalFee is null. Initializing to 0.0.");
             row.setItemHospitalFee(0.0);
         }
         if (row.getItemDiscountAmount() == null) {
+            System.out.println("ItemDiscountAmount is null. Initializing to 0.0.");
             row.setItemDiscountAmount(0.0);
         }
         if (row.getItemProfessionalFee() == null) {
+            System.out.println("ItemProfessionalFee is null. Initializing to 0.0.");
             row.setItemProfessionalFee(0.0);
         }
         if (row.getItemNetTotal() == null) {
+            System.out.println("ItemNetTotal is null. Initializing to 0.0.");
             row.setItemNetTotal(0.0);
         }
 
@@ -16550,16 +16661,22 @@ public class SearchController implements Serializable {
         row.setItemProfessionalFee(row.getItemProfessionalFee() + professionalFee);
         row.setItemNetTotal(row.getItemNetTotal() + netTotal);
 
-        // Now check if 'row.getItem()' is null
+        System.out.println("Updated row values - ItemCount: " + row.getItemCount()
+                + ", ItemTotal: " + row.getItemTotal()
+                + ", ItemHospitalFee: " + row.getItemHospitalFee()
+                + ", ItemDiscountAmount: " + row.getItemDiscountAmount()
+                + ", ItemProfessionalFee: " + row.getItemProfessionalFee()
+                + ", ItemNetTotal: " + row.getItemNetTotal());
+
         if (row.getItem() != null) {
-            System.out.println("Updated row: " + row.getItem().getName()
+            System.out.println("Updated row: Item Name: " + row.getItem().getName()
                     + ", Count: " + row.getItemCount()
                     + ", Net Total: " + row.getItemNetTotal());
         } else {
-            // Handle the case where 'row.getItem()' is null
             System.out.println("Error: Item in the row is null.");
         }
 
+        System.out.println("Completed updateRow method");
     }
 
     public void generateAllCashierSummary() {
