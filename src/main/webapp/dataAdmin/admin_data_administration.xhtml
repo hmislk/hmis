@@ -102,6 +102,13 @@
 
                                             <p:commandButton
                                                 ajax="false" 
+                                                action="#{dataAdministrationController.}" 
+                                                value="Check Missing Fields"  
+                                                class="w-100 m-1"
+                                                />
+
+                                            <p:commandButton
+                                                ajax="false" 
                                                 action="retire_payments_for_individual_opd_bills" 
                                                 value="Retire Payments for Individual OPD Bills"  
                                                 class="w-100 m-1"
@@ -115,10 +122,10 @@
                                                 value="Make All OPD Services and Investigations to Allow Discounts" 
                                                 onclick="if (!confirm('Really want to do that?'))
                                                             return false"/>
-                                            
-                                            
-                                            
-                                             <p:commandButton 
+
+
+
+                                            <p:commandButton 
                                                 ajax="false"
                                                 action="#{billController.addMissingBillTypeAtomics}"
                                                 rendered="true"
@@ -126,9 +133,9 @@
                                                 value="Add Bill Type Atomics" 
                                                 onclick="if (!confirm('Really want to do that?'))
                                                             return false"/>
-                                             
-                                             
-                                             <p:commandButton 
+
+
+                                            <p:commandButton 
                                                 ajax="false"
                                                 action="#{paymentController.addMissingPaymentDates()}"
                                                 rendered="true"
@@ -136,8 +143,8 @@
                                                 value="Add Missing Payment Dates" 
                                                 onclick="if (!confirm('Really want to do that?'))
                                                             return false"/>
-                                             
-                                              <p:commandButton 
+
+                                            <p:commandButton 
                                                 ajax="false"
                                                 action="#{billController.addMissingRefundStatusForCcRefunds()}"
                                                 rendered="true"
@@ -145,15 +152,15 @@
                                                 value="Add Missing Refund Status to CC Bills" 
                                                 onclick="if (!confirm('Really want to do that?'))
                                                             return false"/>
-                                             <p:commandButton 
+                                            <p:commandButton 
                                                 ajax="false"
                                                 action="#{billController.addMissingValuesForCcCancellationBillItems()}"
                                                 rendered="true"
                                                 class="w-100 m-1"
                                                 value="Add Missing CC Fees Bills" 
                                                 />
-                                            
-                                            
+
+
                                         </div>
 
 
