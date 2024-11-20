@@ -14977,9 +14977,9 @@ public class SearchController implements Serializable {
             }
 
             // Additional filters
-            if (department != null) {
-                jpqlOP += " and bi.bill.department=:dep ";
-                mOP.put("dep", department);
+            if (billedDepartment != null) {
+                jpqlOP += " and bi.bill.department=:dept ";
+                mOP.put("dept", billedDepartment);
             }
             if (institution != null) {
                 jpqlOP += " and bi.bill.department.institution=:ins ";
@@ -15024,9 +15024,9 @@ public class SearchController implements Serializable {
             }
 
             // Additional filters
-            if (department != null) {
-                jpqlIP += " and bi.bill.department=:dep ";
-                mIP.put("dep", department);
+            if (billedDepartment != null) {
+                jpqlIP += " and bi.bill.department=:dept ";
+                mIP.put("dept", billedDepartment);
             }
             if (institution != null) {
                 jpqlIP += " and bi.bill.department.institution=:ins ";
