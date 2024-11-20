@@ -105,7 +105,11 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="8. Collection Center Test Wise Count" actionListener="#{reportController.makeNull()}" action="/reports/collectionCenterReports/collection_center_test_wise_count_report?faces-redirect=true"></p:commandButton>
                                     <p:commandButton   class="w-100"  ajax="false" value="9. Route Analysis" action="/reports/collectionCenterReports/route_analysis_report?faces-redirect=true"></p:commandButton>
                                     <p:commandButton   class="w-100"  ajax="false" value="10. Collction Centre Book" action="/reports/collectionCenterReports/collection_center_book_report?faces-redirect=true"></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="11. Collction Centre Book Wise Detail" ></p:commandButton>
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="11. Collction Centre Book Wise Detail"
+                                        action="#{collectingCentreController.navigateToCollectionCentreBookWiseDetail}"></p:commandButton>
                                     <p:commandButton   class="w-100" rendered="false" ajax="false" value="12. Collction Centre Investigation List"  action="/reports/collectionCenterReports/cc_investigation_list?faces-redirect=true"></p:commandButton>
                                     <p:commandButton   class="w-100"  ajax="false" value="12. Collction Centre Bill Item List"  action="/reports/collectionCenterReports/cc_bill_item_list?faces-redirect=true"></p:commandButton>
 
