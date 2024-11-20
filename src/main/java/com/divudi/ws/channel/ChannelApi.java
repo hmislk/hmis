@@ -1349,6 +1349,11 @@ public class ChannelApi {
         Institution creditCompany = channelService.findCreditCompany(paymentChannel, InstitutionType.Agency);
         System.out.println(creditCompany.getName());
         List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany, BillClassType.BilledBill);
+        
+         if (billList == null || billList.isEmpty()) {
+            JSONObject response = commonFunctionToErrorResponse("No bill available for the RefNo");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
 
         Bill bill = billList.get(0);
         if (billList.size() > 1) {
@@ -1358,12 +1363,8 @@ public class ChannelApi {
                 }
             }
         }
-        System.out.println(billList.size());
-        if (billList == null || billList.isEmpty()) {
-            JSONObject response = commonFunctionToErrorResponse("No bill reference with RefNo");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
-
+       // System.out.println(billList.size());
+       
         if (bill.isCancelled()) {
             JSONObject response = commonFunctionToErrorResponse("Bill is already cancelled. Cant complete the booking.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
