@@ -80,18 +80,19 @@
                                 <p:outputLabel value="Service Department" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            
                             <p:autoComplete 
+                                value="#{searchController.serviceDepartment}"
                                 completeMethod="#{departmentController.completeDept}" 
                                 var="dept"
                                 class="w-100"
-                                maxlength="3"
-                                maxResults="15"
+                                minQueryLength="3"
                                 placeholder="Select Service Department"
+                                maxResults="15"
                                 inputStyleClass="w-100"
                                 itemLabel="#{dept.name}"
                                 itemValue="#{dept}">
                             </p:autoComplete>
+                            
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf571;" styleClass="fa mr-2" />
@@ -104,7 +105,7 @@
                                 completeMethod="#{departmentController.completeDept}" 
                                 var="dept"
                                 class="w-100"
-                                maxlength="3"
+                                minQueryLength="3"
                                 placeholder="Select Billed Department"
                                 maxResults="15"
                                 inputStyleClass="w-100"
@@ -190,11 +191,17 @@
 
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                           
+                            <p:commandButton 
+                                value="Download Excel" 
+                                ajax="false" 
+                                class="mx-2 ui-button-success" 
+                                icon="fa fa-file-excel">
+                                <p:dataExporter target="tbl" fileName="#{searchController.bundle.name}" type="xlsx" ></p:dataExporter>
                             </p:commandButton>
 
                         </div>
-
+                        
                         <div style="display: none;" >
                             #{searchController.bundle.reportTemplateRows}
                         </div>
@@ -204,10 +211,10 @@
                             value="#{searchController.bundle.reportTemplateRows}"
                             var="row"
                             paginator="true"
-                            rows="10"
+                            rows="20"
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="5,10,20"
+                            rowsPerPageTemplate="20,50,100"
                             rowKey="#{row.id}">
                             <f:facet name="header" >
                                 <h:outputText value="#{searchController.bundle.name}" ></h:outputText>
