@@ -14981,6 +14981,12 @@ public class SearchController implements Serializable {
                 jpqlOP += " and bi.bill.department=:dept ";
                 mOP.put("dept", billedDepartment);
             }
+            
+            if (serviceDepartment != null) {
+                jpqlOP += " and bi.bill.toDepartment=:serDept ";
+                mOP.put("serDept", serviceDepartment);
+            }
+            
             if (institution != null) {
                 jpqlOP += " and bi.bill.department.institution=:ins ";
                 mOP.put("ins", institution);
@@ -15028,6 +15034,12 @@ public class SearchController implements Serializable {
                 jpqlIP += " and bi.bill.department=:dept ";
                 mIP.put("dept", billedDepartment);
             }
+            
+            if (serviceDepartment != null) {
+                jpqlIP += " and bi.bill.toDepartment=:serDept ";
+                mIP.put("serDept", serviceDepartment);
+            }
+            
             if (institution != null) {
                 jpqlIP += " and bi.bill.department.institution=:ins ";
                 mIP.put("ins", institution);
