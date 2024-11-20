@@ -34,12 +34,11 @@ import javax.persistence.Transient;
 
 /**
  *
- * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
- * 0715812399
+ * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com> 0715812399
  */
 @Entity
 public class SessionInstance implements Serializable {
-    
+
     @ManyToOne
     private BillSession nextInLineBillSession;
     @ManyToOne
@@ -82,14 +81,12 @@ public class SessionInstance implements Serializable {
     private WebUser completedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date completedAt;
-    
+
     private boolean cancelled;
     @ManyToOne
     private WebUser cancelledBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date cancelledAt;
-    
-    
 
     private String name;
     private String sname;
@@ -139,6 +136,8 @@ public class SessionInstance implements Serializable {
     String agencyNumbers;
     String reserveName;
     String reserveNumbers;
+    private String reserveNumbersForFirstVisit;
+    private String reserveNumbersForSubsequentVisits;
     int maxTableRows;
     @Enumerated(EnumType.STRING)
     private ItemType itemType;
@@ -169,6 +168,8 @@ public class SessionInstance implements Serializable {
     int startingNo;
     int numberIncrement;
     int maxNo;
+    private int maxNoForFirstVisits;
+    private int maxNoForSubsequentVisits;
 
     boolean continueNumbers;
 
@@ -224,20 +225,43 @@ public class SessionInstance implements Serializable {
     private Long cancelOnCallPatientCount;
     private Long cancelPaidPatientCount;
     private Long nextAvailableAppointmentNumber;
-    
+
+    private Long bookedPatientCountForFirstVisits;
+    private Long paidPatientCountForFirstVisits;
+    private Long cancelPatientCountForFirstVisits;
+    private Long refundedPatientCountForFirstVisits;
+    private Long onCallPatientCountForFirstVisits;
+    private Long completedPatientCountForFirstVisits;
+    private Long remainingPatientCountForFirstVisits;
+    private Long paidToDoctorPatientCountForFirstVisits;
+    private Long reservedBookingCountForFirstVisits;
+    private Long cancelOnCallPatientCountForFirstVisits;
+    private Long cancelPaidPatientCountForFirstVisits;
+    private Long nextAvailableAppointmentNumberForFirstVisits;
+
+    private Long bookedPatientCountForSubsequentVisits;
+    private Long paidPatientCountForSubsequentVisits;
+    private Long cancelPatientCountForSubsequentVisits;
+    private Long refundedPatientCountForSubsequentVisits;
+    private Long onCallPatientCountForSubsequentVisits;
+    private Long completedPatientCountForSubsequentVisits;
+    private Long remainingPatientCountForSubsequentVisits;
+    private Long paidToDoctorPatientCountForSubsequentVisits;
+    private Long reservedBookingCountForSubsequentVisits;
+    private Long cancelOnCallPatientCountForSubsequentVisits;
+    private Long cancelPaidPatientCountForSubsequentVisits;
+    private Long nextAvailableAppointmentNumberForSubsequentVisits;
+
     private boolean arrived;
-    
-    
+
     @ManyToOne
     private ArrivalRecord arrivalRecord;
-    
+
     private int reportPatients = 0;
-    
+
     @Lob
     private String specialNoticeSessionInstance;
 
-    
-    
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
     }
@@ -1357,6 +1381,230 @@ public class SessionInstance implements Serializable {
 
     public void setSpecialNoticeSessionInstance(String specialNoticeSessionInstance) {
         this.specialNoticeSessionInstance = specialNoticeSessionInstance;
+    }
+
+    public int getMaxNoForFirstVisits() {
+        return maxNoForFirstVisits;
+    }
+
+    public void setMaxNoForFirstVisits(int maxNoForFirstVisits) {
+        this.maxNoForFirstVisits = maxNoForFirstVisits;
+    }
+
+    public int getMaxNoForSubsequentVisits() {
+        return maxNoForSubsequentVisits;
+    }
+
+    public void setMaxNoForSubsequentVisits(int maxNoForSubsequentVisits) {
+        this.maxNoForSubsequentVisits = maxNoForSubsequentVisits;
+    }
+
+    public Long getBookedPatientCountForFirstVisits() {
+        return bookedPatientCountForFirstVisits;
+    }
+
+    public void setBookedPatientCountForFirstVisits(Long bookedPatientCountForFirstVisits) {
+        this.bookedPatientCountForFirstVisits = bookedPatientCountForFirstVisits;
+    }
+
+    public Long getPaidPatientCountForFirstVisits() {
+        return paidPatientCountForFirstVisits;
+    }
+
+    public void setPaidPatientCountForFirstVisits(Long paidPatientCountForFirstVisits) {
+        this.paidPatientCountForFirstVisits = paidPatientCountForFirstVisits;
+    }
+
+    public Long getCancelPatientCountForFirstVisits() {
+        return cancelPatientCountForFirstVisits;
+    }
+
+    public void setCancelPatientCountForFirstVisits(Long cancelPatientCountForFirstVisits) {
+        this.cancelPatientCountForFirstVisits = cancelPatientCountForFirstVisits;
+    }
+
+    public Long getRefundedPatientCountForFirstVisits() {
+        return refundedPatientCountForFirstVisits;
+    }
+
+    public void setRefundedPatientCountForFirstVisits(Long refundedPatientCountForFirstVisits) {
+        this.refundedPatientCountForFirstVisits = refundedPatientCountForFirstVisits;
+    }
+
+    public Long getOnCallPatientCountForFirstVisits() {
+        return onCallPatientCountForFirstVisits;
+    }
+
+    public void setOnCallPatientCountForFirstVisits(Long onCallPatientCountForFirstVisits) {
+        this.onCallPatientCountForFirstVisits = onCallPatientCountForFirstVisits;
+    }
+
+    public Long getCompletedPatientCountForFirstVisits() {
+        return completedPatientCountForFirstVisits;
+    }
+
+    public void setCompletedPatientCountForFirstVisits(Long completedPatientCountForFirstVisits) {
+        this.completedPatientCountForFirstVisits = completedPatientCountForFirstVisits;
+    }
+
+    public Long getRemainingPatientCountForFirstVisits() {
+        return remainingPatientCountForFirstVisits;
+    }
+
+    public void setRemainingPatientCountForFirstVisits(Long remainingPatientCountForFirstVisits) {
+        this.remainingPatientCountForFirstVisits = remainingPatientCountForFirstVisits;
+    }
+
+    public Long getPaidToDoctorPatientCountForFirstVisits() {
+        return paidToDoctorPatientCountForFirstVisits;
+    }
+
+    public void setPaidToDoctorPatientCountForFirstVisits(Long paidToDoctorPatientCountForFirstVisits) {
+        this.paidToDoctorPatientCountForFirstVisits = paidToDoctorPatientCountForFirstVisits;
+    }
+
+    public Long getReservedBookingCountForFirstVisits() {
+        return reservedBookingCountForFirstVisits;
+    }
+
+    public void setReservedBookingCountForFirstVisits(Long reservedBookingCountForFirstVisits) {
+        this.reservedBookingCountForFirstVisits = reservedBookingCountForFirstVisits;
+    }
+
+    public Long getCancelOnCallPatientCountForFirstVisits() {
+        return cancelOnCallPatientCountForFirstVisits;
+    }
+
+    public void setCancelOnCallPatientCountForFirstVisits(Long cancelOnCallPatientCountForFirstVisits) {
+        this.cancelOnCallPatientCountForFirstVisits = cancelOnCallPatientCountForFirstVisits;
+    }
+
+    public Long getCancelPaidPatientCountForFirstVisits() {
+        return cancelPaidPatientCountForFirstVisits;
+    }
+
+    public void setCancelPaidPatientCountForFirstVisits(Long cancelPaidPatientCountForFirstVisits) {
+        this.cancelPaidPatientCountForFirstVisits = cancelPaidPatientCountForFirstVisits;
+    }
+
+    public Long getNextAvailableAppointmentNumberForFirstVisits() {
+        return nextAvailableAppointmentNumberForFirstVisits;
+    }
+
+    public void setNextAvailableAppointmentNumberForFirstVisits(Long nextAvailableAppointmentNumberForFirstVisits) {
+        this.nextAvailableAppointmentNumberForFirstVisits = nextAvailableAppointmentNumberForFirstVisits;
+    }
+
+    public Long getBookedPatientCountForSubsequentVisits() {
+        return bookedPatientCountForSubsequentVisits;
+    }
+
+    public void setBookedPatientCountForSubsequentVisits(Long bookedPatientCountForSubsequentVisits) {
+        this.bookedPatientCountForSubsequentVisits = bookedPatientCountForSubsequentVisits;
+    }
+
+    public Long getPaidPatientCountForSubsequentVisits() {
+        return paidPatientCountForSubsequentVisits;
+    }
+
+    public void setPaidPatientCountForSubsequentVisits(Long paidPatientCountForSubsequentVisits) {
+        this.paidPatientCountForSubsequentVisits = paidPatientCountForSubsequentVisits;
+    }
+
+    public Long getCancelPatientCountForSubsequentVisits() {
+        return cancelPatientCountForSubsequentVisits;
+    }
+
+    public void setCancelPatientCountForSubsequentVisits(Long cancelPatientCountForSubsequentVisits) {
+        this.cancelPatientCountForSubsequentVisits = cancelPatientCountForSubsequentVisits;
+    }
+
+    public Long getRefundedPatientCountForSubsequentVisits() {
+        return refundedPatientCountForSubsequentVisits;
+    }
+
+    public void setRefundedPatientCountForSubsequentVisits(Long refundedPatientCountForSubsequentVisits) {
+        this.refundedPatientCountForSubsequentVisits = refundedPatientCountForSubsequentVisits;
+    }
+
+    public Long getOnCallPatientCountForSubsequentVisits() {
+        return onCallPatientCountForSubsequentVisits;
+    }
+
+    public void setOnCallPatientCountForSubsequentVisits(Long onCallPatientCountForSubsequentVisits) {
+        this.onCallPatientCountForSubsequentVisits = onCallPatientCountForSubsequentVisits;
+    }
+
+    public Long getCompletedPatientCountForSubsequentVisits() {
+        return completedPatientCountForSubsequentVisits;
+    }
+
+    public void setCompletedPatientCountForSubsequentVisits(Long completedPatientCountForSubsequentVisits) {
+        this.completedPatientCountForSubsequentVisits = completedPatientCountForSubsequentVisits;
+    }
+
+    public Long getRemainingPatientCountForSubsequentVisits() {
+        return remainingPatientCountForSubsequentVisits;
+    }
+
+    public void setRemainingPatientCountForSubsequentVisits(Long remainingPatientCountForSubsequentVisits) {
+        this.remainingPatientCountForSubsequentVisits = remainingPatientCountForSubsequentVisits;
+    }
+
+    public Long getPaidToDoctorPatientCountForSubsequentVisits() {
+        return paidToDoctorPatientCountForSubsequentVisits;
+    }
+
+    public void setPaidToDoctorPatientCountForSubsequentVisits(Long paidToDoctorPatientCountForSubsequentVisits) {
+        this.paidToDoctorPatientCountForSubsequentVisits = paidToDoctorPatientCountForSubsequentVisits;
+    }
+
+    public Long getReservedBookingCountForSubsequentVisits() {
+        return reservedBookingCountForSubsequentVisits;
+    }
+
+    public void setReservedBookingCountForSubsequentVisits(Long reservedBookingCountForSubsequentVisits) {
+        this.reservedBookingCountForSubsequentVisits = reservedBookingCountForSubsequentVisits;
+    }
+
+    public Long getCancelOnCallPatientCountForSubsequentVisits() {
+        return cancelOnCallPatientCountForSubsequentVisits;
+    }
+
+    public void setCancelOnCallPatientCountForSubsequentVisits(Long cancelOnCallPatientCountForSubsequentVisits) {
+        this.cancelOnCallPatientCountForSubsequentVisits = cancelOnCallPatientCountForSubsequentVisits;
+    }
+
+    public Long getCancelPaidPatientCountForSubsequentVisits() {
+        return cancelPaidPatientCountForSubsequentVisits;
+    }
+
+    public void setCancelPaidPatientCountForSubsequentVisits(Long cancelPaidPatientCountForSubsequentVisits) {
+        this.cancelPaidPatientCountForSubsequentVisits = cancelPaidPatientCountForSubsequentVisits;
+    }
+
+    public Long getNextAvailableAppointmentNumberForSubsequentVisits() {
+        return nextAvailableAppointmentNumberForSubsequentVisits;
+    }
+
+    public void setNextAvailableAppointmentNumberForSubsequentVisits(Long nextAvailableAppointmentNumberForSubsequentVisits) {
+        this.nextAvailableAppointmentNumberForSubsequentVisits = nextAvailableAppointmentNumberForSubsequentVisits;
+    }
+
+    public String getReserveNumbersForFirstVisit() {
+        return reserveNumbersForFirstVisit;
+    }
+
+    public void setReserveNumbersForFirstVisit(String reserveNumbersForFirstVisit) {
+        this.reserveNumbersForFirstVisit = reserveNumbersForFirstVisit;
+    }
+
+    public String getReserveNumbersForSubsequentVisits() {
+        return reserveNumbersForSubsequentVisits;
+    }
+
+    public void setReserveNumbersForSubsequentVisits(String reserveNumbersForSubsequentVisits) {
+        this.reserveNumbersForSubsequentVisits = reserveNumbersForSubsequentVisits;
     }
     
     

@@ -2,8 +2,9 @@
 * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
-package com.divudi.ejb;
+package com.divudi.service;
 
+import com.divudi.ejb.*;
 import com.divudi.data.BillType;
 import static com.divudi.data.SessionNumberType.ByCategory;
 import static com.divudi.data.SessionNumberType.ByItem;
@@ -40,7 +41,7 @@ import javax.persistence.TemporalType;
  * @author Buddhika
  */
 @Singleton
-public class ServiceSessionBean {
+public class ClinicService {
 
     @EJB
     BillSessionFacade billSessionFacade;
@@ -319,54 +320,7 @@ public class ServiceSessionBean {
     }
 
     @Lock(LockType.WRITE)
-    public Integer getNextNonReservedSerialNumber(SessionInstance si, List<Integer> reservedNumbers) {
-        BillType[] billTypes = {
-            BillType.ChannelAgent,
-            BillType.ChannelCash,
-            BillType.ChannelOnCall,
-            BillType.ChannelStaff,
-            BillType.ChannelCredit,
-            BillType.ChannelResheduleWithOutPayment,
-            BillType.ChannelResheduleWithPayment          
-        };
-
-        List<BillType> bts = Arrays.asList(billTypes);
-        String jpql = "SELECT bs.serialNo "
-                + "FROM BillSession bs "
-                + "WHERE bs.sessionInstance = :si "
-                + "AND bs.bill.billType IN :bt "
-                + "AND TYPE(bs.bill) = :class";
-
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("si", si);
-        params.put("bt", bts);
-        params.put("class", BilledBill.class);
-
-        // Fetch the booked (already assigned) numbers
-        List<Integer> bookedNumbers = (List<Integer>) getBillSessionFacade().findLightsByJpql(jpql, params);
-
-        // Combine reserved and booked numbers into a single set to ensure uniqueness
-        Set<Integer> allUnavailableNumbers = new HashSet<>(bookedNumbers);
-        allUnavailableNumbers.addAll(reservedNumbers);
-
-        // Find the next available number
-        // Assuming serial numbers start from 1 and increment by 1
-        int nextAvailableNumber = 1;
-        if (si.getOriginatingSession().getSessionStartingNumber()!=null) {
-            if (!si.getOriginatingSession().getSessionStartingNumber().trim().equals("")) {
-             nextAvailableNumber=Integer.valueOf(si.getOriginatingSession().getSessionStartingNumber());   
-            }
-        }
-        
-        while (allUnavailableNumbers.contains(nextAvailableNumber)) {
-            nextAvailableNumber++;
-        }
-
-        return nextAvailableNumber;
-    }
-
-    @Lock(LockType.WRITE)
-    public Integer getNextAvailableReservedNumber(SessionInstance si, List<Integer> reservedNumbers, Integer selectedReservedBookingNumber) {
+    public Integer getNextNonReservedSerialNumber(SessionInstance si, List<Integer> reservedNumbers, boolean firstVisit) {
         BillType[] billTypes = {
             BillType.ChannelAgent,
             BillType.ChannelCash,
@@ -382,11 +336,62 @@ public class ServiceSessionBean {
                 + "FROM BillSession bs "
                 + "WHERE bs.sessionInstance = :si "
                 + "AND bs.bill.billType IN :bt "
-                + "AND TYPE(bs.bill) = :class";
+                + "AND TYPE(bs.bill) = :class "
+                + "AND bs.firstVisit=:fv ";
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("si", si);
         params.put("bt", bts);
+        params.put("fv", firstVisit);
+        params.put("class", BilledBill.class);
+
+        // Fetch the booked (already assigned) numbers
+        List<Integer> bookedNumbers = (List<Integer>) getBillSessionFacade().findLightsByJpql(jpql, params);
+
+        // Combine reserved and booked numbers into a single set to ensure uniqueness
+        Set<Integer> allUnavailableNumbers = new HashSet<>(bookedNumbers);
+        allUnavailableNumbers.addAll(reservedNumbers);
+
+        // Find the next available number
+        // Assuming serial numbers start from 1 and increment by 1
+        int nextAvailableNumber = 1;
+        if (si.getOriginatingSession().getSessionStartingNumber() != null) {
+            if (!si.getOriginatingSession().getSessionStartingNumber().trim().equals("")) {
+                nextAvailableNumber = Integer.valueOf(si.getOriginatingSession().getSessionStartingNumber());
+            }
+        }
+
+        while (allUnavailableNumbers.contains(nextAvailableNumber)) {
+            nextAvailableNumber++;
+        }
+
+        return nextAvailableNumber;
+    }
+
+    @Lock(LockType.WRITE)
+    public Integer getNextAvailableReservedNumber(SessionInstance si, List<Integer> reservedNumbers, Integer selectedReservedBookingNumber, boolean firstVisit) {
+        BillType[] billTypes = {
+            BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithOutPayment,
+            BillType.ChannelResheduleWithPayment
+        };
+
+        List<BillType> bts = Arrays.asList(billTypes);
+        String jpql = "SELECT bs.serialNo "
+                + "FROM BillSession bs "
+                + "WHERE bs.sessionInstance = :si "
+                + "AND bs.bill.billType IN :bt "
+                + "AND TYPE(bs.bill) = :class "
+                + "AND bs.firstVisit=:fv ";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("si", si);
+        params.put("bt", bts);
+        params.put("fv", firstVisit);
         params.put("class", BilledBill.class);
 
         // Fetch the booked (already assigned) numbers
