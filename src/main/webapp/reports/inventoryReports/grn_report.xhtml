@@ -16,26 +16,28 @@
                             </p:outputLabel>
                             <p:datePicker value="" 
                                           class="w-100"
+                                          inputStyleClass="w-100"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                            
+
 
                             <p:outputLabel value="To Date" class="mx-2" >
                             </p:outputLabel>
                             <p:datePicker value=""
                                           class="w-100"
+                                          inputStyleClass="w-100"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                            
 
-                            <p:outputLabel value="Branch" class="mx-2" >
+
+                            <p:outputLabel value="Institution" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            
+
+
 
                             <p:outputLabel value="Store" class="mx-2" >
                             </p:outputLabel>
@@ -43,8 +45,8 @@
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            
+
+
 
                             <p:outputLabel value="Payment Mode" class="mx-2" >
                             </p:outputLabel>
@@ -52,16 +54,16 @@
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            
-                            
+
+
+
                             <p:outputLabel value="Suplier" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
-                            
+
                             <p:outputLabel value="Type" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
@@ -69,65 +71,80 @@
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
 
+<!--                            To do Requirements
+                            If Type Is Detail Need to Add columns Qty,Free Qty, Item rate, Item MRP,Date of Expiry,Batch Code,UOM
+                            Need a Link to View GRN / PO (Please check wireframe document)-->
+
                         </p:panelGrid>
 
-                        <div class="d-flex align-items-center my-2">
-                            <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
+                        <div class="d-flex align-items-center">
+                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" >
                             </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Download"
-                                             action="null">
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
-                            
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            </p:commandButton>
                         </div>
 
                         <p:dataTable id="tbl" value="" 
-                                     paginator="true"
-                                     rows="10">
+                                     var="f" 
+                                     rowIndexVar="n" 
+                                     paginator="true" 
+                                     rows="10" 
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-                            <p:column headerText="GRN No.">
+
+                            <p:column headerText="GRN No" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Invoice No">
+                            <p:column headerText="Invoice No" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Created Date">
+                            <p:column headerText="Created Date" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Approved Date">
+                            <p:column headerText="Approved Date" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Supplier Name">
+                            <p:column headerText="Supplier Name" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Branch">
+                            <p:column headerText="Branch" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Po No">
+                            <p:column headerText="Po No" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Purchase Value Cash">
+                            <p:column headerText="Purchase Value Cash" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Purchase Value Credit">
+                            <p:column headerText="Purchase Value Credit" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Sale Value Cash">
+                            <p:column headerText="Sale Value Cash" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Sale Value Credit">
+                            <p:column headerText="Sale Value Credit" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Remark">
+                            <p:column headerText="Remark" width="5em">
                                 <h:outputText value="" />
                             </p:column>
 
                         </p:dataTable>
+                        
                     </p:panel>
 
                 </h:form>
 
             </ui:define>
+            
         </ui:composition>
 
     </h:body>
+    
 </html>
