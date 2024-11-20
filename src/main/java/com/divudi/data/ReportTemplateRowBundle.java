@@ -1,6 +1,7 @@
 package com.divudi.data;
 
 import com.divudi.bean.common.SessionController;
+
 import static com.divudi.data.PaymentMethod.Agent;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
@@ -17,6 +18,7 @@ import static com.divudi.data.PaymentMethod.Staff_Welfare;
 import static com.divudi.data.PaymentMethod.Voucher;
 import static com.divudi.data.PaymentMethod.YouOweMe;
 import static com.divudi.data.PaymentMethod.ewallet;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.ReportTemplate;
@@ -24,6 +26,7 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +43,6 @@ import java.time.ZoneId;
 import java.util.*;
 
 /**
- *
  * @author buddhika
  */
 public class ReportTemplateRowBundle implements Serializable {
@@ -50,7 +52,7 @@ public class ReportTemplateRowBundle implements Serializable {
     // UUID field to uniquely identify each object
     private UUID id;
 
-//    private SessionController sessionController;
+    //    private SessionController sessionController;
     private List<com.divudi.entity.cashTransaction.Denomination> denominations;
 
     private List<ReportTemplateRowBundle> bundles;
@@ -161,7 +163,7 @@ public class ReportTemplateRowBundle implements Serializable {
         this.id = UUID.randomUUID();
     }
 
-//    public ReportTemplateRowBundle(SessionController sessionController) {
+    //    public ReportTemplateRowBundle(SessionController sessionController) {
 //        this();
 //        this.sessionController = sessionController;
 //    }
@@ -990,6 +992,20 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public void calculateTotalByBillItems() {
+        total = 0.0;
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBillItem().getBill().getNetTotal());
+                total += amount;
+            }
+        }
+    }
+
     public void calculateTotalByRowTotals() {
         total = 0.0;        // Ensure all counters are reset before starting calculations
         grossTotal = 0.0;
@@ -997,7 +1013,7 @@ public class ReportTemplateRowBundle implements Serializable {
         tax = 0.0;
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
-                if (row != null) { 
+                if (row != null) {
                     Double iteratingTotal = safeDouble(row.getGrossTotal());
                     grossTotal += iteratingTotal;
 
@@ -1384,14 +1400,14 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
-    
+
     public void createRowValuesFromBillItems() {
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
                 System.out.println("Processing row: " + row);
                 System.out.println("row.getBill() = " + row.getBill());
 
-                if (row.getBillItem()== null) {
+                if (row.getBillItem() == null) {
                     System.out.println("Skipping row, as bill is null.");
                     continue;
                 }
@@ -1418,8 +1434,7 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
-    
-    
+
     private void resetTotalsAndFlags() {
         this.cashValue = this.cardValue = this.multiplePaymentMethodsValue = this.staffValue
                 = this.creditValue = this.staffWelfareValue = this.voucherValue = this.iouValue
@@ -2366,7 +2381,7 @@ public class ReportTemplateRowBundle implements Serializable {
         this.onlineSettlementHandoverValue = onlineSettlementHandoverValue;
     }
 
-//    public SessionController getSessionController() {
+    //    public SessionController getSessionController() {
 //        return sessionController;
 //    }
 //
