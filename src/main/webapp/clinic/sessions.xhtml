@@ -284,10 +284,13 @@
                                     </h:panelGroup>
                                 </div>
                                 <div class="col-5" > 
-                                    <div class="sticky-top shadow " style="max-height: 100vh; overflow-y: auto;z-index: 100;">
-                                        <common:patient_details_view_scope
-                                            editable="#{true}"
-                                            controller="#{clinicController}"/>
+                                    <div class="w-100" style="max-height: 100vh; overflow-y: auto;z-index: 100;">
+                                        <div class="w-100" >
+                                            <common:patient_details_view_scope
+                                                editable="#{true}"
+                                                controller="#{clinicController}"/>
+                                        </div>
+
 
                                         <h:panelGroup id="gpAdditionalItems" >
                                             <p:panel header="Additional Items" rendered="#{not empty clinicController.itemsAvailableToAddToBooking}">
@@ -388,7 +391,7 @@
                                             </f:facet>
 
 
-                                            <h:panelGroup  id="panelPaymentMethod" rendered="#{configOptionApplicationController.getBooleanValueByKey('No Payments for Clinic Booking')}">
+                                            <h:panelGroup  id="panelPaymentMethod" rendered="#{not configOptionApplicationController.getBooleanValueByKey('No Payments for Clinic Booking')}">
                                                 <p:panelGrid columns="2" layout="tabular" class="w-100">
                                                     <p:outputLabel value="Payment Method"/>
                                                     <h:panelGroup>
@@ -467,7 +470,7 @@
                                                 <p:column colspan="4" >
                                                     <p:commandButton
                                                         id="btnAddFirst"
-                                                        value="Add Fitst Booking"
+                                                        value="Add First Booking"
                                                         ajax="false"
                                                         update="gpThisBookingDetails"
                                                         class="ui-button-danger "
@@ -861,7 +864,7 @@
                                         </p:panel>
 
                                         <h:panelGroup id="panelBookingDetails">
-                                            <p:panelGrid columns="2" layout="tabular"  class="w-100 mt-1">
+                                            <p:panelGrid columns="2" layout="tabular"  class="w-100">
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fa-solid fa-calendar-plus"/>
                                                     <h:outputText class="mx-4" value="Booking Details"/>
@@ -902,9 +905,9 @@
 
 
 
-                                                <p:outputLabel value="Total Fee" />
+                                                <p:outputLabel value="Total Fee"  rendered="#{not configOptionApplicationController.getBooleanValueByKey('No Payments for Clinic Booking')}"/>
 
-                                                <h:panelGroup id="gpFeeTotal">
+                                                <h:panelGroup id="gpFeeTotal"  rendered="#{not configOptionApplicationController.getBooleanValueByKey('No Payments for Clinic Booking')}">
                                                     <p:outputLabel  rendered="#{!clinicController.foriegn}"
                                                                     value="#{clinicController.feeTotalForSelectedBill}">
                                                         <f:convertNumber pattern="#,##0.00" />
@@ -916,7 +919,10 @@
                                                 </h:panelGroup>
                                             </p:panelGrid>
 
-                                            <p:dataTable value="#{clinicController.selectedItemFeesWithouZeros}" var="i" >
+                                            <p:dataTable 
+                                                value="#{clinicController.selectedItemFeesWithouZeros}" 
+                                                var="i" 
+                                                rendered="#{not configOptionApplicationController.getBooleanValueByKey('No Payments for Clinic Booking')}">
                                                 <p:column headerText="Name">
                                                     <h:outputLabel value="#{i.item.name}"/> 
                                                     <h:outputLabel class="mr-4" value="("/> 
