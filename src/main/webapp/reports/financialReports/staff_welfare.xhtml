@@ -152,7 +152,20 @@
                                         itemValue="#{d}" />
                                 </p:selectOneMenu>
 
+
+
                             </h:panelGroup>
+
+
+                            <p:outputLabel value="Type" ></p:outputLabel>
+                            <p:selectOneMenu
+                                styleClass="w-100 form-control"
+                                value="#{searchController.reportType}">
+                                <f:selectItem itemLabel="Select" />
+                                <f:selectItem itemLabel="Bills" itemValue="bills"/>
+                                <f:selectItem itemLabel="Bill Items" itemValue="billItems"/>
+                            </p:selectOneMenu>
+
                         </h:panelGrid>
 
                         <p:commandButton 
@@ -164,15 +177,6 @@
                             style="background-color: #28a745; border-color: #28a745;"> 
                         </p:commandButton>
 
-                        <p:commandButton
-                            value="Update"
-                            ajax="false"
-                            rendered="#{webUserController.hasPrivilege('Developers')}"
-                            action="#{searchController.updateBillItemValues()}"
-                            class="ui-button-danger m-1"
-                            icon="pi pi-pencil"
-                            onclick="return confirm('Are you sure you want to update the bill item values?');">
-                        </p:commandButton>
 
                         <p:commandButton 
                             value="Download Excel" 
@@ -204,8 +208,14 @@
 
 
                         <h:panelGroup id="printPanel">        
+                             #{searchController.bundle}
+                             <br/>
+                            
+                            #{searchController.bundle.bundleType}
 
-                            <ez:staffWelfareBills bundle="#{searchController.bundle}" />
+                            <ez:staffWelfareBills rendered="#{searchController.reportType eq 'bills'}" bundle="#{searchController.bundle}" />
+
+                            <ez:staffWelfareBillItems  rendered="#{searchController.reportType eq 'billItems'}"   bundle="#{searchController.bundle}" />
 
                         </h:panelGroup>
                     </p:panel>
