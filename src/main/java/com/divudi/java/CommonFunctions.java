@@ -272,6 +272,16 @@ public class CommonFunctions {
         return minCount;
     }
 
+    public static Date deductMinutesFromCurrentTime(int minutes) {
+        if (minutes < 0) {
+            throw new IllegalArgumentException("Minutes must be non-negative");
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.MINUTE, -minutes);
+        return calendar.getTime();
+    }
+
     public static LocalDateTime getLocalDateTime(Date dateTime) {
         Date input = dateTime;
         LocalDateTime date = input.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
