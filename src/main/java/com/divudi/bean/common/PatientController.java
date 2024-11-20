@@ -2032,12 +2032,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
             if (controller.getPatient().getHasAnAccount() != null) {
                 if (patientSearched.getHasAnAccount() && configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false)) {
+
                     opdBillController.setPatient(controller.getPatient());
                     opdBillController.setPaymentMethod(PaymentMethod.PatientDeposit);
                     opdBillController.listnerForPaymentMethodChange();
                 }
             }
-
             quickSearchPatientList = null;
         } else {
             controller.setPatient(null);

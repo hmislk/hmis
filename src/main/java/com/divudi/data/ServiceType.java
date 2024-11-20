@@ -14,6 +14,7 @@ public enum ServiceType {
     OTHER("Other"),
     SETTLEMENT("Settlement"),
     INWARD("Inward"),
+    INWARD_SERVICE("Inward SERVICE"),
     PATIENT_DEPOSIT("PATIENT DEPOSIT"),
     COMPANY_CREDIT("COMPANY CREDIT"),
     AGENCY("Agency");  // Added new service type for agency-related transactions
