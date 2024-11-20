@@ -3,6 +3,21 @@ package com.divudi.bean.common;
 import com.divudi.bean.hr.StaffImageController;
 import com.divudi.bean.lab.CommonReportItemController;
 import com.divudi.bean.lab.PatientInvestigationController;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import javax.inject.Named;
+import javax.enterprise.context.RequestScoped;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+import com.divudi.entity.lab.PatientReport;
+import com.divudi.data.ReportTemplateRowBundle;
+import javax.inject.Inject;
+
+
+
+import ca.uhn.fhir.model.api.IElement;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ReportItemType;
@@ -43,26 +58,15 @@ import static com.divudi.data.ReportItemType.SampledTime;
 import static com.divudi.data.ReportItemType.Speciman;
 import static com.divudi.data.ReportItemType.VisitType;
 import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.entity.Category;
 import com.divudi.entity.lab.CommonReportItem;
 import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.lab.PatientSampleComponant;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import javax.inject.Named;
-import javax.enterprise.context.RequestScoped;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.Objects;
-
+import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import java.util.Optional;
 import java.util.HashMap;
 import java.util.List;
@@ -70,8 +74,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.image.ImageData;
@@ -81,7 +83,9 @@ import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.*;
+import com.itextpdf.layout.Canvas;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.Style;
@@ -92,8 +96,8 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
+import com.itextpdf.text.pdf.qrcode.BitMatrix;
 import java.util.function.Supplier;
-import javax.inject.Inject;
 
 /**
  *
@@ -121,7 +125,7 @@ public class PdfController {
     public PdfController() {
     }
      public StreamedContent createPdfForBundle(ReportTemplateRowBundle rootBundle) throws IOException {
-        if (rootBundle == null) {
+         if (rootBundle == null) {
             return null;
         }
 
@@ -768,8 +772,6 @@ public class PdfController {
         return null;
     }
 
-   
-
     private void addDataToPdf(Document document, ReportTemplateRowBundle addingBundle, String type) {
         if (type == null || type.isEmpty()) {
             type = "BillList";
@@ -1174,7 +1176,6 @@ public class PdfController {
         }
     }
     
-
     private void populateTableForIncomeByCategoryWithProfessionalFee(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
 

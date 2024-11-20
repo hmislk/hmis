@@ -895,10 +895,10 @@ public class ReportController implements Serializable {
             m.put("cat", category);
         }
 
-        if (investigation != null) {
-            jpql += " AND bi.patientInvestigation.investigation = :inv";
-            m.put("inv", investigation);
-        }
+//        if (investigation != null) {
+//            jpql += " AND bi.patientInvestigation.investigation = :inv";
+//            m.put("inv", investigation);
+//        }
 
         if (item != null) {
             jpql += " AND bi.item = :item";
@@ -1257,16 +1257,19 @@ public class ReportController implements Serializable {
 
         if (bis.size() == 1) {
             voucherItem = billItemFacade.findFirstByJpql(jpql, m);
-            if (voucherItem.getBill().getNetTotal() < b.getNetTotal()) {
-                voucherItem.getBill().setAdjustedTotal(Math.abs(b.getNetTotal()) - Math.abs(voucherItem.getBill().getNetTotal()));
+            voucherItem.getBill().setNetTotal(voucherItem.getNetValue());
+            if (voucherItem.getNetValue() < b.getNetTotal()) {
+                voucherItem.getBill().setAdjustedTotal(Math.abs(voucherItem.getNetValue()));
+                voucherItem.getBill().setBalance(Math.abs(b.getNetTotal()) - Math.abs(voucherItem.getNetValue()));
             }
         } else if (bis.size() > 1) {
             Double NetTotal = 0.0;
             for (BillItem bi : bis) {
                 voucherItem = bi;
-                NetTotal += voucherItem.getBill().getNetTotal();
+                NetTotal += voucherItem.getNetValue();
             }
             voucherItem.getBill().setNetTotal(NetTotal);
+            voucherItem.getBill().setBalance(Math.abs(b.getNetTotal()) - Math.abs(voucherItem.getBill().getNetTotal()));
         }
 
         return voucherItem;
@@ -2372,7 +2375,7 @@ public class ReportController implements Serializable {
     }
 
     public String navigateToManagementAdmissionCountReport() {
-
+        reportType="Summary";
         return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
     }
 

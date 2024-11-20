@@ -76,13 +76,9 @@ public class UploadViewController {
         
         String url = "";
         if (u == null) {
-            System.out.println("u is Null ");
 
         } else {
-            System.out.println("u is not Null ");
-            System.out.println("url = " + u.getFileUrl());
             url = u.getFileUrl();
-            System.out.println("Filan URL = " + url);
         }
         return url;
     }

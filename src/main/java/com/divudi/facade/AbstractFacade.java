@@ -34,15 +34,22 @@ public abstract class AbstractFacade<T> {
 
     private Class<T> entityClass;
 
-    public int executeNativeSql(String jpql) {
+    public void executeNativeSql(String sql) throws Exception {
+        EntityManager em = getEntityManager();
         try {
-            getEntityManager().getTransaction().begin();
-            Query query = getEntityManager().createNativeQuery(jpql);
-            int result = query.executeUpdate();
-            getEntityManager().getTransaction().commit();
-            return result;
+            // Begin transaction if not managed by container
+            em.getTransaction().begin();
+
+            // Execute the native SQL query
+            Query query = em.createNativeQuery(sql);
+            query.executeUpdate();
+
+            // Commit transaction
+            em.getTransaction().commit();
         } catch (Exception e) {
-            return 0;
+            // Rollback transaction in case of error
+            em.getTransaction().rollback();
+            throw e; // Rethrow exception to be handled in calling method
         }
     }
 
@@ -170,7 +177,6 @@ public abstract class AbstractFacade<T> {
 //        }
 //        return t;
 //    }
-
     public T findFreshByJpql(String jpql, Map<String, Object> parameters) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         qry.setHint("javax.persistence.cache.storeMode", "REFRESH"); // Bypass cache
@@ -215,7 +221,7 @@ public abstract class AbstractFacade<T> {
             return null;
         }
     }
-    
+
     public T findFirstByJpql(String jpql, Map<String, Object> parameters, boolean withoutCache) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         Set s = parameters.entrySet();
@@ -240,8 +246,7 @@ public abstract class AbstractFacade<T> {
         } catch (NoResultException e) {
             return null;
         }
-        
-        
+
     }
 
     public AbstractFacade(Class<T> entityClass) {

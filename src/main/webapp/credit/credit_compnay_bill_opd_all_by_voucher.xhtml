@@ -68,7 +68,7 @@
                                             <p:column>
                                                 <h:outputLabel value="#{ix.netTotal}"/>
                                             </p:column>
-                                            <f:ajax execute="@this" event="itemSelect" render=":#{p:resolveFirstComponentWithId('items',view).clientId} :#{p:resolveFirstComponentWithId('ins',view).clientId} tot tot1" 
+                                            <f:ajax execute="@this" event="itemSelect" render=":#{p:resolveFirstComponentWithId('items',view).clientId} :#{p:resolveFirstComponentWithId('ins',view).clientId} tot tot1 tot2" 
                                                     listener="#{cashRecieveBillController.selectVoucherListener()}"/>
                                         </p:autoComplete> 
                                     </div>
@@ -95,6 +95,17 @@
                                     </div>
                                     <div class="col-md-8">
                                         <p:outputLabel id="tot" value="#{cashRecieveBillController.current.total}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </div>
+                                </div>
+                                
+                                 <div class="row my-2 d-flex align-items-center">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Remaning Bill Balance" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:outputLabel id="tot2" value="#{cashRecieveBillController.current.balance}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </div>

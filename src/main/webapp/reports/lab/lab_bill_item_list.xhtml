@@ -233,6 +233,18 @@
                         </h:outputLabel>
 
                     </p:column>
+                    
+                    <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill Type"  filterBy="#{billItem.bill.billTypeAtomic}" sortBy="#{billItem.bill.billTypeAtomic}" filterMatchMode="contains">
+                        <h:outputLabel 
+                            value="#{billItem.bill.billTypeAtomic}" >
+                        </h:outputLabel>
+                    </p:column>
+                    
+                    <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="ID"  filterBy="#{billItem.id}" sortBy="#{billItem.id}" filterMatchMode="contains">
+                        <h:outputLabel 
+                            value="#{billItem.id}" >
+                        </h:outputLabel>
+                    </p:column>
 
                     <!-- Bill Date Column -->
                     <p:column headerText="Bill Date" filterBy="#{billItem.bill.createdAt}" sortBy="#{billItem.bill.createdAt}">
