@@ -75,9 +75,10 @@
                                         id="billNo" 
                                         ajax="false" 
                                         value="#{bill.deptId}" 
+                                        action="/credit/views/bill_reprint?faces-redirect=true"
                                         >
                                         <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillSearch.bill}"/>
-                                        <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillController.current}"/>
+                                        <f:setPropertyActionListener value="#{bill}" target="#{cashRecieveBillController.current}"/>
                                     </p:commandLink>
 
 
