@@ -4,7 +4,8 @@
       template="/resources/template/template.xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
 
     <h:body>
 
@@ -159,7 +160,7 @@
                                                 </p:panel>  
                                             </p:column>
 
-                                            <p:column rendered="true" headerText="Status">
+                                            <p:column headerText="Status">
                                                 <p:tag class="mr-2" style="font-size: 0.8rem" severity="success" value="Completed" rendered="#{bs.completed}"/>
                                                 <p:tag class="mr-2" style="font-size: 0.8rem" severity="default" value="OnGoing" rendered="#{bs.currentlyConsulted}"/>
                                                 <p:tag class="mr-2" style="font-size: 0.8rem" severity="warning" value="Next" rendered="#{bs.nextInLine}"/>
@@ -228,7 +229,133 @@
 
 
                                         </p:dataTable>
+                                        <p:poll interval="5" listener="#{bookingControllerViewScope.loadBillSessions()}" update="acBookings" onactivated="console.log('poll started')"></p:poll>
                                     </p:tab>
+                                    <!--                                    temporary bookings tab-->
+
+                                    <p:tab >
+                                        <f:facet name="title">
+                                            <h:outputText value="Temporary Bookings " />
+                                            <p:badge id="test" value="#{bookingControllerViewScope.temporaryBillSessions.size()}" severity="danger"/>
+                                        </f:facet>
+                                 
+
+                                        <p:dataTable id="temporaryBookings" 
+                                                     rowKey="#{bs.id}"
+                                                     value="#{bookingControllerViewScope.temporaryBillSessions}" 
+                                                     var="bs" 
+                                                     selection="#{bookingControllerViewScope.selectedBillSession}" 
+                                                     selectionMode="single"
+                                                     styleClass="w-100 fullHeightListbox">
+
+                                            <p:column headerText="Serial No" width="2em">
+                                                <h:outputLabel value="#{bs.serialNoStr}" ></h:outputLabel>
+                                            </p:column>
+
+                                            <p:column headerText="Name" 
+                                                      filterMatchMode="contains"
+                                                      filterBy="#{bs.bill.patient.person.name}"
+                                                      width="25em">
+
+                                                <p:panel header="(#{bs.bill.patient.person.smsNumber})" collapsed="true" 
+                                                         toggleOrientation="vertical" toggleable="true"  >
+                                                    <f:facet name="header" >
+                                                        <h:outputText class="mr-5" value="#{bs.bill.patient.person.nameWithTitle}" />
+                                                        <p:spacer width="12" ></p:spacer>
+                                                        <h:outputText class="ml-5" style="font-size: 0.9em" value="(#{bs.bill.patient.person.smsNumber})" />
+                                                        <p:tag class="mr-2 mx-2" style="font-size: 0.8rem" severity="warning" value="OB" rendered="#{bs.bill.creditCompany ne null and bs.bill.creditCompany.institutionCode.equalsIgnoreCase('WEB_DOC990')}"/>
+                                                    </f:facet>
+
+                                                    <h:panelGrid columns="2" >
+                                                        <h:outputLabel value="Institution Code" ></h:outputLabel>
+                                                        <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                                                        <h:outputLabel value="Bill Session ID" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.id}" ></h:outputLabel>
+                                                        <h:outputLabel value="Bill ID" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.id}" ></h:outputLabel>
+                                                        <h:outputLabel value="Bill Type" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.billType}" ></h:outputLabel>
+                                                        <h:outputLabel value="Bill Type Atomic" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.billTypeAtomic}" ></h:outputLabel>
+                                                        <h:outputLabel value="Paid Bill ID" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.paidBill}" ></h:outputLabel>
+                                                        <h:panelGroup rendered="#{bs.bill.agentRefNo ne null and bs.bill.creditCompany ne null}">
+                                                            <h:outputLabel value="Booking Agent" ></h:outputLabel>
+                                                            <br></br>
+                                                            <h:outputLabel value="Booking Ref No" ></h:outputLabel>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{bs.bill.agentRefNo ne null and bs.bill.creditCompany ne null}">
+                                                            <h:outputLabel value="#{bs.bill.creditCompany.name}" ></h:outputLabel>
+                                                            <br></br>
+                                                            <h:outputLabel value="#{bs.bill.agentRefNo}" ></h:outputLabel>
+                                                        </h:panelGroup>
+
+                                                    </h:panelGrid>
+                                                </p:panel>  
+                                            </p:column>
+
+                                            <p:column rendered="true" headerText="Status" width="5em">
+                                                <p:outputLabel class="badge badge-light" value="#{bs.bill.creditCompany.name}" style="color: green;"/>
+                                            </p:column>
+                                            <p:column headerText="Payment" width="8em">
+                                                <p:outputLabel class="badge badge-light" value="Not Completed" style="color: green;"/>
+                       
+                                            </p:column>
+
+                                            <p:column headerText="Actions" width="6em">
+                                                <div class="d-flex">
+                                                    <p:commandButton 
+                                                        icon="fa-solid fa-book" 
+                                                        title="Past Channel Bookings"
+                                                        class="ui-button-secondary"
+                                                        action="#{patientController.navigateToPatientPastChannelBiiking()}"
+                                                        disabled="true"
+                                                        ajax="false">
+                                                        <f:setPropertyActionListener target="#{patientController.patient}" value="#{bs.bill.patient}"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        icon="pi pi-user-plus" 
+                                                        title="OPD" 
+                                                        ajax="false" 
+                                                        action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}"
+                                                        disabled="#{(bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall')}"
+                                                        class="ui-button-secondary mx-1">
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        icon="pi pi-cog" 
+                                                        title="Manage Booking" 
+                                                        ajax="false"
+                                                        disabled="true"
+                                                        action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
+                                                        class="ui-button-secondary ">
+                                                    </p:commandButton>
+
+                                                </div>
+                                                <h:panelGroup rendered="#{bs.markedToCancel}">
+                                                    <i class="fas fa-ban text-danger" title="Cancel"></i>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{bs.markedToRefund}">
+                                                    <i class="fas fa-undo-alt text-danger" title="Refund"></i>
+                                                </h:panelGroup>
+                                            </p:column>
+
+                                            <p:column>
+                                                <p:commandButton 
+                                                    rendered="#{bs.absent}"
+                                                    disabled="#{!(bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall')}"
+                                                    value="Change Patient"
+                                                    ajax="false" 
+                                                    action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
+                                                    class="ui-button-secondary">
+                                                </p:commandButton>
+
+                                            </p:column>
+
+
+                                        </p:dataTable>
+                                        <p:poll interval="5" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings test" onactivated="console.log('poll started')"></p:poll>
+                                    </p:tab>
+
                                     <p:tab title="Nurse View" >
                                         <p:commandButton 
                                             value="Print" 
