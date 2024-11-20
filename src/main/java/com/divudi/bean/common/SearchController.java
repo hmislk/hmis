@@ -3400,6 +3400,10 @@ public class SearchController implements Serializable {
         totalOfOtherPayments = 0.0;
         billCount = 0.0;
         totalPaying = 0.0;
+        serviceDepartment = null;
+        billedDepartment = null;
+        visitType = null;
+        methodType = null; 
     }
 
     public void resetTotals() {
