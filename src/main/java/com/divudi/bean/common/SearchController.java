@@ -3400,6 +3400,10 @@ public class SearchController implements Serializable {
         totalOfOtherPayments = 0.0;
         billCount = 0.0;
         totalPaying = 0.0;
+        serviceDepartment = null;
+        billedDepartment = null;
+        visitType = null;
+        methodType = null; 
     }
 
     public void resetTotals() {
@@ -12949,7 +12953,6 @@ public class SearchController implements Serializable {
             System.out.println("bills");
             bundle.setName("Staff Welfare Bills");
             bundle.setBundleType("billList");
-
             bundle = generatePaymentMethodColumnsByBills(opdBts, staffPaymentMethods);
             bundle.calculateTotalByBills();
 
@@ -12969,7 +12972,6 @@ public class SearchController implements Serializable {
 
             bundle.setName("Staff Welfare Bill Items");
             bundle.setBundleType("billItemList");
-
             bundle = generateBillItems(opdBts, staffPaymentMethods);
             bundle.calculateTotalByBillItems();
         }
@@ -14979,10 +14981,16 @@ public class SearchController implements Serializable {
             }
 
             // Additional filters
-            if (department != null) {
-                jpqlOP += " and bi.bill.department=:dep ";
-                mOP.put("dep", department);
+            if (billedDepartment != null) {
+                jpqlOP += " and bi.bill.department=:dept ";
+                mOP.put("dept", billedDepartment);
             }
+            
+            if (serviceDepartment != null) {
+                jpqlOP += " and bi.bill.toDepartment=:serDept ";
+                mOP.put("serDept", serviceDepartment);
+            }
+            
             if (institution != null) {
                 jpqlOP += " and bi.bill.department.institution=:ins ";
                 mOP.put("ins", institution);
@@ -15026,10 +15034,16 @@ public class SearchController implements Serializable {
             }
 
             // Additional filters
-            if (department != null) {
-                jpqlIP += " and bi.bill.department=:dep ";
-                mIP.put("dep", department);
+            if (billedDepartment != null) {
+                jpqlIP += " and bi.bill.department=:dept ";
+                mIP.put("dept", billedDepartment);
             }
+            
+            if (serviceDepartment != null) {
+                jpqlIP += " and bi.bill.toDepartment=:serDept ";
+                mIP.put("serDept", serviceDepartment);
+            }
+            
             if (institution != null) {
                 jpqlIP += " and bi.bill.department.institution=:ins ";
                 mIP.put("ins", institution);
