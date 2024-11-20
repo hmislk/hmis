@@ -10,7 +10,7 @@
         <jta-data-source>jdbc/hmis</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
-            <property name="eclipselink.logging.level" value="FINEST"/>
+            <property name="eclipselink.logging.level" value="SEVERE"/>
             <property name="eclipselink.logging.parameters" value="true"/>
             <!-- Generate DDL scripts without applying them -->
             <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
@@ -25,7 +25,7 @@
         <jta-data-source>jdbc/hmisaudit</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
-            <property name="eclipselink.logging.level" value="FINEST"/>
+            <property name="eclipselink.logging.level" value="SEVERE"/>
             <property name="eclipselink.logging.parameters" value="true"/>
             <!-- Generate DDL scripts without applying them -->
             <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
