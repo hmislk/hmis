@@ -117,7 +117,7 @@
                                                         autocomplete="off"
                                                         id="txtQuickSearchPhoneNumber"
                                                         value="#{patientController.quickSearchPhoneNumber}"
-                                                        placeholder="Phone Number"
+                                                        placeholder="Phone Number or PHN"
                                                         class="form-control-sm mx-1"
                                                         onfocus="this.select()" 
                                                         />
@@ -127,7 +127,7 @@
                                                         title="Quick Search from Phone Number"
                                                         action="#{patientController.quickSearchPatientLongPhoneNumber(opdBillController)}" 
                                                         process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                                        update="ptImp selectPatient editPatient viewPatient payment paymentDetails pBillDetails"
+                                                        update="ptImp selectPatient editPatient viewPatient payment paymentDetails pBillDetails :#{p:resolveFirstComponentWithId('pay:',view).clientId}"
                                                         styleClass="btn-sm mx-1">
                                                     </p:commandButton>
                                                     <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
@@ -1026,6 +1026,7 @@
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Payment Details" class="mx-4"></h:outputText>
                                     </f:facet>
+                                    #{opdBillController.paymentMethod}
                                     <div class="row my-1"  >
                                         <div class="col-5" >
                                             <p:selectOneMenu   

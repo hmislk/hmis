@@ -2025,19 +2025,25 @@ public class PatientController implements Serializable, ControllerWithPatient {
             controller.setPatientDetailsEditable(true);
             return;
         } else if (quickSearchPatientList.size() == 1) {
+            
             patientSearched = quickSearchPatientList.get(0);
+            System.out.println("patient = " + patientSearched);
             controller.setPatient(patientSearched);
             controller.setPatientDetailsEditable(false);
             opdBillController.setPaymentMethod(null);
 
             if (controller.getPatient().getHasAnAccount() != null) {
+                System.out.println("Has Account = " + controller.getPatient().getHasAnAccount());
+                System.out.println("patientSearched.getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
+                System.out.println("Option = " + controller.getPatient().getHasAnAccount());
                 if (patientSearched.getHasAnAccount() && configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false)) {
+
                     opdBillController.setPatient(controller.getPatient());
                     opdBillController.setPaymentMethod(PaymentMethod.PatientDeposit);
                     opdBillController.listnerForPaymentMethodChange();
                 }
             }
-
+            System.out.println("Payment Method = " + opdBillController.getPaymentMethod()); 
             quickSearchPatientList = null;
         } else {
             controller.setPatient(null);
