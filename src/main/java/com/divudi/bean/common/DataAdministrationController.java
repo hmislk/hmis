@@ -466,21 +466,30 @@ public class DataAdministrationController {
     }
 
     public void runSqlToCreateFields() {
-        String[] sqlStatements = suggestedSql.split("<br/>");
+        // Adjust the split pattern based on your actual SQL string format
+        // Assuming statements end with semicolons
+        String[] sqlStatements = suggestedSql.split(";");
         StringBuilder executionResults = new StringBuilder();
+
         for (String sql : sqlStatements) {
-            if (sql.trim().isEmpty()) {
-                continue; // Skip empty lines
+            sql = sql.trim();
+            if (sql.isEmpty()) {
+                continue; // Skip empty statements
             }
-            int result = itemFacade.executeNativeSql(sql);
-            if (result >= 0) {
-                // Assuming a positive result indicates success. Adjust based on your logic.
+            try {
+                // Execute the SQL statement
+                itemFacade.executeNativeSql(sql);
+
+                // Append success message
                 executionResults.append("<br/>Successfully executed: ").append(sql);
-            } else {
-                // Handle failure case here. Adjust based on your logic.
+            } catch (Exception e) {
+                // Append error message with exception details
                 executionResults.append("<br/>Failed to execute: ").append(sql);
+                executionResults.append("<br/>Error: ").append(e.getMessage());
             }
         }
+
+        // Update the execution feedback
         executionFeedback = executionResults.toString();
     }
 
