@@ -2375,7 +2375,7 @@ public class ReportController implements Serializable {
     }
 
     public String navigateToManagementAdmissionCountReport() {
-
+        reportType="Summary";
         return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
     }
 

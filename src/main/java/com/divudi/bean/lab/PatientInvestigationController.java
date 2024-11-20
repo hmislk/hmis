@@ -2458,7 +2458,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void searchPatientReportsInBillingDepartment() {
-        System.out.println("type = " + type);
         
         StringBuilder jpql = new StringBuilder();
         Map<String, Object> params = new HashMap<>();
@@ -2497,7 +2496,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (referringDoctor != null) {
-            jpql.append(" AND i.billItem.bill.referringDoctor = :rf ");
+            jpql.append(" AND i.billItem.bill.referredBy = :rf ");
             params.put("rf", getReferringDoctor());
         }
 
@@ -3110,7 +3109,7 @@ public class PatientInvestigationController implements Serializable {
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         // Starting from BillItem and joining to PatientInvestigation if needed
-        jpql = "SELECT b "
+        jpql = "SELECT DISTINCT b "
                 + " FROM BillItem b "
                 + " LEFT JOIN b.patientInvestigation i "
                 + " WHERE b.retired = :ret "
@@ -3226,9 +3225,6 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND b.bill.department = :department ";
             params.put("department", getDepartment());
         }
-
-        jpql += " and type(b.item) = :invType ";
-        params.put("invType", Investigation.class);
 
         jpql += " AND b.bill.billTypeAtomic in :bts ";
         params.put("bts", btas);

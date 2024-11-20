@@ -11,8 +11,9 @@
         <ui:composition template="/reports/index.xhtml" class="w-100 border">
             <ui:define name="subcontent">
                 <h:form class="w-100">
-                    <p:panel header="Invoice and Receipt Report (Serial Wise)" class="w-100">
+                    <p:panel header="Package Report" class="w-100">
                         <h:panelGrid columns="8" class="w-100 ">
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
@@ -23,7 +24,9 @@
                                           pattern=""
                                           class=" w-100" inputStyleClass="w-100" ></p:datePicker>
 
+
                             <p:spacer width="20"></p:spacer>
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
@@ -37,8 +40,8 @@
                             <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf543;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Invoice / Receipt" class="mx-3"/>
+                                <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Service / Item" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu 
                                 value="" 
@@ -164,21 +167,21 @@
                             </h:panelGroup>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0c0;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Service Group" class="mx-3"/>
+                                <h:outputText value="&#xf187;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Package Name" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var=""
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
-                            </p:selectOneMenu>
+                            <p:inputText class="w-100"></p:inputText>
 
-                            <p:spacer ></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf543;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Invoice No" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:inputText class="w-100"></p:inputText>
+
+                            <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
@@ -194,70 +197,6 @@
                                                itemLabel=""
                                                itemValue="" ></f:selectItems>
                             </p:selectOneMenu>
-
-
-                            <p:spacer width="20"></p:spacer>
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Type" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var=""
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Pay Mode" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var=""
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <p:spacer width="20"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf084;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Admission Type" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var=""
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
-
-                            <p:selectBooleanButton
-                                onLabel="With Professional Fee" 
-                                offLabel="without Professional Fee" 
-                                value="#{searchController.withProfessionalFee}"
-                                onIcon="pi pi-check" 
-                                class="w-100"
-                                offIcon="pi pi-times" 
-                                >
-                            </p:selectBooleanButton>
 
                         </h:panelGrid>
 
@@ -293,56 +232,100 @@
                             value="PDF">
                         </p:commandButton>
 
-                        <p:dataTable 
-                            id="dtaiarr1" 
-                            value="" 
+                        <p:dataTable
                             paginator="true"
                             rows="10"
                             paginatorPosition="bottom">
 
-                            <p:column headerText="No">
+                            <p:column headerText="MRN" width="5em">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Created Date">
+                            <p:column headerText="Patient Name" width="5em">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Settled Date">
+                            <p:column headerText="Invoice No" width="5em">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Cancelled / Refund Date">
+                            <p:column headerText="Invoice Date" width="5em">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Serial">
+                            <p:column headerText="Approved Date" width="5em">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="OP/IP">
+                            <p:column headerText="Service Code" width="5em">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Admission Type">
+                            <p:column headerText="Service Name" width="5em">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Status">
+                            <p:column headerText="Package Name" width="5em">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Total Amount">
+                            <p:column headerText="Package Order Date" width="5em">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Due Amount">
+                            <p:column headerText="Service Processed Date" width="5em">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Settle Amount">
+                            <p:column headerText="Quantity" width="5em">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Total Payments">
+                            <p:column headerText="Unit Rate" width="5em">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Excess Amount">
+                            <p:column headerText="Professional Fee" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Total Amount" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Admission Date" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Discharge Date and Time" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Visit Type" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Visit No" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Sponsor" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Plan Name" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Ref Dept" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Ref Dr" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Rendering Dept" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Rendering Dr" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Invoice Status" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Charge Class" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Package Net Amount" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Bed No" width="5em">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Invoice Type" width="5em">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
 
                         </p:dataTable>
-
-
 
                     </p:panel>
                 </h:form>

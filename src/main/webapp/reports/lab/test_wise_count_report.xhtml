@@ -80,9 +80,6 @@
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
-
-
-
                         </p:panelGrid>
                         <h:panelGrid columns="6">
                             <p:commandButton 
@@ -94,7 +91,6 @@
                                 action="#{reportController.processLabTestWiseCountReport()}" >
 
                             </p:commandButton>
-
                             <p:commandButton 
                                 icon="fa-solid fa-print"
                                 class="mx-2 ui-button-info"
@@ -113,7 +109,6 @@
                                 >
                                 <p:dataExporter type="xlsx" target="tblExport"  fileName="lab_test_wise_count_report.xlsx" ></p:dataExporter>
                             </p:commandButton>
-
                             <p:commandButton 
                                 class="mx-2 ui-button-danger" 
                                 icon="fa-solid fa-file-pdf"
@@ -126,9 +121,6 @@
                                     target="tblExport"  
                                     fileName="lab_test_wise_count_report" ></p:dataExporter>
                             </p:commandButton>
-
-                            
-                            
                         </h:panelGrid>
 
                         <h:panelGrid  columns="2" class="my-3">
