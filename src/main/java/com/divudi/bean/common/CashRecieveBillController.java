@@ -36,6 +36,7 @@ import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
@@ -91,6 +92,7 @@ public class CashRecieveBillController implements Serializable {
     private List<BillItem> selectedBillItems;
     private Bill selectedBill;
     private PaymentMethodData paymentMethodData;
+    private PaymentMethod paymentMethod;
     private Institution institution;
     @Inject
     CommonController commonController;
@@ -656,6 +658,35 @@ public class CashRecieveBillController implements Serializable {
         }
 
     }
+    
+    private void saveCancelBill(BillType billType, BillTypeAtomic billTypeAtomic, Bill b) {
+
+        b.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
+        b.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
+
+        b.setBillType(billType);
+        b.setBillTypeAtomic(billTypeAtomic);
+
+        b.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        b.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        b.setComments(comment);
+
+        b.setBillDate(new Date());
+        b.setBillTime(new Date());
+
+        b.setCreatedAt(new Date());
+        b.setCreater(getSessionController().getLoggedUser());
+
+        b.setNetTotal(b.getNetTotal());
+
+        if (b.getId() == null) {
+            getBillFacade().create(b);
+        } else {
+            getBillFacade().edit(b);
+        }
+
+    }
 
     @Inject
     private BillBeanController billBean;
@@ -764,6 +795,37 @@ public class CashRecieveBillController implements Serializable {
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
+    }
+    
+    public String navigateToCancelOpdBill(){
+        return "";
+    }
+    
+    public void cancelBillToApprove(Bill b){
+        if(b == null){
+            JsfUtil.addErrorMessage("Error : No Bill");
+            return;
+        }
+        if(b.getBalance() != b.getNetTotal()){
+            JsfUtil.addErrorMessage("Error : Payments Have Been Made By This Voucher");
+            return;
+        }
+        
+        CancelledBill cb = new CancelledBill();
+        cb.copy(b);
+        cb.setPaymentMethod(paymentMethod);
+        saveCancelBill(BillType.CashRecieveBill, BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION, cb);
+        b.setCancelledBill(cb);
+        b.setCancelled(true);
+        cb.setReferenceBill(b);
+        List payments = createPayment(cb,paymentMethod);
+        drawerController.updateDrawerForOuts(payments);
+        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
+        getSessionController().setLoggedUser(wb);
+        //   savePayments();
+        getBillFacade().edit(b);
+        JsfUtil.addSuccessMessage("Bill Canceled");
+        printPreview = true;
     }
 
     public void approveBill(Bill b) {
@@ -1299,6 +1361,14 @@ public class CashRecieveBillController implements Serializable {
 
     public void setSelectedBill(Bill selectedBill) {
         this.selectedBill = selectedBill;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
 }
