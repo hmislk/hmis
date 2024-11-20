@@ -16548,22 +16548,33 @@ public class SearchController implements Serializable {
     }
 
     private void updateRow(ReportTemplateRow row, long count, double total, double hospitalFee, double discount, double professionalFee, double netTotal) {
+        System.out.println("Starting updateRow method");
+        System.out.println("Initial values - Count: " + count + ", Total: " + total
+                + ", HospitalFee: " + hospitalFee + ", Discount: " + discount
+                + ", ProfessionalFee: " + professionalFee + ", NetTotal: " + netTotal);
+
         if (row.getItemCount() == null) {
+            System.out.println("ItemCount is null. Initializing to 0.");
             row.setItemCount(0L);
         }
         if (row.getItemTotal() == null) {
+            System.out.println("ItemTotal is null. Initializing to 0.0.");
             row.setItemTotal(0.0);
         }
         if (row.getItemHospitalFee() == null) {
+            System.out.println("ItemHospitalFee is null. Initializing to 0.0.");
             row.setItemHospitalFee(0.0);
         }
         if (row.getItemDiscountAmount() == null) {
+            System.out.println("ItemDiscountAmount is null. Initializing to 0.0.");
             row.setItemDiscountAmount(0.0);
         }
         if (row.getItemProfessionalFee() == null) {
+            System.out.println("ItemProfessionalFee is null. Initializing to 0.0.");
             row.setItemProfessionalFee(0.0);
         }
         if (row.getItemNetTotal() == null) {
+            System.out.println("ItemNetTotal is null. Initializing to 0.0.");
             row.setItemNetTotal(0.0);
         }
 
@@ -16574,16 +16585,22 @@ public class SearchController implements Serializable {
         row.setItemProfessionalFee(row.getItemProfessionalFee() + professionalFee);
         row.setItemNetTotal(row.getItemNetTotal() + netTotal);
 
-        // Now check if 'row.getItem()' is null
+        System.out.println("Updated row values - ItemCount: " + row.getItemCount()
+                + ", ItemTotal: " + row.getItemTotal()
+                + ", ItemHospitalFee: " + row.getItemHospitalFee()
+                + ", ItemDiscountAmount: " + row.getItemDiscountAmount()
+                + ", ItemProfessionalFee: " + row.getItemProfessionalFee()
+                + ", ItemNetTotal: " + row.getItemNetTotal());
+
         if (row.getItem() != null) {
-            System.out.println("Updated row: " + row.getItem().getName()
+            System.out.println("Updated row: Item Name: " + row.getItem().getName()
                     + ", Count: " + row.getItemCount()
                     + ", Net Total: " + row.getItemNetTotal());
         } else {
-            // Handle the case where 'row.getItem()' is null
             System.out.println("Error: Item in the row is null.");
         }
 
+        System.out.println("Completed updateRow method");
     }
 
     public void generateAllCashierSummary() {
