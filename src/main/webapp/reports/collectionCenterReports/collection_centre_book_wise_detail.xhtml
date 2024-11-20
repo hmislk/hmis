@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Collection Center Book Wise Detail" >
+
+                        <p:panelGrid columns="5" layout="tabular" class="w-100" >
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="From Date" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker 
+                                value="#{collectingCentreController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                inputStyleClass="w-100"
+                                class="w-100"
+                                >
+                            </p:datePicker>
+                            <p:spacer width="5em" ></p:spacer>
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="To Date" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+
+                            <p:datePicker 
+                                value="#{collectingCentreController.toDate}"
+                                inputStyleClass="w-100"
+                                class="w-100"
+                                pattern="#{sessionController.applicationPreference.longDateFormat}">
+                            </p:datePicker>
+
+                            <h:panelGroup class="col-md-2">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Collecting Centre" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                converter="deal" 
+                                value="#{collectingCentreController.collectingCentre}" 
+                                forceSelection="true" id="acColl"
+                                completeMethod="#{institutionController.completeCollectingCenter}" 
+                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" 
+                                maxResults="15"
+                                class="w-100 mb-1"
+                                inputStyleClass="form-control">
+                                <p:column style="padding: 6px;">#{vt.code}</p:column>
+                                <p:column style="padding: 6px;">#{vt.name}</p:column>
+                            </p:autoComplete>
+
+                            <p:spacer width="5em" ></p:spacer>
+                            <h:panelGroup class="col-md-2">
+                                <i class="fa fa-object-group" aria-hidden="true"></i>
+                                <p:outputLabel value="Book Number" class="mx-3"/>
+                            </h:panelGroup>
+
+                            <p:inputText value="#{collectingCentreController.bookNumber}" class="w-100" ></p:inputText>
+
+                        </p:panelGrid>
+
+
+
+
+
+                        <div class="row mb-2">
+                            <div class="col-md-12">
+                                <p:commandButton ajax="false" 
+                                                 value="Process" 
+                                                 icon="fas fa-cogs"
+                                                 class="ui-button-warning"
+                                                 style="width: 150px"
+                                                 action="#{collectingCentreController.processCollectingCentreBookWiseDetail}" >
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    icon="fa-solid fa-print"
+                                    class="mx-1 ui-button-info mx-2"
+                                    ajax="false" 
+                                    style="width: 150px"
+                                    value="Print">
+                                    <p:printer target="tbl" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    id="btnExcel" class="m-1 ui-button-success"
+                                    icon="fas fa-file-excel"
+                                    style="width: 150px"
+                                    ajax="false" value="Excel">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="collection_center_book_wise_detail_report" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="m-2 ui-button-danger" 
+                                    icon="fa-solid fa-file-pdf"
+                                    ajax="false" 
+                                    style="width: 150px"
+                                    value="PDF">
+                                    <p:dataExporter type="pdf" target="tbl"  fileName="collection_center_book_wise_detail_report" ></p:dataExporter>
+                                </p:commandButton>
+                            </div>
+                        </div>
+
+Bill No Book Ref. No Patient Creator Created Date Bill Value
+
+
+                        <p:dataTable id="tbl" value="#{collectingCentreController.bills}" var="c" >
+                            <p:column headerText="Date" width="5rem">
+                                <h:outputText value="#{c.createdAt}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Bill No" width="5rem">
+                                <h:outputText value="#{c.deptId}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Referance No." width="5rem">
+                                <h:outputText value="#{c.referenceNumber}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Patient" width="5rem">
+                                <h:outputText value="#{c.patient.person.nameWithTitle}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="User" width="5rem">
+                                <h:outputText value="#{c.creater.webUserPerson.name}" ></h:outputText>
+                            </p:column>
+                              <p:column headerText="Bill Value" width="5rem">
+                                  <h:outputText value="#{c.netTotal}" ></h:outputText>
+                            </p:column>
+                            
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

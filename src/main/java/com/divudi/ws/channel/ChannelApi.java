@@ -12,6 +12,7 @@ import com.divudi.bean.channel.SessionInstanceController;
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConsultantController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SpecialityController;
@@ -161,6 +162,7 @@ public class ChannelApi {
     ApiKeyController apiKeyController;
     @Inject
     BookingControllerViewScope bookingControllerViewScope;
+    
 
     @EJB
     PatientService patientService;
@@ -1051,7 +1053,7 @@ public class ChannelApi {
         }
 
         //TODO : Handle Payment Method
-        Bill bill = channelService.saveBilledBill(false, newPatient, session, clientsReferanceNo, null, creditCompany);
+        Bill bill = channelService.addToReserveAgentBookingThroughApi(false, newPatient, session, clientsReferanceNo, null, creditCompany);
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -1387,7 +1389,7 @@ public class ChannelApi {
         System.out.println(billList.size());
         System.out.println(billList.get(0).getAgentRefNo());
 
-        bill = channelService.settleCredit(billList.get(0).getSingleBillSession(), clientsReferanceNo);
+        bill = channelService.settleOnlineAgentInitialBooking(billList.get(0).getSingleBillSession(), clientsReferanceNo);
         // List<SessionInstance> ss = channelService.findSessionInstanceFromId(bill.getSingleBillSession().getSessionInstance());
         SessionInstance session = bill.getSingleBillSession().getSessionInstance();
 
@@ -2220,7 +2222,7 @@ public class ChannelApi {
             Bill b;
             b = saveBilledBill(ss, name, phone, doc_code, a_id, agent_reference_no, false);
 
-//            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
+//            Bill b = addToReserveAgentBookingThroughApi(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
 //            //// // System.out.println("b = " + b);
             bill = billDetails(b.getId());
             jSONObjectOut.put("make_booking", bill);
@@ -2289,7 +2291,7 @@ public class ChannelApi {
             } else {
                 b = saveBilledBill(ss, name, phone, doc_code, a_id, agent_reference_no, true);
             }
-//            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
+//            Bill b = addToReserveAgentBookingThroughApi(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
 //            //// // System.out.println("b = " + b);
 
             bill = billDetails(b.getId());
@@ -3059,7 +3061,7 @@ public class ChannelApi {
     }
 
     private Bill saveBilledBill(ServiceSession ss, String name, String phone, String doc, long agent, String agent_ref, boolean foriegn) {
-//    private Bill saveBilledBill(ServiceSession ss, String name, String phone, String doc, long agent, long agent_ref) {
+//    private Bill addToReserveAgentBookingThroughApi(ServiceSession ss, String name, String phone, String doc, long agent, long agent_ref) {
         Bill savingBill = createBill(ss, name, phone, agent);
         BillItem savingBillItem = createBillItem(savingBill, agent_ref, ss);
         BillSession savingBillSession = createBillSession(savingBill, savingBillItem, ss);
