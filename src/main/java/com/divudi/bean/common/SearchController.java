@@ -15011,7 +15011,7 @@ public class SearchController implements Serializable {
                     + " and bi.bill.billTypeAtomic in :bts ";
 
             mIP.put("bts", btasIP);
-            
+
             // Apply payment method filter for IP bills
             if (!"Any".equals(methodType)) {
                 if ("Credit".equals(methodType)) {
@@ -16483,12 +16483,25 @@ public class SearchController implements Serializable {
         double discountTotal = 0.0;
         double staffTotal = 0.0;
         double netTotal = 0.0;
+
+        System.out.println("Starting billItemsToBundleForOpd method");
+        System.out.println("Initial state - count: " + count + ", grossTotal: " + grossTotal
+                + ", hospitalTotal: " + hospitalTotal + ", discountTotal: " + discountTotal
+                + ", staffTotal: " + staffTotal + ", netTotal: " + netTotal);
+
         for (BillItem bi : billItems) {
             System.out.println("Processing BillItem: " + bi);
+            System.out.println("BillItem Details - FeeValue: " + bi.getFeeValue()
+                    + ", HospitalFee: " + bi.getHospitalFee()
+                    + ", Discount: " + bi.getDiscount()
+                    + ", StaffFee: " + bi.getStaffFee()
+                    + ", NetValue: " + bi.getNetValue());
+
             ReportTemplateRow row = new ReportTemplateRow(bi);
             switch (bi.getBill().getBillClassType()) {
                 case CancelledBill:
                 case RefundBill:
+                    System.out.println("Handling Cancelled or Refund Bill");
                     count--;
                     grossTotal -= Math.abs(bi.getFeeValue());
                     hospitalTotal -= Math.abs(bi.getHospitalFee());
@@ -16498,6 +16511,7 @@ public class SearchController implements Serializable {
                     break;
                 case BilledBill:
                 case Bill:
+                    System.out.println("Handling Billed or Bill");
                     count++;
                     grossTotal += Math.abs(bi.getFeeValue());
                     hospitalTotal += Math.abs(bi.getHospitalFee());
@@ -16506,9 +16520,15 @@ public class SearchController implements Serializable {
                     netTotal += Math.abs(bi.getNetValue());
                     break;
                 default:
-                    // Do nothing for other types of bills
-                    continue;  // Skip processing for unrecognized or unhandled bill types
+                    System.out.println("Unrecognized BillClassType: " + bi.getBill().getBillClassType());
+                    continue; // Skip processing for unrecognized or unhandled bill types
             }
+            System.out.println("Updated state after BillItem - count: " + count
+                    + ", grossTotal: " + grossTotal
+                    + ", hospitalTotal: " + hospitalTotal
+                    + ", discountTotal: " + discountTotal
+                    + ", staffTotal: " + staffTotal
+                    + ", netTotal: " + netTotal);
             rowsToAdd.add(row);
         }
 
@@ -16518,6 +16538,12 @@ public class SearchController implements Serializable {
         biBundle.setHospitalTotal(hospitalTotal);
         biBundle.setStaffTotal(staffTotal);
         biBundle.setDiscount(discountTotal);
+
+        System.out.println("Final state - count: " + count + ", grossTotal: " + grossTotal
+                + ", hospitalTotal: " + hospitalTotal + ", discountTotal: " + discountTotal
+                + ", staffTotal: " + staffTotal + ", netTotal: " + netTotal);
+
+        System.out.println("Completed billItemsToBundleForOpd method");
         return biBundle;
     }
 
