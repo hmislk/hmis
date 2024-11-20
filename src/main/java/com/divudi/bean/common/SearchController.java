@@ -212,9 +212,15 @@ public class SearchController implements Serializable {
     DrawerEntryController drawerEntryController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    EnumController enumController;
+
     /**
      * Properties
      */
+    private String visitType;
+    private String methodType;
+
     private Category category;
     private ReportTemplateType reportTemplateType;
     private SearchKeyword searchKeyword;
@@ -6098,9 +6104,9 @@ public class SearchController implements Serializable {
         Row headerRow = sheet.createRow(rowIdx++);
         // Expanding the headers to include all necessary fields
         String[] headers = {
-                "Bill ID", "Insitution Name", "Department Name", "Patient Name", "Staff Name", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
-                "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value",
-                "Fee Name", "Fee Type", "Fee Value", "Institution Name", "Department Name", "Staff Name"
+            "Bill ID", "Insitution Name", "Department Name", "Patient Name", "Staff Name", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
+            "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value",
+            "Fee Name", "Fee Type", "Fee Value", "Institution Name", "Department Name", "Staff Name"
         };
         for (int i = 0; i < headers.length; i++) {
             headerRow.createCell(i).setCellValue(headers[i]);
@@ -8432,9 +8438,9 @@ public class SearchController implements Serializable {
     }
 
     public void listBills(BillType billType, Class billClass, Boolean onlyCancelledBills, Boolean onlyReturnedBills,
-                          Institution fromInstitution, Department fromDepartment,
-                          Institution toInstitution, Department toDepartment,
-                          Doctor referredDoctor, Institution referredInstitution) {
+            Institution fromInstitution, Department fromDepartment,
+            Institution toInstitution, Department toDepartment,
+            Doctor referredDoctor, Institution referredInstitution) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -8684,20 +8690,20 @@ public class SearchController implements Serializable {
     }
 
     public ReportTemplateRowBundle createBundleByKeywordForBills(List<BillTypeAtomic> billTypesAtomics,
-                                                                 Institution ins, Department dep,
-                                                                 Institution fromIns,
-                                                                 Department fromDep,
-                                                                 Institution toIns,
-                                                                 Department toDep) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
         return billService.createBundleByKeywordForBills(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, null, fromDate, toDate, searchKeyword);
     }
 
     public ReportTemplateRowBundle createBundleForBills(List<BillTypeAtomic> billTypesAtomics,
-                                                        Institution ins, Department dep,
-                                                        Institution fromIns,
-                                                        Department fromDep,
-                                                        Institution toIns,
-                                                        Department toDep) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
         ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
         List<ReportTemplateRow> outputRows;
         bills = null;
@@ -8755,11 +8761,11 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeyword(List<BillTypeAtomic> billTypesAtomics,
-                                     Institution ins, Department dep,
-                                     Institution fromIns,
-                                     Department fromDep,
-                                     Institution toIns,
-                                     Department toDep) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -8836,13 +8842,13 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForChannelBills(List<BillTypeAtomic> billTypesAtomics,
-                                                    Institution ins, Department dep,
-                                                    Institution fromIns,
-                                                    Department fromDep,
-                                                    Institution toIns,
-                                                    Department toDep,
-                                                    Staff consultant,
-                                                    Speciality speciality
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Staff consultant,
+            Speciality speciality
     ) {
         bills = null;
         String sql;
@@ -8930,12 +8936,12 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywords(List<BillTypeAtomic> billTypesAtomics,
-                                      Institution ins, Department dep,
-                                      Institution fromIns,
-                                      Department fromDep,
-                                      Institution toIns,
-                                      Department toDep,
-                                      Staff stf) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Staff stf) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -8992,21 +8998,21 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
-                                                Institution ins, Department dep,
-                                                Institution fromIns,
-                                                Department fromDep,
-                                                Institution toIns,
-                                                Department toDep) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
         createTableByKeywordForBillFees(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, null);
     }
 
     public ReportTemplateRowBundle createBundleByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
-                                                                    Institution ins, Department dep,
-                                                                    Institution fromIns,
-                                                                    Department fromDep,
-                                                                    Institution toIns,
-                                                                    Department toDep,
-                                                                    Category cat) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Category cat) {
         ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
         List<ReportTemplateRow> outputRows;
         String sql;
@@ -9095,12 +9101,12 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
-                                                Institution ins, Department dep,
-                                                Institution fromIns,
-                                                Department fromDep,
-                                                Institution toIns,
-                                                Department toDep,
-                                                Category cat) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Category cat) {
 
         String sql;
         Map temMap = new HashMap();
@@ -9182,22 +9188,22 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForBillFee(List<BillTypeAtomic> billTypesAtomics,
-                                               Institution ins, Department dep,
-                                               Institution fromIns,
-                                               Department fromDep,
-                                               Institution toIns,
-                                               Department toDep,
-                                               Staff stf) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Staff stf) {
         createTableByKeywordBillFee(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, stf);
     }
 
     public void createTableByKeywordBillFee(List<BillTypeAtomic> billTypesAtomics,
-                                            Institution ins, Department dep,
-                                            Institution fromIns,
-                                            Department fromDep,
-                                            Institution toIns,
-                                            Department toDep,
-                                            Staff stf) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Staff stf) {
 
         String sql;
         Map temMap = new HashMap();
@@ -9254,11 +9260,11 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForBillsWithoutToStaff(List<BillTypeAtomic> billTypesAtomics,
-                                                           Institution ins, Department dep,
-                                                           Institution fromIns,
-                                                           Department fromDep,
-                                                           Institution toIns,
-                                                           Department toDep) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -9336,11 +9342,11 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeyword(BillType billType,
-                                     Institution ins, Department dep,
-                                     Institution fromIns,
-                                     Department fromDep,
-                                     Institution toIns,
-                                     Department toDep) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -11193,11 +11199,11 @@ public class SearchController implements Serializable {
         Map m = new HashMap();
 
         BillType[] bt = {
-                BillType.ChannelOnCall,
-                BillType.ChannelCash,
-                BillType.ChannelAgent,
-                BillType.ChannelStaff,
-                BillType.ChannelCredit,};
+            BillType.ChannelOnCall,
+            BillType.ChannelCash,
+            BillType.ChannelAgent,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit,};
 
         List<BillType> bts = Arrays.asList(bt);
 
@@ -11262,12 +11268,12 @@ public class SearchController implements Serializable {
         Map m = new HashMap();
 
         BillType[] bt = {
-                BillType.ChannelOnCall,
-                BillType.ChannelCash,
-                BillType.ChannelAgent,
-                BillType.ChannelStaff,
-                BillType.ChannelPaid,
-                BillType.ChannelCredit,};
+            BillType.ChannelOnCall,
+            BillType.ChannelCash,
+            BillType.ChannelAgent,
+            BillType.ChannelStaff,
+            BillType.ChannelPaid,
+            BillType.ChannelCredit,};
 
         List<BillType> bts = Arrays.asList(bt);
 
@@ -12877,11 +12883,15 @@ public class SearchController implements Serializable {
     }
 
     public void createIncomeBreakdownByCategory() {
+        bundle = generateIncomeBreakdownByCategory();
         if (withProfessionalFee) {
-            bundle = generateIncomeBreakdownByCategoryWithProfessionalFee();
+            bundle.setName("Income Breakdown By Category - With Professional Fee");
+            bundle.setBundleType("income_breakdown_by_category_with_professional_fee");
         } else {
-            bundle = generateIncomeBreakdownByCategoryWithOutProfessionalFee();
+            bundle.setName("Income Breakdown By Category - Without Professional Fee");
+            bundle.setBundleType("income_breakdown_by_category_with_out_professional_fee");
         }
+
     }
 
     public void generateStaffWelfareBillReport() {
@@ -14190,137 +14200,149 @@ public class SearchController implements Serializable {
         rtrb.setTotal(totalOpdServiceCollection);
     }
 
-    private String visitType;
-    private String methodType;
-
-    @Inject
-    EnumController enumController;
-
-    public ReportTemplateRowBundle generateIncomeBreakdownByCategoryWithProfessionalFee() {
+    public ReportTemplateRowBundle generateIncomeBreakdownByCategory() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
-        String jpql = "select bi "
-                + " from BillItem bi "
-                + " where bi.bill.retired=:br "
-                + " and bi.bill.createdAt between :fd and :td ";
-        Map m = new HashMap();
-        m.put("br", false);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
 
-        List<BillTypeAtomic> btas = new ArrayList();
+        // Prepare parameters
+        Map<String, Object> mOP = new HashMap<>();
+        Map<String, Object> mIP = new HashMap<>();
+        mOP.put("br", false);
+        mOP.put("fd", fromDate);
+        mOP.put("td", toDate);
+        mIP.putAll(mOP);
 
+        // Prepare BillTypeAtomic lists
         List<BillTypeAtomic> obtas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
-        List<BillTypeAtomic> ibtas = BillTypeAtomic.findByServiceType(ServiceType.INWARD);
+        List<BillTypeAtomic> ibtas = BillTypeAtomic.findByServiceType(ServiceType.INWARD_SERVICE);
 
-        if (null != visitType) {
+        List<BillTypeAtomic> btasOP = new ArrayList<>();
+        List<BillTypeAtomic> btasIP = new ArrayList<>();
+
+        if (visitType != null) {
             switch (visitType) {
                 case "Any":
-                    System.out.println("Any");
-                    btas.addAll(obtas);
-                    btas.addAll(ibtas);
+                    btasOP.addAll(obtas);
+                    btasIP.addAll(ibtas);
                     break;
                 case "OP":
-                    System.out.println("OPD");
-                    btas.addAll(obtas);
+                    btasOP.addAll(obtas);
                     break;
                 case "IP":
-                    System.out.println("IP");
-                    btas.addAll(ibtas);
+                    btasIP.addAll(ibtas);
                     break;
                 default:
                     break;
             }
         }
 
-        oiBundle.setDescription("Bill Types Listed: " + btas.size());
-        if (!btas.isEmpty()) {
-            jpql += " and bi.bill.billTypeAtomic in :bts ";
-            m.put("bts", btas);
-        }
-
+        // Prepare payment methods
         List<PaymentMethod> creditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.CREDIT);
         List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
 
-        List<PaymentMethod> allMethods = new ArrayDeque();
-        allMethods.addAll(creditPaymentMethods);
-        allMethods.addAll(nonCreditPaymentMethods);
+        // Initialize lists to hold BillItems
+        List<BillItem> bisOP = new ArrayList<>();
+        List<BillItem> bisIP = new ArrayList<>();
 
-        if ("Any".equals(methodType)) {
-            System.out.println("Any");
-        } else if ("Credit".equals(methodType)) {
-            System.out.println("Credit");
+        // Fetch OP Bills if applicable
+        if (!btasOP.isEmpty()) {
+            String jpqlOP = "select bi "
+                    + " from BillItem bi "
+                    + " where bi.bill.retired=:br "
+                    + " and bi.bill.createdAt between :fd and :td "
+                    + " and bi.bill.patientEncounter is null "
+                    + " and bi.bill.billTypeAtomic in :bts ";
 
-            if (null != visitType) {
-                switch (visitType) {
-                    case "Any":
-                        System.out.println("Credit Any");
-                        jpql += " AND (bi.bill.paymentMethod in :cpm OR bi.bill.patientEncounter.paymentMethod in :cpm)";
-                        m.put("cpm", creditPaymentMethods);
-                        break;
-                    case "OP":
-                        System.out.println("Credit OP");
-                        jpql += " AND bi.bill.paymentMethod in :cpm ";
-                        m.put("cpm", creditPaymentMethods);
-                        break;
-                    case "IP":
-                        System.out.println("Credit IP");
-                        jpql += " AND bi.bill.patientEncounter.paymentMethod in :cpm ";
-                        m.put("cpm", creditPaymentMethods);
-                        break;
-                    default:
-                        break;
+            mOP.put("bts", btasOP);
+
+            // Apply payment method filter for OP bills
+            if (!"Any".equals(methodType)) {
+                if ("Credit".equals(methodType)) {
+                    jpqlOP += " and bi.bill.paymentMethod in :pm ";
+                    mOP.put("pm", creditPaymentMethods);
+                } else if ("NonCredit".equals(methodType)) {
+                    jpqlOP += " and bi.bill.paymentMethod in :pm ";
+                    mOP.put("pm", nonCreditPaymentMethods);
                 }
             }
 
-        } else if ("NonCredit".equals(methodType)) {
-            System.out.println("Non Credit");
+            // Additional filters
+            if (department != null) {
+                jpqlOP += " and bi.bill.department=:dep ";
+                mOP.put("dep", department);
+            }
+            if (institution != null) {
+                jpqlOP += " and bi.bill.department.institution=:ins ";
+                mOP.put("ins", institution);
+            }
+            if (site != null) {
+                jpqlOP += " and bi.bill.department.site=:site ";
+                mOP.put("site", site);
+            }
+            if (category != null) {
+                jpqlOP += " and bi.item.category=:cat ";
+                mOP.put("cat", category);
+            }
 
-            if (null != visitType) {
-                switch (visitType) {
-                    case "Any":
-                        System.out.println("Credit Any");
-                        System.out.println("Credit Any");
-                        jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm)";
-                        m.put("apm", nonCreditPaymentMethods);
-                        break;
-                    case "OP":
-                        System.out.println("Credit OP");
-                        jpql += " AND bi.bill.paymentMethod in :ncpm ";
-                        m.put("ncpm", nonCreditPaymentMethods);
-                        break;
-                    case "IP":
-                        System.out.println("Credit IP");
-                        jpql += " AND bi.bill.patientEncounter.paymentMethod in :ncpm ";
-                        m.put("ncpm", nonCreditPaymentMethods);
-                        break;
-                    default:
-                        break;
+            System.out.println("OP JPQL: " + jpqlOP);
+            System.out.println("OP Params: " + mOP);
+
+            // Fetch OP BillItems
+            bisOP = billItemFacade.findByJpql(jpqlOP, mOP, TemporalType.TIMESTAMP);
+        }
+
+        // Fetch IP Bills if applicable
+        if (!btasIP.isEmpty()) {
+            String jpqlIP = "select bi "
+                    + " from BillItem bi "
+                    + " where bi.bill.retired=:br "
+                    + " and bi.bill.createdAt between :fd and :td "
+                    + " and bi.bill.patientEncounter is not null "
+                    + " and bi.bill.billTypeAtomic in :bts ";
+
+            mIP.put("bts", btasIP);
+
+            // Apply payment method filter for IP bills
+            if (!"Any".equals(methodType)) {
+                if ("Credit".equals(methodType)) {
+                    jpqlIP += " and bi.bill.patientEncounter.paymentMethod in :pm ";
+                    mIP.put("pm", creditPaymentMethods);
+                } else if ("NonCredit".equals(methodType)) {
+                    jpqlIP += " and bi.bill.patientEncounter.paymentMethod in :pm ";
+                    mIP.put("pm", nonCreditPaymentMethods);
                 }
             }
 
+            // Additional filters
+            if (department != null) {
+                jpqlIP += " and bi.bill.department=:dep ";
+                mIP.put("dep", department);
+            }
+            if (institution != null) {
+                jpqlIP += " and bi.bill.department.institution=:ins ";
+                mIP.put("ins", institution);
+            }
+            if (site != null) {
+                jpqlIP += " and bi.bill.department.site=:site ";
+                mIP.put("site", site);
+            }
+            if (category != null) {
+                jpqlIP += " and bi.item.category=:cat ";
+                mIP.put("cat", category);
+            }
+
+            System.out.println("IP JPQL: " + jpqlIP);
+            System.out.println("IP Params: " + mIP);
+
+            // Fetch IP BillItems
+            bisIP = billItemFacade.findByJpql(jpqlIP, mIP, TemporalType.TIMESTAMP);
         }
 
-        if (department != null) {
-            jpql += " and bi.bill.department=:dep ";
-            m.put("dep", department);
-        }
-        if (institution != null) {
-            jpql += " and bi.bill.department.institution=:ins ";
-            m.put("ins", institution);
-        }
-        if (site != null) {
-            jpql += " and bi.bill.department.site=:site ";
-            m.put("site", site);
-        }
-        if (category != null) {
-            jpql += " and bi.item.category=:cat ";
-            m.put("cat", category);
-        }
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
+        // Combine OP and IP BillItems
+        List<BillItem> bis = new ArrayList<>();
+        bis.addAll(bisOP);
+        bis.addAll(bisIP);
 
-        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("bis = " + bis);
+        System.out.println("Total BillItems: " + bis.size());
 
         // Debug: Print payment methods of the fetched BillItems
         for (BillItem bi : bis) {
@@ -14333,179 +14355,179 @@ public class SearchController implements Serializable {
             }
         }
 
+        // Process the combined BillItems
         summarizeBillItemsToIncomeByCategory(oiBundle, bis);
 
+        // Set report details
         oiBundle.setName("Income Breakdown By Category - With Professional Fee");
         oiBundle.setBundleType("income_breakdown_by_category_with_professional_fee");
 
-        oiBundle.getReportTemplateRows().stream()
-                .forEach(rtr -> {
-                    rtr.setInstitution(institution);
-                    rtr.setDepartment(department);
-                    rtr.setSite(site);
-                    rtr.setFromDate(fromDate);
-                    rtr.setToDate(toDate);
-                });
+        oiBundle.getReportTemplateRows().forEach(rtr -> {
+            rtr.setInstitution(institution);
+            rtr.setDepartment(department);
+            rtr.setSite(site);
+            rtr.setFromDate(fromDate);
+            rtr.setToDate(toDate);
+        });
 
         return oiBundle;
     }
 
-    public ReportTemplateRowBundle generateIncomeBreakdownByCategoryWithOutProfessionalFee() {
-        ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
-        String jpql = "select bi "
-                + " from BillItem bi "
-                + " where bi.bill.retired=:br "
-                + " and bi.bill.createdAt between :fd and :td ";
-        Map m = new HashMap();
-        m.put("br", false);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-
-        List<BillTypeAtomic> btas = new ArrayList();
-
-        List<BillTypeAtomic> obtas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
-        List<BillTypeAtomic> ibtas = BillTypeAtomic.findByServiceType(ServiceType.INWARD);
-
-        if (null != visitType) {
-            switch (visitType) {
-                case "Any":
-                    System.out.println("Any");
-                    btas.addAll(obtas);
-                    btas.addAll(ibtas);
-                    break;
-                case "OP":
-                    System.out.println("OPD");
-                    btas.addAll(obtas);
-                    break;
-                case "IP":
-                    System.out.println("IP");
-                    btas.addAll(ibtas);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        oiBundle.setDescription("Bill Types Listed: " + btas.size());
-        if (!btas.isEmpty()) {
-            jpql += " and bi.bill.billTypeAtomic in :bts ";
-            m.put("bts", btas);
-        }
-
-        List<PaymentMethod> creditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.CREDIT);
-        List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
-
-        List<PaymentMethod> allMethods = new ArrayDeque();
-        allMethods.addAll(creditPaymentMethods);
-        allMethods.addAll(nonCreditPaymentMethods);
-        
-        System.out.println("methodType = " + methodType);
-        System.out.println("visitType = " + visitType);
-        
-        if ("Any".equals(methodType)) {
-            System.out.println("Any");
-        } else if ("Credit".equals(methodType)) {
-            System.out.println("Credit");
-
-            if (null != visitType) {
-                switch (visitType) {
-                    case "Any":
-                        System.out.println("Credit Any");
-                        jpql += " AND (bi.bill.paymentMethod in :cpm OR bi.bill.patientEncounter.paymentMethod in :cpm)";
-                        m.put("cpm", creditPaymentMethods);
-                        break;
-                    case "OP":
-                        System.out.println("Credit OP");
-                        jpql += " AND bi.bill.paymentMethod in :cpm ";
-                        m.put("cpm", creditPaymentMethods);
-                        break;
-                    case "IP":
-                        System.out.println("Credit IP");
-                        jpql += " AND bi.bill.patientEncounter.paymentMethod in :cpm ";
-                        m.put("cpm", creditPaymentMethods);
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-        } else if ("NonCredit".equals(methodType)) {
-            System.out.println("Non Credit");
-
-            if (null != visitType) {
-                switch (visitType) {
-                    case "Any":
-                        System.out.println("NonCredit Any");
-                        jpql += " AND (bi.bill.paymentMethod in :ncpm OR bi.bill.patientEncounter.paymentMethod in :ncpm)";
-                        m.put("ncpm", nonCreditPaymentMethods);
-                        break;
-                    case "OP":
-                        System.out.println("NonCredit OP");
-                        jpql += " AND bi.bill.paymentMethod in :ncpm ";
-                        m.put("ncpm", nonCreditPaymentMethods);
-                        break;
-                    case "IP":
-                        System.out.println("NonCredit IP");
-                        jpql += " AND bi.bill.patientEncounter.paymentMethod in :ncpm ";
-                        m.put("ncpm", nonCreditPaymentMethods);
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-        }
-
-        if (department != null) {
-            jpql += " and bi.bill.department=:dep ";
-            m.put("dep", department);
-        }
-        if (institution != null) {
-            jpql += " and bi.bill.department.institution=:ins ";
-            m.put("ins", institution);
-        }
-        if (site != null) {
-            jpql += " and bi.bill.department.site=:site ";
-            m.put("site", site);
-        }
-        if (category != null) {
-            jpql += " and bi.item.category=:cat ";
-            m.put("cat", category);
-        }
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
-
-        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("bis = " + bis);
-
-        // Debug: Print payment methods of the fetched BillItems
-        for (BillItem bi : bis) {
-            System.out.println("BillItem ID: " + bi.getId());
-            System.out.println("Bill PaymentMethod: " + bi.getBill().getPaymentMethod());
-            if (bi.getBill().getPatientEncounter() != null) {
-                System.out.println("PatientEncounter PaymentMethod: " + bi.getBill().getPatientEncounter().getPaymentMethod());
-            } else {
-                System.out.println("No PatientEncounter");
-            }
-        }
-
-        summarizeBillItemsToIncomeByCategory(oiBundle, bis);
-
-        oiBundle.setName("Income Breakdown By Category - Without Professional Fee");
-        oiBundle.setBundleType("income_breakdown_by_category_with_out_professional_fee");
-
-        oiBundle.getReportTemplateRows().stream()
-                .forEach(rtr -> {
-                    rtr.setInstitution(institution);
-                    rtr.setDepartment(department);
-                    rtr.setSite(site);
-                    rtr.setFromDate(fromDate);
-                    rtr.setToDate(toDate);
-                });
-
-        return oiBundle;
-    }
-
+//    public ReportTemplateRowBundle generateIncomeBreakdownByCategoryWithOutProfessionalFee() {
+//        ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
+//        String jpql = "select bi "
+//                + " from BillItem bi "
+//                + " where bi.bill.retired=:br "
+//                + " and bi.bill.createdAt between :fd and :td ";
+//        Map m = new HashMap();
+//        m.put("br", false);
+//        m.put("fd", fromDate);
+//        m.put("td", toDate);
+//
+//        List<BillTypeAtomic> btas = new ArrayList();
+//
+//        List<BillTypeAtomic> obtas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+//        List<BillTypeAtomic> ibtas = BillTypeAtomic.findByServiceType(ServiceType.INWARD);
+//
+//        if (null != visitType) {
+//            switch (visitType) {
+//                case "Any":
+//                    System.out.println("Any");
+//                    btas.addAll(obtas);
+//                    btas.addAll(ibtas);
+//                    break;
+//                case "OP":
+//                    System.out.println("OPD");
+//                    btas.addAll(obtas);
+//                    break;
+//                case "IP":
+//                    System.out.println("IP");
+//                    btas.addAll(ibtas);
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }
+//
+//        oiBundle.setDescription("Bill Types Listed: " + btas.size());
+//        if (!btas.isEmpty()) {
+//            jpql += " and bi.bill.billTypeAtomic in :bts ";
+//            m.put("bts", btas);
+//        }
+//
+//        List<PaymentMethod> creditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.CREDIT);
+//        List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
+//
+//        List<PaymentMethod> allMethods = new ArrayDeque();
+//        allMethods.addAll(creditPaymentMethods);
+//        allMethods.addAll(nonCreditPaymentMethods);
+//
+//        System.out.println("methodType = " + methodType);
+//        System.out.println("visitType = " + visitType);
+//
+//        if ("Any".equals(methodType)) {
+//            System.out.println("Any");
+//        } else if ("Credit".equals(methodType)) {
+//            System.out.println("Credit");
+//
+//            if (null != visitType) {
+//                switch (visitType) {
+//                    case "Any":
+//                        System.out.println("Credit Any");
+//                        jpql += " AND (bi.bill.paymentMethod in :cpm OR bi.bill.patientEncounter.paymentMethod in :cpm)";
+//                        m.put("cpm", creditPaymentMethods);
+//                        break;
+//                    case "OP":
+//                        System.out.println("Credit OP");
+//                        jpql += " AND bi.bill.paymentMethod in :cpm ";
+//                        m.put("cpm", creditPaymentMethods);
+//                        break;
+//                    case "IP":
+//                        System.out.println("Credit IP");
+//                        jpql += " AND bi.bill.patientEncounter.paymentMethod in :cpm ";
+//                        m.put("cpm", creditPaymentMethods);
+//                        break;
+//                    default:
+//                        break;
+//                }
+//            }
+//
+//        } else if ("NonCredit".equals(methodType)) {
+//            System.out.println("Non Credit");
+//
+//            if (null != visitType) {
+//                switch (visitType) {
+//                    case "Any":
+//                        System.out.println("NonCredit Any");
+//                        jpql += " AND (bi.bill.paymentMethod in :ncpm OR bi.bill.patientEncounter.paymentMethod in :ncpm)";
+//                        m.put("ncpm", nonCreditPaymentMethods);
+//                        break;
+//                    case "OP":
+//                        System.out.println("NonCredit OP");
+//                        jpql += " AND bi.bill.paymentMethod in :ncpm ";
+//                        m.put("ncpm", nonCreditPaymentMethods);
+//                        break;
+//                    case "IP":
+//                        System.out.println("NonCredit IP");
+//                        jpql += " AND bi.bill.patientEncounter.paymentMethod in :ncpm ";
+//                        m.put("ncpm", nonCreditPaymentMethods);
+//                        break;
+//                    default:
+//                        break;
+//                }
+//            }
+//
+//        }
+//
+//        if (department != null) {
+//            jpql += " and bi.bill.department=:dep ";
+//            m.put("dep", department);
+//        }
+//        if (institution != null) {
+//            jpql += " and bi.bill.department.institution=:ins ";
+//            m.put("ins", institution);
+//        }
+//        if (site != null) {
+//            jpql += " and bi.bill.department.site=:site ";
+//            m.put("site", site);
+//        }
+//        if (category != null) {
+//            jpql += " and bi.item.category=:cat ";
+//            m.put("cat", category);
+//        }
+//        System.out.println("jpql = " + jpql);
+//        System.out.println("m = " + m);
+//
+//        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+//        System.out.println("bis = " + bis);
+//
+//        // Debug: Print payment methods of the fetched BillItems
+//        for (BillItem bi : bis) {
+//            System.out.println("BillItem ID: " + bi.getId());
+//            System.out.println("Bill PaymentMethod: " + bi.getBill().getPaymentMethod());
+//            if (bi.getBill().getPatientEncounter() != null) {
+//                System.out.println("PatientEncounter PaymentMethod: " + bi.getBill().getPatientEncounter().getPaymentMethod());
+//            } else {
+//                System.out.println("No PatientEncounter");
+//            }
+//        }
+//
+//        summarizeBillItemsToIncomeByCategory(oiBundle, bis);
+//
+//        oiBundle.setName("Income Breakdown By Category - Without Professional Fee");
+//        oiBundle.setBundleType("income_breakdown_by_category_with_out_professional_fee");
+//
+//        oiBundle.getReportTemplateRows().stream()
+//                .forEach(rtr -> {
+//                    rtr.setInstitution(institution);
+//                    rtr.setDepartment(department);
+//                    rtr.setSite(site);
+//                    rtr.setFromDate(fromDate);
+//                    rtr.setToDate(toDate);
+//                });
+//
+//        return oiBundle;
+//    }
     public ReportTemplateRowBundle generateOpdProfessionalFees(String paymentStatusStr) {
         PaymentStatus paymentStatus = PaymentStatus.ALL;
         if (paymentStatusStr != null) {
@@ -17257,8 +17279,8 @@ public class SearchController implements Serializable {
         Row headerRow = sheet.createRow(rowIdx++);
         // Headers for both bills and bill items
         String[] headers = {
-                "Bill ID", "Institution Name", "Department Name", "Patient Name", "Staff Name", "User", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
-                "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value"
+            "Bill ID", "Institution Name", "Department Name", "Patient Name", "Staff Name", "User", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
+            "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value"
         };
         for (int i = 0; i < headers.length; i++) {
             headerRow.createCell(i).setCellValue(headers[i]);
