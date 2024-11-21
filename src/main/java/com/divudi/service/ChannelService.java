@@ -1076,7 +1076,7 @@ public class ChannelService {
         newlyCreatedAgentOnlinePaymentCompletionBill.setBalance(0.0);
         newlyCreatedAgentOnlinePaymentCompletionBill.setPaymentMethod(PaymentMethod.Agent);
         newlyCreatedAgentOnlinePaymentCompletionBill.setReferenceBill(bs.getBill());
-        newlyCreatedAgentOnlinePaymentCompletionBill.setBillType(BillType.ChannelPaid);
+        newlyCreatedAgentOnlinePaymentCompletionBill.setBillType(BillType.ChannelAgent);
         newlyCreatedAgentOnlinePaymentCompletionBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(bs.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
         // String deptId = generateBillNumberDeptId(temp);
