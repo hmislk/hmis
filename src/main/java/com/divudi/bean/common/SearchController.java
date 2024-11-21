@@ -12953,7 +12953,6 @@ public class SearchController implements Serializable {
             System.out.println("bills");
             bundle.setName("Staff Welfare Bills");
             bundle.setBundleType("billList");
-
             bundle = generatePaymentMethodColumnsByBills(opdBts, staffPaymentMethods);
             bundle.calculateTotalByBills();
 
@@ -12973,7 +12972,6 @@ public class SearchController implements Serializable {
 
             bundle.setName("Staff Welfare Bill Items");
             bundle.setBundleType("billItemList");
-
             bundle = generateBillItems(opdBts, staffPaymentMethods);
             bundle.calculateTotalByBillItems();
         }
