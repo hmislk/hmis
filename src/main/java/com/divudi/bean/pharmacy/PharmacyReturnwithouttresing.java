@@ -531,7 +531,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
         errorMessage = null;
         //   ////System.out.println("errorMessage = " + errorMessage);
         if (toInstitution == null) {
-            JsfUtil.addErrorMessage("Select Dealor");
+            JsfUtil.addErrorMessage("Select a Supplier");
             return;
         }
         if (getPreBill().getComments() == null || getPreBill().getComments().trim().equals("")) {
@@ -591,7 +591,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
         }
 
         if (getToInstitution() == null) {
-            JsfUtil.addErrorMessage("Please Select To Institution");
+            JsfUtil.addErrorMessage("Please Select To Supplier");
             return;
         }
 
