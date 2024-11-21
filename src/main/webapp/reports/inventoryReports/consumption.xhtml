@@ -9,128 +9,292 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="consumption" >
+                    <p:panel header="Consumption" >
                         <p:panelGrid columns="4" class="w-100">
 
-                            <p:outputLabel value="  From Date">
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="From Date" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker value="#{reportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          inputStyleClass="w-100"
                                           class=" w-100" ></p:datePicker>
-                            <p:outputLabel value="  To Date" >
-                            </p:outputLabel>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="To Date" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=""></p:datePicker>
+                                          inputStyleClass="w-100"
+                                          class="w-100"></p:datePicker>
 
-                            <p:outputLabel value="Branch" >
-                            </p:outputLabel>
-                            <p:selectOneMenu 
 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
+                                <p:outputLabel value="Site" class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="d"
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <p:outputLabel value="Store" >
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdFromDepartment"
-                                value="#{reportController.fromDepartment}" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}" ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <p:outputLabel value="Item Category" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true" class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                                <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
 
 
-                            <p:outputLabel value="Items" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university ml-5" />
+                                <p:outputLabel value="Institution" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                                <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Stock type" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building ml-5" />
+                                <p:outputLabel value="Department" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                                <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Stock Procurement Type" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-store ml-5" />
+                                <p:outputLabel value="Store" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                                <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
                             
                             
+                            
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-utensils ml-5" />
+                                <p:outputLabel value="Consumption Department" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-box ml-5" />
+                                <p:outputLabel value="Item Name" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-box ml-5" />
+                                <p:outputLabel value="Item Category" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-file-alt ml-5" />
+                                <p:outputLabel value="Report type" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
 
                         </p:panelGrid>
 
                         <div class="d-flex align-items-center">
-                            <p:commandButton class="m-2" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
+                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" >
                             </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Download"
-                                             action="#{reportController.downloadLabTestCount}">
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
                             </p:commandButton>
                         </div>
+                        
+                        
+                        
+                        <div class="mt-5">
+                        <h5>Department Summary</h5>
+                        <p:dataTable id="tbl1" value="" 
+                                     var="f" 
+                                     rowIndexVar="n" 
+                                     paginator="true" 
+                                     rows="10" 
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-
-                        <p:dataTable id="tbl" value="" 
-                                     paginator="true"
-                                     rows="10">
-                            
-                            <p:column headerText="Department summery Department">
-                                <h:outputText value="" />
-                            </p:column>
-
-                            <p:column headerText="COvid-19 Expenses">
-                                <h:outputText value="" />
-                            </p:column>
-
-                            <p:column headerText="Other Expenses">
+                            <p:column headerText="Department">
                                 <h:outputText value="" />
                             </p:column>
 
                             <p:column headerText="Net Total">
                                 <h:outputText value="" />
+                            </p:column>>
+
+
+                        </p:dataTable>
+                        </div>
+                        
+                        <div>
+                        <h5>Department unit issue by Bill No</h5>
+                        <p:dataTable id="tbl2" value="" 
+                                     var="f" 
+                                     rowIndexVar="n" 
+                                     paginator="true" 
+                                     rows="10" 
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+                            <p:column headerText="Bill No" width="10em">
+                                <h:outputText value="" />
                             </p:column>
 
+                            <p:column headerText="Consumption Department" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Request No" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Cancel No" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Value" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Created Date and Time" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Documnet Created By" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Approved Date and Time" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Documnet Approved By" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
                             
                         </p:dataTable>
+                        
+                        </div>
+                        
+                        
+                        <div>
+                        <h5> Department unit issue by bill item report</h5>
+                        <p:dataTable id="tbl3" value="" 
+                                     var="f" 
+                                     rowIndexVar="n" 
+                                     paginator="true" 
+                                     rows="10" 
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+                            <p:column headerText="No" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Bill No" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Request No" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Consumption Department" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Item" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Item Category" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Quantity" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Rate" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Value" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Created Date and Time" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Documnet Created By" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Approved Date and Time" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Documnet Approved By" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Remarks" width="10em">
+                                <h:outputText value="" />
+                            </p:column>                        
+                            
+                            <p:column headerText="" width="10em">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                        </p:dataTable>
+                        
+                        </div>
+                        
                     </p:panel>
 
                 </h:form>
