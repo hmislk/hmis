@@ -92,7 +92,7 @@
                                 itemLabel="#{dept.name}"
                                 itemValue="#{dept}">
                             </p:autoComplete>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf571;" styleClass="fa mr-2" />
@@ -169,7 +169,7 @@
                             </p:selectOneMenu>
 
                         </h:panelGrid><br />
-                        
+
                         <div class="d-flex align-items-center mb-2">
                             <p:commandButton 
                                 class="ui-button-warning mx-1" 
@@ -189,9 +189,14 @@
                                 <p:fileDownload value="#{searchController.bundleAsPdf}" />
                             </p:commandButton>
 
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                            <p:commandButton 
+                                class="ui-button- mx-1" 
+                                icon="fas fa-print" 
+                                ajax="false" 
+                                value="Print All">
+                                <p:printer target="tbl"></p:printer>
                             </p:commandButton>
-                           
+
                             <p:commandButton 
                                 value="Download Excel" 
                                 ajax="false" 
@@ -201,7 +206,7 @@
                             </p:commandButton>
 
                         </div>
-                        
+
                         <div style="display: none;" >
                             #{searchController.bundle.reportTemplateRows}
                         </div>
@@ -322,14 +327,20 @@
                         </p:dataTable>
 
 
-                        <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb11" rowIndexVar="i"
-                                     rowKey="#{b}" 
-                                     rows="#{searchController.rows}"
-                                     selection="#{searchController.selectedTelephoneNumbers}"
-                                     paginatorPosition="bottom"
-                                     paginator="true"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
+                        <p:dataTable 
+                            value="#{searchController.telephoneNumbers}" 
+                            var="b" 
+                            rendered="false"
+                            id="tb11" 
+                            rowIndexVar="i"
+                            rowKey="#{b}" 
+                            rows="#{searchController.rows}"
+                            selection="#{searchController.selectedTelephoneNumbers}"
+                            paginatorPosition="bottom"
+                            paginator="true"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="20, 50, 100, 1000, 1500" 
+                            class="w-100">
 
                             <f:facet name="header" >
                                 <p:outputLabel value="Service Category Wise Bill Detail Report" />                                
