@@ -270,25 +270,13 @@ public class ChannelSearchController implements Serializable {
             newlyCreatedCancellationProfessionalBillItem.setDiscount(0 - originalProfessionalPaymentBillItem.getDiscount());
             newlyCreatedCancellationProfessionalBillItem.setQty(1.0);
             newlyCreatedCancellationProfessionalBillItem.setRate(originalProfessionalPaymentBillItem.getRate());
-
             newlyCreatedCancellationProfessionalBillItem.setCreatedAt(new Date());
             newlyCreatedCancellationProfessionalBillItem.setCreater(getSessionController().getLoggedUser());
-
             newlyCreatedCancellationProfessionalBillItem.setPaidForBillFee(originalProfessionalPaymentBillItem.getPaidForBillFee());
-
+            
             getBillItemFacede().create(newlyCreatedCancellationProfessionalBillItem);
-
-//            cancelBillComponents(cancellationProfessionalPaymentBill, cancellationProfessionalBillItem);
-//            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + originalProfessionalPaymentBillItem.getId();
             List<BillFee> originalProfessionalPaymentFeesForBillItem = billBean.fetchBillFees(originalProfessionalPaymentBillItem);
-
             cancelBillFee(newlyCreatedCancellationProfessionalPaymentBill, newlyCreatedCancellationProfessionalBillItem, originalProfessionalPaymentFeesForBillItem);
-
-//            //create BillFeePayments For cancel
-//            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + cancellationProfessionalBillItem.getId();
-//            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
-//            getOpdPreSettleController().createOpdCancelRefundBillFeePayment(cancellationProfessionalPaymentBill, tmpC, cancellationBillPayments);
-//            //
             newlyCreatedCancellationBillItems.add(newlyCreatedCancellationProfessionalBillItem);
 
         }
