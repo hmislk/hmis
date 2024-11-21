@@ -54,6 +54,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.SpecialityFacade;
+import com.divudi.facade.StaffFacade;
 import com.divudi.java.CommonFunctions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -101,6 +102,8 @@ public class ChannelService {
     private SpecialityFacade specialityFacade;
     @EJB
     private ConsultantFacade consultantFacade;
+    @EJB
+    private StaffFacade staffFacade;
 
     @Inject
     private BookingControllerViewScope bookingControllerViewScope;
@@ -884,6 +887,16 @@ public class ChannelService {
         }
 
         return consultantFacade.findByJpql(jpql.toString(), m);
+    }
+    public List<Speciality> findAllSpecilities(){
+        String jpql;
+        Map params = new HashMap();
+        jpql = " select c  "
+                + " from DoctorSpeciality c "
+                + " where c.retired=:ret "
+                + " order by c.name";
+        params.put("ret", false);
+        return staffFacade.findByJpql(jpql, params);
     }
 
     public List<Doctor> findDoctorsFromName(String name, Long id) {
