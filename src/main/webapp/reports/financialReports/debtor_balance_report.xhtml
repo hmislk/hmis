@@ -62,13 +62,10 @@
                                 <h:outputText value="&#xf084;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Admission Type" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100 ">
-                                <f:selectItem itemValue="Any" itemLabel="Any"/>
-                                <f:selectItem itemValue="Normal" itemLabel="Normal"/>
-                                <f:selectItem itemValue="Dialysis" itemLabel="Dialysis"/>
-                                <f:selectItem itemValue="ETU" itemLabel="ETU"/>
-                                <f:selectItem itemValue="DayCare" itemLabel="Day Care"/>
-                                <f:selectItem itemValue="CathLab" itemLabel="Cath Lab"/>
+                            <p:selectOneMenu  
+                                class="w-100">
+                                <f:selectItem itemLabel="All Admission Types"/>
+                                <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
@@ -78,16 +75,9 @@
                                 <h:outputText value="&#xf236;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Room Category" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemValue="Any" itemLabel="Any"/>
-                                <f:selectItem itemValue="SuperiorA" itemLabel="Superior A"/>
-                                <f:selectItem itemValue="SuperiorB" itemLabel="Superior B"/>
-                                <f:selectItem itemValue="PremiumRange" itemLabel="Premium Range"/>
-                                <f:selectItem itemValue="BayWindow" itemLabel="Bay Window"/>
-                                <f:selectItem itemValue="KingsCourt" itemLabel="Kings Court"/>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="Select Room Category"/>
+                                <f:selectItems value="#{roomCategoryController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
@@ -102,13 +92,32 @@
                                 <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
                             </p:selectOneMenu>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Credit Company" for="companyName" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete inputStyleClass="w-100" class="w-100" id="companyName" forceSelection="true" style="text-align: right;"
+                                            value="#{creditCompanyDueController.institution}"
+                                            completeMethod="#{creditCompanyController.completeCredit}"
+                                            var="ix" itemLabel="#{ix.name}"
+                                            itemValue="#{ix}" >
+                            </p:autoComplete>
+
                         </h:panelGrid>
 
                         <p:commandButton 
                             class="ui-button-warning my-4 mx-2"
                             style="width: 150px"
                             ajax="false" 
-                            value="Process" 
+                            value="Process All" 
+                            icon="fas fa-cogs" >
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            class="ui-button-warning my-4 mx-2"
+                            style="width: 190px"
+                            ajax="false" 
+                            value="Process Due Only" 
                             icon="fas fa-cogs" >
                         </p:commandButton>
 
@@ -118,6 +127,7 @@
                             icon="fas fa-print" 
                             ajax="false" 
                             value="Print">
+                            <p:printer target="tblExport" />
                         </p:commandButton>
 
                         <p:commandButton 
@@ -126,6 +136,7 @@
                             icon="fas fa-file-excel" 
                             ajax="false" 
                             value="Excel">
+                            <p:dataExporter type="xlsx" target="tblExport"  fileName="debtor_balance_report.xlsx" ></p:dataExporter>
                         </p:commandButton>
 
                         <p:commandButton 
@@ -134,9 +145,10 @@
                             icon= "fas fa-file-pdf" 
                             ajax="false" 
                             value="PDF">
+                            <p:dataExporter type="pdf" target="tblExport"  fileName="debtor_balance_report.pdf" ></p:dataExporter>
                         </p:commandButton>
 
-                        <p:dataTable>
+                        <p:dataTable id="tblExport">
 
                             <p:column headerText="Discharge Date">
                                 <h:outputText value="" ></h:outputText>
