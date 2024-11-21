@@ -1055,7 +1055,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         calculateTotalPay();
         Bill b = createPaymentBillForSession();
         current = b;
-        getBillFacade().create(b);        
+        getBillFacade().create(b);
         Payment payment = createPaymentProPayment(b, paymentMethod);
         drawerController.updateDrawerForOuts(payment);
         saveBillItemsAndFees(b);
