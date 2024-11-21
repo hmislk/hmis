@@ -200,7 +200,7 @@
                                     <h:outputLabel value="#{bill.billClass}"/>
                                 </p:column>
                                 <p:column headerText="Bill Type" width="22em">                                
-                                    <h:outputLabel value="#{bill.billTypeAtomic}"/>
+                                    <h:outputLabel value="#{bill.billTypeAtomic.label}"/>
                                 </p:column>
                                 <p:column headerText="Payment Method" >                                
                                     <h:outputLabel value="#{bill.paymentMethod}"/>
@@ -252,7 +252,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="No" styleClass="alignTop">
+                                <p:column headerText="No" exportable="false" styleClass="alignTop">
                                     <p:commandButton 
                                         value="View" 
                                         icon="fa fa-eye" 
