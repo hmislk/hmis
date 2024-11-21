@@ -191,42 +191,7 @@
                                                     id="credit"
                                                     style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Credit' ? 'none' : 'block'} ; "
                                                     >
-                                                    <div class="my-1">
-                                                        <div class="row">
-                                                            <div class="col-12 d-flex gap-2">
-                                                                <p:autoComplete 
-                                                                    id="creditCompany" 
-                                                                    class="w-100"
-                                                                    inputStyleClass="w-100"
-                                                                    forceSelection="true"
-                                                                    value="#{opdPreSettleController.creditCompany}"  
-                                                                    completeMethod="#{creditCompanyController.completeCredit}" 
-                                                                    var="ix"
-                                                                    minQueryLength="4"
-                                                                    placeholder="Company (Type at least 4 letters to search)"
-                                                                    itemLabel="#{ix.name}" 
-                                                                    itemValue="#{ix}" 
-                                                                    >
-                                                                </p:autoComplete> 
-
-                                                                <p:inputText 
-                                                                    id="polNo" 
-                                                                    style="width: 200px;"
-                                                                    value="#{opdPreSettleController.paymentMethodData.credit.referralNo}" 
-                                                                    placeholder="Policy NO" >
-                                                                </p:inputText>
-
-                                                                <p:commandLink 
-                                                                    id="btnAddNewCreditCom" 
-                                                                    value="(+)"
-                                                                    class="mt-1"
-                                                                    title="Add New Credit Company"
-                                                                    ajax="false" 
-                                                                    action="#{navigationController.navigateToCreditCompany()}"
-                                                                    actionListener="#{creditCompanyController.prepareAdd()}" />  
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                    <pa:credit paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
                                                 <h:panelGroup class="w-100 mt-2" id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
