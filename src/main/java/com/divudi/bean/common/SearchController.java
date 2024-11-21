@@ -10331,35 +10331,35 @@ public class SearchController implements Serializable {
     public void listBillItems() {
         billItems = null;
         Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select b from BillItem bi join bi.bill b where 1=1 ");
+        StringBuilder jpql = new StringBuilder("select bi from BillItem bi where 1=1 ");
         if (toDate != null && fromDate != null) {
-            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            jpql.append(" and bi.bill.createdAt between :fromDate and :toDate ");
             params.put("toDate", toDate);
             params.put("fromDate", fromDate);
         }
 
         if (institution != null) {
             params.put("ins", institution);
-            jpql.append(" and b.department.institution = :ins ");
+            jpql.append(" and bi.bill.department.institution = :ins ");
         }
 
         if (department != null) {
             params.put("dep", department);
-            jpql.append(" and b.department = :dept ");
+            jpql.append(" and bi.bill.department = :dept ");
         }
 
         if (site != null) {
             params.put("site", site);
-            jpql.append(" and b.department.site = :site ");
+            jpql.append(" and bi.bill.department.site = :site ");
         }
 
         if (webUser != null) {
-            jpql.append(" and b.creater=:wu ");
+            jpql.append(" and bi.bill.creater=:wu ");
             params.put("wu", webUser);
         }
 
         // Order by bill ID
-        jpql.append(" order by b.id ");
+        jpql.append(" order by bi.id ");
 
         System.out.println("jpql.toString() = " + jpql.toString());
         System.out.println("params = " + params);
@@ -12873,10 +12873,10 @@ public class SearchController implements Serializable {
     public void createItemizedSalesReport() {
         bundle = generateItemizedSalesReport();
         if (withProfessionalFee) {
-            bundle.setName("Service Category Wise Bill Detail - With Professional Fee");
+            bundle.setName("Itemized Sales Report - With Professional Fee");
             bundle.setBundleType("itemized_sales_report_with_professional_fee");
         } else {
-            bundle.setName("Service Category Wise Bill Detail - Without Professional Fee");
+            bundle.setName("Itemized Sales Report - Without Professional Fee");
             bundle.setBundleType("itemized_sales_report_without_professional_fee");
         }
 
