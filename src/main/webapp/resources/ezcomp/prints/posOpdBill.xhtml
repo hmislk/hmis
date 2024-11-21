@@ -434,7 +434,7 @@
                 </table>
 
             </div>
-            
+
             <div class="billDetails d-flex justify-content-end">
                 <h:outputLabel value="Original Bill : #{cc.attrs.bill.deptId}" class="mx-3" rendered="#{cc.attrs.bill.cancelled and configOptionApplicationController.getBooleanValueByKey('Package Billing - Display the Original Bill Number in Canceled Bill',false)}"/>
             </div>
@@ -453,7 +453,7 @@
                     </h:outputLabel>
                 </div>
             </h:panelGroup>
-            
+
             <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
                 <div class="d-flex gap-2" style="font-size: 12px;">
                     <h:outputLabel value="Remark :"/>
@@ -462,15 +462,8 @@
             </h:panelGroup>
 
             <div class="footer">
-                <br/>
-                The Greatest Wealth is Health!
-                <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
-                    <br/>
-                </h:panelGroup>
-                <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>
+                #{configOptionApplicationController.getLongTextValueByKey("OPD Bill Footer Massage")}
             </div>
-
-
 
         </div>
     </cc:implementation>
