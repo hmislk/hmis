@@ -47,7 +47,7 @@
                                         style="float: right"
                                         value="Back To Search"
                                         icon="fa-solid fa-arrow-left"
-                                        action="/credit/credit_compnay_bill_opd_all_voucher_approve?faces-redirect=true"
+                                        action="/credit/views/bill_reprint?faces-redirect=true"
                                         ajax="false">
                                     </p:commandButton>
                                 </h:panelGrid>
@@ -75,7 +75,17 @@
                                             <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                             <h:outputLabel value="Credit Company Details" class="mx-2"></h:outputLabel>
                                         </f:facet>
-<!--                                        <common:patient patient="#{cashRecieveBillController.current.creditCompany.name}" class="w-100"/>-->
+                                        <p:panelGrid columns="3">
+                                            <h:outputLabel value="Credit Company Name" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 50px;" ></h:outputLabel>
+                                            <h:outputLabel value="#{cashRecieveBillController.current.creditCompany.name}" ></h:outputLabel>
+                                            <h:outputLabel value="Approval Status" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 50px;" ></h:outputLabel>
+                                             <h:panelGroup rendered="#{cashRecieveBillController.current.approveAt ne null}">
+                                        <p:badge value="Approved" severity="success"/>
+                                    </h:panelGroup>
+                                    <p:badge value="Not Approved" severity="danger" rendered="#{cashRecieveBillController.current.approveAt eq null}" />
+                                        </p:panelGrid>
                                     </p:panel>
                                 </div>
                                 <div class="col-5">
@@ -109,7 +119,7 @@
                             </div>
 
                             <!-- Bill Item Detail Panel -->
-                            <p:panel class="mt-2">
+<!--                            <p:panel class="mt-2">
                                 <f:facet name="header">
                                     <h:outputText styleClass="fas fa-list-alt"></h:outputText>
                                     <h:outputLabel value="Bill Item Detail" class="mx-2"></h:outputLabel>
@@ -130,7 +140,7 @@
                                         </h:outputLabel>
                                     </p:column>
                                 </p:dataTable>
-                            </p:panel>
+                            </p:panel>-->
                         </p:panel>
                     </h:panelGroup>
 
@@ -176,7 +186,7 @@
                                 <prints:five_five_paper_with_headings bill="#{cashRecieveBillController.current}"/>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >       
-                                <prints:five_five_paper_coustom_cancellation  bill="#{cashRecieveBillController.current}"/>
+                                <prints:five_five_paper_coustom_1_credit_company_payment  bill="#{cashRecieveBillController.current}"/>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                 <prints:five_five_paper_without_headings 
