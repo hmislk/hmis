@@ -1171,6 +1171,7 @@ public class CashRecieveBillController implements Serializable {
         selectedBillItems = null;
         institution = null;
         comment = null;
+        selectedBill = null;
     }
 
     public String prepareNewBill() {
