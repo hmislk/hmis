@@ -4,285 +4,243 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
 
                 <h:form >
+                    <p:panel header="Collection Center Bill Wise Detail Report" styleClass="w-100">
 
-                    <p:panel header="Collection Center Bill Wise Detail Report" >
+                        <p:panelGrid columns="4" styleClass="" columnClasses="col-md-2, col-md-4, col-md-2, col-md-4">
+                            <h:panelGroup >
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From Date"  class="mx-3"/>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          class="w-100"
+                                          inputStyleClass="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                        <div class="row mb-2">
-                            <div class="col-md-2">
-                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
-                                <p:outputLabel value="From Date" class="mx-3">
-                                </p:outputLabel>
-                            </div>
-                            <div class="col-md-4">
-                                <p:datePicker value="#{reportController.fromDate}" 
-                                              pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                              inputStyleClass="w-100"
-                                              class="w-100"
-                                              ></p:datePicker>
-                            </div>
 
-                            <div class="col-md-2">
-                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
-                                <p:outputLabel value="To Date" class="mx-3">
-                                </p:outputLabel>
-                            </div>
-                            <div class="col-md-4">
-                                <p:datePicker value="#{reportController.toDate}"
-                                              inputStyleClass="w-100"
-                                              class="w-100"
-                                              pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                            </div>
-                        </div>
+                            <h:panelGroup >
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To Date"  class="mx-3"/>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          class="w-100"
+                                          inputStyleClass="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                        <div class="row mb-2">
-                            <div class="col-md-2">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Institution/Branch" class="mx-3">
-                                </p:outputLabel>
-                            </div>
-                            <div class="col-md-4">
-                                <p:selectOneMenu 
-                                    id="cmdInstitution"
-                                    value="#{reportController.institution}"
-                                    style=" max-width: 100%; overflow-x: auto; "
-                                    class="w-100"
-                                    filter="true"
-                                    >
-                                    <f:selectItem itemLabel="All"></f:selectItem>
-                                    <f:selectItems value="#{institutionController.items}"
-                                                   var="i"
-                                                   itemLabel="#{i.name}"
-                                                   itemValue="#{i}"></f:selectItems>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
                                 </p:selectOneMenu>
-                            </div>
 
-                            <div class="col-md-2">
-                                <i class="fa fa-object-group" aria-hidden="true"></i>
-                                <p:outputLabel value="Service Group" class="mx-3"/>
-                            </div>
-                            <div class="col-md-4">
-                                <p:selectOneMenu 
-                                    value="null"
-                                    filter="true"
-                                    style="overflow-x: auto;"
-                                    class="w-100"
-                                    >
-                                    <f:selectItem itemLabel="Select Service Group"></f:selectItem>
-                                    <f:selectItems value="#{serviceController.category.items}"
-                                                   var="i"
-                                                   itemLabel="#{i.name}"
-                                                   itemValue="#{i}"></f:selectItems>
-
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
                                 </p:selectOneMenu>
-                            </div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-md-2">
-                                <i class="fa fa-object-group" aria-hidden="true"></i>
-                                <p:outputLabel value="Service Name" class="mx-3"/>
-                            </div>
-                            <div class="col-md-4">
-                                <p:selectOneMenu 
-                                    filter="true"
-                                    id="acIx"
-                                    class="w-100"
-                                    style=" max-width: 100%; overflow-x: auto; "
-                                    converter="itemLightConverter"
-                                    value="#{reportController.itemLight}" var="ix" >
-                                    <f:selectItems value="#{reportController.investigationsAndServices}"
-                                                   var="item" 
-                                                   itemLabel="#{item.name}"
-                                                   itemValue="#{item}" >
-                                    </f:selectItems>
-                                    <p:column  headerText="Name">
-                                        <f:facet name="header" >
-                                            Name
-                                        </f:facet>
-                                        <h:outputText value="#{ix.name}" ></h:outputText>
-                                        <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
-                                            <h:outputText value=" (#{ix.fullName})" ></h:outputText>
-                                        </h:panelGroup>
-                                    </p:column>
-                                    <p:column  headerText="Dept">
-                                        <h:outputText value="#{ix.departmentName}"></h:outputText>
-                                    </p:column>
-                                    <p:column  headerText="Code">
-                                        <h:outputText value="#{ix.code}"></h:outputText>
-                                    </p:column>
-                                    <p:column style="text-align: right;" headerText="Value">
-                                        <h:outputText value="#{ix.total}"></h:outputText>
-                                    </p:column>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
                                 </p:selectOneMenu>
-                            </div>
-                            <div class="col-md-2">
-                                <i class="fa fa-ambulance" aria-hidden="true"></i>
-                                <p:outputLabel value="Visit Type" class="mx-3"></p:outputLabel>
-                            </div>
-                            <div class="col-md-4">
-                                <p:selectOneMenu value="null" 
-                                                 class="w-100">
-                                    <f:selectItem itemLabel="All visits"/>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
                                 </p:selectOneMenu>
-                            </div>
-                        </div>
 
-                        <div class="row mb-2">
-                            <div class="col-md-2">
-                                <i class="fa fa-money-bill" aria-hidden="true"></i>
-                                <p:outputLabel value="Payment Mode" class="mx-3"></p:outputLabel>
-                            </div>
-                            <div class="col-md-4">
-                                <p:selectOneMenu value="#{reportController.paymentMethod}" class="w-100" >
-                                    <f:selectItem itemLabel="All visits"/>
-                                    <f:selectItem itemLabel="Select" />                           
-                                    <f:selectItems value="#{enumController.paymentMethods}" />  
+                                <p:selectOneMenu
+                                    rendered="false"
+                                    styleClass="w-100 form-control"  
+                                    value="#{searchController.department}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
+                                        var="d" 
+                                        itemLabel="#{d.name}" 
+                                        itemValue="#{d}" />
                                 </p:selectOneMenu>
-                            </div>
+                            </h:panelGroup>
 
-                            <div class="col-md-2">
-                                <i class="fa fa-object-group" aria-hidden="true"></i>
-                                <p:outputLabel value="Service Type" class="mx-3"></p:outputLabel>
-                            </div>
-                            <div class="col-md-4">
-                                <p:selectOneMenu value="null" class="w-100">
-                                    <f:selectItem itemLabel="Select Type"/>
-                                </p:selectOneMenu>
-                            </div>
-                        </div>
+                            <h:panelGroup >
+                                <h:outputText value="&#xf543;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Invoice No"  class="mx-3"/>
+                                <p:outputLabel  />
+                            </h:panelGroup>
+                            <p:inputText class="w-100" placeholder="Enter Invoice No"></p:inputText>
 
-                        <div class="row mb-2">
-                            <div class="col-md-12">
-                                <p:commandButton ajax="false" 
-                                                 value="Process" 
-                                                 icon="fas fa-cogs"
-                                                 class="ui-button-warning"
-                                                 style="width: 150px"
-                                                 action="#{reportController.processCollectingCentreBillWiseDetailReport}" >
-                                </p:commandButton>
+                            <h:panelGroup >
+                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Agent Name/Code"  class="mx-3"/>
+                                <p:outputLabel  />
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                placeholder="Enter Agent Name or Code"
+                                converter="deal" 
+                                forceSelection="true" id="acColl"
+                                completeMethod="#{institutionController.completeCollectingCenter}" 
+                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" 
+                                maxResults="15"
+                                class="w-100 mb-1"
+                                inputStyleClass="form-control">
+                                <p:column style="padding: 6px;">#{vt.code}</p:column>
+                                <p:column style="padding: 6px;">#{vt.name}</p:column>
+                            </p:autoComplete>
 
-                                <p:commandButton 
-                                    icon="fa-solid fa-print"
-                                    class="mx-1 ui-button-info mx-2"
-                                    ajax="false" 
-                                    style="width: 150px"
-                                    value="Print">
-                                    <p:printer target="tblExport" />
-                                </p:commandButton>
-                                <p:commandButton id="btnExcel" class="m-1 ui-button-success"
-                                                 icon="fas fa-file-excel"
-                                                 style="width: 150px"
-                                                 ajax="false" value="Excel">
-                                    <p:dataExporter type="xlsx" target="tblExport" fileName="collection_center_bill_wise_detail_report" />
-                                </p:commandButton>
-                                <p:commandButton 
-                                    class="m-2 ui-button-danger" 
-                                    icon="fa-solid fa-file-pdf"
-                                    ajax="false" 
-                                    style="width: 150px"
-                                    value="PDF">
-                                    <p:dataExporter type="pdf" target="tblExport"  fileName="collection_center_bill_wise_detail_report" ></p:dataExporter>
-                                </p:commandButton>
-                            </div>
-                        </div>
+                        </p:panelGrid>
+                        <h:panelGrid columns="6">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Process" 
+                                style="width: 150px"
+                                icon="fas fa-cogs"
+                                class="m-2 ui-button-warning">
+
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                icon="fa-solid fa-print"
+                                class="m-2 ui-button-info"
+                                style="width: 150px"
+                                ajax="false" 
+                                value="Print">
+                                <p:printer target="tblExport" />
+                            </p:commandButton>
+                            <p:commandButton 
+                                class="m-2 ui-button-success" 
+                                style="width: 150px"
+                                icon="fas fa-file-excel"
+                                ajax="false" 
+                                value="Excel">
+                                <p:dataExporter type="xlsx" target="tblExport"  fileName="collection_center_bill_wise_detail_report.pdf.xlsx" ></p:dataExporter>
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="m-2 ui-button-danger" 
+                                icon="fa-solid fa-file-pdf"
+                                style="width: 150px"
+                                ajax="false" 
+                                value="PDF">
+                                <p:dataExporter type="pdf" target="tblExport"  fileName="collection_center_bill_wise_detail_report.pdf" ></p:dataExporter>
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                        <h:panelGrid  columns="2" class="my-3">
+                            <h:outputLabel value="From Date :  "/>
+                            <h:outputLabel value="#{reportController.fromDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+                            <h:outputLabel value="To Date :  "/>
+                            <h:outputLabel value="#{reportController.toDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+                        </h:panelGrid>
 
 
-                        <!--                        <h:panelGrid columns="2">
-                                                    <h:outputLabel value="Institution/Branch :  "/>
-                                                    <h:outputLabel value="#{reportController.institution}"  ></h:outputLabel>
-                        
-                                                    <h:outputLabel value="From Date :  "/>
-                                                    <h:outputLabel value="#{reportController.fromDate}"  >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                                    </h:outputLabel>
-                        
-                                                    <h:outputLabel value="To Date :  "/>
-                                                    <h:outputLabel value="#{reportController.toDate}"  >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                                    </h:outputLabel>
-                                                    
-                                                    <h:outputLabel value="Service Group :  "/>
-                                                     <h:outputLabel value="null"  ></h:outputLabel>
-                                                     
-                                                     <h:outputLabel value="Service Name :  "/>
-                                                     <h:outputLabel value="null"  ></h:outputLabel>
-                        
-                                                     <h:outputLabel value="Visit Type :  "/>
-                                                     <h:outputLabel value="null"  ></h:outputLabel>
-                                                     
-                                                     <h:outputLabel value="Professional Fee :  "/>
-                                                     <h:outputLabel value="null"  ></h:outputLabel>
-                        
-                        
-                                                </h:panelGrid>-->
-
-
-                        <p:dataTable id="tblExport" value="#{reportController.bills}" var="c" >
-                            <p:column headerText="MRN No" width="5rem">
-                                <h:outputText value="#{c.patient.phn}" ></h:outputText>
+                        <p:dataTable id="tblExport" var="c" rowIndexVar="rowIndex">
+                            <p:column headerText="CC Code" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Leaf No" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="MRN" width="5rem">
+                                <h:outputText></h:outputText>
                             </p:column>
                             <p:column headerText="Patient Name" width="5rem">
-                                <h:outputText value="#{c.patient.person.nameWithTitle}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Invoice No" width="5rem">
-                                <h:outputText value="#{c.deptId}" ></h:outputText>
+                                <h:outputText></h:outputText>
                             </p:column>
                             <p:column headerText="Invoice Date" width="5rem">
-                                <h:outputText value="#{c.billDate}" ></h:outputText>
+                                <h:outputText></h:outputText>
                             </p:column>
-                            <p:column headerText="BHT No" width="5rem">
-                                <h:outputText value="#{c.patientEncounter.bhtNo}" ></h:outputText>
+                            <p:column headerText="Invoice No" width="5rem">
+                                <h:outputText></h:outputText>
                             </p:column>
-                            <p:column headerText="Consultant No" width="5rem">
-                                <h:outputText value="#{c.referredInstituteOrDoctor.name}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Service Name" width="5rem">
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Quantity" width="5rem">
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Base Price" width="5rem">
-                                <h:outputText value="#{c.total}" ></h:outputText>
-                            </p:column>
-
-                            //Base price means total//
-
-                            <p:column headerText="Disc Amount" width="5rem">
-                                <h:outputText value="#{c.discount}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Hospital Fee" width="5rem">
-                                <h:outputText value="#{c.hospitalFee}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Sponser Payable" width="5rem">
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Patient Payable" width="5rem">
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Total Patient Pay" width="5rem">
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-
                         </p:dataTable>
 
                     </p:panel>
-
-
 
                 </h:form>
 
