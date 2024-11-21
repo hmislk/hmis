@@ -12,8 +12,6 @@
             <ui:define name="subcontent">
                 <h:form >
 
-
-
                     <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
@@ -155,8 +153,6 @@
                         </h:panelGroup>
                     </h:panelGrid>
 
-
-
                     <p:commandButton 
                         value="Process" 
                         ajax="false"
@@ -166,11 +162,51 @@
                         style="background-color: #28a745; border-color: #28a745;"> 
                     </p:commandButton>
 
+                    <p:dataTable 
+                                 value="#{searchController.bundle.reportTemplateRows}" 
+                                 var="row" 
+                                 rowKey="#{row.id}"
+                                 paginator="true"
+                                 rows="10">
 
-                    <p:dataTable value="#{searchController.bundle.reportTemplateRows}" var="row" rowKey="#{row.id}" >
+                        <p:column title="Bill No" sortBy="#{row.bill.insId}" filterBy="#{row.bill.insId}" filterMatchMode="contains">
+                            <h:outputLabel value="#{row.bill.insId}"></h:outputLabel>
+                        </p:column>
 
-                        <p:column title="Bill No" >
-                            <h:outputLabel value="#{row.bill.insId}" ></h:outputLabel>
+                        <p:column title="Bill Date" sortBy="#{row.bill.createdAt}" filterBy="#{row.bill.createdAt}">
+                            <h:outputLabel value="#{row.bill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column title="Name" sortBy="#{row.bill.patient.person.nameWithTitle}" filterBy="#{row.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
+                            <h:outputLabel value="#{row.bill.patient.person.nameWithTitle}"></h:outputLabel>
+                        </p:column>
+
+                        <p:column title="User" sortBy="#{row.bill.creater.name}" filterBy="#{row.bill.creater.name}" filterMatchMode="contains">
+                            <h:outputLabel value="#{row.bill.creater.name}"></h:outputLabel>
+                        </p:column>
+
+                        <p:column title="Bill Item Count" sortBy="#{row.itemCount}" filterBy="#{row.itemCount}">
+                            <h:outputLabel value="#{row.itemCount}"></h:outputLabel>
+                        </p:column>
+
+                        <p:column title="Gross Total" sortBy="#{row.bill.total}" filterBy="#{row.bill.total}">
+                            <h:outputLabel value="#{row.bill.total}">
+                                <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column title="Discount" sortBy="#{row.bill.discount}" filterBy="#{row.bill.discount}">
+                            <h:outputLabel value="#{row.bill.discount}">
+                                <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column title="Net Total" sortBy="#{row.bill.netTotal}" filterBy="#{row.bill.netTotal}">
+                            <h:outputLabel value="#{row.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                            </h:outputLabel>
                         </p:column>
 
                     </p:dataTable>
