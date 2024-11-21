@@ -277,6 +277,10 @@ public class DataAdministrationController {
     public String navigateToCheckMissingFields() {
         return "/dataAdmin/missing_database_fields";
     }
+    
+    public String navigateToListOpdBillsAndBillItemsFields() {
+        return "/dataAdmin/opd_bills_and_bill_items";
+    }
 
     public void checkMissingFields1() {
         suggestedSql = "";

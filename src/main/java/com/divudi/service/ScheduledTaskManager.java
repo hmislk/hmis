@@ -13,7 +13,6 @@ import javax.ejb.Startup;
  * 
  */
 @Singleton
-@Startup
 public class ScheduledTaskManager {
 
     @EJB
