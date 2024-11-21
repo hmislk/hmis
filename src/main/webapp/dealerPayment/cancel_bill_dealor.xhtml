@@ -10,6 +10,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
+                    <p:messages id="messages" autoUpdate="true" />
                     <h:panelGroup rendered="#{!dealorPaymentBillSearch.printPreview}" styleClass="alignTop">
                         <p:panel header="Cancellation">
                             <p:selectOneMenu id="cmbPs" value="#{dealorPaymentBillSearch.bill.paymentMethod}">
@@ -69,9 +70,14 @@
                         </p:panel>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{dealorPaymentBillSearch.printPreview}">
-                        <bi:grnCheque billController="#{dealorPaymentBillSearch}" bill="#{dealorPaymentBillSearch.bill.cancelledBill}" dup="false" />
-                    </h:panelGroup>
+                    <p:panel rendered="#{dealorPaymentBillSearch.printPreview}">
+                        <p:commandButton value="Print" ajax="false" action="#"  >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>   
+                        <h:panelGroup id="gpBillPreview">
+                            <bi:grnCheque billController="#{dealorPaymentBillSearch}" bill="#{dealorPaymentBillSearch.bill.cancelledBill}" dup="false" />
+                        </h:panelGroup>
+                    </p:panel>
                 </h:form>
 
             </ui:define>
