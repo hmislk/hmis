@@ -6,7 +6,7 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"                
-                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <ui:define name="admin">
@@ -45,8 +45,8 @@
                                     <h:outputText styleClass="fa fa-money-bill-wave" />
                                     <h:outputText value="Payment" class="mx-4"></h:outputText>
                                 </f:facet>
-                                
-                                  <div class="row my-2 d-flex align-items-center">
+
+                                <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Select Institution" />      
                                     </div>
@@ -69,7 +69,7 @@
                                         </p:autoComplete> 
                                     </div>
                                 </div>
-                                
+
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Payment Method" />      
@@ -110,7 +110,7 @@
                                     </div>
                                 </div>
 
-                              
+
 
                                 <div class="row my-2">
                                     <div class="col-md-4"></div>
@@ -143,14 +143,30 @@
 
 
                 <p:panel rendered="#{cashRecieveBillController.printPreview}" >
-                    <p:commandButton 
-                        value="New Bill" 
-                        ajax="false" 
-                        action="#{cashRecieveBillController.prepareNewBill()}"  
-                        icon="fa fa-plus"
-                        class="ui-button-warning">
-                    </p:commandButton>
-                    <bi:insRecieve_opd billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p:commandButton 
+                                value="New Bill" 
+                                ajax="false" 
+                                action="#{cashRecieveBillController.prepareNewBill()}"  
+                                icon="fa fa-plus"
+                                class="ui-button-warning">
+                            </p:commandButton>
+                        </div>
+                        <div>
+                            <p:commandButton
+                                value="Print"
+                                ajax="false"
+                                icon="fas fa-print"
+                                class="ui-button-info">
+                                <p:printer target="prints" />
+                            </p:commandButton>
+                        </div>
+                    </div>
+                    <h:panelGroup id="prints">
+                        <bi:five_five_paper_coustom_1_credit_company_payment bill="#{cashRecieveBillController.current}" duplicate="false"/> 
+                    </h:panelGroup>
+
                 </p:panel>
 
             </h:form>
