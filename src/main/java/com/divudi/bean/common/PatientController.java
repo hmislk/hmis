@@ -2007,22 +2007,24 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         opdBillController.setPaymentMethod(null);
         if (quickSearchPatientList == null) {
-            JsfUtil.addErrorMessage("No Patient found !");
+            
             controller.setPatient(null);
             if (!usePHN) {
                 controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
                 controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
             }
             controller.setPatientDetailsEditable(true);
+            JsfUtil.addErrorMessage("No Patient found !");
             return;
         } else if (quickSearchPatientList.isEmpty()) {
-            JsfUtil.addErrorMessage("No Patient found !");
+            
             controller.setPatient(null);
             if (!usePHN) {
                 controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
                 controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
             }
             controller.setPatientDetailsEditable(true);
+            JsfUtil.addErrorMessage("No Patient found !");
             return;
         } else if (quickSearchPatientList.size() == 1) {
             patientSearched = quickSearchPatientList.get(0);
@@ -2032,12 +2034,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
             if (controller.getPatient().getHasAnAccount() != null) {
                 if (patientSearched.getHasAnAccount() && configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false)) {
+
                     opdBillController.setPatient(controller.getPatient());
                     opdBillController.setPaymentMethod(PaymentMethod.PatientDeposit);
                     opdBillController.listnerForPaymentMethodChange();
                 }
             }
-
             quickSearchPatientList = null;
         } else {
             controller.setPatient(null);

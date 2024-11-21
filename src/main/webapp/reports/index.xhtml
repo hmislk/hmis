@@ -98,7 +98,7 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="2. Collection Center Current Balance" action="/reports/collectionCenterReports/collection_center_current_balance_report?faces-redirect=true" ></p:commandButton>
                                     <p:commandButton   class="w-100"  ajax="false" value="2. Collection Center Balance" action="/reports/collectionCenterReports/collection_center_balance_report?faces-redirect=true" ></p:commandButton>
                                     <p:commandButton   class="w-100"  ajax="false" value="3. Collection Center Receipt" action="/reports/collectionCenterReports/collection_center_recipt_reports?faces-redirect=true"></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="4. Collection Center Bill Wise Detail" action="/reports/collectionCenterReports/collection_center_bill_wise_detail_report?faces-redirect=true"></p:commandButton>
+                                    <p:commandButton   class="w-100"  ajax="false" value="4. Collection Center Bill Wise Detail" action="/reports/collectionCenterReports/collection_center_bill_wise_detail_report_new?faces-redirect=true"></p:commandButton>
                                     <p:commandButton   class="w-100"  ajax="false" value="5. Collection Center Wise Transaction Reports" action="/reports/collectionCenterReports/collection_center_wise_transaction_reports_1?faces-redirect=true"></p:commandButton>
                                     <p:commandButton   class="w-100"  ajax="false" value="6. Collection Center Statement" action="/reports/collectionCenterReports/collection_center_statement_report?faces-redirect=true"></p:commandButton>
                                     <p:commandButton   class="w-100"  ajax="false" value="7. Collection Center Wise Summary" action="/reports/collectionCenterReports/collection_center_wise_summary_report?faces-redirect=true"></p:commandButton>
@@ -126,7 +126,15 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="Daily return" action="/reports/financialReports/daily_return?faces-redirect=true"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Income Breakdown by Category"  action="/reports/financialReports/income_breakdown_by_category?faces-redirect=true"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Bills by Category" action="/reports/financialReports/bills_by_item_category?faces-redirect=true"/>
-                                    <p:commandButton   class="w-100"  ajax="false" value="4. Service Category Wise Bill Details" action="/reports/financialReports/service_category_wise_bill_detail?faces-redirect=true"/>
+                                    
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        actionListener="#{searchController.makeNull()}"
+                                        value="4. Service Category Wise Bill Details" 
+                                        action="/reports/financialReports/service_category_wise_bill_detail?faces-redirect=true">
+                                    </p:commandButton>
+                                    
                                     <p:commandButton   class="w-100"  ajax="false" value="4.1. Service Category Wise Bill Details OPD" action="/reports/financialReports/service_category_wise_bill_detail_OPD?faces-redirect=true"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="5. Professional Fees Payment" action="/reports/financialReports/professional_fee_payment?faces-redirect=true"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="6. Discount" action="#{reportController.navigateToDiscount()}" />

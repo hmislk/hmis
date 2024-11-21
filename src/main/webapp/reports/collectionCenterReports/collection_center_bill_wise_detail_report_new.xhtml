@@ -4,14 +4,15 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
 
                 <h:form >
-                    <p:panel header="Collection Center Test Wise Count Report" styleClass="w-100">
+                    <p:panel header="Collection Center Bill Wise Detail Report" styleClass="w-100">
 
                         <p:panelGrid columns="4" styleClass="" columnClasses="col-md-2, col-md-4, col-md-2, col-md-4">
                             <h:panelGroup >
@@ -142,17 +143,25 @@
                             </h:panelGroup>
 
                             <h:panelGroup >
-                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Collection Center "  class="mx-3"/>
+                                <h:outputText value="&#xf543;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Invoice No"  class="mx-3"/>
                                 <p:outputLabel  />
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{reportController.collectingCentre}" style=" max-width: 100%; overflow-x: auto;" class="w-100" filter="true" filterMatchMode="contains">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value="#{collectingCentreController.items}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}" ></f:selectItems>
-                            </p:selectOneMenu>
+                            <p:inputText class="w-100" ></p:inputText>
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Agent Name"  class="mx-3"/>
+                                <p:outputLabel  />
+                            </h:panelGroup>
+                            <p:autoComplete class="w-100" inputStyleClass="form-control"></p:autoComplete>
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Agent No"  class="mx-3"/>
+                                <p:outputLabel  />
+                            </h:panelGroup>
+                            <p:autoComplete class="w-100" inputStyleClass="form-control"></p:autoComplete>
 
 
                         </p:panelGrid>
@@ -162,38 +171,34 @@
                                 value="Process" 
                                 style="width: 150px"
                                 icon="fas fa-cogs"
-                                class="mx-2 ui-button-warning"
-                                action="#{reportController.processCollectingCentreTestWiseCountReport()}" >
+                                class="m-2 ui-button-warning">
 
                             </p:commandButton>
 
                             <p:commandButton 
                                 icon="fa-solid fa-print"
-                                class="mx-2 ui-button-info"
+                                class="m-2 ui-button-info"
                                 style="width: 150px"
                                 ajax="false" 
-                                value="Print"
-                                action="#{reportController.processCollectingCentreStatementReportNew()}">
+                                value="Print">
                                 <p:printer target="tblExport" />
                             </p:commandButton>
                             <p:commandButton 
-                                class="mx-2 ui-button-success" 
+                                class="m-2 ui-button-success" 
                                 style="width: 150px"
                                 icon="fas fa-file-excel"
                                 ajax="false" 
-                                value="Excel"
-                                action="#{reportController.processCollectingCentreStatementReportNew()}">
-                                <p:dataExporter type="xlsx" target="tblExport"  fileName="collection_center_test_wise_count_report.xlsx" ></p:dataExporter>
+                                value="Excel">
+                                <p:dataExporter type="xlsx" target="tblExport"  fileName="collection_center_bill_wise_detail_report.pdf.xlsx" ></p:dataExporter>
                             </p:commandButton>
 
                             <p:commandButton 
-                                class="mx-2 ui-button-danger" 
+                                class="m-2 ui-button-danger" 
                                 icon="fa-solid fa-file-pdf"
                                 style="width: 150px"
                                 ajax="false" 
-                                value="PDF"
-                                action="#{reportController.processCollectingCentreStatementReportNew()}">
-                                <p:dataExporter type="pdf" target="tblExport"  fileName="collection_center_test_wise_count_report.pdf" ></p:dataExporter>
+                                value="PDF">
+                                <p:dataExporter type="pdf" target="tblExport"  fileName="collection_center_bill_wise_detail_report.pdf" ></p:dataExporter>
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -208,75 +213,28 @@
                             <h:outputLabel value="#{reportController.toDate}"  >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
-
-                            <h:outputLabel value="CC Name :"/>
-                            <h:outputLabel value="#{reportController.collectingCentre.name}" ></h:outputLabel>
-
                         </h:panelGrid>
 
 
-                        <p:dataTable value="#{reportController.testWiseCounts}" id="tblExport" var="c" rowIndexVar="rowIndex">
-                            <p:column headerText="S. No" width="3em">
-                                <h:outputText value="#{rowIndex + 1}" ></h:outputText>
+                        <p:dataTable id="tblExport" var="c" rowIndexVar="rowIndex">
+                            <p:column headerText="CC Code" width="5rem">
+                                <h:outputText></h:outputText>
                             </p:column>
-                            <p:column headerText="Test Name">
-                                <h:outputText value="#{c.testName}" ></h:outputText>
+                            <p:column headerText="Leaf No" width="5rem">
+                                <h:outputText></h:outputText>
                             </p:column>
-
-                            <p:column headerText="Count" width="10em">
-                                <f:facet name="footer">
-                                    <h:outputText value="#{reportController.totalCount}" >
-                                        <f:convertNumber pattern="#,##0" />
-                                    </h:outputText>
-                                </f:facet>
-                                <h:outputText value="#{c.count}" >
-                                    <f:convertNumber pattern="#,##0" />
-                                </h:outputText>
+                            <p:column headerText="MRN" width="5rem">
+                                <h:outputText></h:outputText>
                             </p:column>
-                            <p:column headerText="Hos Fee" width="10em">
-                                <h:outputText value="#{c.hosFee}" > 
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{reportController.totalHosFee}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
+                            <p:column headerText="Patient Name" width="5rem">
+                                <h:outputText></h:outputText>
                             </p:column>
-
-                            <p:column headerText="CC Fee" width="10em">
-                                <h:outputText value="#{c.ccFee}" > 
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{reportController.totalCCFee}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
+                            <p:column headerText="Invoice Date" width="5rem">
+                                <h:outputText></h:outputText>
                             </p:column>
-
-                            <p:column headerText="Professional Fee" width="10em">
-                                <h:outputText value="#{c.proFee}" > 
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{reportController.totalProFee}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
+                            <p:column headerText="Invoice No" width="5rem">
+                                <h:outputText></h:outputText>
                             </p:column>
-
-                            <p:column headerText="Total Amount" width="10em">
-                                <h:outputText value="#{c.total}" > 
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{reportController.totalNetTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
                         </p:dataTable>
 
                     </p:panel>

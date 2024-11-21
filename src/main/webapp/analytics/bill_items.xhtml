@@ -11,7 +11,7 @@
                 <h:form >
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="ALL BILL LIST"/>                          
+                            <h:outputLabel value="ALL BILL Item LIST"/>                          
                         </f:facet>
 
                         <h:panelGrid columns="1" class="w-100">
@@ -84,27 +84,48 @@
                                 value="Search" 
                                 action="#{searchController.listBillItems}"/>
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="All Bills" type="xls" target="tblBills" ></p:dataExporter>
+                                <p:dataExporter fileName="All Bill Items" type="xls" target="tbl" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
 
 
                         <div style="width: 100%; overflow-x: auto;">
-                            <p:dataTable rowIndexVar="i" id="tblBillItems" 
-                                         value="#{searchController.billItems}" 
-                                         scrollable="true"
-                                         var="mbi"
-                                         rows="10"
-                                         paginator="true"
-                                         paginatorPosition="top"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="5,10,15"
-                                         >
-                                <p:column >
-                                    <p:outputLabel value="#{mbi.bill}" ></p:outputLabel>
+                            <p:dataTable 
+                                rowIndexVar="i"
+                                rowKey="#{billItem.id}"
+                                id="tbl" 
+                                value="#{searchController.billItems}" 
+                                scrollable="true"
+                                var="billItem"
+                                rows="10"
+                                paginator="true"
+                                paginatorPosition="top"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15"
+                                >
+                                 <p:column headerText="Bill Item ID">
+                                    <p:outputLabel value="#{billItem.id}" ></p:outputLabel>
                                 </p:column>
-                                <p:column >
-                                    <p:outputLabel value="#{mbi}" ></p:outputLabel>
+                                <p:column headerText="Bill ID">
+                                    <p:outputLabel value="#{billItem.bill.id}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Bill No">
+                                    <p:outputLabel value="#{billItem.bill.deptId}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Bill Type">
+                                    <p:outputLabel value="#{billItem.bill.billTypeAtomic.label}" ></p:outputLabel>
+                                </p:column>
+                                <p:column  headerText="Bill Payment Method">
+                                    <p:outputLabel value="#{billItem.bill.paymentMethod}" ></p:outputLabel>
+                                </p:column>
+                                <p:column  headerText="Item">
+                                    <p:outputLabel value="#{billItem.item.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column  headerText="Category">
+                                    <p:outputLabel value="#{billItem.item.category.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column  headerText="Net Total">
+                                    <p:outputLabel value="#{billItem.netValue}" ></p:outputLabel>
                                 </p:column>
 
                             </p:dataTable>

@@ -7,13 +7,14 @@
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}" >
-                    You are NOT authorized
+                    <na:not_authorize />
                 </h:panelGroup>
 
                 <h:form id="form" rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" >
@@ -49,12 +50,12 @@
                             </div>
                         </f:facet>
 
-
-                        <!--                        <div class="row" >
-                                                    <div class="col-md-12 text-center p-1" >
-                                                        <p:messages id="messages" ></p:messages>
-                                                    </div>
-                                                </div>-->
+                        <div class="row" >
+                            <div class="col-md-12 text-center p-1" >
+                                
+                            </div>
+                        </div>
+                        
                         <div class="row" >
                             <div class="col-md-6" >
                                 <p:focus  context="txtQuickSearchPhoneNumber" ></p:focus>
@@ -117,7 +118,7 @@
                                                         autocomplete="off"
                                                         id="txtQuickSearchPhoneNumber"
                                                         value="#{patientController.quickSearchPhoneNumber}"
-                                                        placeholder="Phone Number"
+                                                        placeholder="Phone Number or PHN"
                                                         class="form-control-sm mx-1"
                                                         onfocus="this.select()" 
                                                         />
@@ -127,7 +128,7 @@
                                                         title="Quick Search from Phone Number"
                                                         action="#{patientController.quickSearchPatientLongPhoneNumber(opdBillController)}" 
                                                         process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                                        update="ptImp selectPatient editPatient viewPatient payment paymentDetails pBillDetails"
+                                                        update="ptImp selectPatient editPatient viewPatient payment paymentDetails pBillDetails msg :#{p:resolveFirstComponentWithId('pay:',view).clientId}"
                                                         styleClass="btn-sm mx-1">
                                                     </p:commandButton>
                                                     <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
@@ -1493,7 +1494,8 @@
                                                 action="#{navigationController.navigateToCollectingCenter()}"
                                                 actionListener="#{collectingCentreController.prepareAdd()}"  />  
                                         </h:panelGroup>
-                                        <p:autoComplete id="creditCom" 
+                                        <p:autoComplete 
+                                            id="creditCom" 
                                                         forceSelection="true" 
                                                         class="w-100"
                                                         value="#{opdBillController.collectingCentre}"  
@@ -1518,18 +1520,11 @@
                                     </h:panelGrid>
                                 </p:panel>
 
-
-
-
                             </div>
                         </div>
                     </p:panel>
 
-
-
-
                 </h:form>
-
 
             </ui:define>
 
