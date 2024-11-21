@@ -10331,35 +10331,35 @@ public class SearchController implements Serializable {
     public void listBillItems() {
         billItems = null;
         Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select b from BillItem bi join bi.bill b where 1=1 ");
+        StringBuilder jpql = new StringBuilder("select bi from BillItem bi where 1=1 ");
         if (toDate != null && fromDate != null) {
-            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            jpql.append(" and bi.bill.createdAt between :fromDate and :toDate ");
             params.put("toDate", toDate);
             params.put("fromDate", fromDate);
         }
 
         if (institution != null) {
             params.put("ins", institution);
-            jpql.append(" and b.department.institution = :ins ");
+            jpql.append(" and bi.bill.department.institution = :ins ");
         }
 
         if (department != null) {
             params.put("dep", department);
-            jpql.append(" and b.department = :dept ");
+            jpql.append(" and bi.bill.department = :dept ");
         }
 
         if (site != null) {
             params.put("site", site);
-            jpql.append(" and b.department.site = :site ");
+            jpql.append(" and bi.bill.department.site = :site ");
         }
 
         if (webUser != null) {
-            jpql.append(" and b.creater=:wu ");
+            jpql.append(" and bi.bill.creater=:wu ");
             params.put("wu", webUser);
         }
 
         // Order by bill ID
-        jpql.append(" order by b.id ");
+        jpql.append(" order by bi.id ");
 
         System.out.println("jpql.toString() = " + jpql.toString());
         System.out.println("params = " + params);
@@ -12922,7 +12922,6 @@ public class SearchController implements Serializable {
             System.out.println("bills");
             bundle.setName("Staff Welfare Bills");
             bundle.setBundleType("billList");
-
             bundle = generatePaymentMethodColumnsByBills(opdBts, staffPaymentMethods);
             bundle.calculateTotalByBills();
 
@@ -12942,7 +12941,6 @@ public class SearchController implements Serializable {
 
             bundle.setName("Staff Welfare Bill Items");
             bundle.setBundleType("billItemList");
-
             bundle = generateBillItems(opdBts, staffPaymentMethods);
             bundle.calculateTotalByBillItems();
         }
