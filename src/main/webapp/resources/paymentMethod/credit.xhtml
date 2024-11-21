@@ -62,6 +62,7 @@
                 value="(+)"
                 class="mx-3 mt-1"
                 title="Add New Credit Company"
+                rendered="#{webUserController.hasPrivilege('Admin')}" 
                 ajax="false" 
                 action="#{navigationController.navigateToCreditCompany()}"
                 actionListener="#{creditCompanyController.prepareAdd()}" />  
