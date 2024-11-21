@@ -331,6 +331,17 @@ public class BillService {
         params.put("bl", b);
         return billItemFacade.findByJpql(jpql, params);
     }
+    
+    public Long fetchBillItemCount(Bill b) {
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "SELECT count(bi) "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bl "
+                + " order by bi.id";
+        params.put("bl", b);
+        return billItemFacade.findLongByJpql(jpql, params);
+    }
 
     public List<BillItem> fetchBillItems(List<Bill> bills) {
         List<BillItem> allBillItems = new ArrayList<>();
