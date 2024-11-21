@@ -36,7 +36,7 @@
                                 <!-- Command Buttons -->
                                 <div class="d-flex m-1 col-6">
 
-                                    <h:panelGroup rendered="#{billSearch.opdBillCancellationSameDay}">
+                                    <h:panelGroup rendered="#{!cashRecieveBillController.checkForExpireofApproval(cashRecieveBillController.current)}">
                                         <p:commandButton 
                                             ajax="false" 
                                             value="To Cancel" 
@@ -45,8 +45,7 @@
                                             class="ui-button-danger m-1 w-25" icon="fa fa-times"> 
                                         </p:commandButton>
                                     </h:panelGroup>
-
-                                    <h:panelGroup rendered="#{!billSearch.opdBillCancellationSameDay}">
+                                    <h:panelGroup rendered="#{cashRecieveBillController.checkForExpireofApproval(cashRecieveBillController.current)}">
                                         <p:commandButton 
                                             ajax="false" 
                                             value="Can not Cancel" 
@@ -115,7 +114,7 @@
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}">
                                         <ui:repeat value="#{cashRecieveBillController.current}" var="ffb">
-                                            <prints:five_five_paper_coustom_1_creditcompany_payment bill="#{ffb}" duplicate="true"/>                        
+                                            <prints:five_five_paper_coustom_1_credit_company_payment bill="#{ffb}" duplicate="true"/>                        
                                         </ui:repeat>
                                     </h:panelGroup>
                                 </h:panelGroup>

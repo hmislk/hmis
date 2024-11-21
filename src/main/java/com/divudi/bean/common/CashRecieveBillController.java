@@ -798,7 +798,7 @@ public class CashRecieveBillController implements Serializable {
     }
     
     public String navigateToCancelOpdBill(){
-        return "";
+        return "/credit/views/bill_cancel?faces-redirect=true";
     }
     
     public void cancelBillToApprove(Bill b){
@@ -827,6 +827,7 @@ public class CashRecieveBillController implements Serializable {
         JsfUtil.addSuccessMessage("Bill Canceled");
         printPreview = true;
     }
+    
 
     public void approveBill(Bill b) {
         if (b == null) {
