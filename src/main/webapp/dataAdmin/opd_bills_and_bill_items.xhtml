@@ -155,8 +155,6 @@
                         </h:panelGroup>
                     </h:panelGrid>
 
-
-
                     <p:commandButton 
                         value="Process" 
                         ajax="false"
@@ -166,8 +164,10 @@
                         style="background-color: #28a745; border-color: #28a745;"> 
                     </p:commandButton>
 
-
-                    <p:dataTable value="#{searchController.bundle.reportTemplateRows}" var="row" rowKey="#{row.id}"
+                    <p:dataTable 
+                                 value="#{searchController.bundle.reportTemplateRows}" 
+                                 var="row" 
+                                 rowKey="#{row.id}"
                                  paginator="true"
                                  rows="10">
 
@@ -212,7 +212,6 @@
                         </p:column>
 
                     </p:dataTable>
-
 
                 </h:form>
 
