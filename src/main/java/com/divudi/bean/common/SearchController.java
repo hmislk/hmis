@@ -6032,85 +6032,54 @@ public class SearchController implements Serializable {
     private StreamedContent fileForDownload;
 
     public void listBillsAndItemsWithFees() {
-        String sql;
-        Map<String, Object> paramMap = new HashMap<>();
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+                + " FROM Bill bill "
+                + "WHERE 1=1 "
+                + "AND bill.billTypeAtomic in :bts ";
 
-        paramMap.put("toDate", toDate);
-        paramMap.put("fromDate", fromDate);
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        parameters.put("bts", btas);
+       
 
-        // Assuming BillItem has a fee attribute or a method to get the fee
-        sql = "select bi "
-                + "from BillItem bi "
-                + "where bi.createdAt between :fromDate and :toDate "
-                + "order by bi.id desc";
-
-        // Execute the query
-        List<BillItem> results = getBillItemFacade().findByJpql(sql, paramMap, TemporalType.TIMESTAMP);
-
-        // Bills Have Bill Items and Bill Fees
-        // BillFee also has a referance to Bill Item and Bill
-        //BillItem has a referance to Item and Bill
-        // I want to list bills > under that Bill Items > Under that Bill Fees with the folloing attributed
-        // Have to create an excel table and download it
-        // Excel is partially created
-        billItems = results;
-
-        // Extract fees and bills if needed
-        Map<BillItem, Double> itemFees = new HashMap<>();
-        bills = new ArrayList<>();
-
-        for (BillItem bi : results) {
-
-            Bill b = bi.getBill();
-            List<BillFee> billFees = billBean.findSavedBillFeefromBillItem(bi);
-            for (BillFee bf : billFees) {
-                bf.getBill();
-                bf.getBillItem();
-                bf.getFee().getName();
-                bf.getFee().getFeeType().toString();
-                bf.getFeeValue();
-                bf.getInstitution().getName();
-                bf.getDepartment().getName();
-                bf.getStaff().getPerson().getNameWithTitle();
-
-            }
-
-            b.getId();
-            b.getInsId();
-            b.getDeptId();
-            b.getPatient().getPerson().getName();
-            b.getStaff().getPerson().getNameWithTitle();
-            b.getBillType().getLabel();
-            b.getBillTypeAtomic().getLabel();
-            b.getGrantTotal();
-            b.getDiscount();
-            b.getNetTotal();
-            b.getCreditCompany().getName();
-            b.getToStaff();
-            b.getCreatedAt();
-            b.getPaidAmount();
-            b.isCancelled();
-            b.isRefunded();
-            b.getCreater().getWebUserPerson().getName();
-            b.getPaymentMethod();
-            b.getInstitution().getName();
-            b.getDepartment().getName();
-            b.getReferenceInstitution().getName();
-            b.getReferredBy().getName();
-
-            bi.getItem().getName();
-            bi.getItem().getCode();
-            bi.getItem().getItemType().toString();
-            bi.getQty();
-            bi.getNetRate();
-            bi.getGrossValue();
-            bi.getDiscount();
-            bi.getNetValue();
-
-            Double feeValue = bi.getFeeValue();  // Assuming getFeeValue() returns the fee
-            itemFees.put(bi, feeValue);
-            bills.add(bi.getBill());
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
         }
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND bill.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+        if (paymentMethod != null) {
+            jpql += "AND bill.paymentMethod = :pm ";
+            parameters.put("pm", paymentMethod);
+        }
+
+        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        for(ReportTemplateRow r:rs){
+            if(r.getBill()!=null){
+                r.setItemCount(billService.fetchBillItemCount(r.getBill()));
+            }
+        }
+        
+        bundle = new ReportTemplateRowBundle();
+        bundle.setReportTemplateRows(rs);
 
     }
 
@@ -12904,10 +12873,10 @@ public class SearchController implements Serializable {
     public void createItemizedSalesReport() {
         bundle = generateItemizedSalesReport();
         if (withProfessionalFee) {
-            bundle.setName("Itemized Sales Report - With Professional Fee");
+            bundle.setName("Service Category Wise Bill Detail - With Professional Fee");
             bundle.setBundleType("itemized_sales_report_with_professional_fee");
         } else {
-            bundle.setName("Itemized Sales Report - Without Professional Fee");
+            bundle.setName("Service Category Wise Bill Detail - Without Professional Fee");
             bundle.setBundleType("itemized_sales_report_without_professional_fee");
         }
 
@@ -15232,9 +15201,9 @@ public class SearchController implements Serializable {
             m.put("site", site);
         }
         
-//        System.out.println("btas = " + btas);
-//        System.out.println("m = " + m);
-//        System.out.println("jpql = " + jpql);
+        System.out.println("btas = " + btas);
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         System.out.println("bis = " + bis);
         billItemsToBundleForOpdUnderCategory(opdServiceCollection, bis, paymentType);
