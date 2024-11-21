@@ -1722,7 +1722,7 @@ public class ChannelApi {
 
         if (billList.size() > 1) {
             for (Bill b : billList) {
-                if (b.getBillType() == BillType.ChannelOnCall) {
+                if (b.getBillType() == BillType.ChannelAgent) {
                     bill = b;
                 }
             }
