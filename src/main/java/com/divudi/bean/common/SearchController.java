@@ -120,7 +120,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import kotlin.collections.ArrayDeque;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author safrin
@@ -15260,13 +15261,9 @@ public class SearchController implements Serializable {
             jpql += " and bi.bill.department.site=:site ";
             m.put("site", site);
         }
-//        System.out.println("btas = " + btas);
-//        System.out.println("m = " + m);
-//        System.out.println("jpql = " + jpql);
+
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-//        System.out.println("bis = " + bis);
         billItemsToBundleForOpdUnderCategoryWithoutProfessionalFee(opdServiceCollection, bis, paymentType);
-//        bundle.getBundles().add(opdServiceCollection);
 
         if (paymentType == PaymentType.CREDIT) {
             opdServiceCollection.setName("OPD Service Collection - Credit");
@@ -15759,8 +15756,9 @@ public class SearchController implements Serializable {
 
     public void billItemsToBundleForOpdUnderCategory(ReportTemplateRowBundle rtrb, List<BillItem> billItems, PaymentType paymentType) {
         System.out.println("billItemsToBundleForOpdUnderCategory");
-        Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
-        Map<String, ReportTemplateRow> itemMap = new HashMap<>();
+        // Use TreeMap to maintain alphabetical order
+        Map<String, ReportTemplateRow> categoryMap = new TreeMap<>();
+        Map<String, ReportTemplateRow> itemMap = new TreeMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         double totalOpdServiceCollection = 0.0;
         double totalGrossValue = 0.0;
@@ -15770,15 +15768,7 @@ public class SearchController implements Serializable {
         long totalQuantity = 0l;
 
         for (BillItem bi : billItems) {
-            System.out.println("Processing BillItem: " + bi);
 
-            // Skip invalid or unwanted bills
-//            if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
-//                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE
-//                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.CREDIT) {
-//                System.out.println("continue 1");
-//                continue;
-//            }
             if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
                     || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
                 System.out.println("continue 1");
@@ -15798,7 +15788,6 @@ public class SearchController implements Serializable {
 
             }
 
-            // Identify category and item
             String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null
                     ? bi.getItem().getCategory().getName() : "No Category";
             System.out.println("categoryName = " + categoryName);
@@ -15896,20 +15885,18 @@ public class SearchController implements Serializable {
 
     public void billItemsToBundleForOpdUnderCategoryWithoutProfessionalFee(ReportTemplateRowBundle rtrb, List<BillItem> billItems, PaymentType paymentType) {
         System.out.println("billItemsToBundleForOpdUnderCategory");
-        Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
-        Map<String, ReportTemplateRow> itemMap = new HashMap<>();
+        // Use TreeMap to maintain alphabetical order
+        Map<String, ReportTemplateRow> categoryMap = new TreeMap<String, ReportTemplateRow>();
+        Map<String, ReportTemplateRow> itemMap = new TreeMap<String, ReportTemplateRow>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         double totalOpdServiceCollection = 0.0;
         double totalGrossValue = 0.0;
         double totalHospitalFee = 0.0;
-        double totalSiscount = 0.0;
+        double totalDiscount = 0.0;
         double totalStaffFee = 0.0;
-        long totalQuantity = 0l;
+        long totalQuantity = 0L;
 
         for (BillItem bi : billItems) {
-            System.out.println("Processing BillItem: " + bi);
-
-            // Skip invalid or unwanted bills
             if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
                     || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
                 System.out.println("skipping as it is not credit or non credit");
@@ -15926,14 +15913,13 @@ public class SearchController implements Serializable {
                     System.out.println("Skipping as this is credit");
                     continue;
                 }
-
             }
 
-            // Identify category and item
-            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null
+            // Identify category and item with null checks
+            String categoryName = (bi.getItem() != null && bi.getItem().getCategory() != null && bi.getItem().getCategory().getName() != null)
                     ? bi.getItem().getCategory().getName() : "No Category";
             System.out.println("categoryName = " + categoryName);
-            String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
+            String itemName = (bi.getItem() != null && bi.getItem().getName() != null) ? bi.getItem().getName() : "No Item";
             System.out.println("itemName = " + itemName);
             String itemKey = categoryName + "->" + itemName;
 
@@ -15987,8 +15973,8 @@ public class SearchController implements Serializable {
             totalHospitalFee += hospitalFee;
             System.out.println("Accumulated total hospital fee: " + totalHospitalFee);
 
-            totalSiscount += discount;
-            System.out.println("Accumulated total discount: " + totalSiscount);
+            totalDiscount += discount;
+            System.out.println("Accumulated total discount: " + totalDiscount);
 
             totalStaffFee += staffFee;
             System.out.println("Accumulated total staff fee: " + totalStaffFee);
@@ -15996,7 +15982,6 @@ public class SearchController implements Serializable {
             totalQuantity += quantity;
             System.out.println("Accumulated total quantity: " + totalQuantity);
 
-            //System.out.println("hospitalFee = " + hospitalFee);
             // Update the rows with the adjusted values
             updateRow(categoryRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
             updateRow(itemRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
@@ -16015,16 +16000,15 @@ public class SearchController implements Serializable {
                     });
         });
 
-        System.out.println("Total collected: " + totalOpdServiceCollection);
         rtrb.getReportTemplateRows().addAll(rowsToAdd);
-        rtrb.setTotal(totalOpdServiceCollection);
+        System.out.println("Added rows to ReportTemplateRowBundle. Total rows added: " + rowsToAdd.size());
 
+        rtrb.setTotal(totalOpdServiceCollection);
         rtrb.setGrossTotal(totalGrossValue);
         rtrb.setHospitalTotal(totalHospitalFee);
         rtrb.setStaffTotal(totalStaffFee);
-        rtrb.setDiscount(totalSiscount);
+        rtrb.setDiscount(totalDiscount);
         rtrb.setCount(totalQuantity);
-
     }
 
     public void billToBundleForPatientDeposits(ReportTemplateRowBundle rtrb, List<Bill> bills) {
