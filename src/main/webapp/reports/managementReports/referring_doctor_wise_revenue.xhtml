@@ -291,37 +291,38 @@
 
 
                             <p:spacer ></p:spacer>
-                            <h:panelGroup id="ccCom" rendered="#{reportController.type eq 'CC'}">
-                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Collecting Center" class="mx-1"></p:outputLabel>
+                            <h:panelGroup id="ccCom" >
+                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" rendered="#{reportController.type eq 'CC'}"/>
+                                <p:outputLabel value="Collecting Center" class="mx-1" rendered="#{reportController.type eq 'CC'}"></p:outputLabel>
                             </h:panelGroup>
 
 
+                            <h:panelGroup id="creditCom"  >
+                                <p:autoComplete 
+                                    forceSelection="true" 
+                                    value="#{reportController.collectingCentre}"
+                                    completeMethod="#{institutionController.completeCollectingCenter}" 
+                                    var="ix" 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    itemLabel="#{ix.name}" 
+                                    itemValue="#{ix}" 
+                                    rendered="#{reportController.type eq 'CC'}"
+                                    size="30" 
+                                    maxResults="20"                                
+                                    >
+                                    <f:ajax  event="itemSelect" execute="creditCom"  />
+                                    <p:column headerText="Code" style="padding: 5px; width: 150px;">#{ix.institutionCode}</p:column>
+                                    <p:column headerText="Collecting Centre Name" style="padding: 5px;">#{ix.name}</p:column>
+                                    <p:column headerText="Balance" style="padding: 5px; width: 150px; text-align: right;">
+                                        <p:outputLabel value="#{ix.ballance}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:autoComplete>
 
-                            <p:autoComplete 
-                                id="creditCom" 
-                                forceSelection="true" 
-                                value="#{reportController.collectingCentre}"
-                                completeMethod="#{institutionController.completeCollectingCenter}" 
-                                var="ix" 
-                                class="w-100"
-                                inputStyleClass="form-control"
-                                itemLabel="#{ix.name}" 
-                                itemValue="#{ix}" 
-                                rendered="#{reportController.type eq 'CC'}"
-                                size="30" 
-                                maxResults="20"                                
-                                >
-                                <f:ajax  event="itemSelect" execute="creditCom"  />
-                                <p:column headerText="Code" style="padding: 5px; width: 150px;">#{ix.institutionCode}</p:column>
-                                <p:column headerText="Collecting Centre Name" style="padding: 5px;">#{ix.name}</p:column>
-                                <p:column headerText="Balance" style="padding: 5px; width: 150px; text-align: right;">
-                                    <p:outputLabel value="#{ix.ballance}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </p:outputLabel>
-                                </p:column>
-                            </p:autoComplete>
 
+                            </h:panelGroup>
 
 
 

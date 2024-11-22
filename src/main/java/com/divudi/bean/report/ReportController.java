@@ -899,7 +899,6 @@ public class ReportController implements Serializable {
 //            jpql += " AND bi.patientInvestigation.investigation = :inv";
 //            m.put("inv", investigation);
 //        }
-
         if (item != null) {
             jpql += " AND bi.item = :item";
             m.put("item", item);
@@ -910,9 +909,13 @@ public class ReportController implements Serializable {
             m.put("type", type);
         }
 
-        if (collectingCentre != null) {
-            jpql += " AND bi.bill.collectingCentre = :cc";
-            m.put("cc", collectingCentre);
+        if (type.equalsIgnoreCase("cc")) {
+            if (collectingCentre != null) {
+                jpql += " AND bi.bill.collectingCentre = :cc";
+                m.put("cc", collectingCentre);
+            }
+        } else {
+            collectingCentre = null;
         }
 
         if (doctor != null) {
@@ -997,9 +1000,13 @@ public class ReportController implements Serializable {
             params.put("type", type);
         }
 
-        if (collectingCentre != null) {
-            jpql += " AND bi.bill.collectingCentre = :cc";
-            params.put("cc", collectingCentre);
+        if (type!=null && type.equalsIgnoreCase("cc")) {
+            if (collectingCentre != null) {
+                jpql += " AND bi.bill.collectingCentre = :cc";
+                params.put("cc", collectingCentre);
+            }
+        } else {
+            collectingCentre = null;
         }
 
         if (doctor != null) {
@@ -2128,7 +2135,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=test_counts.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -2144,7 +2151,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Sale_Item_Count.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -2160,7 +2167,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=service_count.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -2375,7 +2382,7 @@ public class ReportController implements Serializable {
     }
 
     public String navigateToManagementAdmissionCountReport() {
-        reportType="Summary";
+        reportType = "Summary";
         return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
     }
 
