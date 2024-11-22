@@ -417,7 +417,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public List getReleasedAppoinmentNumbers() {
-        long nextNumber = selectedSessionInstance.getNextAvailableAppointmentNumber();
+        long nextNumber = 1L;
+        if(selectedSessionInstance.getNextAvailableAppointmentNumber() != null){
+            nextNumber = selectedSessionInstance.getNextAvailableAppointmentNumber();
+        }
+      
         List releasedNumberList = new ArrayList();
         
         loadBillSessions();
@@ -3644,7 +3648,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
 
-        if (selectedSessionInstance.getMaxNo() != 0) {
+        if (selectedSessionInstance.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (selectedSessionInstance.getBookedPatientCount() != null) {
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
