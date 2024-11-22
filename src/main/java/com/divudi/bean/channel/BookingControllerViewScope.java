@@ -417,7 +417,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public List getReleasedAppoinmentNumbers() {
-        long nextNumber = selectedSessionInstance.getNextAvailableAppointmentNumber();
+        long nextNumber = 1L;
+        if(selectedSessionInstance.getNextAvailableAppointmentNumber() != null){
+            nextNumber = selectedSessionInstance.getNextAvailableAppointmentNumber();
+        }
+      
         List releasedNumberList = new ArrayList();
         
         loadBillSessions();
