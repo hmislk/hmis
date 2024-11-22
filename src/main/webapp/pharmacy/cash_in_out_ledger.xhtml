@@ -114,7 +114,7 @@
                             <p:column headerText="Bill Type">
                                 <h:outputText value="#{bill.billTypeAtomic}" />
                             </p:column>
-                            
+
                             <p:column headerText="Cash In Value" width="6em">
                                 <h:outputText value="#{bill.netTotal}" rendered="#{bill.localNumber == 'CASH_IN'}" />
                             </p:column>
@@ -124,6 +124,35 @@
                             </p:column>
 
                         </p:dataTable>
+
+                        <p:dataTable value="#{pharmacyReportController.unifiedBundle}" var="row"
+                                     paginator="true" rows="10" id="tblUnifiedBundle"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate="(Page {currentPage} of {totalPages})"
+                                     paginatorPosition="bottom"
+                                     rowIndexVar="i">
+
+                            <p:column headerText="No" width="2em">
+                                <h:outputText value="#{i+1}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type">
+                                <h:outputText value="#{row.billTypeAtomic}" />
+                            </p:column>
+
+                            <p:column headerText="IN Total">
+                                <h:outputText value="#{row.total}" rendered="#{row.billTypeAtomic.billFinanceType eq 'CASH_IN'}">
+                                    <f:convertNumber groupingUsed="true" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="OUT Total" >
+                                <h:outputText value="#{row.total}" rendered="#{row.billTypeAtomic.billFinanceType eq 'CASH_OUT'}">
+                                    <f:convertNumber groupingUsed="true" />
+                                </h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+
 
 
                     </p:panel>
