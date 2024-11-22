@@ -268,7 +268,13 @@ public class QuickBookReportController implements Serializable {
         List<QuickBookFormat> qbfs = new ArrayList<>();
 
         List<PaymentMethod> paymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card, PaymentMethod.OnlineSettlement, PaymentMethod.MultiplePaymentMethods);
-        qbfs.addAll(fetchOPdListWithProDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), null));
+
+        qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), null));
+
+        if (withProfessionalFee) {
+            qbfs.addAll(fetchOPdListProfessionalFeeDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), null));
+        }
+
         qbfs.addAll(createPharmacySale(BillType.PharmacySale, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate)));
         qbfs.addAll(createInwardCollection(commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate)));
         qbfs.addAll(createAgencyAndCollectionCenterTotal(commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate)));
@@ -311,7 +317,7 @@ public class QuickBookReportController implements Serializable {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
             List<PaymentMethod> paymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card, PaymentMethod.OnlineSettlement, PaymentMethod.MultiplePaymentMethods);
-            qbfs.addAll(fetchOPdListWithProDayEndTable(paymentMethods, CommonFunctions.getStartOfDay(reportDate), CommonFunctions.getEndOfDay(reportDate), null));
+            qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, CommonFunctions.getStartOfDay(reportDate), CommonFunctions.getEndOfDay(reportDate), null));
             qbfs.addAll(createPharmacySale(BillType.PharmacySale, CommonFunctions.getStartOfDay(reportDate), CommonFunctions.getEndOfDay(reportDate)));
             qbfs.addAll(createInwardCollection(CommonFunctions.getStartOfDay(reportDate), CommonFunctions.getEndOfDay(reportDate)));
             qbfs.addAll(createAgencyAndCollectionCenterTotal(CommonFunctions.getStartOfDay(reportDate), CommonFunctions.getEndOfDay(reportDate)));
@@ -355,7 +361,7 @@ public class QuickBookReportController implements Serializable {
             } else {
                 System.out.println("****i = " + i);
             }
-            qbfs.addAll(fetchOPdListWithProDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), i));
+            qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), i));
             qbfs.addAll(fetchOPdDocPaymentTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), i));
             if (qbfs.size() == 0) {
                 System.out.println("qbfs.size() = " + qbfs.size());
@@ -1325,7 +1331,7 @@ public class QuickBookReportController implements Serializable {
     }
 
     //-------Main Functions
-    public List<QuickBookFormat> fetchOPdListWithProDayEndTable(List<PaymentMethod> paymentMethods, Date fd, Date td, Institution creditCompany) {
+    public List<QuickBookFormat> fetchOPdListDayEndTable(List<PaymentMethod> paymentMethods, Date fd, Date td, Institution creditCompany) {
         List<QuickBookFormat> qbfs = new ArrayList<>();
         Map temMap = new HashMap();
         String jpql;
@@ -1543,6 +1549,78 @@ public class QuickBookReportController implements Serializable {
 
         return qbfs;
 
+    }
+
+    public List<QuickBookFormat> fetchOPdListProfessionalFeeDayEndTable(List<PaymentMethod> paymentMethods, Date fd, Date td, Institution creditCompany) {
+        List<QuickBookFormat> qbfs = new ArrayList<>();
+        Map<String, Object> temMap = new HashMap<>();
+        String jpql;
+
+        jpql = "select count(bi.bill), sum(bf.feeValue) "
+                + " from BillFee bf join bf.billItem bi "
+                + " where bi.bill.billType = :bTp "
+                + " and bi.bill.createdAt between :fromDate and :toDate "
+                + " and bi.bill.paymentMethod in :pms "
+                + " and bi.bill.retired = false "
+                + " and bi.retired = false "
+                + " and bf.retired = false "
+                + " and bf.fee.feeType = :ft ";
+
+        temMap.put("ft", FeeType.Staff);
+
+        if (institution != null) {
+            jpql += " and bi.bill.institution = :ins ";
+            temMap.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and bi.bill.department = :dep ";
+            temMap.put("dep", department);
+        }
+        if (site != null) {
+            jpql += " and bi.bill.department.site = :site ";
+            temMap.put("site", site);
+        }
+
+        if (creditCompany != null) {
+            jpql += " and bi.bill.creditCompany = :cd ";
+            temMap.put("cd", creditCompany);
+        }
+
+        // Removed the ORDER BY clause as it's unnecessary and causes unintended grouping
+        // jpql += " order by c.name, i.name, bf.fee.feeType ";
+        temMap.put("fromDate", fd);
+        temMap.put("toDate", td);
+        temMap.put("bTp", BillType.OpdBill);
+        temMap.put("pms", paymentMethods);
+
+        List<Object[]> lobjs = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("lobjs.size = " + (lobjs != null ? lobjs.size() : 0));
+
+        if (lobjs != null && !lobjs.isEmpty()) {
+            Object[] resultRow = lobjs.get(0);
+            Number countResult = (Number) resultRow[0];
+            Number sumResult = (Number) resultRow[1];
+
+            Long proBillCount = countResult != null ? countResult.longValue() : 0L;
+            Double proFeeValue = sumResult != null ? sumResult.doubleValue() : 0.0;
+
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            Item itemBefore = null;
+
+            QuickBookFormat qbf = new QuickBookFormat();
+            qbf.setRowType("SPL");
+            qbf.setTrnsType("Cash Sale");
+            qbf.setAccnt("ACCRUED CHARGES:Consultant Advance:Consultant Payment");
+            qbf.setName("Cash AR");
+            qbf.setInvItemType("SERV");
+            qbf.setInvItem("Consultant Payment:OPD Professional Payments");
+            qbf.setAmount(0 - Math.abs(proFeeValue));
+            qbf.setCustFld5(proBillCount.toString());
+
+            qbfs.add(qbf);
+        }
+
+        return qbfs;
     }
 
     public List<QuickBookFormat> fetchOPdDocPaymentTable(List<PaymentMethod> paymentMethods, Date fd, Date td, Institution creditCompany) {
