@@ -15898,9 +15898,6 @@ public class SearchController implements Serializable {
         long totalQuantity = 0l;
 
         for (BillItem bi : billItems) {
-            System.out.println("Processing BillItem: " + bi);
-
-            // Skip invalid or unwanted bills
             if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
                     || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
                 System.out.println("skipping as it is not credit or non credit");
