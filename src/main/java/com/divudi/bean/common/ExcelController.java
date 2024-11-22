@@ -73,7 +73,7 @@ public class ExcelController {
             indDataSet += searchController.getDepartment().getName();
             indDataSet += "(" + searchController.getSite().getName() + ")";
         }
-        if ( !indDataSet.trim().isEmpty() || indDataSet.trim() != null) {
+        if (!indDataSet.trim().isEmpty() || indDataSet.trim() != null) {
             Row insData = dataSheet.createRow(1);
             Cell insCell = insData.createCell(0);
             insCell.setCellValue(indDataSet);
@@ -216,7 +216,7 @@ public class ExcelController {
 
                 // Second column: Bill Class
                 Cell billClassCell = excelRow.createCell(1);
-                billClassCell.setCellValue(row.getPayment() != null && row.getPayment().getBill() != null ? row.getPayment().getBill().getBillClassType().toString() : "N/A");
+                billClassCell.setCellValue(row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getBillClassType() != null ? row.getPayment().getBill().getBillClassType().toString() : "N/A");
 
                 // Third column: Bill Type
                 Cell billTypeCell = excelRow.createCell(2);
@@ -609,7 +609,12 @@ public class ExcelController {
             totalCell.setCellValue(addingBundle.getTotal()); // Assuming getTotal() returns formatted string
 
             // Merge title across the first column (leaving second for total)
-            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 0));
+            try {
+                // Merge title across the first column (leaving second for total)
+                dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 0));
+            } catch (Exception e) {
+
+            }
 
             // Create header row for Excel only when there is data
             Row headerRow = dataSheet.createRow(startRow++);

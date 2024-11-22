@@ -195,14 +195,17 @@
                                 <p:column headerText="Actions" exportable="false">
                                     <p:commandButton 
                                         ajax="false" 
+                                        class="m-1"
                                         value="View Bills by Bill Type Atomic" 
                                         action="#{searchController.navigatToBillListByBillTypeAtomic(row.billTypeAtomic)}" >
                                     </p:commandButton>
                                     <p:commandButton 
                                         ajax="false" 
+                                        class="m-1"
                                         value="View Bills by Bill Type" 
                                         action="#{searchController.navigatToBillListByBillType(row.billType)}" >
                                     </p:commandButton>
+                                    
                                 </p:column>
 
 
