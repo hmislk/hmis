@@ -11,20 +11,14 @@
             <property name="eclipselink.ddl-generation.output-mode" value="both"/>
             <property name="eclipselink.ddl-generation.validation" value="true"/>
         </properties>
-    </persistence-unit> 
+    </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
         <jta-data-source>jdbc/himsAduit</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
-            <property name="eclipselink.logging.level" value="SEVERE"/>
-            <property name="eclipselink.logging.parameters" value="true"/>
-            <!-- Generate DDL scripts without applying them -->
-            <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
-            <property name="eclipselink.ddl-generation.output-mode" value="sql-script"/>
-            <!-- Use a relative path for the application location -->
-            <property name="eclipselink.application-location" value="E:/tmp/"/>
-            <!-- After generation, set ddl-generation to 'none' -->
-            <!-- <property name="eclipselink.ddl-generation" value="none"/> -->
+            <property name="eclipselink.logging.level.sql" value="SEVERE"/>
+            <property name="eclipselink.logging.parameters" value="false"/>
+            <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
         </properties>
     </persistence-unit>
 </persistence>
