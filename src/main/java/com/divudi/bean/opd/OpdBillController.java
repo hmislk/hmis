@@ -2132,6 +2132,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setBillTime(new Date());
         newBatchBill.setBillTotal(netTotal);
         newBatchBill.setBillDate(new Date());
+        newBatchBill.setStaff(staff);
+        newBatchBill.setToStaff(toStaff);
         newBatchBill.setCreatedAt(new Date());
         newBatchBill.setCreater(getSessionController().getLoggedUser());
         newBatchBill.setFromStaff(selectedCurrentlyWorkingStaff);

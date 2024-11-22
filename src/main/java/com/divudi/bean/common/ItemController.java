@@ -2509,6 +2509,27 @@ public class ItemController implements Serializable {
         }
         return mySuggestions;
     }
+    
+    public List<Item> getServicesPlusInvestigationsOfSelectedCategory(Category cat) {
+        List<Item> mySuggestions;
+        HashMap m = new HashMap();
+        String sql;
+        if (cat == null) {
+            mySuggestions = new ArrayList<>();
+        } else {
+            sql = "select c from Item c "
+                    + " where c.retired=false "
+                    + " and (type(c)=:ser or type(c)=:inv)  "
+                    + " and c.category=:cat "
+                    + " order by c.name";
+            m.put("ser", Service.class);
+            m.put("inv", Investigation.class);
+            m.put("cat",  cat);
+
+            mySuggestions = getFacade().findByJpql(sql, m, 20);
+        }
+        return mySuggestions;
+    }
 
     public List<Item> completeItemsByInstitution(String query, Institution institution) {
         List<Item> suggestions;

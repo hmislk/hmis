@@ -73,9 +73,9 @@
                                 <p:tab title="Credit Company">
                                     <div class="d-grid gap-2">
                                           <!-- Credit Company Payment -->
-                                        <p:commandButton class="w-100" ajax="false" value="Credit Company  Payment Voucher" action="/credit/credit_compnay_bill_opd_all_voucher?faces-redirect=true" />
-                                        <p:commandButton class="w-100" ajax="false" value="Credit Company Payment Voucher Search" action="/credit/credit_compnay_bill_opd_all_voucher_approve?faces-redirect=true" />
-                                        <p:commandButton class="w-100" ajax="false" value="Credit Company Payment By Voucher" action="/credit/credit_compnay_bill_opd_all_by_voucher?faces-redirect=true" />
+                                          <p:commandButton class="w-100" ajax="false" value="Credit Company  Payment Voucher" action="/credit/credit_compnay_bill_opd_all_voucher?faces-redirect=true" actionListener="#{cashRecieveBillController.prepareNewBill()}" />
+                                          <p:commandButton class="w-100" ajax="false" value="Credit Company Payment Voucher Search" action="/credit/credit_compnay_bill_opd_all_voucher_approve?faces-redirect=true" actionListener="#{searchController.createCreditCompanyPaymentToApproveTable()}" />
+                                        <p:commandButton class="w-100" ajax="false" value="Credit Company Payment By Voucher" action="/credit/credit_compnay_bill_opd_all_by_voucher?faces-redirect=true" actionListener="#{cashRecieveBillController.prepareNewBill()}" />
                                        
                                         <!-- OPD -->
                                         <p:commandButton class="w-100" ajax="false" value="OPD Due Search" action="/credit/credit_company_opd_due?faces-redirect=true" />

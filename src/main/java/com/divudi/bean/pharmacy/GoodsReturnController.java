@@ -274,6 +274,11 @@ public class GoodsReturnController implements Serializable {
 
         return false;
     }
+    
+    public void removeItem(BillItem bi) {
+        getBillItems().remove(bi.getSearialNo());
+        calTotal();
+    }
 
     public void settle() {
 

@@ -34,17 +34,7 @@
 
                     <cc:implementation>
                         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-                        <div class="d-flex justify-content-end">
-                            <p:commandButton 
-                                style="width: 100px" 
-                                value="Back" 
-                                ajax="false" 
-                                rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}"
-                                action="#{supplierPaymentController.navigateToPaymentDoneSearch()}"  
-                                class="ui-button-info mb-2 mx-2">
-                            </p:commandButton>
-                            
-                        </div>
+                        
                         <div class="posbill noBorder summeryBorder" >
 
                             <div class="institutionName">
@@ -82,7 +72,7 @@
 
                                 </div>
 
-                                <div>
+<!--                                <div>
 
                                     <p:dataTable value="#{cc.attrs.billItems}" var="bi" sortBy="#{bi.referenceBill.invoiceNumber}">
 
@@ -118,7 +108,7 @@
 
                                     </p:dataTable>
 
-                                </div>
+                                </div>-->
 
                                 <div>
                                     <h:panelGrid columns="5" styleClass="col-12 W-100" cellpadding="5">

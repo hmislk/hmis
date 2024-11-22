@@ -71,7 +71,17 @@
                             <p:inputText autocomplete="off" 
                                          value="#{supplierPaymentController.chequeNo}"
                                          class="w-100"/>
-
+                            <h:outputLabel value="Status"/>
+                            <p:selectOneMenu id="statusSelect" 
+                                             value="#{supplierPaymentController.supplierPaymentStatus}" 
+                                             class="form-control w-100">
+                                <f:selectItem itemLabel="Select status" noSelectionOption="true"/>
+                                <f:selectItems value="#{supplierPaymentController.supplierPaymentStatusList}" 
+                                               var="inst"  
+                                               itemValue="#{inst}"/>
+                                <p:tooltip value="Select the status for the cheque."/>
+                                <p:ajax process="@this"/>
+                            </p:selectOneMenu>
 
                         </h:panelGrid>
                         <h:panelGrid columns="3">
@@ -79,18 +89,18 @@
                                              ajax="false" value="List Pharmacy Payment to Settle" 
                                              class="my-1 w-100 ui-button-success" 
                                              icon="fas fa-pills"
-                                             action="#{supplierPaymentController.fillAllCreditBillssettledByChequeDate()}"/>
+                                             action="#{supplierPaymentController.fillPharmacySupplierPaymentsByChequDate()}"/>
 
                             <p:commandButton ajax="false" 
                                              class="my-1 w-100 ui-button-info" 
                                              icon="fas fa-store"
                                              value="List Store Payments to Settle"
-                                             action="#{supplierPaymentController.fillStoreSupplierPayments()}"/>
+                                             action="#{supplierPaymentController.fillStoreSupplierPaymentByChequeDate()}"/>
 
                             <p:commandButton ajax="false" value="List All Payments to Settle" 
                                              class="my-1 w-100 ui-button-warning" 
                                              icon="fas fa-search-dollar"
-                                             action="#{supplierPaymentController.fillSupplierPayments()}"/>
+                                             action="#{supplierPaymentController.fillAllSupplierPaymentsByChequDate()}"/>
                         </h:panelGrid>
                         <div class="col-12">
                             <p:dataTable 
@@ -106,10 +116,15 @@
 
                                 <p:column headerText="Bill No" > 
                                     <h:commandLink action="reprint_bill_dealor">
-                                        <h:outputLabel value="#{bill.deptId}"  >
-                                        </h:outputLabel>                                    
+                                        #{bill.deptId}"                               
                                         <f:setPropertyActionListener target="#{dealorPaymentBillSearch.bill}" value="#{bill}"/>
                                     </h:commandLink>
+                                    <br/>
+                                    <h:outputText value="#{bill.referenceBill.cancelledBill.deptId}" 
+                                                  style="color: red;"
+                                                  rendered="#{bill.referenceBill.cancelled}"
+                                                  />
+
                                 </p:column>
                                 <p:column headerText="Supplier Name">                             
                                     <h:outputLabel value="#{bill.toInstitution.name}" />
@@ -175,7 +190,8 @@
                                 </p:column>
                                 <p:column headerText="Status">                                
                                     <p:badge value="Pending..." rendered="#{bill.referenceBill.billType == null}"/>
-                                    <p:badge value="Approved" rendered="#{bill.referenceBill.billType eq 'GrnPayment'}" severity="success"/>
+                                    <p:badge value="Approved" rendered="#{bill.referenceBill.billType eq 'GrnPayment' and !bill.referenceBill.cancelled}" severity="success"/>
+                                    <p:badge value="Canceled" rendered="#{bill.referenceBill.cancelled}" severity="danger"/>
                                 </p:column> 
                                 <p:column headerText="Action">
                                     <p:commandButton ajax="false" 
@@ -183,7 +199,7 @@
                                                      update="@form" 
                                                      action="#{dealorPaymentBillSearch.approve()}"
                                                      disabled="#{bill.referenceBill.billType eq 'GrnPayment'}"
-                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill?'))
+                                                     onclick="if (!confirm('Are you sure! you want to Approve This Cheque?'))
                                                                  return false;">
                                         <f:setPropertyActionListener value="#{bill}" 
                                                                      target="#{dealorPaymentBillSearch.bill}"/>

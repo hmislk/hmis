@@ -56,6 +56,7 @@ public class PaymentSchemeController implements Serializable {
     private List<PaymentScheme> items = null;
     List<AllowedPaymentMethod> allowedPaymentMethods;
     String selectText = "";
+    private List<PaymentScheme> allPaymentSchemes;
 
     public AllowedPaymentMethod getCurrentAllowedPaymentMethod() {
         if (paymentSchemeAllowedPaymentMethod == null) {
@@ -398,6 +399,15 @@ public class PaymentSchemeController implements Serializable {
 
     public void setAllowedPaymentMethods(List<AllowedPaymentMethod> allowedPaymentMethods) {
         this.allowedPaymentMethods = allowedPaymentMethods;
+    }
+
+    public List<PaymentScheme> getAllPaymentSchemes() {
+        allPaymentSchemes = createPaymentSchemes(true, true, true);
+        return allPaymentSchemes;
+    }
+
+    public void setAllPaymentSchemes(List<PaymentScheme> allPaymentSchemes) {
+        this.allPaymentSchemes = allPaymentSchemes;
     }
 
     @FacesConverter(forClass = PaymentScheme.class)

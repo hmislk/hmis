@@ -127,6 +127,8 @@ public class SupplierPaymentController implements Serializable {
     @Inject
     CommonController commonController;
     private int tabIndex = 0;
+    private List<String> supplierPaymentStatusList;
+    private String supplierPaymentStatus;
 
     public String navigateToDealerPaymentIndex() {
         return "/dealerPayment/index?faces-redirect=true";
@@ -195,6 +197,7 @@ public class SupplierPaymentController implements Serializable {
         return "/credit/index_pharmacy_due_access?faces-redirect=true";
     }
 
+    @Deprecated
     public void fillPharmacySupplierPayments() {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.SUPPLIER_PAYMENT);
@@ -598,13 +601,29 @@ public class SupplierPaymentController implements Serializable {
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
-    public void fillAllCreditBillssettled() {
+    public void fillPharmacySupplierPayment() {
+        List<InstitutionType> institutionTypes = new ArrayList<>();
+        institutionTypes.add(InstitutionType.Dealer);
+        fillAllCreditBillssettled(institutionTypes);
+    }
+
+    public void fillStoreSupplierPayment() {
+        List<InstitutionType> institutionTypes = new ArrayList<>();
+        institutionTypes.add(InstitutionType.StoreDealor);
+        fillAllCreditBillssettled(institutionTypes);
+    }
+
+    public void fillAllSupplierPayment() {
+        fillAllCreditBillssettled(null);
+    }
+
+    public void fillAllCreditBillssettled(List<InstitutionType> institutionTypes) {
         bills = null;
         netTotal = 0.0;
 
         // Ensure dates are not null
         if (fromDate == null || toDate == null) {
-            throw new IllegalArgumentException("fromDate and toDate must be set");
+            JsfUtil.addErrorMessage("From Date and To Date Empty");
         }
 
         // Build JPQL query
@@ -621,6 +640,11 @@ public class SupplierPaymentController implements Serializable {
         params.put("toDate", toDate);
         params.put("billType", BillType.GrnPaymentPre);
         params.put("billTypeAtomic", BillTypeAtomic.SUPPLIER_PAYMENT);
+
+        if (institutionTypes != null) {
+            jpql.append(" and b.toInstitution.institutionType in :insTps ");
+            params.put("insTps", institutionTypes);
+        }
 
         // Append optional filters if they are provided
         if (chequeFromDate != null && chequeToDate != null) {
@@ -644,15 +668,12 @@ public class SupplierPaymentController implements Serializable {
 
         jpql.append("AND b.billType <> :excludeBillType ");
         params.put("excludeBillType", BillType.GrnPayment);
-        jpql.append("ORDER BY b.id");
+        jpql.append("ORDER BY b.chequeDate");
 
         // Execute query
         bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
         // Calculate net total
-//        netTotal = bills.stream()
-//                .mapToDouble(Bill::getNetTotal)
-//                .sum();
         Iterator<Bill> iterator = bills.iterator();
         while (iterator.hasNext()) {
             Bill b = iterator.next();
@@ -661,13 +682,14 @@ public class SupplierPaymentController implements Serializable {
 
     }
 
+    @Deprecated
     public void fillAllCreditBillssettledByChequeDate() {
         bills = null;
         netTotal = 0.0;
 
         // Ensure dates are not null
         if (chequeFromDate == null || chequeToDate == null) {
-            JsfUtil.addErrorMessage("cheque From Date and cheque To Date must be set");
+            JsfUtil.addErrorMessage("Cheque From Date and Cheque To Date Empty");
         }
 
         // Build JPQL query
@@ -717,9 +739,91 @@ public class SupplierPaymentController implements Serializable {
 
     }
 
+    public void fillPharmacySupplierPaymentsByChequDate() {
+        List<InstitutionType> institutionTypes = new ArrayList<>();
+        institutionTypes.add(InstitutionType.Dealer);
+        createSupplierPaymentTableByChequDate(institutionTypes);
+    }
+
+    public void fillStoreSupplierPaymentByChequeDate() {
+        List<InstitutionType> institutionTypes = new ArrayList<>();
+        institutionTypes.add(InstitutionType.StoreDealor);
+        createSupplierPaymentTableByChequDate(institutionTypes);
+    }
+
+    public void fillAllSupplierPaymentsByChequDate() {
+        createSupplierPaymentTableByChequDate(null);
+    }
+
+    public void createSupplierPaymentTableByChequDate(List<InstitutionType> institutionTypes) {
+        bills = null;
+        netTotal = 0.0;
+
+        // Ensure dates are not null
+        if (chequeFromDate == null || chequeToDate == null) {
+            JsfUtil.addErrorMessage("Cheque From Date and Cheque To Date Empty");
+        }
+
+        // Build JPQL query
+        StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.refunded = false "
+                + "AND b.chequeDate BETWEEN :chequeFromDate AND :chequeToDate "
+                + "AND (b.billType = :billType OR b.billTypeAtomic = :billTypeAtomic) ");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("chequeFromDate", chequeFromDate);
+        params.put("chequeToDate", chequeToDate);
+        params.put("billType", BillType.GrnPaymentPre);
+        params.put("billTypeAtomic", BillTypeAtomic.SUPPLIER_PAYMENT);
+
+        if (institutionTypes != null) {
+            jpql.append(" and b.toInstitution.institutionType in :insTps ");
+            params.put("insTps", institutionTypes);
+        }
+
+        if (supplierPaymentStatus != null && !supplierPaymentStatus.equals("Any")) {
+            if (supplierPaymentStatus.equals("Pending")) {
+                jpql.append(" AND b.referenceBill IS NULL ");
+            } else if (supplierPaymentStatus.equals("Approved")) {
+                jpql.append(" AND b.referenceBill.billType = :approvedBillType AND b.referenceBill.cancelled = false ");
+                params.put("approvedBillType", BillType.GrnPayment);
+            } else if (supplierPaymentStatus.equals("Canceled")) {
+                jpql.append(" AND b.referenceBill.cancelled = true ");
+            }
+        }
+
+        if (chequeNo != null && !chequeNo.trim().isEmpty()) {
+            jpql.append("AND b.chequeRefNo = :chequeRefNo ");
+            params.put("chequeRefNo", chequeNo);
+        }
+        if (toInstitution != null) {
+            jpql.append("AND b.toInstitution = :supplier ");
+            params.put("supplier", toInstitution);
+        }
+        if (bank != null) {
+            jpql.append("AND b.bank = :bank ");
+            params.put("bank", bank);
+        }
+
+        jpql.append("AND b.billType <> :excludeBillType ");
+        params.put("excludeBillType", BillType.GrnPayment);
+        jpql.append("ORDER BY b.chequeDate");
+
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        Iterator<Bill> iterator = bills.iterator();
+        while (iterator.hasNext()) {
+            Bill b = iterator.next();
+            netTotal += b.getNetTotal();
+        }
+    }
+
     public void fillDealorPaymentDone() {
         bills = null;
         netTotal = 0.0;
+        supplierPaymentStatus = "Any";
         String jpql;
         Map params = new HashMap();
 
@@ -746,6 +850,7 @@ public class SupplierPaymentController implements Serializable {
     public void fillDealorPaymentCanceled() {
         bills = null;
         netTotal = 0.0;
+        supplierPaymentStatus = "Canceled";
         String jpql;
         Map params = new HashMap();
 
@@ -1122,6 +1227,7 @@ public class SupplierPaymentController implements Serializable {
      * Creates a new instance of pharmacyDealorBill
      */
     public SupplierPaymentController() {
+        this.supplierPaymentStatusList = Arrays.asList("Pending", "Approved", "Canceled", "Any");
     }
 
     public boolean isPrintPreview() {
@@ -1447,6 +1553,22 @@ public class SupplierPaymentController implements Serializable {
 
     public void setBank(Institution bank) {
         this.bank = bank;
+    }
+
+    public List<String> getSupplierPaymentStatusList() {
+        return supplierPaymentStatusList;
+    }
+
+    public void setSupplierPaymentStatusList(List<String> supplierPaymentStatusList) {
+        this.supplierPaymentStatusList = supplierPaymentStatusList;
+    }
+
+    public String getSupplierPaymentStatus() {
+        return supplierPaymentStatus;
+    }
+
+    public void setSupplierPaymentStatus(String supplierPaymentStatus) {
+        this.supplierPaymentStatus = supplierPaymentStatus;
     }
 
 }

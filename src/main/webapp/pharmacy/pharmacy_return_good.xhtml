@@ -135,6 +135,14 @@
                     <p:column style="width:10px!important;">  
                         <p:rowEditor />  
                     </p:column>
+                    <p:column style="width:10px!important;">  
+                        <p:commandButton 
+                                ajax="false"
+                                style="float: right;"
+                                icon="fas fa-trash"
+                                class="ui-button-danger"
+                                action="#{goodsReturnController.removeItem(ph)}"/>
+                    </p:column>
 
                 </p:dataTable>  
                 <p:spacer height="50"/>
