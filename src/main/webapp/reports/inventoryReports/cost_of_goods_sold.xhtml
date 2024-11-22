@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Cost Of Goods Sold " >
+                    <p:panel header="Cost Of Good Sold " >
                         <p:panelGrid columns="6" class="w-100">
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -83,15 +83,16 @@
 
                             
 
-
-
                         </p:panelGrid>
 
                         <div class="d-flex align-items-center">
-                            <p:commandButton class="m-2" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
+                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" >
                             </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Download"
-                                             action="#{reportController.downloadLabTestCount}">
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
                             </p:commandButton>
                         </div>
 
