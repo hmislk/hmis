@@ -103,11 +103,7 @@
 
                                 <h:outputText id="test" value="#{bookingControllerViewScope.selectedBillSession}" rendered="false"></h:outputText>
                                 <p:tabView >
-                                    <p:tab >
-                                         <f:facet name="title">
-                                            <h:outputText value="Bookings " />
-                                            <p:badge id="BookingCount" value="#{bookingControllerViewScope.billSessions.size()}" severity="warning"/>
-                                        </f:facet>
+                                    <p:tab title="Bookings" >
                                         <p:dataTable id="acBookings" 
                                                      rowKey="#{bs.id}"
                                                      value="#{bookingControllerViewScope.billSessions}" 
@@ -234,15 +230,18 @@
 
 
                                         </p:dataTable>
-<!--                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="acBookings" onactivated="console.log('poll started')"></p:poll>-->
+
+                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="acBookings" onactivated="console.log('poll started')"></p:poll>
+
                                     </p:tab>
                                     <!--                                    temporary bookings tab-->
-                                     <p:ajax event="tabChange" listener="#{bookingControllerViewScope.loadBillSessions()}" update="BookingCount temporaryBookings acBookings temporaryBookingCount"></p:ajax>
+
                                     <p:tab >
-                                       
                                         <f:facet name="title">
                                             <h:outputText value="Temporary Bookings " />
+
                                             <p:badge id="temporaryBookingCount" value="#{bookingControllerViewScope.temporaryBillSessions.size()}" severity="danger"/>
+
                                         </f:facet>
                                  
 
@@ -254,12 +253,17 @@
                                                      selectionMode="single"
                                                      styleClass="w-100 fullHeightListbox">
 
+
+
                                             <p:column headerText="Temporary Serial No" width="5em">
+
                                                 <h:outputLabel value="#{bs.serialNoStr}" ></h:outputLabel>
                                             </p:column>
 
                                             <p:column filterPlaceholder="Patient's Name" 
-                                                      filterMatchMode="contains"
+
+                                  filterMatchMode="contains"
+
                                                       filterBy="#{bs.bill.patient.person.name}"
                                                       width="25em">
 
@@ -300,6 +304,7 @@
                                                 </p:panel>  
                                             </p:column>
 
+
                                             <p:column rendered="true" headerText="Agent" width="5em">
                                                 <p:outputLabel class="badge badge-light" value="#{bs.bill.creditCompany.name}" style="color: green;"/>
                                             </p:column>
@@ -308,6 +313,9 @@
                        
                                             </p:column>
 <!--
+
+<!--
+
                                             <p:column headerText="Actions" width="6em">
                                                 <div class="d-flex">
                                                     <p:commandButton 
@@ -343,7 +351,9 @@
                                                 <h:panelGroup rendered="#{bs.markedToRefund}">
                                                     <i class="fas fa-undo-alt text-danger" title="Refund"></i>
                                                 </h:panelGroup>
+
                                             </p:column>-->
+
 
                                             <p:column>
                                                 <p:commandButton 
@@ -359,7 +369,9 @@
 
 
                                         </p:dataTable>
-<!--                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings temporaryBookingCount" onactivated="console.log('poll started')"></p:poll>-->
+
+                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings temporaryBookingCount" onactivated="console.log('poll started')"></p:poll>
+
                                     </p:tab>
 
                                     <p:tab title="Nurse View" >
