@@ -1556,9 +1556,19 @@ public class QuickBookReportController implements Serializable {
         Map<String, Object> temMap = new HashMap<>();
         String jpql;
 
+//        jpql = "select count(bi.bill), sum(bf.feeValue) "
+//                + " from BillFee bf join bf.billItem bi "
+//                + " where bi.bill.billType = :bTp "
+//                + " and bi.bill.createdAt between :fromDate and :toDate "
+//                + " and bi.bill.paymentMethod in :pms "
+//                + " and bi.bill.retired = false "
+//                + " and bi.retired = false "
+//                + " and bf.retired = false "
+//                + " and bf.fee.feeType = :ft ";
+        
         jpql = "select count(bi.bill), sum(bf.feeValue) "
                 + " from BillFee bf join bf.billItem bi "
-                + " where bi.bill.billType = :bTp "
+                + " where bi.bill.billTypeAtomic in :btas "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod in :pms "
                 + " and bi.bill.retired = false "
@@ -1590,7 +1600,17 @@ public class QuickBookReportController implements Serializable {
         // jpql += " order by c.name, i.name, bf.fee.feeType ";
         temMap.put("fromDate", fd);
         temMap.put("toDate", td);
-        temMap.put("bTp", BillType.OpdBill);
+//        temMap.put("bTp", BillType.OpdBill);
+           
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+        btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+
+        temMap.put("btas", btas);
+           
+           
         temMap.put("pms", paymentMethods);
 
         List<Object[]> lobjs = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
@@ -1614,6 +1634,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("Cash AR");
             qbf.setInvItemType("SERV");
             qbf.setInvItem("Consultant Payment:OPD Professional Payments");
+            qbf.setMemo("OPD Professional Payments");
             qbf.setAmount(0 - Math.abs(proFeeValue));
             qbf.setCustFld5(proBillCount.toString());
 
