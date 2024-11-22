@@ -254,12 +254,16 @@
                                                      styleClass="w-100 fullHeightListbox">
 
 
+
                                             <p:column headerText="Temporary Serial No" width="5em">
+
                                                 <h:outputLabel value="#{bs.serialNoStr}" ></h:outputLabel>
                                             </p:column>
 
                                             <p:column filterPlaceholder="Patient's Name" 
+
                                   filterMatchMode="contains"
+
                                                       filterBy="#{bs.bill.patient.person.name}"
                                                       width="25em">
 
@@ -308,6 +312,8 @@
                                                 <p:outputLabel class="badge badge-light" value="Not Completed" style="color: green;"/>
                        
                                             </p:column>
+<!--
+
 <!--
 
                                             <p:column headerText="Actions" width="6em">
