@@ -2007,22 +2007,24 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         opdBillController.setPaymentMethod(null);
         if (quickSearchPatientList == null) {
-            JsfUtil.addErrorMessage("No Patient found !");
+            
             controller.setPatient(null);
             if (!usePHN) {
                 controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
                 controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
             }
             controller.setPatientDetailsEditable(true);
+            JsfUtil.addErrorMessage("No Patient found !");
             return;
         } else if (quickSearchPatientList.isEmpty()) {
-            JsfUtil.addErrorMessage("No Patient found !");
+            
             controller.setPatient(null);
             if (!usePHN) {
                 controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
                 controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
             }
             controller.setPatientDetailsEditable(true);
+            JsfUtil.addErrorMessage("No Patient found !");
             return;
         } else if (quickSearchPatientList.size() == 1) {
             patientSearched = quickSearchPatientList.get(0);

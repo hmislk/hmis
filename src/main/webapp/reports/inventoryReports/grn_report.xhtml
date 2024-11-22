@@ -11,123 +11,281 @@
                 <h:form >
                     <p:panel header="GRN Report" >
 
-                        <p:panelGrid columns="4" class="w-100">
-                            <p:outputLabel value="From Date" class="mx-2" >
-                            </p:outputLabel>
+                        <p:panelGrid columns="6" class="w-100">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="From Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker value="" 
                                           class="w-100"
+                                          inputStyleClass="w-100"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                            
 
-                            <p:outputLabel value="To Date" class="mx-2" >
-                            </p:outputLabel>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="To Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker value=""
                                           class="w-100"
+                                          inputStyleClass="w-100"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                            
 
-                            <p:outputLabel value="Branch" class="mx-2" >
-                            </p:outputLabel>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
+                                <p:outputLabel value="Site" class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university ml-5" />
+                                <p:outputLabel value="Institution" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            
 
-                            <p:outputLabel value="Store" class="mx-2" >
-                            </p:outputLabel>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building ml-5" />
+                                <p:outputLabel value="Department" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-store ml-5" />
+                                <p:outputLabel value="Store" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            
 
-                            <p:outputLabel value="Payment Mode" class="mx-2" >
-                            </p:outputLabel>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-credit-card ml-5" />
+                                <p:outputLabel value="Payment Mode" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            
-                            
-                            <p:outputLabel value="Suplier" class="mx-2" >
-                            </p:outputLabel>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-user-tie ml-5" />
+                                <p:outputLabel value="Suplier" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Type" class="mx-2" >
-                            </p:outputLabel>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-list-alt ml-5" />
+                                <p:outputLabel value="Type" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
+
+                            <!-- To do Requirements
+                             If Type Is Detail Need to Add columns Qty,Free Qty, Item rate, Item MRP,Date of Expiry,Batch Code,UOM
+                              Need a Link to View GRN / PO (Please check wireframe document)-->
 
                         </p:panelGrid>
 
-                        <div class="d-flex align-items-center my-2">
-                            <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
+                        <div class="d-flex align-items-center">
+                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" >
                             </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Download"
-                                             action="null">
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            </p:commandButton>
+                        </div>
+
+
+                        <div class="mt-5">
+                            <h5>GRN Report</h5>
+
+                            <p:dataTable id="tbl1" value="" 
+                                         var="f" 
+                                         rowIndexVar="n" 
+                                         paginator="true" 
+                                         rows="10" 
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+
+                                <p:column headerText="GRN No" width="10em">
+                                    <h:outputText value="" />
+                                    <f:facet name="footer">
+                                        <h:outputText value="Net Purchase Value" />
+                                        <br />
+                                        <h:outputText value="Net Sale Value" />
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Invoice No" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Created Date" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Approved Date" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Supplier Name" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Branch" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Po No" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Purchase Value Cash" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Purchase Value Credit" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Sale Value Cash" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Sale Value Credit" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Remark" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+
+                            </p:dataTable>
+                            
+                        </div>
+                        
+                        
+                         <div class="mt-5">
+                            <h5>GRN Return</h5>
+
+                            <p:dataTable id="tbl2" value="" 
+                                         var="f" 
+                                         rowIndexVar="n" 
+                                         paginator="true" 
+                                         rows="10" 
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+
+                                <p:column headerText="Purchase Return No" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="GRN No" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="GRN Invoice No" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="GRN Date" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Reference Institution" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Created At" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Approved At" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Supplier" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Purchase Value" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Sale Value" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+
+                            </p:dataTable>
+                            
+                        </div>
+                        
+                        <div class="mt-5">
+                            <h5>Summary</h5>
+
+                            <p:dataTable id="tbl3" value="" 
+                                         var="f" 
+                                         rowIndexVar="n" 
+                                         paginator="true" 
+                                         rows="10" 
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+
+                                <p:column headerText="" width="10em">
+                                    <h:outputText value="" />
+                                    <f:facet name="footer">
+                                        <h:outputText value="Final Credit Total" />
+                                        <br />
+                                        <h:outputText value="Final Cash Total" />
+                                        <br />
+                                        <h:outputText value="Final Cash and Credit Total" />
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Purchase Value" width="15em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Sale Value" width="15em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                
+                            </p:dataTable>
                             
                         </div>
 
-                        <p:dataTable id="tbl" value="" 
-                                     paginator="true"
-                                     rows="10">
-
-                            <p:column headerText="GRN No.">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Invoice No">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Created Date">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Approved Date">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Supplier Name">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Branch">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Po No">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Purchase Value Cash">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Purchase Value Credit">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Sale Value Cash">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Sale Value Credit">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Remark">
-                                <h:outputText value="" />
-                            </p:column>
-
-                        </p:dataTable>
                     </p:panel>
 
                 </h:form>
 
             </ui:define>
+
         </ui:composition>
 
     </h:body>
+
 </html>

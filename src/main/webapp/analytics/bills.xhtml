@@ -188,9 +188,9 @@
                                 <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill ID" sortBy="#{bill.id}" filterBy="#{bill.id}" filterMatchMode="contains" >                                
                                     <h:outputLabel value="#{bill.id}"/>
                                 </p:column>
-                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Ins ID" sortBy="#{bill.insId}" filterBy="#{bill.insId}" filterMatchMode="contains" >                                
+<!--                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Ins ID" sortBy="#{bill.insId}" filterBy="#{bill.insId}" filterMatchMode="contains" >                                
                                     <h:outputLabel value="#{bill.insId}"/>
-                                </p:column>
+                                </p:column>-->
                                 <p:column
                                     headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" 
                                           filterMatchMode="contains" >                                
@@ -199,8 +199,8 @@
                                 <p:column headerText="Bill Class" >                                
                                     <h:outputLabel value="#{bill.billClass}"/>
                                 </p:column>
-                                <p:column headerText="Bill Type" >                                
-                                    <h:outputLabel value="#{bill.billTypeAtomic}"/>
+                                <p:column headerText="Bill Type" width="22em">                                
+                                    <h:outputLabel value="#{bill.billTypeAtomic.label}"/>
                                 </p:column>
                                 <p:column headerText="Payment Method" >                                
                                     <h:outputLabel value="#{bill.paymentMethod}"/>
@@ -252,7 +252,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="No" styleClass="alignTop">
+                                <p:column headerText="No" exportable="false" styleClass="alignTop">
                                     <p:commandButton 
                                         value="View" 
                                         icon="fa fa-eye" 

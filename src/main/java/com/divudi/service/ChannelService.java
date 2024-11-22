@@ -54,6 +54,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.SpecialityFacade;
+import com.divudi.facade.StaffFacade;
 import com.divudi.java.CommonFunctions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -101,6 +102,8 @@ public class ChannelService {
     private SpecialityFacade specialityFacade;
     @EJB
     private ConsultantFacade consultantFacade;
+    @EJB
+    private StaffFacade staffFacade;
 
     @Inject
     private BookingControllerViewScope bookingControllerViewScope;
@@ -485,7 +488,7 @@ public class ChannelService {
         bill.setPaid(false);
         bill.setPaidAmount(0.0);
         bill.setPaidBill(null);
-        bill.setBillType(BillType.ChannelAgent);
+        bill.setBillType(BillType.ChannelOnCall);
         bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         System.out.println(bill);
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(session.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
@@ -885,6 +888,16 @@ public class ChannelService {
 
         return consultantFacade.findByJpql(jpql.toString(), m);
     }
+    public List<Speciality> findAllSpecilities(){
+        String jpql;
+        Map params = new HashMap();
+        jpql = " select c  "
+                + " from DoctorSpeciality c "
+                + " where c.retired=:ret "
+                + " order by c.name";
+        params.put("ret", false);
+        return staffFacade.findByJpql(jpql, params);
+    }
 
     public List<Doctor> findDoctorsFromName(String name, Long id) {
         StringBuffer jpql = new StringBuffer("select c from Doctor c where c.retired=:ret");
@@ -1076,7 +1089,7 @@ public class ChannelService {
         newlyCreatedAgentOnlinePaymentCompletionBill.setBalance(0.0);
         newlyCreatedAgentOnlinePaymentCompletionBill.setPaymentMethod(PaymentMethod.Agent);
         newlyCreatedAgentOnlinePaymentCompletionBill.setReferenceBill(bs.getBill());
-        newlyCreatedAgentOnlinePaymentCompletionBill.setBillType(BillType.ChannelPaid);
+        newlyCreatedAgentOnlinePaymentCompletionBill.setBillType(BillType.ChannelAgent);
         newlyCreatedAgentOnlinePaymentCompletionBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(bs.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
         // String deptId = generateBillNumberDeptId(temp);
