@@ -172,29 +172,7 @@
                                         itemLabel="#{d.name}" 
                                         itemValue="#{d}" />
                                 </p:selectOneMenu>
-                            </h:panelGroup>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf271;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Added Date" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" inputStyleClass="w-100" ></p:datePicker>
-
-                            <p:spacer width="20"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value=" Discharge Date" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
-
-                            <p:spacer width="20"></p:spacer>
+                            </h:panelGroup>                         
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf09d;" styleClass="fa mr-2" /> 
@@ -210,6 +188,8 @@
                                                itemLabel=""
                                                itemValue="" ></f:selectItems>
                             </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf53d;" styleClass="fa mr-2" />
@@ -232,9 +212,7 @@
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}"
                                                ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <p:spacer width="20"></p:spacer>
+                            </p:selectOneMenu>                          
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
@@ -249,6 +227,8 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <i class="fas fa-stethoscope"></i>
@@ -277,8 +257,6 @@
                                                itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"></p:spacer>
-
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0c0;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Service Group" class="mx-3"/>
@@ -293,6 +271,8 @@
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf075;" styleClass="fa mr-2" />
@@ -321,7 +301,63 @@
                                 >
                             </p:selectBooleanButton>
 
+                            <!--Please change this {searchController.withProfessionalFee} in values of following filters and put the correct thing according to controller you working I just used this for wireframe-->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Date Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectBooleanButton
+                                onLabel="Discharge Date" 
+                                offLabel="Admission Date" 
+                                value="#{searchController.withProfessionalFee}"
+                                onIcon="pi pi-minus" 
+                                class="w-100"
+                                offIcon="pi pi-plus" 
+                                >
+                                <p:ajax update="@form" />
+                            </p:selectBooleanButton>
 
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group" rendered="#{!searchController.withProfessionalFee}">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Admission From" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=" w-100" inputStyleClass="w-100" rendered="#{!searchController.withProfessionalFee}"></p:datePicker>
+
+                            <p:spacer width="20" rendered="#{!searchController.withProfessionalFee}"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group" rendered="#{!searchController.withProfessionalFee}">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Admission To" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class="w-100" inputStyleClass="w-100" rendered="#{!searchController.withProfessionalFee}"></p:datePicker>
+
+                            <h:panelGroup layout="block" styleClass="form-group" rendered="#{searchController.withProfessionalFee}">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Discharge From" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=" w-100" inputStyleClass="w-100" rendered="#{searchController.withProfessionalFee}"></p:datePicker>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group" rendered="#{searchController.withProfessionalFee}">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Discharge To" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class="w-100" inputStyleClass="w-100" rendered="#{searchController.withProfessionalFee}"></p:datePicker>
 
                         </h:panelGrid><br/>
 
