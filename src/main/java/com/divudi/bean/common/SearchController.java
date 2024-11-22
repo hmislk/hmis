@@ -15759,8 +15759,9 @@ public class SearchController implements Serializable {
 
     public void billItemsToBundleForOpdUnderCategory(ReportTemplateRowBundle rtrb, List<BillItem> billItems, PaymentType paymentType) {
         System.out.println("billItemsToBundleForOpdUnderCategory");
-        Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
-        Map<String, ReportTemplateRow> itemMap = new HashMap<>();
+        // Use TreeMap to maintain alphabetical order
+        Map<String, ReportTemplateRow> categoryMap = new TreeMap<>();
+        Map<String, ReportTemplateRow> itemMap = new TreeMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         double totalOpdServiceCollection = 0.0;
         double totalGrossValue = 0.0;
@@ -15770,15 +15771,7 @@ public class SearchController implements Serializable {
         long totalQuantity = 0l;
 
         for (BillItem bi : billItems) {
-            System.out.println("Processing BillItem: " + bi);
 
-            // Skip invalid or unwanted bills
-//            if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
-//                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE
-//                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.CREDIT) {
-//                System.out.println("continue 1");
-//                continue;
-//            }
             if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
                     || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
                 System.out.println("continue 1");
@@ -15798,7 +15791,6 @@ public class SearchController implements Serializable {
 
             }
 
-            // Identify category and item
             String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null
                     ? bi.getItem().getCategory().getName() : "No Category";
             System.out.println("categoryName = " + categoryName);
