@@ -469,7 +469,7 @@
                                 <h:outputText value="#{item.doctor.nameWithTitle}" />
                             </p:column>
 
-                            <p:column headerText="Item" width="4em">
+                            <p:column headerText="Item" width="5em">
                                 <h:outputText value="" />
                             </p:column>
 
@@ -545,192 +545,212 @@
 
                 <h:panelGroup>
 
-                    <p:panel header="Referring Doctor Detail Report " rendered="#{reportController.reportType eq 'Detail'}">
+                    <h:form >
 
-                        <h:panelGroup>
+                        <p:panel header="Referring Doctor Detail Report " rendered="#{reportController.reportType eq 'Detail'}">
+
+                            <h:panelGroup>
 
 
-                            <div class="row w-50" >
-                                <div class="col-3">
-                                    <h:outputLabel style="width: 100px; font-weight:bold ">From Date</h:outputLabel><span>:</span>
+                                <div class="row w-50" >
+                                    <div class="col-3">
+                                        <h:outputLabel style="width: 100px; font-weight:bold ">From Date</h:outputLabel><span>:</span>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputLabel value="#{reportController.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+                                    </div>
                                 </div>
-                                <div class="col-3">
-                                    <h:outputLabel value="#{reportController.fromDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+
+                                <div class="row w-50" >
+                                    <div class="col-3">
+                                        <h:outputLabel style="width: 100px ; font-weight:bold ">To Date</h:outputLabel><span>:</span>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputLabel value="#{reportController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+                                    </div>
+                                </div>
+                                <h:panelGroup rendered="#{reportController.collectingCentre ne null}">
+                                    <div class="row w-50" >
+                                        <div class="col-3">
+                                            <h:outputLabel style="width: 100px; font-weight:bold ">C. Center</h:outputLabel><span>:</span>
+                                        </div>
+                                        <div class="col-3">
+                                            <h:outputLabel value="#{reportController.collectingCentre.name}">
+                                            </h:outputLabel>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{reportController.department ne null}" >
+                                    <div class="row w-50" >
+                                        <div class="col-3">
+                                            <h:outputLabel style="width: 100px ; font-weight:bold ">Department</h:outputLabel><span>:</span>
+                                        </div>
+                                        <div class="col-3">
+                                            <h:outputLabel value="#{reportController.department.name}">
+                                            </h:outputLabel>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{reportController.institution ne null}">
+                                    <div class="row w-50" >
+                                        <div class="col-3">
+                                            <h:outputLabel style="width: 100px; font-weight:bold ">Institution</h:outputLabel><span>:</span>
+                                        </div>
+                                        <div class="col-3">
+                                            <h:outputLabel value="#{reportController.institution.name}">
+                                            </h:outputLabel>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{reportController.site ne null}">
+                                    <div class="row w-50" >
+                                        <div class="col-3">
+                                            <h:outputLabel style="width: 100px ; font-weight:bold ">Site</h:outputLabel><span>:</span>
+                                        </div>
+                                        <div class="col-3">
+                                            <h:outputLabel value="#{reportController.site.name}" ></h:outputLabel>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                            </h:panelGroup>
+
+                            <p:dataTable id="tbl2" value="#{reportController.billItems}" var="bi" rowIndexVar="rowIndex"
+                                         paginator="true"
+                                         rows="10"
+                                         paginatorPosition="bottom"
+                                         class="my-3"
+
+                                         >
+                                <p:column headerText="S.No" width="1em">
+                                    <h:outputText value="#{rowIndex+1}" />
+                                </p:column>
+
+                                <p:column headerText="Invoice No" width="13em">
+                                    <h:outputText value="#{bi.bill.deptId}" />
+                                    <h:outputLabel 
+                                        class="mx-1 ui-message-error"
+                                        rendered="#{bi.bill.cancelled}" 
+                                        value="Cancelled">
                                     </h:outputLabel>
-                                </div>
-                            </div>
-
-                            <div class="row w-50" >
-                                <div class="col-3">
-                                    <h:outputLabel style="width: 100px ; font-weight:bold ">To Date</h:outputLabel><span>:</span>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputLabel value="#{reportController.toDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    <h:outputLabel
+                                        class="mx-1 ui-message-error"
+                                        rendered="#{bi.bill.cancelled}" 
+                                        value="#{bi.bill.cancelledBill.deptId}">
                                     </h:outputLabel>
-                                </div>
-                            </div>
-                            <h:panelGroup rendered="#{reportController.collectingCentre ne null}">
-                                <div class="row w-50" >
-                                    <div class="col-3">
-                                        <h:outputLabel style="width: 100px; font-weight:bold ">C. Center</h:outputLabel><span>:</span>
-                                    </div>
-                                    <div class="col-3">
-                                        <h:outputLabel value="#{reportController.collectingCentre.name}">
-                                        </h:outputLabel>
-                                    </div>
-                                </div>
-                            </h:panelGroup>
-                            <h:panelGroup rendered="#{reportController.department ne null}" >
-                                <div class="row w-50" >
-                                    <div class="col-3">
-                                        <h:outputLabel style="width: 100px ; font-weight:bold ">Department</h:outputLabel><span>:</span>
-                                    </div>
-                                    <div class="col-3">
-                                        <h:outputLabel value="#{reportController.department.name}">
-                                        </h:outputLabel>
-                                    </div>
-                                </div>
-                            </h:panelGroup>
-                            <h:panelGroup rendered="#{reportController.institution ne null}">
-                                <div class="row w-50" >
-                                    <div class="col-3">
-                                        <h:outputLabel style="width: 100px; font-weight:bold ">Institution</h:outputLabel><span>:</span>
-                                    </div>
-                                    <div class="col-3">
-                                        <h:outputLabel value="#{reportController.institution.name}">
-                                        </h:outputLabel>
-                                    </div>
-                                </div>
-                            </h:panelGroup>
+                                    <h:outputLabel 
+                                        class="mx-1 ui-message-warn"
+                                        rendered="#{bi.refunded}" 
+                                        value="Refunded">
+                                    </h:outputLabel>
+                                    <h:outputLabel
+                                        class="mx-1 ui-message-warn"
+                                        rendered="#{bi.refunded}" 
+                                        value="#{bi.bill.refundedBill.deptId}">
+                                    </h:outputLabel>
+                                </p:column>
 
-                            <h:panelGroup rendered="#{reportController.site ne null}">
-                                <div class="row w-50" >
-                                    <div class="col-3">
-                                        <h:outputLabel style="width: 100px ; font-weight:bold ">Site</h:outputLabel><span>:</span>
-                                    </div>
-                                    <div class="col-3">
-                                        <h:outputLabel value="#{reportController.site.name}" ></h:outputLabel>
-                                    </div>
-                                </div>
-                            </h:panelGroup>
+                                <p:column headerText="Referring Doctor" width="20em">
+                                    <h:outputText value="#{bi.bill.referredBy.person.nameWithTitle}" />
+                                </p:column>
 
-                        </h:panelGroup>
+                                <p:column headerText="Service Name" width="20em">
+                                    <h:outputText value="#{bi.item.name}" />
+                                </p:column>
 
-                        <p:dataTable id="tbl2" value="#{reportController.billItems}" var="bi" rowIndexVar="rowIndex"
-                                     paginator="true"
-                                     rows="10"
-                                     paginatorPosition="bottom"
-                                     class="my-3"
+                                <p:column headerText="Date " width="14em">
+                                    <h:outputText value="#{bi.bill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                                    </h:outputText>
+                                </p:column>
 
-                                     >
-                            <p:column headerText="S.No" width="0.5em">
-                                <h:outputText value="#{rowIndex+1}" />
-                            </p:column>
+                                <p:column headerText="Status" width="10em">
+                                    <h:outputText value="#{patientInvestigationController.getPatientInvestigationFromBillItem(bi).status}" />
+                                </p:column>
 
-                            <p:column headerText="Invoice No" width="8em">
-                                <h:outputText value="#{bi.bill.deptId}" />
-                                <h:outputLabel 
-                                    class="mx-1 ui-message-error"
-                                    rendered="#{bi.bill.cancelled}" 
-                                    value="Cancelled">
-                                </h:outputLabel>
-                                <h:outputLabel
-                                    class="mx-1 ui-message-error"
-                                    rendered="#{bi.bill.cancelled}" 
-                                    value="#{bi.bill.cancelledBill.deptId}">
-                                </h:outputLabel>
-                                <h:outputLabel 
-                                    class="mx-1 ui-message-warn"
-                                    rendered="#{bi.refunded}" 
-                                    value="Refunded">
-                                </h:outputLabel>
-                                <h:outputLabel
-                                    class="mx-1 ui-message-warn"
-                                    rendered="#{bi.refunded}" 
-                                    value="#{bi.bill.refundedBill.deptId}">
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Referring Doctor" width="4em">
-                                <h:outputText value="#{bi.bill.referredBy.person.nameWithTitle}" />
-                            </p:column>
-
-                            <p:column headerText="Service Name" width="4em">
-                                <h:outputText value="#{bi.item.name}" />
-                            </p:column>
-
-                            <p:column headerText="Date " width="4em">
-                                <h:outputText value="#{bi.bill.createdAt}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Status" width="4em">
-                                <h:outputText value="#{patientInvestigationController.getPatientInvestigationFromBillItem(bi).status}" />
-                            </p:column>
-
-                            <p:column headerText="CC Amt" width="4em">
-                                <h:outputText value="#{bi.collectingCentreFee}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{reportController.ccFeeTotal}">
+                                <p:column headerText="CC Amt" width="5em">
+                                    <h:outputText value="#{bi.collectingCentreFee}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                </f:facet>
-                            </p:column>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{reportController.ccFeeTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
 
-                            <p:column headerText="Hos Amt" width="4em">
-                                <h:outputText value="#{bi.hospitalFee}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{reportController.hospitalFeeTotal}">
+                                <p:column headerText="Hos Amt" width="5em">
+                                    <h:outputText value="#{bi.hospitalFee}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                </f:facet>
-                            </p:column>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{reportController.hospitalFeeTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
 
-                            <p:column headerText="Pro Amt" width="4em">
-                                <h:outputText value="#{bi.staffFee}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{reportController.staffFeeTotal}">
+                                <p:column headerText="Pro Amt" width="5em">
+                                    <h:outputText value="#{bi.staffFee}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                </f:facet>
-                            </p:column>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{reportController.staffFeeTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
 
-                            <p:column headerText="Dis Amt" width="4em">
-                                <h:outputText value="#{bi.discount}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{reportController.discountTotal}">
+                                <p:column headerText="Dis Amt" width="5em">
+                                    <h:outputText value="#{bi.discount}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                </f:facet>
-                            </p:column>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{reportController.discountTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
 
-                            <p:column headerText="Net Amt" width="4em">
-                                <h:outputText value="#{bi.netValue}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{reportController.netTotal}">
+                                <p:column headerText="Net Amt" width="5em">
+                                    <h:outputText value="#{bi.netValue}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                </f:facet>
-                            </p:column>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{reportController.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
 
-                        </p:dataTable>
+                                <p:column 
+                                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                                    headerText="Actions" 
+                                    exportable="false" >
 
-                    </p:panel>
 
+                                    <p:commandButton 
+                                        value="Admin" 
+                                        icon="fa fa-shield-alt" 
+                                        class="m-1 ui-button-danger" 
+                                        style="width: 100px;"
+                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                        ajax="false" 
+                                        rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}" />
+                                    </p:commandButton>
+                                </p:column>
 
+                            </p:dataTable>
+
+                        </p:panel>
+
+                    </h:form>
                 </h:panelGroup>
 
 

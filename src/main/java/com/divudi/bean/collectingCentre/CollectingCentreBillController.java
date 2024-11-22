@@ -833,8 +833,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         savePatient();
         calTotals();
 //        if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
-        BilledBill temp = new BilledBill();
-        Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
+        BilledBill ccBill = new BilledBill();
+        Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), ccBill);
         if (b == null) {
             return;
         }
@@ -1036,59 +1036,59 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     }
 
-    private Bill saveBill(Department bt, Bill temp) {
-        temp.setBillType(BillType.CollectingCentreBill);
-        temp.setBillTypeAtomic(BillTypeAtomic.CC_BILL);
+    private Bill saveBill(Department bt, Bill ccBill) {
+        ccBill.setBillType(BillType.CollectingCentreBill);
+        ccBill.setBillTypeAtomic(BillTypeAtomic.CC_BILL);
 
-        temp.setInstitution(collectingCentre);
-        temp.setDepartment(departmentController.getDefaultDepatrment(collectingCentre));
-        temp.setCollectingCentre(collectingCentre);
-        temp.setToDepartment(bt);
-        temp.setToInstitution(bt.getInstitution());
+        ccBill.setInstitution(collectingCentre);
+        ccBill.setDepartment(departmentController.getDefaultDepatrment(collectingCentre));
+        ccBill.setCollectingCentre(collectingCentre);
+        ccBill.setToDepartment(bt);
+        ccBill.setToInstitution(bt.getInstitution());
 
-        temp.setFromDepartment(temp.getDepartment());
-        temp.setFromInstitution(temp.getInstitution());
+        ccBill.setFromDepartment(ccBill.getDepartment());
+        ccBill.setFromInstitution(ccBill.getInstitution());
 
-        temp.setReferredBy(referredBy);
-        temp.setReferenceNumber(referralId);
-        temp.setReferredByInstitution(referredByInstitution);
-        temp.setComments(comment);
+        ccBill.setReferredBy(referredBy);
+        ccBill.setReferenceNumber(referralId);
+        ccBill.setReferredByInstitution(referredByInstitution);
+        ccBill.setComments(comment);
 
 //        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
-        temp.setBillDate(new Date());
-        temp.setBillTime(new Date());
-        temp.setPatient(getPatient());
+        ccBill.setBillDate(new Date());
+        ccBill.setBillTime(new Date());
+        ccBill.setPatient(getPatient());
 
-        temp.setPaymentScheme(getPaymentScheme());
-        temp.setPaymentMethod(getPaymentMethod());
-        temp.setCreatedAt(new Date());
-        temp.setCreater(getSessionController().getLoggedUser());
+        ccBill.setPaymentScheme(getPaymentScheme());
+        ccBill.setPaymentMethod(getPaymentMethod());
+        ccBill.setCreatedAt(new Date());
+        ccBill.setCreater(getSessionController().getLoggedUser());
 
         //SETTING INS ID
         recurseCount = 0;
-        String insId = generateBillNumberInsId(temp);
+        String insId = generateBillNumberInsId(ccBill);
 
         if (insId.equals("")) {
             return null;
         }
-        temp.setInsId(insId);
-        if (temp.getId() == null) {
-            getFacade().create(temp);
+        ccBill.setInsId(insId);
+        if (ccBill.getId() == null) {
+            getFacade().create(ccBill);
         } else {
-            getFacade().edit(temp);
+            getFacade().edit(ccBill);
         }
 
         //Department ID (DEPT ID)
         String deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(sessionController.getInstitution(),
-                temp.getDepartment(), temp.getBillType(), BillClassType.BilledBill);
-        temp.setDeptId(deptId);
+                ccBill.getDepartment(), ccBill.getBillType(), BillClassType.BilledBill);
+        ccBill.setDeptId(deptId);
 
-        if (temp.getId() == null) {
-            getFacade().create(temp);
+        if (ccBill.getId() == null) {
+            getFacade().create(ccBill);
         } else {
-            getFacade().edit(temp);
+            getFacade().edit(ccBill);
         }
-        return temp;
+        return ccBill;
 
     }
 
