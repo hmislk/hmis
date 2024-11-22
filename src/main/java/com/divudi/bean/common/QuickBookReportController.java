@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
@@ -13,7 +8,6 @@ import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.QuickBookFormat;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.AdmissionTypeEnum;
@@ -58,13 +52,10 @@ import javax.persistence.TemporalType;
  *
  * @author Dushan
  */
-@Named(value = "quickBookReportController")
+@Named
 @SessionScoped
 public class QuickBookReportController implements Serializable {
 
-    /**
-     * Creates a new instance of QuickBookReportController
-     */
     @EJB
     private CategoryFacade categoryFacade;
     @EJB
@@ -112,6 +103,11 @@ public class QuickBookReportController implements Serializable {
     private boolean withProfessionalFee;
 
     public QuickBookReportController() {
+    }
+
+    public String navigateToDailyReturnImportForQbReport() {
+        report = "1";
+        return "/reports/qb/report_qb_day_income_with_out_professional?faces-redirect=true";
     }
 
     public void createQBFormat() {

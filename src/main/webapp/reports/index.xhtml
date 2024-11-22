@@ -360,7 +360,11 @@
 
                             <p:tab title="QB Import Reports">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" value="1. Daily Return Import Report " action ="/reports/qb/report_qb_day_income_with_out_professional?faces-redirect=true"/>
+                                    <p:commandButton   
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="1. Daily Return Import Report " 
+                                        action ="#{quickBookReportController.navigateToDailyReturnImportForQbReport}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="2. Item Import Report" action ="/reports/qb/report_qb_item_list?faces-redirect=true"/>
                                 </div>
                             </p:tab>
