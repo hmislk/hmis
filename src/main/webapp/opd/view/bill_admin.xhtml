@@ -39,6 +39,10 @@
                                                 <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                                 <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                             </f:facet>
+                                            <p:commandButton value="Add Payment" ajax="false" 
+                                                             action="#{billSearch.addPaymentToViewingBillForAdminToCorrectErrors}" >
+                                                
+                                            </p:commandButton>
                                             <view:out bill="#{billSearch.viewingBill}"/>
                                         </p:panel>
                                     </p:tab>

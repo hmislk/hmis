@@ -15,12 +15,17 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value=" Invoice Date From"  class="mx-3">
+                                <p:outputLabel value="From Date"  class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" inputStyleClass="w-100" ></p:datePicker>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
 
 
                             <p:spacer width="20"></p:spacer>
@@ -28,12 +33,17 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Invoice Date To" class="mx-3" >
+                                <p:outputLabel value="To Date" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
 
                             <p:spacer width="20"></p:spacer>
 
@@ -165,8 +175,8 @@
                             </h:panelGroup>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value=" Discharge Date" class="mx-3">
+                                <h:outputText value="&#xf271;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Added Date" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:datePicker value="#{reportController.fromDate}" 
@@ -175,10 +185,9 @@
 
                             <p:spacer width="20"></p:spacer>
 
-
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf271;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Added Date" class="mx-3">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value=" Discharge Date" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:datePicker value="#{reportController.toDate}"
@@ -269,7 +278,7 @@
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
-                            
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0c0;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Service Group" class="mx-3"/>

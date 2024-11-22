@@ -4582,7 +4582,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void fillTemporaryBillSessions() {
 
+
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelOnCall};
+
         List<BillType> bts = Arrays.asList(billTypes);
 
         String sql = "Select bs "
