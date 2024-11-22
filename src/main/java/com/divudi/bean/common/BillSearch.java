@@ -3001,6 +3001,20 @@ public class BillSearch implements Serializable {
         return bills;
 
     }
+    
+    public String addPaymentToViewingBillForAdminToCorrectErrors(){
+        if(viewingBill==null){
+            JsfUtil.addErrorMessage("No viewing Bill");
+            return null;
+        }
+        List<Payment> newPayments = billService.createPayment(bill, paymentMethod, null);
+        if(newPayments==null){
+            JsfUtil.addErrorMessage("Error");
+            return null;
+        }
+        bill=viewingBill;
+        return navigateToAdminBillByAtomicBillType();
+    }
 
     public List<Bill> getUserBills() {
         List<Bill> userBills;
@@ -3765,16 +3779,6 @@ public class BillSearch implements Serializable {
         }
         BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
         loadBillDetails(bill);
-        switch (billTypeAtomic) {
-            case CC_DEBIT_NOTE:
-                return navigateToAdminCcDepositBill();
-            case OPD_BILL_REFUND:
-                return navigateToAdminOpdRefundBill();
-            case OPD_BILL_CANCELLATION:
-                return navigateToAdminOpdCancellationBill();
-            case OPD_BILL_WITH_PAYMENT:
-                return navigateToAdminOpdBill();
-        }
         return navigateToAdminBill();
     }
 

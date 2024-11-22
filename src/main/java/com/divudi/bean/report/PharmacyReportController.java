@@ -198,6 +198,7 @@ public class PharmacyReportController implements Serializable {
     private List<ItemCount> reportOpdServiceCount;
     private ReportTemplateRowBundle bundle;
     private List<ReportTemplateRow> unifiedBundle;
+    private List<ReportTemplateRowBundle> bundleList;
 
     private List<PatientDepositHistory> patientDepositHistories;
 
@@ -1102,72 +1103,79 @@ public class PharmacyReportController implements Serializable {
     // </editor-fold>
     @Deprecated
     public void createPharmacyCashInOutLedgerOld() {
-        // Initialize a unified bundle
-        List<ReportTemplateRow> unifiedBundle = new ArrayList<>();
+        bundleList = new ArrayList<>();
+        ReportTemplateRowBundle childBundle = new ReportTemplateRowBundle();
 
-        // Query for CASH_IN transactions
-        String jpqlCashIn = "SELECT new com.divudi.data.ReportTemplateRow("
+        netTotal = 0.0;
+
+        List<BillTypeAtomic> btasPIn = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_IN);
+        List<BillTypeAtomic> btasPOut = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_OUT);
+
+        ReportTemplateRowBundle pharmacyIn = generatePaymentMethodColumnsByBills(btasPIn);
+        pharmacyIn.setBundleType("CashIn");
+        pharmacyIn.setName("Pharmacy cash in");
+        childBundle.getBundles().add(pharmacyIn);
+        bundleList.add(childBundle);
+
+        ReportTemplateRowBundle pharmacyOut = generatePaymentMethodColumnsByBills(btasPOut);
+        pharmacyOut.setBundleType("CashOut");
+        pharmacyOut.setName("Pharmacy cash out");
+        childBundle.getBundles().add(pharmacyOut);
+        bundleList.add(childBundle);
+
+//        bundle.getBundles().add(netCashForTheDayBundle);
+    }
+
+    @Deprecated
+    public ReportTemplateRowBundle generatePaymentMethodColumnsByBills(List<BillTypeAtomic> bts) {
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
                 + "bill.department, FUNCTION('date', p.createdAt), "
                 + "SUM(p.paidValue)) "
                 + "FROM Payment p "
                 + "JOIN p.bill bill "
-                + "WHERE p.retired <> :bfr AND bill.retired <> :br "
-                + "AND p.createdAt BETWEEN :fd AND :td "
-                + "AND bill.billTypeAtomic IN :billTypeAtomic "
-                + "GROUP BY bill.department, FUNCTION('date', p.createdAt)";
+                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
 
-        Map<String, Object> paramsCashIn = new HashMap<>();
-        paramsCashIn.put("bfr", true);
-        paramsCashIn.put("br", true);
-        paramsCashIn.put("fd", fromDate);
-        paramsCashIn.put("td", toDate);
-        paramsCashIn.put("billTypeAtomic", BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        parameters.put("bfr", true);
+        parameters.put("br", true);
 
-        List<ReportTemplateRow> cashInRows = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpqlCashIn, paramsCashIn, TemporalType.TIMESTAMP);
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
 
-        // Add cash-in rows to unified bundle with transaction type
-        for (ReportTemplateRow row : cashInRows) {
-            row.setRowType("CASH_IN");
-            unifiedBundle.add(row);
+        if (department != null) {
+            jpql += " AND bill.department = :dept ";
+            parameters.put("dept", department);
+        }
+        if (webUser != null) {
+            jpql += " AND bill.creater.webUserPerson.name = :wu ";
+            parameters.put("wu", webUser.getWebUserPerson().getName());
         }
 
-        // Query for CASH_OUT transactions
-        String jpqlCashOut = "SELECT new com.divudi.data.ReportTemplateRow("
-                + "bill.department, FUNCTION('date', p.createdAt), "
-                + "SUM(p.paidValue)) "
-                + "FROM Payment p "
-                + "JOIN p.bill bill "
-                + "WHERE p.retired <> :bfr AND bill.retired <> :br "
-                + "AND p.createdAt BETWEEN :fd AND :td "
-                + "AND bill.billTypeAtomic IN :billTypeAtomic "
-                + "GROUP BY bill.department, FUNCTION('date', p.createdAt)";
+        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
 
-        Map<String, Object> paramsCashOut = new HashMap<>();
-        paramsCashOut.put("bfr", true);
-        paramsCashOut.put("br", true);
-        paramsCashOut.put("fd", fromDate);
-        paramsCashOut.put("td", toDate);
-        paramsCashOut.put("billTypeAtomic", BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        jpql += "GROUP BY bill.department, FUNCTION('date', p.createdAt)";
 
-        List<ReportTemplateRow> cashOutRows = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpqlCashOut, paramsCashOut, TemporalType.TIMESTAMP);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
-        // Add cash-out rows to unified bundle with transaction type
-        for (ReportTemplateRow row : cashOutRows) {
-            row.setRowType("CASH_OUT");
-            unifiedBundle.add(row);
-        }
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+        b.setReportTemplateRows(rs);
+        b.createRowValuesFromBill();
 
-        // Store the unified bundle for the view
-        this.unifiedBundle = unifiedBundle;
+        return b;
     }
 
     public void createPharmacyCashInOutLedger() {
         netTotal = 0.0;
         bills = new ArrayList<>();
+        unifiedBundle = new ArrayList<>();
+        Map<BillTypeAtomic, Double> btaNetTotals = new HashMap<>();
 
         // Define cash in and cash out types
-        List<BillTypeAtomic> btasCashIn = BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN);
-        List<BillTypeAtomic> btasCashOut = BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT);
+        List<BillTypeAtomic> btasCashIn = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_IN);
+        List<BillTypeAtomic> btasCashOut = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_OUT);
 
         // JPQL for fetching cash-in transactions
         Map<String, Object> paramsCashIn = new HashMap<>();
@@ -1192,6 +1200,10 @@ public class PharmacyReportController implements Serializable {
         for (Bill row : cashInRows) {
             row.setLocalNumber("CASH_IN");
             bills.add(row); // Add each row individually
+
+            BillTypeAtomic bta = row.getBillTypeAtomic();
+            btaNetTotals.put(bta, btaNetTotals.getOrDefault(bta, 0.0) + row.getNetTotal());
+
         }
 
         // JPQL for fetching cash-out transactions
@@ -1200,7 +1212,7 @@ public class PharmacyReportController implements Serializable {
                 + "WHERE b.retired = false "
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate "
                 + "AND b.billTypeAtomic IN :cashOut";
-        
+
         if (department != null) {
             jpqlCashOut += " AND b.department = :dept ";
             paramsCashOut.put("dept", department);
@@ -1218,9 +1230,23 @@ public class PharmacyReportController implements Serializable {
         for (Bill row : cashOutRows) {
             row.setLocalNumber("CASH_OUT");
             bills.add(row); // Add each row individually
+
+            BillTypeAtomic bta = row.getBillTypeAtomic();
+            btaNetTotals.put(bta, btaNetTotals.getOrDefault(bta, 0.0) + row.getNetTotal());
+        }
+
+        bills.sort(Comparator.comparing(Bill::getCreatedAt));
+
+        List<ReportTemplateRow> reportRows = new ArrayList<>();
+        for (Map.Entry<BillTypeAtomic, Double> entry : btaNetTotals.entrySet()) {
+            ReportTemplateRow reportRow = new ReportTemplateRow();
+            reportRow.setBillTypeAtomic(entry.getKey());
+            reportRow.setTotal(entry.getValue());
+            reportRows.add(reportRow);
         }
 
         this.bills = bills;
+        this.unifiedBundle = reportRows;
     }
 
     public void makeNull() {
@@ -2275,6 +2301,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setUnifiedBundle(List<ReportTemplateRow> unifiedBundle) {
         this.unifiedBundle = unifiedBundle;
+    }
+
+    public List<ReportTemplateRowBundle> getBundleList() {
+        return bundleList;
+    }
+
+    public void setBundleList(List<ReportTemplateRowBundle> bundleList) {
+        this.bundleList = bundleList;
     }
 
 }

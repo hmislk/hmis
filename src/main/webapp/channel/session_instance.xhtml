@@ -103,7 +103,11 @@
 
                                 <h:outputText id="test" value="#{bookingControllerViewScope.selectedBillSession}" rendered="false"></h:outputText>
                                 <p:tabView >
-                                    <p:tab title="Bookings" >
+                                    <p:tab >
+                                        <f:facet name="title">
+                                            <h:outputText value="Bookings " />
+                                            <p:badge id="BookingCount" value="#{bookingControllerViewScope.billSessions.size()}" severity="warning"/>
+                                        </f:facet>
                                         <p:dataTable id="acBookings" 
                                                      rowKey="#{bs.id}"
                                                      value="#{bookingControllerViewScope.billSessions}" 
@@ -118,10 +122,10 @@
                                             </p:column>
 
                                             <p:column 
-                                                      filterPlaceholder="Patient's Name"
-                                                      filterMatchMode="contains"
-                                                      filterBy="#{bs.bill.patient.person.name}"
-                                                      width="25em">
+                                                filterPlaceholder="Patient's Name"
+                                                filterMatchMode="contains"
+                                                filterBy="#{bs.bill.patient.person.name}"
+                                                width="25em">
 
                                                 <p:panel header="(#{bs.bill.patient.person.smsNumber})" collapsed="true" 
                                                          toggleOrientation="vertical" toggleable="true"  >
@@ -155,7 +159,6 @@
                                                             <br></br>
                                                             <h:outputLabel value="#{bs.bill.agentRefNo}" ></h:outputLabel>
                                                         </h:panelGroup>
-
 
                                                     </h:panelGrid>
                                                 </p:panel>  
@@ -230,16 +233,16 @@
 
 
                                         </p:dataTable>
-                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="acBookings" onactivated="console.log('poll started')"></p:poll>
+<!--                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="acBookings" onactivated="console.log('poll started')"></p:poll>-->
                                     </p:tab>
                                     <!--                                    temporary bookings tab-->
-
+                                    <p:ajax event="tabChange" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount"></p:ajax>
                                     <p:tab >
+
                                         <f:facet name="title">
                                             <h:outputText value="Temporary Bookings " />
                                             <p:badge id="temporaryBookingCount" value="#{bookingControllerViewScope.temporaryBillSessions.size()}" severity="danger"/>
                                         </f:facet>
-                                 
 
                                         <p:dataTable id="temporaryBookings" 
                                                      rowKey="#{bs.id}"
@@ -249,7 +252,7 @@
                                                      selectionMode="single"
                                                      styleClass="w-100 fullHeightListbox">
 
-                                            <p:column headerText="Serial No" width="5em">
+                                            <p:column headerText="Temporary Serial No" width="5em">
                                                 <h:outputLabel value="#{bs.serialNoStr}" ></h:outputLabel>
                                             </p:column>
 
@@ -295,50 +298,13 @@
                                                 </p:panel>  
                                             </p:column>
 
-                                            <p:column rendered="true" headerText="Status" width="5em">
+                                            <p:column rendered="true" headerText="Agent" width="5em">
                                                 <p:outputLabel class="badge badge-light" value="#{bs.bill.creditCompany.name}" style="color: green;"/>
                                             </p:column>
-                                            <p:column headerText="Payment" width="8em">
+                                            <p:column headerText="Status" width="8em">
                                                 <p:outputLabel class="badge badge-light" value="Not Completed" style="color: green;"/>
-                       
-                                            </p:column>
-<!--
-                                            <p:column headerText="Actions" width="6em">
-                                                <div class="d-flex">
-                                                    <p:commandButton 
-                                                        icon="fa-solid fa-book" 
-                                                        title="Past Channel Bookings"
-                                                        class="ui-button-secondary"
-                                                        action="#{patientController.navigateToPatientPastChannelBiiking()}"
-                                                        disabled="true"
-                                                        ajax="false">
-                                                        <f:setPropertyActionListener target="#{patientController.patient}" value="#{bs.bill.patient}"/>
-                                                    </p:commandButton>
-                                                    <p:commandButton 
-                                                        icon="pi pi-user-plus" 
-                                                        title="OPD" 
-                                                        ajax="false" 
-                                                        action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}"
-                                                        disabled="#{(bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall')}"
-                                                        class="ui-button-secondary mx-1">
-                                                    </p:commandButton>
-                                                    <p:commandButton 
-                                                        icon="pi pi-cog" 
-                                                        title="Manage Booking" 
-                                                        ajax="false"
-                                                        disabled="true"
-                                                        action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
-                                                        class="ui-button-secondary ">
-                                                    </p:commandButton>
 
-                                                </div>
-                                                <h:panelGroup rendered="#{bs.markedToCancel}">
-                                                    <i class="fas fa-ban text-danger" title="Cancel"></i>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{bs.markedToRefund}">
-                                                    <i class="fas fa-undo-alt text-danger" title="Refund"></i>
-                                                </h:panelGroup>
-                                            </p:column>-->
+                                            </p:column>
 
                                             <p:column>
                                                 <p:commandButton 
@@ -354,7 +320,7 @@
 
 
                                         </p:dataTable>
-                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings temporaryBookingCount" onactivated="console.log('poll started')"></p:poll>
+<!--                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings temporaryBookingCount" onactivated="console.log('poll started')"></p:poll>-->
                                     </p:tab>
 
                                     <p:tab title="Nurse View" >

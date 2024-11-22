@@ -725,6 +725,9 @@ public class Bill implements Serializable {
     }
 
     public BillClassType getBillClassType() {
+        if(billClassType==null){
+            billClassType=BillClassType.Bill;
+        }
         return billClassType;
     }
 

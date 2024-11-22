@@ -23,6 +23,10 @@
                                 ajax="false" 
                                 action="#{financialTransactionController.settleInitialFundBill()}" >
                             </p:commandButton>
+                            <h:panelGroup style="float: right;" class="mx-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Comment for Shift Start', true)}" >
+                                <p:outputLabel value="Comment" class="mx-2"></p:outputLabel>
+                                <p:inputText value="#{financialTransactionController.currentBill.comments}" ></p:inputText>
+                            </h:panelGroup>
                         </f:facet>
 
                         <div class="row">
