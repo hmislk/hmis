@@ -12,8 +12,12 @@
                     <p:panel header="GRN Report" >
 
                         <p:panelGrid columns="4" class="w-100">
-                            <p:outputLabel value="From Date" class="mx-2" >
-                            </p:outputLabel>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="From Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker value="" 
                                           class="w-100"
                                           inputStyleClass="w-100"
@@ -21,8 +25,11 @@
 
 
 
-                            <p:outputLabel value="To Date" class="mx-2" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="To Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker value=""
                                           class="w-100"
                                           inputStyleClass="w-100"
@@ -30,8 +37,22 @@
 
 
 
-                            <p:outputLabel value="Institution" class="mx-2" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
+                                <p:outputLabel value="Site" class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university ml-5" />
+                                <p:outputLabel value="Institution" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
@@ -39,8 +60,23 @@
 
 
 
-                            <p:outputLabel value="Store" class="mx-2" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building ml-5" />
+                                <p:outputLabel value="Department" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-store ml-5" />
+                                <p:outputLabel value="Store" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
@@ -48,8 +84,11 @@
 
 
 
-                            <p:outputLabel value="Payment Mode" class="mx-2" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-credit-card ml-5" />
+                                <p:outputLabel value="Payment Mode" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
@@ -57,23 +96,31 @@
 
 
 
-                            <p:outputLabel value="Suplier" class="mx-2" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-user-tie ml-5" />
+                                <p:outputLabel value="Suplier" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
 
-                            <p:outputLabel value="Type" class="mx-2" >
-                            </p:outputLabel>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-list-alt ml-5" />
+                                <p:outputLabel value="Type" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
 
-<!--                            To do Requirements
-                            If Type Is Detail Need to Add columns Qty,Free Qty, Item rate, Item MRP,Date of Expiry,Batch Code,UOM
-                            Need a Link to View GRN / PO (Please check wireframe document)-->
+                            <!-- To do Requirements
+                             If Type Is Detail Need to Add columns Qty,Free Qty, Item rate, Item MRP,Date of Expiry,Batch Code,UOM
+                              Need a Link to View GRN / PO (Please check wireframe document)-->
 
                         </p:panelGrid>
 
@@ -136,15 +183,15 @@
                             </p:column>
 
                         </p:dataTable>
-                        
+
                     </p:panel>
 
                 </h:form>
 
             </ui:define>
-            
+
         </ui:composition>
 
     </h:body>
-    
+
 </html>
