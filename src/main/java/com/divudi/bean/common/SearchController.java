@@ -6041,7 +6041,6 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         parameters.put("bts", btas);
-       
 
         if (institution != null) {
             jpql += "AND bill.department.institution = :ins ";
@@ -6072,12 +6071,12 @@ public class SearchController implements Serializable {
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
-        for(ReportTemplateRow r:rs){
-            if(r.getBill()!=null){
+        for (ReportTemplateRow r : rs) {
+            if (r.getBill() != null) {
                 r.setItemCount(billService.fetchBillItemCount(r.getBill()));
             }
         }
-        
+
         bundle = new ReportTemplateRowBundle();
         bundle.setReportTemplateRows(rs);
 
@@ -15176,9 +15175,11 @@ public class SearchController implements Serializable {
         String jpql = "select bi "
                 + " from BillItem bi "
                 + " where bi.bill.retired=:br "
+                + " and bi.retired=:bir "
                 + " and bi.bill.createdAt between :fd and :td ";
         Map m = new HashMap();
         m.put("br", false);
+        m.put("bir", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
         List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
@@ -15200,7 +15201,7 @@ public class SearchController implements Serializable {
             jpql += " and bi.bill.department.site=:site ";
             m.put("site", site);
         }
-        
+
         System.out.println("btas = " + btas);
         System.out.println("m = " + m);
         System.out.println("jpql = " + jpql);
@@ -15233,9 +15234,11 @@ public class SearchController implements Serializable {
         String jpql = "select bi "
                 + " from BillItem bi "
                 + " where bi.bill.retired=:br "
+                + " and bi.retired=:bir "
                 + " and bi.bill.createdAt between :fd and :td ";
         Map m = new HashMap();
         m.put("br", false);
+        m.put("bir", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
         List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
