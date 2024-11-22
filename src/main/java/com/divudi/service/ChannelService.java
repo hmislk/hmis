@@ -65,8 +65,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
@@ -546,6 +548,66 @@ public class ChannelService {
         billItemFacade.create(bi);
         return bi;
     }
+    
+    private List<BillSession> getAllBillSessionForSessionInstance(SessionInstance ss){
+        List<BillSession> allBillSessions = new ArrayList<>();
+        BillType[] billTypes = {
+            BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithPayment,
+            BillType.ChannelResheduleWithOutPayment,};
+
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select bs "
+                + " From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.bill.billType in :bts"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionInstance=:ss "
+                + " order by bs.serialNo ";
+        HashMap<String, Object> hh = new HashMap<>();
+
+        Bill b = new Bill();
+        b.getBillTypeAtomic();
+        hh.put("bts", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ss", ss);
+        return getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
+    }
+    
+    public List getReleasedAppoinmentNumbersForApiBookings(SessionInstance ss) {
+        long nextNumber = 1L;
+        
+        if(ss.getNextAvailableAppointmentNumber() != null){
+            nextNumber = ss.getNextAvailableAppointmentNumber();
+        }
+        
+        List releasedNumberList = new ArrayList();
+        
+        List<BillSession> allBillSessions = getAllBillSessionForSessionInstance(ss);
+
+        List<Integer> reservedSerialNumbers = allBillSessions.stream()
+                .map(BillSession::getSerialNo)
+                .collect(Collectors.toList());
+
+        for (int i = 1; i < nextNumber; ++i) {
+            boolean isAssign = false;
+            for (Integer number : reservedSerialNumbers) {
+                if (i == number) {
+                    isAssign = true;
+                    
+                }
+            }
+
+            if (!isAssign) {
+                releasedNumberList.add(i);
+            }
+        }
+        return releasedNumberList;
+    }
 
     private BillSession createBillSession(Bill bill, BillItem billItem, boolean forReservedNumbers, SessionInstance session) {
         BillSession bs = new BillSession();
@@ -571,6 +633,13 @@ public class ChannelService {
 
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(session.getOriginatingSession().getReserveNumbers());
         Integer count = null;
+        
+        List<Integer> availableReleasedApoinmentNumbers = getReleasedAppoinmentNumbersForApiBookings(session); 
+        Random rand = new Random();
+        if(availableReleasedApoinmentNumbers != null && !availableReleasedApoinmentNumbers.isEmpty()){
+            count = availableReleasedApoinmentNumbers.get(rand.nextInt(availableReleasedApoinmentNumbers.size()));
+        }
+        
 
         if (forReservedNumbers) {
 //            // Pass the selectedReservedBookingNumber to the service method
@@ -579,7 +648,7 @@ public class ChannelService {
 //                count = serviceSessionBean.getNextNonReservedSerialNumber(session, reservedNumbers);
 //                JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
 //            }
-        } else {
+        } else if(count == null){
             count = serviceSessionBean.getNextNonReservedSerialNumber(session, reservedNumbers);
         }
 
