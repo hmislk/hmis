@@ -65,6 +65,26 @@ public class BillService {
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData) {
         List<Payment> ps = new ArrayList<>();
+        if (paymentMethodData == null) {
+            if (bill.getPaymentMethod() == null) {
+                return null;
+            }
+            if (bill.getPaymentMethod() == MultiplePaymentMethods) {
+                return null;
+            }
+            Payment p = new Payment();
+            p.setBill(bill);
+            p.setInstitution(bill.getInstitution());
+            p.setDepartment(bill.getDepartment());
+            p.setCreatedAt(bill.getCreatedAt());
+            p.setCreater(bill.getCreater());
+            p.setComments("Created Payments to correct Erros of Not creating a payment");
+            p.setPaymentMethod(bill.getPaymentMethod());
+            p.setPaidValue(bill.getNetTotal());
+            ps.add(p);
+            return ps;
+        }
+
         if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 Payment p = new Payment();
@@ -331,7 +351,7 @@ public class BillService {
         params.put("bl", b);
         return billItemFacade.findByJpql(jpql, params);
     }
-    
+
     public Long fetchBillItemCount(Bill b) {
         String jpql;
         HashMap params = new HashMap();

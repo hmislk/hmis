@@ -117,7 +117,7 @@ public class BillItem implements Serializable {
     Date fromTime;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date toTime;
-    @OneToOne(mappedBy = "billItem")
+    @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER)
     private PatientInvestigation patientInvestigation;
     @OneToOne
     BillItem referanceBillItem;
