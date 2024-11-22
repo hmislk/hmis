@@ -14,6 +14,11 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form id="bill" >
+                    <script>
+                        window.onload = function () {
+                            document.getElementById("acStock").focus();
+                        };
+                    </script>
                     <p:growl id="panelError" />
                     <p:defaultCommand  target="btnAdd" /> 
                     <p:panel rendered="#{!pharmacySaleController.billPreview}">
