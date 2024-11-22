@@ -61,7 +61,7 @@
                     </h:panelGroup>
                     <h:panelGroup id="quickSearch" >
                         <h:panelGroup rendered="#{cc.attrs.searchable}" layout="block"  styleClass="form-inline">
-                            <p:focus  for="txtQuickSearchPhoneNumber" />
+                            <p:focus  for="txtQuickSearchPhoneNumber" rendered="#{cc.attrs.focus}" />
                             <p:inputText 
                                 autocomplete="off"
                                 id="txtQuickSearchPhoneNumber"
