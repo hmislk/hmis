@@ -16,6 +16,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConsultantController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SpecialityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
@@ -162,6 +163,8 @@ public class ChannelApi {
     ApiKeyController apiKeyController;
     @Inject
     BookingControllerViewScope bookingControllerViewScope;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     @EJB
     PatientService patientService;
@@ -863,6 +866,32 @@ public class ChannelApi {
             JSONObject response = commonFunctionToErrorResponse("Session id is invalid");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
+        
+        if (session.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
+            if (session.getBookedPatientCount() != null) {
+                int maxNo = session.getMaxNo();
+                long bookedPatientCount = session.getBookedPatientCount();
+                long totalPatientCount;
+
+                List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(session.getReserveNumbers());
+                if (false) {
+                    bookedPatientCount = bookedPatientCount;
+                } else {
+                    bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                }
+
+                if (session.getCancelPatientCount() != null) {
+                    long canceledPatientCount = session.getCancelPatientCount();
+                    totalPatientCount = bookedPatientCount - canceledPatientCount;
+                } else {
+                    totalPatientCount = bookedPatientCount;
+                }
+                if (maxNo <= totalPatientCount) {
+                    JSONObject response = commonFunctionToErrorResponse("No of appoinments has been reach to max appoinemtns amount. ");
+                    return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+                }
+            }
+        }
 
         if (session.isCancelled()) {
             JSONObject response = commonFunctionToErrorResponse("Sorry!. Session is calcelled due to unavoidable reason.");
@@ -1352,10 +1381,6 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        if (billList == null || billList.isEmpty()) {
-            JSONObject response = commonFunctionToErrorResponse("No bill available for the RefNo");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
 
         if (billList == null || billList.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("No bill available for the RefNo");
