@@ -38,19 +38,19 @@
                     <f:facet name="header">
                         <h:outputText value="Bil No" />
                     </f:facet>
-                    <h:outputText value="#{row.bill.deptId}"  />
+                    <h:outputText value="#{row.payment.bill.deptId}"  />
                 </p:column>
                 <p:column>
                     <f:facet name="header">
                         <h:outputText value="Bill Type" />
                     </f:facet>
-                    <h:outputText value="#{row.bill.billTypeAtomic.label}"  />
+                    <h:outputText value="#{row.payment.bill.billTypeAtomic.label}"  />
                 </p:column>
                 <p:column>
                     <f:facet name="header">
                         <h:outputText value="Fee" />
                     </f:facet>
-                    <h:outputText value="#{row.bill.netTotal}"  >
+                    <h:outputText value="#{row.payment.bill.netTotal}"  >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                 </p:column>
@@ -58,7 +58,7 @@
                     <f:facet name="header">
                         <h:outputText value="Fee" />
                     </f:facet>
-                    <h:outputText value="#{row.bill.netTotal}"  >
+                    <h:outputText value="#{row.payment.bill.netTotal}"  >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                 </p:column>
