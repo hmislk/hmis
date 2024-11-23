@@ -1097,6 +1097,12 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         return "/reports/financialReports/package_report?faces-redirect=true";
     }
+    
+     public String navigateToCreditInvoiceDispatch() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/credit_invoice_dispatch_report?faces-redirect=true";
+    }
 
     public String navigatToShiftEndSummary() {
         resetAllFiltersExceptDateRange();
@@ -10372,7 +10378,7 @@ public class SearchController implements Serializable {
     public void listBillFees() {
         billFees = null;
         Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select b from BillFee bf join bf.bill b where 1=1 ");
+        StringBuilder jpql = new StringBuilder("select bf from BillFee bf join bf.bill b where 1=1 ");
         if (toDate != null && fromDate != null) {
             jpql.append(" and b.createdAt between :fromDate and :toDate ");
             params.put("toDate", toDate);
