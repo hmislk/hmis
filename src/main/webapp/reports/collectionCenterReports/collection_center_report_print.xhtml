@@ -16,7 +16,10 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Collection Centre Reports Print" ></h:outputLabel>
                         </f:facet>
-                        <h:panelGrid columns="5" class="w-100 m-2" >
+                        <h:panelGrid columns="8" class="w-100 m-2" >
+
+                            <!--Dates-->
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="From" for="fromDate" class="mx-3"/>
@@ -26,8 +29,7 @@
                                 showTime="true"
                                 value="#{reportController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            <p:spacer width="50"></p:spacer>
-
+                            <p:spacer width="10"></p:spacer>
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                                 <h:outputLabel value="To" for="toDate" class="mx-3"/>
@@ -38,39 +40,26 @@
                                 inputStyleClass="w-100"
                                 value="#{reportController.toDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            <p:spacer width="10"></p:spacer>
+                            <p:spacer width="10"></p:spacer>
+                            <p:spacer width="10"></p:spacer>
 
+                            <!--Institutions-->
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
                                 <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu filter="true" id="cmdInstitution" 
-                                             class="w-100"
-                                             value="#{reportController.institution}">
-                                <f:selectItem itemLabel="All" />
-                                <f:selectItems value="#{institutionController.companies}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}" />
-                            </p:selectOneMenu>
-                            <p:spacer width="50"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Collection Center Name" for="cmbCCname" class="mx-3"/>
-                                <p:outputLabel  />
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                style=" max-width: 100%; overflow-x: auto; "
-                                class="w-100"
-                                value="#{reportController.collectingCentre}"
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{reportController.institution}" 
                                 filter="true">
-                                <f:selectItem itemLabel="Select Collecting Centre"/>
-                                <f:selectItems var="r" itemLabel="#{r.name}" 
-                                               value="#{collectingCentreController.items}" 
-                                               itemValue="#{r}" />
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
                             </p:selectOneMenu>
-
+                            <p:spacer width="10"></p:spacer>
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
                                 <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
@@ -82,13 +71,96 @@
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
                             </p:selectOneMenu>
-                            <p:spacer width="50"></p:spacer>
+                            <p:spacer width="10"></p:spacer>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{reportController.institution eq null and reportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{reportController.institution eq null and reportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{reportController.institution ne null and reportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(reportController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{reportController.institution ne null and reportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.institution, reportController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="false"
+                                    styleClass="w-100 form-control"  
+                                    value="#{reportController.department}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.institution, reportController.site)}" 
+                                        var="d" 
+                                        itemLabel="#{d.name}" 
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+
+                            <!--Collecting Centres-->
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf201;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                                 <h:outputLabel value="Collecting Centre Route" for="cmbCCroute" class="mx-3"/>
                             </h:panelGroup>
-
                             <p:selectOneMenu 
                                 style=" max-width: 100%; overflow-x: auto; "
                                 class="w-100"
@@ -101,22 +173,47 @@
                                                itemLabel="#{r.name}"
                                                itemValue="#{r}" />
                             </p:selectOneMenu>
+                            <p:spacer width="10"></p:spacer>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Collection Center Name" for="cmbCCname" class="mx-3"/>
+                                <p:outputLabel  />
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                value="#{reportController.collectingCentre}" 
+                                forceSelection="true" id="acColl"
+                                completeMethod="#{institutionController.completeCollectingCenter}" 
+                                var="collectingCentre" itemLabel="#{collectingCentre.name}" itemValue="#{collectingCentre}" 
+                                maxResults="15"
+                                class="w-100 mb-1"
+                                inputStyleClass="w-100">
+                                <p:column style="padding: 6px;">#{collectingCentre.code}</p:column>
+                                <p:column style="padding: 6px;">#{collectingCentre.name}</p:column>
+                            </p:autoComplete>
+                            <p:spacer width="10"></p:spacer>
+                            <p:spacer width="10"></p:spacer>
+                            <p:spacer width="10"></p:spacer>
+
+                            <!--Item-->
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Patient MRN" for="cmbPmrn" class="mx-3"/>
+                                <h:outputText value="&#xf491;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Category" for="cmbLab" class="mx-3"/>
                             </h:panelGroup>
-                            <p:inputText value="#{reportController.phn}" class="w-100" />
-                            <p:spacer width="50"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f6;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Invoice Number" for="cmbInvno" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:inputText  style=" max-width: 100%; overflow-x: auto; "
-                                          class="w-100"
-                                          value="#{reportController.invoiceNumber}" />
-
+                            <p:selectOneMenu 
+                                class="form-control" 
+                                id="cmbCat" 
+                                filter="true"
+                                filterMatchMode="contains"
+                                value="#{reportController.category}" >
+                                <f:selectItem itemLabel="Please select a laboratory category"/>
+                                <f:selectItems 
+                                    value="#{investigationCategoryController.items}" 
+                                    var="cat" 
+                                    itemLabel="#{cat.name}" 
+                                    itemValue="#{cat}" />
+                            </p:selectOneMenu>
+                            <p:spacer width="10"></p:spacer>
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0c3;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                                 <h:outputLabel value="Investigation" for="cmbInves" class="mx-3"/>
@@ -142,27 +239,35 @@
                                     #{apt.code}
                                 </p:column>
                             </p:autoComplete> 
+                            <p:spacer width="10"></p:spacer>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf46d;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Result Status" for="cmbOdrreq" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGrid columns="1" class="w-100">
+                                <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" style="max-width:100%;" value="#{reportController.patientInvestigationStatus}">
+                                    <f:selectItem itemLabel="Any" />
+                                    <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
+                                </p:selectOneMenu>
+                            </h:panelGrid>
 
-                            <p:spacer width="50"></p:spacer>
+                            <!--Patient-->
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf491;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Category" for="cmbLab" class="mx-3"/>
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Patient MRN" for="cmbPmrn" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu 
-                                class="form-control" 
-                                id="cmbCat" 
-                                filter="true"
-                                filterMatchMode="contains"
-                                value="#{reportController.category}" >
-                                <f:selectItem itemLabel="Please select a laboratory category"/>
-                                <f:selectItems 
-                                    value="#{investigationCategoryController.items}" 
-                                    var="cat" 
-                                    itemLabel="#{cat.name}" 
-                                    itemValue="#{cat}" />
-                            </p:selectOneMenu>
-
+                            <p:inputText value="#{reportController.phn}" class="w-100" />
+                            <p:spacer width="10"></p:spacer>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f6;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Invoice Number" for="cmbInvno" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:inputText  style=" max-width: 100%; overflow-x: auto; "
+                                          class="w-100"
+                                          value="#{reportController.invoiceNumber}" />
+                            <p:spacer width="10"></p:spacer>
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                                 <h:outputLabel value="Referring Doctor" for="cmbRefdoc" class="mx-3"/>
@@ -185,18 +290,8 @@
                                     <h:outputText value="#{ix.code}" ></h:outputText>
                                 </p:column>
                             </p:autoComplete>
-                            <p:spacer width="50"></p:spacer>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf46d;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Result Status" for="cmbOdrreq" class="mx-3"/>
-                            </h:panelGroup>
-                            <h:panelGrid columns="1" class="w-100">
-                                <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" style="max-width:100%;" value="#{reportController.patientInvestigationStatus}">
-                                    <f:selectItem itemLabel="Any" />
-                                    <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
-                                </p:selectOneMenu>
-                            </h:panelGrid>
+
 
                         </h:panelGrid>
 
@@ -233,11 +328,11 @@
                         </p:commandButton>
 
                     </p:panel>
-                    
+
                     <p:spacer height="5"></p:spacer>
 
                     <h:panelGrid columns="2" class="my-4" >
-                        
+
                         <h:outputLabel value="From Date :  "/>
                         <h:outputLabel value="#{reportController.fromDate}"  >
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
