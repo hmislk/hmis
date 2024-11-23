@@ -417,7 +417,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public List getReleasedAppoinmentNumbers() {
-        long nextNumber = selectedSessionInstance.getNextAvailableAppointmentNumber();
+        long nextNumber = 1L;
+        if(selectedSessionInstance.getNextAvailableAppointmentNumber() != null){
+            nextNumber = selectedSessionInstance.getNextAvailableAppointmentNumber();
+        }
+      
         List releasedNumberList = new ArrayList();
         
         loadBillSessions();
@@ -3568,6 +3572,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         fillBillSessions();
         billingStarted = false;
     }
+    
+    public boolean checkApoinmentNumberIsAvailable(int no){
+        loadBillSessions();
+        List<Integer> unavailableNumber = allBillSessionsWithTemporaryBookings.stream().map(BillSession::getSerialNo).collect(Collectors.toList());
+        for(Integer number : unavailableNumber){
+            if(no == number){
+                return false;
+            }
+        }
+        return true;
+    }
 
     public void addChannelBooking(boolean reservedBooking) {
         errorText = "";
@@ -3633,7 +3648,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
 
-        if (selectedSessionInstance.getMaxNo() != 0) {
+        if (selectedSessionInstance.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (selectedSessionInstance.getBookedPatientCount() != null) {
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
@@ -3689,6 +3704,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
 
+        }
+        if(getAssignedReleasedAppoinmentNumber() != 0L){
+            Long num = getAssignedReleasedAppoinmentNumber();
+            boolean checkNumber = checkApoinmentNumberIsAvailable(num.intValue());
+            
+            if(!checkNumber){
+                JsfUtil.addErrorMessage("No is already Booked by Online Booking now. Change Number ");
+                return;
+            }
         }
 
         saveSelected(patient);
