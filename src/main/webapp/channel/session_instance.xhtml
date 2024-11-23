@@ -118,10 +118,10 @@
                                             </p:column>
 
                                             <p:column 
-                                                      filterPlaceholder="Patient's Name"
-                                                      filterMatchMode="contains"
-                                                      filterBy="#{bs.bill.patient.person.name}"
-                                                      width="25em">
+                                                filterPlaceholder="Patient's Name"
+                                                filterMatchMode="contains"
+                                                filterBy="#{bs.bill.patient.person.name}"
+                                                width="25em">
 
                                                 <p:panel header="(#{bs.bill.patient.person.smsNumber})" collapsed="true" 
                                                          toggleOrientation="vertical" toggleable="true"  >
@@ -243,7 +243,7 @@
                                             <p:badge id="temporaryBookingCount" value="#{bookingControllerViewScope.temporaryBillSessions.size()}" severity="danger"/>
 
                                         </f:facet>
-                                 
+
 
                                         <p:dataTable id="temporaryBookings" 
                                                      rowKey="#{bs.id}"
@@ -253,7 +253,10 @@
                                                      selectionMode="single"
                                                      styleClass="w-100 fullHeightListbox">
 
+
+
                                             <p:column headerText="Temporary Serial No" width="5em">
+
                                                 <h:outputLabel value="#{bs.serialNoStr}" ></h:outputLabel>
                                             </p:column>
 
@@ -301,15 +304,17 @@
                                                 </p:panel>  
                                             </p:column>
 
+
                                             <p:column rendered="true" headerText="Agent" width="5em">
                                                 <p:outputLabel class="badge badge-light" value="#{bs.bill.creditCompany.name}" style="color: green;"/>
                                             </p:column>
                                             <p:column headerText="Status" width="8em">
                                                 <p:outputLabel class="badge badge-light" value="Not Completed" style="color: green;"/>
-                       
-                                            </p:column>
 
-<!--
+                                            </p:column>
+                                           
+                                            
+                                            <!--
 
                                             <p:column headerText="Actions" width="6em">
                                                 <div class="d-flex">
