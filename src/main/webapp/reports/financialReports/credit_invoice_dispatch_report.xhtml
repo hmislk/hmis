@@ -1,0 +1,285 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body class="w-100 border">
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+            <ui:define name="subcontent">
+                <h:form class="w-100">
+                    <p:panel header="Credit Invoice Dispatch" class="w-100">
+                        <h:panelGrid columns="8" class="w-100" >
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From Date"  class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="To Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Sponsor Name" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Settlement Status" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" />
+                                <f:selectItems value="#{reportController.voucherStatusOnDebtorSettlement}"
+                                               var="i"
+                                               itemLabel="#{i}"
+                                               itemValue="#{i}" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Visit Type" for="visitType" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100" value="#{searchController.visitType}">
+                                <f:selectItem itemValue="Any" itemLabel="All"/>
+                                <f:selectItem itemValue="OP" itemLabel="OP"/>
+                                <f:selectItem itemValue="IP" itemLabel="IP"/>
+                            </p:selectOneMenu>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <!--Need multiple selection-->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf084;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Admission Types" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu  
+                                class="w-100">
+                                <f:selectItem itemLabel="All Admission Types"/>
+                                <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0d1;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Dispatch Mode" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer></p:spacer>
+                            <p:spacer></p:spacer>
+                            <p:spacer></p:spacer>
+                            <p:spacer></p:spacer>
+                            <p:spacer></p:spacer>
+                            <p:spacer></p:spacer>
+
+
+                            <!--Please change this {searchController.withProfessionalFee} in values of following and put the correct thing according to controller you working I just used this for wireframe-->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Date Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectBooleanButton
+                                onLabel="Discharge Date" 
+                                offLabel="Admission Date" 
+                                value="#{searchController.withProfessionalFee}"
+                                onIcon="pi pi-minus" 
+                                class="w-100"
+                                offIcon="pi pi-plus" 
+                                >
+                                <p:ajax update="@form" />
+                            </p:selectBooleanButton>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group" rendered="#{!searchController.withProfessionalFee}">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Admission From" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=" w-100" inputStyleClass="w-100" rendered="#{!searchController.withProfessionalFee}"></p:datePicker>
+
+                            <p:spacer width="20" rendered="#{!searchController.withProfessionalFee}"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group" rendered="#{!searchController.withProfessionalFee}">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Admission To" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class="w-100" inputStyleClass="w-100" rendered="#{!searchController.withProfessionalFee}"></p:datePicker>
+
+                            <h:panelGroup layout="block" styleClass="form-group" rendered="#{searchController.withProfessionalFee}">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Discharge From" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=" w-100" inputStyleClass="w-100" rendered="#{searchController.withProfessionalFee}"></p:datePicker>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group" rendered="#{searchController.withProfessionalFee}">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Discharge To" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class="w-100" inputStyleClass="w-100" rendered="#{searchController.withProfessionalFee}"></p:datePicker>
+
+                        </h:panelGrid>
+
+                        <p:commandButton 
+                            class="ui-button-warning my-4 mx-2" 
+                            style="width: 150px"
+                            ajax="false" 
+                            value="Process" 
+                            icon="fas fa-cogs" >
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            class="ui-button-info my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-print" 
+                            ajax="false" 
+                            value="Print">
+                            <p:printer target="tblExport" />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            class="ui-button-success my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-file-excel" 
+                            ajax="false" 
+                            value="Excel">
+                            <p:dataExporter type="xlsx" target="tblExport"  fileName="credit_invoice_dispatch_report.xlsx" ></p:dataExporter>
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            class="ui-button-danger my-4 mx-2"
+                            style="width: 150px"
+                            icon= "fas fa-file-pdf" 
+                            ajax="false" 
+                            value="PDF">
+                            <p:dataExporter type="pdf" target="tblExport"  fileName="credit_invoice_dispatch_report.pdf" ></p:dataExporter>
+                        </p:commandButton>
+
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Credit Invoice Dispatch" /><br/><br/>
+
+                                <h:panelGrid columns="2" class="mb-2">
+                                    <h:outputLabel value="From Date :"/>
+                                    <h:outputLabel value="#{reportController.fromDate}"  >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="To Date :"/>   
+                                    <h:outputLabel value="#{reportController.toDate}"  >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Sponsor Name :"/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel value="Settlement Status :"/>
+                                    <h:outputLabel/>
+                                </h:panelGrid>
+                            </f:facet>
+
+
+                            <p:dataTable  id="tblExport">  
+                                <p:column headerText="S.No">
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Sponsor Name">
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Invoice Date">
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Dispatched Date" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="BHT" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="MRN" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Dispatched Comment" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Dispatch Mode" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Invoice Value" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Due Amount" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Approved By" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
