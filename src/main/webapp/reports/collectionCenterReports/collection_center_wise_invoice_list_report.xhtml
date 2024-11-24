@@ -239,7 +239,7 @@
                                 <h:outputText value="#{bi.bill.deptId}" />
                             </p:column>
                             <p:column headerText="Before Balance" >
-                                <h:outputText value="#{bi.bill}" />
+                                <h:outputText value="#{agentAndCcApplicationController.ccBalanceBefore(bi.bill)}" />
                             </p:column>
                             <p:column headerText="Transaction Value (Hospital Amount)" >
                                 <h:outputText value="#{bi.bill.totalHospitalFee}" />
@@ -251,7 +251,7 @@
                                 <h:outputText value="#{bi.bill.collctingCentreFee}" />
                             </p:column>
                             <p:column headerText="After Balance" >
-                                <h:outputText value="#{bi.bill}" />
+                                <h:outputText value="#{agentAndCcApplicationController.ccBalanceAfter(bi.bill)}" />
                             </p:column>
                             <p:column headerText="Creator" >
                                 <h:outputText value="#{bi.bill.creater.name}" />
