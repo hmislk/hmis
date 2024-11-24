@@ -70,7 +70,7 @@
                         <h:panelGrid columns="3" class="my-2" >
 
                             <p:commandButton  
-                                action="#{pharmacyReportController.createPharmacyCashInOutLedger()}"
+                                action="#{pharmacyReportController.generatePharmacyCashInOutLedger()}"
                                 value="Process" 
                                 ajax="false"
                                 class="ui-button-warning" icon="fas fa-cogs">
@@ -89,7 +89,57 @@
 
 
                         <p:dataTable value="#{pharmacyReportController.bills}" var="bill"
-                                     paginator="true" rows="10" id="tblCashier"
+                                     id="tblCashier"
+                                     rows="10"
+                                     paginator="true" 
+                                     paginatorPosition="both"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                     rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                     rowIndexVar="i">
+
+                            <p:column headerText="No" width="2em">
+                                <h:outputText value="#{i+1}" />
+                            </p:column>
+
+                            <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">
+                                <h:outputText value="#{bill.deptId}" />
+                            </p:column>
+
+                            <p:column headerText="Department" sortBy="#{bill.department.name}" filterBy="#{bill.department.name}" filterMatchMode="contains" width="6em">
+                                <h:outputText value="#{bill.department.name}" />
+                            </p:column>
+
+                            <p:column headerText="Comment" sortBy="#{bill.comments}" filterBy="#{bill.comments}" filterMatchMode="contains">
+                                <h:outputText value="#{bill.comments}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type" sortBy="#{bill.billTypeAtomic}" filterBy="#{bill.billTypeAtomic}" filterMatchMode="contains">
+                                <h:outputText value="#{bill.billTypeAtomic}" />
+                            </p:column>
+
+                            <p:column headerText="Cash In Value" width="6em">
+                                <h:outputText value="#{bill.netTotal}" rendered="#{bill.billTypeAtomic.billFinanceType eq 'CASH_IN'}" >
+                                    <f:convertNumber pattern="###.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Cash Out Value" width="6em">
+                                <h:outputText value="#{bill.netTotal}" rendered="#{bill.billTypeAtomic.billFinanceType eq 'CASH_OUT'}" >
+                                    <f:convertNumber pattern="###.00" />
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Other" width="6em">
+                                <h:outputText value="#{bill.netTotal}" rendered="#{bill.billTypeAtomic.billFinanceType eq 'FLOAT_STARTING_BALANCE' or bill.billTypeAtomic.billFinanceType eq 'FLOAT_CLOSING_BALANCE'}" >
+                                    <f:convertNumber pattern="###.00" />
+                                </h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <p:dataTable value="#{pharmacyReportController.unifiedBundle}" var="row"
+                                     paginator="true" rows="10" id="tblUnifiedBundle"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                      currentPageReportTemplate="(Page {currentPage} of {totalPages})"
                                      paginatorPosition="bottom"
@@ -99,31 +149,28 @@
                                 <h:outputText value="#{i+1}" />
                             </p:column>
 
-                            <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
-                                <h:outputText value="#{bill.deptId}" />
-                            </p:column>
-
-                            <p:column headerText="Department" sortBy="#{bill.department.name}" filterBy="#{bill.department.name}" width="6em">
-                                <h:outputText value="#{bill.department.name}" />
-                            </p:column>
-
-                            <p:column headerText="Comment" sortBy="#{bill.date}" filterBy="#{bill.date}">
-                                <h:outputText value="#{bill.comments}" />
-                            </p:column>
-
                             <p:column headerText="Bill Type">
-                                <h:outputText value="#{bill.billTypeAtomic}" />
-                            </p:column>
-                            
-                            <p:column headerText="Cash In Value" width="6em">
-                                <h:outputText value="#{bill.netTotal}" rendered="#{bill.localNumber == 'CASH_IN'}" />
+                                <h:outputText value="#{row.billTypeAtomic}" />
                             </p:column>
 
-                            <p:column headerText="Cash Out Value" width="6em">
-                                <h:outputText value="#{bill.netTotal}" rendered="#{bill.localNumber == 'CASH_OUT'}" />
+                            <p:column headerText="IN Total">
+                                <h:outputText value="#{row.total}" rendered="#{row.billTypeAtomic.billFinanceType eq 'CASH_IN'}">
+                                    <f:convertNumber />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="OUT Total" >
+                                <h:outputText value="#{row.total}" rendered="#{row.billTypeAtomic.billFinanceType eq 'CASH_OUT'}">
+                                    <f:convertNumber  />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Other" >
+                                <h:outputText value="#{row.total}" rendered="#{row.billTypeAtomic.billFinanceType eq 'FLOAT_STARTING_BALANCE' or row.billTypeAtomic.billFinanceType eq 'FLOAT_CLOSING_BALANCE'}">
+                                    <f:convertNumber  />
+                                </h:outputText>
                             </p:column>
 
                         </p:dataTable>
+
 
 
                     </p:panel>

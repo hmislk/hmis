@@ -198,6 +198,7 @@ public class PharmacyReportController implements Serializable {
     private List<ItemCount> reportOpdServiceCount;
     private ReportTemplateRowBundle bundle;
     private List<ReportTemplateRow> unifiedBundle;
+    private List<ReportTemplateRowBundle> bundleList;
 
     private List<PatientDepositHistory> patientDepositHistories;
 
@@ -1102,125 +1103,139 @@ public class PharmacyReportController implements Serializable {
     // </editor-fold>
     @Deprecated
     public void createPharmacyCashInOutLedgerOld() {
-        // Initialize a unified bundle
-        List<ReportTemplateRow> unifiedBundle = new ArrayList<>();
+        bundleList = new ArrayList<>();
+        ReportTemplateRowBundle childBundle = new ReportTemplateRowBundle();
 
-        // Query for CASH_IN transactions
-        String jpqlCashIn = "SELECT new com.divudi.data.ReportTemplateRow("
-                + "bill.department, FUNCTION('date', p.createdAt), "
-                + "SUM(p.paidValue)) "
-                + "FROM Payment p "
-                + "JOIN p.bill bill "
-                + "WHERE p.retired <> :bfr AND bill.retired <> :br "
-                + "AND p.createdAt BETWEEN :fd AND :td "
-                + "AND bill.billTypeAtomic IN :billTypeAtomic "
-                + "GROUP BY bill.department, FUNCTION('date', p.createdAt)";
+        netTotal = 0.0;
 
-        Map<String, Object> paramsCashIn = new HashMap<>();
-        paramsCashIn.put("bfr", true);
-        paramsCashIn.put("br", true);
-        paramsCashIn.put("fd", fromDate);
-        paramsCashIn.put("td", toDate);
-        paramsCashIn.put("billTypeAtomic", BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        List<BillTypeAtomic> btasPIn = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_IN);
+        List<BillTypeAtomic> btasPOut = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_OUT);
 
-        List<ReportTemplateRow> cashInRows = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpqlCashIn, paramsCashIn, TemporalType.TIMESTAMP);
+        ReportTemplateRowBundle pharmacyIn = generatePaymentMethodColumnsByBills(btasPIn);
+        pharmacyIn.setBundleType("CashIn");
+        pharmacyIn.setName("Pharmacy cash in");
+        childBundle.getBundles().add(pharmacyIn);
+        bundleList.add(childBundle);
 
-        // Add cash-in rows to unified bundle with transaction type
-        for (ReportTemplateRow row : cashInRows) {
-            row.setRowType("CASH_IN");
-            unifiedBundle.add(row);
-        }
+        ReportTemplateRowBundle pharmacyOut = generatePaymentMethodColumnsByBills(btasPOut);
+        pharmacyOut.setBundleType("CashOut");
+        pharmacyOut.setName("Pharmacy cash out");
+        childBundle.getBundles().add(pharmacyOut);
+        bundleList.add(childBundle);
 
-        // Query for CASH_OUT transactions
-        String jpqlCashOut = "SELECT new com.divudi.data.ReportTemplateRow("
-                + "bill.department, FUNCTION('date', p.createdAt), "
-                + "SUM(p.paidValue)) "
-                + "FROM Payment p "
-                + "JOIN p.bill bill "
-                + "WHERE p.retired <> :bfr AND bill.retired <> :br "
-                + "AND p.createdAt BETWEEN :fd AND :td "
-                + "AND bill.billTypeAtomic IN :billTypeAtomic "
-                + "GROUP BY bill.department, FUNCTION('date', p.createdAt)";
-
-        Map<String, Object> paramsCashOut = new HashMap<>();
-        paramsCashOut.put("bfr", true);
-        paramsCashOut.put("br", true);
-        paramsCashOut.put("fd", fromDate);
-        paramsCashOut.put("td", toDate);
-        paramsCashOut.put("billTypeAtomic", BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
-
-        List<ReportTemplateRow> cashOutRows = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpqlCashOut, paramsCashOut, TemporalType.TIMESTAMP);
-
-        // Add cash-out rows to unified bundle with transaction type
-        for (ReportTemplateRow row : cashOutRows) {
-            row.setRowType("CASH_OUT");
-            unifiedBundle.add(row);
-        }
-
-        // Store the unified bundle for the view
-        this.unifiedBundle = unifiedBundle;
+//        bundle.getBundles().add(netCashForTheDayBundle);
     }
 
-    public void createPharmacyCashInOutLedger() {
+    @Deprecated
+    public ReportTemplateRowBundle generatePaymentMethodColumnsByBills(List<BillTypeAtomic> bts) {
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+                + "bill.department, FUNCTION('date', p.createdAt), "
+                + "SUM(p.paidValue)) "
+                + "FROM Payment p "
+                + "JOIN p.bill bill "
+                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (department != null) {
+            jpql += " AND bill.department = :dept ";
+            parameters.put("dept", department);
+        }
+        if (webUser != null) {
+            jpql += " AND bill.creater.webUserPerson.name = :wu ";
+            parameters.put("wu", webUser.getWebUserPerson().getName());
+        }
+
+        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill.department, FUNCTION('date', p.createdAt)";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+        b.setReportTemplateRows(rs);
+        b.createRowValuesFromBill();
+
+        return b;
+    }
+
+    public void generatePharmacyCashInOutLedger() {
         netTotal = 0.0;
         bills = new ArrayList<>();
+        unifiedBundle = new ArrayList<>();
+        List<BillTypeAtomic> allBillTypes = new ArrayList<>();
+        Map<BillTypeAtomic, Double> btaNetTotals = new HashMap<>();
 
-        // Define cash in and cash out types
-        List<BillTypeAtomic> btasCashIn = BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN);
-        List<BillTypeAtomic> btasCashOut = BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT);
+        // Combine all relevant BillTypeAtomic
+        List<BillTypeAtomic> btasCashIn = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_IN);
+        List<BillTypeAtomic> btasCashOut = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_OUT);
+        List<BillTypeAtomic> btasShiftStart = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OTHER, BillFinanceType.FLOAT_STARTING_BALANCE);
+        List<BillTypeAtomic> btasShiftEnd = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE);
 
-        // JPQL for fetching cash-in transactions
-        Map<String, Object> paramsCashIn = new HashMap<>();
-        String jpqlCashIn = "SELECT b FROM Bill b "
+        allBillTypes.addAll(btasCashIn);
+        allBillTypes.addAll(btasCashOut);
+        allBillTypes.addAll(btasShiftStart);
+        allBillTypes.addAll(btasShiftEnd);
+
+        allBillTypes.add(BillTypeAtomic.SUPPLEMENTARY_INCOME);
+        allBillTypes.add(BillTypeAtomic.OPERATIONAL_EXPENSES);
+
+        createPharmacyCashInOutLedger(allBillTypes);
+    }
+
+    public void createPharmacyCashInOutLedger(List<BillTypeAtomic> billTypeAtomics) {
+        netTotal = 0.0;
+        bills = new ArrayList<>();
+        unifiedBundle = new ArrayList<>();
+        Map<BillTypeAtomic, Double> btaNetTotals = new HashMap<>();
+
+        // Prepare parameters for the query
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT b FROM Bill b "
                 + "WHERE b.retired = false "
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate "
-                + "AND b.billTypeAtomic IN :cashIn";
+                + "AND b.billTypeAtomic IN :billTypes ";
         if (department != null) {
-            jpqlCashIn += " AND b.department = :dept ";
-            paramsCashIn.put("dept", department);
+            jpql += " AND b.department = :dept ";
+            params.put("dept", department);
         }
         if (webUser != null) {
-            jpqlCashIn += " AND b.creater.webUserPerson.name = :wu ";
-            paramsCashIn.put("wu", webUser.getWebUserPerson().getName());
+            jpql += " AND b.creater.webUserPerson.name = :wu ";
+            params.put("wu", webUser.getWebUserPerson().getName());
         }
-        paramsCashIn.put("fromDate", fromDate);
-        paramsCashIn.put("toDate", toDate);
-        paramsCashIn.put("cashIn", btasCashIn);
-
-        // Fetch and add cash-in rows
-        List<Bill> cashInRows = (List<Bill>) billFacade.findLightsByJpql(jpqlCashIn, paramsCashIn, TemporalType.TIMESTAMP);
-        for (Bill row : cashInRows) {
-            row.setLocalNumber("CASH_IN");
-            bills.add(row); // Add each row individually
-        }
-
-        // JPQL for fetching cash-out transactions
-        Map<String, Object> paramsCashOut = new HashMap<>();
-        String jpqlCashOut = "SELECT b FROM Bill b "
-                + "WHERE b.retired = false "
-                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
-                + "AND b.billTypeAtomic IN :cashOut";
-        
-        if (department != null) {
-            jpqlCashOut += " AND b.department = :dept ";
-            paramsCashOut.put("dept", department);
-        }
-        if (webUser != null) {
-            jpqlCashOut += " AND b.creater.webUserPerson.name = :wu ";
-            paramsCashOut.put("wu", webUser.getWebUserPerson().getName());
-        }
-        paramsCashOut.put("fromDate", fromDate);
-        paramsCashOut.put("toDate", toDate);
-        paramsCashOut.put("cashOut", btasCashOut);
-
-        // Fetch and add cash-out rows
-        List<Bill> cashOutRows = (List<Bill>) billFacade.findLightsByJpql(jpqlCashOut, paramsCashOut, TemporalType.TIMESTAMP);
-        for (Bill row : cashOutRows) {
-            row.setLocalNumber("CASH_OUT");
-            bills.add(row); // Add each row individually
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("billTypes", billTypeAtomics);
+        jpql += " ORDER BY b.id ";
+        // Fetch and process bills
+        List<Bill> rows = (List<Bill>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        for (Bill row : rows) {
+            BillTypeAtomic bta = row.getBillTypeAtomic();
+            btaNetTotals.put(bta, btaNetTotals.getOrDefault(bta, 0.0) + row.getNetTotal());
+            bills.add(row);
         }
 
+        bills.sort(Comparator.comparing(Bill::getCreatedAt));
+
+        List<ReportTemplateRow> reportRows = new ArrayList<>();
+        for (Map.Entry<BillTypeAtomic, Double> entry : btaNetTotals.entrySet()) {
+            ReportTemplateRow reportRow = new ReportTemplateRow();
+            reportRow.setBillTypeAtomic(entry.getKey());
+            reportRow.setTotal(entry.getValue());
+            reportRows.add(reportRow);
+        }
+
+        // Update class-level variables
         this.bills = bills;
+        this.unifiedBundle = reportRows;
     }
 
     public void makeNull() {
@@ -2275,6 +2290,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setUnifiedBundle(List<ReportTemplateRow> unifiedBundle) {
         this.unifiedBundle = unifiedBundle;
+    }
+
+    public List<ReportTemplateRowBundle> getBundleList() {
+        return bundleList;
+    }
+
+    public void setBundleList(List<ReportTemplateRowBundle> bundleList) {
+        this.bundleList = bundleList;
     }
 
 }
