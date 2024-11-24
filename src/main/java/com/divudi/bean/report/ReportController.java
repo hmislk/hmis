@@ -880,7 +880,7 @@ public class ReportController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
 
-       if (institution != null) {
+        if (institution != null) {
             jpql += " AND (bi.bill.institution = :ins or bi.bill.toInstitution=:ins) ";
             params.put("ins", institution);
         }
@@ -989,7 +989,6 @@ public class ReportController implements Serializable {
 //            jpql += " AND bi.patientInvestigation.investigation = :inv";
 //            params.put("inv", investigation);
 //        }
-
         if (item != null) {
             jpql += " AND bi.item = :item";
             params.put("item", item);
@@ -1000,7 +999,7 @@ public class ReportController implements Serializable {
             params.put("type", type);
         }
 
-        if (type!=null && type.equalsIgnoreCase("cc")) {
+        if (type != null && type.equalsIgnoreCase("cc")) {
             if (collectingCentre != null) {
                 jpql += " AND bi.bill.collectingCentre = :cc";
                 params.put("cc", collectingCentre);
@@ -1684,6 +1683,9 @@ public class ReportController implements Serializable {
         jpql += " ORDER BY i.id DESC";
 
         params.put("ret", false);
+       
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
 
         patientInvestigations = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -3036,16 +3038,7 @@ public class ReportController implements Serializable {
                 + " and bi.bill.cancelled=:can"
                 + " and bi.bill.billDate between :fd and :td "
                 + " and bi.bill.billTypeAtomic = :billTypeAtomic ";
-
-        if (false) {
-            BillItem bi = new BillItem();
-            bi.getItem();
-            bi.getHospitalFee();
-            bi.getCollectingCentreFee();
-            bi.getStaffFee();
-            bi.getNetValue();
-        }
-
+       
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("can", false);
@@ -3063,14 +3056,19 @@ public class ReportController implements Serializable {
             m.put("ins", institution);
         }
 
+        if (department != null) {
+            jpql += " and bi.bill.department = :dep ";
+            m.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and bi.bill.department.site = :site ";
+            m.put("site", site);
+        }
+
         if (collectingCentre != null) {
             jpql += " and bi.bill.fromInstitution = :cc ";
             m.put("cc", collectingCentre);
-        }
-
-        if (toDepartment != null) {
-            jpql += " and bi.bill.toDepartment = :dep ";
-            m.put("dep", toDepartment);
         }
 
         if (phn != null && !phn.isEmpty()) {
