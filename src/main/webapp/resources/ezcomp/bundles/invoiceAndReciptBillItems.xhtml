@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<!-- INTERFACE -->
+<cc:interface>
+    <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle"/>
+</cc:interface>
+
+<!-- IMPLEMENTATION -->
+<cc:implementation>
+
+    <h:panelGroup rendered="#{empty cc.attrs.bundle.reportTemplateRows}">
+        <table class="table w-100">
+            <thead>
+            <tr class="text-light bg-dark">
+                <th class="text-light bg-dark">
+                    <h:outputText value="No Data for #{cc.attrs.bundle.name}"></h:outputText>
+                </th>
+            </tr>
+            </thead>
+        </table>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
+        <table class="table w-100">
+            <thead>
+            <tr class="text-light bg-dark">
+                <th class="text-light bg-dark">
+                    <h:outputText value="#{cc.attrs.bundle.name}"></h:outputText>
+                </th>
+            </tr>
+            </thead>
+        </table>
+        <p:dataTable id="tbl"
+                     class="w-100 m-2"
+                     value="#{cc.attrs.bundle.reportTemplateRows}"
+                     var="row"
+                     paginator="true"
+                     paginatorAlwaysVisible="false"
+                     rows="10"
+                     rowIndexVar="n"
+                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                     rowsPerPageTemplate="5,10,20"
+                     rowKey="#{row.id}"
+                     style="table-layout:auto;">
+            <p:column style="width: 2em;">
+                <f:facet name="header">
+                    <h:outputText value="No"/>
+                </f:facet>
+                <h:outputText value="#{n+1}"/>
+            </p:column>
+            <p:column style="width: 10em;">
+                <f:facet name="header">
+                    <h:outputText value="Created Date"/>
+                </f:facet>
+                <p:outputLabel value="#{row.bill.billDate}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                </p:outputLabel>
+            </p:column>
+            <p:column style="width: 10em;">
+                <f:facet name="header">
+                    <h:outputText value="Settled Date"/>
+                </f:facet>
+                <p:outputLabel value="#{row.bill.paidAt}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                </p:outputLabel>
+            </p:column>
+            <p:column style="width: 12em;">
+                <f:facet name="header">
+                    <h:outputText value="Cancelled / Refund Date"/>
+                </f:facet>
+                <p:outputLabel value="#{row.bill.paidAt}" rendered="#{row.bill.patientEncounter eq null}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                </p:outputLabel>
+                <p:outputLabel value="#{row.bill.patientEncounter.finalBill.paidAt}"
+                               rendered="#{row.bill.patientEncounter ne null}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                </p:outputLabel>
+            </p:column>
+            <p:column style="width: 8em;">
+                <f:facet name="header">
+                    <h:outputText value="Serial"/>
+                </f:facet>
+                <h:outputText value="#{row.bill.deptId}"/>
+            </p:column>
+            <p:column style="width: 6em;">
+                <f:facet name="header">
+                    <h:outputText value="OP/IP"/>
+                </f:facet>
+                <h:outputText value="#{row.bill.ipOpOrCc}"/>
+            </p:column>
+            <p:column style="width: 10em;">
+                <f:facet name="header">
+                    <h:outputText value="Admission Type"/>
+                </f:facet>
+                <h:outputText value="#{row.bill.patientEncounter.admissionType.name}"/>
+            </p:column>
+            <p:column style="width: 8em;">
+                <f:facet name="header">
+                    <h:outputText value="Status"/>
+                </f:facet>
+                <h:outputText value="#{row.bill.paid? 'Paid':''}" rendered="#{row.bill.patientEncounter eq null}"/>
+                <h:outputText value="#{row.bill.patientEncounter.finalBill.paid? 'Paid':''}"
+                              rendered="#{row.bill.patientEncounter ne null}"/>
+            </p:column>
+            <p:column style="width: 10em;">
+                <f:facet name="header">
+                    <h:outputText value="Total Amount"/>
+                </f:facet>
+                <p:outputLabel value="#{row.bill.netTotal}" rendered="#{row.bill.patientEncounter eq null}"/>
+                <p:outputLabel value="#{row.bill.patientEncounter.finalBill.netTotal}"
+                               rendered="#{row.bill.patientEncounter ne null}"/>
+            </p:column>
+            <p:column style="width: 8em;">
+                <f:facet name="header">
+                    <h:outputText value="Due Amount"/>
+                </f:facet>
+                <p:outputLabel value="#{row.bill.netTotal - row.billItem.bill.paidAmount}"
+                               rendered="#{row.bill.patientEncounter eq null}"/>
+                <p:outputLabel
+                        value="#{row.bill.patientEncounter.finalBill.netTotal - row.bill.patientEncounter.finalBill.paidAmount}"
+                        rendered="#{row.bill.patientEncounter ne null}"/>
+            </p:column>
+            <p:column style="width: 10em;">
+                <f:facet name="header">
+                    <h:outputText value="Settle Amount"/>
+                </f:facet>
+                <p:outputLabel value="#{row.bill.paidAmount}" rendered="#{row.bill.patientEncounter eq null}"/>
+                <p:outputLabel value="#{row.bill.patientEncounter.finalBill.paidAmount}"
+                               rendered="#{row.bill.patientEncounter ne null}"/>
+            </p:column>
+            <!--            <p:column style="width: 10em;">-->
+            <!--                <f:facet name="header">-->
+            <!--                    <h:outputText value="Total Payments"/>-->
+            <!--                </f:facet>-->
+            <!--                <p:outputLabel value="#{row.bill.netTotal}">-->
+            <!--                </p:outputLabel>-->
+            <!--            </p:column>-->
+            <p:column style="width: 10em;">
+                <f:facet name="header">
+                    <h:outputText value="Excess Amount"/>
+                </f:facet>
+                <p:outputLabel value="#{row.bill.paidAmount - row.billItem.bill.netTotal}" rendered="#{row.bill.patientEncounter eq null and row.bill.paidAmount gt 0}"/>
+                <p:outputLabel
+                        value="#{row.bill.patientEncounter.finalBill.paidAmount - row.bill.patientEncounter.finalBill.netTotal}"
+                        rendered="#{row.bill.patientEncounter ne null and row.bill.patientEncounter.finalBill.paidAmount gt 0}"/>
+            </p:column>
+        </p:dataTable>
+    </h:panelGroup>
+
+</cc:implementation>
+</html>
