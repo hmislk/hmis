@@ -1543,38 +1543,12 @@ public class ReportsController implements Serializable {
 
     public ReportTemplateRowBundle generateCollectingCenterWiseBills(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
-                + "bill, "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
-                + "FROM Payment p "
-                + "JOIN p.bill bill "
-                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
-
-        parameters.put("bfr", true);
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "WHERE bill.retired <> :br ";
         parameters.put("br", true);
-
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
-
-        if (visitType != null && (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP")
-                || visitType.equalsIgnoreCase("CC"))) {
-            jpql += "AND bill.ipOpOrCc = :type ";
-            parameters.put("type", visitType);
-        }
 
         if (institution != null) {
             jpql += "AND bill.department.institution = :ins ";
@@ -1590,11 +1564,11 @@ public class ReportsController implements Serializable {
             parameters.put("site", site);
         }
         if (webUser != null) {
-            jpql += "AND p.creater = :wu ";
+            jpql += "AND bill.creater = :wu ";
             parameters.put("wu", webUser);
         }
 
-        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
 

@@ -1097,11 +1097,17 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         return "/reports/financialReports/package_report?faces-redirect=true";
     }
-    
-     public String navigateToCreditInvoiceDispatch() {
+
+    public String navigateToCreditInvoiceDispatch() {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
         return "/reports/financialReports/credit_invoice_dispatch_report?faces-redirect=true";
+    }
+
+    public String navigateToPaymentSettlement() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/payment_settlement_report?faces-redirect=true";
     }
 
     public String navigatToShiftEndSummary() {

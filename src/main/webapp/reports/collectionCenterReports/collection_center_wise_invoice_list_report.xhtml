@@ -238,20 +238,26 @@
                             <p:column headerText="Bill No" >
                                 <h:outputText value="#{bi.bill.deptId}" />
                             </p:column>
-                            <p:column headerText="Before Balance" >
-                                <h:outputText value="#{bi.bill}" />
+                            <p:column headerText="Before Balance"  class="text-end">
+                                <h:outputText value="#{agentAndCcApplicationController.ccBalanceBefore(bi.bill)}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Transaction Value (Hospital Amount)" >
+                            <p:column headerText="Transaction Value (Hospital Amount)"  class="text-end">
                                 <h:outputText value="#{bi.bill.totalHospitalFee}" />
                             </p:column>
-                            <p:column headerText="CC(%)" >
+                            <p:column headerText="CC(%)" class="text-end">
                                 <h:outputText  value="#{(bi.bill.collctingCentreFee / bi.bill.netTotal) * 100}" />
                             </p:column>
-                            <p:column headerText="CC Amount" >
-                                <h:outputText value="#{bi.bill.collctingCentreFee}" />
+                            <p:column headerText="CC Amount"  class="text-end">
+                                <h:outputText value="#{bi.bill.collctingCentreFee}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="After Balance" >
-                                <h:outputText value="#{bi.bill}" />
+                            <p:column headerText="After Balance"  class="text-end">
+                                <h:outputText value="#{agentAndCcApplicationController.ccBalanceAfter(bi.bill)}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Creator" >
                                 <h:outputText value="#{bi.bill.creater.name}" />
