@@ -155,8 +155,6 @@
                         </h:panelGroup>
                     </h:panelGrid>
 
-
-
                     <p:commandButton 
                         value="Process" 
                         ajax="false"
@@ -166,11 +164,17 @@
                         style="background-color: #28a745; border-color: #28a745;"> 
                     </p:commandButton>
 
-
-                    <p:dataTable value="#{searchController.bundle.reportTemplateRows}" var="row" rowKey="#{row.id}"
+                    <p:dataTable 
+                                 value="#{searchController.bundle.reportTemplateRows}" 
+                                 var="row" 
+                                 rowKey="#{row.id}"
                                  paginator="true"
                                  rows="10">
 
+                        <p:column title="ID" sortBy="#{row.bill.id}" filterBy="#{row.bill.id}" filterMatchMode="contains">
+                            <h:outputLabel value="#{row.bill.id}"></h:outputLabel>
+                        </p:column>
+                        
                         <p:column title="Bill No" sortBy="#{row.bill.insId}" filterBy="#{row.bill.insId}" filterMatchMode="contains">
                             <h:outputLabel value="#{row.bill.insId}"></h:outputLabel>
                         </p:column>
@@ -212,7 +216,6 @@
                         </p:column>
 
                     </p:dataTable>
-
 
                 </h:form>
 

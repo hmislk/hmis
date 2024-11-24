@@ -5,15 +5,14 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
-      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
 
+                
 
                 <p:panel rendered="#{!opdPreBillController.printPreview}" >
                     <f:facet name="header" >
@@ -83,7 +82,7 @@
 
 
 
-                                <p:panel id='pIxAdd' class="w-100 mb-1" >
+                                <p:panel id='pIxAdd' class="w-100 mt-2" >
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Add New Items" class="mx-4"></h:outputText>
@@ -203,7 +202,8 @@
                                         </div>
                                     </div>
                                 </p:panel>
-                                <p:panel >
+                                
+                                <p:panel class="mt-2">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-list" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Added Items" class="mx-4"></h:outputText>
@@ -370,6 +370,7 @@
                                                     <p:commandButton 
                                                         value="Mark Foreigner" 
                                                         class="mx-1"
+                                                        style="width: 150px;"
                                                         action="#{opdPreBillController.markAsForeigner}" 
                                                         rendered="#{!opdPreBillController.foreigner}" 
                                                         process="@this" 
@@ -378,6 +379,7 @@
                                                     <p:commandButton 
                                                         value="Mark Local" 
                                                         class="mx-1"
+                                                        style="width: 150px;"
                                                         action="#{opdPreBillController.markAsLocal}" 
                                                         rendered="#{opdPreBillController.foreigner}" 
                                                         process="@this" 
@@ -391,7 +393,7 @@
 
                                 </p:panel>
 
-                                <p:panel class="m-1">
+                                <p:panel class="mt-2">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Doctor Details" class="mx-4"></h:outputText>
@@ -404,7 +406,7 @@
                                     </p:selectOneListbox>
                                 </p:panel>
 
-                                <p:panel id="panelBillReferrals" class="m-1">
+                                <p:panel id="panelBillReferrals" class="mt-2">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-stethoscope" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Referral Details" class="mx-4"></h:outputText>
@@ -589,7 +591,7 @@
                                     </h:panelGrid>
                                 </p:panel>
 
-                                <p:panel  id="pBillDetails" class=" m-1"  >
+                                <p:panel  id="pBillDetails" class=" mt-2"  >
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Bill Details" class="mx-4"></h:outputText>

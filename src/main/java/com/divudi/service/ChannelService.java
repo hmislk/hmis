@@ -54,6 +54,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.SpecialityFacade;
+import com.divudi.facade.StaffFacade;
 import com.divudi.java.CommonFunctions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -64,8 +65,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
@@ -101,6 +104,8 @@ public class ChannelService {
     private SpecialityFacade specialityFacade;
     @EJB
     private ConsultantFacade consultantFacade;
+    @EJB
+    private StaffFacade staffFacade;
 
     @Inject
     private BookingControllerViewScope bookingControllerViewScope;
@@ -485,7 +490,7 @@ public class ChannelService {
         bill.setPaid(false);
         bill.setPaidAmount(0.0);
         bill.setPaidBill(null);
-        bill.setBillType(BillType.ChannelAgent);
+        bill.setBillType(BillType.ChannelOnCall);
         bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         System.out.println(bill);
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(session.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
@@ -543,6 +548,66 @@ public class ChannelService {
         billItemFacade.create(bi);
         return bi;
     }
+    
+    private List<BillSession> getAllBillSessionForSessionInstance(SessionInstance ss){
+        List<BillSession> allBillSessions = new ArrayList<>();
+        BillType[] billTypes = {
+            BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithPayment,
+            BillType.ChannelResheduleWithOutPayment,};
+
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select bs "
+                + " From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.bill.billType in :bts"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionInstance=:ss "
+                + " order by bs.serialNo ";
+        HashMap<String, Object> hh = new HashMap<>();
+
+        Bill b = new Bill();
+        b.getBillTypeAtomic();
+        hh.put("bts", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ss", ss);
+        return getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
+    }
+    
+    public List getReleasedAppoinmentNumbersForApiBookings(SessionInstance ss) {
+        long nextNumber = 1L;
+        
+        if(ss.getNextAvailableAppointmentNumber() != null){
+            nextNumber = ss.getNextAvailableAppointmentNumber();
+        }
+        
+        List releasedNumberList = new ArrayList();
+        
+        List<BillSession> allBillSessions = getAllBillSessionForSessionInstance(ss);
+
+        List<Integer> reservedSerialNumbers = allBillSessions.stream()
+                .map(BillSession::getSerialNo)
+                .collect(Collectors.toList());
+
+        for (int i = 1; i < nextNumber; ++i) {
+            boolean isAssign = false;
+            for (Integer number : reservedSerialNumbers) {
+                if (i == number) {
+                    isAssign = true;
+                    
+                }
+            }
+
+            if (!isAssign) {
+                releasedNumberList.add(i);
+            }
+        }
+        return releasedNumberList;
+    }
 
     private BillSession createBillSession(Bill bill, BillItem billItem, boolean forReservedNumbers, SessionInstance session) {
         BillSession bs = new BillSession();
@@ -568,6 +633,13 @@ public class ChannelService {
 
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(session.getOriginatingSession().getReserveNumbers());
         Integer count = null;
+        
+        List<Integer> availableReleasedApoinmentNumbers = getReleasedAppoinmentNumbersForApiBookings(session); 
+        Random rand = new Random();
+        if(availableReleasedApoinmentNumbers != null && !availableReleasedApoinmentNumbers.isEmpty()){
+            count = availableReleasedApoinmentNumbers.get(rand.nextInt(availableReleasedApoinmentNumbers.size()));
+        }
+        
 
         if (forReservedNumbers) {
 //            // Pass the selectedReservedBookingNumber to the service method
@@ -576,7 +648,7 @@ public class ChannelService {
 //                count = serviceSessionBean.getNextNonReservedSerialNumber(session, reservedNumbers);
 //                JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
 //            }
-        } else {
+        } else if(count == null){
             count = serviceSessionBean.getNextNonReservedSerialNumber(session, reservedNumbers);
         }
 
@@ -885,6 +957,16 @@ public class ChannelService {
 
         return consultantFacade.findByJpql(jpql.toString(), m);
     }
+    public List<Speciality> findAllSpecilities(){
+        String jpql;
+        Map params = new HashMap();
+        jpql = " select c  "
+                + " from DoctorSpeciality c "
+                + " where c.retired=:ret "
+                + " order by c.name";
+        params.put("ret", false);
+        return staffFacade.findByJpql(jpql, params);
+    }
 
     public List<Doctor> findDoctorsFromName(String name, Long id) {
         StringBuffer jpql = new StringBuffer("select c from Doctor c where c.retired=:ret");
@@ -1076,7 +1158,7 @@ public class ChannelService {
         newlyCreatedAgentOnlinePaymentCompletionBill.setBalance(0.0);
         newlyCreatedAgentOnlinePaymentCompletionBill.setPaymentMethod(PaymentMethod.Agent);
         newlyCreatedAgentOnlinePaymentCompletionBill.setReferenceBill(bs.getBill());
-        newlyCreatedAgentOnlinePaymentCompletionBill.setBillType(BillType.ChannelPaid);
+        newlyCreatedAgentOnlinePaymentCompletionBill.setBillType(BillType.ChannelAgent);
         newlyCreatedAgentOnlinePaymentCompletionBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(bs.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
         // String deptId = generateBillNumberDeptId(temp);

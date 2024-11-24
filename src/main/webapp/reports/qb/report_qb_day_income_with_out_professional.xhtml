@@ -326,144 +326,40 @@
                         </p:row>
                     </p:columnGroup> 
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editRowType}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.rowType}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.rowType}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.rowType}" />
                     </p:column>
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editTrnsType}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.trnsType}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.trnsType}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.trnsType}" />
                     </p:column>
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editDate}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.date}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.date}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.date}" />
                     </p:column>
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editAccnt}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.accnt}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.accnt}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
-                        <!--<p:outputLabel value="#{qbf.accnt}" />-->
                         <p:outputLabel value="INCOME ACCOUNTS:Cafe R" rendered="#{qbf.accnt eq 'PHARMACY SALES:Pharmacy OPD Sales'}"/>
-                        <!--<h1>#{qbf.accnt}</h1>-->
                         <p:outputLabel value="#{qbf.accnt}" rendered="#{qbf.accnt ne 'PHARMACY SALES:Pharmacy OPD Sales'}"/>
                     </p:column>
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editName}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.name}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.name}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.name}" />
                     </p:column>
                     <p:column rendered="#{quickBookReportController.report ne '2'}">
-<!--                        <p:cellEditor rendered="#{qbf.editInvItemType}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.invItemType}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.invItemType}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.invItemType}" />
                     </p:column>
                     <p:column rendered="#{quickBookReportController.report ne '2'}">
-<!--                        <p:cellEditor rendered="#{qbf.editInvItem}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.invItem}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.invItem}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.invItem}" />
                     </p:column>
                     <p:column styleClass="numberCol" >
-<!--                        <p:cellEditor rendered="#{qbf.editAmount}">  
-                            <f:facet name="output"> 
-                                <p:outputLabel value="#{qbf.amount}" rendered="#{qbf.amount ne 0.0}">
-                                    <f:convertNumber pattern="0.00" />
-                                </p:outputLabel>
-                                <p:outputLabel value="" rendered="#{qbf.amount eq 0.0}"/>
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.amount}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.amount}" rendered="#{qbf.amount ne 0.0}">
                             <f:convertNumber pattern="0.00" />
                         </p:outputLabel>
                         <p:outputLabel value="" rendered="#{qbf.amount eq 0.0}"/>
                     </p:column>
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editDocNum}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.docNum}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.docNum}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.docNum}" />
                     </p:column>
-                    <!--                    <p:column>
-                                            <p:cellEditor rendered="#{qbf.editPoNum}">  
-                                                <f:facet name="output"> 
-                                                    <h:outputLabel value="#{qbf.poNum}" />
-                                                </f:facet>  
-                                                <f:facet name="input">  
-                                                    <p:inputText value="#{qbf.poNum}" />
-                                                </f:facet>  
-                                            </p:cellEditor>  
-                                            <p:outputLabel value="#{qbf.poNum}"/>
-                                        </p:column>-->
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editQbClass}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.qbClass}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.qbClass}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.qbClass}"/>
                     </p:column>
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editMemo}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.memo}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.memo}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.memo}" />
                     </p:column>
                     <p:column>

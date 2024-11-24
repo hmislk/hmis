@@ -877,59 +877,62 @@ public class ReportController implements Serializable {
                 + " where bi.retired=:ret"
                 + " and bi.bill.referredBy IS NOT NULL";
 
-        Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
 
         if (institution != null) {
-            jpql += " AND bi.bill.institution = :ins";
-            m.put("ins", institution);
+            jpql += " AND (bi.bill.institution = :ins or bi.bill.toInstitution=:ins) ";
+            params.put("ins", institution);
         }
 
         if (site != null) {
             jpql += " AND bi.bill.department.site = :site";
-            m.put("site", site);
+            params.put("site", site);
         }
 
         if (category != null) {
             jpql += " AND bi.item.category = :cat";
-            m.put("cat", category);
+            params.put("cat", category);
         }
 
 //        if (investigation != null) {
 //            jpql += " AND bi.patientInvestigation.investigation = :inv";
 //            m.put("inv", investigation);
 //        }
-
         if (item != null) {
             jpql += " AND bi.item = :item";
-            m.put("item", item);
+            params.put("item", item);
         }
 
         if (type != null) {
             jpql += " AND bi.bill.ipOpOrCc = :type";
-            m.put("type", type);
+            params.put("type", type);
         }
 
-        if (collectingCentre != null) {
-            jpql += " AND bi.bill.collectingCentre = :cc";
-            m.put("cc", collectingCentre);
+        if (type.equalsIgnoreCase("cc")) {
+            if (collectingCentre != null) {
+                jpql += " AND bi.bill.collectingCentre = :cc";
+                params.put("cc", collectingCentre);
+            }
+        } else {
+            collectingCentre = null;
         }
 
         if (doctor != null) {
             jpql += " AND bi.bill.referredBy = :doc";
-            m.put("doc", doctor);
+            params.put("doc", doctor);
         }
 
         if (speciality != null) {
             jpql += " AND bi.bill.referredBy.speciality = :speci";
-            m.put("speci", speciality);
+            params.put("speci", speciality);
         }
 
         jpql += " AND bi.createdAt BETWEEN :fromDate AND :toDate";
-        m.put("fromDate", getFromDate());
-        m.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
 
-        billItems = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        billItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         // Initialize totals
         hospitalFeeTotal = 0.0;
@@ -968,7 +971,7 @@ public class ReportController implements Serializable {
         Map<String, Object> params = new HashMap<>();
 
         if (institution != null) {
-            jpql += " AND bi.bill.institution = :ins";
+            jpql += " AND (bi.bill.institution = :ins or bi.bill.toInstitution=:ins) ";
             params.put("ins", institution);
         }
 
@@ -982,11 +985,10 @@ public class ReportController implements Serializable {
             params.put("cat", category);
         }
 
-        if (investigation != null) {
-            jpql += " AND bi.patientInvestigation.investigation = :inv";
-            params.put("inv", investigation);
-        }
-
+//        if (investigation != null) {
+//            jpql += " AND bi.patientInvestigation.investigation = :inv";
+//            params.put("inv", investigation);
+//        }
         if (item != null) {
             jpql += " AND bi.item = :item";
             params.put("item", item);
@@ -997,9 +999,13 @@ public class ReportController implements Serializable {
             params.put("type", type);
         }
 
-        if (collectingCentre != null) {
-            jpql += " AND bi.bill.collectingCentre = :cc";
-            params.put("cc", collectingCentre);
+        if (type != null && type.equalsIgnoreCase("cc")) {
+            if (collectingCentre != null) {
+                jpql += " AND bi.bill.collectingCentre = :cc";
+                params.put("cc", collectingCentre);
+            }
+        } else {
+            collectingCentre = null;
         }
 
         if (doctor != null) {
@@ -1677,6 +1683,9 @@ public class ReportController implements Serializable {
         jpql += " ORDER BY i.id DESC";
 
         params.put("ret", false);
+       
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
 
         patientInvestigations = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -2128,7 +2137,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=test_counts.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -2144,7 +2153,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Sale_Item_Count.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -2160,7 +2169,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=service_count.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -2375,7 +2384,7 @@ public class ReportController implements Serializable {
     }
 
     public String navigateToManagementAdmissionCountReport() {
-        reportType="Summary";
+        reportType = "Summary";
         return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
     }
 
@@ -3029,16 +3038,7 @@ public class ReportController implements Serializable {
                 + " and bi.bill.cancelled=:can"
                 + " and bi.bill.billDate between :fd and :td "
                 + " and bi.bill.billTypeAtomic = :billTypeAtomic ";
-
-        if (false) {
-            BillItem bi = new BillItem();
-            bi.getItem();
-            bi.getHospitalFee();
-            bi.getCollectingCentreFee();
-            bi.getStaffFee();
-            bi.getNetValue();
-        }
-
+       
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("can", false);
@@ -3056,14 +3056,19 @@ public class ReportController implements Serializable {
             m.put("ins", institution);
         }
 
+        if (department != null) {
+            jpql += " and bi.bill.department = :dep ";
+            m.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and bi.bill.department.site = :site ";
+            m.put("site", site);
+        }
+
         if (collectingCentre != null) {
             jpql += " and bi.bill.fromInstitution = :cc ";
             m.put("cc", collectingCentre);
-        }
-
-        if (toDepartment != null) {
-            jpql += " and bi.bill.toDepartment = :dep ";
-            m.put("dep", toDepartment);
         }
 
         if (phn != null && !phn.isEmpty()) {

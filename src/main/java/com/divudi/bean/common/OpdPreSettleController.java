@@ -919,7 +919,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             }
             return false;
         } else if (getPaymentMethod() == PaymentMethod.Credit) {
-            if (getCreditCompany() == null) {
+            if (getPaymentMethodData().getCredit().getInstitution() == null) {
                 JsfUtil.addErrorMessage("Select Credit Company");
                 return true;
             } else if (getPaymentMethodData().getCredit().getReferralNo().equalsIgnoreCase("") && configOptionApplicationController.getBooleanValueByKey("Billing for Cashier - Credit Policy No is Mandatory", false)) {

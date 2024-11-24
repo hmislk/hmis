@@ -117,7 +117,7 @@ public class BillItem implements Serializable {
     Date fromTime;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date toTime;
-    @OneToOne(mappedBy = "billItem")
+    @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER)
     private PatientInvestigation patientInvestigation;
     @OneToOne
     BillItem referanceBillItem;
@@ -139,6 +139,12 @@ public class BillItem implements Serializable {
     @Enumerated(EnumType.ORDINAL)
     private BillItemStatus billItemStatus;
     private double feeValue;
+    @ManyToOne
+    private Department requestedFromDepartment;
+    @ManyToOne
+    private Department requestedToDepartment;
+    @ManyToOne
+    private Department peformedDepartment;
 
 //    @Transient
     int searialNo;
@@ -1012,6 +1018,30 @@ public class BillItem implements Serializable {
 
     public void setBillItemRefunded(boolean billItemRefunded) {
         this.billItemRefunded = billItemRefunded;
+    }
+
+    public Department getRequestedFromDepartment() {
+        return requestedFromDepartment;
+    }
+
+    public void setRequestedFromDepartment(Department requestedFromDepartment) {
+        this.requestedFromDepartment = requestedFromDepartment;
+    }
+
+    public Department getRequestedToDepartment() {
+        return requestedToDepartment;
+    }
+
+    public void setRequestedToDepartment(Department requestedToDepartment) {
+        this.requestedToDepartment = requestedToDepartment;
+    }
+
+    public Department getPeformedDepartment() {
+        return peformedDepartment;
+    }
+
+    public void setPeformedDepartment(Department peformedDepartment) {
+        this.peformedDepartment = peformedDepartment;
     }
     
     

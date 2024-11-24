@@ -40,7 +40,7 @@
                             <p:selectOneMenu
                                 id="cmbIns"
                                 styleClass="w-100 form-control" 
-                                value="#{searchController.institution}" 
+                                value="#{reportController.institution}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
@@ -54,7 +54,7 @@
                             <p:selectOneMenu
                                 id="siteMenu"
                                 styleClass="w-100 form-control"  
-                                value="#{searchController.site}" 
+                                value="#{reportController.site}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
@@ -69,9 +69,9 @@
 
                                 <!-- Component 1: Without Institution and Site -->
                                 <p:selectOneMenu
-                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                                    rendered="#{reportController.institution eq null and reportController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
+                                    value="#{reportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
@@ -84,14 +84,14 @@
 
                                 <!-- Component 2: With Site Only -->
                                 <p:selectOneMenu
-                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
+                                    rendered="#{reportController.institution eq null and reportController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
+                                    value="#{reportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.site)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}" />
@@ -99,14 +99,14 @@
 
                                 <!-- Component 3: With Institution Only -->
                                 <p:selectOneMenu
-                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
+                                    rendered="#{reportController.institution ne null and reportController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
+                                    value="#{reportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(reportController.institution)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}" />
@@ -114,14 +114,14 @@
 
                                 <!-- Component 4: With Both Institution and Site -->
                                 <p:selectOneMenu
-                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    rendered="#{reportController.institution ne null and reportController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
+                                    value="#{reportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.institution, reportController.site)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}" />
@@ -130,11 +130,11 @@
                                 <p:selectOneMenu
                                     rendered="false"
                                     styleClass="w-100 form-control"  
-                                    value="#{searchController.department}" 
+                                    value="#{reportController.department}" 
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.institution, reportController.site)}" 
                                         var="d" 
                                         itemLabel="#{d.name}" 
                                         itemValue="#{d}" />
@@ -146,13 +146,17 @@
                                 <h:outputLabel value="Collection Center "  class="mx-3"/>
                                 <p:outputLabel  />
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{reportController.collectingCentre}" style=" max-width: 100%; overflow-x: auto;" class="w-100" filter="true" filterMatchMode="contains">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value="#{collectingCentreController.items}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}" ></f:selectItems>
-                            </p:selectOneMenu>
+                            <p:autoComplete 
+                                value="#{reportController.collectingCentre}" 
+                                forceSelection="true" id="acColl"
+                                completeMethod="#{institutionController.completeCollectingCenter}" 
+                                var="collectingCentre" itemLabel="#{collectingCentre.name}" itemValue="#{collectingCentre}" 
+                                maxResults="15"
+                                class="w-100 mb-1"
+                                inputStyleClass="w-100">
+                                <p:column style="padding: 6px;">#{collectingCentre.code}</p:column>
+                                <p:column style="padding: 6px;">#{collectingCentre.name}</p:column>
+                            </p:autoComplete>
 
 
                         </p:panelGrid>

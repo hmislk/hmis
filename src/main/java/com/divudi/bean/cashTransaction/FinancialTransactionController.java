@@ -2261,7 +2261,7 @@ public class FinancialTransactionController implements Serializable {
         if (currentBill.getBillType() != BillType.OPERATIONAL_EXPENSES) {
             JsfUtil.addErrorMessage("Error");
             return "";
-        }          
+        }
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
@@ -2932,8 +2932,8 @@ public class FinancialTransactionController implements Serializable {
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
 
     }
-    
-     public void fillPaymentsFromViewHandoverAcceptBillOld() {
+
+    public void fillPaymentsFromViewHandoverAcceptBillOld() {
         paymentsFromShiftSratToNow = new ArrayList<>();
         Map<String, Object> m = new HashMap<>();
         String jpql = "SELECT p "
@@ -2990,9 +2990,6 @@ public class FinancialTransactionController implements Serializable {
 
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
     }
-
-
-    
 
     public void fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbook() {
         paymentsFromShiftSratToNow = new ArrayList<>();
@@ -5200,17 +5197,17 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
-        
-        if (currentPayment.getPaymentMethod() == PaymentMethod.Cash) {
-        double drawerBalance = getLoggedUserDrawer().getCashInHandValue();
-        double paymentAmount = currentPayment.getPaidValue();
 
-        if (drawerBalance < paymentAmount) {
-            JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
-            return;
+        if (currentPayment.getPaymentMethod() == PaymentMethod.Cash) {
+            double drawerBalance = getLoggedUserDrawer().getCashInHandValue();
+            double paymentAmount = currentPayment.getPaidValue();
+
+            if (drawerBalance < paymentAmount) {
+                JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                return;
+            }
         }
-    }
-        
+
         getCurrentBillPayments().add(currentPayment);
         calculateExpenseBillTotal();
         currentPayment = null;
@@ -5364,7 +5361,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setTotal(total);
         currentBill.setNetTotal(total);
     }
-    
+
     private void calculateExpenseBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
