@@ -53,11 +53,19 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </div>
-                            <div style="float: right">
+                            <div >
                                 <p:commandButton  value="Return" 
                                                   action="#{goodsReturnController.settle}" ajax="false" icon="fa fa-cancel" style="float: right;" class="mx-5 ui-button-danger">
                                 </p:commandButton>
                             </div>
+
+                        </div>
+                        <div>
+                            <p:outputLabel  value="Original Payment Method :" class=" my-2"/> 
+                            <p:inputText value="#{goodsReturnController.bill.paymentMethod}" class="mx-2 my-4" disabled="true"/>  
+                            <p:inputText 
+                                rendered="#{goodsReturnController.bill.paymentMethod eq 'Credit'}" 
+                                value="#{goodsReturnController.bill.creditDuration}   Days" style="width: 10em;" disabled="true"/>
                         </div>
                     </f:facet>
                 </p:panel>
@@ -137,11 +145,11 @@
                     </p:column>
                     <p:column style="width:10px!important;">  
                         <p:commandButton 
-                                ajax="false"
-                                style="float: right;"
-                                icon="fas fa-trash"
-                                class="ui-button-danger"
-                                action="#{goodsReturnController.removeItem(ph)}"/>
+                            ajax="false"
+                            style="float: right;"
+                            icon="fas fa-trash"
+                            class="ui-button-danger"
+                            action="#{goodsReturnController.removeItem(ph)}"/>
                     </p:column>
 
                 </p:dataTable>  
