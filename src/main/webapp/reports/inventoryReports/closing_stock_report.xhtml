@@ -22,7 +22,7 @@
                                           inputStyleClass="w-100"
                                           class=" w-100" ></p:datePicker>
 
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university ml-5" />
@@ -39,8 +39,8 @@
                                                itemLabel=""
                                                itemValue="" ></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            
+
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
                                 <p:outputLabel value="Site" class="mx-3"></p:outputLabel>
@@ -122,9 +122,9 @@
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            
-                            
+
+
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-boxes ml-5" />
                                 <p:outputLabel value="Stock type" class="mx-3">
@@ -135,7 +135,7 @@
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
 
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-truck ml-5" />
@@ -163,125 +163,142 @@
                         </div>
 
 
-                        <p:dataTable id="tbl1" value="" 
-                                     var="f" 
-                                     rowIndexVar="n" 
-                                     paginator="true" 
-                                     rows="10" 
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
-                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                        <div class="mt-5">
+                            
+                            <h5>Report Data By Item</h5>
+
+                            <p:dataTable id="tbl1" value="" 
+                                         var="f" 
+                                         rowIndexVar="n" 
+                                         paginator="true" 
+                                         rows="10" 
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
 
-                            <p:column headerText="S.No">
-                                <h:outputText value="" />
-                            </p:column>
-
-                            <p:column headerText="Item Category">
-                                <h:outputText value="" />
-                            </p:column>
-
-                            <p:column headerText="Item Code">
-                                <h:outputText value="" />
-                            </p:column>
-
-                            <p:column headerText="Item Name">
-                                <h:outputText value="" />
-                            </p:column>
-
-                            <p:column headerText="UOM">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Closing Stock">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Closing Stock Value">
-                                <h:outputText value="" />
-                            </p:column>
-
-
-                            <f:facet name="footer">
-
-                                <p:column>
-                                    <h:outputText value="Total:" />
-                                </p:column>
-                                <p:column>
+                                <p:column headerText="S.No">
                                     <h:outputText value="" />
                                 </p:column>
-                            </f:facet>
 
-
-                        </p:dataTable>
-
-                        <p:dataTable id="tbl2" value="" 
-                                     var="f" 
-                                     rowIndexVar="n" 
-                                     paginator="true" 
-                                     rows="10" 
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
-                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
-
-                            <p:column headerText="S.No">
-                                <h:outputText value="" />
-                            </p:column>
-
-                            <p:column headerText="Item Category">
-                                <h:outputText value="" />
-                            </p:column>
-
-                            <p:column headerText="Item Code">
-                                <h:outputText value="" />
-                            </p:column>
-
-                            <p:column headerText="Item Name">
-                                <h:outputText value="" />
-                            </p:column>
-
-                            <p:column headerText="UOM">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Expiry">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Batch No">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Qty">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Purchase Rate">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Purchase Value">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Retail Rate">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Sale Value">
-                                <h:outputText value="" />
-                            </p:column>
-
-
-                            <f:facet name="footer">
-
-                                <p:column>
-                                    <h:outputText value="Total:" />
-                                </p:column>
-                                <p:column>
+                                <p:column headerText="Item Category">
                                     <h:outputText value="" />
                                 </p:column>
-                            </f:facet>
+
+                                <p:column headerText="Item Code">
+                                    <h:outputText value="" />
+                                </p:column>
+
+                                <p:column headerText="Item Name">
+                                    <h:outputText value="" />
+                                </p:column>
+
+                                <p:column headerText="UOM">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Closing Stock">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Closing Stock Value">
+                                    <h:outputText value="" />
+                                </p:column>
 
 
-                        </p:dataTable>
+                                <f:facet name="footer">
+
+                                    <p:column>
+                                        <h:outputText value="Total:" />
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="" />
+                                    </p:column>
+                                </f:facet>
+
+
+                            </p:dataTable>
+
+                        </div>
+                        
+                        
+
+                        <div class="mt-5">
+                            
+                            <h5>Report Data By Batch</h5>
+
+                            <p:dataTable id="tbl2" value="" 
+                                         var="f" 
+                                         rowIndexVar="n" 
+                                         paginator="true" 
+                                         rows="10" 
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+                                <p:column headerText="S.No">
+                                    <h:outputText value="" />
+                                </p:column>
+
+                                <p:column headerText="Item Category">
+                                    <h:outputText value="" />
+                                </p:column>
+
+                                <p:column headerText="Item Code">
+                                    <h:outputText value="" />
+                                </p:column>
+
+                                <p:column headerText="Item Name">
+                                    <h:outputText value="" />
+                                </p:column>
+
+                                <p:column headerText="UOM">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Expiry">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Batch No">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Qty">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Purchase Rate">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Purchase Value">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Retail Rate">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Sale Value">
+                                    <h:outputText value="" />
+                                </p:column>
+
+
+                                <f:facet name="footer">
+
+                                    <p:column>
+                                        <h:outputText value="Total:" />
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="" />
+                                    </p:column>
+                                </f:facet>
+
+
+                            </p:dataTable>
+
+                        </div>
+                        
                     </p:panel>
 
                 </h:form>
 
             </ui:define>
+            
         </ui:composition>
 
     </h:body>
+    
 </html>
