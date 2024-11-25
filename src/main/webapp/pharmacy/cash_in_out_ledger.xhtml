@@ -16,13 +16,13 @@
 
                     <p:panel   header="Cash Bill Search" class="m-1">
 
-                        <h:panelGrid columns="8" class="w-100">
+                        <h:panelGrid columns="5" class="w-100">
                             <h:outputLabel value="From"/>
                             <p:calendar 
                                 class="w-100 " 
                                 inputStyleClass="w-100" 
                                 id="fromDate" 
-                                value="#{searchController.fromDate}" 
+                                value="#{pharmacyReportController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
 
@@ -33,26 +33,44 @@
                                 class="w-100 " 
                                 inputStyleClass="w-100" 
                                 id="toDate" 
-                                value="#{searchController.toDate}" 
+                                value="#{pharmacyReportController.toDate}" 
                                 navigator="false" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
 
-                            <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
 
                             <h:outputLabel value="Department"/>                                
-                            <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
+                            <p:selectOneMenu class="w-100 "  value="#{pharmacyReportController.department}" filter="true">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
-                            
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="User"/> 
+                            <p:autoComplete
+                                completeMethod="#{webUserController.completeUser}"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                value="#{pharmacyReportController.webUser}" 
+                                var="user"
+                                scrollHeight="450"
+                                itemLabel="#{user.webUserPerson.name}" 
+                                itemValue="#{user}" >
+                                <p:column headerText="Username" >
+                                    <h:outputText value="#{user.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Name" >
+                                    <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
+                                </p:column>
+                            </p:autoComplete>
+
                         </h:panelGrid>
 
                         <h:panelGrid columns="3" class="my-2" >
 
                             <p:commandButton  
+                                action="#{pharmacyReportController.createPharmacyCashInOutLedger()}"
                                 value="Process" 
                                 ajax="false"
                                 class="ui-button-warning" icon="fas fa-cogs">
@@ -70,46 +88,72 @@
 
 
 
-                        <p:dataTable value="#{searchController.bundle.reportTemplateRows}" var="summary"
+                        <p:dataTable value="#{pharmacyReportController.bills}" var="bill"
                                      paginator="true" rows="10" id="tblCashier"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                      currentPageReportTemplate="(Page {currentPage} of {totalPages})"
-                                     paginatorPosition="top"
+                                     paginatorPosition="bottom"
                                      rowIndexVar="i">
 
-
-
-                            <p:column headerText="No" >
+                            <p:column headerText="No" width="2em">
                                 <h:outputText value="#{i+1}" />
                             </p:column>
 
-                            <p:column headerText="Bill No" sortBy="#{summary.department.site.name}" filterBy="#{summary.department.site.name}">
-                                <h:outputText value="#{summary.department.site.name}" />
+                            <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
+                                <h:outputText value="#{bill.deptId}" />
                             </p:column>
 
-                            <p:column headerText="Department" sortBy="#{summary.department.name}" filterBy="#{summary.department.name}">
-                                <h:outputText value="#{summary.department.name}" />
+                            <p:column headerText="Department" sortBy="#{bill.department.name}" filterBy="#{bill.department.name}" width="6em">
+                                <h:outputText value="#{bill.department.name}" />
                             </p:column>
 
-                            <p:column headerText="Comment" sortBy="#{summary.date}" filterBy="#{summary.date}">
-                                
+                            <p:column headerText="Comment" sortBy="#{bill.date}" filterBy="#{bill.date}">
+                                <h:outputText value="#{bill.comments}" />
                             </p:column>
 
-                            <p:column headerText="Cash In value" 
-                                      style="text-align: left;">
-                                
+                            <p:column headerText="Bill Type">
+                                <h:outputText value="#{bill.billTypeAtomic}" />
                             </p:column>
 
-                            <p:column headerText="Cash Out value" >
-                                
+                            <p:column headerText="Cash In Value" width="6em">
+                                <h:outputText value="#{bill.netTotal}" rendered="#{bill.localNumber == 'CASH_IN'}" />
                             </p:column>
 
-                            <p:column headerText="Transaction" >
-                                
+                            <p:column headerText="Cash Out Value" width="6em">
+                                <h:outputText value="#{bill.netTotal}" rendered="#{bill.localNumber == 'CASH_OUT'}" />
                             </p:column>
 
-                            
                         </p:dataTable>
+
+                        <p:dataTable value="#{pharmacyReportController.unifiedBundle}" var="row"
+                                     paginator="true" rows="10" id="tblUnifiedBundle"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate="(Page {currentPage} of {totalPages})"
+                                     paginatorPosition="bottom"
+                                     rowIndexVar="i">
+
+                            <p:column headerText="No" width="2em">
+                                <h:outputText value="#{i+1}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type">
+                                <h:outputText value="#{row.billTypeAtomic}" />
+                            </p:column>
+
+                            <p:column headerText="IN Total">
+                                <h:outputText value="#{row.total}" rendered="#{row.billTypeAtomic.billFinanceType eq 'CASH_IN'}">
+                                    <f:convertNumber groupingUsed="true" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="OUT Total" >
+                                <h:outputText value="#{row.total}" rendered="#{row.billTypeAtomic.billFinanceType eq 'CASH_OUT'}">
+                                    <f:convertNumber groupingUsed="true" />
+                                </h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+
+
 
                     </p:panel>
 

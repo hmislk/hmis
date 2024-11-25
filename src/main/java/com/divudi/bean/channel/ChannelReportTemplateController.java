@@ -891,12 +891,16 @@ public class ChannelReportTemplateController implements Serializable {
             bs.getSessionInstance().getSessionDate();
             if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE) {
                 bs.getBill().getPatient().getPerson();
+                bs.getBill().getCreditCompany().getName();
+                bs.getBill().getCreatedAt();
             }
         }
 
         j = "select new com.divudi.data.ReportTemplateRow(bs) "
                 + " from BillSession bs "
                 + " where bs.retired=false "
+                + " and bs.bill.creditCompany is not null "
+                + " and bs.bill.creditCompany.name = 'DOC_990'"
                 + " and bs.sessionInstance.sessionDate between :fd and :td ";
 
         if (institution != null) {
@@ -908,6 +912,8 @@ public class ChannelReportTemplateController implements Serializable {
             m.put("cat", category);
             j += " and bs.originatingSession.category=:cat ";
         }
+        
+        j += " order by bs.bill.createdAt desc";
 
         m.put("fd", fromDate);
         m.put("td", toDate);

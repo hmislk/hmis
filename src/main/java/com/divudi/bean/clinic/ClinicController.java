@@ -34,7 +34,6 @@ import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
-import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
@@ -99,6 +98,7 @@ import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.data.channel.SessionInstanceEvent;
+import com.divudi.service.ClinicService;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -171,7 +171,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
-    private ServiceSessionBean serviceSessionBean;
+    private ClinicService clinicService;
     @EJB
     AgentHistoryFacade agentHistoryFacade;
     @EJB
@@ -536,47 +536,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         }
     }
 
-    //----------------------------------------------
-    public void sessionReschedule() {
-        if (getSelectedSessionInstanceForRechedule() == null) {
-            JsfUtil.addErrorMessage("Pleace Select Session For Rechedule");
-            return;
-        }
-
-        if (selectedBillSession == null) {
-            JsfUtil.addErrorMessage("Bill session is not valid !");
-            return;
-        }
-
-        if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0) {
-            if (getSelectedSessionInstanceForRechedule().getBookedPatientCount() != null) {
-                int maxNo = getSelectedSessionInstanceForRechedule().getMaxNo();
-                long bookedPatientCount = getSelectedSessionInstanceForRechedule().getBookedPatientCount();
-                if (maxNo <= bookedPatientCount) {
-                    JsfUtil.addErrorMessage("Cannot reschedule the selected session: The session has reached its maximum booking capacity.");
-                    return;
-
-                }
-            }
-        }
-
-        if (selectedBillSession.getBill().isCancelled()) {
-            JsfUtil.addErrorMessage("Cannot reschedule: This bill session has been cancelled.");
-        }
-
-        if (selectedBillSession.isRecheduledSession()) {
-            JsfUtil.addErrorMessage("Cannot reschedule: This bill session has been Alrady Recheduled To Another Session !");
-        }
-
-        if (selectedBillSession.getReferenceBillSession() == null) {    // TODO: can remove after ReferenceBillSession is deprecated
-            createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
-            JsfUtil.addSuccessMessage("Reschedule Successfully");
-            sendSmsOnChannelBookingReschedule();
-        } else {
-            JsfUtil.addErrorMessage("Cannot reschedule the selected session: This appointment has already been rescheduled.");
-        }
-
-    }
+   
 
     public void sendSmsOnChannelBookingReschedule() {
         if (selectedBillSession == null) {
@@ -618,239 +578,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         return createSmsForChannelBookingReschedule(b, s, template);
     }
 
-    private void createBillSessionForReschedule(BillSession bs, SessionInstance si) {
-        BillSession newBillSession = new BillSession();
-        if (bs == null) {
-            return;
-        }
-        if (si == null) {
-            return;
-        }
-
-        Bill printingBill = createBillForChannelReshedule(bs);
-        BillItem savingBillItem = createSessionItemForReshedule(printingBill);
-        if (printingBill.getBillType() == BillType.ChannelResheduleWithPayment) {
-            List<Payment> p = createPayment(printingBill, paymentMethod);
-            drawerController.updateDrawerForIns(p);
-        }
-
-        newBillSession.copy(bs);
-        newBillSession.setBill(printingBill);
-        newBillSession.setBillItem(savingBillItem);
-        newBillSession.setRescheduledFromBillSession(bs);
-        newBillSession.setCreatedAt(new Date());
-        newBillSession.setCreater(getSessionController().getLoggedUser());
-        newBillSession.setSessionInstance(getSelectedSessionInstanceForRechedule());
-        newBillSession.setSessionDate(getSelectedSessionInstanceForRechedule().getSessionDate());
-        newBillSession.setSessionTime(getSelectedSessionInstanceForRechedule().getSessionTime());
-        newBillSession.setStaff(getSelectedSessionInstanceForRechedule().getStaff());
-        newBillSession.setSerialNo(0);
-
-        newBillSession.setPaidBillSession(bs.getPaidBillSession());
-
-        getBillSessionFacade().create(newBillSession);
-
-        printingBill.setSingleBillSession(newBillSession);
-        printingBill.setSingleBillItem(savingBillItem);
-        printingBill.getSingleBillItem().setItem(savingBillItem.getItem());
-
-        newBillSession.setBill(printingBill);
-
-        PriceMatrix priceMatrix;
-
-        priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, getSelectedSessionInstanceForRechedule().getOriginatingSession().getCategory());
-//        System.out.println("priceMatrix = " + priceMatrix);
-
-        ArrayList<BillFee> savingBillFees = new ArrayList<>();
-
-        List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(printingBill, savingBillItem, true, priceMatrix);
-
-        if (savingBillFeesFromSession != null) {
-            savingBillFees.addAll(savingBillFeesFromSession);
-        }
-
-        Map<Long, BillItem> billItemsByItem = new HashMap<>();
-
-        for (BillFee originalBillFee : bs.getBill().getBillFees()) {
-            BillItem originalBillItem = originalBillFee.getBillItem();
-            if (originalBillItem.getItem() instanceof ServiceSession) {
-                continue;  // do not create. it's created above
-            }
-
-            if (!billItemsByItem.containsKey(originalBillItem.getId())) {
-                BillItem bi = new BillItem();
-                bi.copy(originalBillItem);
-                bi.setBill(printingBill);
-                bi.setSessionDate(si.getSessionAt());
-                bi.setBillSession(newBillSession);
-                bi.setBillFees(new ArrayList<>());
-                getBillItemFacade().create(bi);
-                billItemsByItem.put(originalBillItem.getId(), bi);
-            }
-
-            BillItem newBillItem = billItemsByItem.get(originalBillItem.getId());
-            BillFee bf = new BillFee();
-            bf.copy(originalBillFee);
-            bf.setBillItem(newBillItem);
-            bf.setBill(printingBill);
-            getBillFeeFacade().create(bf);
-            savingBillFees.add(bf);
-
-            newBillItem.getBillFees().add(bf);
-            getBillItemFacade().edit(newBillItem);
-        }
-        printingBill.getBillItems().addAll(billItemsByItem.values());
-
-        savingBillItem.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItem));
-        savingBillItem.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItem));
-        savingBillItem.setBillSession(newBillSession);
-        getBillItemFacade().edit(savingBillItem);
-        printingBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, printingBill));
-        printingBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, printingBill));
-        printingBill.setSingleBillItem(savingBillItem);
-        printingBill.setSingleBillSession(newBillSession);
-        printingBill.setBillFees(savingBillFees);
-
-        calculateBillTotalsFromBillFees(printingBill, savingBillFees);
-
-        List<Integer> lastSessionReservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
-        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstanceForRechedule().getOriginatingSession().getReserveNumbers());
-
-        Integer count = null;
-        boolean reservedSession;
-
-        if (reservedBooking) {
-            if (lastSessionReservedNumbers.isEmpty()) {
-                JsfUtil.addErrorMessage("No Reserved Numbers FInd !");
-                return;
-            }
-            for (Integer rn : lastSessionReservedNumbers) {
-//                System.out.println("rn = " + rn);
-                if (bs.getSerialNo() == rn) {
-                    count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers, selectedReserverdBookingNumber);
-                    if (count == null) {
-                        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
-                        JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
-                    }
-                }
-            }
-
-        } else {
-            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
-        }
-        if (count != null) {
-            newBillSession.setSerialNo(count);
-//            System.out.println("count = " + count);
-        } else {
-            newBillSession.setSerialNo(1);
-//            System.out.println("count serial number= " + bs.getSerialNo());
-        }
-        getBillSessionFacade().edit(newBillSession);
-        bs.setRecheduledSession(true);
-        bs.setRescheduledToBillSession(newBillSession);
-        getBillSessionFacade().edit(bs);
-        newBillSessionForSMS = newBillSession;
-//        System.out.println("newBillSessionForSMS = " + newBillSessionForSMS);
-//        printingBill.setSingleBillSession(newBillSession);
-        billFacade.edit(printingBill);
-//        for (BillItem bi : printingBill.getBillItems()) {
-//            bi.setBillSession(newBillSession);
-//            billItemFacade.edit(bi);
-//        }
-    }
-
-    private Bill createBillForChannelReshedule(BillSession bs) {
-        Bill bill = new BilledBill();
-        List<BillItem> billItems = new ArrayList<>();
-        bill.setBillItems(billItems);
-        bill.setStaff(getSelectedSessionInstanceForRechedule().getOriginatingSession().getStaff());
-        bill.setToStaff(toStaff);
-        bill.setAppointmentAt(getSelectedSessionInstanceForRechedule().getSessionDate());
-        bill.setTotal(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
-        bill.setNetTotal(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
-        bill.setPaymentMethod(bs.getBill().getPaymentMethod());
-        bill.setPatient(bs.getBill().getPatient());
-        switch (bs.getBill().getPaymentMethod()) {
-            case OnCall:
-                bill.setBillType(BillType.ChannelOnCall);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT);
-                break;
-
-            case Cash:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_PAYMENT);
-                break;
-
-            case Card:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_PAYMENT);
-                break;
-
-            case Cheque:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_PAYMENT);
-                break;
-
-            case Slip:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_PAYMENT);
-                break;
-            case Agent:
-                bill.setBillType(BillType.ChannelAgent);
-                bill.setCreditCompany(institution);
-                bill.setAgentRefNo(agentRefNo);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_PAYMENT);
-                break;
-            case Staff:
-                bill.setBillType(BillType.ChannelStaff);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT);
-                break;
-            case Credit:
-                bill.setBillType(BillType.ChannelCredit);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT);
-                break;
-            case OnlineSettlement:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
-                break;
-
-            case MultiplePaymentMethods:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_PAYMENT);
-                break;
-        }
-
-        String deptId = generateBillNumberDeptId(bill);
-        if (deptId.equals("")) {
-            return null;
-        }
-        bill.setDeptId(deptId);
-        bill.setInsId(deptId);
-
-        bill.setPaidAmount(bs.getBill().getPaidAmount());
-        bill.setPaidAt(bs.getBill().getPaidAt());
-        bill.setPaidBill(bs.getBill().getPaidBill());
-
-        bill.setBillDate(new Date());
-        bill.setBillTime(new Date());
-        bill.setCreatedAt(new Date());
-        bill.setCreater(getSessionController().getLoggedUser());
-        bill.setDepartment(getSessionController().getDepartment());
-        bill.setInstitution(sessionController.getInstitution());
-
-        bill.setToDepartment(getSelectedSessionInstanceForRechedule().getDepartment());
-        bill.setToInstitution(getSelectedSessionInstanceForRechedule().getInstitution());
-        getBillFacade().create(bill);
-        BillItem savingBillItem = createSessionItemForReshedule(bill);
-        billItems.add(savingBillItem);
-        bill.setBillItems(billItems);
-        getBillFacade().edit(bill);
-        if (bs.getBill().getBillType() == BillType.ChannelCash || bs.getBill().getBillType() == BillType.ChannelAgent) {
-            bill.setPaidBill(bill);
-            getBillFacade().edit(bill);
-        }
-        return bill;
-    }
+   
 
     private BillItem createSessionItemForReshedule(Bill bill) {
         BillItem bi = new BillItem();
@@ -3474,7 +3202,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         return false;
     }
 
-    public void addNormalChannelBooking() {
+    public void addNormalFirstVisit() {
         if (billingStarted) {
             return;
         }
@@ -3484,14 +3212,31 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             billingStarted = false;
             return;
         }
-        addChannelBooking(false);
+        addChannelBooking(false, true);
 
         fillBillSessions();
         billingStarted = false;
 
     }
 
-    public void addReservedChannelBooking() {
+    public void addNormalSubsequentVisit() {
+        if (billingStarted) {
+            return;
+        }
+        billingStarted = true;
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("Please select a Session");
+            billingStarted = false;
+            return;
+        }
+        addChannelBooking(false, false);
+
+        fillBillSessions();
+        billingStarted = false;
+
+    }
+
+    public void addReservedChannelBookingFirstVisit() {
         if (billingStarted) {
             return;
         }
@@ -3501,12 +3246,27 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             return;
         }
         boolean reservedBooking = true;
-        addChannelBooking(reservedBooking);
+        addChannelBooking(reservedBooking, true);
         fillBillSessions();
         billingStarted = false;
     }
 
-    public void addChannelBooking(boolean reservedBooking) {
+    public void addReservedChannelBookingSubsequentVisit() {
+        if (billingStarted) {
+            return;
+        }
+        billingStarted = true;
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("Please select a Session Instance");
+            return;
+        }
+        boolean reservedBooking = true;
+        addChannelBooking(reservedBooking, false);
+        fillBillSessions();
+        billingStarted = false;
+    }
+
+    public void addChannelBooking(boolean reservedBooking, boolean firstVisit) {
         errorText = "";
         if (patient == null) {
             JsfUtil.addErrorMessage("Please select a patient");
@@ -3517,12 +3277,16 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             settleSucessFully = false;
             return;
         }
-        if (paymentMethodErrorPresent()) {
-            JsfUtil.addErrorMessage("Please Enter Payment Details");
-            settleSucessFully = false;
-            return;
+        if (!configOptionApplicationController.getBooleanValueByKey("No Payments for Clinic Booking")) {
+            if (paymentMethodErrorPresent()) {
+                JsfUtil.addErrorMessage("Please Enter Payment Details");
+                settleSucessFully = false;
+                return;
+            }
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Channelling Patients Cannot Be Added After the Channel Has Been Completed")) {
+
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Clinic Patients Cannot Be Added After the Clinic is Completed")) {
             if (selectedSessionInstance.isCompleted()) {
                 JsfUtil.addErrorMessage("This Session Has Been Completed");
                 settleSucessFully = false;
@@ -3530,37 +3294,8 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Channel Scan Sessions Require Item Presence")) {
-            if (!(itemsAvailableToAddToBooking.isEmpty())) {
-                if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
-                    JsfUtil.addErrorMessage("There is No Item Added");
-                    settleSucessFully = false;
-                    return;
-                }
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Channel Hearing Test Sessions Require Item Presence")) {
-            if (!(itemsAvailableToAddToBooking.isEmpty())) {
-                if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
-                    JsfUtil.addErrorMessage("There is No Item Added");
-                    settleSucessFully = false;
-                    return;
-                }
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Channel EEG Sessions Require Item Presence")) {
-            if (!(itemsAvailableToAddToBooking.isEmpty())) {
-                if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
-                    JsfUtil.addErrorMessage("There is No Item Added");
-                    settleSucessFully = false;
-                    return;
-                }
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Channel Items Sessions Need to Have a Referance Doctor")) {
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "First Clinic Appointment Needs to Have a Referral Doctor")) {
             if (!(itemsAddedToBooking == null || itemsAddedToBooking.isEmpty())) {
                 if (referredBy == null) {
                     JsfUtil.addErrorMessage("Referring Doctor is required");
@@ -3570,42 +3305,73 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             }
         }
 
-        if (selectedSessionInstance.getMaxNo() != 0) {
-            if (selectedSessionInstance.getBookedPatientCount() != null) {
-                int maxNo = selectedSessionInstance.getMaxNo();
-                long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
-                long totalPatientCount;
+        if (firstVisit) {
 
-                List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
-                if (reservedBooking) {
-                    bookedPatientCount = bookedPatientCount;
-                } else {
-                    bookedPatientCount = bookedPatientCount + reservedNumbers.size();
-                }
+            if (selectedSessionInstance.getMaxNoForFirstVisits()
+                    != 0) {
+                if (selectedSessionInstance.getBookedPatientCountForFirstVisits() != null) {
+                    int maxNo = selectedSessionInstance.getMaxNoForFirstVisits();
+                    long bookedPatientCount = selectedSessionInstance.getBookedPatientCountForFirstVisits();
+                    long totalPatientCount;
 
-                if (selectedSessionInstance.getCancelPatientCount() != null) {
-                    long canceledPatientCount = selectedSessionInstance.getCancelPatientCount();
-                    totalPatientCount = bookedPatientCount - canceledPatientCount;
-                } else {
-                    totalPatientCount = bookedPatientCount;
-                }
-                if (maxNo <= totalPatientCount) {
-                    JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + maxNo + ") has been Reached.");
-                    return;
+                    List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbersForFirstVisit());
+                    if (!reservedBooking) {
+                        bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                    }
+
+                    if (selectedSessionInstance.getCancelPatientCountForFirstVisits() != null) {
+                        long canceledPatientCount = selectedSessionInstance.getCancelPatientCountForFirstVisits();
+                        totalPatientCount = bookedPatientCount - canceledPatientCount;
+                    } else {
+                        totalPatientCount = bookedPatientCount;
+                    }
+                    if (maxNo <= totalPatientCount) {
+                        JsfUtil.addErrorMessage("Error: The maximum number of first bookings (" + maxNo + ") has been Reached.");
+                        return;
+                    }
                 }
             }
+        } else {
+            if (selectedSessionInstance.getMaxNoForSubsequentVisits()
+                    != 0) {
+                if (selectedSessionInstance.getBookedPatientCountForSubsequentVisits() != null) {
+                    int maxNo = selectedSessionInstance.getMaxNoForSubsequentVisits();
+                    long bookedPatientCount = selectedSessionInstance.getBookedPatientCountForSubsequentVisits();
+                    long totalPatientCount;
+
+                    List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbersForSubsequentVisits());
+                    if (!reservedBooking) {
+                        bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                    }
+
+                    if (selectedSessionInstance.getCancelPatientCountForSubsequentVisits() != null) {
+                        long canceledPatientCount = selectedSessionInstance.getCancelPatientCountForSubsequentVisits();
+                        totalPatientCount = bookedPatientCount - canceledPatientCount;
+                    } else {
+                        totalPatientCount = bookedPatientCount;
+                    }
+                    if (maxNo <= totalPatientCount) {
+                        JsfUtil.addErrorMessage("Error: The maximum number of susequent visits (" + maxNo + ") has been Reached.");
+                        return;
+                    }
+                }
+            }
+
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-            if (paymentMethod == PaymentMethod.Cash) {
-                if (strTenderedValue.isEmpty()) {
-                    JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
-                    return;
-                }
-                Double tend = Double.valueOf(strTenderedValue);
-                if (feeNetTotalForSelectedBill > tend) {
-                    JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
-                    return;
+        if (!configOptionApplicationController.getBooleanValueByKey("No Payments for Clinic Booking")) {
+            if (configOptionApplicationController.getBooleanValueByKey(
+                    "Allow Tenderd amount for channel booking")) {
+                if (paymentMethod == PaymentMethod.Cash) {
+                    if (strTenderedValue.isEmpty()) {
+                        JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
+                        return;
+                    }
+                    Double tend = Double.valueOf(strTenderedValue);
+                    if (feeNetTotalForSelectedBill > tend) {
+                        JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
+                        return;
+                    }
                 }
             }
         }
@@ -3615,21 +3381,23 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             return;
         }
 
-        if (paymentMethod == PaymentMethod.Agent) {
-            if (institution.getBallance() + institution.getAllowedCreditLimit() < feeNetTotalForSelectedBill) {
-                JsfUtil.addErrorMessage("Agency (balance+credit limit) exeeded. Please get a agency deposit or increase credit limit");
-                return;
-            }
+        if (!configOptionApplicationController.getBooleanValueByKey("No Payments for Clinic Booking")) {
+            if (paymentMethod == PaymentMethod.Agent) {
+                if (institution.getBallance() + institution.getAllowedCreditLimit() < feeNetTotalForSelectedBill) {
+                    JsfUtil.addErrorMessage("Agency (balance+credit limit) exeeded. Please get a agency deposit or increase credit limit");
+                    return;
+                }
 
-            if (getAgentRefNo() == null || getAgentRefNo().isEmpty()) {
-                JsfUtil.addErrorMessage("Please add Agent Reference No. ");
-                return;
-            }
+                if (getAgentRefNo() == null || getAgentRefNo().isEmpty()) {
+                    JsfUtil.addErrorMessage("Please add Agent Reference No. ");
+                    return;
+                }
 
+            }
         }
 
         saveSelected(patient);
-        printingBill = saveBilledBill(reservedBooking);
+        printingBill = saveBilledBill(reservedBooking, firstVisit);
 
         if (printingBill.getBillTypeAtomic()
                 .getBillFinanceType() == BillFinanceType.CASH_IN) {
@@ -3653,7 +3421,8 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         settleSucessFully = true;
         printPreview = true;
 
-        JsfUtil.addSuccessMessage("Channel Booking Added.");
+        JsfUtil.addSuccessMessage(
+                "Channel Booking Added.");
     }
 
     public long totalReservedNumberCount(SessionInstance s) {
@@ -5475,7 +5244,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
 
     }
 
-    private Bill saveBilledBill(boolean forReservedNumbers) {
+    private Bill saveBilledBill(boolean forReservedNumbers, boolean firstVisit) {
         Bill savingBill = createBill();
         BillItem savingBillItemForSession = createSessionItem(savingBill);
 
@@ -5488,7 +5257,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         }
         BillSession savingBillSession;
 
-        savingBillSession = createBillSession(savingBill, savingBillItemForSession, forReservedNumbers);
+        savingBillSession = createBillSession(savingBill, savingBillItemForSession, forReservedNumbers, firstVisit);
 
         List<BillFee> savingBillFees = new ArrayList<>();
 
@@ -5640,7 +5409,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         }
 
         BillSession savingBillSession;
-        savingBillSession = createBillSession(savingBill, savingBillItem, false);
+        savingBillSession = createBillSession(savingBill, savingBillItem, true, false);
 
         BillSession bs = new BillSession();
         bs.setAbsent(false);
@@ -5658,7 +5427,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
         Integer count;
 
-        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
+        count = clinicService.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers, false);
 
         if (count != null) {
             bs.setSerialNo(count);
@@ -6330,105 +6099,65 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         bill.setAppointmentAt(getSelectedSessionInstance().getSessionDate());
         bill.setTotal(getSelectedSessionInstance().getOriginatingSession().getTotal());
         bill.setNetTotal(getSelectedSessionInstance().getOriginatingSession().getTotal());
-        bill.setPaymentMethod(paymentMethod);
+
         bill.setPatient(getPatient());
-        switch (paymentMethod) {
-            case OnCall:
-                bill.setBillType(BillType.ChannelOnCall);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
-                break;
+        if (!configOptionApplicationController.getBooleanValueByKey("No Payments for Clinic Booking")) {
+            bill.setPaymentMethod(paymentMethod);
+            switch (paymentMethod) {
+                case OnCall:
+                    bill.setBillType(BillType.ChannelOnCall);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+                    break;
 
-            case Cash:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-                break;
+                case Cash:
+                    bill.setBillType(BillType.ChannelCash);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    break;
 
-            case Card:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-                break;
+                case Card:
+                    bill.setBillType(BillType.ChannelCash);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    break;
 
-            case Cheque:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-                break;
+                case Cheque:
+                    bill.setBillType(BillType.ChannelCash);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    break;
 
-            case Slip:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-                break;
-            case Agent:
-                bill.setBillType(BillType.ChannelAgent);
-                bill.setCreditCompany(institution);
-                bill.setAgentRefNo(agentRefNo);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-                break;
-            case Staff:
-                bill.setBillType(BillType.ChannelStaff);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
-                break;
-            case Credit:
-                bill.setBillType(BillType.ChannelCredit);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
-                break;
-            case OnlineSettlement:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
-                break;
+                case Slip:
+                    bill.setBillType(BillType.ChannelCash);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    break;
+                case Agent:
+                    bill.setBillType(BillType.ChannelAgent);
+                    bill.setCreditCompany(institution);
+                    bill.setAgentRefNo(agentRefNo);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    break;
+                case Staff:
+                    bill.setBillType(BillType.ChannelStaff);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+                    break;
+                case Credit:
+                    bill.setBillType(BillType.ChannelCredit);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+                    break;
+                case OnlineSettlement:
+                    bill.setBillType(BillType.ChannelCash);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
+                    break;
 
-            case MultiplePaymentMethods:
-                bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-                break;
+                case MultiplePaymentMethods:
+                    bill.setBillType(BillType.ChannelCash);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    break;
+            }
+        } else {
+            bill.setPaymentMethod(PaymentMethod.None);
+            bill.setBillType(BillType.ChannelCash);
+            bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
         }
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
+
         String deptId = generateBillNumberDeptId(bill);
 
         if (deptId.equals("")) {
@@ -6582,12 +6311,20 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         return bi;
     }
 
-    private BillSession createBillSession(Bill bill, BillItem billItem, boolean forReservedNumbers) {
+    private BillSession createBillSession(Bill bill, BillItem billItem, boolean forReservedNumbers, boolean firstVisit) {
+        String reserverNumberString;
         BillSession bs = new BillSession();
         bs.setAbsent(false);
         bs.setBill(bill);
         bs.setReservedBooking(forReservedNumbers);
         bs.setBillItem(billItem);
+        if (firstVisit) {
+            bs.setFirstVisit(true);
+            reserverNumberString = getSelectedSessionInstance().getReserveNumbersForFirstVisit();
+        } else {
+            bs.setFirstVisit(false);
+            reserverNumberString = getSelectedSessionInstance().getReserveNumbersForSubsequentVisits();
+        }
         bs.setCreatedAt(new Date());
         bs.setCreater(getSessionController().getLoggedUser());
         bs.setDepartment(getSelectedSessionInstance().getOriginatingSession().getDepartment());
@@ -6604,18 +6341,18 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         bs.setSessionTime(getSelectedSessionInstance().getSessionTime());
         bs.setStaff(getSelectedSessionInstance().getStaff());
 
-        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
+        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(reserverNumberString);
         Integer count;
 
         if (forReservedNumbers) {
             // Pass the selectedReservedBookingNumber to the service method
-            count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers, selectedReserverdBookingNumber);
+            count = clinicService.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers, selectedReserverdBookingNumber, firstVisit);
             if (count == null) {
-                count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
+                count = clinicService.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers, firstVisit);
                 JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
             }
         } else {
-            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
+            count = clinicService.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers, firstVisit);
         }
 
         if (count != null) {

@@ -30,6 +30,17 @@
                 <p:inputTextarea value="#{dataAdministrationController.errors}" 
                                  class="w-100"/>
 
+                
+                <p:outputLabel value="Data table Create SQL statement" ></p:outputLabel>
+                <p:inputTextarea value="#{dataAdministrationController.createdSql}" 
+                                 class="w-100"/>
+                
+                <p:spacer ></p:spacer>
+                <p:commandButton 
+                    value="Generate Alter Statements" 
+                    ajax="false" 
+                    action="#{dataAdministrationController.generateAlterStatementFromCreateTableStatement}" ></p:commandButton>
+                
                 <p:outputLabel value="SQL to Run" ></p:outputLabel>
                 <p:inputTextarea value="#{dataAdministrationController.suggestedSql}" 
                                  class="w-100"/>

@@ -53,9 +53,8 @@ import javax.persistence.Transient;
  *
  * @author buddhika
  */
-
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE) 
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "DTYPE")
 public class Item implements Serializable, Comparable<Item> {
 
@@ -74,7 +73,7 @@ public class Item implements Serializable, Comparable<Item> {
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
     int orderNo;
-    
+
     private boolean canSechduleForOtherDays;
 
     private Long itemId;
@@ -82,7 +81,6 @@ public class Item implements Serializable, Comparable<Item> {
     private boolean isMasterItem;
     private boolean hasReportFormat;
     private int numberOfDaysToMarkAsShortExpiary;
-    
 
     @ManyToOne
     Category category;
@@ -112,7 +110,7 @@ public class Item implements Serializable, Comparable<Item> {
     Item billedAs;
     @ManyToOne
     Item reportedAs;
-    
+
     @ManyToOne
     private Item masterItemReference;
     String name;
@@ -215,6 +213,8 @@ public class Item implements Serializable, Comparable<Item> {
     String agencyNumbers;
     String reserveName;
     String reserveNumbers;
+    private String reserveNumbersForFirstVisit;
+    private String reserveNumbersForSubsequentVisits;
     int maxTableRows;
     @Enumerated(EnumType.STRING)
     private ItemType itemType;
@@ -247,7 +247,7 @@ public class Item implements Serializable, Comparable<Item> {
     double channelAgentFee;
     @Transient
     double channelOnCallFee;
-    
+
     @Transient
     private double totalStockQty;
 
@@ -256,19 +256,19 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Transient
     private String transCodeFromName;
-    
+
     private boolean multipleReportsAllowed;
-    
+
     private boolean alternativeReportAllowed;
-    
+
     @Lob
     private String forGender;
 
     @Column(name = "DTYPE", insertable = false, updatable = false)
     private String clazz;
-    
-     private boolean canRemoveItemfromPackage;
- 
+
+    private boolean canRemoveItemfromPackage;
+
     public double getVatPercentage() {
         return 0;
     }
@@ -430,7 +430,6 @@ public class Item implements Serializable, Comparable<Item> {
     @Transient
     List<ItemFee> itemFees;
     private Boolean printFeesForBills;
-    
 
     @Transient
     private List<ItemFee> itemFeesActive;
@@ -830,8 +829,8 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public SessionNumberType getSessionNumberType() {
-        if(sessionNumberType==null){
-            sessionNumberType=SessionNumberType.ByBill;
+        if (sessionNumberType == null) {
+            sessionNumberType = SessionNumberType.ByBill;
         }
         return sessionNumberType;
     }
@@ -1108,8 +1107,6 @@ public class Item implements Serializable, Comparable<Item> {
 
         return this.name.compareTo(o.name);
     }
-    
-    
 
     public ItemType getItemType() {
         if (itemType == null) {
@@ -1265,8 +1262,6 @@ public class Item implements Serializable, Comparable<Item> {
     public void setPackUnit(MeasurementUnit packUnit) {
         this.packUnit = packUnit;
     }
-    
-    
 
     public MeasurementUnit getBaseUnit() {
         return baseUnit;
@@ -1333,7 +1328,7 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public int getNumberOfDaysToMarkAsShortExpiary() {
-        if(numberOfDaysToMarkAsShortExpiary==0){
+        if (numberOfDaysToMarkAsShortExpiary == 0) {
             numberOfDaysToMarkAsShortExpiary = 30;
         }
         return numberOfDaysToMarkAsShortExpiary;
@@ -1360,8 +1355,8 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public ItemBarcodeGenerationStrategy getItemBarcodeGenerationStrategy() {
-        if(itemBarcodeGenerationStrategy==null){
-            itemBarcodeGenerationStrategy=ItemBarcodeGenerationStrategy.BY_ITEM;
+        if (itemBarcodeGenerationStrategy == null) {
+            itemBarcodeGenerationStrategy = ItemBarcodeGenerationStrategy.BY_ITEM;
         }
         return itemBarcodeGenerationStrategy;
     }
@@ -1371,8 +1366,8 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public Long getLastBarcode() {
-        if(lastBarcode==null){
-            lastBarcode=0l;
+        if (lastBarcode == null) {
+            lastBarcode = 0l;
         }
         return lastBarcode;
     }
@@ -1406,14 +1401,12 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public String getForGender() {
-        if(forGender==null||forGender.trim().equals("")){
+        if (forGender == null || forGender.trim().equals("")) {
             forGender = "Both";
         }
         return forGender;
     }
 
-    
-    
     public void setForGender(String forGender) {
         this.forGender = forGender;
     }
@@ -1449,6 +1442,24 @@ public class Item implements Serializable, Comparable<Item> {
     public void setAlternativeReportAllowed(boolean alternativeReportAllowed) {
         this.alternativeReportAllowed = alternativeReportAllowed;
     }
+
+    public String getReserveNumbersForFirstVisit() {
+        return reserveNumbersForFirstVisit;
+    }
+
+    public void setReserveNumbersForFirstVisit(String reserveNumbersForFirstVisit) {
+        this.reserveNumbersForFirstVisit = reserveNumbersForFirstVisit;
+    }
+
+    public String getReserveNumbersForSubsequentVisits() {
+        return reserveNumbersForSubsequentVisits;
+    }
+
+    public void setReserveNumbersForSubsequentVisits(String reserveNumbersForSubsequentVisits) {
+        this.reserveNumbersForSubsequentVisits = reserveNumbersForSubsequentVisits;
+    }
+    
+    
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 

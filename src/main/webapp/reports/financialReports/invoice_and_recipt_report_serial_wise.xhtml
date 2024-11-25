@@ -11,9 +11,8 @@
         <ui:composition template="/reports/index.xhtml" class="w-100 border">
             <ui:define name="subcontent">
                 <h:form class="w-100">
-                    <p:panel header="Invoice and Receipt Report(serial wise)" class="w-100">
-                        <h:panelGrid columns="5" class="w-100 ">
-
+                    <p:panel header="Invoice and Receipt Report (Serial Wise)" class="w-100">
+                        <h:panelGrid columns="8" class="w-100 ">
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
@@ -24,9 +23,7 @@
                                           pattern=""
                                           class=" w-100" inputStyleClass="w-100" ></p:datePicker>
 
-
                             <p:spacer width="20"></p:spacer>
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
@@ -37,10 +34,11 @@
                                           pattern=""
                                           class="w-100" inputStyleClass="w-100"></p:datePicker>
 
+                            <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Branch" class="mx-3"/>
+                                <h:outputText value="&#xf543;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Invoice / Receipt" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu 
                                 value="" 
@@ -53,8 +51,117 @@
                                                itemValue="" ></f:selectItems>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"></p:spacer>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
 
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="false"
+                                    styleClass="w-100 form-control"  
+                                    value="#{searchController.department}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
+                                        var="d" 
+                                        itemLabel="#{d.name}" 
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0c0;" styleClass="fa mr-2" /> 
@@ -71,7 +178,7 @@
                                                itemValue="" ></f:selectItems>
                             </p:selectOneMenu>
 
-
+                            <p:spacer ></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
@@ -107,10 +214,6 @@
                                                itemValue="" ></f:selectItems>
                             </p:selectOneMenu>
 
-
-
-
-
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf09d;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Pay Mode" class="mx-3"/>
@@ -126,26 +229,7 @@
                                                itemValue="" ></f:selectItems>
                             </p:selectOneMenu>
 
-
                             <p:spacer width="20"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf155;" styleClass="fa mr-2" /> <!-- FontAwesome dollar-sign icon for Professional Fee -->
-                                <h:outputLabel value="Professional Fee" for="cmbProfessionalFee" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var=""
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
-                            </p:selectOneMenu>
-
-
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf084;" styleClass="fa mr-2" /> 
@@ -162,62 +246,100 @@
                                                itemValue="" ></f:selectItems>
                             </p:selectOneMenu>
 
-                        </h:panelGrid><br />
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
 
+                            <p:selectBooleanButton
+                                onLabel="With Professional Fee" 
+                                offLabel="without Professional Fee" 
+                                value="#{searchController.withProfessionalFee}"
+                                onIcon="pi pi-check" 
+                                class="w-100"
+                                offIcon="pi pi-times" 
+                                >
+                            </p:selectBooleanButton>
 
-                        <div class="d-flex align-items-center">
-                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process" icon="fas fa-cogs" >
-                            </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
-                            </p:commandButton>
-                        </div><br/>
+                        </h:panelGrid>
 
-                        <p:dataTable id="dtaiarr1" value="" var="pc" rowIndexVar="rowIndex">
-                            
+                        <p:commandButton 
+                            class="ui-button-warning my-4 mx-2"
+                            style="width: 150px"
+                            ajax="false" 
+                            value="Process" 
+                            icon="fas fa-cogs" >
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            class="ui-button-info my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-print" 
+                            ajax="false" 
+                            value="Print">
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            class="ui-button-success my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-file-excel" 
+                            ajax="false" 
+                            value="Excel">
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            class="ui-button-danger my-4 mx-2"
+                            style="width: 150px"
+                            icon= "fas fa-file-pdf" 
+                            ajax="false" 
+                            value="PDF">
+                        </p:commandButton>
+
+                        <p:dataTable 
+                            id="dtaiarr1" 
+                            value="" 
+                            paginator="true"
+                            rows="10"
+                            paginatorPosition="bottom">
+
                             <p:column headerText="No">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Invoice / Receipt created Date">
+                            <p:column headerText="Created Date">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Invoice / Receipt settled Date">
+                            <p:column headerText="Settled Date">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Cancelled / Refund date">
+                            <p:column headerText="Cancelled / Refund Date">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Invoice / Receipt serial">
+                            <p:column headerText="Serial">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
                             <p:column headerText="OP/IP">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Admission type">
+                            <p:column headerText="Admission Type">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Status (Settled / pending / refund / cancel)">
+                            <p:column headerText="Status">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Total Invoice / Receipt amount">
+                            <p:column headerText="Total Amount">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Due amount">
+                            <p:column headerText="Due Amount">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Settle amount">
+                            <p:column headerText="Settle Amount">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Total payments">
+                            <p:column headerText="Total Payments">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
                             <p:column headerText="Excess Amount">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                                                   
+
                         </p:dataTable>
 
 
