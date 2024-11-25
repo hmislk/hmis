@@ -17,102 +17,122 @@
                             <div class="d-flex align-items-center justify-content-between">
                                 <div></div>
                                 <div>
-                                    <p:commandButton ajax="false"
-                                                     class="ui-button-warning mx-2"
-                                                     value="Refund"
-                                                     action="#{billSearch.navigateToViewCcBillRefund(billSearch.bill)}"/>
-                                    
-                                    <p:commandButton ajax="false"
-                                                     class="ui-button-danger"
-                                                     value="Cancel"
-                                                     action="/collecting_centre/bill_cancel?faces-redirect=true"/>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="To Cancel"
+                                        action="#{billSearch.navigateToCancelCollectingCentreBill}" 
+                                        disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
+                                        class="ui-button-danger m-1" 
+                                        icon="fa fa-times" >                           
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false" 
+                                        value="To Refund" 
+                                        rendered="false"
+                                        action="#{billSearch.navigateToRefundCollectingCentreBill}" 
+                                        disabled="#{billSearch.bill.cancelled or not billReturnController.checkCanReturnBill(billSearch.bill)}" 
+                                        class="ui-button-warning m-1" 
+                                        icon="fa fa-money-bill-wave"> 
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false" 
+                                        value="To Return" 
+                                        actionListener="#{billReturnController.clear()}"
+                                        action="#{billReturnController.navigateToReturnCCBill()}" 
+                                        disabled="#{billSearch.bill.cancelled or not billReturnController.checkCanReturnBill(billSearch.bill)}" 
+                                        class="ui-button-warning m-1" 
+                                        icon="fa fa-money-bill-wave">      
+                                        <f:setPropertyActionListener 
+                                            value="#{billSearch.bill}" 
+                                            target="#{billReturnController.originalBillToReturn}" />
+                                    </p:commandButton>
                                 </div>
                             </div>
                         </f:facet>
                         <div class="row ">
-                        <div class="col-md-6">
-                            <p:panel>
-                                <f:facet name="header">
-                                    <p:outputLabel value="Bill for Collecting Center"  class="mt-2"/>
-                                    <p:commandButton 
-                                        value="Print" 
-                                        process="@this" 
-                                        update="@all" 
-                                        type="button"  
-                                        class="ui-button-info m-1"
-                                        icon="fa fa-print"
-                                        style="float: right;"
-                                        ajax="false">
-                                        <p:printer target="centerBillPriview" ></p:printer>
-                                    </p:commandButton>
-                                </f:facet>
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Bill for Collecting Center"  class="mt-2"/>
+                                        <p:commandButton 
+                                            value="Print" 
+                                            process="@this" 
+                                            update="@all" 
+                                            type="button"  
+                                            class="ui-button-info m-1"
+                                            icon="fa fa-print"
+                                            style="float: right;"
+                                            ajax="false">
+                                            <p:printer target="centerBillPriview" ></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
 
-                                <h:panelGroup id="centerBillPriview">
+                                    <h:panelGroup id="centerBillPriview">
 
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                            <bi:posCCBill_CC bill="#{pp}" duplicate="false"/>                        
-                                        </ui:repeat>
-                                    </h:panelGroup>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:posCCBill_CC bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                            <bi:fiveFiveCCBill_CC bill="#{pp}" duplicate="false"/>                        
-                                        </ui:repeat>
-                                    </h:panelGroup>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_CC bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
-                                       
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+
                                             <bi:fiveFiveCCBill_CC_Custom1 bill="#{billSearch.bill}" duplicate="false"/>                        
-                                        
+
+                                        </h:panelGroup>
+
                                     </h:panelGroup>
 
-                                </h:panelGroup>
+                                </p:panel>
+                            </div>
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Bill for Patinet " class="mt-2"/>
+                                        <p:commandButton 
+                                            value="Print Patient" 
+                                            class="ui-button-info m-1"
+                                            icon="fa fa-print"
+                                            process="@this" 
+                                            update="@all" 
+                                            style="float: right;"
+                                            type="button"  
+                                            ajax="false">
+                                            <p:printer target="parinetBillPriview" ></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
+                                    <h:panelGroup id="parinetBillPriview">
 
-                            </p:panel>
-                        </div>
-                        <div class="col-md-6">
-                            <p:panel>
-                                <f:facet name="header">
-                                    <p:outputLabel value="Bill for Patinet " class="mt-2"/>
-                                    <p:commandButton 
-                                        value="Print Patient" 
-                                        class="ui-button-info m-1"
-                                        icon="fa fa-print"
-                                        process="@this" 
-                                        update="@all" 
-                                        style="float: right;"
-                                        type="button"  
-                                        ajax="false">
-                                        <p:printer target="parinetBillPriview" ></p:printer>
-                                    </p:commandButton>
-                                </f:facet>
-                                <h:panelGroup id="parinetBillPriview">
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:posCCBill_Patient bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                            <bi:posCCBill_Patient bill="#{pp}" duplicate="false"/>                        
-                                        </ui:repeat>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                            <bi:fiveFiveCCBill_Patient bill="#{pp}" duplicate="false"/>                        
-                                        </ui:repeat>
-                                    </h:panelGroup>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_Patient bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
 
 
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
-                                        
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+
                                             <bi:fiveFiveCCBill_Patient_Custom1 bill="#{billSearch.bill}" duplicate="false"/>                        
-                                        
+
+                                        </h:panelGroup>
+
                                     </h:panelGroup>
 
-                                </h:panelGroup>
-
-                            </p:panel>
-                        </div>                            
-                    </div>
+                                </p:panel>
+                            </div>                            
+                        </div>
                     </p:panel>
                 </h:form>
             </ui:define>

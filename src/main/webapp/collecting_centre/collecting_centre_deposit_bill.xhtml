@@ -99,7 +99,10 @@
                                         </h:panelGroup>
 
                                         <h:panelGroup id="cash"  rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Cash'}">
-                                            <p:inputText autocomplete="off" value="#{agentAndCcPaymentController.current.netTotal}"/> 
+                                            <p:inputText 
+                                                autocomplete="off" 
+                                                onfocus="this.select();"
+                                                value="#{agentAndCcPaymentController.current.netTotal}"/> 
                                         </h:panelGroup>
                                     </h:panelGroup>
                                 </div>

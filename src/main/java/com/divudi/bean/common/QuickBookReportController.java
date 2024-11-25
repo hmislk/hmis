@@ -1333,7 +1333,7 @@ public class QuickBookReportController implements Serializable {
     //-------Main Functions
     public List<QuickBookFormat> fetchOPdListDayEndTable(List<PaymentMethod> paymentMethods, Date fd, Date td, Institution creditCompany) {
         List<QuickBookFormat> qbfs = new ArrayList<>();
-        Map temMap = new HashMap();
+        Map params = new HashMap();
         String jpql;
 
         jpql = "select c, "
@@ -1351,26 +1351,26 @@ public class QuickBookReportController implements Serializable {
 
         if (!withProfessionalFee) {
             jpql += " and bf.fee.feeType!=:ft ";
-            temMap.put("ft", FeeType.Staff);
+            params.put("ft", FeeType.Staff);
         } else {
 
         }
         if (institution != null) {
             jpql += " and bi.bill.institution=:ins ";
-            temMap.put("ins", institution);
+            params.put("ins", institution);
         }
         if (department != null) {
             jpql += " and bi.bill.department=:dep ";
-            temMap.put("dep", department);
+            params.put("dep", department);
         }
         if (site != null) {
             jpql += " and bi.bill.department.site=:site ";
-            temMap.put("site", site);
+            params.put("site", site);
         }
 
         if (creditCompany != null) {
             jpql += " and bi.bill.creditCompany=:cd ";
-            temMap.put("cd", creditCompany);
+            params.put("cd", creditCompany);
 
         } else {
             // RHRHD/87626 set fee depart ment collecting center
@@ -1379,13 +1379,16 @@ public class QuickBookReportController implements Serializable {
         jpql += " group by c, i, bi.bill.billClassType, bf.fee "
                 + " order by c.name, i.name, bf.fee.feeType ";
 
-        temMap.put("toDate", td);
-        temMap.put("fromDate", fd);
+        params.put("toDate", td);
+        params.put("fromDate", fd);
 
-        temMap.put("bTp", BillType.OpdBill);
-        temMap.put("pms", paymentMethods);
+        params.put("bTp", BillType.OpdBill);
+        params.put("pms", paymentMethods);
 
-        List<Object[]> lobjs = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+
+        List<Object[]> lobjs = getBillFacade().findAggregates(jpql, params, TemporalType.TIMESTAMP);
         System.out.println("lobjs.size = " + lobjs.size());
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
@@ -1565,7 +1568,6 @@ public class QuickBookReportController implements Serializable {
 //                + " and bi.retired = false "
 //                + " and bf.retired = false "
 //                + " and bf.fee.feeType = :ft ";
-        
         jpql = "select count(bi.bill), sum(bf.feeValue) "
                 + " from BillFee bf join bf.billItem bi "
                 + " where bi.bill.billTypeAtomic in :btas "
@@ -1601,7 +1603,7 @@ public class QuickBookReportController implements Serializable {
         temMap.put("fromDate", fd);
         temMap.put("toDate", td);
 //        temMap.put("bTp", BillType.OpdBill);
-           
+
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
@@ -1609,8 +1611,7 @@ public class QuickBookReportController implements Serializable {
         btas.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
 
         temMap.put("btas", btas);
-           
-           
+
         temMap.put("pms", paymentMethods);
 
         List<Object[]> lobjs = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
@@ -1789,7 +1790,7 @@ public class QuickBookReportController implements Serializable {
         List<BillTypeAtomic> ccCollection = new ArrayList<>();
         ccCollection.add(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
         ccCollection.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
-        double cc = getBillBeanController().calBillTotal(ccCollection, fd, td, getInstitution());
+        double cc = getBillBeanController().calBillTotal(ccCollection, fd, td, getInstitution(), getSite(), getDepartment());
 
         boolean skippedChannelling = true;
         QuickBookFormat qbf;

@@ -22,7 +22,7 @@
                                     <p:commandButton 
                                         ajax="false" 
                                         value="To Cancel"
-                                        action="/collecting_centre/bill_cancel?faces-redirect=true" 
+                                        action="#{billSearch.navigateToCancelCollectingCentreBill}" 
                                         disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
                                         class="ui-button-danger m-1 w-25" 
                                         icon="fa fa-times" >                           
@@ -30,6 +30,7 @@
                                     <p:commandButton
                                         ajax="false" 
                                         value="To Refund" 
+                                        rendered="false"
                                         action="#{billSearch.navigateToRefundCollectingCentreBill}" 
                                         disabled="#{billSearch.bill.cancelled or not billReturnController.checkCanReturnBill(billSearch.bill)}" 
                                         class="ui-button-warning m-1 w-25" 
