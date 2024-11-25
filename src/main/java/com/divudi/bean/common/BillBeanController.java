@@ -1550,6 +1550,7 @@ public class BillBeanController implements Serializable {
                 + " order by b.id";
 
         Map temMap = new HashMap();
+
         temMap.put("fromDate", fromDate);
         temMap.put("toDate", toDate);
         temMap.put("btas", billTypeAtomics);
@@ -1558,6 +1559,38 @@ public class BillBeanController implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
+    public double calBillTotal(List<BillTypeAtomic> billTypeAtomics, Date fromDate, Date toDate, Institution institution, Institution site, Department department) {
+        String jpql;
+        jpql = " SELECT sum(b.netTotal) "
+                + " FROM Bill b"
+                + " WHERE b.retired=false "
+                + " and b.billTypeAtomic in :btas "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        Map params = new HashMap();
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+        jpql += " order by b.id";
+
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("btas", billTypeAtomics);
+
+        return getBillFacade().findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    @Deprecated // Use calBillTotal(List<BillTypeAtomic> billTypeAtomics, Date fromDate, Date toDate, Institution institution, Institution site, Department department)
     public double calBillTotal(BillType billType, boolean isOpd, Date fromDate, Date toDate, Institution institution) {
         String sql;
         Map temMap = new HashMap();
