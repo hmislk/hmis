@@ -126,7 +126,7 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="Daily return" action="/reports/financialReports/daily_return?faces-redirect=true"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Income Breakdown by Category"  action="/reports/financialReports/income_breakdown_by_category?faces-redirect=true"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Bills by Category" action="/reports/financialReports/bills_by_item_category?faces-redirect=true"/>
-                                    
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
@@ -134,7 +134,7 @@
                                         value="4. Service Category Wise Bill Details" 
                                         action="/reports/financialReports/service_category_wise_bill_detail?faces-redirect=true">
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton   class="w-100"  ajax="false" value="4.1. Service Category Wise Bill Details OPD" action="/reports/financialReports/service_category_wise_bill_detail_OPD?faces-redirect=true"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="5. Professional Fees Payment" action="/reports/financialReports/professional_fee_payment?faces-redirect=true"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="6. Discount" action="#{reportController.navigateToDiscount()}" />
@@ -163,6 +163,7 @@
                                         ajax="false" 
                                         value="27. Department Revenue" >
                                     </p:commandButton>
+                                    <p:commandButton   class="w-100"  ajax="false" value="28. Payment Settlement" action="#{searchController.navigateToPaymentSettlement()}"/>
                                 </div>
                             </p:tab>
                             <p:tab title="Professional Payment Reports">

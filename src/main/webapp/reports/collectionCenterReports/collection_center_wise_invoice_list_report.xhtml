@@ -23,7 +23,7 @@
                                     class="w-100 " 
                                     inputStyleClass="w-100" 
                                     id="fromDate" 
-                                    value="#{searchController.fromDate}" 
+                                    value="#{reportsController.fromDate}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 </p:calendar>
 
@@ -35,7 +35,7 @@
                                     class="w-100 " 
                                     inputStyleClass="w-100" 
                                     id="toDate" 
-                                    value="#{searchController.toDate}" 
+                                    value="#{reportsController.toDate}"
                                     navigator="false" 
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 </p:calendar>
@@ -47,7 +47,7 @@
                                 <p:selectOneMenu
                                     id="cmbIns"
                                     styleClass="w-100 form-control" 
-                                    value="#{searchController.institution}" 
+                                    value="#{reportsController.institution}"
                                     filter="true">
                                     <f:selectItem itemLabel="All Institutions" />
                                     <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
@@ -61,7 +61,7 @@
                                 <p:selectOneMenu
                                     id="siteMenu"
                                     styleClass="w-100 form-control"  
-                                    value="#{searchController.site}" 
+                                    value="#{reportsController.site}"
                                     filter="true">
                                     <f:selectItem itemLabel="All Sites" />
                                     <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
@@ -76,9 +76,9 @@
 
                                     <!-- Component 1: Without Institution and Site -->
                                     <p:selectOneMenu
-                                        rendered="#{searchController.institution eq null and searchController.site eq null}"
+                                        rendered="#{reportsController.institution eq null and reportsController.site eq null}"
                                         styleClass="w-100 form-control"
-                                        value="#{searchController.department}"
+                                        value="#{reportsController.department}"
                                         filterMatchMode="contains"
                                         filter="true">
                                         <f:selectItem itemLabel="All Departments" />
@@ -91,14 +91,14 @@
 
                                     <!-- Component 2: With Site Only -->
                                     <p:selectOneMenu
-                                        rendered="#{searchController.institution eq null and searchController.site ne null}"
+                                        rendered="#{reportsController.institution eq null and reportsController.site ne null}"
                                         styleClass="w-100 form-control"
-                                        value="#{searchController.department}"
+                                        value="#{reportsController.department}"
                                         filterMatchMode="contains"
                                         filter="true">
                                         <f:selectItem itemLabel="All Departments" />
                                         <f:selectItems 
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.site)}"
                                             var="d"
                                             itemLabel="#{d.name}"
                                             itemValue="#{d}" />
@@ -106,14 +106,14 @@
 
                                     <!-- Component 3: With Institution Only -->
                                     <p:selectOneMenu
-                                        rendered="#{searchController.institution ne null and searchController.site eq null}"
+                                        rendered="#{reportsController.institution ne null and reportsController.site eq null}"
                                         styleClass="w-100 form-control"
-                                        value="#{searchController.department}"
+                                        value="#{reportsController.department}"
                                         filterMatchMode="contains"
                                         filter="true">
                                         <f:selectItem itemLabel="All Departments" />
                                         <f:selectItems 
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(reportsController.institution)}"
                                             var="d"
                                             itemLabel="#{d.name}"
                                             itemValue="#{d}" />
@@ -121,14 +121,14 @@
 
                                     <!-- Component 4: With Both Institution and Site -->
                                     <p:selectOneMenu
-                                        rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                        rendered="#{reportsController.institution ne null and reportsController.site ne null}"
                                         styleClass="w-100 form-control"
-                                        value="#{searchController.department}"
+                                        value="#{reportsController.department}"
                                         filterMatchMode="contains"
                                         filter="true">
                                         <f:selectItem itemLabel="All Departments" />
                                         <f:selectItems 
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.institution, reportsController.site)}"
                                             var="d"
                                             itemLabel="#{d.name}"
                                             itemValue="#{d}" />
@@ -137,11 +137,11 @@
                                     <p:selectOneMenu
                                         rendered="false"
                                         styleClass="w-100 form-control"  
-                                        value="#{searchController.department}" 
+                                        value="#{reportsController.department}"
                                         filter="true">
                                         <f:selectItem itemLabel="All Departments" />
                                         <f:selectItems 
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.institution, reportsController.site)}"
                                             var="d" 
                                             itemLabel="#{d.name}" 
                                             itemValue="#{d}" />
@@ -155,7 +155,8 @@
                                 </h:panelGroup>
                                 <p:autoComplete 
                                     placeholder="Enter Agent Name or Code"
-                                    converter="deal" 
+                                    converter="deal"
+                                    value="#{reportsController.collectingCentre}"
                                     forceSelection="true" id="acColl"
                                     completeMethod="#{institutionController.completeCollectingCenter}" 
                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" 
@@ -170,7 +171,8 @@
                             <h:panelGrid columns="6">
                                 <p:commandButton 
                                     ajax="false" 
-                                    value="Process" 
+                                    value="Process"
+                                    action="#{reportsController.generateCollectionCenterWiseInvoiceListReport()}"
                                     style="width: 150px"
                                     icon="fas fa-cogs"
                                     class="m-2 ui-button-warning">
@@ -208,86 +210,67 @@
                             <h:panelGrid columns="2" class="my-4" >
 
                                 <h:outputLabel value="From Date :  "/>
-                                <h:outputLabel value="#{reportController.fromDate}"  >
+                                <h:outputLabel value="#{reportsController.fromDate}"  >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
 
                                 <h:outputLabel value="To Date :  "/>
-                                <h:outputLabel value="#{reportController.toDate}"  >
+                                <h:outputLabel value="#{reportsController.toDate}"  >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
 
                                 <h:outputLabel value="Agent Name :  "/>
-                                <h:outputLabel value="#{reportController.collectingCentre.name}"  >
+                                <h:outputLabel value="#{reportsController.collectingCentre.name}"  >
                                 </h:outputLabel>
                             </h:panelGrid>
                         </div>
 
-                        <p:dataTable value="#{reportController.agentHistories}" rowIndexVar="b" var="bi" id="tblExport">
-                            <!--                        //Mandatory filters
-                            #{bi.bill.retired} - boolean - false
-                            #{bi.retired} - boolean - false
-                            #{bi.bill.billType} - public enum BillType - CollectingCentreBill
-    
-                            //For User input Filters
-                            #{bi.bill.billDate} - Date - for user input from and to
-                            #{bi.bill.institution} - Institution - for Instituion or branch
-                            #{bi.bill.fromInstitution} - Institution - COllecting Centre
-                            #{bi.bill.fromInstitution.route} - Route - Route
-    
-    
-                            #{bi.bill.patient.phn}    Patient MRN
-                            #{bi.bill.deptId} Invoice Number
-                            #{bi.item} - Investigation
-                            #{bi.bill.toDepartment} - Laboratory
-    
-                            #{bi.bill.referredBy} Referring Doctor Name
-    
-                            #{bi.billItemStatus} - Status
-    
-                            -->
-
+                        <p:dataTable value="#{reportsController.bundle.reportTemplateRows}" rowIndexVar="b" var="bi" id="tblExport">
                             <p:column headerText="S1. No" >
-                                <h:outputText value="#{b+1}" ></h:outputText>
+                                <h:outputText value="#{b+1}" />
                             </p:column>
                             <p:column headerText="CC Code" >
-                                <h:outputText value="#{bi.bill.collectingCentre.code}" ></h:outputText>
+                                <h:outputText value="#{bi.bill.collectingCentre.code}" />
                             </p:column>
                             <p:column headerText="Collecting Centre" >
-                                <h:outputText value="#{bi.bill.collectingCentre.name}" ></h:outputText>
+                                <h:outputText value="#{bi.bill.collectingCentre.name}" />
                             </p:column>
                             <p:column headerText="Bill No" >
-                                <h:outputText value="#{bi.bill.id}" ></h:outputText>
+                                <h:outputText value="#{bi.bill.deptId}" />
                             </p:column>
-                            <p:column headerText="Before Balance" >
-                                <h:outputText value="#{bi.balanceBeforeTransaction}" ></h:outputText>
+                            <p:column headerText="Before Balance"  class="text-end">
+                                <h:outputText value="#{agentAndCcApplicationController.ccBalanceBefore(bi.bill)}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Transaction Value (Hospital Amount)" >
-                                <h:outputText value="#{bi.companyTransactionValue}" ></h:outputText>
+                            <p:column headerText="Transaction Value (Hospital Amount)"  class="text-end">
+                                <h:outputText value="#{bi.bill.totalHospitalFee}" />
                             </p:column>
-                            <p:column headerText="CC(%)" >
-                                <h:outputText></h:outputText>
+                            <p:column headerText="CC(%)" class="text-end">
+                                <h:outputText  value="#{(bi.bill.collctingCentreFee / bi.bill.netTotal) * 100}" />
                             </p:column>
-                            <p:column headerText="CC Amount" >
-                                <h:outputText value="#{bi.collectingCentertransactionValue}" ></h:outputText>
+                            <p:column headerText="CC Amount"  class="text-end">
+                                <h:outputText value="#{bi.bill.collctingCentreFee}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="After Balance" >
-                                <h:outputText value="#{bi.balanceAfterTransaction}" ></h:outputText>
+                            <p:column headerText="After Balance"  class="text-end">
+                                <h:outputText value="#{agentAndCcApplicationController.ccBalanceAfter(bi.bill)}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Creator" >
-                                <h:outputText value="#{bi.bill.creater.name}" ></h:outputText>
+                                <h:outputText value="#{bi.bill.creater.name}" />
                             </p:column>
                             <p:column headerText="Created Date" >
                                 <h:outputText value="#{bi.bill.createdAt}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>
                         </p:dataTable>
                     </p:panel>
                 </h:form>
-
             </ui:define>
         </ui:composition>
-
     </h:body>
 </html>

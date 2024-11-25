@@ -1097,11 +1097,17 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         return "/reports/financialReports/package_report?faces-redirect=true";
     }
-    
-     public String navigateToCreditInvoiceDispatch() {
+
+    public String navigateToCreditInvoiceDispatch() {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
         return "/reports/financialReports/credit_invoice_dispatch_report?faces-redirect=true";
+    }
+
+    public String navigateToPaymentSettlement() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/payment_settlement_report?faces-redirect=true";
     }
 
     public String navigatToShiftEndSummary() {
@@ -12402,9 +12408,9 @@ public class SearchController implements Serializable {
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
-        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
-            sql += " and  ((b.staff.person.name) like :stf )";
-            temMap.put("stf", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        if (getStaff() != null) {
+            sql += " and  ((b.staff) =:stf )";
+            temMap.put("stf", getStaff());
         }
 
         if (getSearchKeyword().getPersonName() != null && !getSearchKeyword().getPersonName().trim().equals("")) {

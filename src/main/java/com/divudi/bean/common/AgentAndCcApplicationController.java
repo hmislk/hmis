@@ -11,6 +11,7 @@ import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.InstitutionFacade;
 import javax.inject.Named;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import javax.ejb.EJB;
 import java.util.concurrent.ConcurrentHashMap;
@@ -96,6 +97,27 @@ public class AgentAndCcApplicationController {
         }
     }
 
+    
+    public Double ccBalanceBefore(Bill b){
+        String jpql;
+        jpql = "select h.balanceBeforeTransaction "
+                + " from AgentHistory h "
+                + " where h.bill=:bill";
+        Map params = new HashMap();
+        params.put("bill", b);
+        return agentHistoryFacade.findDoubleByJpql(jpql, params);
+    }
+    
+    public Double ccBalanceAfter(Bill b){
+        String jpql;
+        jpql = "select h.balanceAfterTransaction "
+                + " from AgentHistory h "
+                + " where h.bill=:bill";
+        Map params = new HashMap();
+        params.put("bill", b);
+        return agentHistoryFacade.findDoubleByJpql(jpql, params);
+    }
+    
     private void handleCcBalanceUpdateBill(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill, String comments) {
 
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
