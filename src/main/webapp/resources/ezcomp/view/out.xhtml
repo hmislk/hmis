@@ -86,6 +86,92 @@
                         itemValue="#{d}" />
                 </p:selectOneMenu>
             </h:panelGroup>
+            
+            <p:outputLabel value="From Institution" ></p:outputLabel>
+            <h:panelGroup >
+                <p:outputLabel 
+                    value="#{cc.attrs.bill.fromInstitution.name}" 
+                    rendered="#{not webUserController.hasPrivilege('Developers')}">
+                </p:outputLabel>
+                <p:autoComplete  
+                    id="acFIns"
+                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                    class="w-100" 
+                    inputStyleClass="w-100" 
+                    completeMethod="#{institutionController.completeCompany}" 
+                    var="pta" 
+                    itemLabel="#{pta.name}" 
+                    itemValue="#{pta}" 
+                    forceSelection="true" 
+                    value="#{cc.attrs.bill.fromInstitution}" >
+                    <p:ajax process="acIns" update="cmbFDept"/>
+                </p:autoComplete>
+            </h:panelGroup>
+
+
+            <p:outputLabel value="From Department" ></p:outputLabel>
+            <h:panelGroup id="cmbFDept">
+                <p:outputLabel 
+                    rendered="#{not webUserController.hasPrivilege('Developers')}"
+                    value="#{cc.attrs.bill.fromDepartment.name}" >
+                </p:outputLabel>
+                <p:selectOneMenu
+                    rendered="#{cc.attrs.bill.institution ne null and webUserController.hasPrivilege('Developers')}"
+                    styleClass="w-100 form-control"
+                    value="#{cc.attrs.bill.fromDepartment}"
+                    filterMatchMode="contains"
+                    filter="true">
+                    <f:selectItem itemLabel="All Departments" />
+                    <f:selectItems 
+                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(cc.attrs.bill.fromInstitution)}"
+                        var="d"
+                        itemLabel="#{d.name}"
+                        itemValue="#{d}" />
+                </p:selectOneMenu>
+            </h:panelGroup>
+            
+            <p:outputLabel value="To Institution" ></p:outputLabel>
+            <h:panelGroup >
+                <p:outputLabel 
+                    value="#{cc.attrs.bill.toInstitution.name}" 
+                    rendered="#{not webUserController.hasPrivilege('Developers')}">
+                </p:outputLabel>
+                <p:autoComplete  
+                    id="acTIns"
+                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                    class="w-100" 
+                    inputStyleClass="w-100" 
+                    completeMethod="#{institutionController.completeCompany}" 
+                    var="pta" 
+                    itemLabel="#{pta.name}" 
+                    itemValue="#{pta}" 
+                    forceSelection="true" 
+                    value="#{cc.attrs.bill.toInstitution}" >
+                    <p:ajax process="acIns" update="cmbTDept"/>
+                </p:autoComplete>
+            </h:panelGroup>
+
+
+            <p:outputLabel value="To Department" ></p:outputLabel>
+            <h:panelGroup id="cmbTDept">
+                <p:outputLabel 
+                    rendered="#{not webUserController.hasPrivilege('Developers')}"
+                    value="#{cc.attrs.bill.toDepartment.name}" >
+                </p:outputLabel>
+                <p:selectOneMenu
+                    rendered="#{cc.attrs.bill.toInstitution ne null and webUserController.hasPrivilege('Developers')}"
+                    styleClass="w-100 form-control"
+                    value="#{cc.attrs.bill.toDepartment}"
+                    filterMatchMode="contains"
+                    filter="true">
+                    <f:selectItem itemLabel="All Departments" />
+                    <f:selectItems 
+                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(cc.attrs.bill.toInstitution)}"
+                        var="d"
+                        itemLabel="#{d.name}"
+                        itemValue="#{d}" />
+                </p:selectOneMenu>
+            </h:panelGroup>
 
 
             <p:outputLabel value="User" ></p:outputLabel>
