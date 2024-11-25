@@ -4051,7 +4051,7 @@ public class BillSearch implements Serializable {
 
     public String navigateToRefundCollectingCentreBill() {
         if (bill == null) {
-            JsfUtil.addErrorMessage("Nothing to cancel");
+            JsfUtil.addErrorMessage("Nothing to Refund");
             return "";
         }
         paymentMethod = bill.getPaymentMethod();
@@ -4060,6 +4060,19 @@ public class BillSearch implements Serializable {
         bill.setTransError(flag);
         printPreview = false;
         return "/collecting_centre/bill_refund?faces-redirect=true;";
+    }
+    
+    public String navigateToCancelCollectingCentreBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        paymentMethod = bill.getPaymentMethod();
+//        createBillItemsAndBillFees();
+//        boolean flag = billController.checkBillValues(bill);
+//        bill.setTransError(flag);
+        printPreview = false;
+        return "/collecting_centre/bill_cancel?faces-redirect=true";
     }
 
     public List<BillEntry> getBillEntrys() {

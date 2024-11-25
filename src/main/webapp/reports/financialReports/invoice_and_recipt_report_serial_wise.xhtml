@@ -1,353 +1,292 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles">
 
-    <h:body class="w-100 border">
+<h:body class="w-100 border">
 
-        <ui:composition template="/reports/index.xhtml" class="w-100 border">
-            <ui:define name="subcontent">
-                <h:form class="w-100">
-                    <p:panel header="Invoice and Receipt Report (Serial Wise)" class="w-100">
-                        <h:panelGrid columns="8" class="w-100 ">
+    <ui:composition template="/reports/index.xhtml" class="w-100 border">
+        <ui:define name="subcontent">
+            <h:form class="w-100">
+                <p:panel header="Invoice and Receipt Report (Serial Wise)" class="w-100">
+                    <h:panelGrid columns="8" class="w-100 ">
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="From Date"  class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:datePicker value="" 
-                                          pattern=""
-                                          class=" w-100" inputStyleClass="w-100" ></p:datePicker>
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
+                            <p:outputLabel value="From Date" class="mx-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:datePicker value="#{reportsController.fromDate}"
+                                      pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                      class=" w-100" inputStyleClass="w-100"/>
 
-                            <p:spacer width="20"></p:spacer>
+                        <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="To Date" class="mx-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:datePicker value=""
-                                          pattern=""
-                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
+                            <p:outputLabel value="To Date" class="mx-3" />
+                        </h:panelGroup>
+                        <p:datePicker value="#{reportsController.toDate}"
+                                      pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                      class="w-100" inputStyleClass="w-100" />
 
-                            <p:spacer width="20"></p:spacer>
+                        <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf543;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Invoice / Receipt" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf543;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Invoice / Receipt" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                                value="#{reportsController.reportType}"
                                 filter="true"
                                 class="w-100 ">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var=""
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
-                            </p:selectOneMenu>
+                            <f:selectItem itemLabel="Select"/>
+                            <f:selectItem itemLabel="Invoice" itemValue="invoice"/>
+                            <f:selectItem itemLabel="Reciept" itemValue="reciept"/>
+                        </p:selectOneMenu>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
-                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
+                            <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
                                 id="cmbIns"
-                                styleClass="w-100 form-control" 
-                                value="#{searchController.institution}" 
+                                styleClass="w-100 form-control"
+                                value="#{reportsController.institution}"
                                 filter="true">
-                                <f:selectItem itemLabel="All Institutions" />
-                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                <p:ajax process="cmbIns" update="cmbDept" />
-                            </p:selectOneMenu>
+                            <f:selectItem itemLabel="All Institutions"/>
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                           itemValue="#{ins}"/>
+                            <p:ajax process="cmbIns" update="cmbDept"/>
+                        </p:selectOneMenu>
 
-                            <p:spacer ></p:spacer>
+                        <p:spacer />
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
-                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
+                            <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
                                 id="siteMenu"
-                                styleClass="w-100 form-control"  
-                                value="#{searchController.site}" 
+                                styleClass="w-100 form-control"
+                                value="#{reportsController.site}"
                                 filter="true">
-                                <f:selectItem itemLabel="All Sites" />
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                <p:ajax process="siteMenu" update="cmbDept" />
-                            </p:selectOneMenu>
+                            <f:selectItem itemLabel="All Sites"/>
+                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                           itemValue="#{site}"/>
+                            <p:ajax process="siteMenu" update="cmbDept"/>
+                        </p:selectOneMenu>
 
-                            <p:spacer ></p:spacer>
+                        <p:spacer />
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
-                            </h:panelGroup>
-                            <h:panelGroup id="cmbDept">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
+                            <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="cmbDept">
 
-                                <!-- Component 1: Without Institution and Site -->
-                                <p:selectOneMenu
-                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                            <!-- Component 1: Without Institution and Site -->
+                            <p:selectOneMenu
+                                    rendered="#{reportsController.institution eq null and reportsController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
+                                    value="#{reportsController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
                                         value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
                                         var="d"
                                         itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
+                                        itemValue="#{d}"/>
+                            </p:selectOneMenu>
 
-                                <!-- Component 2: With Site Only -->
-                                <p:selectOneMenu
-                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
+                            <!-- Component 2: With Site Only -->
+                            <p:selectOneMenu
+                                    rendered="#{reportsController.institution eq null and reportsController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
+                                    value="#{reportsController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.site)}"
                                         var="d"
                                         itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
+                                        itemValue="#{d}"/>
+                            </p:selectOneMenu>
 
-                                <!-- Component 3: With Institution Only -->
-                                <p:selectOneMenu
-                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
+                            <!-- Component 3: With Institution Only -->
+                            <p:selectOneMenu
+                                    rendered="#{reportsController.institution ne null and reportsController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
+                                    value="#{reportsController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(reportsController.institution)}"
                                         var="d"
                                         itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
+                                        itemValue="#{d}"/>
+                            </p:selectOneMenu>
 
-                                <!-- Component 4: With Both Institution and Site -->
-                                <p:selectOneMenu
-                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                            <!-- Component 4: With Both Institution and Site -->
+                            <p:selectOneMenu
+                                    rendered="#{reportsController.institution ne null and reportsController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
+                                    value="#{reportsController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.institution, reportsController.site)}"
                                         var="d"
                                         itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
+                                        itemValue="#{d}"/>
+                            </p:selectOneMenu>
 
-                                <p:selectOneMenu
+                            <p:selectOneMenu
                                     rendered="false"
-                                    styleClass="w-100 form-control"  
-                                    value="#{searchController.department}" 
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
                                     filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
-                                        var="d" 
-                                        itemLabel="#{d.name}" 
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
-                            </h:panelGroup>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0c0;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Service Group" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var=""
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.institution, reportsController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
                             </p:selectOneMenu>
+                        </h:panelGroup>
 
-                            <p:spacer ></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Visit Type" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var=""
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
-                            </p:selectOneMenu>
-
-
-                            <p:spacer width="20"></p:spacer>
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Type" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var=""
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Pay Mode" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var=""
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <p:spacer width="20"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf084;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Admission Type" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var=""
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
-
-                            <p:selectBooleanButton
-                                onLabel="With Professional Fee" 
-                                offLabel="without Professional Fee" 
-                                value="#{searchController.withProfessionalFee}"
-                                onIcon="pi pi-check" 
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0c0;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Service Group" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:autoComplete
+                                completeMethod="#{categoryController.completeCategory}"
+                                var="pta"
+                                itemLabel="#{pta.name}"
+                                itemValue="#{pta}"
+                                forceSelection="true"
+                                value="#{reportsController.category}"
+                                inputStyleClass="w-100"
                                 class="w-100"
-                                offIcon="pi pi-times" 
-                                >
-                            </p:selectBooleanButton>
+                                maxResults="15"
+                                id="cat"
+                        >
+                            <p:column style="padding: 4px!important">#{pta.name}</p:column>
+                            <p:column style="padding: 4px!important">#{pta.parentCategory}</p:column>
+                        </p:autoComplete>
 
-                        </h:panelGrid>
+                        <p:spacer />
 
-                        <p:commandButton 
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf007;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Visit Type" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu id="visitType" class="w-100" value="#{reportsController.visitType}">
+                            <f:selectItem itemValue="Any" itemLabel="Any"/>
+                            <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                            <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                        </p:selectOneMenu>
+
+                        <p:spacer width="20" />
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf02b;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Type" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                                value="#{reportsController.smsText}"
+                                filter="true"
+                                class="w-100 ">
+                            <f:selectItem itemLabel="Details" />
+                        </p:selectOneMenu>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf09d;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Pay Mode" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                                value="#{reportsController.paymentMethod}"
+                                filter="true"
+                                class="w-100 ">
+                            <f:selectItem itemLabel="Any" itemValue="#{null}" />
+                            <f:selectItems value="#{enumController.paymentMethods}"  />
+                        </p:selectOneMenu>
+
+                        <p:spacer width="20" />
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf084;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Admission Type" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                                value="#{reportsController.admissionType}"
+                                filter="true"
+                                class="w-100 ">
+                            <f:selectItem itemLabel="Select"></f:selectItem>
+                            <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                        </p:selectOneMenu>
+
+                        <p:spacer />
+                        <p:spacer />
+
+                        <p:selectBooleanButton
+                                onLabel="With Professional Fee"
+                                offLabel="without Professional Fee"
+                                value="#{reportsController.withProfessionalFee}"
+                                onIcon="pi pi-check"
+                                class="w-100"
+                                offIcon="pi pi-times"
+                        >
+                        </p:selectBooleanButton>
+
+                    </h:panelGrid>
+
+                    <p:commandButton
                             class="ui-button-warning my-4 mx-2"
                             style="width: 150px"
-                            ajax="false" 
-                            value="Process" 
-                            icon="fas fa-cogs" >
-                        </p:commandButton>
-
-                        <p:commandButton 
+                            ajax="false"
+                            action="#{reportsController.generateInvoiceAndReportSerialWiseReport()}"
+                            value="Process"
+                            icon="fas fa-cogs">
+                    </p:commandButton>
+                    <p:commandButton
                             class="ui-button-info my-4 mx-2"
                             style="width: 150px"
-                            icon="fas fa-print" 
-                            ajax="false" 
+                            icon="fas fa-print"
+                            ajax="false"
                             value="Print">
-                        </p:commandButton>
+                    </p:commandButton>
 
-                        <p:commandButton 
+                    <p:commandButton
                             class="ui-button-success my-4 mx-2"
                             style="width: 150px"
-                            icon="fas fa-file-excel" 
-                            ajax="false" 
+                            icon="fas fa-file-excel"
+                            ajax="false"
                             value="Excel">
-                        </p:commandButton>
+                    </p:commandButton>
 
-                        <p:commandButton 
+                    <p:commandButton
                             class="ui-button-danger my-4 mx-2"
                             style="width: 150px"
-                            icon= "fas fa-file-pdf" 
-                            ajax="false" 
+                            icon="fas fa-file-pdf"
+                            ajax="false"
                             value="PDF">
-                        </p:commandButton>
+                    </p:commandButton>
 
-                        <p:dataTable 
-                            id="dtaiarr1" 
-                            value="" 
-                            paginator="true"
-                            rows="10"
-                            paginatorPosition="bottom">
+                    <ez:invoiceAndReciptBillItems bundle="#{reportsController.bundle}"/>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
 
-                            <p:column headerText="No">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Created Date">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Settled Date">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Cancelled / Refund Date">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Serial">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="OP/IP">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Admission Type">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Status">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Total Amount">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Due Amount">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Settle Amount">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Total Payments">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Excess Amount">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-
-                        </p:dataTable>
-
-
-
-                    </p:panel>
-                </h:form>
-            </ui:define>
-        </ui:composition>
-
-    </h:body>
+</h:body>
 </html>

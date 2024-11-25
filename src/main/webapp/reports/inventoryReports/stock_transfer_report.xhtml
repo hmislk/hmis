@@ -39,11 +39,11 @@
 
 
                             <h:panelGroup layout="block" styleClass="form-group" class="my-1">
-                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
-                                <p:outputLabel value="Issuing/Returning Site" class="mx-2">                                   
+                                <h:outputText styleClass="fa fa-university ml-5" />
+                                <p:outputLabel value="Issuing/Returning Institution" class="mx-2" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100 ">
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
@@ -51,11 +51,11 @@
 
 
                             <h:panelGroup layout="block" styleClass="form-group" class="my-1">
-                                <h:outputText styleClass="fa fa-university ml-5" />
-                                <p:outputLabel value="Issuing/Returning Institution" class="mx-2" >
+                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
+                                <p:outputLabel value="Issuing/Returning Site" class="mx-2">                                   
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100">
+                            <p:selectOneMenu class="w-100 ">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
@@ -85,7 +85,7 @@
                             </p:selectOneMenu>
 
 
-<h:panelGroup layout="block" styleClass="form-group">
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university ml-5" />
                                 <p:outputLabel value="Receiving Institution" class="mx-2" >
                                 </p:outputLabel>
@@ -94,9 +94,9 @@
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            
-                            
+
+
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
                                 <p:outputLabel value="Receiving Site" class="mx-2"></p:outputLabel>
@@ -134,20 +134,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-tag ml-5" />
-                                <p:outputLabel value="Item Name" class="mx-2">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems></f:selectItems>
-                            </p:selectOneMenu>
-
-
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-check-circle ml-5" />
-                                <p:outputLabel value="Approval Status" class="mx-2">
+                                <p:outputLabel value="Item Name/Code" class="mx-2">
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu class="w-100">
@@ -159,7 +146,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group" >
                                 <h:outputText styleClass="fa fa-exchange-alt ml-5" />
-                                <p:outputLabel value="Transfer Type" class="mx-2">
+                                <p:outputLabel value="Transfer" class="mx-2">
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu class="w-100">
@@ -196,80 +183,114 @@
 
 
                         <div class="mt-5">
-                        <h5>Stock Issues Summary</h5>
-                        <p:dataTable id="tbl1" value="" 
-                                     var="f" 
-                                     rowIndexVar="n" 
-                                     paginator="true" 
-                                     rows="10" 
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
-                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                            
+                            <h5>Stock Issues Summary</h5>
+                            
+                            <p:dataTable id="tbl1" value="" 
+                                         var="f" 
+                                         rowIndexVar="n" 
+                                         paginator="true" 
+                                         rows="10" 
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-                            <p:column headerText="Store">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Net Total">
-                                <h:outputText value="" />
-                            </p:column>>                          
-                            <p:column headerText="Good In Transist Amount">
-                                <h:outputText value="" />
-                            </p:column>>
+                                <p:column headerText="Store">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Net Total">
+                                    <h:outputText value="" />
+                                </p:column>>                          
+                                <p:column headerText="Good In Transist Amount">
+                                    <h:outputText value="" />
+                                </p:column>>
 
 
-                        </p:dataTable>
-                        
+                            </p:dataTable>
+
                         </div>
-                        
+
                         <div class="mt-5">
-                        <h5>Stock Issues Detail</h5>
-                        <p:dataTable id="tbl2" value="" 
-                                     var="f" 
-                                     rowIndexVar="n" 
-                                     paginator="true" 
-                                     rows="10" 
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
-                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                            <h5>Stock Issues Detail</h5>
+                            <p:dataTable id="tbl2" value="" 
+                                         var="f" 
+                                         rowIndexVar="n" 
+                                         paginator="true" 
+                                         rows="10" 
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-                            <p:column headerText="Bill No" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText=" Approval Date" width="10em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Ref Bill No" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Ref Bill Approved Date and Time" width="15em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Item Description"  width="10em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Item Code" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Quantity" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Unit" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Cost rate" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Cost Value" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Issue Approved User" width="10em">
-                                <h:outputText value="" />
-                            </p:column>
+                                <p:column headerText="Bill No" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText=" Approval Date" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Ref Bill No" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Ref Bill Approved Date and Time" width="15em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Item Description"  width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Item Code" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Quantity" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Unit" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Cost rate" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Cost Value" width="5em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Issue Approved User" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
 
-                        </p:dataTable>
-                        
+                            </p:dataTable>
+
                         </div>
-                        
+
+                        <div class="mt-5">
+                            <h5>Transfer Issue By Bill</h5>
+                            <p:dataTable id="tbl3" value="" 
+                                         var="f" 
+                                         rowIndexVar="n" 
+                                         paginator="true" 
+                                         rows="10" 
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+                                <p:column headerText="Bill No">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Date">
+                                    <h:outputText value="" />
+                                </p:column>>                          
+                                <p:column headerText="Ref Bill No">
+                                    <h:outputText value="" />
+                                </p:column>>
+                                <p:column headerText="Ref Bill Approved Date">
+                                    <h:outputText value="" />
+                                </p:column>>
+                                <p:column headerText="Net Total">
+                                    <h:outputText value="" />
+                                </p:column>>
+
+
+                            </p:dataTable>
+
+                        </div>
+
                     </p:panel>
 
                 </h:form>
