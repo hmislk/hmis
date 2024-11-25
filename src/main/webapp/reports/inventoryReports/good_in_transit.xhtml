@@ -12,28 +12,73 @@
                     <p:panel header="Good In Transit" >
 
                         <p:panelGrid columns="4" class="w-100">
-                            <p:outputLabel value="From Date" class="mx-2" >
-                            </p:outputLabel>
+
+                            <h:panelGroup layout="block" styleClass="form-group" class="my-1">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="From Date" class="mx-2" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker value="" 
+                                          inputStyleClass="w-100"
                                           class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}">
+                            </p:datePicker>
 
-                            <p:outputLabel value="To Date" class="mx-2" >
-                            </p:outputLabel>
-                            <p:datePicker value="" 
+
+
+                            <h:panelGroup layout="block" styleClass="form-group" class="my-1">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="To Date" class="mx-2" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value=""
+                                          inputStyleClass="w-100"
                                           class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}">
+                            </p:datePicker>
 
-                            <p:outputLabel value="Receive Branch" class="mx-2" >
-                            </p:outputLabel>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university ml-5" />
+                                <p:outputLabel value="Receiving Institution" class="mx-2" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
 
 
-                            <p:outputLabel value="Receive Store" class="mx-2" >
-                            </p:outputLabel>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
+                                <p:outputLabel value="Receiving Site" class="mx-2"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>                           
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building ml-5" />
+                                <p:outputLabel value="Receiving Department" class="mx-2">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-store ml-5" />
+                                <p:outputLabel value="Receiving Store" class="mx-2">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
@@ -41,8 +86,11 @@
 
 
 
-                            <p:outputLabel value="Issue Branch" class="mx-2" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group" class="my-1">
+                                <h:outputText styleClass="fa fa-university ml-5" />
+                                <p:outputLabel value="Issue Institution" class="mx-2" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
@@ -50,25 +98,46 @@
 
 
 
-                            <p:outputLabel value="Issue Store" class="mx-2" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group" class="my-1">
+                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
+                                <p:outputLabel value="Issue Site" class="mx-2">                                   
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building ml-5" />
+                                <p:outputLabel value="Issue Department" class="mx-2">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-store ml-5" />
+                                <p:outputLabel value="Issue Store" class="mx-2">                           
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
 
 
-                            <p:outputLabel value="Item Name/Code" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
-
-
-
-                            <p:outputLabel value="Item Category" class="mx-2" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-tag ml-5" />
+                                <p:outputLabel value="Item Name/Code" class="mx-2">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
@@ -76,17 +145,33 @@
 
 
 
-                            <p:outputLabel value="Show only Pending Documents" class="mx-2" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-box ml-5" />
+                                <p:outputLabel value="Item Category" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-clock ml-5" />
+                                <p:outputLabel value="Show only Pending Documents" class="mx-2" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
 
 
-
-                            <p:outputLabel value="Transit Store/Staff" class="mx-2" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-people-carry ml-5" />
+                                <p:outputLabel value="Transit Store/Staff" class="mx-2" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
