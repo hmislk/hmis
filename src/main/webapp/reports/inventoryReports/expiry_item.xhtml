@@ -123,81 +123,93 @@
                             </p:commandButton>
                         </div>
 
-                        <p:dataTable id="tbl" value="" 
-                                     paginator="true"
-                                     rows="10">
+                        <div class="mt-5">
 
-                            <p:column headerText=" Item name wise">
+                            <h5>Expiry Item Report</h5>
+
+                        <p:dataTable id="tbl1" value="" 
+                                         var="f" 
+                                         rowIndexVar="n" 
+                                         paginator="true" 
+                                         rows="10" 
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+                            <p:column headerText=" Item name wise" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Parenct Category Code">
+                            <p:column headerText="Parenct Category Code" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Parent Category Name">
+                            <p:column headerText="Parent Category Name" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Item Category Code">
+                            <p:column headerText="Item Category Code" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Item Category Name">
+                            <p:column headerText="Item Category Name" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Item Code">
+                            <p:column headerText="Item Code" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Item Name">
+                            <p:column headerText="Item Name" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Base UOM">
+                            <p:column headerText="Base UOM" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Secondary UOM">
+                            <p:column headerText="Secondary UOM" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Item Type">
+                            <p:column headerText="Item Type" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Batch No">
+                            <p:column headerText="Batch No" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Batch Date">
+                            <p:column headerText="Batch Date" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Expiry Date">
+                            <p:column headerText="Expiry Date" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Supplier">
+                            <p:column headerText="Supplier" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Shelf life rema- ining ( Days)">
+                            <p:column headerText="Shelf life rema- ining(Days)" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Rate">
+                            <p:column headerText="Rate" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="MRP">
+                            <p:column headerText="MRP" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Qty">
+                            <p:column headerText="Qty" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Item Value">
+                            <p:column headerText="Item Value" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Batch wise total">
+                            <p:column headerText="Batch wise total" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Batch wise Qty">
+                            <p:column headerText="Batch wise Qty" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Item wise total">
+                            <p:column headerText="Item wise total" width="10em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Item wise Qty">
+                            <p:column headerText="Item wise Qty" width="10em">
                                 <h:outputText value="" />
                             </p:column>
 
                         </p:dataTable>
+                            
+                        </div>
+                        
                     </p:panel>
 
                 </h:form>
