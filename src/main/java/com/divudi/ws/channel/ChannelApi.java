@@ -1614,14 +1614,14 @@ public class ChannelApi {
         System.out.println(bill.getBillType());
         // List<SessionInstance> ss = bill.getSingleBillSession().getSessionInstance();
         SessionInstance session = bill.getSingleBillSession().getSessionInstance();
-        String billStatus = null;
-        if (bill.isCancelled()) {
-            billStatus = "Cancelled Bill";
-        } else if (bill.getPaidBill() == null) {
-            billStatus = "Temporarty Booking added. Still Not completed with payment.";
-        } else if (bill.getPaidBill() == null && bill.getPaidBill().getBillType() == BillType.ChannelPaid) {
-            billStatus = "Booking is done with the payment";
-        }
+//        String billStatus = null;
+//        if (bill.isCancelled()) {
+//            billStatus = "Cancelled Bill";
+//        } else if (bill.getPaidBill() == null) {
+//            billStatus = "Temporarty Booking added. Still Not completed with payment.";
+//        } else if (bill.getPaidBill() == null && bill.getPaidBill().getBillType() == BillType.ChannelPaid) {
+//            billStatus = "Booking is done with the payment";
+//        }
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -1630,7 +1630,7 @@ public class ChannelApi {
         String bookingStatus = "This is a temporary booking.";
         if (bill.isCancelled()) {
             bookingStatus = "This booking is already Cancelled.";
-        } else if (bill.getPaidBill() != null) {
+        } else if (bill.getBillType() == BillType.ChannelAgent) {
             bookingStatus = "This booking is completed.";
         }
 
