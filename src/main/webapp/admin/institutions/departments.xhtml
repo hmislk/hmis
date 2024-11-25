@@ -5,16 +5,9 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui">
-
     <h:body>
-
         <ui:composition template="/admin/institutions/admin_institutions_index.xhtml">
-
             <ui:define name="admin">
-
-                <f:view>
-
-
                     <h:form>
 
                         <p:commandButton value="Download" ajax="false" >
@@ -63,6 +56,13 @@
                                 </f:facet>
                                 <h:outputText value="#{item.departmentType}"/>
                             </p:column>
+                            
+                              <p:column sortBy="#{item.institution.name}" filterBy="#{item.institution.name}" filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputText value="Institution"/>
+                                </f:facet>
+                                <h:outputText value="#{item.institution.name}"/>
+                            </p:column>
 
                             <p:column sortBy="#{item.site.name}" filterBy="#{item.site.name}" filterMatchMode="contains">
                                 <f:facet name="header">
@@ -71,28 +71,6 @@
                                 <h:outputText value="#{item.site.name}"/>
                             </p:column>
 
-
-                            <p:column sortBy="#{item.telephone1}" filterBy="#{item.telephone1}" filterMatchMode="contains">
-                                <f:facet name="header">
-                                    <h:outputText value="Phone"/>
-                                </f:facet>
-                                <h:outputText value="#{item.telephone1}"/>
-                            </p:column>
-
-                            <p:column sortBy="#{item.email}" filterBy="#{item.email}" filterMatchMode="contains">
-                                <f:facet name="header">
-                                    <h:outputText value="Email"/>
-                                </f:facet>
-                                <h:outputText value="#{item.email}"/>
-                            </p:column>
-
-
-                            <p:column sortBy="#{item.address}" filterBy="#{item.address}" filterMatchMode="contains">
-                                <f:facet name="header">
-                                    <h:outputText value="Address"/>
-                                </f:facet>
-                                <h:outputText value="#{item.address}"/>
-                            </p:column>
 
                             <p:column>
                                 <f:facet name="header">
@@ -112,13 +90,7 @@
 
                         </p:dataTable>
                     </h:form>
-                </f:view>
-
-
-
             </ui:define>
-
         </ui:composition>
-
     </h:body>
 </html>
