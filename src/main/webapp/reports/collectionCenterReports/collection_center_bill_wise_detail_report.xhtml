@@ -167,6 +167,16 @@
                                 <p:column style="padding: 6px;">#{vt.name}</p:column>
                             </p:autoComplete>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf15b;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Report Type" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemValue="" itemLabel="Report"/>
+                                <f:selectItem itemValue="" itemLabel="Summary With Letter"/>
+                                <f:selectItem itemValue="" itemLabel="Summary With Letter and Test Name"/>
+                            </p:selectOneMenu>
+
                         </p:panelGrid>
                         <h:panelGrid columns="6">
                             <p:commandButton 
@@ -218,8 +228,14 @@
                             </h:outputLabel>
                         </h:panelGrid>
 
-
-                        <p:dataTable id="tblExport" var="c" rowIndexVar="rowIndex">
+                        <!--table 1 / report type - report-->
+                        <p:dataTable 
+                            id="tblExport" 
+                            paginator="true" 
+                            paginatorPosition="bottom"
+                            rows="10"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="10,25,50">
                             <p:column headerText="CC Code" width="5rem">
                                 <h:outputText></h:outputText>
                             </p:column>
@@ -236,6 +252,98 @@
                                 <h:outputText></h:outputText>
                             </p:column>
                             <p:column headerText="Invoice No" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+
+                        <Br/>
+                        <Br/>
+                        <Br/>
+                        <Br/>
+                        <!--table 2 / report type - Summary With Letter-->
+                        <p:dataTable 
+                            id="tblExport2" 
+                            paginator="true" 
+                            paginatorPosition="bottom"
+                            rows="10"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="10,25,50">
+
+                            <f:facet name="header">
+                                <h:outputText value="SETTLEMENT OF INVESTIGATION BILL" 
+                                              style="font-size: 18px; font-weight: bold; text-align: center; display: block;" />
+                            </f:facet>
+
+                            <p:column headerText="S.No" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Bill No (Invoice No)" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Ref No (Leaf No)" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Bill Date" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Patient Name" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Hospital Fee" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Professional Fee" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Net Amount" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+                        <Br/>
+                        <Br/>
+                        <Br/>
+                        <Br/>
+                        <!--table 3 / report type - Summary With Letter and Test Name-->
+                        <p:dataTable 
+                            id="tblExport3" 
+                            paginator="true" 
+                            paginatorPosition="bottom"
+                            rows="10"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="10,25,50">
+
+                            <f:facet name="header">
+                                <h:outputText value="SETTLEMENT OF INVESTIGATION BILL" 
+                                              style="font-size: 18px; font-weight: bold; text-align: center; display: block;" />
+                            </f:facet>
+
+                            <p:column headerText="S.No" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Bill No (Invoice No)" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Ref No (Leaf No)" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Bill Date" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Patient Name" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Test Name" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Hospital Fee" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Professional Fee" width="5rem">
+                                <h:outputText></h:outputText>
+                            </p:column>
+                            <p:column headerText="Net Amount" width="5rem">
                                 <h:outputText></h:outputText>
                             </p:column>
                         </p:dataTable>
