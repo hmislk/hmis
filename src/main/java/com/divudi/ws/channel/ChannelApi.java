@@ -565,7 +565,7 @@ public class ChannelApi {
             @QueryParam("offset") Integer offset,
             @QueryParam("page") Integer page,
             @QueryParam("sessionDate") String sessionDate) {
-        
+
         String key = requestContext.getHeader("Token");
         if (!isValidKey(key)) {
             JSONObject responseError = new JSONObject();
@@ -582,7 +582,7 @@ public class ChannelApi {
 //                    .entity(errorResponse.toString())
 //                    .build();
 //        }
-        
+
         if (docName == null || docName.isEmpty()) {
             JSONObject json = commonFunctionToErrorResponse("Doc name is missing.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(json.toString()).build();
@@ -866,7 +866,7 @@ public class ChannelApi {
             JSONObject response = commonFunctionToErrorResponse("Session id is invalid");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-        
+
         if (session.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (session.getBookedPatientCount() != null) {
                 int maxNo = session.getMaxNo();
@@ -1375,8 +1375,8 @@ public class ChannelApi {
         Institution creditCompany = channelService.findCreditCompany(paymentChannel, InstitutionType.Agency);
         System.out.println(creditCompany.getName());
         List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany, BillClassType.BilledBill);
-        
-         if (billList == null || billList.isEmpty()) {
+
+        if (billList == null || billList.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("No bill available for the RefNo");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
@@ -1396,7 +1396,6 @@ public class ChannelApi {
         }
 
         // System.out.println(billList.size());
-
         if (bill.isCancelled()) {
             JSONObject response = commonFunctionToErrorResponse("Bill is already cancelled. Cant complete the booking.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
@@ -1602,7 +1601,7 @@ public class ChannelApi {
 
         if (billList.size() > 1) {
             for (Bill b : billList) {
-                if (b.getBillType() == BillType.ChannelOnCall) {
+                if (b.getBillType() == BillType.ChannelAgent) {
                     bill = b;
                 }
             }
@@ -1628,6 +1627,13 @@ public class ChannelApi {
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
         SimpleDateFormat forDay = new SimpleDateFormat("E");
 
+        String bookingStatus = "This is a temporary booking.";
+        if (bill.isCancelled()) {
+            bookingStatus = "This booking is already Cancelled.";
+        } else if (bill.getPaidBill() != null) {
+            bookingStatus = "This booking is completed.";
+        }
+
         Map<String, Object> appoinment = new HashMap<>();
         appoinment.put("refNo", bill.getAgentRefNo());
         appoinment.put("patientNo", bill.getSingleBillSession().getSerialNo());
@@ -1636,7 +1642,7 @@ public class ChannelApi {
         appoinment.put("showTime", "");
         appoinment.put("chRoom", bill.getSingleBillSession().getSessionInstance().getRoomNo());
         appoinment.put("timeInterval", "");
-        appoinment.put("status", billStatus);
+        appoinment.put("status", bookingStatus);
 
         String sessionStatus = "Session will have on time.";
         if (session.isCompleted()) {
@@ -1703,7 +1709,7 @@ public class ChannelApi {
         Map response = new HashMap();
         response.put("data", appoinment);
         response.put("message", "Booking details for ref No");
-        response.put("detailMessage", "Your booking is setted");
+        response.put("detailMessage", bookingStatus);
 
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
 
