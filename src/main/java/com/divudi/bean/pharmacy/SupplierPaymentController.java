@@ -977,6 +977,11 @@ public class SupplierPaymentController implements Serializable {
             return null;
         }
         prepareForNewSupplierPayment();
+        if(originalBill.getBillTypeAtomic() == BillTypeAtomic.SUPPLIER_PAYMENT_CANCELLED){
+            current.setComments("Canceled & Repay");
+            current.setCancelledBill(originalBill);
+            current.setCancelled(false);
+        }
         current.setFromInstitution(sessionController.getInstitution());
         current.setFromDepartment(sessionController.getDepartment());
         current.setToInstitution(originalBill.getFromInstitution());
