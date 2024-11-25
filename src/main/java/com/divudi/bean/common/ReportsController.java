@@ -1539,6 +1539,8 @@ public class ReportsController implements Serializable {
         bundle.setBundleType("billList");
 
         bundle = generateCollectingCenterWiseBills(opdBts);
+        bundle.calculateTotalByHospitalFee();
+        bundle.calculateTotalCCFee();
     }
 
     public ReportTemplateRowBundle generateCollectingCenterWiseBills(List<BillTypeAtomic> bts) {
@@ -1566,6 +1568,11 @@ public class ReportsController implements Serializable {
         if (webUser != null) {
             jpql += "AND bill.creater = :wu ";
             parameters.put("wu", webUser);
+        }
+
+        if (collectingCentre != null) {
+            jpql += "AND bill.collectingCentre = :cc ";
+            parameters.put("cc", collectingCentre);
         }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
