@@ -144,7 +144,7 @@
                             </p:column>
 
                             <p:column style="padding: 1px;" width="8em">
-                                <h:outputText value="#{drawerentry.payment.cashbookEntry}" />
+                                <h:outputText value="#{drawerentry.payment.bill.billTypeAtomic}" />
                             </p:column>
 
                             <p:column style="padding: 6px;">
@@ -157,34 +157,46 @@
                             </p:column>
 
                             <p:column style="padding: 1px;" width="5em">
-                                <h:outputText value="#{drawerentry.bill.referenceNumber}" />
+                                <h:outputText value="#{drawerentry.bill.deptId}" />
                             </p:column>
 
                             <p:column style="padding: 1px;" width="5em">
                                 <h:outputText value="#{drawerentry.bill.creater.name}" />
                             </p:column>
 
-                            <p:column style="padding: 1px;" width="5em">
-                                <h:outputText value="#{drawerentry.bill.toStaff.person.name}" />
-                            </p:column>
+                           
 
                             <p:column style="padding: 6px;">
                                 <h:outputText value="#{drawerentry.bill.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>
+                            
+                             <p:column style="padding: 1px;" width="5em">
+                                 <h:outputText value="#{drawerentry.bill.toWebUser.webUserPerson.nameWithTitle}" />
+                            </p:column>
 
                             <!-- Replace the following columns with appropriate data access expressions -->
                             <!-- Example for Cash -->
 
                             <p:column >
-                                <h:outputText value="#{drawerentry.beforeBalance}" />
+                                <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Cash'}" />
                             </p:column>
                             <p:column>
-                                <h:outputText value="#{drawerentry.payment.paidValue}" />
+                                <h:outputText value="#{drawerentry.payment.paidValue}"  rendered="#{drawerentry.payment.paymentMethod eq 'Cash'}"/>
                             </p:column>
                             <p:column>
-                                <h:outputText value="#{drawerentry.afterBalance}" />
+                                <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Cash'}"/>
+                            </p:column>
+                            
+                             <p:column >
+                                <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Card'}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{drawerentry.payment.paidValue}"  rendered="#{drawerentry.payment.paymentMethod eq 'Card'}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Card'}"/>
                             </p:column>
 
 
