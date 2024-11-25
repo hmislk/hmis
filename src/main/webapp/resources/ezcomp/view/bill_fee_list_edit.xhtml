@@ -21,6 +21,11 @@
                 <f:facet name="header">Fee ID</f:facet>
                 <h:outputText value="#{bf.id}" />
             </p:column>
+            
+             <p:column >
+                <f:facet name="header">Fee Type</f:facet>
+                <h:outputText value="#{bf.fee.feeType}"   />
+            </p:column>
 
             <p:column >
                 <f:facet name="header">Fee Name</f:facet>

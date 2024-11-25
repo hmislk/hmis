@@ -136,7 +136,7 @@
                                             <p:ajax 
                                                 event="rowSelect" 
                                                 process="@this"
-                                                update=":#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId} :#{p:resolveFirstComponentWithId('gdManageBookings',view).clientId} :#{p:resolveFirstComponentWithId('gpAdditionalItems',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId}"
+                                                update=":#{p:resolveFirstComponentWithId('releasedNumbers',view).clientId} :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId} :#{p:resolveFirstComponentWithId('gdManageBookings',view).clientId} :#{p:resolveFirstComponentWithId('gpAdditionalItems',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId}"
                                                 listener="#{bookingControllerViewScope.sessionInstanceSelected()}" />
 
 
@@ -387,20 +387,28 @@
                                                 </p:row>
                                             </f:facet>
                                             <f:facet name="footer">
-                                                <p:row>
-                                                    <p:column colspan="4" >
-                                                        <p:commandButton
+                                                <p:panel header="Normal Booking Section">
+                                                    <p:row rendered="#{bookingControllerViewScope.selectedSessionInstance ne null and configOptionApplicationController.getBooleanValueByKey('Released Number Booking available in the Channel Booking by date', false)}">
+                                                        <p:selectOneMenu style="border: 2px solid #007bff; border-radius: 10px; padding: 1px; background-color: #f8f9fa;" class="w-50" id="releasedNumbers" placeholder=" Apoinment Numbers" value="#{bookingControllerViewScope.assignedReleasedAppoinmentNumber}" editable="true">
+                                                            <f:selectItem itemLabel="Check Released Apoinment No" itemValue="0"/>
+                                                            <f:selectItems  value="#{bookingControllerViewScope.releasedAppoinmentNumbers}"/>
+                                                            <p:ajax event="valueChange" update="releasedNumbers btnAddReserved"></p:ajax>
+                                                        </p:selectOneMenu>
+
+                                                    </p:row>
+                                                    <p:commandButton
                                                             id="btnAdd"
                                                             value="Add Normal Booking"
                                                             ajax="false"
                                                             update="gpThisBookingDetails"
-                                                            class="ui-button-info "
+                                                            class="ui-button-info mx-3 "
                                                             icon="pi pi-check"
                                                             action="#{bookingControllerViewScope.addNormalChannelBooking}" >
                                                         </p:commandButton>
-                                                        <p:spacer height="1" width="10" ></p:spacer>
-                                                        <p:spacer height="1" width="10" ></p:spacer>
-                                                        <p:selectOneMenu value="#{bookingControllerViewScope.selectedReserverdBookingNumber}" >
+                                                </p:panel>
+                                                
+                                                <p:panel header="Reserved Booking Section">
+                                                    <p:selectOneMenu class="w-50" value="#{bookingControllerViewScope.selectedReserverdBookingNumber}" >
                                                             <f:selectItem itemLabel="Next Number" ></f:selectItem>
                                                             <f:selectItems value="#{bookingControllerViewScope.reservedBookingNumbers}" ></f:selectItems>
                                                         </p:selectOneMenu>
@@ -408,15 +416,18 @@
                                                             id="btnAddReserved"
                                                             value="Add Reserved Booking"
                                                             ajax="false"
+                                                            disabled="#{bookingControllerViewScope.assignedReleasedAppoinmentNumber > 0}"
                                                             update="gpThisBookingDetails"
-                                                            class="ui-button-warning m-2"
+                                                            class="ui-button-warning mx-3"
                                                             icon="pi pi-bookmark"
                                                             action="#{bookingControllerViewScope.addReservedChannelBooking}" > <!-- Assuming a different action for reserved booking -->
                                                         </p:commandButton>
-                                                        <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                </p:panel>
+                                                <p:panel>
+                                                    <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
                                                             <p:commandButton 
                                                                 value="Mark Foreigner" 
-                                                                class="mx-2"
+                                                                class="mx-2 my-2"
                                                                 action="#{bookingControllerViewScope.markAsForeigner}" 
                                                                 rendered="#{!bookingControllerViewScope.foriegn}" 
                                                                 process="@this" 
@@ -434,9 +445,9 @@
                                                             </p:commandButton>
 
                                                         </h:panelGroup>
+                                                </p:panel>
 
-                                                    </p:column>
-                                                </p:row>
+                                             
                                             </f:facet>
 
                                             <h:panelGroup  id="panelPaymentMethod">

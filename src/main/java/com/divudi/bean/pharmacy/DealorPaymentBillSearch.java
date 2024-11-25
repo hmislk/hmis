@@ -279,10 +279,10 @@ public class DealorPaymentBillSearch implements Serializable {
     private CancelledBill createCancelBill() {
         CancelledBill cb = new CancelledBill();
 
-        cb.setBilledBill(getBill());
-        cb.copy(getBill());
-        cb.invertAndAssignValuesFromOtherBill(getBill());
-        cb.setNetTotal(0 - Math.abs(cb.getNetTotal()));
+        cb.setBilledBill(bill);
+        cb.copy(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
+//        cb.setNetTotal(0 - Math.abs(cb.getNetTotal()));
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
 
@@ -300,7 +300,6 @@ public class DealorPaymentBillSearch implements Serializable {
         if (cb.getId() == null) {
             getBillFacade().create(cb);
         }
-        JsfUtil.addSuccessMessage("Successfully Cancelled");
         return cb;
     }
 
@@ -343,7 +342,7 @@ public class DealorPaymentBillSearch implements Serializable {
             } else {
                 JsfUtil.addErrorMessage("Cash transaction saving failed.");
             }
-             JsfUtil.addSuccessMessage("Successfully Returned");
+            JsfUtil.addSuccessMessage("Successfully Returned");
         } else {
             JsfUtil.addErrorMessage("No Bill to return");
         }
@@ -384,12 +383,12 @@ public class DealorPaymentBillSearch implements Serializable {
     }
 
     private boolean errorCheck() {
-        if (getBill().isCancelled()) {
+        if (bill.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
-        if (getBill().isRefunded()) {
+        if (bill.isRefunded()) {
             JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
@@ -456,33 +455,24 @@ public class DealorPaymentBillSearch implements Serializable {
     SupplierPaymentController pharmacyDealorBill;
 
     public void cancelBill() {
-        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+        if (bill != null && bill.getId() != null && bill.getId() != 0) {
             if (errorCheck()) {
                 return;
             }
 
             CancelledBill cb = createCancelBill();
-            Payment p = pharmacyDealorBill.createPayment(cb, getBill().getPaymentMethod());
+            Payment p = pharmacyDealorBill.createPayment(cb, bill.getPaymentMethod());
 
-            //Copy & paste
-            //  if (webUserController.hasPrivilege("LabBillCancelling")) {
-            if (true) {
-//                if (cb.getId() == null) {
-//                    getCancelledBillFacade().create(cb);
-//                }
-                cancelBillItems(cb, p);
-                getBill().setCancelled(true);
-                getBill().setCancelledBill(cb);
-                getBilledBillFacade().edit(getBill());
-                JsfUtil.addSuccessMessage("Cancelled");
+            cancelBillItems(cb, p);
+            bill.setCancelled(true);
+            bill.setCancelledBill(cb);
+            JsfUtil.addSuccessMessage("Successfully Cancelled");
+            System.out.println("JsfUtil.addSuccessMessage(Successfully Cancelled);");
+            getBilledBillFacade().edit(bill);
 
-                WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
-                getSessionController().setLoggedUser(wb);
-                printPreview = true;
-            } else {
-                getEjbApplication().getBillsToCancel().add(cb);
-                JsfUtil.addSuccessMessage("Awaiting Cancellation");
-            }
+            WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
+            getSessionController().setLoggedUser(wb);
+            printPreview = true;
 
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
