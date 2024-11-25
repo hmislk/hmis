@@ -992,6 +992,32 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public void calculateTotalByHospitalFee() {
+        total = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBill().getTotalHospitalFee());
+                total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalCCFee() {
+        ccTotal = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBill().getCollctingCentreFee());
+                ccTotal += amount;
+            }
+        }
+    }
+
     public void calculateTotalByBillItems() {
         total = 0.0;
 

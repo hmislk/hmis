@@ -144,7 +144,7 @@
                             </p:column>
 
                             <p:column style="padding: 1px;" width="8em">
-                                <h:outputText value="#{drawerentry.payment.bill.billTypeAtomic}" />
+                                <h:outputText value="#{drawerentry.payment.bill.billTypeAtomic.billFinanceType}" />
                             </p:column>
 
                             <p:column style="padding: 6px;">
@@ -164,7 +164,9 @@
                                 <h:outputText value="#{drawerentry.bill.creater.name}" />
                             </p:column>
 
-                           
+                           <p:column style="padding: 1px;" width="5em">
+                                 <h:outputText value="#{drawerentry.bill.toWebUser.webUserPerson.nameWithTitle}" />
+                            </p:column>
 
                             <p:column style="padding: 6px;">
                                 <h:outputText value="#{drawerentry.bill.createdAt}">
@@ -172,9 +174,7 @@
                                 </h:outputText>
                             </p:column>
                             
-                             <p:column style="padding: 1px;" width="5em">
-                                 <h:outputText value="#{drawerentry.bill.toWebUser.webUserPerson.nameWithTitle}" />
-                            </p:column>
+                             
 
                             <!-- Replace the following columns with appropriate data access expressions -->
                             <!-- Example for Cash -->
@@ -198,8 +198,46 @@
                             <p:column>
                                 <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Card'}"/>
                             </p:column>
+                            
+                            <p:column >
+                                <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Cheque'}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{drawerentry.payment.paidValue}"  rendered="#{drawerentry.payment.paymentMethod eq 'Cheque'}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Cheque'}"/>
+                            </p:column>
 
+                            <p:column >
+                                <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Slip'}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{drawerentry.payment.paidValue}"  rendered="#{drawerentry.payment.paymentMethod eq 'Slip'}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Slip'}"/>
+                            </p:column>
 
+                            <p:column >
+                                <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'IOU'}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{drawerentry.payment.paidValue}"  rendered="#{drawerentry.payment.paymentMethod eq 'IOU'}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'IOU'}"/>
+                            </p:column>
+                            
+                            <p:column >
+                                <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Credit'}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{drawerentry.payment.paidValue}"  rendered="#{drawerentry.payment.paymentMethod eq 'Credit'}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Credit'}"/>
+                            </p:column>
                         </p:dataTable>
 
                     </p:panel>
