@@ -705,8 +705,11 @@ public class BillBhtController implements Serializable {
         if (errorCheckForAdding()) {
             return;
         }
-        if (errorCheckForPatientRoomDepartment()) {
-            return;
+        
+        if(patientEncounter.getAdmissionType().isRoomChargesAllowed()){
+             if (errorCheckForPatientRoomDepartment()) {
+                return;
+            }
         }
 
         for (BillEntry bi : lstBillEntries) {
