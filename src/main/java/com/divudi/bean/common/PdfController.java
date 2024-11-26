@@ -846,7 +846,7 @@ public class PdfController {
         // Optionally, add spacing or a separator between tables
         document.add(new Paragraph("\n"));
     }
-
+ 
     private void populateTableForCreditCards(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
             // If no data, add a paragraph stating this
