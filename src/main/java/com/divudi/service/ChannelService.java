@@ -579,12 +579,7 @@ public class ChannelService {
     }
     
     public List getReleasedAppoinmentNumbersForApiBookings(SessionInstance ss) {
-        long nextNumber = 1L;
-        
-        if(ss.getNextAvailableAppointmentNumber() != null){
-            nextNumber = ss.getNextAvailableAppointmentNumber();
-        }
-        
+        long nextNumber = ss.getNextAvailableAppointmentNumber();
         List releasedNumberList = new ArrayList();
         
         List<BillSession> allBillSessions = getAllBillSessionForSessionInstance(ss);
