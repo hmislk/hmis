@@ -1178,22 +1178,24 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateBackToPaymentHandoverCreate() {
         selectedBundle.markSelectedAtHandover();
-        selectedBundle.calculateTotalsByPaymentsAndDenominations();
-        bundle.aggregateTotalsFromSelectedChildBundles();
+        bundle.calculateTotalsByChildBundlesForHandover();
         return "/cashier/handover_start_all?faces-redirect=true";
     }
 
     public void updateForPaymentHandoverSelectionAtCreate() {
-        if (selectedBundle != null) {
-            selectedBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
-        }
-        bundle.calculateTotalsBySelectedChildBundles();
+//        if (selectedBundle != null) {
+//            selectedBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
+//        }
+
+         bundle.calculateTotalsByChildBundlesForHandover();
     }
 
     public void selectAllForPaymentHandoverSelectionAtCreate() {
         selectedBundle.markAllAtHandover(selectedPaymentMethod);
-        selectedBundle.calculateTotalsByPaymentsAndDenominations();
-        bundle.calculateTotalsBySelectedChildBundles();
+        selectedBundle.calculateTotalsOfSelectedRowsPlusAllCash();
+        boolean selectAllCashToHandover = configOptionApplicationController.getBooleanValueByKey("Select All Cash During Handover", true);
+        bundle.setSelectAllCashToHandover(selectAllCashToHandover);
+        bundle.calculateTotalsByChildBundlesForHandover();
     }
 
     public void unselectAllForPaymentHandoverSelection() {
@@ -4529,7 +4531,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
         currentBill.setTotal(bundle.getTotal());
-        currentBill.setNetTotal(bundle.getTotal());
+        currentBill.setNetTotal(bundle.getTotalOut());
 
         currentBill.setCreatedAt(new Date());
         currentBill.setCreater(sessionController.getLoggedUser());
