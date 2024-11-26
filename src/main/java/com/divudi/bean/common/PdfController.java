@@ -14,10 +14,6 @@ import org.primefaces.model.StreamedContent;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.data.ReportTemplateRowBundle;
 import javax.inject.Inject;
-
-
-
-import ca.uhn.fhir.model.api.IElement;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ReportItemType;
@@ -73,7 +69,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.image.ImageData;
@@ -83,12 +78,11 @@ import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
-import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.*;
-import com.itextpdf.layout.Canvas;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.Style;
+import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.LineSeparator;
@@ -96,7 +90,6 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
-import com.itextpdf.text.pdf.qrcode.BitMatrix;
 import java.util.function.Supplier;
 
 /**
@@ -124,8 +117,8 @@ public class PdfController {
      */
     public PdfController() {
     }
-     public StreamedContent createPdfForBundle(ReportTemplateRowBundle rootBundle) throws IOException {
-         if (rootBundle == null) {
+    public StreamedContent createPdfForBundle(ReportTemplateRowBundle rootBundle) throws IOException {
+        if (rootBundle == null) {
             return null;
         }
 
@@ -801,7 +794,8 @@ public class PdfController {
                 populateTableForPatientDeposits(document, addingBundle);
                 break;
             case "collectionForTheDay":
-                populateTitleBundleForPdf(document, addingBundle);
+                populateBundleCashPlusCreditForPdf(document, addingBundle);
+                //populateTitleBundleForPdf(document, addingBundle);
                 break;
             case "pettyCashPayments":
                 populateTableForPettyCashPayments(document, addingBundle);
@@ -822,7 +816,8 @@ public class PdfController {
 //                populateTableForPaymentReports(document, addingBundle);
                 break;
             case "netCash":
-                populateTitleBundleForPdf(document, addingBundle);
+                populateBundleCashPlusCreditForPdf(document, addingBundle);
+                //populateTitleBundleForPdf(document, addingBundle);
                 break;
             case "income_breakdown_by_category_with_professional_fee":
                 populateTableForIncomeByCategoryWithProfessionalFee(document, addingBundle);
@@ -838,6 +833,9 @@ public class PdfController {
                 break;
             case "opdServiceCollectionCredit":
                 populateTableForCreditItemSummaryGroupedByCategory(document, addingBundle);
+                break;
+            case "netCashPlusCredit":
+                populateBundleCashPlusCreditForPdf(document, addingBundle);
                 break;
             default:
                 table.addCell(new Cell().add(new Paragraph("Data for unknown type"))); // Default handling for unknown types
@@ -1178,12 +1176,11 @@ public class PdfController {
             document.add(noDataParagraph);
         }
     }
-    
-    
+
     private void populateTableForCreditItemSummaryGroupedByCategory(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
             // Create a new Table for each call
-            
+
             Table table = new Table(new float[]{40, 60, 10, 10, 10, 10, 10});
             table.setWidth(UnitValue.createPercentValue(100));
             Style cellStyle = new Style().setFontSize(9);  // Set font size
@@ -1217,7 +1214,7 @@ public class PdfController {
                 table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
                         String.format("%.2f", row.getItemNetTotal())))); // Format as string
             }
-            
+
             table.getChildren().forEach(element -> {
                 if (element instanceof Cell) {
                     ((Cell) element).addStyle(cellStyle);
@@ -1232,9 +1229,7 @@ public class PdfController {
             document.add(noDataParagraph);
         }
     }
-    
-    
-    
+
     private void populateTableForIncomeByCategoryWithProfessionalFee(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
 
@@ -1332,7 +1327,7 @@ public class PdfController {
             table.setWidth(UnitValue.createPercentValue(100));
 
             Style cellStyle = new Style().setFontSize(8);  // Set font size
-            
+
             // Add headers
             String[] headers = {"Category", "Code", "Item/Service", "Count", "Bill No", "Patient", "Hospital Fee", "Professional Fee", "Discount", "Net Amount"};
             for (String header : headers) {
@@ -1358,7 +1353,7 @@ public class PdfController {
                 table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.format("%.2f", row.getItemDiscountAmount() != null ? row.getItemDiscountAmount() : 0))));
                 table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.format("%.2f", row.getItemNetTotal() != null ? row.getItemNetTotal() : 0))));
             }
-            
+
             table.getChildren().forEach(element -> {
                 if (element instanceof Cell) {
                     ((Cell) element).addStyle(cellStyle);
@@ -1484,5 +1479,43 @@ public class PdfController {
         // Visual separator after the total
         document.add(lineSeparator);
     }
+
+    private void populateBundleCashPlusCreditForPdf(Document document, ReportTemplateRowBundle addingBundle) {
+        // Create a solid line separator
+        SolidLine lineDrawer = new SolidLine(1f); // 1f is the line width
+        LineSeparator lineSeparator = new LineSeparator(lineDrawer);
+        lineSeparator.setStrokeColor(ColorConstants.BLACK); // Set color of the line
+
+        // Visual separator before the title
+        document.add(lineSeparator);
+
+        // Create a table with two columns
+        float[] columnWidths = {2, 1}; // Adjust column widths as needed
+        Table table; // Remove table border
+        table = new Table(columnWidths)
+                .useAllAvailableWidth();
+
+        // Left-aligned cell (Title)
+        Cell titleCell = new Cell()
+                .add(new Paragraph(addingBundle.getName()).setBold().setTextAlignment(TextAlignment.LEFT));
+        titleCell.setBorder(Border.NO_BORDER);
+        table.addCell(titleCell);
+
+        // Right-aligned cell (Total)
+        Cell totalCell = new Cell()
+                .add(new Paragraph("Total  : " + String.format("%.2f", addingBundle.getTotal())).setItalic().setTextAlignment(TextAlignment.RIGHT));
+        totalCell.setBorder(Border.NO_BORDER);
+        table.addCell(totalCell);
+        table.setMarginBottom(8);
+        table.setMarginTop(8);
+        table.setBorder(Border.NO_BORDER);
+
+        // Add the table to the document
+        document.add(table);
+
+        // Visual separator after the total
+        document.add(lineSeparator);
+    }
+
 
 }
