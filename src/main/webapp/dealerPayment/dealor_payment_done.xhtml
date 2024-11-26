@@ -200,12 +200,16 @@
                                         value="#{supplierPaymentController.bills}" 
                                         var="bill"  
                                         paginatorPosition="bottom"
+                                        selectionMode="multiple"
+                                        rowKey="#{bill.id}"
                                         rows="10"
                                         paginator="true"
                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                         rowsPerPageTemplate="5,10,15"
                                         >
+                                        <p:column selectionBox="true" width="20">
 
+                                        </p:column>
                                         <p:column headerText="Bill No" >                                
                                             <h:commandLink action="reprint_bill_dealor" >
                                                 #{bill.deptId}"  
@@ -268,6 +272,11 @@
                                         <p:column headerText="Status">                                
                                             <p:badge value="Canceled" severity="danger" rendered="#{bill.billTypeAtomic eq 'SUPPLIER_PAYMENT_CANCELLED'}" />
                                         </p:column>
+
+                                        <p:column headerText="Action" >
+                                            <p:commandButton value="Pay Back" action="#{supplierPaymentController.navigateToStartSupplierPayment(bill)}" ajax="false" >
+                                            </p:commandButton>
+                                        </p:column> 
 
                                     </p:dataTable>
                                 </h:panelGroup>
