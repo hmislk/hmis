@@ -1183,15 +1183,18 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void updateForPaymentHandoverSelectionAtCreate() {
-        if (selectedBundle != null) {
-            selectedBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
-        }
-        bundle.calculateTotalsByChildBundlesForHandover();
+//        if (selectedBundle != null) {
+//            selectedBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
+//        }
+
+         bundle.calculateTotalsByChildBundlesForHandover();
     }
 
     public void selectAllForPaymentHandoverSelectionAtCreate() {
         selectedBundle.markAllAtHandover(selectedPaymentMethod);
         selectedBundle.calculateTotalsOfSelectedRowsPlusAllCash();
+        boolean selectAllCashToHandover = configOptionApplicationController.getBooleanValueByKey("Select All Cash During Handover", true);
+        bundle.setSelectAllCashToHandover(selectAllCashToHandover);
         bundle.calculateTotalsByChildBundlesForHandover();
     }
 
