@@ -794,8 +794,7 @@ public class PdfController {
                 populateTableForPatientDeposits(document, addingBundle);
                 break;
             case "collectionForTheDay":
-                populateBundleCashPlusCreditForPdf(document, addingBundle);
-                //populateTitleBundleForPdf(document, addingBundle);
+                populateTitleBundleForPdf(document, addingBundle);
                 break;
             case "pettyCashPayments":
                 populateTableForPettyCashPayments(document, addingBundle);
@@ -816,8 +815,7 @@ public class PdfController {
 //                populateTableForPaymentReports(document, addingBundle);
                 break;
             case "netCash":
-                populateBundleCashPlusCreditForPdf(document, addingBundle);
-                //populateTitleBundleForPdf(document, addingBundle);
+                populateTitleBundleForPdf(document, addingBundle);
                 break;
             case "income_breakdown_by_category_with_professional_fee":
                 populateTableForIncomeByCategoryWithProfessionalFee(document, addingBundle);
@@ -835,7 +833,7 @@ public class PdfController {
                 populateTableForCreditItemSummaryGroupedByCategory(document, addingBundle);
                 break;
             case "netCashPlusCredit":
-                populateBundleCashPlusCreditForPdf(document, addingBundle);
+                populateTitleBundleForPdf(document, addingBundle);
                 break;
             default:
                 table.addCell(new Cell().add(new Paragraph("Data for unknown type"))); // Default handling for unknown types
@@ -1456,31 +1454,6 @@ public class PdfController {
     }
 
     private void populateTitleBundleForPdf(Document document, ReportTemplateRowBundle addingBundle) {
-        // Create a solid line separator
-        SolidLine lineDrawer = new SolidLine(1f); // 1f is the line width
-        LineSeparator lineSeparator = new LineSeparator(lineDrawer);
-        lineSeparator.setStrokeColor(ColorConstants.BLACK); // Set color of the line
-
-        // Visual separator before the title
-        document.add(lineSeparator);
-
-        // Create a title paragraph for the report name
-        Paragraph titleParagraph = new Paragraph(addingBundle.getName())
-                .setTextAlignment(TextAlignment.LEFT)
-                .setBold();
-        document.add(titleParagraph);
-
-        // Paragraph for the total
-        Paragraph totalParagraph = new Paragraph("Total: " + String.format("%.2f", addingBundle.getTotal()))
-                .setTextAlignment(TextAlignment.RIGHT)
-                .setItalic();
-        document.add(totalParagraph);
-
-        // Visual separator after the total
-        document.add(lineSeparator);
-    }
-
-    private void populateBundleCashPlusCreditForPdf(Document document, ReportTemplateRowBundle addingBundle) {
         // Create a solid line separator
         SolidLine lineDrawer = new SolidLine(1f); // 1f is the line width
         LineSeparator lineSeparator = new LineSeparator(lineDrawer);
