@@ -77,6 +77,22 @@
                                     <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                 </h:outputText>
                             </p:column>
+                            
+                            <!-- Slip Balance Column with Sorting -->
+                            <p:column headerText="Slip"
+                                      sortBy="#{dr.slipInHandValue}">
+                                <h:outputText value="#{dr.slipInHandValue}">
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+                            
+                            <!-- Credit Balance Column with Sorting -->
+                            <p:column headerText="Credit"
+                                      sortBy="#{dr.creditInHandValue}">
+                                <h:outputText value="#{dr.creditInHandValue}">
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
 
                             <!-- Voucher Balance Column with Sorting -->
                             <p:column headerText="Voucher Balance"
