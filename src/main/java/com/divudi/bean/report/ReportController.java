@@ -2582,6 +2582,11 @@ public class ReportController implements Serializable {
 
         return "/reports/inventoryReports/slow_fast_none_movement?faces-redirect=true";
     }
+    
+    public String navigateToGrn() {
+        
+        return "/reports/inventoryReports/grn?faces-redirect=true";
+    }
 
     public String navigateToBeforeStockTaking() {
 

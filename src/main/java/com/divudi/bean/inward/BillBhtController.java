@@ -498,8 +498,11 @@ public class BillBhtController implements Serializable {
         }
         //for daily return credit card transaction
         paymentMethod = null;
-        settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
-
+        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
+            settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
+        } else {
+            settleBill(getPatientEncounter().getDepartment(), getPatientEncounter().getPaymentMethod());
+        }
     }
 
     public void settleBillSurgery() {
@@ -608,12 +611,14 @@ public class BillBhtController implements Serializable {
             return true;
         }
 
-        if (getPatientEncounter().getCurrentPatientRoom() == null) {
-            return true;
-        }
+        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
+            if (getPatientEncounter().getCurrentPatientRoom() == null) {
+                return true;
+            }
 
-        if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
-            return true;
+            if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+                return true;
+            }
         }
 
         if (getPatientEncounter().isDischarged()) {
