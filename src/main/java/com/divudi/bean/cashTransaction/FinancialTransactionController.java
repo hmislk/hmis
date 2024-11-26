@@ -5052,7 +5052,7 @@ public class FinancialTransactionController implements Serializable {
         selectedBill.setCompletedBy(sessionController.getLoggedUser());
         billController.save(selectedBill);
 
-        return "/cashier/handover_creation_bill_print?faces-redirect=true";
+        return "/cashier/handover_accept_bill_print?faces-redirect=true";
     }
 
     private CashBookEntry findCashbookEntry(Payment p, List<CashBookEntry> cbEntries) {
