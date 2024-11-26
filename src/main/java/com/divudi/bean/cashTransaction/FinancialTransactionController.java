@@ -4620,14 +4620,14 @@ public class FinancialTransactionController implements Serializable {
                         System.out.println("row.getPayment() = " + row.getPayment());
                         continue;
                     }
-                    if (row.getPayment().getPaymentMethod() == PaymentMethod.Cash) {
-
-                    }
                     Payment p = row.getPayment();
                     if (p.getPaymentMethod() == null) {
                         continue;
                     }
                     if (p.getPaymentMethod() != PaymentMethod.Cash && p.isSelectedForHandover() == false) {
+                        continue;
+                    }
+                    if (p.getPaymentMethod() == PaymentMethod.Cash && shiftBundle.getSelectAllCashToHandover() == false) {
                         continue;
                     }
                     p.setHandoverCreatedBill(currentBill);
