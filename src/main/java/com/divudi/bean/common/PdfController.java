@@ -836,6 +836,9 @@ public class PdfController {
             case "itemized_sales_report_without_professional_fee":
                 populateTableForItemizedSalesReportWithoutProfessionalFee(document, addingBundle);
                 break;
+            case "opdServiceCollectionCredit":
+                populateTableForCreditItemSummaryGroupedByCategory(document, addingBundle);
+                break;
             default:
                 table.addCell(new Cell().add(new Paragraph("Data for unknown type"))); // Default handling for unknown types
                 break;
@@ -1175,6 +1178,62 @@ public class PdfController {
             document.add(noDataParagraph);
         }
     }
+    
+    
+    private void populateTableForCreditItemSummaryGroupedByCategory(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
+            // Create a new Table for each call
+            
+            Table table = new Table(new float[]{40, 60, 10, 10, 10, 10, 10});
+            table.setWidth(UnitValue.createPercentValue(100));
+            Style cellStyle = new Style().setFontSize(9);  // Set font size
+
+            // Add title row with bundle name and total
+            table.addCell(new com.itextpdf.layout.element.Cell(1, 6)
+                    .add(new Paragraph(addingBundle.getName())));
+            table.addCell(new com.itextpdf.layout.element.Cell()
+                    .add(new Paragraph(String.format("%.2f", addingBundle.getTotal())))); // Formatting total as a string
+
+            // Add headers
+            String[] headers = {"Category", "Item / Service", "Count", "Hospital Fee", "Professional Fee", "Discount", "Net Amount"};
+            for (String header : headers) {
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(header)));
+            }
+
+            // Populate table with data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        row.getCategory() != null ? row.getCategory().getName() : "")));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        row.getItem() != null ? row.getItem().getName() : "")));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.valueOf(row.getItemCount()))));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.format("%.2f", row.getItemHospitalFee())))); // Format as string
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.format("%.2f", row.getItemProfessionalFee())))); // Format as string
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.format("%.2f", row.getItemDiscountAmount())))); // Format as string
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.format("%.2f", row.getItemNetTotal())))); // Format as string
+            }
+            
+            table.getChildren().forEach(element -> {
+                if (element instanceof Cell) {
+                    ((Cell) element).addStyle(cellStyle);
+                }
+            });
+
+            // Add the table to the document
+            document.add(table);
+        } else {
+            // Add a paragraph for no data
+            Paragraph noDataParagraph = new Paragraph("No Data for " + addingBundle.getName());
+            document.add(noDataParagraph);
+        }
+    }
+    
+    
     
     private void populateTableForIncomeByCategoryWithProfessionalFee(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
