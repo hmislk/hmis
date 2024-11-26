@@ -13103,11 +13103,7 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(netCashForTheDayBundle);
 
         ReportTemplateRowBundle opdServiceCollectionCredit;
-        if (isWithProfessionalFee()) {
-            opdServiceCollectionCredit = generateOpdServiceCollection(PaymentType.CREDIT);
-        } else {
-            opdServiceCollectionCredit = generateOpdServiceCollectionWithoutProfessionalFee(PaymentType.CREDIT);
-        }
+        opdServiceCollectionCredit = generateCreditOpdServiceCollection();
         bundle.getBundles().add(opdServiceCollectionCredit);
         netCollectionPlusCredits = netCashCollection + Math.abs(getSafeTotal(creditBills)); // NOT Deducted from Totals
 
@@ -15246,6 +15242,61 @@ public class SearchController implements Serializable {
         return opdServiceCollection;
     }
 
+    public ReportTemplateRowBundle generateCreditOpdServiceCollection() {
+        ReportTemplateRowBundle opdServiceCollection = new ReportTemplateRowBundle();
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.bill.retired=:br "
+                + " and bi.retired=:bir "
+                + " and bi.bill.createdAt between :fd and :td ";
+        Map m = new HashMap();
+        m.put("br", false);
+        m.put("bir", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        opdServiceCollection.setDescription("Bill Types Listed: " + btas);
+        if (!btas.isEmpty()) {
+            jpql += " and bi.bill.billTypeAtomic in :bts ";
+            m.put("bts", btas);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and bi.bill.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and bi.bill.department.site=:site ";
+            m.put("site", site);
+        }
+
+        System.out.println("btas = " + btas);
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("bis = " + bis);
+        billItemsToBundleForOpdCreditUnderCategory(opdServiceCollection, bis, PaymentType.CREDIT);
+
+        opdServiceCollection.setName("OPD Service Collection - Credit");
+        opdServiceCollection.setBundleType("opdServiceCollectionCredit");
+        
+        opdServiceCollection.getReportTemplateRows().stream()
+                .forEach(rtr -> {
+                    rtr.setInstitution(institution);
+                    rtr.setDepartment(department);
+                    rtr.setSite(site);
+                    rtr.setFromDate(fromDate);
+                    rtr.setToDate(toDate);
+                });
+
+        return opdServiceCollection;
+    }
+
+    
     public ReportTemplateRowBundle generateOpdServiceCollectionWithoutProfessionalFee(PaymentType paymentType) {
         ReportTemplateRowBundle opdServiceCollection = new ReportTemplateRowBundle();
         String jpql = "select bi "
@@ -15899,6 +15950,131 @@ public class SearchController implements Serializable {
 
     }
 
+    public void billItemsToBundleForOpdCreditUnderCategory(ReportTemplateRowBundle rtrb, List<BillItem> billItems, PaymentType paymentType) {
+        System.out.println("billItemsToBundleForOpdUnderCategory");
+        // Use TreeMap to maintain alphabetical order
+        Map<String, ReportTemplateRow> categoryMap = new TreeMap<>();
+        Map<String, ReportTemplateRow> itemMap = new TreeMap<>();
+        List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
+        double totalOpdServiceCollection = 0.0;
+        double totalGrossValue = 0.0;
+        double totalHospitalFee = 0.0;
+        double totalSiscount = 0.0;
+        double totalStaffFee = 0.0;
+        long totalQuantity = 0l;
+
+        for (BillItem bi : billItems) {
+
+            if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
+                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
+                System.out.println("continue 1");
+                continue;
+            }
+
+            if (paymentType == PaymentType.NON_CREDIT) {
+                if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.CREDIT) {
+                    System.out.println("Skipping as this is credit");
+                    continue;
+                }
+            }
+
+            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null
+                    ? bi.getItem().getCategory().getName() : "No Category";
+            System.out.println("categoryName = " + categoryName);
+            String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
+            System.out.println("itemName = " + itemName);
+            String itemKey = categoryName + "->" + itemName;
+
+            System.out.println("Item Key: " + itemKey);
+            System.out.println("Category: " + categoryName + ", Item: " + itemName);
+
+            // Initialize the maps if keys are not present
+            categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
+            itemMap.putIfAbsent(itemKey, new ReportTemplateRow());
+
+            ReportTemplateRow categoryRow = categoryMap.get(categoryName);
+            ReportTemplateRow itemRow = itemMap.get(itemKey);
+
+            // Set category and item details
+            if (bi.getItem() != null) {
+                categoryRow.setCategory(bi.getItem().getCategory());
+                itemRow.setItem(bi.getItem());
+            }
+
+            // Initialize financial values
+            double grossValue = bi.getGrossValue();
+            double hospitalFee = bi.getHospitalFee();
+            double discount = bi.getDiscount();
+            double staffFee = bi.getStaffFee();
+            double netValue = bi.getNetValue();
+
+            // Determine quantity modifier based on bill class type
+            long qtyModifier = (bi.getBill().getBillClassType() == BillClassType.CancelledBill
+                    || bi.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+
+            // Adjust financial values for cancelled/refunded items
+            if (qtyModifier == -1) {
+                grossValue = -Math.abs(grossValue);
+                hospitalFee = -Math.abs(hospitalFee);
+                discount = -Math.abs(discount);
+                staffFee = -Math.abs(staffFee);
+                netValue = -Math.abs(netValue);
+            }
+
+            // Calculate the adjusted quantity
+            long quantity = (long) (bi.getQtyAbsolute() * qtyModifier);
+
+            // Accumulate the total collection
+            totalOpdServiceCollection += netValue;
+            System.out.println("Accumulated total OPD service collection: " + totalOpdServiceCollection);
+
+            totalGrossValue += grossValue;
+            System.out.println("Accumulated total gross value: " + totalGrossValue);
+
+            totalHospitalFee += hospitalFee;
+            System.out.println("Accumulated total hospital fee: " + totalHospitalFee);
+
+            totalSiscount += discount;
+            System.out.println("Accumulated total discount: " + totalSiscount);
+
+            totalStaffFee += staffFee;
+            System.out.println("Accumulated total staff fee: " + totalStaffFee);
+
+            totalQuantity += quantity;
+            System.out.println("Accumulated total quantity: " + totalQuantity);
+
+            // Update the rows with the adjusted values
+            updateRow(categoryRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
+            updateRow(itemRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
+        }
+
+        // Add the rows to the report template bundle
+        categoryMap.forEach((categoryName, catRow) -> {
+            System.out.println("Adding category row to bundle: " + categoryName);
+            rowsToAdd.add(catRow);
+
+            itemMap.entrySet().stream()
+                    .filter(entry -> entry.getKey().startsWith(categoryName + "->"))
+                    .forEach(entry -> {
+                        System.out.println("Adding item row to bundle under category " + categoryName + ": " + entry.getValue().getItem().getName());
+                        rowsToAdd.add(entry.getValue());
+                    });
+        });
+
+        rtrb.getReportTemplateRows().addAll(rowsToAdd);
+        System.out.println("Added rows to ReportTemplateRowBundle. Total rows added: " + rowsToAdd.size());
+
+        rtrb.setTotal(totalOpdServiceCollection);
+        rtrb.setGrossTotal(totalGrossValue);
+        rtrb.setHospitalTotal(totalHospitalFee);
+        rtrb.setStaffTotal(totalStaffFee);
+        rtrb.setDiscount(totalSiscount);
+        rtrb.setCount(totalQuantity);
+
+    }
+
+    
+    
     public void billItemsToBundleForOpdUnderCategoryWithoutProfessionalFee(ReportTemplateRowBundle rtrb, List<BillItem> billItems, PaymentType paymentType) {
         System.out.println("billItemsToBundleForOpdUnderCategory");
         // Use TreeMap to maintain alphabetical order
