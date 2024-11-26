@@ -148,11 +148,41 @@ public class ExcelController {
                 return addDataToExcelForTitleBundle(dataSheet, startRow, addingBundle);
             case "opdServiceCollectionCredit":
                 return addDataToExcelForCreditItemSummaryGroupedByCategory(dataSheet, startRow, addingBundle);
-
+            case "netCashPlusCredit":
+                return addDataToExcelForNetCashPlusCreditBundle(dataSheet, startRow, addingBundle);
         }
         return startRow++;
     }
 
+    private int addDataToExcelForNetCashPlusCreditBundle(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
+        // Row above for visual separation (mimicking <hr/>)
+        Row upperSeparatorRow = dataSheet.createRow(startRow++);
+        upperSeparatorRow.createCell(0).setCellValue(""); // Empty cell, you can optionally format it as a visual separator
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 5));
+
+        // Create a title row for the report name and total
+        Row titleRow = dataSheet.createRow(startRow++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(addingBundle.getName());  // Bundle name
+
+        Cell totalCell = titleRow.createCell(5); // Total in the sixth column
+        totalCell.setCellValue(addingBundle.getTotal());  // Total value
+        // Merge cells for the title, leaving the last one for the total
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 4));
+
+        // Row below for visual separation (mimicking <hr/>)
+        Row lowerSeparatorRow = dataSheet.createRow(startRow++);
+        lowerSeparatorRow.createCell(0).setCellValue(""); // Empty cell, can be formatted as a visual separator
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 5));
+
+        // Adjust column widths to maintain uniform appearance
+        for (int i = 0; i < 6; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        return startRow;
+    }
+    
     private int addDataToExcelForTitleBundle(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
         // Row above for visual separation (mimicking <hr/>)
         Row upperSeparatorRow = dataSheet.createRow(startRow++);
