@@ -3108,6 +3108,15 @@ public class PatientInvestigationController implements Serializable {
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        
+        
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        
+        
         // Starting from BillItem and joining to PatientInvestigation if needed
         jpql = "SELECT DISTINCT b "
                 + " FROM BillItem b "
