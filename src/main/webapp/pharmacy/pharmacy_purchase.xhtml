@@ -50,16 +50,16 @@
                 </h:panelGroup>
 
                 <div class="row">
-                    <div class="col-6">
+                    <div class="col-5">
                         <p:panel header="Purchasing Details">
                             <f:facet name="header">
                                 <h:outputText styleClass="fas fa-shopping-basket"/>
                                 <h:outputText class="mx-4" value="Purchasing Details"/>
                             </f:facet>
-                            <h:panelGrid columns="2" class="w-100">
+                            <h:panelGrid  class="w-100">
                                 <p:outputLabel value="Select Supplier"/>
                                 <p:autoComplete 
-                                    class=" w-100" 
+                                    class=" w-100 my-2" 
                                     inputStyleClass="w-100" 
                                     converter="deal" 
                                     value="#{pharmacyPurchaseController.bill.fromInstitution}" 
@@ -71,7 +71,7 @@
                                     itemValue="#{vt}" />
                                 <h:outputLabel value="Purchasing Institution"/>
                                 <p:autoComplete 
-                                    class=" w-100" 
+                                    class=" w-100 my-2" 
                                     inputStyleClass="w-100" 
                                     value="#{pharmacyPurchaseController.bill.referenceInstitution}"
                                     completeMethod="#{institutionController.completeCompany}" 
@@ -83,7 +83,7 @@
                             </h:panelGrid>
                         </p:panel>
                     </div>
-                    <div class="col-6">
+                    <div class="col-7">
                         <p:panel header="Payment Details">
                             <f:facet name="header" > 
                                 <h:outputText styleClass="fa fa-money-bill-wave"/>
@@ -93,32 +93,33 @@
 
                             <div class="row">
                                 <div class="col-12">
-                                    <h:panelGrid columns="2">
-                                        <p:outputLabel value="Payment Method"/>
-                                        <p:selectOneMenu class="mx-4"  id="cmbPs" value="#{pharmacyPurchaseController.bill.paymentMethod}">       
+                                    <h:panelGrid>
+                                        <h:outputLabel value="Payment Method" class="mb-2"/>
+                                        <p:selectOneMenu style="width: 300px;" id="cmbPs" value="#{pharmacyPurchaseController.bill.paymentMethod}">       
                                             <f:selectItem itemLabel="Select Payment Method" />
                                             <f:selectItems value="#{enumController.paymentMethodsForPo}" />
                                             <p:ajax event="change" process="cmbPs" update="paymentMethodDetails" ></p:ajax>
                                         </p:selectOneMenu>
                                     </h:panelGrid>
-                                    <h:panelGrid id="paymentMethodDetails" class="w-100 b-1" style="margin-left: 150px;" >
+                                    <h:panelGrid id="paymentMethodDetails" class="w-100"  >
                                         <h:panelGroup
+                                            style="margin-left: 1px;"
                                             class="row my-1"
                                             layout="block" 
                                             id="cash"  
                                             rendered="#{pharmacyPurchaseController.bill.paymentMethod eq 'Cash'}" >
-                                            <p:inputText class="mx-1" style="width: 200px;" value="#{pharmacyPurchaseController.bill.netTotal}" id="txtNetTotal"/>
-                                            <p:inputText value="#{pharmacyPurchaseController.bill.comments}" placeholder="Enter a Comment" style="width: 200px;"     id="comment"/>
+                                            <p:inputText style="width: 200px;" value="#{pharmacyPurchaseController.bill.netTotal}" id="txtNetTotal"/>
+                                            <p:inputText class="mx-2"  value="#{pharmacyPurchaseController.bill.comments}" placeholder="Enter a Comment" style="width: 300px;" id="comment"/>
                                         </h:panelGroup>
                                         <h:panelGroup
                                             class="row my-1"
                                             layout="block" 
                                             id="credit"  rendered="#{pharmacyPurchaseController.bill.paymentMethod eq 'Credit'}" >
                                             <div class="d-flex" >
-                                                <div class="ui-inputgroup mx-1 my-1">
+                                                <div class="ui-inputgroup my-1">
                                                     <p:inputText  
                                                         value="#{pharmacyPurchaseController.bill.creditDuration}"
-                                                        style="width: 10em;">
+                                                        style="width: 10em; ">
                                                     </p:inputText>
                                                     <div class="ui-inputgroup-addon">Days</div>
                                                 </div>
@@ -139,13 +140,12 @@
                                     </h:panelGrid>
                                 </div>
                             </div>
-                            <p:spacer height="40px"></p:spacer>
                         </p:panel>
                     </div>
                 </div>
-                <div class="row w-100">
+                <div class="row">
                     <div class="col-12">
-                        <p:panel id="itemselectgrid" class="my-1 w-100" rendered="#{sessionController.loggedPreference.pharmayPurchaseWithLastRate eq false}" header="Add Item">
+                        <p:panel id="itemselectgrid" class="my-2 w-100" rendered="#{sessionController.loggedPreference.pharmayPurchaseWithLastRate eq false}" header="Add Item">
                             <f:facet name="header" > 
                                 <h:outputText styleClass="fa-solid fa-circle-plus" />
                                 <h:outputText  class="mx-4" value="Add Items" />  

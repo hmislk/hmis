@@ -22,7 +22,7 @@
                             <p:printer target="panIx" />
                         </p:commandButton>
                         <p:commandButton id="excel" ajax="false" value="Excel"   >
-                            <p:dataExporter target="tbl" type="xls" fileName="List of Investigations of #{investigationController.category}"  />
+                            <p:dataExporter target="tbl" type="xlsx" fileName="List of Investigations of #{investigationController.category}"  />
                         </p:commandButton>
                         <p:selectOneMenu id="cmbCat" value="#{investigationController.category}" >
                             <f:selectItem itemLabel="List all" />

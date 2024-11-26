@@ -231,6 +231,20 @@ public class DrawerEntryController implements Serializable {
     public void setWebUser(WebUser webUser) {
         this.webUser = webUser;
     }
+    
+    
+    /*
+    Pubudu Start
+    */
+    
+
+
+
+    /*
+    Pubudu End
+    */
+    
+    
 
     @FacesConverter(forClass = DrawerEntry.class)
     public static class DrawerEntryConverter implements Converter {
