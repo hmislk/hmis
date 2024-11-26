@@ -5406,7 +5406,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillTime(new Date());
 
         Double netTotal = currentBill.getNetTotal();
-        if (loggedUserDrawer.getCashInHandValue() < netTotal) {
+        if (getLoggedUserDrawer().getCashInHandValue() < netTotal) {
             JsfUtil.addErrorMessage("Not Enough Cash in the Drawer");
             return "";
         }
