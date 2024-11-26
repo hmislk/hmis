@@ -146,10 +146,43 @@ public class ExcelController {
                 return addDataToExcelForCreditCards(dataSheet, startRow, addingBundle);
             case "netCash":
                 return addDataToExcelForTitleBundle(dataSheet, startRow, addingBundle);
+            case "opdServiceCollectionCredit":
+                return addDataToExcelForCreditItemSummaryGroupedByCategory(dataSheet, startRow, addingBundle);
+            case "netCashPlusCredit":
+                return addDataToExcelForNetCashPlusCreditBundle(dataSheet, startRow, addingBundle);
         }
         return startRow++;
     }
 
+    private int addDataToExcelForNetCashPlusCreditBundle(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
+        // Row above for visual separation (mimicking <hr/>)
+        Row upperSeparatorRow = dataSheet.createRow(startRow++);
+        upperSeparatorRow.createCell(0).setCellValue(""); // Empty cell, you can optionally format it as a visual separator
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 5));
+
+        // Create a title row for the report name and total
+        Row titleRow = dataSheet.createRow(startRow++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(addingBundle.getName());  // Bundle name
+
+        Cell totalCell = titleRow.createCell(5); // Total in the sixth column
+        totalCell.setCellValue(addingBundle.getTotal());  // Total value
+        // Merge cells for the title, leaving the last one for the total
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 4));
+
+        // Row below for visual separation (mimicking <hr/>)
+        Row lowerSeparatorRow = dataSheet.createRow(startRow++);
+        lowerSeparatorRow.createCell(0).setCellValue(""); // Empty cell, can be formatted as a visual separator
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 5));
+
+        // Adjust column widths to maintain uniform appearance
+        for (int i = 0; i < 6; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        return startRow;
+    }
+    
     private int addDataToExcelForTitleBundle(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
         // Row above for visual separation (mimicking <hr/>)
         Row upperSeparatorRow = dataSheet.createRow(startRow++);
@@ -703,4 +736,59 @@ public class ExcelController {
         return startRow;
     }
 
+    private int addDataToExcelForCreditItemSummaryGroupedByCategory(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
+        // Create title row only if there is data
+        if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
+            // Create title row with name and total
+            Row titleRow = dataSheet.createRow(startRow++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(addingBundle.getName());
+            Cell totalCell = titleRow.createCell(6); // Assuming 7th column is for total
+            totalCell.setCellValue(addingBundle.getTotal()); // Assuming getTotal() returns formatted string
+
+            // Merge title across all columns except the last (for total)
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 5));
+
+            // Create header row for Excel
+            Row headerRow = dataSheet.createRow(startRow++);
+            String[] columnHeaders = {
+                "Category", "Item / Service", "Count", "Hospital Fee",
+                "Professional Fee", "Discount", "Net Amount"
+            };
+            for (int i = 0; i < columnHeaders.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columnHeaders[i]);
+            }
+
+            // Iterate through each row of the data and add to Excel
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                Row excelRow = dataSheet.createRow(startRow++);
+                String categoryOrItem = row.getCategory() != null ? row.getCategory().getName() : "";
+                String itemName = row.getItem() != null ? row.getItem().getName() : "";
+
+                // Create cells for each column
+                excelRow.createCell(0).setCellValue(categoryOrItem);
+                excelRow.createCell(1).setCellValue(itemName);
+                excelRow.createCell(2).setCellValue(row.getItemCount());
+                excelRow.createCell(3).setCellValue(row.getItemHospitalFee());
+                excelRow.createCell(4).setCellValue(row.getItemProfessionalFee());
+                excelRow.createCell(5).setCellValue(row.getItemDiscountAmount());
+                excelRow.createCell(6).setCellValue(row.getItemNetTotal());
+            }
+
+        } else {
+            // If no data, create a single row stating this
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + addingBundle.getName());
+            // Merge the cell across all columns
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 6));
+        }
+
+        return startRow;
+    }
+
+    
+    
+    
 }

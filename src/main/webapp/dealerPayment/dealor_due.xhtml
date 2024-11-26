@@ -58,6 +58,13 @@
                                     ajax="false"
                                     icon="fas fa-file-invoice-dollar"
                                     class="my-1 w-100  ui-button-success" />
+                                 
+                                 <p:commandButton 
+                                    value="List All Canceled Returned Supplier Payments"
+                                    action="#{supplierPaymentController.fillAllCanceledReturnedSupplierPayments()}"
+                                    ajax="false"
+                                    icon="fas fa-file-invoice-dollar"
+                                    class="my-1 w-100  ui-button-danger" />
 
                                 <p:separator></p:separator>
 
@@ -165,7 +172,11 @@
                                     </p:column>
 
                                     <p:column  headerText="Actions" >
-                                        <p:commandButton value="Pay" action="#{supplierPaymentController.navigateToStartSupplierPayment(b)}" ajax="false" >
+                                        <p:commandButton value="Pay" 
+                                                         update="@form" 
+                                                         action="#{supplierPaymentController.navigateToStartSupplierPayment(b)}" 
+                                                         ajax="false" 
+                                                         disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT'}" >
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
