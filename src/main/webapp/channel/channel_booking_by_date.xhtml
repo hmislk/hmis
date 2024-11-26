@@ -241,7 +241,7 @@
                                                                                                                 </div>-->
                                                         <div class="text-center">
                                                             <h:outputLabel style="font-weight: bolder" value="N"/><br/>
-                                                            <p:badge value="#{s.nextAvailableAppointmentNumber}" rendered="#{s.nextAvailableAppointmentNumber ne null}" size="large" styleClass="mr-2"></p:badge>
+                                                            <p:badge value="#{bookingControllerViewScope.getNextAvailableNumberWithTemporaryBookings(s)}" rendered="#{s.nextAvailableAppointmentNumber ne null}" size="large" styleClass="mr-2"></p:badge>
                                                             <p:badge value="1" rendered="#{s.nextAvailableAppointmentNumber eq null and s.originatingSession.sessionStartingNumber eq null}" size="large" styleClass="mr-2"></p:badge>
                                                             <p:badge value="#{s.originatingSession.sessionStartingNumber}" rendered="#{s.originatingSession.sessionStartingNumber ne null and s.nextAvailableAppointmentNumber eq null}" size="large" styleClass="mr-2"></p:badge>
                                                         </div>
@@ -390,7 +390,7 @@
                                                 <p:panel header="Normal Booking Section">
                                                     <p:row rendered="#{bookingControllerViewScope.selectedSessionInstance ne null and configOptionApplicationController.getBooleanValueByKey('Released Number Booking available in the Channel Booking by date', false)}">
                                                         <p:selectOneMenu style="border: 2px solid #007bff; border-radius: 10px; padding: 1px; background-color: #f8f9fa;" class="w-50" id="releasedNumbers" placeholder=" Apoinment Numbers" value="#{bookingControllerViewScope.assignedReleasedAppoinmentNumber}" editable="true">
-                                                            <f:selectItem itemLabel="Check Released Apoinment No" itemValue="0"/>
+                                                            <f:selectItem itemLabel="Released Apoinment No.s : (#{bookingControllerViewScope.releasedAppoinmentNumbers.size()})" itemValue="0"/>
                                                             <f:selectItems  value="#{bookingControllerViewScope.releasedAppoinmentNumbers}"/>
                                                             <p:ajax event="valueChange" update="releasedNumbers btnAddReserved"></p:ajax>
                                                         </p:selectOneMenu>
