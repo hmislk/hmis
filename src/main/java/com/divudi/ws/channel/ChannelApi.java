@@ -1468,8 +1468,8 @@ public class ChannelApi {
 
         Map<String, Object> priceDetails = new HashMap<>();
         priceDetails.put("totalAmount", bill.getTotal());
-        priceDetails.put("docCharge", i.getChannelStaffFee());
-        priceDetails.put("hosCharge", i.getChannelHosFee());
+        priceDetails.put("docCharge", bill.getPatient().getPerson().isForeigner()? 0 : i.getChannelStaffFee());
+        priceDetails.put("hosCharge", bill.getPatient().getPerson().isForeigner()? 0 : i.getChannelHosFee());
 
         Map<String, Object> paymentDetailsForResponse = new HashMap<>();
         paymentDetailsForResponse.put("paymentMode", bill.getCreditCompany().getName());
