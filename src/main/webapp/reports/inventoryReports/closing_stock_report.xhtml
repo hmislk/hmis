@@ -22,20 +22,7 @@
                                           inputStyleClass="w-100"
                                           class=" w-100" ></p:datePicker>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
-                                <p:outputLabel value="Site" class="mx-3"></p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="d"
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
-                            </p:selectOneMenu>
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university ml-5" />
@@ -52,6 +39,42 @@
                                                itemLabel=""
                                                itemValue="" ></f:selectItems>
                             </p:selectOneMenu>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
+                                <p:outputLabel value="Site" class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="d"
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            
+                            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building ml-5" />
@@ -93,6 +116,7 @@
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
 
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-barcode ml-5" />
                                 <p:outputLabel value="Item Code" class="mx-3">
@@ -102,6 +126,7 @@
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-box ml-5" />
@@ -113,25 +138,8 @@
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-boxes ml-5" />
-                                <p:outputLabel value="Stock type" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
-                          
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-truck ml-5" />
-                                <p:outputLabel value="Is Consignment Item" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
+
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-boxes ml-5" />
@@ -166,8 +174,11 @@
                             </p:commandButton>
                         </div>
 
+
                         <div class="mt-5">
+                            
                             <h5>Report Data By Item</h5>
+
                             <p:dataTable id="tbl1" value="" 
                                          var="f" 
                                          rowIndexVar="n" 
@@ -179,9 +190,6 @@
 
                                 <p:column headerText="S.No">
                                     <h:outputText value="" />
-                                    <f:facet name="footer">
-                                        <h:outputText value="Total" />
-                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Item Category">
@@ -205,16 +213,32 @@
                                 <p:column headerText="Closing Stock Value">
                                     <h:outputText value="" />
                                 </p:column>
-                                <p:column headerText="ON Date">
-                                    <h:outputText value="" />
-                                </p:column>
+
+
+                                <f:facet name="footer">
+
+                                    <p:column>
+                                        <h:outputText value="Total:" />
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="" />
+                                    </p:column>
+                                </f:facet>
+
 
                             </p:dataTable>
-                            
+
+                        </div>
+                        
+                        
+
+
                         </div>
                        
                         <div class="mt-5">
+                            
                             <h5>Report Data By Batch</h5>
+
                             <p:dataTable id="tbl2" value="" 
                                          var="f" 
                                          rowIndexVar="n" 
@@ -226,9 +250,6 @@
 
                                 <p:column headerText="S.No">
                                     <h:outputText value="" />
-                                    <f:facet name="footer">
-                                        <h:outputText value="Total" />
-                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Item Category">
@@ -268,16 +289,31 @@
                                     <h:outputText value="" />
                                 </p:column>
 
+
+                                <f:facet name="footer">
+
+                                    <p:column>
+                                        <h:outputText value="Total:" />
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="" />
+                                    </p:column>
+                                </f:facet>
+
+
+
                             </p:dataTable>
 
                         </div>
-
+                        
                     </p:panel>
 
                 </h:form>
 
             </ui:define>
+            
         </ui:composition>
 
     </h:body>
+    
 </html>
