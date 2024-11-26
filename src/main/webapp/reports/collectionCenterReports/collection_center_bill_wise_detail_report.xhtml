@@ -19,20 +19,27 @@
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="From Date"  class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          class="w-100"
-                                          inputStyleClass="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                value="#{searchController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                />
 
 
                             <h:panelGroup >
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="To Date"  class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          class="w-100"
-                                          inputStyleClass="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                value="#{searchController.toDate}"
+                                navigator="false"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                />
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -254,6 +261,7 @@
                             <p:column headerText="Invoice No" width="5rem">
                                 <h:outputText></h:outputText>
                             </p:column>
+                            
                         </p:dataTable>
 
 
