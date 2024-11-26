@@ -1187,7 +1187,7 @@ public class FinancialTransactionController implements Serializable {
 //            selectedBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
 //        }
 
-         bundle.calculateTotalsByChildBundlesForHandover();
+        bundle.calculateTotalsByChildBundlesForHandover();
     }
 
     public void selectAllForPaymentHandoverSelectionAtCreate() {
@@ -4481,19 +4481,31 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No Payments to Handover");
             return null;
         }
-        if (Math.abs(bundle.getDenominatorValue() - bundle.getCashHandoverValue()) > 1) {
+        Double maximumAllowedCashDifferenceForHandover = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Cash Difference for Handover", 1.0);
+        if (Math.abs(bundle.getDenominatorValue() - bundle.getCashValue()) > maximumAllowedCashDifferenceForHandover) {
             JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
             return null;
         }
-        boolean hasSelectedBundles = false;
+        boolean shouldSelectAllCollectionsForHandover = configOptionApplicationController.getBooleanValueByKey("Should Select All Collections for Handover", false);
+        boolean allBundlesSelected = true;
+        boolean anyBundleSelected = false;
+
         for (ReportTemplateRowBundle b : bundle.getBundles()) {
             if (b.isSelected()) {
-                hasSelectedBundles = true;
+                anyBundleSelected = true; // At least one bundle is selected
+            } else {
+                allBundlesSelected = false; // Found an unselected bundle, not all are selected
             }
         }
-        if (!hasSelectedBundles) {
+
+        if (!anyBundleSelected) {
             JsfUtil.addErrorMessage("No Payments to Handover");
-            return null;
+            return null; // Stop processing since no bundles are selected
+        }
+
+        if (shouldSelectAllCollectionsForHandover && !allBundlesSelected) {
+            JsfUtil.addErrorMessage("All collections must be selected for handover");
+            return null; // Stop processing since not all bundles are selected when they must be
         }
 
         bundle.setFromUser(sessionController.getLoggedUser());
