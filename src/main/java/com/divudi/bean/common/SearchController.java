@@ -827,6 +827,10 @@ public class SearchController implements Serializable {
         bills = null;
         return "/analytics/professional_payment_list?faces-redirect=true";
     }
+    
+    public String navigateToWhtReport(){
+        return "/reports/financialReports/wht?faces-redirect=true";
+    }
 
     public String toSearchBills() {
         bills = null;
