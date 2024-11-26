@@ -536,8 +536,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         }
     }
 
-   
-
     public void sendSmsOnChannelBookingReschedule() {
         if (selectedBillSession == null) {
             return;
@@ -577,8 +575,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         }
         return createSmsForChannelBookingReschedule(b, s, template);
     }
-
-   
 
     private BillItem createSessionItemForReshedule(Bill bill) {
         BillItem bi = new BillItem();
@@ -2014,7 +2010,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
         viewScopeDataTransferController.setNeedToPrepareForNewBooking(true);
 
-        return "/channel/channel_booking_by_date?faces-redirect=true";
+        return "/clinic/sessions?faces-redirect=true";
     }
 
     public String navigateBackToBookingsLoagingBillSessions() {
@@ -3398,16 +3394,17 @@ public class ClinicController implements Serializable, ControllerWithPatientView
 
         saveSelected(patient);
         printingBill = saveBilledBill(reservedBooking, firstVisit);
+        if (!configOptionApplicationController.getBooleanValueByKey("No Payments for Clinic Booking")) {
+            if (printingBill.getBillTypeAtomic()
+                    .getBillFinanceType() == BillFinanceType.CASH_IN) {
 
-        if (printingBill.getBillTypeAtomic()
-                .getBillFinanceType() == BillFinanceType.CASH_IN) {
+                List<Payment> p = createPayment(printingBill, paymentMethod);
 
-            List<Payment> p = createPayment(printingBill, paymentMethod);
+                if (printingBill.getBillType() != BillType.ChannelAgent) {
+                    drawerController.updateDrawerForIns(p);
+                }
 
-            if (printingBill.getBillType() != BillType.ChannelAgent) {
-                drawerController.updateDrawerForIns(p);
             }
-
         }
 
         boolean sendSmsAfterBooking = configOptionApplicationController.getBooleanValueByKey("Send SMS after Channel Booking", true);
