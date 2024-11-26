@@ -5,6 +5,7 @@
     xsi:schemaLocation="
         http://xmlns.jcp.org/xml/ns/persistence
         http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
+
     <persistence-unit name="hmisPU" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <jta-data-source>jdbc/ruhunu</jta-data-source>
@@ -19,6 +20,7 @@
             <property name="eclipselink.application-location" value="c:/tmp/"/>
             <!-- After generation, set ddl-generation to 'none' -->
             <!-- <property name="eclipselink.ddl-generation" value="none"/> -->
+
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
@@ -34,6 +36,7 @@
             <property name="eclipselink.application-location" value="c:/tmp/"/>
             <!-- After generation, set ddl-generation to 'none' -->
             <!-- <property name="eclipselink.ddl-generation" value="none"/> -->
+
         </properties>
     </persistence-unit>
 </persistence>
