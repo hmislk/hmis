@@ -7381,7 +7381,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
             if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
                 if (settlePaymentMethod == PaymentMethod.Cash) {
-                    if (strTenderedValue.isEmpty()) {
+                    if (strTenderedValue==null || strTenderedValue.isEmpty()) {
                         JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                         return;
                     }
