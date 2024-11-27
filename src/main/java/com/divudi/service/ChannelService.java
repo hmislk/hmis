@@ -1023,7 +1023,7 @@ public class ChannelService {
 
         m.put("ret", false);
 
-        sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
+        sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
         // System.out.println(jpql.toString()+"\n"+sessionInstances.size()+"\n"+m.values());
         return sessionInstances;
     }
@@ -1038,7 +1038,7 @@ public class ChannelService {
         if (sessionDate != null) {
             jpql.append(" and i.sessionDate > :sd ");
             m.put("sd", sessionDate);
-            System.out.println(sessionDate);
+           // System.out.println(sessionDate);
         }
 //         
 //        if(fromDate != null){
@@ -1063,7 +1063,7 @@ public class ChannelService {
 
         m.put("ret", false);
         System.out.println(jpql.toString() + "\n" + m);
-        return sessionInstanceFacade.findFirstByJpql(jpql.toString(), m, TemporalType.DATE);
+        return sessionInstanceFacade.findFirstByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
         // System.out.println(jpql.toString()+"\n"+sessionInstances.size()+"\n"+m.values());
 
     }
