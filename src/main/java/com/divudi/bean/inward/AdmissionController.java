@@ -150,6 +150,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private boolean patientDetailsEditable;
     private List<ClinicalFindingValue> patientAllergies;
     private ClinicalFindingValue currentPatientAllergy;
+    private Institution lastCreditCompany;
 
     public void addPatientAllergy() {
         if (currentPatientAllergy == null) {
@@ -269,6 +270,39 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void dateChangeListen() {
         getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
 
+    }
+    
+    public void admissionPaymentMethodChange(){
+        if(current.getPaymentMethod() == PaymentMethod.Credit){
+            isPatientHaveALastUsedCreditCompany(current.getPatient());
+        }
+    }
+    
+    public boolean isPatientHaveALastUsedCreditCompany(Patient p){
+        if(p == null){
+            return false;
+        }
+        
+        Admission a = null;
+        lastCreditCompany = null;
+        String sql;
+        HashMap hash = new HashMap();
+        sql = "select c from Admission c "
+                + " where c.patient=:pt "
+                + " and c.paymentMethod= :pm"
+                + " and c.retired=false "
+                + " order by c.id desc";
+        
+         hash.put("pm", PaymentMethod.Credit);
+         hash.put("pt", p);
+         a = getFacade().findFirstByJpql(sql, hash);
+         System.out.println("a = " + a);
+         if(a == null){
+             return false;
+         }else{
+             lastCreditCompany = a.getCreditCompany();
+             return true;
+         } 
     }
 
     public List<Admission> completeBhtCredit(String qry) {
@@ -1595,6 +1629,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {
         this.patientAllergies = patientAllergies;
+    }
+
+    public Institution getLastCreditCompany() {
+        return lastCreditCompany;
+    }
+
+    public void setLastCreditCompany(Institution lastCreditCompany) {
+        this.lastCreditCompany = lastCreditCompany;
     }
 
     /**
