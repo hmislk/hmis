@@ -15045,6 +15045,7 @@ public class SearchController implements Serializable {
             bisIP = billItemFacade.findByJpql(jpqlIP, mIP, TemporalType.TIMESTAMP);
         }
 
+        
         // Combine OP and IP BillItems
         List<BillItem> bis = new ArrayList<>();
         bis.addAll(bisOP);
