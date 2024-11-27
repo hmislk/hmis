@@ -1019,7 +1019,7 @@
                                                 </div>
                                                 <div class="col-5">
                                                     <p:inputText autocomplete="off"  id="paid" value="#{billPackageController.cashPaid}" class="h5">
-                                                        <p:ajax event="keyup" process="netTotal paid" update="balance netTotal" listener="#{billPackageController.calTotals()}"/>
+                                                        <p:ajax event="keyup" process="netTotal paid" update=":#{p:resolveFirstComponentWithId('balance',view).clientId} netTotal" listener="#{billPackageController.calTotals()}"/>
                                                     </p:inputText>
                                                 </div>
                                             </div>
