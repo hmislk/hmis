@@ -498,7 +498,7 @@
                                 <p:dataTable   
                                     value="#{financialTransactionController.denominationTransactions}" 
                                     var="deno" 
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow to Denomination for shift Ending Process',false)}" >
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow to Denomination for shift Ending Process')}" >
                                     <p:column title="Denomination" style="padding: 4px; width: 8em;">
                                         <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
                                     </p:column>
@@ -532,7 +532,7 @@
                                     class="mt-2 ui-button-info" 
                                     icon="pi pi-refresh" 
                                     style="float: left;"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow to Denomination for shift Ending Process',false)}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow to Denomination for shift Ending Process')}"
                                     process="@this"
                                     update="#{p:resolveFirstComponentWithId('txtCashValue',view).clientId}"
                                     >                                                                    
