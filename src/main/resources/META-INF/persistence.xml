@@ -9,6 +9,7 @@
 
     <persistence-unit name="hmisPU" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+
         <jta-data-source>jdbc/hmis</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
@@ -25,6 +26,7 @@
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
+
         <jta-data-source>jdbc/hmisaudit</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
