@@ -886,11 +886,16 @@ public class ReportTemplateRowBundle implements Serializable {
                     childBundle.calculateTotalsOfSelectedRowsPlusAllCash();
 
                     System.out.println("selected childBundle = " + childBundle.getName());
-                    if (selectAllCashToHandover) {
+                    System.out.println("childBundle.getSelectAllCashToHandover() = " + childBundle.getSelectAllCashToHandover());
+                    System.out.println("childBundle.getCashValue() = " + childBundle.getCashValue());
+                    System.out.println("childBundle.getCashHandoverValue() = " + childBundle.getCashHandoverValue());
+                    if (childBundle.getSelectAllCashToHandover()) {
                         addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashHandoverValue()));
                     } else {
                         addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashValue()));
                     }
+                    System.out.println("childBundle.getCashValue = " + childBundle.getCashValue());
+                    System.out.println("childBundle.getCashHandoverValue = " + childBundle.getCashHandoverValue());
                     addValueAndUpdateFlag("card", safeDouble(childBundle.getCardValue()), safeDouble(childBundle.getCardHandoverValue()));
                     addValueAndUpdateFlag("multiplePaymentMethods", safeDouble(childBundle.getMultiplePaymentMethodsValue()), safeDouble(childBundle.getMultiplePaymentMethodsHandoverValue()));
                     addValueAndUpdateFlag("staff", safeDouble(childBundle.getStaffValue()), safeDouble(childBundle.getStaffHandoverValue()));

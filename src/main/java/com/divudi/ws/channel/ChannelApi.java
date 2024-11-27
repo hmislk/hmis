@@ -823,7 +823,7 @@ public class ChannelApi {
         sessionData.put("vatDocForeignCharge", null);
         sessionData.put("specID", session.getOriginatingSession().getStaff().getSpeciality().getId().toString());
         sessionData.put("maxPatient", session.getMaxNo());
-        sessionData.put("activePatient", null);
+        sessionData.put("activePatient", session.getBookedPatientCount());
         sessionData.put("foreignAmount", session.getOriginatingSession().getTotalForForeigner());
         sessionData.put("appDate", forDate.format(session.getSessionDate()));
         sessionData.put("vatHosForeignCharge", null);
@@ -1438,18 +1438,18 @@ public class ChannelApi {
 
         Map<String, Object> appoinment = new HashMap<>();
         appoinment.put("refNo", bill.getAgentRefNo());
-
+        
         Map<String, Object> sessionDetails = new HashMap<>();
         Item i = bill.getSingleBillSession().getItem();
         sessionDetails.put("hosId", i.getInstitution().getId().toString());
-        sessionDetails.put("docname", i.getStaff().getPerson().getNameWithInitials());
-        sessionDetails.put("amount", i.getTotalFee());
+        sessionDetails.put("docname", session.getStaff().getPerson().getNameWithTitle());
+        sessionDetails.put("amount", session.getOriginatingSession().getTotal());
         sessionDetails.put("hosAmount", i.getChannelHosFee());
         sessionDetails.put("docAmount", i.getChannelStaffFee());
         sessionDetails.put("specialization", i.getStaff().getSpeciality().getName());
         sessionDetails.put("theDate", forDate.format(session.getSessionDate()));
         sessionDetails.put("theDay", forDay.format(session.getSessionDate()));
-        sessionDetails.put("startTime", forTime.format(session.getSessionDate()));
+        sessionDetails.put("startTime", forTime.format(session.getStartingTime()));
         sessionDetails.put("hosLocation", session.getInstitution().getAddress());
         sessionDetails.put("hosName", session.getInstitution().getName());
         sessionDetails.put("sessionStarted", session.isStarted());
@@ -1468,8 +1468,8 @@ public class ChannelApi {
 
         Map<String, Object> priceDetails = new HashMap<>();
         priceDetails.put("totalAmount", bill.getTotal());
-        priceDetails.put("docCharge", session.getChannelStaffFee());
-        priceDetails.put("hosCharge", session.getChannelHosFee());
+        priceDetails.put("docCharge", i.getChannelStaffFee());
+        priceDetails.put("hosCharge", i.getChannelHosFee());
 
         Map<String, Object> paymentDetailsForResponse = new HashMap<>();
         paymentDetailsForResponse.put("paymentMode", bill.getCreditCompany().getName());
