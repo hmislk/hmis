@@ -914,6 +914,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         setDiscount(dis);
         setTotal(net);
         setNetTotal(net);
+        System.out.println("Cash Balance = " + getCashBalance());
     }
 
     public void feeChanged() {
