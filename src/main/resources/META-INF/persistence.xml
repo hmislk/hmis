@@ -21,6 +21,7 @@
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
 
+
             <property name="eclipselink.logging.level" value="SEVERE"/>
             <property name="eclipselink.logging.parameters" value="true"/>
             <!-- Generate DDL scripts without applying them -->
