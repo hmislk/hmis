@@ -3427,22 +3427,24 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
                         break;
                     case ewallet:
-                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
+                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferralNo());
                         p.setComments(cd.getPaymentMethodData().getCredit().getComment());
-                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
+                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
                         p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
                         break;
                     case Agent:
-                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
+                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferralNo());
                         p.setComments(cd.getPaymentMethodData().getCredit().getComment());
-                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
+                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
                         p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
                         break;
                     case Credit:
-                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
+                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferralNo());
                         p.setComments(cd.getPaymentMethodData().getCredit().getComment());
-                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
+                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
+                        System.out.println("cd.getPaymentMethodData().getCredit().getInstitution() = " + cd.getPaymentMethodData().getCredit().getInstitution());
                         p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
+                        System.out.println("p = " + p.getCreditCompany().getName());
                         break;
                     case PatientDeposit:
                         if (getPatient().getRunningBalance() != null) {
