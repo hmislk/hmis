@@ -279,14 +279,19 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
     
     public boolean isPatientHaveALastUsedCreditCompany(Patient p){
+        if(p == null){
+            return false;
+        }
+        
         Admission a = null;
+        lastCreditCompany = null;
         String sql;
         HashMap hash = new HashMap();
         sql = "select c from Admission c "
                 + " where c.patient=:pt "
                 + " and c.paymentMethod= :pm"
                 + " and c.retired=false "
-                + " and order by c.id desc";
+                + " order by c.id desc";
         
          hash.put("pm", PaymentMethod.Credit);
          hash.put("pt", p);
@@ -295,6 +300,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
          if(a == null){
              return false;
          }else{
+             lastCreditCompany = a.getCreditCompany();
              return true;
          } 
     }
