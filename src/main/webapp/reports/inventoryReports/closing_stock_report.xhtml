@@ -22,35 +22,27 @@
                                           inputStyleClass="w-100"
                                           class=" w-100" ></p:datePicker>
 
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university ml-5" />
+                                <p:outputLabel value="Institution" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>                            
+
+
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
                                 <p:outputLabel value="Site" class="mx-3"></p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
+                            <p:selectOneMenu class="w-100 ">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="d"
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university ml-5" />
-                                <p:outputLabel value="Institution" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="d"
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
+                                <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
 
 
@@ -60,30 +52,24 @@
                                 <p:outputLabel value="Department" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
+                            <p:selectOneMenu class="w-100 ">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="d"
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
+                                <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
+
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-store ml-5" />
                                 <p:outputLabel value="Store" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="cmdFromDepartment"
-                                value="#{reportController.fromDepartment}" 
-                                filter="true"
-                                class="w-100 ">
+                            <p:selectOneMenu value="" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
+
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-tags ml-5" />
@@ -95,6 +81,8 @@
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
 
+
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-barcode ml-5" />
                                 <p:outputLabel value="Item Code" class="mx-3">
@@ -104,6 +92,8 @@
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
+
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-box ml-5" />
@@ -115,6 +105,8 @@
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
 
+
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-boxes ml-5" />
                                 <p:outputLabel value="Stock type" class="mx-3">
@@ -124,7 +116,9 @@
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
-                          
+
+
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-truck ml-5" />
                                 <p:outputLabel value="Is Consignment Item" class="mx-3">
@@ -146,6 +140,8 @@
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
+
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-truck ml-5" />
@@ -209,16 +205,13 @@
                                 <p:column headerText="Closing Stock Value">
                                     <h:outputText value="" />
                                 </p:column>
-                                <p:column headerText="ON Date">
-                                    <h:outputText value="" />
-                                </p:column>
 
                             </p:dataTable>
-                            
+
                         </div>
 
 
-                       
+
                         <div class="mt-5">
                             <h5>Report Data By Batch</h5>
                             <p:dataTable id="tbl2" value="" 
