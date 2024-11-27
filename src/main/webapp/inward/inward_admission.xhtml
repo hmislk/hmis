@@ -294,10 +294,8 @@
                                                                      itemLabel="Claimable" />
                                             
                                             <p:outputLabel value="Last Used Credit Company" rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"/>
-                                            <p:badge value="#{admissionController.lastCreditCompany.name}"
-                                                                     styleClass="form-control w-100"
-                                                                     class="w-100"
-                                                                     rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"
+                                            <p:badge value="#{admissionController.lastCreditCompany.name}" 
+                                                     rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"
                                                                       />
 
                                             <p:outputLabel value="Payment Method"/>
