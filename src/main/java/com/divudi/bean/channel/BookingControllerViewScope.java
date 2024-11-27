@@ -275,6 +275,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private List<BillSession> billSessions;
     private List<BillSession> temporaryBillSessions;
     private List<BillSession> allBillSessionsWithTemporaryBookings;
+
     private List releasedAppoinmentNumbers;
     private Long assignedReleasedAppoinmentNumber;
 
@@ -382,6 +383,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private ScheduleEvent<?> sEvent = new DefaultScheduleEvent<>();
 
     private List<BillFee> lstBillFees;
+    
+     public List<BillSession> getAllBillSessionsWithTemporaryBookings() {
+        return allBillSessionsWithTemporaryBookings;
+    }
+
+    public void setAllBillSessionsWithTemporaryBookings(List<BillSession> allBillSessionsWithTemporaryBookings) {
+        this.allBillSessionsWithTemporaryBookings = allBillSessionsWithTemporaryBookings;
+    }
 
     public void makeNull() {
         consultant = null;
@@ -6754,6 +6763,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getBillSessionFacade().create(bs);
 
         return bs;
+    }
+    public int getNextAvailableNumberWithTemporaryBookings(SessionInstance ss){
+         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(ss.getOriginatingSession().getReserveNumbers());
+         return serviceSessionBean.getNextNonReservedSerialNumber(ss, reservedNumbers);
     }
 
     public String generateBillNumberInsId(Bill bill) {
