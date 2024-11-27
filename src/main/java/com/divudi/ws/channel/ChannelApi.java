@@ -50,6 +50,7 @@ import com.divudi.entity.Person;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
+import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
@@ -79,6 +80,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import javax.ejb.EJB;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
@@ -2068,6 +2070,52 @@ public class ChannelApi {
 
         String json = jSONObjectOut.toString();
         return json;
+    }
+    
+    @POST
+    @Path("/getApiKey")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getApiKeyWithRenewal(@Context HttpServletRequest requestContext, Map<String, Object> requestBody){
+        String bookingChannel = (String)requestBody.get("bookingChannel");
+        
+        if(!bookingChannel.equalsIgnoreCase("WEB_DOC990")){
+            JSONObject response = commonFunctionToErrorResponse("Authentication failed");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+        
+        String userName = (String)requestBody.get("userName");
+        String password = (String)requestBody.get("password");
+        
+        WebUser user = channelService.checkUserCredentialForApi(userName, password);
+        
+        if(user == null){
+            JSONObject response = commonFunctionToErrorResponse("Authentication failed");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(response.toString()).build();
+        }
+        
+        List<ApiKey> apiKeyList = channelService.listApiKeysForUser(user);
+        
+        if(apiKeyList != null && !apiKeyList.isEmpty()){
+            Random rand = new Random();
+            int size = apiKeyList.size();
+            ApiKey apiKey = apiKeyList.get(rand.nextInt(size));
+            Map<String, String> response = new HashMap();
+            response.put("key", apiKey.getKeyType().toString());
+            response.put("value", apiKey.getKeyValue());
+            response.put("userName", userName);
+            
+            return Response.status(Response.Status.ACCEPTED).entity(response).build();
+        }
+        
+        ApiKey apiKey = channelService.createNewApiKeyForApiResponse(user);
+        Map<String, String> response = new HashMap<>();
+        response.put("key", apiKey.getKeyType().toString());
+        response.put("value", apiKey.getKeyValue());
+        response.put("userName", userName);
+        
+        return Response.status(Response.Status.ACCEPTED).entity(response).build();
+        
     }
 
 //    /sessions/DR0001

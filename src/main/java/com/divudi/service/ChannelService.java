@@ -3,7 +3,9 @@ package com.divudi.service;
 import com.divudi.bean.channel.BookingControllerViewScope;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.ApiKeyType;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
@@ -23,6 +25,7 @@ import static com.divudi.data.PaymentMethod.Slip;
 import static com.divudi.data.PaymentMethod.Staff;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ServiceSessionBean;
+import com.divudi.entity.ApiKey;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -42,6 +45,7 @@ import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
+import com.divudi.facade.ApiKeyFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -55,6 +59,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.facade.WebUserFacade;
 import com.divudi.java.CommonFunctions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -66,6 +71,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -1026,6 +1032,62 @@ public class ChannelService {
         sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
         // System.out.println(jpql.toString()+"\n"+sessionInstances.size()+"\n"+m.values());
         return sessionInstances;
+    }
+    
+    @EJB
+    WebUserFacade webUserFacade;
+    @Inject
+    SecurityController securityController;
+    
+    public WebUser checkUserCredentialForApi(String temUserName, String temPassword) {
+     
+        String temSQL; 
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
+        Map m = new HashMap();
+
+        m.put("n", temUserName.trim().toLowerCase());
+        WebUser u = webUserFacade.findFirstByJpql(temSQL, m);
+
+        if (u == null) {
+            return null;
+        }
+
+        if (securityController.matchPassword(temPassword, u.getWebUserPassword())) {
+
+            return u;
+        }
+      
+        return null;
+    }
+    
+    @EJB
+    ApiKeyFacade apiKeyFacade;
+    
+    public List<ApiKey> listApiKeysForUser(WebUser user) {
+        String j;
+        j = "select a "
+                + " from ApiKey a "
+                + " where a.retired=false "
+                + " and a.webUser=:wu "
+                + " and a.dateOfExpiary > :ed "
+                + " order by a.dateOfExpiary";
+        Map m = new HashMap();
+        m.put("wu", user);
+        m.put("ed", new Date());
+        return apiKeyFacade.findByJpql(j, m, TemporalType.DATE);
+    }
+    
+     public ApiKey createNewApiKeyForApiResponse(WebUser user) {
+        UUID uuid = UUID.randomUUID();
+        ApiKey newOne = new ApiKey();
+        newOne.setWebUser(user);
+        newOne.setKeyType(ApiKeyType.Token);
+        newOne.setKeyValue(uuid.toString());
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 12);
+        newOne.setDateOfExpiary(c.getTime());
+        apiKeyFacade.create(newOne);
+        return newOne;
     }
 
     public SessionInstance findNextSessionInstance(List<Institution> institution, List<Speciality> specialities, List<Doctor> doctorList, Date sessionDate) {
