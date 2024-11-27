@@ -42,8 +42,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -54,6 +54,8 @@ public class RoomChangeController implements Serializable {
     SessionController sessionController;
     @Inject
     private RoomFacilityChargeController roomFacilityChargeController;
+    @Inject
+    BhtSummeryController bhtSummeryController;
     @EJB
     private AdmissionFacade ejbFacade;
     @EJB
@@ -92,11 +94,11 @@ public class RoomChangeController implements Serializable {
     }
 
     public void remove(PatientRoom pR) {
-        if(pR==null){
+        if (pR == null) {
             JsfUtil.addErrorMessage("No Patient Room Detected");
             return;
         }
-        
+
         AdmissionTypeEnum admissionTypeEnum = pR.getPatientEncounter().getAdmissionType().getAdmissionTypeEnum();
 
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
@@ -104,15 +106,14 @@ public class RoomChangeController implements Serializable {
             JsfUtil.addErrorMessage("To Delete Patient Room There should be Previus room U can ReSet Correct Room Facility and update");
             return;
         }
-        
+
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
-                && pR.getNextRoom() != null && !pR.getNextRoom().isRetired() && pR.getPreviousRoom() != null 
+                && pR.getNextRoom() != null && !pR.getNextRoom().isRetired() && pR.getPreviousRoom() != null
                 && !pR.getPreviousRoom().isRetired()) {
             JsfUtil.addErrorMessage("You have to Remove Last one First");
             return;
         }
-        
-        
+
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
                 && pR.getNextRoom() != null && !pR.getNextRoom().isRetired()) {
             JsfUtil.addErrorMessage("To Delete Patient Room There next Room Should Be Empty");
@@ -149,6 +150,22 @@ public class RoomChangeController implements Serializable {
         if (pR.getDischargedAt() == null) {
             pR.setDischargedAt(new Date());
         }
+        List<PatientRoom> rooms = bhtSummeryController.getPatientRooms();
+        if (rooms != null) {
+            if (rooms.size() > 1) {
+                int currentRoomIndex = rooms.indexOf(patientRoom);
+                if (currentRoomIndex > 0) {
+                    PatientRoom previousRoom = rooms.get(currentRoomIndex - 1);
+
+                    if (pR.getAdmittedAt() != null && previousRoom.getDischargedAt() != null) {
+                        if (pR.getAdmittedAt().before(previousRoom.getDischargedAt())) {
+                            JsfUtil.addErrorMessage("Admitted time must be after the discharge time of the previous room.");
+                            return;
+                        }
+                    }
+                }
+            }
+        }
 
         pR.setDischarged(true);
         pR.setDischargedBy(getSessionController().getLoggedUser());
@@ -159,7 +176,7 @@ public class RoomChangeController implements Serializable {
         pR.setDischarged(false);
         pR.setDischargedBy(null);
         getPatientRoomFacade().edit(pR);
-        
+
     }
 
     public void removeGuardianRoom(PatientRoom pR) {
@@ -375,7 +392,7 @@ public class RoomChangeController implements Serializable {
     }
 
     public Admission getCurrent() {
-       
+
         return current;
     }
 
