@@ -127,7 +127,7 @@
                                                 <tr class="ui-widget-content" >
                                                     <td>Cash</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{financialTransactionController.bundle.cashHandoverValue}">
+                                                        <h:outputText value="#{financialTransactionController.bundle.cashValue}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -137,7 +137,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td class="text-end">
-                                                        <h:outputText id="txtCashHandover" value="#{financialTransactionController.bundle.cashHandoverValue - financialTransactionController.bundle.denominatorValue}">
+                                                        <h:outputText id="txtCashHandover" value="#{financialTransactionController.bundle.cashValue - financialTransactionController.bundle.denominatorValue}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
