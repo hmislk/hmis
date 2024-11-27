@@ -150,6 +150,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private boolean patientDetailsEditable;
     private List<ClinicalFindingValue> patientAllergies;
     private ClinicalFindingValue currentPatientAllergy;
+    private Institution lastCreditCompany;
 
     public void addPatientAllergy() {
         if (currentPatientAllergy == null) {
@@ -269,6 +270,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void dateChangeListen() {
         getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
 
+    }
+    
+    public void admissionPaymentMethodChange(){
+        if(current.getPaymentMethod() == PaymentMethod.Credit){
+            isPatientHaveALastUsedCreditCompany(current.getPatient());
+        }
+    }
+    
+    public boolean isPatientHaveALastUsedCreditCompany(Patient p){
+        
+        return true;
     }
 
     public List<Admission> completeBhtCredit(String qry) {
@@ -1595,6 +1607,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {
         this.patientAllergies = patientAllergies;
+    }
+
+    public Institution getLastCreditCompany() {
+        return lastCreditCompany;
+    }
+
+    public void setLastCreditCompany(Institution lastCreditCompany) {
+        this.lastCreditCompany = lastCreditCompany;
     }
 
     /**
