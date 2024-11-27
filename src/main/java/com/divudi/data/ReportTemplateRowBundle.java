@@ -886,7 +886,11 @@ public class ReportTemplateRowBundle implements Serializable {
                     childBundle.calculateTotalsOfSelectedRowsPlusAllCash();
 
                     System.out.println("selected childBundle = " + childBundle.getName());
-                    addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashHandoverValue()));
+                    if (selectAllCashToHandover) {
+                        addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashHandoverValue()));
+                    } else {
+                        addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashValue()));
+                    }
                     addValueAndUpdateFlag("card", safeDouble(childBundle.getCardValue()), safeDouble(childBundle.getCardHandoverValue()));
                     addValueAndUpdateFlag("multiplePaymentMethods", safeDouble(childBundle.getMultiplePaymentMethodsValue()), safeDouble(childBundle.getMultiplePaymentMethodsHandoverValue()));
                     addValueAndUpdateFlag("staff", safeDouble(childBundle.getStaffValue()), safeDouble(childBundle.getStaffHandoverValue()));
