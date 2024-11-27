@@ -4620,14 +4620,14 @@ public class FinancialTransactionController implements Serializable {
                         System.out.println("row.getPayment() = " + row.getPayment());
                         continue;
                     }
-                    if (row.getPayment().getPaymentMethod() == PaymentMethod.Cash) {
-
-                    }
                     Payment p = row.getPayment();
                     if (p.getPaymentMethod() == null) {
                         continue;
                     }
                     if (p.getPaymentMethod() != PaymentMethod.Cash && p.isSelectedForHandover() == false) {
+                        continue;
+                    }
+                    if (p.getPaymentMethod() == PaymentMethod.Cash && shiftBundle.getSelectAllCashToHandover() == false) {
                         continue;
                     }
                     p.setHandoverCreatedBill(currentBill);
@@ -5052,7 +5052,7 @@ public class FinancialTransactionController implements Serializable {
         selectedBill.setCompletedBy(sessionController.getLoggedUser());
         billController.save(selectedBill);
 
-        return "/cashier/handover_creation_bill_print?faces-redirect=true";
+        return "/cashier/handover_accept_bill_print?faces-redirect=true";
     }
 
     private CashBookEntry findCashbookEntry(Payment p, List<CashBookEntry> cbEntries) {
@@ -5406,7 +5406,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillTime(new Date());
 
         Double netTotal = currentBill.getNetTotal();
-        if (loggedUserDrawer.getCashInHandValue() < netTotal) {
+        if (getLoggedUserDrawer().getCashInHandValue() < netTotal) {
             JsfUtil.addErrorMessage("Not Enough Cash in the Drawer");
             return "";
         }
