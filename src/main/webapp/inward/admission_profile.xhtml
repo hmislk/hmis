@@ -171,7 +171,18 @@
                             </f:facet>
                             <div class="d-grid gap-3"> 
                                 <ui:repeat value="#{bhtSummeryController.surgeryBills}" var="s">
-                                    <h:outputText value="#{s.procedure.item.name}" ></h:outputText><br/>
+                                    <div class="d-flex align-items-center justify-content-between w-100">
+                                        <div>
+                                           <h:outputText value="#{s.procedure.item.name}" ></h:outputText> 
+                                        </div>
+                                        <div>
+                                            <p:commandButton icon="fas fa-info" class="ui-button-info" ajax="false" action="/theater/inward_bill_surgery_view?faces-redirect=true">
+                                                    <f:setPropertyActionListener 
+                                                            value="#{s}" 
+                                                            target="#{surgeryBillController.surgeryBill}" />
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
                                 </ui:repeat>
                                 
                                 <p:commandButton 
