@@ -279,8 +279,24 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
     
     public boolean isPatientHaveALastUsedCreditCompany(Patient p){
+        Admission a = null;
+        String sql;
+        HashMap hash = new HashMap();
+        sql = "select c from Admission c "
+                + " where c.patient=:pt "
+                + " and c.paymentMethod= :pm"
+                + " and c.retired=false "
+                + " and order by c.id desc";
         
-        return true;
+         hash.put("pm", PaymentMethod.Credit);
+         hash.put("pt", p);
+         a = getFacade().findFirstByJpql(sql, hash);
+         System.out.println("a = " + a);
+         if(a == null){
+             return false;
+         }else{
+             return true;
+         } 
     }
 
     public List<Admission> completeBhtCredit(String qry) {
