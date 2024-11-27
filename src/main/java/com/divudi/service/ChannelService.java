@@ -1125,7 +1125,7 @@ public class ChannelService {
 
         m.put("ret", false);
         System.out.println(jpql.toString() + "\n" + m);
-        return sessionInstanceFacade.findFirstByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+        return sessionInstanceFacade.findFirstByJpql(jpql.toString(), m, TemporalType.DATE);
         // System.out.println(jpql.toString()+"\n"+sessionInstances.size()+"\n"+m.values());
 
     }
