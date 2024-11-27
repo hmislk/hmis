@@ -176,7 +176,7 @@
                                            <h:outputText value="#{s.procedure.item.name}" ></h:outputText> 
                                         </div>
                                         <div>
-                                            <p:commandButton icon="fas fa-info" class="ui-button-info" ajax="false" action="/theater/inward_bill_surgery_view?faces-redirect=true">
+                                            <p:commandButton icon="fas fa-eye" title="view Surgeries" class="ui-button-info" ajax="false" action="/theater/inward_bill_surgery_view?faces-redirect=true">
                                                     <f:setPropertyActionListener 
                                                             value="#{s}" 
                                                             target="#{surgeryBillController.surgeryBill}" />
