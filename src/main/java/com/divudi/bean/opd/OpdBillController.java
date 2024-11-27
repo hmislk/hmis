@@ -2587,10 +2587,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         if (paymentMethod == PaymentMethod.Credit) {
-            if (creditCompany == null && collectingCentre == null) {
-                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company or Collecting centre.");
+            ComponentDetail cd= getPaymentMethodData().getCredit();
+            if(cd.getInstitution()==null){
+                JsfUtil.addErrorMessage("Please select Credit Company");
                 return true;
             }
+            creditCompany = cd.getInstitution();
         }
 
         if (paymentMethod == PaymentMethod.Staff) {
