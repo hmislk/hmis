@@ -128,6 +128,10 @@ public class ReportTemplateRowBundle implements Serializable {
     private double patientPointsHandoverValue;
     private double onlineSettlementHandoverValue;
 
+    private double settledAmountByPatientsTotal;
+    private double settledAmountBySponsorsTotal;
+    private double totalBalance;
+
     // Booleans to track transactions
     private boolean hasOnCallTransaction;
     private boolean hasCashTransaction;
@@ -1037,6 +1041,58 @@ public class ReportTemplateRowBundle implements Serializable {
                 }
                 Double amount = safeDouble(row.getBill().getNetTotal());
                 total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalByBills(final boolean isOutpatient) {
+        total = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(isOutpatient ? row.getBill().getNetTotal() : row.getBill().getPatientEncounter().getFinalBill().getNetTotal());
+                total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalSettledAmountByPatients(final boolean isOutpatient) {
+        settledAmountByPatientsTotal = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(isOutpatient ? row.getBill().getSettledAmountByPatient() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient());
+                settledAmountByPatientsTotal += amount;
+            }
+        }
+    }
+
+    public void calculateTotalSettledAmountBySponsors(final boolean isOutpatient) {
+        settledAmountBySponsorsTotal = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(isOutpatient ? row.getBill().getSettledAmountBySponsor() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor());
+                settledAmountBySponsorsTotal += amount;
+            }
+        }
+    }
+
+    public void calculateTotalBalance(final boolean isOutpatient) {
+        totalBalance = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(isOutpatient ? row.getBill().getBalance() : row.getBill().getPatientEncounter().getFinalBill().getBalance());
+                totalBalance += amount;
             }
         }
     }
@@ -1992,6 +2048,30 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public Double getTotal() {
         return total;
+    }
+
+    public double getSettledAmountByPatientsTotal() {
+        return settledAmountByPatientsTotal;
+    }
+
+    public void setSettledAmountByPatientsTotal(double settledAmountByPatientsTotal) {
+        this.settledAmountByPatientsTotal = settledAmountByPatientsTotal;
+    }
+
+    public double getSettledAmountBySponsorsTotal() {
+        return settledAmountBySponsorsTotal;
+    }
+
+    public void setSettledAmountBySponsorsTotal(double settledAmountBySponsorsTotal) {
+        this.settledAmountBySponsorsTotal = settledAmountBySponsorsTotal;
+    }
+
+    public double getTotalBalance() {
+        return totalBalance;
+    }
+
+    public void setTotalBalance(double totalBalance) {
+        this.totalBalance = totalBalance;
     }
 
     public void setTotal(Double total) {
