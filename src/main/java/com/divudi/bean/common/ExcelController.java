@@ -150,6 +150,7 @@ public class ExcelController {
                 return addDataToExcelForCreditItemSummaryGroupedByCategory(dataSheet, startRow, addingBundle);
             case "netCashPlusCredit":
                 return addDataToExcelForNetCashPlusCreditBundle(dataSheet, startRow, addingBundle);
+
         }
         return startRow++;
     }
