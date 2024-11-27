@@ -3425,11 +3425,22 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
                         break;
                     case ewallet:
-
+                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
+                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
+                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
+                        p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
+                        break;
                     case Agent:
+                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
+                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
+                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
+                        p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
+                        break;
                     case Credit:
                         p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
                         p.setComments(cd.getPaymentMethodData().getCredit().getComment());
+                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
+                        p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
                         break;
                     case PatientDeposit:
                         if (getPatient().getRunningBalance() != null) {
@@ -3704,9 +3715,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (patient == null) {
             return;
         }
-        if(patient.getPerson().getMembershipScheme()==null){
-            paymentScheme=null;
-        }else{
+        if (patient.getPerson().getMembershipScheme() == null) {
+            paymentScheme = null;
+        } else {
             paymentScheme = patient.getPerson().getMembershipScheme().getPaymentScheme();
         }
         listnerForPaymentMethodChange();

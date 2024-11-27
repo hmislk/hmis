@@ -414,8 +414,20 @@
 
                                 <p:dataTable
                                     value="#{financialTransactionController.selectedBundle.getPaymentRows(financialTransactionController.selectedPaymentMethod)}" var="cardPayment" >
-                                    <p:column  headerText="ID">
-                                        <h:outputText value="#{cardPayment.payment.id}" ></h:outputText>
+                                    <p:column  headerText="Bill Number">
+                                        <h:outputText value="#{cardPayment.payment.bill.deptId}" ></h:outputText>
+                                    </p:column>
+                                    <p:column  headerText="Company">
+                                        <h:outputText value="#{cardPayment.payment.creditCompany.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column  headerText="Policy Number">
+                                        <h:outputText value="#{cardPayment.payment.policyNo}" ></h:outputText>
+                                    </p:column>
+                                    <p:column  headerText="Referance Number">
+                                        <h:outputText value="#{cardPayment.payment.referenceNo}" ></h:outputText>
+                                    </p:column>
+                                    <p:column  headerText="Comments">
+                                        <h:outputText value="#{cardPayment.payment.comments}" ></h:outputText>
                                     </p:column>
                                     <p:column  headerText="Bank">
                                         <h:outputText value="#{cardPayment.payment.bank.name}" ></h:outputText>
