@@ -280,7 +280,7 @@
 
                                 <div class="row">
                                     <div class="col-12">
-                                        <h:panelGrid columns="2" class="my-2 w-100" >
+                                        <h:panelGrid id="pg1" columns="2" class="my-2 w-100" >
                                             <p:outputLabel value="Nationality"/>
                                             <p:selectBooleanCheckbox value="#{admissionController.current.foriegner}"
                                                                      styleClass="form-control w-100"
@@ -292,17 +292,21 @@
                                                                      styleClass="form-control w-100"
                                                                      class="w-100"
                                                                      itemLabel="Claimable" />
+                                            
+                                            <p:outputLabel value="Last Used Credit Company" rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"/>
+                                            <p:badge value="#{admissionController.lastCreditCompany.name}" 
+                                                     rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"
+                                                                      />
 
                                             <p:outputLabel value="Payment Method"/>
                                             <p:selectOneMenu  class="mx-1  w-100" styleClass="form-control w-100" id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
                                                 <f:selectItem itemLabel="Select" />                           
                                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                                <p:ajax process="@this" update="crd" event="change" />
+                                                <p:ajax process="@this" update="crd pg1" event="change" />
                                             </p:selectOneMenu>
                                         </h:panelGrid>
                                     </div>
                                 </div>
-
                                 <h:panelGroup id="crd" style="display: #{admissionController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ; ">
                                     <credit:inputCredit_admit  patientEncounter="#{admissionController.current}"/>
                                 </h:panelGroup>
