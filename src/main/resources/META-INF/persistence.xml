@@ -3,6 +3,7 @@
     <persistence-unit name="hmisPU" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <jta-data-source>jdbc/ruhunu</jta-data-source>
+
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
@@ -14,6 +15,7 @@
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
         <jta-data-source>jdbc/ruhunuAudit</jta-data-source>
+
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
