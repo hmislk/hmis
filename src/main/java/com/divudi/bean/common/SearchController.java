@@ -16251,7 +16251,7 @@ public class SearchController implements Serializable {
             }else{
                 netValue = countModifier * Math.abs(iteratingBillItem.getNetValue()- iteratingBillItem.getStaffFee());
             }
-            
+             
             totalIncome += grossValue;
             totalNetIncome += netValue;
             totalHospitalFees += hospitalFee;
