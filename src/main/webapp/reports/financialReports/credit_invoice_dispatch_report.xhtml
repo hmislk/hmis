@@ -120,7 +120,7 @@
                             <p:spacer></p:spacer>
 
 
-                            <!--Please change this {searchController.withProfessionalFee} in values of following and put the correct thing according to controller you working I just used this for wireframe-->
+                            <!--Please change this {searchController.withProfessionalFee} in values of following date range filters and put the correct thing according to controller you working I just used this for wireframe-->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Date Type" class="mx-3"/>
@@ -143,9 +143,15 @@
                                 <p:outputLabel value="Admission From" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" inputStyleClass="w-100" rendered="#{!searchController.withProfessionalFee}"></p:datePicker>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDateAdmission" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                rendered="#{!searchController.withProfessionalFee}">
+                            </p:calendar>
+
 
                             <p:spacer width="20" rendered="#{!searchController.withProfessionalFee}"></p:spacer>
 
@@ -154,18 +160,29 @@
                                 <p:outputLabel value="Admission To" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class="w-100" inputStyleClass="w-100" rendered="#{!searchController.withProfessionalFee}"></p:datePicker>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDateAdmission" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                rendered="#{!searchController.withProfessionalFee}">
+                            </p:calendar>
 
                             <h:panelGroup layout="block" styleClass="form-group" rendered="#{searchController.withProfessionalFee}">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Discharge From" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" inputStyleClass="w-100" rendered="#{searchController.withProfessionalFee}"></p:datePicker>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDateDischarge" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                rendered="#{searchController.withProfessionalFee}">
+                            </p:calendar>
 
                             <p:spacer width="20" ></p:spacer>
 
@@ -174,9 +191,15 @@
                                 <p:outputLabel value="Discharge To" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class="w-100" inputStyleClass="w-100" rendered="#{searchController.withProfessionalFee}"></p:datePicker>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDateDischarge" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                rendered="#{searchController.withProfessionalFee}">
+                            </p:calendar>
 
                         </h:panelGrid>
 
