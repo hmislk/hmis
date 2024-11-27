@@ -1358,13 +1358,18 @@ public class BhtSummeryController implements Serializable {
         getDischargeController().discharge();
 
         if (getPatientEncounter().isDischarged()) {
-            getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
-            roomChangeController.discharge(getPatientEncounter().getCurrentPatientRoom());
+            if(getPatientEncounter().getAdmissionType().isRoomChargesAllowed()){
+                getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
+                roomChangeController.discharge(getPatientEncounter().getCurrentPatientRoom());
+            }
         }
 
         if (getPatientEncounter().getCurrentPatientRoom() != null && getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == null) {
-            getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
+            if(getPatientEncounter().getAdmissionType().isRoomChargesAllowed()){
+                 getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
             getPatientRoomFacade().edit(getPatientEncounter().getCurrentPatientRoom());
+            }
+           
         }
 
         JsfUtil.addSuccessMessage("Patient  Discharged");
