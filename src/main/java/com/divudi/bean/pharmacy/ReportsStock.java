@@ -644,6 +644,46 @@ public class ReportsStock implements Serializable {
         billItems = billItemFacade.findByJpql(sql, m);
     }
 
+    public void fillDistributorExpiryStocks() {
+
+        if (department == null || institution == null) {
+            JsfUtil.addErrorMessage("Please select a department and distributor");
+            return;
+        }
+
+        Map<String, Object> m = new HashMap<>();
+        String sql;
+
+        sql = "select s "
+                + "from Stock s "
+                + "where s.stock > :st "
+                + "and s.department = :dep "
+                + "and s.itemBatch.dateOfExpire between :fd and :td "
+                + "and s.itemBatch.item.id in ("
+                + "    select item.id "
+                + "    from ItemsDistributors id join id.item as item "
+                + "    where id.retired = false "
+                + "    and id.institution = :ins"
+                + ") "
+                + "order by s.itemBatch.dateOfExpire";
+
+        m.put("dep", department);
+        m.put("ins", institution);
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("st", 0.0);
+
+        stocks = getStockFacade().findByJpql(sql, m);
+
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        for (Stock ts : stocks) {
+            stockPurchaseValue += ts.getItemBatch().getPurcahseRate() * ts.getStock();
+            stockSaleValue += ts.getItemBatch().getPurcahseRate() * ts.getStock();
+        }
+
+    }
+
     public String fillDistributorStocks() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -1031,6 +1071,30 @@ public class ReportsStock implements Serializable {
         c.set(Calendar.YEAR, c.get(Calendar.YEAR) + 1);
         toDate = c.getTime();
         fillDepartmentExpiaryStocks();;
+    }
+    
+    public void fillThreeMonthsExpiaryOfSupplier() {
+        fromDate = Calendar.getInstance().getTime();
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.MONTH, c.get(Calendar.MONTH) + 3);
+        toDate = c.getTime();
+        fillDistributorExpiryStocks();
+    }
+
+    public void fillSixMonthsExpiaryOfSupplier() {
+        fromDate = Calendar.getInstance().getTime();
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.MONTH, c.get(Calendar.MONTH) + 6);
+        toDate = c.getTime();
+        fillDistributorExpiryStocks();
+    }
+
+    public void fillOneYearExpiaryOfSupplier() {
+        fromDate = Calendar.getInstance().getTime();
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.YEAR, c.get(Calendar.YEAR) + 1);
+        toDate = c.getTime();
+        fillDistributorExpiryStocks();
     }
 
     public void fillThreeMonthsNonmoving() {
