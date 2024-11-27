@@ -54,7 +54,7 @@
                             </h:panelGroup>
                             <p:selectOneMenu class="w-100 ">
                                 <f:selectItem itemValue="Any" itemLabel="Any"/>
-                                <f:selectItem itemValue="" itemLabel="Details"/>
+                                <f:selectItem itemValue="" itemLabel="Detail"/>
                                 <f:selectItem itemValue="" itemLabel="Summary"/>
                             </p:selectOneMenu>
 
@@ -176,11 +176,11 @@
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Visit Type" for="visitType" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100" value="#{searchController.visitType}">
-                                <f:selectItem itemValue="Any" itemLabel="Any"/>
+                            <p:selectOneMenu class="w-100" value="#{reportController.type}">
+                                <f:selectItem itemLabel="Any"/>
                                 <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
                                 <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
-                                <!--need to include cc-->
+                                <f:selectItem itemValue="CC" itemLabel="Collecting Centre (CC)"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
@@ -298,6 +298,11 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="10,25,50">
 
+                            <f:facet name="header">
+                                <h:outputText value="Report Type - Detail" 
+                                              style="font-weight: bold; text-align: left; display: block;" />
+                            </f:facet>
+
                             <p:column headerText="Sample ID" width="5rem">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
@@ -370,6 +375,11 @@
                             rows="10"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="10,25,50">
+
+                            <f:facet name="header">
+                                <h:outputText value="Report Type - Summary" 
+                                              style="font-weight: bold; text-align: left; display: block;" />
+                            </f:facet>
 
                             <p:column headerText="Sl. No." width="5rem">
                                 <h:outputText value="" ></h:outputText>
