@@ -41,6 +41,7 @@
             <!-- After generation, set ddl-generation to 'none' -->
             <!-- <property name="eclipselink.ddl-generation" value="none"/> -->
 
+
         </properties>
     </persistence-unit>
 </persistence>
