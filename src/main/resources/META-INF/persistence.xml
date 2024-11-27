@@ -11,6 +11,8 @@
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <jta-data-source>jdbc/ruhunu</jta-data-source>
 
+        <jta-data-source>jdbc/hmis</jta-data-source>
+
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
@@ -28,6 +30,8 @@
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
         <jta-data-source>jdbc/ruhunuAudit</jta-data-source>
 
+
+        <jta-data-source>jdbc/hmisaudit</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
 
@@ -40,6 +44,7 @@
             <property name="eclipselink.application-location" value="C:/tmp/"/>
             <!-- After generation, set ddl-generation to 'none' -->
             <!-- <property name="eclipselink.ddl-generation" value="none"/> -->
+
 
         </properties>
     </persistence-unit>
