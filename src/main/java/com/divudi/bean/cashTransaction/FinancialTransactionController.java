@@ -1188,7 +1188,7 @@ public class FinancialTransactionController implements Serializable {
 //        if (selectedBundle != null) {
 //            selectedBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
 //        }
-        bundle.setPatientDepositsAreConsideredInHandingover(patientDepositsAreConsideredInHandingover);
+        bundle.setPatientDepositsAreConsideredInHandingover(getPatientDepositsAreConsideredInHandingover());
         bundle.calculateTotalsByChildBundlesForHandover();
     }
 
