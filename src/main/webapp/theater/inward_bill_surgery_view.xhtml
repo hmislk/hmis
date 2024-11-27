@@ -60,11 +60,11 @@
 
                             <!-- Right aligned items with adjusted vertical spacing -->
                             <div class="d-flex align-items-center">
-                                <!-- Each button has reduced margin and padding -->
-                                <p:commandButton value="Clear All" ajax="false" icon="fa fa-ban" class="ui-button-danger" 
-                                                 action="#{surgeryBillController.resetSurgeryBillValues}"
-                                                 style="margin: 0 4px; padding: 2px 6px;"/>
-                                
+                                <!--                                 Each button has reduced margin and padding 
+                                                                <p:commandButton value="Clear All" ajax="false" icon="fa fa-ban" class="ui-button-danger" 
+                                                                                 action="#{surgeryBillController.resetSurgeryBillValues}"
+                                                                                 style="margin: 0 4px; padding: 2px 6px;"/>-->
+
                                 <p:commandButton ajax="false" icon="fa fa-search"  class="ui-button-warning"
                                                  action="#{patientController.navigateToSearchPatients()}" style="margin: 0 4px; padding: 2px 6px;"/>
 
@@ -126,12 +126,47 @@
                                             </p:autoComplete>
                                         </div>
                                     </div>
+                                    <div class="row m-1">
+                                        <div class="col-4">
+                                            <h:outputLabel value="Accepted Time"  >
+                                            </h:outputLabel>
+                                        </div>
+                                        <div class="col-4">
+                                            <p:datePicker 
+                                                id="acceptedTime" 
+                                                showTime="true"
+                                                showButtonBar="true"
+                                                timeInput="true"
+                                                value="#{surgeryBillController.surgeryBill.acceptedAt}" 
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                size="40" >
+                                            </p:datePicker>  
+                                        </div>
+                                    </div>
+                                    <div class="row m-1">
+                                        <div class="col-4">
+                                            <h:outputLabel value="Released Time"  >
+                                            </h:outputLabel>
+                                        </div>
+                                        <div class="col-4">
+                                            <p:datePicker 
+                                                id="releasedTime" 
+                                                showTime="true"
+                                                showButtonBar="true"
+                                                timeInput="true"
+                                                value="#{surgeryBillController.surgeryBill.releasedAt}" 
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                size="40" >
+                                            </p:datePicker>  
+
+                                        </div>
+                                    </div>
                                     <div class="row">
                                         <div class="col-3">
                                             <p:commandButton 
-                                                value="Add New Surgery" ajax="false" class="w-100 ui-button-success m-2 "
+                                                value="Edit Surgery" ajax="false" class="w-100 ui-button-success m-2 "
                                                 style="float: right"
-                                                action="#{surgeryBillController.save()}" 
+                                                action="#{surgeryBillController.edit()}" 
                                                 disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}" />
                                         </div>
                                     </div>
