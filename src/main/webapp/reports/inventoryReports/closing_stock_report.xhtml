@@ -23,9 +23,8 @@
                                           class=" w-100" ></p:datePicker>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university ml-5" />
-                                <p:outputLabel value="Institution" class="mx-3">
-                                </p:outputLabel>
+                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
+                                <p:outputLabel value="Site" class="mx-3"></p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu 
                                 value="" 
@@ -39,8 +38,9 @@
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
-                                <p:outputLabel value="Site" class="mx-3"></p:outputLabel>
+                                <h:outputText styleClass="fa fa-university ml-5" />
+                                <p:outputLabel value="Institution" class="mx-3">
+                                </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu 
                                 value="" 
@@ -166,11 +166,8 @@
                             </p:commandButton>
                         </div>
 
-
                         <div class="mt-5">
-                            
                             <h5>Report Data By Item</h5>
-
                             <p:dataTable id="tbl1" value="" 
                                          var="f" 
                                          rowIndexVar="n" 
@@ -182,6 +179,9 @@
 
                                 <p:column headerText="S.No">
                                     <h:outputText value="" />
+                                    <f:facet name="footer">
+                                        <h:outputText value="Total" />
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Item Category">
@@ -205,27 +205,16 @@
                                 <p:column headerText="Closing Stock Value">
                                     <h:outputText value="" />
                                 </p:column>
-
-
-                                <f:facet name="footer">
-
-                                    <p:column>
-                                        <h:outputText value="Total:" />
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputText value="" />
-                                    </p:column>
-                                </f:facet>
-
+                                <p:column headerText="ON Date">
+                                    <h:outputText value="" />
+                                </p:column>
 
                             </p:dataTable>
-
+                            
                         </div>
                        
                         <div class="mt-5">
-                            
                             <h5>Report Data By Batch</h5>
-
                             <p:dataTable id="tbl2" value="" 
                                          var="f" 
                                          rowIndexVar="n" 
@@ -237,6 +226,9 @@
 
                                 <p:column headerText="S.No">
                                     <h:outputText value="" />
+                                    <f:facet name="footer">
+                                        <h:outputText value="Total" />
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Item Category">
@@ -292,15 +284,13 @@
                             </p:dataTable>
 
                         </div>
-                        
+
                     </p:panel>
 
                 </h:form>
 
             </ui:define>
-            
         </ui:composition>
 
     </h:body>
-    
 </html>
