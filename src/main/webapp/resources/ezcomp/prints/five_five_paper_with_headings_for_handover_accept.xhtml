@@ -238,12 +238,12 @@
                                         </h:outputText>
                                     </div>
                                     <div class="col-3">
-                                        <h:outputText value="#{cc.attrs.bundle.denominatorValue}">
+                                        <h:outputText value="#{cc.attrs.bundle.cashHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </div>
                                     <div class="col-3">
-                                        <h:outputText value="#{cc.attrs.bundle.cashValue - cc.attrs.bundle.denominatorValue}">
+                                        <h:outputText value="#{cc.attrs.bundle.cashValue - cc.attrs.bundle.cashHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </div>
