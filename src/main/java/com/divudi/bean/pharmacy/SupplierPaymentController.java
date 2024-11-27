@@ -601,6 +601,39 @@ public class SupplierPaymentController implements Serializable {
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    public void fillAllCanceledReturnedSupplierPayments() {
+        bills = null;
+        netTotal = 0.0;
+        String jpql;
+        Map params = new HashMap();
+        List<BillTypeAtomic> billTypesListBilled = new ArrayList<>();
+        billTypesListBilled.add(BillTypeAtomic.SUPPLIER_PAYMENT_CANCELLED);
+        billTypesListBilled.add(BillTypeAtomic.SUPPLIER_PAYMENT_RETURNED);
+
+        jpql = "select b from Bill b "
+                + " where b.retired=false "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.billType = :billTypes "
+                + " and b.billTypeAtomic IN :bTA ";
+        params.put("billTypes", BillType.GrnPayment);
+        params.put("bTA", billTypesListBilled);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        netTotal = 0.0;
+        paidAmount = 0.0;
+        refundAmount = 0.0;
+        balance = 0.0;
+        for (Bill b : bills) {
+            netTotal += b.getNetTotal();
+            paidAmount += b.getPaidAmount();
+            balance += b.getBalance();
+            refundAmount += b.getRefundAmount();
+        }
+    }
+
     public void fillPharmacySupplierPayment() {
         List<InstitutionType> institutionTypes = new ArrayList<>();
         institutionTypes.add(InstitutionType.Dealer);
@@ -977,14 +1010,14 @@ public class SupplierPaymentController implements Serializable {
             return null;
         }
         prepareForNewSupplierPayment();
-        if(originalBill.getBillTypeAtomic() == BillTypeAtomic.SUPPLIER_PAYMENT_CANCELLED){
-            current.setComments("Canceled & Repay");
-            current.setCancelledBill(originalBill);
-            current.setCancelled(false);
-        }
         current.setFromInstitution(sessionController.getInstitution());
         current.setFromDepartment(sessionController.getDepartment());
         current.setToInstitution(originalBill.getFromInstitution());
+        if(originalBill.getBillTypeAtomic() == BillTypeAtomic.SUPPLIER_PAYMENT_CANCELLED || originalBill.getBillTypeAtomic() == BillTypeAtomic.SUPPLIER_PAYMENT_RETURNED){
+            current.setReferenceBill(originalBill);
+            originalBill.setReferenceBill(current);
+            current.setReactivated(true);
+        }
         currentBillItem = new BillItem();
         currentBillItem.setReferenceBill(originalBill);
         double settlingValue = Math.abs(originalBill.getNetTotal()) - (Math.abs(originalBill.getRefundAmount()) + Math.abs(originalBill.getPaidAmount()));

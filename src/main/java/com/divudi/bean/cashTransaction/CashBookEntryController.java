@@ -10,10 +10,22 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.CashBookEntryData;
 import com.divudi.data.PaymentMethod;
+import static com.divudi.data.PaymentMethod.Agent;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
+import static com.divudi.data.PaymentMethod.Cheque;
+import static com.divudi.data.PaymentMethod.Credit;
+import static com.divudi.data.PaymentMethod.IOU;
+import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
 import static com.divudi.data.PaymentMethod.OnCall;
+import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import static com.divudi.data.PaymentMethod.PatientDeposit;
+import static com.divudi.data.PaymentMethod.PatientPoints;
+import static com.divudi.data.PaymentMethod.Slip;
+import static com.divudi.data.PaymentMethod.Staff;
+import static com.divudi.data.PaymentMethod.Staff_Welfare;
+import static com.divudi.data.PaymentMethod.Voucher;
+import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.SitesGroupedIntoInstitutions;
@@ -84,7 +96,7 @@ public class CashBookEntryController implements Serializable {
 
         Date fd = CommonFunctions.getStartOfDay(fromDate);
         Date td = CommonFunctions.getEndOfDay(toDate);
-        
+
         List<Department> departmentsFromCashBookEntries = fetchToDepartmentsFromCashbookEntries(fd, td);
 
         Map<Institution, List<Institution>> institutionToSitesMap = new HashMap<>();
@@ -249,6 +261,160 @@ public class CashBookEntryController implements Serializable {
         return null;
     }
 
+    public Double fetchStartingBalanceForFromSite(Date date, Institution site, String paymentMethodStr) {
+        String jpql = "select cbe "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromSite.id = :siteId"
+                + " and cbe.createdAt > :ed"
+                + " order by cbe.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("siteId", site.getId());
+        params.put("ed", CommonFunctions.getStartOfDay(date));
+        CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        PaymentMethod paymentMethod;
+        try {
+            paymentMethod = PaymentMethod.valueOf(paymentMethodStr);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        if (cbe != null) {
+            Double result;
+            switch (paymentMethod) {
+                case Agent:
+                    result = cbe.getFromSiteAgentBalanceBefore();
+                    break;
+                case Card:
+                    result = cbe.getFromSiteCardBalanceBefore();
+                    break;
+                case Cheque:
+                    result = cbe.getFromSiteChequeBalanceBefore();
+                    break;
+                case Slip:
+                    result = cbe.getFromSiteSlipBalanceBefore();
+                    break;
+                case ewallet:
+                    result = cbe.getFromSiteEwalletBalanceBefore();
+                    break;
+                case PatientDeposit:
+                    result = cbe.getFromSitePatientDepositBalanceBefore();
+                    break;
+                case PatientPoints:
+                    result = cbe.getFromSitePatientPointsBalanceBefore();
+                    break;
+                case OnlineSettlement:
+                    result = cbe.getFromSiteOnlineSettlementBalanceBefore();
+                    break;
+                case Cash:
+                    result = cbe.getFromSiteCashBalanceBefore();
+                    break;
+                case Credit:
+                    result = cbe.getFromSiteCreditBalanceBefore();
+                    break;
+                case IOU:
+                    result = cbe.getFromSiteIouBalanceBefore();
+                    break;
+                case OnCall:
+                    result = cbe.getFromSiteOnCallBalanceBefore();
+                    break;
+                case Staff:
+                    result = cbe.getFromSiteStaffBalanceBefore();
+                    break;
+                case Staff_Welfare:
+                    result = cbe.getFromSiteStaffWelfareBalanceBefore();
+                    break;
+                case Voucher:
+                    result = cbe.getFromSiteVoucherBalanceBefore();
+                    break;
+                case MultiplePaymentMethods:
+                    result = cbe.getFromSiteMultiplePaymentMethodsBalanceBefore();
+                    break;
+                default:
+                    result = cbe.getFromSiteBalanceAfter();
+            }
+            return result;
+        }
+        return null;
+    }
+    
+    public Double fetchEndingBalanceForFromSite(Date date, Institution site, String paymentMethodStr) {
+        String jpql = "select cbe "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromSite.id = :siteId"
+                + " and cbe.createdAt > :ed"
+                + " order by cbe.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("siteId", site.getId());
+        params.put("ed", CommonFunctions.getStartOfDay(date));
+        CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        PaymentMethod paymentMethod;
+        try {
+            paymentMethod = PaymentMethod.valueOf(paymentMethodStr);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        if (cbe != null) {
+            Double result;
+            switch (paymentMethod) {
+                case Agent:
+                    result = cbe.getFromSiteAgentBalanceAfter();
+                    break;
+                case Card:
+                    result = cbe.getFromSiteCardBalanceAfter();
+                    break;
+                case Cheque:
+                    result = cbe.getFromSiteChequeBalanceAfter();
+                    break;
+                case Slip:
+                    result = cbe.getFromSiteSlipBalanceAfter();
+                    break;
+                case ewallet:
+                    result = cbe.getFromSiteEwalletBalanceAfter();
+                    break;
+                case PatientDeposit:
+                    result = cbe.getFromSitePatientDepositBalanceAfter();
+                    break;
+                case PatientPoints:
+                    result = cbe.getFromSitePatientPointsBalanceAfter();
+                    break;
+                case OnlineSettlement:
+                    result = cbe.getFromSiteOnlineSettlementBalanceAfter();
+                    break;
+                case Cash:
+                    result = cbe.getFromSiteCashBalanceAfter();
+                    break;
+                case Credit:
+                    result = cbe.getFromSiteCreditBalanceAfter();
+                    break;
+                case IOU:
+                    result = cbe.getFromSiteIouBalanceAfter();
+                    break;
+                case OnCall:
+                    result = cbe.getFromSiteOnCallBalanceAfter();
+                    break;
+                case Staff:
+                    result = cbe.getFromSiteStaffBalanceAfter();
+                    break;
+                case Staff_Welfare:
+                    result = cbe.getFromSiteStaffWelfareBalanceAfter();
+                    break;
+                case Voucher:
+                    result = cbe.getFromSiteVoucherBalanceAfter();
+                    break;
+                case MultiplePaymentMethods:
+                    result = cbe.getFromSiteMultiplePaymentMethodsBalanceAfter();
+                    break;
+                default:
+                    result = cbe.getFromSiteBalanceAfter();
+            }
+            return result;
+        }
+        return null;
+    }
+
     public Double fetchEndingBalanceForFromSite(Date date, Institution site) {
         String jpql = "select cbe "
                 + " from CashBookEntry cbe "
@@ -275,6 +441,85 @@ public class CashBookEntryController implements Serializable {
 
     public Double fetchSumOfEntryValuesForFromSite(Date date, Institution site) {
         String jpql = "select sum(cbe.entryValue) "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired=:ret "
+                + " and cbe.fromSite=:site"
+                + " and cbe.createdAt>:eds"
+                + " and cbe.createdAt<:ede";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("site", site);
+        params.put("eds", CommonFunctions.getStartOfDay(date));
+        params.put("ede", CommonFunctions.getEndOfDay(date));
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("result = " + result);
+        return result;
+    }
+    
+    public Double fetchSumOfEntryValuesForFromSite(Date date, Institution site, String paymentMethodStr ) {
+        PaymentMethod paymentMethod;
+        try {
+            paymentMethod = PaymentMethod.valueOf(paymentMethodStr);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        String jpqlField = "";
+        switch (paymentMethod) {
+                case Agent:
+                    jpqlField = "agentValue";
+                    break;
+                case Card:
+                    jpqlField = "cardValue";
+                    break;
+                case Cheque:
+                    jpqlField = "chequeValue";
+                    break;
+                case Slip:
+                    jpqlField = "slipValue";
+                    break;
+                case ewallet:
+                    jpqlField = "ewalletValue";
+                    break;
+                case PatientDeposit:
+                    jpqlField = "patientDepositValue";
+                    break;
+                case PatientPoints:
+                    jpqlField = "patientPointsValue";
+                    break;
+                case OnlineSettlement:
+                    jpqlField = "onlineSettlementValue";
+                    break;
+                case Cash:
+                    jpqlField = "cashValue";
+                    break;
+                case Credit:
+                    jpqlField = "creditValue";
+                    break;
+                case IOU:
+                    jpqlField = "iouValue";
+                    break;
+                case OnCall:
+                    jpqlField = "onCallValue";
+                    break;
+                case Staff:
+                    jpqlField ="staffValue";
+                    break;
+                case Staff_Welfare:
+                    jpqlField = "staffWelfareValue";
+                    break;
+                case Voucher:
+                    jpqlField = "voucherValue";
+                    break;
+                case MultiplePaymentMethods:
+                    jpqlField = "multiplePaymentMethodsValue";
+                    break;
+
+                default:
+                    jpqlField = "cashValue";
+            }
+        String jpql = "select sum(cbe." + jpqlField + ") "
                 + " from CashBookEntry cbe "
                 + " where cbe.retired=:ret "
                 + " and cbe.fromSite=:site"

@@ -67,6 +67,7 @@ import com.divudi.facade.StaffFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.service.ChannelService;
 import com.divudi.service.PatientService;
+import com.itextpdf.io.font.otf.LanguageTags;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -583,8 +584,8 @@ public class ChannelApi {
 //                    .build();
 //        }
 
-        if (docName == null || docName.isEmpty()) {
-            JSONObject json = commonFunctionToErrorResponse("Doc name is missing.");
+        if ((docName == null || docName.isEmpty()) && docNo == null) {
+            JSONObject json = commonFunctionToErrorResponse("Both Doctor name and Doctor number are missing.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(json.toString()).build();
         }
 
@@ -607,7 +608,7 @@ public class ChannelApi {
         try {
             if (results.get("code") != null) {
                 if ((Integer) results.get("code") == 406) {
-                    Response.status(Response.Status.NOT_ACCEPTABLE).entity(results.toString()).build();
+                    return Response.status(Response.Status.NOT_ACCEPTABLE).entity(results.toString()).build();
                 }
             }
         } catch (Exception e) {
@@ -622,8 +623,8 @@ public class ChannelApi {
 
         // Implementing pagination details
         JSONObject paginationDetails = new JSONObject();
-        paginationDetails.put("currentPage", page);
-        paginationDetails.put("itemsPerPage", 10);  // Assuming a fixed number of items per page
+        paginationDetails.put("currentPage", 0);
+        paginationDetails.put("itemsPerPage", 0);  // Assuming a fixed number of items per page
         paginationDetails.put("totalPages", ""); //(int) Math.ceil((double) results.getInt("totalCount") / 10
         response.put("pagination", paginationDetails);
 
@@ -822,7 +823,7 @@ public class ChannelApi {
         sessionData.put("vatDocForeignCharge", null);
         sessionData.put("specID", session.getOriginatingSession().getStaff().getSpeciality().getId().toString());
         sessionData.put("maxPatient", session.getMaxNo());
-        sessionData.put("activePatient", null);
+        sessionData.put("activePatient", session.getBookedPatientCount());
         sessionData.put("foreignAmount", session.getOriginatingSession().getTotalForForeigner());
         sessionData.put("appDate", forDate.format(session.getSessionDate()));
         sessionData.put("vatHosForeignCharge", null);
@@ -1359,6 +1360,12 @@ public class ChannelApi {
         }
 
         String clientsReferanceNo = (String) requestBody.get("refNo");
+        Integer statusId = (Integer) requestBody.get("statusId");
+
+        if (statusId == 0) {
+            JSONObject response = commonFunctionToErrorResponse("Booking Completion is failed based on statusID(0).");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
 
         if (clientsReferanceNo.isEmpty() || clientsReferanceNo == null) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Ref No");
@@ -1431,18 +1438,18 @@ public class ChannelApi {
 
         Map<String, Object> appoinment = new HashMap<>();
         appoinment.put("refNo", bill.getAgentRefNo());
-
+        
         Map<String, Object> sessionDetails = new HashMap<>();
         Item i = bill.getSingleBillSession().getItem();
         sessionDetails.put("hosId", i.getInstitution().getId().toString());
-        sessionDetails.put("docname", i.getStaff().getPerson().getNameWithInitials());
-        sessionDetails.put("amount", i.getTotalFee());
+        sessionDetails.put("docname", session.getStaff().getPerson().getNameWithTitle());
+        sessionDetails.put("amount", session.getOriginatingSession().getTotal());
         sessionDetails.put("hosAmount", i.getChannelHosFee());
         sessionDetails.put("docAmount", i.getChannelStaffFee());
         sessionDetails.put("specialization", i.getStaff().getSpeciality().getName());
         sessionDetails.put("theDate", forDate.format(session.getSessionDate()));
         sessionDetails.put("theDay", forDay.format(session.getSessionDate()));
-        sessionDetails.put("startTime", forTime.format(session.getSessionDate()));
+        sessionDetails.put("startTime", forTime.format(session.getStartingTime()));
         sessionDetails.put("hosLocation", session.getInstitution().getAddress());
         sessionDetails.put("hosName", session.getInstitution().getName());
         sessionDetails.put("sessionStarted", session.isStarted());
@@ -1461,8 +1468,8 @@ public class ChannelApi {
 
         Map<String, Object> priceDetails = new HashMap<>();
         priceDetails.put("totalAmount", bill.getTotal());
-        priceDetails.put("docCharge", session.getChannelStaffFee());
-        priceDetails.put("hosCharge", session.getChannelHosFee());
+        priceDetails.put("docCharge", i.getChannelStaffFee());
+        priceDetails.put("hosCharge", i.getChannelHosFee());
 
         Map<String, Object> paymentDetailsForResponse = new HashMap<>();
         paymentDetailsForResponse.put("paymentMode", bill.getCreditCompany().getName());
@@ -1976,13 +1983,17 @@ public class ChannelApi {
                 hospitalObject.put("displayName", session.getOriginatingSession().getInstitution() != null ? session.getOriginatingSession().getInstitution().getName() : "N/A");
             }
             SessionInstance nextSession = channelService.findNextSessionInstance(hospialList, specialities, doctorList, session.getSessionDate());
-
             JSONObject doctor = new JSONObject();
             doctor.put("docNo", session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() != null ? session.getOriginatingSession().getStaff().getId().toString() : "N/A");
             doctor.put("displayName", session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() != null ? session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() : "N/A");
             doctor.put("title", session.getOriginatingSession().getStaff().getPerson().getTitle() != null ? session.getOriginatingSession().getStaff().getPerson().getTitle().toString() : "N/A");
             doctor.put("nextAvailableDate", nextSession == null ? "Not yet shedule next session by the Hospital." : forDate.format(nextSession.getSessionDate()) + " at " + forTime.format(nextSession.getStartingTime()) + " on " + forDay.format(nextSession.getSessionDate()));
             doctorArray.put(doctor);
+
+        }
+
+        if (doctorArray.isEmpty()) {
+            return commonFunctionToErrorResponse("No data for this criterias.");
 
         }
         hospitalObject.put("doctor", doctorArray);

@@ -273,11 +273,7 @@
                                             <p:badge value="Canceled" severity="danger" rendered="#{bill.billTypeAtomic eq 'SUPPLIER_PAYMENT_CANCELLED'}" />
                                         </p:column>
 
-                                        <p:column headerText="Action" >
-                                            <p:commandButton value="Pay Back" action="#{supplierPaymentController.navigateToStartSupplierPayment(bill)}" ajax="false" >
-                                            </p:commandButton>
-                                        </p:column> 
-
+                                        
                                     </p:dataTable>
                                 </h:panelGroup>
                             </div>

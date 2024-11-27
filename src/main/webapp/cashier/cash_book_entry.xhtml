@@ -98,7 +98,7 @@
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column  headerText="Summary Date" style="text-align: left;">
+                                <p:column  headerText="Summary Date" style="text-align: right; width:6em;">
                                     <p:outputLabel value="#{cb.cashbookDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                     </p:outputLabel>
@@ -110,45 +110,225 @@
                                     <p:outputLabel value="#{cb.site.name}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:column  headerText="Balance Before" style="text-align: left;">
+                                <p:column  headerText="Balance Before" style="text-align: right; width:6em;">
                                     <p:outputLabel value="#{cb.fromDepartmentBalanceBefore}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Value" style="text-align: left;" >
+                                <p:column headerText="Value" style="text-align: right; width:6em;" >
                                     <p:outputLabel value="#{cb.entryValue}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Balance After" style="text-align: left;" >
+                                <p:column headerText="Balance After" style="text-align: right; width:6em;" >
                                     <p:outputLabel value="#{cb.fromDepartmentBalanceAfter}" ></p:outputLabel>
                                 </p:column>
 
-                                
-                                 <p:column  headerText="Cash Balance Before" style="text-align: left;">
+
+                                <p:column  headerText="Cash Balance Before" style="text-align: right; width:6em;">
                                     <p:outputLabel value="#{cb.fromDepartmentCashBalanceBefore}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Cash Value" style="text-align: left;" >
+                                <p:column headerText="Cash Value" style="text-align: right; width:6em;" >
                                     <p:outputLabel value="#{cb.cashValue}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Cash Balance After" style="text-align: left;" >
+                                <p:column headerText="Cash Balance After" style="text-align: right; width:6em;" >
                                     <p:outputLabel value="#{cb.fromDepartmentCashBalanceAfter}" ></p:outputLabel>
                                 </p:column>
-                                
-                                 <p:column  headerText="Card Balance Before" style="text-align: left;">
+
+                                <p:column  headerText="Card Balance Before" style="text-align: right; width:6em;">
                                     <p:outputLabel value="#{cb.fromDepartmentCardBalanceBefore}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Card Value" style="text-align: left;" >
+                                <p:column headerText="Card Value" style="text-align: right; width:6em;" >
                                     <p:outputLabel value="#{cb.cardValue}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Card Balance After" style="text-align: left;" >
+                                <p:column headerText="Card Balance After" style="text-align: right; width:6em;" >
                                     <p:outputLabel value="#{cb.fromDepartmentCardBalanceAfter}" ></p:outputLabel>
                                 </p:column>
 
+                                <!-- Cheque Columns -->
+                                <p:column headerText="Cheque Balance Before" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentChequeBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Cheque Value" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.chequeValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Cheque Balance After" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentChequeBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+
+                                <!-- Slip Payment Columns -->
+                                <p:column headerText="Slip Balance Before" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentSlipBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Slip Value" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.slipValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Slip Balance After" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentSlipBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+
+                                <!-- e-Wallet Payment Columns -->
+                                <p:column headerText="e-Wallet Balance Before" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentEwalletBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="e-Wallet Value" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.ewalletValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="e-Wallet Balance After" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentEwalletBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+
+                                <!-- Patient Deposit Columns -->
+                                <p:column headerText="Patient Deposit Balance Before" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentPatientDepositBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Patient Deposit Value" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.patientDepositValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Patient Deposit Balance After" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentPatientDepositBalanceAfter}" ></p:outputLabel>
+                                </p:column>
 
 
+                                <!-- On Call Columns -->
+                                <p:column headerText="On Call Balance Before" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentOnCallBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="On Call Value" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.onCallValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="On Call Balance After" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentOnCallBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+
+                                <!-- Multiple Payment Methods Columns -->
+                                <p:column headerText="Multiple Payment Methods Balance Before" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentMultiplePaymentMethodsBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Multiple Payment Methods Value" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.multiplePaymentMethodsValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Multiple Payment Methods Balance After" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentMultiplePaymentMethodsBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+
+                                <!-- Staff Credit Columns -->
+                                <p:column headerText="Staff Credit Balance Before" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentStaffBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Staff Credit Value" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.staffValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Staff Credit Balance After" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentStaffBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+
+                                <!-- Credit Columns -->
+                                <p:column headerText="Credit Balance Before" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentCreditBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Credit Value" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.creditValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Credit Balance After" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentCreditBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+
+                                <!-- Staff Welfare Columns -->
+                                <p:column headerText="Staff Welfare Balance Before" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentStaffWelfareBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Staff Welfare Value" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.staffWelfareValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Staff Welfare Balance After" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentStaffWelfareBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+
+                                <!-- Voucher Columns -->
+                                <p:column headerText="Voucher Balance Before" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentVoucherBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Voucher Value" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.voucherValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Voucher Balance After" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentVoucherBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+
+                                <!-- IOU Columns -->
+                                <p:column headerText="IOU Balance Before" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentIouBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="IOU Value" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.iouValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="IOU Balance After" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentIouBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+
+                                <!-- Agent Payment Columns -->
+                                <p:column headerText="Agent Payment Balance Before" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentAgentBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Agent Payment Value" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.agentValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Agent Payment Balance After" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentAgentBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+
+                                <!-- Patient Points Columns -->
+                                <p:column headerText="Patient Points Balance Before" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentPatientPointsBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Patient Points Value" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.patientPointsValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Patient Points Balance After" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentPatientPointsBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+
+                                <!-- Online Settlement Columns -->
+                                <p:column headerText="Online Settlement Balance Before" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentOnlineSettlementBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Online Settlement Value" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.onlineSettlementValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Online Settlement Balance After" style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromDepartmentOnlineSettlementBalanceAfter}" ></p:outputLabel>
+                                </p:column>
 
 
 
