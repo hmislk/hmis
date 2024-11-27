@@ -612,6 +612,7 @@
                                             <div class="row">
                                                 <div class="col-6">
                                                     <p:selectOneMenu   id="cmbPs" value="#{billPackageController.paymentMethod}" >
+                                                        <f:selectItem itemLabel="Select Method" ></f:selectItem>
                                                         <f:selectItems value="#{enumController.paymentMethodsForPackageBilling}"  />
                                                         <p:ajax process="@this cmbPs" 
                                                                 update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  tblBillItem paymentDetails"
@@ -1018,8 +1019,10 @@
                                                     <h:outputText value="Tendered" class="h5"></h:outputText>
                                                 </div>
                                                 <div class="col-5">
-                                                    <p:inputText autocomplete="off"  id="paid" value="#{billPackageController.cashPaid}" class="h5">
-                                                        <p:ajax event="keyup" process="netTotal paid" update="balance netTotal" listener="#{billPackageController.calTotals()}"/>
+                                                    <p:inputText
+                                                        onfocus="this.select();"
+                                                        autocomplete="off"  id="paid" value="#{billPackageController.tenderedAmount}" class="h5">
+                                                        <p:ajax event="keyup" process="netTotal paid" update=":#{p:resolveFirstComponentWithId('balance',view).clientId} netTotal" listener="#{billPackageController.calTotals()}"/>
                                                     </p:inputText>
                                                 </div>
                                             </div>

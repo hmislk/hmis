@@ -150,7 +150,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private double total;
     private double discount;
     private double netTotal;
-    private double cashPaid;
+    private double tenderedAmount;
     private double cashBalance;
     private Institution chequeBank;
     private BillItem currentBillItem;
@@ -914,6 +914,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         setDiscount(dis);
         setTotal(net);
         setNetTotal(net);
+        if(paymentMethod==PaymentMethod.Cash){
+            cashBalance = getTenderedAmount() - getNetTotal();
+        }
+        System.out.println("Cash Balance = " + getCashBalance());
     }
 
     public void feeChanged() {
@@ -942,7 +946,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         //   setForeigner(false);
         calTotals();
 
-        setCashPaid(0.0);
+        setTenderedAmount(0.0);
         setDiscount(0.0);
         setCashBalance(0.0);
         printPreview = false;
@@ -961,7 +965,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         lstBillFees = null;
         lstBillItems = null;
         lstBillEntries = null;
-        setCashPaid(0.0);
+        setTenderedAmount(0.0);
         setDiscount(0.0);
         setCashBalance(0.0);
         setTotal(0.0);
@@ -1184,11 +1188,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public PaymentMethod getPaymentMethod() {
-        if (paymentMethod != paymentMethod.Cash) {
-            setCashPaid(netTotal);
-        } else {
-            setCashPaid(0.00);
-        }
         return paymentMethod;
     }
 
@@ -1273,14 +1272,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.netTotal = netTotal;
     }
 
-    public double getCashPaid() {
-        return cashPaid;
-    }
 
-    public void setCashPaid(double cashPaid) {
-        this.cashPaid = cashPaid;
-        cashBalance = cashPaid - getNetTotal();
-    }
+    
 
     public double getCashBalance() {
         return cashBalance;
@@ -1621,5 +1614,15 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setListOfTheNonExpiredPackages(List<Item> listOfTheNonExpiredPackages) {
         this.listOfTheNonExpiredPackages = listOfTheNonExpiredPackages;
     }
+
+    public double getTenderedAmount() {
+        return tenderedAmount;
+    }
+
+    public void setTenderedAmount(double tenderedAmount) {
+        this.tenderedAmount = tenderedAmount;
+    }
+
+   
 
 }
