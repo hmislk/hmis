@@ -1115,16 +1115,35 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void updatePatientRoom(PatientRoom patientRoom) {
-        //   ////System.out.println("patientRoom = " + patientRoom);
         if (patientRoom == null) {
             return;
         }
+
+        List<PatientRoom> rooms = patientRooms;
+        if (rooms != null) {
+            if (rooms.size() > 1) {
+                int currentRoomIndex = rooms.indexOf(patientRoom);
+                if (currentRoomIndex > 0) { 
+                    PatientRoom previousRoom = rooms.get(currentRoomIndex - 1);
+
+                    if (patientRoom.getAdmittedAt() != null && previousRoom.getDischargedAt() != null) {
+                        if (patientRoom.getAdmittedAt().before(previousRoom.getDischargedAt())) {
+                            JsfUtil.addErrorMessage("Admitted time must be after the discharge time of the previous room.");
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        // If validation passes, save the room (edit or create)
         if (patientRoom.getId() != null) {
             getPatientRoomFacade().edit(patientRoom);
         } else {
             getPatientRoomFacade().create(patientRoom);
         }
 
+        // Refresh the tables or any other necessary actions after saving
         createTables();
     }
 
@@ -1358,18 +1377,17 @@ public class BhtSummeryController implements Serializable {
         getDischargeController().discharge();
 
         if (getPatientEncounter().isDischarged()) {
-            if(getPatientEncounter().getAdmissionType().isRoomChargesAllowed()){
+            if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
                 getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
                 roomChangeController.discharge(getPatientEncounter().getCurrentPatientRoom());
             }
         }
 
         if (getPatientEncounter().getCurrentPatientRoom() != null && getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == null) {
-            if(getPatientEncounter().getAdmissionType().isRoomChargesAllowed()){
-                 getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
-            getPatientRoomFacade().edit(getPatientEncounter().getCurrentPatientRoom());
+            if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
+                getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
+                getPatientRoomFacade().edit(getPatientEncounter().getCurrentPatientRoom());
             }
-           
         }
 
         JsfUtil.addSuccessMessage("Patient  Discharged");
