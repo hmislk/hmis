@@ -609,8 +609,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         for (Bill b : bills) {
             getBillBean().checkBillItemFeesInitiated(b);
         }
+
         duplicatePrint = true;
-        return "/opd/opd_batch_bill_print?faces-redirect=true;";
+
+        switch (batchBill.getBillTypeAtomic()) {
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+                return "/opd/opd_batch_bill_print?faces-redirect=true";
+            case PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT:
+                return "/opd/opd_package_batch_bill_print?faces-redirect=true";
+            default:
+                return "";
+        }
+
     }
 
     public String navigateToViewOpdBatchBill(Bill bb) {
