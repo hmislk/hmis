@@ -71,6 +71,7 @@ import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillFeeBundleEntry;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
+import static com.divudi.data.PaymentMethod.Credit;
 import com.divudi.entity.FeeValue;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.Token;
@@ -2588,10 +2589,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         }
 
-        System.out.println("paymentMethod = " + paymentMethod);        
+        System.out.println("paymentMethod = " + paymentMethod);
         if (paymentMethod == PaymentMethod.Credit) {
-            ComponentDetail cd= getPaymentMethodData().getCredit();
-            if(cd.getInstitution()==null){
+            ComponentDetail cd = getPaymentMethodData().getCredit();
+            if (cd.getInstitution() == null) {
                 JsfUtil.addErrorMessage("Please select Credit Company");
                 return true;
             }
@@ -3510,8 +3511,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
                 case Agent:
                 case Credit:
-                    p.setReferenceNo(paymentMethodData.getCredit().getReferralNo());
+                    p.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
                     p.setComments(paymentMethodData.getCredit().getComment());
+                    p.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
+                    p.setCreditCompany(paymentMethodData.getCredit().getInstitution());
                     break;
                 case PatientDeposit:
                 case Slip:
