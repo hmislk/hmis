@@ -1232,7 +1232,7 @@ public class ChannelApi {
         Bill bill = billList.get(0);
 
         if (bill == null || billList.isEmpty()) {
-            JSONObject response = commonFunctionToErrorResponse("No bills with refNo");
+            JSONObject response = commonFunctionToErrorResponse("No bills with refNo : "+clientsReferanceNo);
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
