@@ -179,6 +179,8 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle selectedBundle;
     private PaymentMethod selectedPaymentMethod;
 
+    private Boolean patientDepositsAreConsideredInHandingover;
+
     @Deprecated
     private PaymentMethodValues paymentMethodValues;
     private AtomicBillTypeTotals atomicBillTypeTotalsByBills;
@@ -1186,7 +1188,7 @@ public class FinancialTransactionController implements Serializable {
 //        if (selectedBundle != null) {
 //            selectedBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
 //        }
-
+        bundle.setPatientDepositsAreConsideredInHandingover(getPatientDepositsAreConsideredInHandingover());
         bundle.calculateTotalsByChildBundlesForHandover();
     }
 
@@ -6481,6 +6483,13 @@ public class FinancialTransactionController implements Serializable {
 
     public void setRemovingBillItem(BillItem removingBillItem) {
         this.removingBillItem = removingBillItem;
+    }
+
+    public Boolean getPatientDepositsAreConsideredInHandingover() {
+        if (patientDepositsAreConsideredInHandingover == null) {
+            patientDepositsAreConsideredInHandingover = configOptionApplicationController.getBooleanValueByKey("Patient Deposits are considered in handingover", false);
+        }
+        return patientDepositsAreConsideredInHandingover;
     }
 
 }
