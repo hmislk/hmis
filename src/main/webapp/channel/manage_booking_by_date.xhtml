@@ -508,7 +508,7 @@
                                                 <h:panelGrid id="gdManageBookings" class="w-100 m-1" columns="2" rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Cash'}">
                                                     <p:outputLabel value="Tenderd Amount" />
                                                     <h:panelGroup class="w-100 my-2" style="font-weight: bolder" >
-                                                        <p:inputText id="paid" value="#{bookingControllerViewScope.cashPaid}"
+                                                        <p:inputText id="paid" value="#{bookingControllerViewScope.strTenderedValue}"
                                                                      onfocus="this.select()">
                                                             <p:ajax event="keyup" process="paid" update="balance" listener="#{bookingControllerViewScope.calculateCashBalance}"/>
                                                         </p:inputText>

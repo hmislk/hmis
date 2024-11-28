@@ -163,6 +163,8 @@ public class ReportTemplateRowBundle implements Serializable {
 
     private boolean selected;
 
+    private boolean patientDepositsAreConsideredInHandingover = true;
+
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();
     }
@@ -907,7 +909,9 @@ public class ReportTemplateRowBundle implements Serializable {
                     addValueAndUpdateFlag("cheque", safeDouble(childBundle.getChequeValue()), safeDouble(childBundle.getChequeHandoverValue()));
                     addValueAndUpdateFlag("slip", safeDouble(childBundle.getSlipValue()), safeDouble(childBundle.getSlipHandoverValue()));
                     addValueAndUpdateFlag("eWallet", safeDouble(childBundle.getEwalletValue()), safeDouble(childBundle.getEwalletHandoverValue()));
-                    addValueAndUpdateFlag("patientDeposit", safeDouble(childBundle.getPatientDepositValue()), safeDouble(childBundle.getPatientDepositHandoverValue()));
+                    if (patientDepositsAreConsideredInHandingover) {
+                        addValueAndUpdateFlag("patientDeposit", safeDouble(childBundle.getPatientDepositValue()), safeDouble(childBundle.getPatientDepositHandoverValue()));
+                    }
                     addValueAndUpdateFlag("patientPoints", safeDouble(childBundle.getPatientPointsValue()), safeDouble(childBundle.getPatientPointsHandoverValue()));
                     addValueAndUpdateFlag("onlineSettlement", safeDouble(childBundle.getOnlineSettlementValue()), safeDouble(childBundle.getOnlineSettlementHandoverValue()));
                     addValueAndUpdateFlag("grossTotal", safeDouble(childBundle.getGrossTotal()));
@@ -2786,5 +2790,15 @@ public class ReportTemplateRowBundle implements Serializable {
     public void setSelectAllCashToHandover(Boolean selectAllCashToHandover) {
         this.selectAllCashToHandover = selectAllCashToHandover;
     }
+
+    public boolean isPatientDepositsAreConsideredInHandingover() {
+        return patientDepositsAreConsideredInHandingover;
+    }
+
+    public void setPatientDepositsAreConsideredInHandingover(boolean patientDepositsAreConsideredInHandingover) {
+        this.patientDepositsAreConsideredInHandingover = patientDepositsAreConsideredInHandingover;
+    }
+    
+    
 
 }

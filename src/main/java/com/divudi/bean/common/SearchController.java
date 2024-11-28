@@ -15045,6 +15045,7 @@ public class SearchController implements Serializable {
             bisIP = billItemFacade.findByJpql(jpqlIP, mIP, TemporalType.TIMESTAMP);
         }
 
+        
         // Combine OP and IP BillItems
         List<BillItem> bis = new ArrayList<>();
         bis.addAll(bisOP);
@@ -16245,8 +16246,13 @@ public class SearchController implements Serializable {
             double hospitalFee = countModifier * Math.abs(iteratingBillItem.getHospitalFee());
             double iteratingDiscount = countModifier * Math.abs(iteratingBillItem.getDiscount());
             double staffFee = countModifier * Math.abs(iteratingBillItem.getStaffFee());
-            double netValue = countModifier * Math.abs(iteratingBillItem.getNetValue());
-
+            double netValue = 0.0;
+            if(withProfessionalFee){
+                netValue = countModifier * Math.abs(iteratingBillItem.getNetValue());
+            }else{
+                netValue = countModifier * Math.abs(iteratingBillItem.getNetValue()- iteratingBillItem.getStaffFee());
+            }
+             
             totalIncome += grossValue;
             totalNetIncome += netValue;
             totalHospitalFees += hospitalFee;
@@ -16649,7 +16655,13 @@ public class SearchController implements Serializable {
             double hospitalFee = bi.getHospitalFee();
             double discount = bi.getDiscount();
             double professionalFee = bi.getStaffFee();
-            double netTotal = bi.getNetValue();
+            double netTotal = 0.0;
+            if(withProfessionalFee){
+                netTotal = bi.getNetValue();
+            }else{
+                netTotal = bi.getNetValue() - bi.getStaffFee();
+            }
+            
             long countModifier = (bi.getBill().getBillClassType() == BillClassType.CancelledBill
                     || bi.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
 
@@ -16662,7 +16674,7 @@ public class SearchController implements Serializable {
                 professionalFee = -Math.abs(professionalFee);
                 netTotal = -Math.abs(netTotal);
             }
-
+            
             totalOpdServiceCollection += netTotal;
 
             // Update the detailed row

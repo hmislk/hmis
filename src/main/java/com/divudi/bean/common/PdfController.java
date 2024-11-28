@@ -141,7 +141,7 @@ public class PdfController {
 
         // Set the downloading file
         return DefaultStreamedContent.builder()
-                .name("Bundle_Report.pdf")
+                .name(rootBundle.getName()+".pdf")
                 .contentType("application/pdf")
                 .stream(() -> inputStream)
                 .build();

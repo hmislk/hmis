@@ -1230,10 +1230,15 @@ public class ChannelApi {
 
         if (billList.size() > 1) {
             for (Bill b : billList) {
-                if (b.getBillType() == BillType.ChannelOnCall) {
+                if (b.getBillType() == BillType.ChannelAgent) {
                     bill = b;
                 }
             }
+        }
+        
+        if(bill.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT){
+            JSONObject response = commonFunctionToErrorResponse("Temporary Bookings unable to edit.");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
         if (bill.isCancelled()) {
