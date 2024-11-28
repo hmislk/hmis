@@ -1791,6 +1791,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public String settleOpdBill() {
+        System.out.println("settleOpdBill");
         if (billSettlingStarted) {
             return null;
         }
@@ -1818,6 +1819,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private boolean executeSettleBillActions() {
+        System.out.println("executeSettleBillActions");
         if (errorCheck()) {
             return false;
         }
@@ -2586,13 +2588,16 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         }
 
+        System.out.println("paymentMethod = " + paymentMethod);        
         if (paymentMethod == PaymentMethod.Credit) {
             ComponentDetail cd= getPaymentMethodData().getCredit();
             if(cd.getInstitution()==null){
                 JsfUtil.addErrorMessage("Please select Credit Company");
                 return true;
             }
+            System.out.println("cd.getInstitution() = " + cd.getInstitution());
             creditCompany = cd.getInstitution();
+            System.out.println("creditCompany = " + creditCompany);
         }
 
         if (paymentMethod == PaymentMethod.Staff) {
@@ -3400,6 +3405,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
+        System.out.println("createPayment");
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
