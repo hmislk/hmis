@@ -1628,7 +1628,7 @@ public class ChannelApi {
 
         List<Bill> billList = channelService.findBillFromRefNo(refNo, creditCompany, BillClassType.BilledBill);
         if (billList == null || billList.isEmpty()) {
-            JSONObject response = commonFunctionToErrorResponse("No bill reference with RefNo");
+            JSONObject response = commonFunctionToErrorResponse("No bill reference with Ref No. : "+refNo);
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
