@@ -22,6 +22,12 @@ import javax.inject.Inject;
  */
 public class ComponentDetail {
 
+    /**
+     * 
+     * URGENTLY need to remove this
+     * 
+     */
+    @Deprecated
     @Inject
     OpdBillController opdBillController;
     private String no;

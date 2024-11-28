@@ -109,6 +109,9 @@ public class Payment implements Serializable {
     @ManyToOne
     private Department department;
 
+    @ManyToOne
+    private Institution creditCompany;
+
     @Transient
     @Deprecated
     private List<Denomination> currencyDenominations;
@@ -118,6 +121,7 @@ public class Payment implements Serializable {
     private List<String> humanReadableDenominations;
 
     private String referenceNo;
+    private String policyNo;
 
     private boolean cashbookEntryStated;
     private boolean cashbookEntryCompleted;
@@ -476,6 +480,8 @@ public class Payment implements Serializable {
         newPayment.setPaidValue(this.paidValue);
         newPayment.setInstitution(this.institution);
         newPayment.setDepartment(this.department);
+        newPayment.setPolicyNo(this.policyNo);
+        newPayment.setCreditCompany(this.creditCompany);
         // Note: ID is not copied to ensure the uniqueness of each entity
         // newPayment.setId(this.id); // This line is intentionally commented out
         return newPayment;
@@ -484,7 +490,7 @@ public class Payment implements Serializable {
     public void invertValues() {
         paidValue = 0 - paidValue;
     }
-    
+
     public Payment clonePaymentForNewBill() {
         Payment newPayment = new Payment();
         newPayment.setWrittenAt(this.writtenAt);
@@ -522,6 +528,9 @@ public class Payment implements Serializable {
 
         newPayment.setFromInstitution(this.fromInstitution);
         newPayment.setToInstitution(this.toInstitution);
+
+        newPayment.setPolicyNo(this.policyNo);
+        newPayment.setCreditCompany(this.creditCompany);
 
         return newPayment;
     }
@@ -928,6 +937,22 @@ public class Payment implements Serializable {
 
     public void setToInstitution(Institution toInstitution) {
         this.toInstitution = toInstitution;
+    }
+
+    public String getPolicyNo() {
+        return policyNo;
+    }
+
+    public void setPolicyNo(String policyNo) {
+        this.policyNo = policyNo;
+    }
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
     }
 
 }
