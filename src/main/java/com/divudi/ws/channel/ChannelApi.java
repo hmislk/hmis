@@ -69,6 +69,7 @@ import com.divudi.java.CommonFunctions;
 import com.divudi.service.ChannelService;
 import com.divudi.service.PatientService;
 import com.itextpdf.io.font.otf.LanguageTags;
+import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -618,6 +619,13 @@ public class ChannelApi {
             }
         } catch (Exception e) {
         }
+        
+        JSONArray resultArray = (JSONArray)results.get("data");
+        if(resultArray.length() == 0){
+            JSONObject response = commonFunctionToErrorResponse("No data for this criteria.");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+        
 
         // Constructing the detailed response
         JSONObject response = new JSONObject();
@@ -1370,7 +1378,7 @@ public class ChannelApi {
         }
 
         String clientsReferanceNo = (String) requestBody.get("refNo");
-        Integer statusId = (Integer) requestBody.get("statusId");
+        Integer statusId = ((Number) requestBody.get("statusId")).intValue();
 
         if (statusId == 0) {
             JSONObject response = commonFunctionToErrorResponse("Booking Completion is failed based on statusID(0).");

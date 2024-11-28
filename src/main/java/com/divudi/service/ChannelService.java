@@ -739,7 +739,7 @@ public class ChannelService {
 
             Map params = new HashMap();
 
-            BillTypeAtomic billType = BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT;
+            BillTypeAtomic billType = BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT;
             String jpql = "Select b from Bill b "
                     + " where b.billDate between :fd And :td "
                     + " and b.creditCompany = :cc "
