@@ -16245,8 +16245,13 @@ public class SearchController implements Serializable {
             double hospitalFee = countModifier * Math.abs(iteratingBillItem.getHospitalFee());
             double iteratingDiscount = countModifier * Math.abs(iteratingBillItem.getDiscount());
             double staffFee = countModifier * Math.abs(iteratingBillItem.getStaffFee());
-            double netValue = countModifier * Math.abs(iteratingBillItem.getNetValue());
-
+            double netValue = 0.0;
+            if(withProfessionalFee){
+                netValue = countModifier * Math.abs(iteratingBillItem.getNetValue());
+            }else{
+                netValue = countModifier * Math.abs(iteratingBillItem.getNetValue()- iteratingBillItem.getStaffFee());
+            }
+             
             totalIncome += grossValue;
             totalNetIncome += netValue;
             totalHospitalFees += hospitalFee;
