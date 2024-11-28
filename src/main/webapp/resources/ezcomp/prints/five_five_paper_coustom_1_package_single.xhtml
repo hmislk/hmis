@@ -52,12 +52,12 @@
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value="Refuned" />
                     </h:panelGroup>
-                    
+
                     <h:panelGroup  rendered="#{cc.attrs.bill.cancelled}" >
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value="Cancelled" />
                     </h:panelGroup>
-                    
+
                     <h:panelGroup>
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value=" Receipt"/>
@@ -100,7 +100,7 @@
                     <div class="col-3"><h:outputLabel value="Contact No" ></h:outputLabel></div>
                     <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
                     <div class="col-7"><h:outputLabel rendered="#{cc.attrs.bill.patient.person.mobile ne ''}" value="#{cc.attrs.bill.patient.person.mobile}"/>
-                    <h:outputLabel rendered="#{cc.attrs.bill.patient.person.mobile eq ''}" value="#{cc.attrs.bill.patient.person.phone}"/>
+                        <h:outputLabel rendered="#{cc.attrs.bill.patient.person.mobile eq ''}" value="#{cc.attrs.bill.patient.person.phone}"/>
                     </div>
 
                 </div>
@@ -152,7 +152,10 @@
 
                         </td>
                         <td  style="width:10%!important;text-align: right;">
-                            <h:outputLabel value="Amount" ></h:outputLabel>
+                            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide Print Individual Bill Prices in OPD Bills Package Billing')}" >
+                                <h:outputLabel value="Amount" ></h:outputLabel>
+                            </h:panelGroup>
+                            
                         </td>
                     </tr>
 
@@ -172,9 +175,11 @@
                                 </h:panelGroup>
                             </td>
                             <td   style="width:10%!important;text-align: right;">
-                                <h:outputLabel value="#{billItem.grossValue}" style="text-align: right;" class="w-100">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
+                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide Print Individual Bill Prices in OPD Bills Package Billing')}" >
+                                    <h:outputLabel value="#{billItem.grossValue}" style="text-align: right;" class="w-100">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </h:panelGroup>
                             </td>
                         </tr>
 
