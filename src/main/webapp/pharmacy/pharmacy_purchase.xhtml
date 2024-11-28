@@ -115,15 +115,7 @@
                                             class="row my-1"
                                             layout="block" 
                                             id="credit"  rendered="#{pharmacyPurchaseController.bill.paymentMethod eq 'Credit'}" >
-                                            <div class="d-flex" >
-                                                <div class="ui-inputgroup my-1">
-                                                    <p:inputText  
-                                                        value="#{pharmacyPurchaseController.bill.creditDuration}"
-                                                        style="width: 10em; ">
-                                                    </p:inputText>
-                                                    <div class="ui-inputgroup-addon">Days</div>
-                                                </div>
-                                            </div>
+                                            <pa:credit paymentMethodData="#{pharmacyPurchaseController.paymentMethodData}"/>
                                         </h:panelGroup>
                                         <h:panelGroup
                                             class="row my-1"

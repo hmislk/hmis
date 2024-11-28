@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.inward.AdmissionTypeEnum;
@@ -56,6 +57,8 @@ public class RoomChangeController implements Serializable {
     private RoomFacilityChargeController roomFacilityChargeController;
     @Inject
     BhtSummeryController bhtSummeryController;
+    @Inject
+    NotificationController notificationController;
     @EJB
     private AdmissionFacade ejbFacade;
     @EJB
@@ -144,6 +147,7 @@ public class RoomChangeController implements Serializable {
         pR.setDischarged(true);
         pR.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(pR);
+        notificationController.createNotification(pR,"Discharge");
     }
 
     public void dischargeWithCurrentTime(PatientRoom pR) {
@@ -170,6 +174,7 @@ public class RoomChangeController implements Serializable {
         pR.setDischarged(true);
         pR.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(pR);
+        notificationController.createNotification(pR,"Discharge");
     }
 
     public void dischargeCancel(PatientRoom pR) {

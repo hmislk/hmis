@@ -19,9 +19,6 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-
-
-
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
         <div class="fiveinchbill" style="page-break-after: always" >
 
@@ -46,7 +43,7 @@
             <div class="headingBillFiveFive mt-2" style="text-align: center;font-weight: bold;">
                 <div class="d-flex align-items-center justify-content-center">
                     <h:panelGroup >
-                        <h:outputLabel value="OPD" />
+                        <h:outputLabel value="OPD Package" />
                     </h:panelGroup>
                     <h:panelGroup  rendered="#{cc.attrs.bill.refunded}" >
                         <h:outputLabel value="&nbsp;&nbsp;" />
@@ -126,7 +123,7 @@
                     </div>
                 </h:panelGroup>
             </div>
-
+            
             <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Print OPD Bill Session Number')}" >
                 <h:panelGroup  rendered="#{cc.attrs.bill.singleBillSession ne null}" >
                     <div class="billline">
@@ -156,7 +153,7 @@
                         </td>
                     </tr>
 
-                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="billItem"   >
+                    <ui:repeat value="#{billPackageController.fillPackageBillItem(cc.attrs.bill)}" var="billItem"   >
                         <tr class="billDetailsFiveFive">
                             <td  style="width:80%!important;">
                                 <h:outputLabel value="#{billItem.item.printName}"></h:outputLabel>

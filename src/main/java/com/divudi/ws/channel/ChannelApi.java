@@ -69,6 +69,7 @@ import com.divudi.java.CommonFunctions;
 import com.divudi.service.ChannelService;
 import com.divudi.service.PatientService;
 import com.itextpdf.io.font.otf.LanguageTags;
+import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -618,6 +619,13 @@ public class ChannelApi {
             }
         } catch (Exception e) {
         }
+        
+        JSONArray resultArray = (JSONArray)results.get("data");
+        if(resultArray.length() == 0){
+            JSONObject response = commonFunctionToErrorResponse("No data for this criteria.");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+        
 
         // Constructing the detailed response
         JSONObject response = new JSONObject();
@@ -1224,7 +1232,7 @@ public class ChannelApi {
         Bill bill = billList.get(0);
 
         if (bill == null || billList.isEmpty()) {
-            JSONObject response = commonFunctionToErrorResponse("No bills with refNo");
+            JSONObject response = commonFunctionToErrorResponse("No bills with refNo : "+clientsReferanceNo);
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
@@ -1370,7 +1378,17 @@ public class ChannelApi {
         }
 
         String clientsReferanceNo = (String) requestBody.get("refNo");
-        Integer statusId = (Integer) requestBody.get("statusId");
+        Integer statusId = null;
+        try {
+            statusId = ((Number) requestBody.get("statusId")).intValue();
+        } catch (Exception e) {
+            statusId = null;
+        }
+        
+        if(statusId == null){
+            JSONObject response = commonFunctionToErrorResponse("Request statusId is not available or error occupied. Please check.");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
 
         if (statusId == 0) {
             JSONObject response = commonFunctionToErrorResponse("Booking Completion is failed based on statusID(0).");
@@ -1394,7 +1412,7 @@ public class ChannelApi {
         List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany, BillClassType.BilledBill);
 
         if (billList == null || billList.isEmpty()) {
-            JSONObject response = commonFunctionToErrorResponse("No bill available for the RefNo");
+            JSONObject response = commonFunctionToErrorResponse("No bill available for the RefNo : "+ clientsReferanceNo);
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
@@ -1610,7 +1628,7 @@ public class ChannelApi {
 
         List<Bill> billList = channelService.findBillFromRefNo(refNo, creditCompany, BillClassType.BilledBill);
         if (billList == null || billList.isEmpty()) {
-            JSONObject response = commonFunctionToErrorResponse("No bill reference with RefNo");
+            JSONObject response = commonFunctionToErrorResponse("No bill reference with Ref No. : "+refNo);
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
@@ -1774,6 +1792,11 @@ public class ChannelApi {
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             }
 
+        }
+        
+        if(billList == null || billList.isEmpty()){
+            JSONObject response = commonFunctionToErrorResponse("No bill available for this ref no. : "+refNo);
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
         Bill bill = billList.get(0);

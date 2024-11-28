@@ -460,6 +460,21 @@ public class SurgeryBillController implements Serializable {
         
         return bhtSummeryController.navigateToInpatientProfile();
     }
+    
+    public void edit(){
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
+        if (generalChecking()) {
+            return;
+        }
+
+        saveProcedure();
+        saveSurgeryBill();
+        getBillBean().updateBatchBill(getSurgeryBill());
+        JsfUtil.addSuccessMessage("Surgery Detail Added");
+    }
 
     /**
      * Creates a new instance of SurgeryBill

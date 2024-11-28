@@ -60,8 +60,10 @@ import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
@@ -995,6 +997,21 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
         calTotals();
     }
+    
+    public List<BillItem> fillPackageBillItem(Bill bill){
+        List<BillItem> billItem = new ArrayList<>();
+        
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select bi from BillItem bi "
+                + " where bi.retired = false "
+                + " and bi.bill.backwardReferenceBill =:pBill";
+        m.put("pBill", bill);
+        
+        billItem = getBillItemFacade().findByJpql(jpql, m);
+        
+        return billItem;
+    }
 
     public void recreateList(BillEntry r) {
         List<BillEntry> temp = new ArrayList<BillEntry>();
@@ -1271,10 +1288,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setNetTotal(double netTotal) {
         this.netTotal = netTotal;
     }
-
-
     
-
     public double getCashBalance() {
         return cashBalance;
     }
@@ -1296,7 +1310,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (currentBillItem == null) {
             currentBillItem = new BillItem();
         }
-
         return currentBillItem;
     }
 
