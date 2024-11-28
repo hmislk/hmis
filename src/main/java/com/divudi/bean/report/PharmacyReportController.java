@@ -224,6 +224,8 @@ public class PharmacyReportController implements Serializable {
     private Double grossFeeTotal;
     private Double discountTotal;
     private Double netTotal;
+    private double calAllInTotal;
+    private double calAllOutTotal;
 
     private List<String> voucherStatusOnDebtorSettlement;
     private String selectedVoucherStatusOnDebtorSettlement;
@@ -1196,6 +1198,8 @@ public class PharmacyReportController implements Serializable {
         bills = new ArrayList<>();
         unifiedBundle = new ArrayList<>();
         Map<BillTypeAtomic, Double> btaNetTotals = new HashMap<>();
+        calAllInTotal = 0.0;
+        calAllOutTotal = 0.0;
 
         // Prepare parameters for the query
         Map<String, Object> params = new HashMap<>();
@@ -1231,6 +1235,14 @@ public class PharmacyReportController implements Serializable {
             reportRow.setBillTypeAtomic(entry.getKey());
             reportRow.setTotal(entry.getValue());
             reportRows.add(reportRow);
+
+            if (entry.getKey().getBillFinanceType() == BillFinanceType.CASH_IN
+                    || entry.getKey().getBillFinanceType() == BillFinanceType.FLOAT_STARTING_BALANCE) {
+                calAllInTotal += entry.getValue();
+            } else if (entry.getKey().getBillFinanceType() == BillFinanceType.CASH_OUT
+                    || entry.getKey().getBillFinanceType() == BillFinanceType.FLOAT_CLOSING_BALANCE) {
+                calAllOutTotal += entry.getValue();
+            }
         }
 
         // Update class-level variables
@@ -2298,6 +2310,22 @@ public class PharmacyReportController implements Serializable {
 
     public void setBundleList(List<ReportTemplateRowBundle> bundleList) {
         this.bundleList = bundleList;
+    }
+
+    public double getCalAllInTotal() {
+        return calAllInTotal;
+    }
+
+    public void setCalAllInTotal(double calAllInTotal) {
+        this.calAllInTotal = calAllInTotal;
+    }
+
+    public double getCalAllOutTotal() {
+        return calAllOutTotal;
+    }
+
+    public void setCalAllOutTotal(double calAllOutTotal) {
+        this.calAllOutTotal = calAllOutTotal;
     }
 
 }
