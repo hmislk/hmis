@@ -71,6 +71,7 @@ import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillFeeBundleEntry;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
+import static com.divudi.data.PaymentMethod.Credit;
 import com.divudi.entity.FeeValue;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.Token;
@@ -608,8 +609,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         for (Bill b : bills) {
             getBillBean().checkBillItemFeesInitiated(b);
         }
+
         duplicatePrint = true;
-        return "/opd/opd_batch_bill_print?faces-redirect=true;";
+
+        switch (batchBill.getBillTypeAtomic()) {
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+                return "/opd/opd_batch_bill_print?faces-redirect=true";
+            case PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT:
+                return "/opd/opd_package_batch_bill_print?faces-redirect=true";
+            default:
+                return "";
+        }
+
     }
 
     public String navigateToViewOpdBatchBill(Bill bb) {
@@ -1791,6 +1802,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public String settleOpdBill() {
+        System.out.println("settleOpdBill");
         if (billSettlingStarted) {
             return null;
         }
@@ -1818,6 +1830,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private boolean executeSettleBillActions() {
+        System.out.println("executeSettleBillActions");
         if (errorCheck()) {
             return false;
         }
@@ -2586,11 +2599,16 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         }
 
+        System.out.println("paymentMethod = " + paymentMethod);
         if (paymentMethod == PaymentMethod.Credit) {
-            if (creditCompany == null && collectingCentre == null) {
-                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company or Collecting centre.");
+            ComponentDetail cd = getPaymentMethodData().getCredit();
+            if (cd.getInstitution() == null) {
+                JsfUtil.addErrorMessage("Please select Credit Company");
                 return true;
             }
+            System.out.println("cd.getInstitution() = " + cd.getInstitution());
+            creditCompany = cd.getInstitution();
+            System.out.println("creditCompany = " + creditCompany);
         }
 
         if (paymentMethod == PaymentMethod.Staff) {
@@ -3398,6 +3416,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
+        System.out.println("createPayment");
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
@@ -3425,11 +3444,24 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
                         break;
                     case ewallet:
-
-                    case Agent:
-                    case Credit:
-                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
+                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferralNo());
                         p.setComments(cd.getPaymentMethodData().getCredit().getComment());
+                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
+                        p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
+                        break;
+                    case Agent:
+                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferralNo());
+                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
+                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
+                        p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
+                        break;
+                    case Credit:
+                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferralNo());
+                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
+                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
+                        System.out.println("cd.getPaymentMethodData().getCredit().getInstitution() = " + cd.getPaymentMethodData().getCredit().getInstitution());
+                        p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
+                        System.out.println("p = " + p.getCreditCompany().getName());
                         break;
                     case PatientDeposit:
                         if (getPatient().getRunningBalance() != null) {
@@ -3489,8 +3521,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
                 case Agent:
                 case Credit:
-                    p.setReferenceNo(paymentMethodData.getCredit().getReferralNo());
+                    p.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
                     p.setComments(paymentMethodData.getCredit().getComment());
+                    p.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
+                    p.setCreditCompany(paymentMethodData.getCredit().getInstitution());
                     break;
                 case PatientDeposit:
                 case Slip:
@@ -3704,9 +3738,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (patient == null) {
             return;
         }
-        if(patient.getPerson().getMembershipScheme()==null){
-            paymentScheme=null;
-        }else{
+        if (patient.getPerson().getMembershipScheme() == null) {
+            paymentScheme = null;
+        } else {
             paymentScheme = patient.getPerson().getMembershipScheme().getPaymentScheme();
         }
         listnerForPaymentMethodChange();

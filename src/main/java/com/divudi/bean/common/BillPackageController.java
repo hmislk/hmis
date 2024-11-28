@@ -60,8 +60,10 @@ import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
@@ -150,7 +152,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private double total;
     private double discount;
     private double netTotal;
-    private double cashPaid;
+    private double tenderedAmount;
     private double cashBalance;
     private Institution chequeBank;
     private BillItem currentBillItem;
@@ -914,6 +916,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         setDiscount(dis);
         setTotal(net);
         setNetTotal(net);
+        if(paymentMethod==PaymentMethod.Cash){
+            cashBalance = getTenderedAmount() - getNetTotal();
+        }
         System.out.println("Cash Balance = " + getCashBalance());
     }
 
@@ -943,7 +948,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         //   setForeigner(false);
         calTotals();
 
-        setCashPaid(0.0);
+        setTenderedAmount(0.0);
         setDiscount(0.0);
         setCashBalance(0.0);
         printPreview = false;
@@ -962,7 +967,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         lstBillFees = null;
         lstBillItems = null;
         lstBillEntries = null;
-        setCashPaid(0.0);
+        setTenderedAmount(0.0);
         setDiscount(0.0);
         setCashBalance(0.0);
         setTotal(0.0);
@@ -991,6 +996,21 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
         calTotals();
+    }
+    
+    public List<BillItem> fillPackageBillItem(Bill bill){
+        List<BillItem> billItem = new ArrayList<>();
+        
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select bi from BillItem bi "
+                + " where bi.retired = false "
+                + " and bi.bill.backwardReferenceBill =:pBill";
+        m.put("pBill", bill);
+        
+        billItem = getBillItemFacade().findByJpql(jpql, m);
+        
+        return billItem;
     }
 
     public void recreateList(BillEntry r) {
@@ -1185,11 +1205,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public PaymentMethod getPaymentMethod() {
-        if (paymentMethod != paymentMethod.Cash) {
-            setCashPaid(netTotal);
-        } else {
-            setCashPaid(0.00);
-        }
         return paymentMethod;
     }
 
@@ -1273,16 +1288,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setNetTotal(double netTotal) {
         this.netTotal = netTotal;
     }
-
-    public double getCashPaid() {
-        return cashPaid;
-    }
-
-    public void setCashPaid(double cashPaid) {
-        this.cashPaid = cashPaid;
-        cashBalance = cashPaid - getNetTotal();
-    }
-
+    
     public double getCashBalance() {
         return cashBalance;
     }
@@ -1304,7 +1310,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (currentBillItem == null) {
             currentBillItem = new BillItem();
         }
-
         return currentBillItem;
     }
 
@@ -1622,5 +1627,15 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setListOfTheNonExpiredPackages(List<Item> listOfTheNonExpiredPackages) {
         this.listOfTheNonExpiredPackages = listOfTheNonExpiredPackages;
     }
+
+    public double getTenderedAmount() {
+        return tenderedAmount;
+    }
+
+    public void setTenderedAmount(double tenderedAmount) {
+        this.tenderedAmount = tenderedAmount;
+    }
+
+   
 
 }
