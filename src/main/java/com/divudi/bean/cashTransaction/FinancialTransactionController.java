@@ -1185,6 +1185,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void updateForPaymentHandoverSelectionAtCreate() {
+        System.out.println("updateForPaymentHandoverSelectionAtCreate");
 //        if (selectedBundle != null) {
 //            selectedBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
 //        }
@@ -1194,7 +1195,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void selectAllForPaymentHandoverSelectionAtCreate() {
         selectedBundle.markAllAtHandover(selectedPaymentMethod);
-        selectedBundle.calculateTotalsOfSelectedRowsPlusAllCash();
+        selectedBundle.calculateTotalsOfSelectedRowsPlusAllCashForHandover(getPatientDepositsAreConsideredInHandingover());
         boolean selectAllCashToHandover = configOptionApplicationController.getBooleanValueByKey("Select All Cash During Handover", true);
         bundle.setSelectAllCashToHandover(selectAllCashToHandover);
         bundle.calculateTotalsByChildBundlesForHandover();

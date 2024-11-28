@@ -885,7 +885,7 @@ public class ReportTemplateRowBundle implements Serializable {
 
                 if (childBundle.isSelected()) {
 
-                    childBundle.calculateTotalsOfSelectedRowsPlusAllCash();
+                    childBundle.calculateTotalsOfSelectedRowsPlusAllCashForHandover(patientDepositsAreConsideredInHandingover);
 
                     System.out.println("selected childBundle = " + childBundle.getName());
                     System.out.println("childBundle.getSelectAllCashToHandover() = " + childBundle.getSelectAllCashToHandover());
@@ -910,6 +910,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     addValueAndUpdateFlag("slip", safeDouble(childBundle.getSlipValue()), safeDouble(childBundle.getSlipHandoverValue()));
                     addValueAndUpdateFlag("eWallet", safeDouble(childBundle.getEwalletValue()), safeDouble(childBundle.getEwalletHandoverValue()));
                     if (patientDepositsAreConsideredInHandingover) {
+                        System.out.println("patientDepositsAreConsideredInHandingover = " + patientDepositsAreConsideredInHandingover);
                         addValueAndUpdateFlag("patientDeposit", safeDouble(childBundle.getPatientDepositValue()), safeDouble(childBundle.getPatientDepositHandoverValue()));
                     }
                     addValueAndUpdateFlag("patientPoints", safeDouble(childBundle.getPatientPointsValue()), safeDouble(childBundle.getPatientPointsHandoverValue()));
@@ -1389,7 +1390,7 @@ public class ReportTemplateRowBundle implements Serializable {
         calculateTotalHandoverByDenominationQuantities();
     }
 
-    public void calculateTotalsOfSelectedRowsPlusAllCash() {
+    public void calculateTotalsOfSelectedRowsPlusAllCashForHandover(boolean patientDepositsAreConsideredInHandingover) {
         resetTotalsAndFlags();
 
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
@@ -1456,9 +1457,11 @@ public class ReportTemplateRowBundle implements Serializable {
                         this.hasOnlineSettlementTransaction = true;
                         break;
                     case PatientDeposit:
-                        this.patientDepositValue += amount;
-                        this.patientDepositHandoverValue += amountHandingOver;
-                        this.hasPatientDepositTransaction = true;
+                        if (patientDepositsAreConsideredInHandingover) {
+                            this.patientDepositValue += amount;
+                            this.patientDepositHandoverValue += amountHandingOver;
+                            this.hasPatientDepositTransaction = true;
+                        }
                         break;
                     case PatientPoints:
                         this.patientPointsValue += amount;
@@ -2798,7 +2801,5 @@ public class ReportTemplateRowBundle implements Serializable {
     public void setPatientDepositsAreConsideredInHandingover(boolean patientDepositsAreConsideredInHandingover) {
         this.patientDepositsAreConsideredInHandingover = patientDepositsAreConsideredInHandingover;
     }
-    
-    
 
 }
