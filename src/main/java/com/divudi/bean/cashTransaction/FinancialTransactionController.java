@@ -2575,9 +2575,12 @@ public class FinancialTransactionController implements Serializable {
         bundle.setUser(sessionController.getLoggedUser());
         bundle.setStartBill(startBill);
         bundle.selectAllChildBundles();
-        bundle.aggregateTotalsFromAllChildBundles();
+//        bundle.aggregateTotalsFromAllChildBundles();
         bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
         bundle.sortByDateInstitutionSiteDepartmentType();
+        
+        bundle.setPatientDepositsAreConsideredInHandingover(getPatientDepositsAreConsideredInHandingover());
+        bundle.calculateTotalsByChildBundlesForHandover();
         return "/cashier/handover_start_all?faces-redirect=true";
     }
 
