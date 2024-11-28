@@ -1009,7 +1009,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         m.put("pBill", bill);
         
         billItem = getBillItemFacade().findByJpql(jpql, m);
-        System.out.println("billItem = " + billItem.size());
+        
         return billItem;
     }
 
