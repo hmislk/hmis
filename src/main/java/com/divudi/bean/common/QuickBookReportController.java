@@ -269,10 +269,11 @@ public class QuickBookReportController implements Serializable {
 
         List<PaymentMethod> paymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card, PaymentMethod.OnlineSettlement, PaymentMethod.MultiplePaymentMethods);
 
-        qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), null));
-
         if (withProfessionalFee) {
+            qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), null));
             qbfs.addAll(fetchOPdListProfessionalFeeDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), null));
+        } else {
+            qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), null));
         }
 
         qbfs.addAll(createPharmacySale(BillType.PharmacySale, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate)));
@@ -1353,7 +1354,8 @@ public class QuickBookReportController implements Serializable {
             jpql += " and bf.fee.feeType!=:ft ";
             params.put("ft", FeeType.Staff);
         } else {
-
+            jpql += " and bf.fee.feeType!=:ft ";
+            params.put("ft", FeeType.Staff);
         }
         if (institution != null) {
             jpql += " and bi.bill.institution=:ins ";

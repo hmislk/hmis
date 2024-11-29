@@ -3439,6 +3439,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
                         p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
                         p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCheque().getComment());
                         break;
                     case Cash:
                         p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
