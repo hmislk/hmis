@@ -641,6 +641,34 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
         return a;
     }
+    
+    public List<Bill> completeOpdCreditBatchBill(String qry) {
+        List<Bill> a = null;
+        String sql;
+        HashMap hash = new HashMap();
+        if (qry != null) {
+            sql = "select c from BilledBill c "
+                    + " where abs(c.netTotal)-abs(c.paidAmount)>:val "
+                    + " and c.billType= :btp "
+                    + " and c.paymentMethod= :pm "
+                    + " and c.cancelledBill is null "
+                    + " and c.refundedBill is null "
+                    + " and c.retired=false "
+                    + " and ((c.insId) like :q or"
+                    + " (c.patient.person.name) like :q "
+                    + " or (c.creditCompany.name) like :q ) "
+                    + " order by c.creditCompany.name";
+            hash.put("btp", BillType.OpdBathcBill);
+            hash.put("pm", PaymentMethod.Credit);
+            hash.put("val", 0.1);
+            hash.put("q", "%" + qry.toUpperCase() + "%");
+            a = getFacade().findByJpql(sql, hash);
+        }
+        if (a == null) {
+            a = new ArrayList<>();
+        }
+        return a;
+    }
 
     public List<Bill> completePharmacyCreditBill(String qry) {
         List<Bill> a = null;
