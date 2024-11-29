@@ -38,8 +38,8 @@
                 <div class="col-12 text-center" style="font-weight: bold;">
                     <h3>ADMISSION CASE SHEET</h3>
                 </div>
-                
-                
+
+
                 <div class="mt-3" style="font-weight: bold;">
                     <p:outputLabel   value="PATIENT DETAILS" />
                 </div>
@@ -104,7 +104,7 @@
                     </table>
 
                 </div>
-                
+
 
 
 
@@ -120,14 +120,14 @@
                             <td style="width: 25%"><p:outputLabel  value="" /></td>
                         </tr>
                         <tr>
-                            <td><h:outputLabel value="Primary Doctor Department"></h:outputLabel></td>
-                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><p:outputLabel  value="" /></td>
+                            <td style="width: 17%"><h:outputLabel value="Primary Doctor Department"></h:outputLabel></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><p:outputLabel  value="" /></td>
                         </tr>
                         <tr>
-                            <td><p:outputLabel   value="Treatment For" /></td>
-                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><p:outputLabel  value="" /></td>
+                            <td style="width: 17%"><p:outputLabel   value="Treatment For" /></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><p:outputLabel  value="" /></td>
                         </tr>
 
                     </table>
@@ -149,30 +149,32 @@
                             </td>
                         </tr>
                         <tr>
-                            <td><h:outputLabel value="Relationship "/></td>
-                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.admission.guardianRelationshipToPatient.name}" />
-                            </td>
+                            <td style="width: 17%"><h:outputLabel value="Relationship "/></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.guardianRelationshipToPatient.name}" /> </td>
                         </tr>
-                        <tr>
-                            
-                            <td><h:outputLabel value="Address in Full"></h:outputLabel></td>
-                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td>
+                        <tr>                            
+                            <td style="width: 17%"><h:outputLabel value="Address in Full"></h:outputLabel></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%">
                                 <h:outputLabel value="#{cc.attrs.admission.guardian.address}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </td>                                              
                         </tr>
                         <tr>
-                            <td><h:outputLabel value="Attendant's Mobile No"></h:outputLabel></td>
-                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td>
+                            <td style="width: 17%"><h:outputLabel value="Attendant's Mobile No"></h:outputLabel></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%">
                                 <h:outputLabel value="#{cc.attrs.admission.guardian.mobile}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 17%"><h:outputLabel value="NIC No"/></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><h:outputLabel value="" /> </td>
                         </tr>
 
                     </table>
@@ -180,30 +182,31 @@
                 </div>
 
                 <div class="mt-3" style="font-weight: bold;">
-                    <p:outputLabel   value="CREDIT COMPANY DETAILS" />
+                    <p:outputLabel   value="REFERRAL DETAILS" />
                 </div>
 
                 <div class="row">
                     <table style="margin-left: 5%">
                         <tr>
-                            <td style="width: 17%"><h:outputLabel value="Credit Company "></h:outputLabel></td>
+                            <td style="width: 17%"><h:outputLabel value="Ref By Inst/Dr"></h:outputLabel></td>
                             <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.creditCompany.name}" ></h:outputLabel></td>
-                            <td style="width: 3%"></td>
-                            <td style="width: 17%"><h:outputLabel value="Policy Number "></h:outputLabel></td>
-                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.policyNo}" ></h:outputLabel></td>
+                            <td style="width: 25%"><h:outputLabel value="" ></h:outputLabel></td>
                         </tr>
                         <tr>
-                            <td><h:outputLabel value="Reference Number "></h:outputLabel></td>
-                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><h:outputLabel value="#{cc.attrs.admission.referanceNo}" ></h:outputLabel></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td style="width: 17%"><h:outputLabel value="Ref By Inst / Doctor Address"></h:outputLabel></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><h:outputLabel value="" ></h:outputLabel></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 17%"><h:outputLabel value="Ref By Inst. Ph No"></h:outputLabel></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><h:outputLabel value="" ></h:outputLabel></td>
                         </tr>
                     </table>
+                </div>
+                <div class="mt-3">
+                    <p>I agree to abide by the terms and conditions of admission prevailing at this hospital and hold myself responsible for
+                    payment of all bills of this patient before discharge.</p>
                 </div>
 
                 <div class="mt-3" style="font-weight: bold; font-size: 15px">
@@ -223,7 +226,7 @@
 
 
                 <div class="d-flex justify-content-end mt-5">
-                    <h:outputLabel value="Guardian" style="text-decoration: overline; margin-left: 10mm;"></h:outputLabel>
+                    <h:outputLabel value="Guardian's Signature" style="text-decoration: overline; margin-left: 10mm;"></h:outputLabel>
                 </div>
 
                 <div class=" d-flex justify-content-between mt-5">
