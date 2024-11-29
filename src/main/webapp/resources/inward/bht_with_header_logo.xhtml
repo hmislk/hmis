@@ -18,19 +18,10 @@
         <h:form >
             <div style="width: 210mm;">
                 <div class="">
+                    
+<!--                    Add header here-->
+
                     <div class="col-12 text-center">
-                        <h3><h:outputLabel value="#{cc.attrs.admission.institution.name}" /></h3>
-                        <h5 style="margin-top: -10px;"><h:outputLabel value="#{cc.attrs.admission.institution.address}" /></h5>
-                        <div class="d-flex justify-content-center">
-                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.phone}</h6>
-                            <p:spacer width="10px"/>
-                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.email}</h6>
-                        </div>
-                        <div class="d-flex text-center">
-                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.fax}</h6>
-                            <p:spacer width="10px"/>
-                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.web}</h6>
-                        </div>
 
                     </div>
                 </div>
@@ -88,16 +79,12 @@
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
                             <td><h:outputLabel value="#{cc.attrs.admission.patient.person.mobile}" ></h:outputLabel></td>
                             <td></td>
-                            <td><h:outputLabel value="Home No "></h:outputLabel></td>
+                            <td><h:outputLabel value="Addmission Type"></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><h:outputLabel value="#{cc.attrs.admission.patient.person.phone}" ></h:outputLabel></td>
+                            <td><h:outputLabel value="" ></h:outputLabel></td>
                         </tr>
                         <tr>
                             <td><h:outputLabel value="Addmission Date"></h:outputLabel></td>
-                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><h:outputLabel value="" ></h:outputLabel></td>
-                            <td></td>
-                            <td><h:outputLabel value="Addmission Type"></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
                             <td><h:outputLabel value="" ></h:outputLabel></td>
                         </tr>
@@ -174,7 +161,7 @@
                         <tr>
                             <td style="width: 17%"><h:outputLabel value="NIC No"/></td>
                             <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td style="width: 25%"><h:outputLabel value="" /> </td>
+                            <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.guardian.nic}" /> </td>
                         </tr>
 
                     </table>
