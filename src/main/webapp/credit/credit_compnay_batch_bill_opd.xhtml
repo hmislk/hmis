@@ -58,7 +58,7 @@
                                     </div>
 
                                 </f:facet>
-                                
+
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Select Credit Bill" />      
@@ -119,7 +119,7 @@
                                         </p:autoComplete>
                                     </div>
                                 </div>
-                                
+
                                 <div class="row my-2 align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Payment Method" />      
@@ -151,16 +151,16 @@
                                     </div>
                                 </div>
 
-<!--                                <div class="row my-2 d-flex align-items-center">
-                                    <div class="col-md-4">
-                                        <p:outputLabel value="Comment" />      
-                                    </div>
-                                    <div class="col-md-8">
-                                        <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
-                                    </div>
-                                </div>-->
+                                <!--                                <div class="row my-2 d-flex align-items-center">
+                                                                    <div class="col-md-4">
+                                                                        <p:outputLabel value="Comment" />      
+                                                                    </div>
+                                                                    <div class="col-md-8">
+                                                                        <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
+                                                                    </div>
+                                                                </div>-->
 
-                                
+
 
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
@@ -238,14 +238,29 @@
 
                 <p:panel  rendered="#{cashRecieveBillController.printPreview}" >
 
-                    <p:commandButton 
-                        value="New Bill" 
-                        ajax="false" 
-                        action="#{cashRecieveBillController.prepareNewBill()}" 
-                        icon="fa fa-plus"
-                        class="ui-button-warning d-flex">
-                    </p:commandButton>
-                    <bi:five_five_paper_coustom_1_credit_payemnt  bill="#{cashRecieveBillController.current}" duplicate="false"/>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p:commandButton 
+                                value="New Bill" 
+                                ajax="false" 
+                                action="#{cashRecieveBillController.prepareNewBill()}" 
+                                icon="fa fa-plus"
+                                class="ui-button-warning d-flex">
+                            </p:commandButton>
+                        </div>
+                        <div>
+                            <p:commandButton
+                                value="Print"
+                                ajax="false"
+                                icon="fas fa-print"
+                                class="ui-button-info">
+                                <p:printer target="prints" />
+                            </p:commandButton>
+                        </div>
+                    </div>
+                    <h:panelGroup id="prints">
+                        <bi:five_five_paper_coustom_1_credit_payemnt  bill="#{cashRecieveBillController.current}" duplicate="false"/>
+                    </h:panelGroup>
                 </p:panel>
 
             </h:form>
