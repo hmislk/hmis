@@ -190,7 +190,8 @@
                                 </p:column>
                                 <p:column headerText="Status">                                
                                     <p:badge value="Pending..." rendered="#{bill.referenceBill.billType == null}"/>
-                                    <p:badge value="Approved" rendered="#{bill.referenceBill.billType eq 'GrnPayment' and !bill.referenceBill.cancelled}" severity="success"/>
+                                    <p:badge value="Repay..." rendered="#{bill.reactivated}" severity="warning"/>
+                                    <p:badge value="Approved" rendered="#{bill.referenceBill.billType eq 'GrnPayment' and !bill.referenceBill.cancelled and not bill.reactivated}" severity="success"/>
                                     <p:badge value="Canceled" rendered="#{bill.referenceBill.cancelled}" severity="danger"/>
                                 </p:column> 
                                 <p:column headerText="Action">
@@ -198,7 +199,7 @@
                                                      value="Approve" 
                                                      update="@form" 
                                                      action="#{dealorPaymentBillSearch.approve()}"
-                                                     disabled="#{bill.referenceBill.billType eq 'GrnPayment'}"
+                                                     disabled="#{bill.referenceBill.billType eq 'GrnPayment' and not bill.reactivated}"
                                                      onclick="if (!confirm('Are you sure! you want to Approve This Cheque?'))
                                                                  return false;">
                                         <f:setPropertyActionListener value="#{bill}" 
