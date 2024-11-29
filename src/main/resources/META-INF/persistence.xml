@@ -19,8 +19,6 @@
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
             <property name="eclipselink.logging.parameters" value="false"/>
             <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
-
         </properties>
     </persistence-unit>
 </persistence>
-
