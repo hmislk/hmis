@@ -755,6 +755,12 @@ public class DataUploadController implements Serializable {
         return "/admin/items/item_and_fee_upload_for_collecting_Centres?faces-redirect=true";
     }
 
+    public String navigateToUploadItemAndFees() {
+        pollActive = false;
+        file = null;
+        return "/admin/items/item_and_fees_upload?faces-redirect=true";
+    }
+
     public String navigateToUploadOutSourceInvestigationFees() {
         pollActive = false;
         file = null;
@@ -964,6 +970,449 @@ public class DataUploadController implements Serializable {
             }
         }
         pollActive = false;
+    }
+
+    public void uploadItemsAndFees() {
+        pollActive = true;
+        items = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                items = readItemsAndFeesFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("items = " + items.size());
+        pollActive = false;
+    }
+
+    private List<Item> readItemsAndFeesFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        itemsToSave = new ArrayList<>();
+        masterItemsToSave = new ArrayList<>();
+        itemFeesToSave = new ArrayList<>();
+        categoriesSaved = new ArrayList<>();
+        institutionsSaved = new ArrayList<>();
+        departmentsSaved = new ArrayList<>();
+        itemsSkipped = new ArrayList<>();
+
+        Item item;
+        Institution runningIns = null;
+        Department runningDept = null;
+        Category runningCategory = null;
+
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            Category category;
+            Institution institution;
+            Department department;
+            InwardChargeType iwct = null;
+
+            String name = null;
+            String comments = null;
+            String printingName = null;
+            String fullName = null;
+            String code = null;
+            String categoryName = null;
+            String institutionName = null;
+            String departmentName = null;
+            String inwardName = null;
+            String itemType = "Service";
+
+            Double hospitalFee = 0.0;
+            Double collectingCentreFee = 0.0;
+            Double chemicalFee = 0.0;
+            Double additionalFee = 0.0;
+
+            Cell insCell = row.getCell(5);
+            if (insCell != null && insCell.getCellType() == CellType.STRING) {
+                institutionName = insCell.getStringCellValue();
+            }
+            if (institutionName == null || institutionName.trim().equals("")) {
+                institutionName = "Other";
+            }
+            if (runningIns == null) {
+                institution = institutionController.findAndSaveInstitutionByName(institutionName);
+                institutionsSaved.add(institution);
+                runningIns = institution;
+            } else if (runningIns.getName().equals(institutionName)) {
+                institution = runningIns;
+            } else {
+                institution = institutionController.findAndSaveInstitutionByName(institutionName);
+                institutionsSaved.add(institution);
+                runningIns = institution;
+            }
+            Cell deptCell = row.getCell(6);
+            if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
+                departmentName = deptCell.getStringCellValue();
+            }
+            if (departmentName == null || departmentName.trim().equals("")) {
+                departmentName = institutionName;
+            }
+            if (runningDept == null) {
+                department = departmentController.findAndSaveDepartmentByName(departmentName);
+                runningDept = department;
+                departmentsSaved.add(department);
+            } else if (runningDept.getName().equals(departmentName)) {
+                department = runningDept;
+            } else {
+                department = departmentController.getDefaultDepatrment(institution);
+                runningDept = department;
+                departmentsSaved.add(department);
+            }
+
+            Cell nameCell = row.getCell(0);
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+                name = nameCell.getStringCellValue();
+                if (name == null || name.trim().equals("")) {
+                    continue;
+                }
+            }
+
+            comments = name;
+            name = CommonFunctions.sanitizeStringForDatabase(name);
+
+            item = itemController.findItemByName(name, code, department);
+            if (item != null) {
+                itemsSkipped.add(item);
+                continue;
+            }
+
+            Item masterItem = itemController.findMasterItemByName(name);
+
+            Cell printingNameCell = row.getCell(1);
+            if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
+                printingName = printingNameCell.getStringCellValue();
+
+            }
+            if (printingName == null || printingName.trim().equals("")) {
+                printingName = name;
+            }
+
+            Cell fullNameCell = row.getCell(2);
+            if (fullNameCell != null && fullNameCell.getCellType() == CellType.STRING) {
+                fullName = fullNameCell.getStringCellValue();
+            }
+            if (fullName == null || fullName.trim().equals("")) {
+                fullName = name;
+            }
+
+            Cell codeCell = row.getCell(3);
+            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
+                code = codeCell.getStringCellValue();
+            }
+            if (code == null || code.trim().equals("")) {
+                code = serviceController.generateShortCode(name);
+            }
+
+            Cell categoryCell = row.getCell(4);
+            if (categoryCell != null && categoryCell.getCellType() == CellType.STRING) {
+                categoryName = categoryCell.getStringCellValue();
+            }
+            if (categoryName == null || categoryName.trim().equals("")) {
+                itemsSkipped.add(item);
+                continue;
+            }
+
+            if (runningCategory == null) {
+                category = categoryController.findCategoryByName(categoryName);
+                if (category == null) {
+                    category = new Category();
+                    category.setName(categoryName);
+                    categoryFacade.create(category);
+                    categoriesSaved.add(category);
+                }
+                runningCategory = category;
+            } else if (runningCategory.getName() == null) {
+                category = runningCategory;
+            } else if (runningCategory.getName().equals(categoryName)) {
+                category = runningCategory;
+            } else {
+                category = categoryController.findCategoryByName(categoryName);
+                if (category == null) {
+                    category = new Category();
+                    category.setName(categoryName);
+                    categoryFacade.create(category);
+                    categoriesSaved.add(category);
+                }
+                runningCategory = category;
+            }
+
+            Cell inwardCcCell = row.getCell(7);
+            if (inwardCcCell != null && inwardCcCell.getCellType() == CellType.STRING) {
+                inwardName = inwardCcCell.getStringCellValue();
+            }
+            if (inwardName != null && !inwardName.trim().equals("")) {
+                iwct = enumController.getInaChargeType(inwardName);
+            }
+            if (iwct == null) {
+                iwct = InwardChargeType.OtherCharges;
+            }
+
+            Cell itemTypeCell = row.getCell(8);
+            if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
+                itemType = itemTypeCell.getStringCellValue();
+            }
+            if (itemType == null || itemType.trim().equals("")) {
+                itemType = "Investigation";
+            }
+            if (itemType.equals("Service")) {
+                if (masterItem == null) {
+                    masterItem = new Service();
+                    masterItem.setName(name);
+                    masterItem.setPrintName(printingName);
+                    masterItem.setFullName(fullName);
+                    masterItem.setCode(code);
+                    masterItem.setCategory(category);
+                    masterItem.setIsMasterItem(true);
+                    masterItem.setInwardChargeType(iwct);
+                    masterItem.setCreater(sessionController.getLoggedUser());
+                    masterItem.setCreatedAt(new Date());
+                    masterItemsToSave.add(masterItem);
+                }
+
+                Service service = new Service();
+                service.setName(name);
+                service.setPrintName(printingName);
+                service.setFullName(fullName);
+                service.setCode(code);
+                service.setCategory(category);
+                service.setMasterItemReference(masterItem);
+                service.setInstitution(institution);
+                service.setDepartment(department);
+                service.setInwardChargeType(iwct);
+                service.setCreater(sessionController.getLoggedUser());
+                service.setCreatedAt(new Date());
+                item = service;
+            } else if (itemType.equals("Investigation")) {
+
+                if (masterItem == null) {
+                    masterItem = new Investigation();
+                    masterItem.setName(name);
+                    masterItem.setPrintName(printingName);
+                    masterItem.setFullName(fullName);
+                    masterItem.setCode(code);
+                    masterItem.setIsMasterItem(true);
+                    masterItem.setCategory(category);
+                    masterItem.setInwardChargeType(iwct);
+                    masterItem.setCreater(sessionController.getLoggedUser());
+                    masterItem.setCreatedAt(new Date());
+                    masterItemsToSave.add(masterItem);
+                }
+                Investigation ix = new Investigation();
+                ix.setName(name);
+                ix.setPrintName(printingName);
+                ix.setFullName(fullName);
+                ix.setCode(code);
+                ix.setCategory(category);
+                ix.setInstitution(institution);
+                ix.setDepartment(department);
+                ix.setInwardChargeType(iwct);
+                ix.setMasterItemReference(masterItem);
+                ix.setCreater(sessionController.getLoggedUser());
+                ix.setCreatedAt(new Date());
+                item = ix;
+            }
+
+            if (item == null) {
+                itemsSkipped.add(item);
+                continue;
+            }
+            System.out.println("---------------------------------------------");
+            System.out.println("item = " + item.getName());
+
+            Cell hospitalFeeTypeCell = row.getCell(9);
+            if (hospitalFeeTypeCell != null) {
+                if (hospitalFeeTypeCell.getCellType() == CellType.NUMERIC) {
+                    // If it's a numeric value
+                    hospitalFee = hospitalFeeTypeCell.getNumericCellValue();
+                } else if (hospitalFeeTypeCell.getCellType() == CellType.FORMULA) {
+                    // If it's a formula, evaluate it
+                    Workbook wb = hospitalFeeTypeCell.getSheet().getWorkbook();
+                    CreationHelper createHelper = wb.getCreationHelper();
+                    FormulaEvaluator evaluator = createHelper.createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(hospitalFeeTypeCell);
+
+                    // Check the type of the evaluated value
+                    if (cellValue.getCellType() == CellType.NUMERIC) {
+                        hospitalFee = cellValue.getNumberValue();
+                    } else {
+                        // Handle other types if needed
+                    }
+                } else if (hospitalFeeTypeCell.getCellType() == CellType.STRING) {
+                    // If it's a numeric value
+                    String strhospitalFee = hospitalFeeTypeCell.getStringCellValue();
+                    hospitalFee = CommonFunctions.stringToDouble(strhospitalFee);
+                }
+
+                // Rest of your code remains the same
+                ItemFee itf = new ItemFee();
+                itf.setName("Hospital Fee");
+                itf.setItem(item);
+                itf.setInstitution(institution);
+                itf.setDepartment(department);
+                itf.setFeeType(FeeType.OwnInstitution);
+                itf.setFee(hospitalFee);
+                itf.setFfee(hospitalFee);
+                itf.setCreatedAt(new Date());
+                itf.setCreater(sessionController.getLoggedUser());
+//                itemFeeFacade.create(itf);
+                itemFeesToSave.add(itf);
+            }
+
+            Cell collectingCenterFeeTypeCell = row.getCell(10);
+            if (collectingCenterFeeTypeCell != null) {
+                if (collectingCenterFeeTypeCell.getCellType() == CellType.NUMERIC) {
+                    // If it's a numeric value
+                    collectingCentreFee = collectingCenterFeeTypeCell.getNumericCellValue();
+                } else if (collectingCenterFeeTypeCell.getCellType() == CellType.FORMULA) {
+                    // If it's a formula, evaluate it
+                    Workbook wb = collectingCenterFeeTypeCell.getSheet().getWorkbook();
+                    CreationHelper createHelper = wb.getCreationHelper();
+                    FormulaEvaluator evaluator = createHelper.createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(collectingCenterFeeTypeCell);
+
+                    // Check the type of the evaluated value
+                    if (cellValue.getCellType() == CellType.NUMERIC) {
+                        collectingCentreFee = cellValue.getNumberValue();
+                    } else {
+                        // Handle other types if needed
+                    }
+                }
+                if (collectingCenterFeeTypeCell.getCellType() == CellType.STRING) {
+                    // If it's a numeric value
+                    String strcollectingCentreFee = collectingCenterFeeTypeCell.getStringCellValue();
+                    collectingCentreFee = CommonFunctions.stringToDouble(strcollectingCentreFee);
+                }
+
+                // Rest of your code remains the same
+                if (collectingCentreFee > 0.0) {
+                    ItemFee itf = new ItemFee();
+                    itf.setName("CC Fee");
+                    itf.setItem(item);
+                    itf.setInstitution(institution);
+                    itf.setDepartment(department);
+                    itf.setFeeType(FeeType.CollectingCentre);
+                    itf.setFee(collectingCentreFee);
+                    itf.setFfee(collectingCentreFee);
+                    itf.setCreatedAt(new Date());
+                    itf.setCreater(sessionController.getLoggedUser());
+                    itemFeesToSave.add(itf);
+                }
+
+            }
+
+            //-----------------------------------------------------------------------------------------
+            Cell chemicalFeeTypeCell = row.getCell(11);
+            if (chemicalFeeTypeCell != null) {
+                if (chemicalFeeTypeCell.getCellType() == CellType.NUMERIC) {
+                    // If it's a numeric value
+                    chemicalFee = chemicalFeeTypeCell.getNumericCellValue();
+                } else if (chemicalFeeTypeCell.getCellType() == CellType.FORMULA) {
+                    // If it's a formula, evaluate it
+                    Workbook wb = chemicalFeeTypeCell.getSheet().getWorkbook();
+                    CreationHelper createHelper = wb.getCreationHelper();
+                    FormulaEvaluator evaluator = createHelper.createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(chemicalFeeTypeCell);
+
+                    // Check the type of the evaluated value
+                    if (cellValue.getCellType() == CellType.NUMERIC) {
+                        chemicalFee = cellValue.getNumberValue();
+                    } else {
+                        // Handle other types if needed
+                    }
+                }
+                if (chemicalFeeTypeCell.getCellType() == CellType.STRING) {
+                    // If it's a numeric value
+                    String strChemicalFee = chemicalFeeTypeCell.getStringCellValue();
+                    chemicalFee = CommonFunctions.stringToDouble(strChemicalFee);
+                }
+
+                // Rest of your code remains the same
+                if (chemicalFee > 0.0) {
+                    ItemFee itf = new ItemFee();
+                    itf.setName("Regent Fee");
+                    itf.setItem(item);
+                    itf.setInstitution(institution);
+                    itf.setDepartment(department);
+                    itf.setFeeType(FeeType.Chemical);
+                    itf.setFee(chemicalFee);
+                    itf.setFfee(chemicalFee);
+                    itf.setCreatedAt(new Date());
+                    itf.setCreater(sessionController.getLoggedUser());
+                    itemFeesToSave.add(itf);
+                }
+
+            }
+
+            //-----------------------------------------------------------------------------------------
+            Cell additionalFeeTypeCell = row.getCell(12);
+            if (additionalFeeTypeCell != null) {
+                if (additionalFeeTypeCell.getCellType() == CellType.NUMERIC) {
+                    // If it's a numeric value
+                    additionalFee = additionalFeeTypeCell.getNumericCellValue();
+                } else if (additionalFeeTypeCell.getCellType() == CellType.FORMULA) {
+                    // If it's a formula, evaluate it
+                    Workbook wb = additionalFeeTypeCell.getSheet().getWorkbook();
+                    CreationHelper createHelper = wb.getCreationHelper();
+                    FormulaEvaluator evaluator = createHelper.createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(additionalFeeTypeCell);
+
+                    // Check the type of the evaluated value
+                    if (cellValue.getCellType() == CellType.NUMERIC) {
+                        additionalFee = cellValue.getNumberValue();
+                    } else {
+                        // Handle other types if needed
+                    }
+                }
+                if (additionalFeeTypeCell.getCellType() == CellType.STRING) {
+                    // If it's a numeric value
+                    String strAdditionalFee = chemicalFeeTypeCell.getStringCellValue();
+                    additionalFee = CommonFunctions.stringToDouble(strAdditionalFee);
+                }
+
+                // Rest of your code remains the same
+                if (additionalFee > 0.0) {
+                    ItemFee itf = new ItemFee();
+                    itf.setName("Other Fee");
+                    itf.setItem(item);
+                    itf.setInstitution(institution);
+                    itf.setDepartment(department);
+                    itf.setFeeType(FeeType.Additional);
+                    itf.setFee(additionalFee);
+                    itf.setFfee(additionalFee);
+                    itf.setCreatedAt(new Date());
+                    itf.setCreater(sessionController.getLoggedUser());
+                    itemFeesToSave.add(itf);
+                }
+
+            }
+
+            item.setTotal(hospitalFee + collectingCentreFee + chemicalFee + additionalFee);
+            item.setTotalForForeigner(hospitalFee + collectingCentreFee + chemicalFee + additionalFee);
+            item.setDblValue(hospitalFee + collectingCentreFee + chemicalFee + additionalFee);
+
+            System.out.println("Total Fee = " + item.getTotal());
+            System.out.println("Total Foreigner Fee = " + item.getTotalForForeigner());
+            itemsToSave.add(item);
+        }
+        
+        System.out.println("---------------------------------------------");
+        
+        itemFacade.batchCreate(masterItemsToSave, 5000);
+        itemFacade.batchCreate(itemsToSave, 5000);
+        itemFeeFacade.batchCreate(itemFeesToSave, 10000);
+
+        return itemsToSave;
     }
 
     public void uploadCollectingCentreSpecialFeeUpload() {
