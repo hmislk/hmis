@@ -2258,6 +2258,13 @@ public class ReportController implements Serializable {
         }
         return "/reports/lab/external_laboratory_workload?faces-redirect=true";
     }
+    
+        public String navigateToSampleCarrierReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/sample_carrier?faces-redirect=true";
+    }
 
     public String navigateToInvestigationMonthEndSummery() {
         if (institutionController.getItems() == null) {
