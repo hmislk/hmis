@@ -885,7 +885,7 @@ public class ReportTemplateRowBundle implements Serializable {
 
                 if (childBundle.isSelected()) {
 
-                    childBundle.calculateTotalsOfSelectedRowsPlusAllCash();
+                    childBundle.calculateTotalsOfSelectedRowsPlusAllCashForHandover(patientDepositsAreConsideredInHandingover);
 
                     System.out.println("selected childBundle = " + childBundle.getName());
                     System.out.println("childBundle.getSelectAllCashToHandover() = " + childBundle.getSelectAllCashToHandover());
@@ -909,6 +909,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     addValueAndUpdateFlag("cheque", safeDouble(childBundle.getChequeValue()), safeDouble(childBundle.getChequeHandoverValue()));
                     addValueAndUpdateFlag("slip", safeDouble(childBundle.getSlipValue()), safeDouble(childBundle.getSlipHandoverValue()));
                     addValueAndUpdateFlag("eWallet", safeDouble(childBundle.getEwalletValue()), safeDouble(childBundle.getEwalletHandoverValue()));
+                    System.out.println("patientDepositsAreConsideredInHandingover = " + patientDepositsAreConsideredInHandingover);
                     if (patientDepositsAreConsideredInHandingover) {
                         addValueAndUpdateFlag("patientDeposit", safeDouble(childBundle.getPatientDepositValue()), safeDouble(childBundle.getPatientDepositHandoverValue()));
                     }
@@ -1389,7 +1390,8 @@ public class ReportTemplateRowBundle implements Serializable {
         calculateTotalHandoverByDenominationQuantities();
     }
 
-    public void calculateTotalsOfSelectedRowsPlusAllCash() {
+    public void calculateTotalsOfSelectedRowsPlusAllCashForHandover(boolean patientDepositsAreConsideredInHandingover) {
+        System.out.println("calculateTotalsOfSelectedRowsPlusAllCashForHandover");
         resetTotalsAndFlags();
 
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
@@ -1411,89 +1413,120 @@ public class ReportTemplateRowBundle implements Serializable {
                     }
                 }
 
-                total += amount;
-                totalOut += amountHandingOver;
-
                 switch (method) {
                     case Agent:
                         this.agentValue += amount;
                         this.agentHandoverValue += amountHandingOver;
                         this.hasAgentTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     case Card:
                         this.cardValue += amount;
                         this.cardHandoverValue += amountHandingOver;
                         this.hasCardTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     case Cash:
                         this.cashValue += amount;
                         this.cashHandoverValue += amountHandingOver;
                         this.hasCashTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     case Cheque:
                         this.chequeValue += amount;
                         this.chequeHandoverValue += amountHandingOver;
                         this.hasChequeTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     case Credit:
                         this.creditValue += amount;
                         this.creditHandoverValue += amountHandingOver;
                         this.hasCreditTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     case IOU:
                         this.iouValue += amount;
                         this.iouHandoverValue += amountHandingOver;
                         this.hasIouTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     case MultiplePaymentMethods:
                         this.multiplePaymentMethodsValue += amount;
                         this.multiplePaymentMethodsHandoverValue += amountHandingOver;
                         this.hasMultiplePaymentMethodsTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     case OnlineSettlement:
                         this.onlineSettlementValue += amount;
                         this.onlineSettlementHandoverValue += amountHandingOver;
                         this.hasOnlineSettlementTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     case PatientDeposit:
-                        this.patientDepositValue += amount;
-                        this.patientDepositHandoverValue += amountHandingOver;
-                        this.hasPatientDepositTransaction = true;
+                        if (patientDepositsAreConsideredInHandingover) {
+                            this.patientDepositValue += amount;
+                            this.patientDepositHandoverValue += amountHandingOver;
+                            this.hasPatientDepositTransaction = true;
+                            total += amount;
+                            totalOut += amountHandingOver;
+                        }
                         break;
                     case PatientPoints:
                         this.patientPointsValue += amount;
                         this.patientPointsHandoverValue += amountHandingOver;
                         this.hasPatientPointsTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     case Slip:
                         this.slipValue += amount;
                         this.slipHandoverValue += amountHandingOver;
                         this.hasSlipTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     case Staff:
                         this.staffValue += amount;
                         this.staffHandoverValue += amountHandingOver;
                         this.hasStaffTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     case Staff_Welfare:
                         this.staffWelfareValue += amount;
                         this.staffWelfareHandoverValue += amountHandingOver;
                         this.hasStaffWelfareTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     case Voucher:
                         this.voucherValue += amount;
                         this.voucherHandoverValue += amountHandingOver;
                         this.hasVoucherTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     case YouOweMe:
                         this.iouValue += amount;  // Assuming YouOweMe is equivalent to IOU
                         this.iouHandoverValue += amountHandingOver;
                         this.hasIouTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     case ewallet:
                         this.eWalletValue += amount;
                         this.eWalletHandoverValue += amountHandingOver;
                         this.hasEWalletTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
                         break;
                     default:
 
@@ -2798,7 +2831,5 @@ public class ReportTemplateRowBundle implements Serializable {
     public void setPatientDepositsAreConsideredInHandingover(boolean patientDepositsAreConsideredInHandingover) {
         this.patientDepositsAreConsideredInHandingover = patientDepositsAreConsideredInHandingover;
     }
-    
-    
 
 }
