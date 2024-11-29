@@ -156,10 +156,10 @@
             <div class="d-flex justify-content-center " >
                 <table width="90%" style="width: 90%; " >
                     <tr class="itemHeadingsFiveFive">
-                        <td style="width:50%!important;text-align: left; ">
+                        <td style="width:40%!important;text-align: left; ">
                             <h:outputLabel value="Bill No" ></h:outputLabel>
                         </td>
-                        <td  style="width:40%!important;">
+                        <td  style="width:50%!important;">
                             <h:outputLabel value="Patient Name" ></h:outputLabel>
                         </td>
                         <td  style="width:10%!important;text-align: right;">
@@ -169,11 +169,11 @@
 
                     <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="b"   >
                         <tr class="billDetailsFiveFive">
-                            <td  style="width:50%!important;">
+                            <td  style="width:40%!important;">
                                 <p:outputLabel value="#{b.patientEncounter.bhtNo} - " rendered="#{b.patientEncounter ne null}"/>
                                 <p:outputLabel value="#{b.referenceBill.deptId}" rendered="#{b.patientEncounter eq null}"/>
                             </td>
-                            <td style="width:40%!important;">
+                            <td style="width:50%!important;">
                                 <p:outputLabel style="text-transform: capitalize; " value="#{b.referenceBill.patient.person.name}" rendered="#{b.patientEncounter eq null}"/>
                                 <p:outputLabel style="text-transform: capitalize; " value="#{b.patientEncounter.patient.person.name}" rendered="#{b.patientEncounter ne null}"/>
                             </td>
@@ -188,10 +188,10 @@
                     </ui:repeat>
 
                     <tr class="totalsBlock mt-3" style="font-weight: 600" >
-                        <td style="width:50%!important;text-align: left; ">
+                        <td style="width:40%!important;text-align: left; ">
                             <h:outputLabel value="Total" ></h:outputLabel>
                         </td>
-                        <td  style="width:40%!important;">
+                        <td  style="width:50%!important;">
 
                         </td>
                         <td  style="width:10%!important;text-align: right;">
@@ -200,11 +200,11 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-                    <tr class="totalsBlock mt-3" style="font-weight: 600" >
-                        <td style="width:50%!important;text-align: left; ">
+<!--                    <tr class="totalsBlock mt-3" style="font-weight: 600" >
+                        <td style="width:40%!important;text-align: left; ">
                             <h:outputLabel value="Balance" ></h:outputLabel>
                         </td>
-                        <td  style="width:40%!important;">
+                        <td  style="width:50%!important;">
 
                         </td>
                         <td  style="width:10%!important;text-align: right;">
@@ -212,12 +212,12 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
-                    </tr>
+                    </tr>-->
                     <tr class="totalsBlock mt-3" style="font-weight: 600" >
-                        <td style="width:50%!important;text-align: left; ">
+                        <td style="width:40%!important;text-align: left; ">
                             <h:outputLabel value="Net total" ></h:outputLabel>
                         </td>
-                        <td  style="width:40%!important;">
+                        <td  style="width:50%!important;">
 
                         </td>
                         <td  style="width:10%!important;text-align: right;">
