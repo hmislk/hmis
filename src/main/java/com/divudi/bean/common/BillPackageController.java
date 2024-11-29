@@ -241,6 +241,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         batchBill = new BilledBill();
         batchBill.setBillType(BillType.OpdBathcBill);
         batchBill.setBillTypeAtomic(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        batchBill.setBillPackege((Packege) currentBillItem.getItem());
         batchBill.setPaymentScheme(paymentScheme);
         batchBill.setPaymentMethod(paymentMethod);
         batchBill.setCreatedAt(new Date());
