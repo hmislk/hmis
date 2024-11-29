@@ -5,8 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ezb="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+      xmlns:payments="http://xmlns.jcp.org/jsf/composite/ezcomp/reports">
 
     <h:body>
 
@@ -412,39 +411,38 @@
                                     ajax="false"
                                     action="#{financialTransactionController.updateForPaymentHandoverSelectionAtCreate()}" />
 
-                                <p:dataTable
-                                    value="#{financialTransactionController.selectedBundle.getPaymentRows(financialTransactionController.selectedPaymentMethod)}" var="cardPayment" >
-                                    <p:column  headerText="Bill Number">
-                                        <h:outputText value="#{cardPayment.payment.bill.deptId}" ></h:outputText>
-                                    </p:column>
-                                    <p:column  headerText="Company">
-                                        <h:outputText value="#{cardPayment.payment.creditCompany.name}" ></h:outputText>
-                                    </p:column>
-                                    <p:column  headerText="Policy Number">
-                                        <h:outputText value="#{cardPayment.payment.policyNo}" ></h:outputText>
-                                    </p:column>
-                                    <p:column  headerText="Comments">
-                                        <h:outputText value="#{cardPayment.payment.comments}" ></h:outputText>
-                                    </p:column>
-                                    <p:column  headerText="Bank">
-                                        <h:outputText value="#{cardPayment.payment.bank.name}" ></h:outputText>
-                                    </p:column>
-                                    <p:column  headerText="Ref No">
-                                        <h:outputText value="#{cardPayment.payment.creditCardRefNo}" ></h:outputText>
-                                        <h:outputText value="#{cardPayment.payment.chequeRefNo}" ></h:outputText>
-                                        <h:outputText value="#{cardPayment.payment.referenceNo}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Value">
-                                        <h:outputText value="#{cardPayment.payment.paidValue}" >
-                                            <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column  headerText="Select to Handover">
-                                        <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForHandover}" >
-                                            <p:ajax process="checkCardSelected" ></p:ajax>
-                                        </p:selectBooleanCheckbox>
-                                    </p:column>
-                                </p:dataTable>
+                                <payments:paymentsListCard rendered="#{financialTransactionController.selectedPaymentMethod eq 'Card'}"/>
+                                <payments:paymentsListAny rendered="#{financialTransactionController.selectedPaymentMethod eq 'Agent'}"/>
+                                <payments:paymentsListCheque rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cheque'}"/>
+                                <payments:paymentsListCredit rendered="#{financialTransactionController.selectedPaymentMethod eq 'Credit'}"/>
+                                <payments:paymentsListAny  rendered="#{financialTransactionController.selectedPaymentMethod eq 'IOU'}"/>
+                                <payments:paymentsListAny rendered="#{financialTransactionController.selectedPaymentMethod eq 'MultiplePaymentMethods'}"/>
+                                <payments:paymentsListAny 
+                                    rendered="#{financialTransactionController.selectedPaymentMethod eq 'OnlineSettlement'}"
+                                    />
+                                <payments:paymentsListAny  
+                                    rendered="#{financialTransactionController.selectedPaymentMethod eq 'PatientDeposit'}"
+                                    />
+                                <payments:paymentsListAny 
+                                    rendered="#{financialTransactionController.selectedPaymentMethod eq 'PatientPoints'}"
+                                    />
+                                <payments:paymentsListSlip 
+                                    rendered="#{financialTransactionController.selectedPaymentMethod eq 'Slip'}"
+                                    />
+                                <payments:paymentsListAny 
+                                    rendered="#{financialTransactionController.selectedPaymentMethod eq 'Staff'}"
+                                    />
+                                <payments:paymentsListAny 
+                                    rendered="#{financialTransactionController.selectedPaymentMethod eq 'Staff_Welfare'}"
+                                    />
+                                <payments:paymentsListAny 
+                                    rendered="#{financialTransactionController.selectedPaymentMethod eq 'Voucher'}"
+                                    />
+                                <payments:paymentsListAny 
+                                    rendered="#{financialTransactionController.selectedPaymentMethod eq 'YouOweMe'}"
+                                    />
+                                <payments:paymentsListEwallet rendered="#{financialTransactionController.selectedPaymentMethod eq 'ewallet'}"/>
+
                             </h:panelGroup>
 
                         </h:panelGroup>
