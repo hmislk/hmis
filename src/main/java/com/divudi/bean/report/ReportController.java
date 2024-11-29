@@ -2252,11 +2252,11 @@ public class ReportController implements Serializable {
         return "/reports/lab/investigation_wise_report?faces-redirect=true";
     }
 
-    public String navigateToExternalLaborataryWorkloadReport() {
+    public String navigateToExternalLaboratoryWorkloadReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/lab/external_laboratary_workload?faces-redirect=true";
+        return "/reports/lab/external_laboratory_workload?faces-redirect=true";
     }
 
     public String navigateToInvestigationMonthEndSummery() {
