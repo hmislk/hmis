@@ -6,7 +6,7 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"                
-                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <ui:define name="admin">
@@ -245,7 +245,7 @@
                         icon="fa fa-plus"
                         class="ui-button-warning d-flex">
                     </p:commandButton>
-                    <bi:CreditReceiveBill controller="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>
+                    <bi:five_five_paper_coustom_1_credit_payemnt  bill="#{cashRecieveBillController.current}" duplicate="false"/>
                 </p:panel>
 
             </h:form>
