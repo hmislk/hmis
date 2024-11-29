@@ -126,6 +126,11 @@ public class Bill implements Serializable {
     //Pharmacy
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date invoiceDate;
+    //Theater
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date acceptedAt;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date releasedAt;
     //Enum
     @Enumerated(EnumType.STRING)
     private BillType billType;
@@ -2457,5 +2462,21 @@ public class Bill implements Serializable {
 
     public void setCollctingCentreFee(double collctingCentreFee) {
         this.collctingCentreFee = collctingCentreFee;
+    }
+
+    public Date getAcceptedAt() {
+        return acceptedAt;
+    }
+
+    public void setAcceptedAt(Date acceptedAt) {
+        this.acceptedAt = acceptedAt;
+    }
+
+    public Date getReleasedAt() {
+        return releasedAt;
+    }
+
+    public void setReleasedAt(Date releasedAt) {
+        this.releasedAt = releasedAt;
     }
 }
