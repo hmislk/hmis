@@ -7890,21 +7890,16 @@ public class SearchController implements Serializable {
     public void searchOpdPackageBills() {
         Date startTime = new Date();
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
-        System.out.println("selectedOpdPackageBillSelector = " + selectedOpdPackageBillSelector);
         if (selectedOpdPackageBillSelector == null) {
             billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
             billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
         } else {
             if (selectedOpdPackageBillSelector.equalsIgnoreCase("Single Package Bills")) {
-                System.out.println("1 = " + 1);
                 billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
             } else if (selectedOpdPackageBillSelector.equalsIgnoreCase("Paackage Batch Bills")) {
-                System.out.println("2 = " + 2);
                 billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
             }
         }
-
-        System.out.println("billTypesAtomics = " + billTypesAtomics);
         createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
         checkLabReportsApproved(bills);
 
