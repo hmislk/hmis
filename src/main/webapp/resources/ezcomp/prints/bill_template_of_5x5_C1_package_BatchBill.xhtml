@@ -115,8 +115,15 @@
                     <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
                     <div class="col-7"><h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/></div>
                 </div>
+                <h:panelGroup  rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}">
+                    <div class="d-flex">
+                        <div class="col-3"><h:outputLabel value="Credit Company" ></h:outputLabel></div>
+                        <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
+                        <div class="col-7"><h:outputLabel value="#{cc.attrs.bill.creditCompany.name}"/></div>
+                    </div>
+                </h:panelGroup>
             </div>
-
+            
             <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Print OPD Bill Session Number')}" >
                 <h:panelGroup  rendered="#{cc.attrs.bill.singleBillSession ne null}" >
                     <div class="billline">
