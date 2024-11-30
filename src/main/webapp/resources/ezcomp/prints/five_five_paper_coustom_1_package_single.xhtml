@@ -19,11 +19,18 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
+        <style>
+            @media print {
+                .fiveinchbill {
+                    page-break-after: always !important;
+                }
+            }
+        </style>
 
 
 
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
-        <div class="fiveinchbill" style="page-break-after: always" >
+        <div class="fiveinchbill" style="page-break-after: always!important;" >
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
