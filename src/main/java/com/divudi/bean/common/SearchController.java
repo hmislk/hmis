@@ -10381,6 +10381,61 @@ public class SearchController implements Serializable {
 
     }
 
+    public void listBillsOpdCreditCompanySettle() {
+        bills = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dep", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+
+        jpql.append(" and b.billTypeAtomic in :btas ");
+        params.put("btas", btas);
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        // Execute the query
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        if (bills != null) {
+            for (Bill bill : bills) {
+                if (bill != null) {
+                    total += bill.getTotal();
+                    netTotal += bill.getNetTotal();
+                    discount += bill.getDiscount();
+                }
+            }
+        }
+
+    }
+
     public void listBillTypes() {
         bundle = new ReportTemplateRowBundle();
         Map<String, Object> params = new HashMap<>();
