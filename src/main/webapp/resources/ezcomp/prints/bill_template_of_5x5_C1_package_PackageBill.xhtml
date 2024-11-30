@@ -19,9 +19,6 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-
-
-
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
         <div class="fiveinchbill" style="page-break-after: always" >
 
@@ -46,18 +43,18 @@
             <div class="headingBillFiveFive mt-2" style="text-align: center;font-weight: bold;">
                 <div class="d-flex align-items-center justify-content-center">
                     <h:panelGroup >
-                        <h:outputLabel value="OPD" />
+                        <h:outputLabel value="OPD Package" />
                     </h:panelGroup>
                     <h:panelGroup  rendered="#{cc.attrs.bill.refunded}" >
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value="Refuned" />
                     </h:panelGroup>
-
+                    
                     <h:panelGroup  rendered="#{cc.attrs.bill.cancelled}" >
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value="Cancelled" />
                     </h:panelGroup>
-
+                    
                     <h:panelGroup>
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value=" Receipt"/>
@@ -100,7 +97,7 @@
                     <div class="col-3"><h:outputLabel value="Contact No" ></h:outputLabel></div>
                     <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
                     <div class="col-7"><h:outputLabel rendered="#{cc.attrs.bill.patient.person.mobile ne ''}" value="#{cc.attrs.bill.patient.person.mobile}"/>
-                        <h:outputLabel rendered="#{cc.attrs.bill.patient.person.mobile eq ''}" value="#{cc.attrs.bill.patient.person.phone}"/>
+                    <h:outputLabel rendered="#{cc.attrs.bill.patient.person.mobile eq ''}" value="#{cc.attrs.bill.patient.person.phone}"/>
                     </div>
 
                 </div>
@@ -126,7 +123,7 @@
                     </div>
                 </h:panelGroup>
             </div>
-
+            
             <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Print OPD Bill Session Number')}" >
                 <h:panelGroup  rendered="#{cc.attrs.bill.singleBillSession ne null}" >
                     <div class="billline">
@@ -152,92 +149,78 @@
 
                         </td>
                         <td  style="width:10%!important;text-align: right;">
-                            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide Print Individual Bill Prices in OPD Bills Package Billing')}" >
-                                <h:outputLabel value="Amount" ></h:outputLabel>
-                            </h:panelGroup>
-
+                            <h:outputLabel value="Amount" ></h:outputLabel>
                         </td>
                     </tr>
+                    
 
-                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="billItem"   >
                         <tr class="billDetailsFiveFive">
                             <td  style="width:80%!important;">
-                                <h:outputLabel value="#{billItem.item.printName}"></h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.billPackege.name}"></h:outputLabel>
                             </td>
                             <td style="width:10%!important;">
-                                <h:panelGroup rendered="#{billItem.item.printSessionNumber}" >
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Individual Bill Item Session Number in OPD Bills')}" >
-                                        <td>
-                                            <h:outputLabel  value="#{billItem.billSession.serialNo}"    >
-                                            </h:outputLabel>
-                                        </td>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                                
                             </td>
                             <td   style="width:10%!important;text-align: right;">
-                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide Print Individual Bill Prices in OPD Bills Package Billing')}" >
-                                    <h:outputLabel value="#{billItem.grossValue}" style="text-align: right;" class="w-100">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </h:panelGroup>
-                            </td>
-                        </tr>
-
-                    </ui:repeat>
-                    <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide Print Individual Bill Totals in OPD Package Billing')}" >
-                        <tr class="totalsBlock mt-3" style="font-weight: 600" >
-                            <td style="width:80%!important;text-align: left; ">
-                                <h:outputLabel value="Total" ></h:outputLabel>
-                            </td>
-                            <td  style="width:10%!important;">
-
-                            </td>
-                            <td  style="width:10%!important;text-align: right;">
                                 <h:outputLabel value="#{cc.attrs.bill.total}" style="text-align: right;" class="w-100">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>
-                        <tr class="totalsBlock mt-3" style="font-weight: 600" >
-                            <td style="width:80%!important;text-align: left; ">
-                                <h:outputLabel value="Discount" ></h:outputLabel>
-                            </td>
-                            <td  style="width:10%!important;">
 
-                            </td>
-                            <td  style="width:10%!important;text-align: right;">
-                                <h:outputLabel value="#{cc.attrs.bill.discount}" style="text-align: right;" class="w-100">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                        <tr class="totalsBlock mt-3" style="font-weight: 600" >
-                            <td style="width:80%!important;text-align: left; ">
-                                <h:outputLabel value="Net total" ></h:outputLabel>
-                            </td>
-                            <td  style="width:10%!important;">
 
-                            </td>
-                            <td  style="width:10%!important;text-align: right;">
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="text-align: right;" class="w-100">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                        <tr class="totalsBlock mt-3" style="font-weight: 600" >
-                            <td style="width:80%!important;text-align: left; ">
-                                <h:outputLabel value="VAT" ></h:outputLabel>
-                            </td>
-                            <td  style="width:10%!important;">
+                    <tr class="totalsBlock mt-3" style="font-weight: 600" >
+                        <td style="width:80%!important;text-align: left; ">
+                            <h:outputLabel value="Total" ></h:outputLabel>
+                        </td>
+                        <td  style="width:10%!important;">
 
-                            </td>
-                            <td  style="width:10%!important;text-align: right;">
-                                <h:outputLabel value="#{cc.attrs.bill.vat}" style="text-align: right;" class="w-100">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
+                        </td>
+                        <td  style="width:10%!important;text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.total}" style="text-align: right;" class="w-100">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr class="totalsBlock mt-3" style="font-weight: 600" >
+                        <td style="width:80%!important;text-align: left; ">
+                            <h:outputLabel value="Discount" ></h:outputLabel>
+                        </td>
+                        <td  style="width:10%!important;">
+
+                        </td>
+                        <td  style="width:10%!important;text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.discount}" style="text-align: right;" class="w-100">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr class="totalsBlock mt-3" style="font-weight: 600" >
+                        <td style="width:80%!important;text-align: left; ">
+                            <h:outputLabel value="Net total" ></h:outputLabel>
+                        </td>
+                        <td  style="width:10%!important;">
+
+                        </td>
+                        <td  style="width:10%!important;text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="text-align: right;" class="w-100">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr class="totalsBlock mt-3" style="font-weight: 600" >
+                        <td style="width:80%!important;text-align: left; ">
+                            <h:outputLabel value="VAT" ></h:outputLabel>
+                        </td>
+                        <td  style="width:10%!important;">
+
+                        </td>
+                        <td  style="width:10%!important;text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.vat}" style="text-align: right;" class="w-100">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
                 </table>
             </div>
 

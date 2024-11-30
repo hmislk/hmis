@@ -365,7 +365,12 @@
                 <p:panel rendered="#{admissionController.printPreview}">
 
                     <h:panelGroup id="gpBillPreview">
-                        <bill:bht_sethma admission="#{admissionController.current}" controller="#{admissionController}" />
+                        <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Admission Needed Header and Logo')}">
+                            <bill:bht_sethma admission="#{admissionController.current}" controller="#{admissionController}" />
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Admission Needed Header and Logo')}">
+                            <bill:bht_with_header_logo admission="#{admissionController.current}" controller="#{admissionController}" />
+                        </h:panelGroup>
                     </h:panelGroup>
                 </p:panel>
 
