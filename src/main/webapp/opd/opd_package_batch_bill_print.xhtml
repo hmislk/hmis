@@ -245,7 +245,7 @@
                                 <p:panelGrid columns="2" layout="tabular" class="w-100 m-1" columnClasses="text-start ps-5, text-end pe-5">
                                     <f:facet name="header">
                                         <div class="d-flex justify-content-between align-items-center w-100">
-                                            <h:outputLabel value="Batch Bill Details" class="mx-5" />
+                                            <h:outputLabel value="Batch Bill Details" class="" />
                                             <div class="d-flex">
                                                 <p:commandButton 
                                                     ajax="false" 
@@ -258,16 +258,7 @@
                                                         value="#{opdBillController.batchBill}" 
                                                         target="#{billController.batchBill}" />
                                                 </p:commandButton>
-                                                <p:commandButton 
-                                                    ajax="false"
-                                                    value="View Batch Bill"
-                                                    icon="fa fa-file-invoice"
-                                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}"
-                                                    styleClass="m-1 ui-button-success">
-                                                    <f:setPropertyActionListener 
-                                                        value="#{opdBillController.batchBill}" 
-                                                        target="#{billSearch.bill}" />
-                                                </p:commandButton>
+                                                
                                             </div>
                                         </div>
                                     </f:facet>
