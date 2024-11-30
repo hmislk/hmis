@@ -1502,7 +1502,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
         getBill().setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(sessionController.getDepartment(), sessionController.getDepartment(), billType, BillClassType.BilledBill));
         getBill().setBillType(billType);
-
+        getBill().setBillClassType(BillClassType.BilledBill);
         getBill().setPatient(patient);
 
         getBill().setCreatedAt(new Date());
