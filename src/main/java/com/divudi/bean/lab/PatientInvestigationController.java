@@ -2301,9 +2301,9 @@ public class PatientInvestigationController implements Serializable {
             params.put("referringDoctor", getReferringDoctor());
         }
 
-        if (investigation != null) {
-            jpql += " AND r.patientInvestigation.investigation = :investigation ";
-            params.put("investigation", getInvestigation());
+        if (investigationName != null && !investigationName.trim().isEmpty()) {
+            jpql += " AND r.patientInvestigation.billItem.item.name like :investigation ";
+            params.put("investigation", "%"+ investigationName.trim() + "%");
         }
 
         if (department != null) {
