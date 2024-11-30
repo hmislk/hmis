@@ -15,12 +15,12 @@
                 <p:panel rendered="#{!cashRecieveBillController.printPreview}" >
                     <f:facet name="header" >
                         <div class="d-flex justify-content-between">
-                            <h:outputLabel value="OPD CREDIT BATCH BILL PAYMENT" class="mt-2"/>
+                            <h:outputLabel value="CREDIT SETTLING FOR OPD BATCH BILLS" class="mt-2"/>
                             <div class="d-flex gap-2">
                                 <p:commandButton 
                                     id="btnSettle" 
                                     value="Settle" 
-                                    action="#{cashRecieveBillController.settleBill}"       
+                                    action="#{cashRecieveBillController.settleCreditForOpdPackageBills}"       
                                     ajax="false"  
                                     style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" 
                                     class="ui-button-success"

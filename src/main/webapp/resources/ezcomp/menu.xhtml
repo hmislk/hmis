@@ -142,13 +142,13 @@
                     <p:submenu 
                         id="smOpdSearch"
                         label="Search"
-                        icon="fa fa-money-bill-alt"
+                        icon="fa fa-search"
                         rendered="#{webUserController.hasPrivilege('Opd')}">
                         <p:menuitem 
                             ajax="false" 
                             action="#{opdBillController.navigateToSearchOpdBills()}" 
                             value="OPD Bill Search" 
-                            icon="fa fa-search"
+                            icon="fa fa-file-medical-alt"
                             actionListener="#{searchController.clearBillList()}"
                             rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" >
                         </p:menuitem>
@@ -157,18 +157,20 @@
                             action="/opd_search_billitem_own?faces-redirect=true" 
                             value="OPD Bill Item Search" 
                             actionListener="#{searchController.makeListNull}" 
-                            icon="fa fa-search"
-                            rendered="#{webUserController.hasPrivilege('OpdBillItemSearch')}" ></p:menuitem>
+                            icon="fa fa-list"
+                            rendered="#{webUserController.hasPrivilege('OpdBillItemSearch')}" >
+                        </p:menuitem>
                         <p:menuitem 
                             ajax="false" 
                             action="/opd_search_bill_fee_payment?faces-redirect=true" 
                             value="OPD Payment Search"
-                            icon="fa fa-search" ></p:menuitem>
+                            icon="fa fa-receipt">
+                        </p:menuitem>
                         <p:menuitem 
                             ajax="false" 
                             action="#{opdBillController.navigateToSearchOpdPackageBills()}" 
                             value="OPD Bill Package Search" 
-                            icon="fa fa-search"
+                            icon="fa fa-box-open"
                             actionListener="#{searchController.clearBillList()}"
                             rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" >
                         </p:menuitem>
@@ -177,7 +179,7 @@
                             action="/collecting_centre/collecting_centre_search_bill_own?faces-redirect=true"
                             actionListener="#{searchController.makeListNull}"
                             value="Collecting Centre Bill Search" 
-                            icon="fa fa-search"
+                            icon="fa fa-clinic-medical"
                             rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
                         </p:menuitem>
                         <p:menuitem 
@@ -185,23 +187,27 @@
                             action="/opd_search_bill_to_pay?faces-redirect=true" 
                             actionListener="#{billController.clear()}"  
                             value="Bills To Pay Search" 
-                            icon="fa fa-search"
-                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
+                            icon="fa fa-credit-card"
+                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" >
+                        </p:menuitem>
                         <p:menuitem 
                             ajax="false" 
-                            value="Credit paid Bill Search" 
+                            value="Credit Paid Bill Search" 
                             action="/opd_search_bill_full_paid?faces-redirect=true" 
                             actionListener="#{billController.clear()}" 
-                            icon="fa fa-search"
-                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}"></p:menuitem>
+                            icon="fa fa-money-check-alt"
+                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}">
+                        </p:menuitem>
                         <p:menuitem 
                             ajax="false" 
-                            value="Credit paid Bills with OPD Bill Search" 
+                            value="Credit Paid Bills with OPD Bill Search" 
                             action="/opd_search_bill_full_paid_bills?faces-redirect=true" 
                             actionListener="#{billController.clear()}" 
-                            icon="fa fa-search"
-                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}"></p:menuitem>
+                            icon="fa fa-hand-holding-usd"
+                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}">
+                        </p:menuitem>
                     </p:submenu>
+
                     <p:submenu 
                         id="smOpdDoctors"
                         label="Doctors"
@@ -554,13 +560,13 @@
                         action="#{searchController.navigateToPatientReportSearch()}" 
                         value="Report Search by Billing Department" >
                     </p:menuitem>
-                    
-<!--                    <p:menuitem 
-                        ajax="false" 
-                        action="#{searchController.navigateToPatientReportSearch()}" 
-                        value="Report Search by Billing Department" 
-                        rendered="#{webUserController.hasPrivilege('LabReportPrint')}" >
-                    </p:menuitem>-->
+
+                    <!--                    <p:menuitem 
+                                            ajax="false" 
+                                            action="#{searchController.navigateToPatientReportSearch()}" 
+                                            value="Report Search by Billing Department" 
+                                            rendered="#{webUserController.hasPrivilege('LabReportPrint')}" >
+                                        </p:menuitem>-->
 
                     <p:menuitem 
                         ajax="false" 
