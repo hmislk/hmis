@@ -166,6 +166,14 @@
                             icon="fa fa-search" ></p:menuitem>
                         <p:menuitem 
                             ajax="false" 
+                            action="#{opdBillController.navigateToSearchOpdPackageBills()}" 
+                            value="OPD Bill Package Search" 
+                            icon="fa fa-search"
+                            actionListener="#{searchController.clearBillList()}"
+                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" >
+                        </p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
                             action="/collecting_centre/collecting_centre_search_bill_own?faces-redirect=true"
                             actionListener="#{searchController.makeListNull}"
                             value="Collecting Centre Bill Search" 
