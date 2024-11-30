@@ -127,6 +127,7 @@
                                 <p:autoComplete  
                                     forceSelection="true" id="acStaff"
                                     value="#{searchController.staff}" 
+                                    rendered="#{searchController.speciality eq null}"
                                     completeMethod="#{staffController.completeStaff}" 
                                     var="mys" class="w-100" inputStyleClass="w-100"
                                     itemLabel="#{mys.person.nameWithTitle}" 
@@ -259,7 +260,7 @@
                             </p:commandButton>
 
                         </div>
-
+                        
                         <p:panel 
                             id="gpIndividualReceipts"
                             header="Individual Receipts Wise WHT Report " 

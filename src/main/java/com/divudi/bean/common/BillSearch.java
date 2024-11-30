@@ -3875,57 +3875,57 @@ public class BillSearch implements Serializable {
 
     public String navigateToViewCcBill(Bill bill) {
         loadBillDetails(bill); // Load the bill details
-        return "/collecting_centre/view/cc_bill_view";
+        return "/collecting_centre/view/cc_bill_view?faces-redirect=true;";
     }
 
     public String navigateToViewCcBillCancellation(Bill bill) {
         loadBillDetails(bill);
-        return "/collecting_centre/view/cc_bill_cancellation_view";
+        return "/collecting_centre/view/cc_bill_cancellation_view?faces-redirect=true;";
     }
 
     public String navigateToViewCcBillRefund(Bill bill) {
         loadBillDetails(bill);
-        return "/collecting_centre/view/cc_bill_refund_view";
+        return "/collecting_centre/view/cc_bill_refund_view?faces-redirect=true;";
     }
 
     public String navigateToViewCcCreditNote(Bill bill) {
         loadBillDetails(bill);
-        return "/collecting_centre/view/cc_credit_note_view";
+        return "/collecting_centre/view/cc_credit_note_view?faces-redirect=true;";
     }
 
     public String navigateToViewCcDebitNote(Bill bill) {
         loadBillDetails(bill);
-        return "/collecting_centre/view/cc_debit_note_view";
+        return "/collecting_centre/view/cc_debit_note_view?faces-redirect=true;";
     }
 
     public String navigateToViewCcCreditNoteCancellation(Bill bill) {
         loadBillDetails(bill);
-        return "/collecting_centre/view/cc_credit_note_cancellation_view";
+        return "/collecting_centre/view/cc_credit_note_cancellation_view?faces-redirect=true;";
     }
 
     public String navigateToViewCcDebitNoteCancellation(Bill bill) {
         loadBillDetails(bill);
-        return "/collecting_centre/view/cc_debit_note_cancellation_view";
+        return "/collecting_centre/view/cc_debit_note_cancellation_view?faces-redirect=true;";
     }
 
     public String navigateToViewCcPaymentCancellationBill(Bill bill) {
         loadBillDetails(bill);
-        return "/collecting_centre/view/cc_payment_cancellation_bill_view";
+        return "/collecting_centre/view/cc_payment_cancellation_bill_view?faces-redirect=true;";
     }
 
     public String navigateToViewCcPaymentMadeBill(Bill bill) {
         loadBillDetails(bill);
-        return "/collecting_centre/view/cc_payment_made_bill_view";
+        return "/collecting_centre/view/cc_payment_made_bill_view?faces-redirect=true;";
     }
 
     public String navigateToViewCcPaymentMadeCancellationBill(Bill bill) {
         loadBillDetails(bill);
-        return "/collecting_centre/view/cc_payment_made_cancellation_bill_view";
+        return "/collecting_centre/view/cc_payment_made_cancellation_bill_view?faces-redirect=true;";
     }
 
     public String navigateToViewCcPaymentReceivedBill(Bill bill) {
         loadBillDetails(bill);
-        return "/collecting_centre/view/cc_payment_received_bill_view";
+        return "/collecting_centre/view/cc_payment_received_bill_view?faces-redirect=true;";
     }
 
     public String navigateViewOpdBillByBillTypeAtomic() {
@@ -4051,7 +4051,7 @@ public class BillSearch implements Serializable {
 
     public String navigateToRefundCollectingCentreBill() {
         if (bill == null) {
-            JsfUtil.addErrorMessage("Nothing to cancel");
+            JsfUtil.addErrorMessage("Nothing to Refund");
             return "";
         }
         paymentMethod = bill.getPaymentMethod();
@@ -4060,6 +4060,19 @@ public class BillSearch implements Serializable {
         bill.setTransError(flag);
         printPreview = false;
         return "/collecting_centre/bill_refund?faces-redirect=true;";
+    }
+    
+    public String navigateToCancelCollectingCentreBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        paymentMethod = bill.getPaymentMethod();
+//        createBillItemsAndBillFees();
+//        boolean flag = billController.checkBillValues(bill);
+//        bill.setTransError(flag);
+        printPreview = false;
+        return "/collecting_centre/bill_cancel?faces-redirect=true";
     }
 
     public List<BillEntry> getBillEntrys() {

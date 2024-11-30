@@ -10,6 +10,7 @@
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
                 xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
                 xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
     >
 
@@ -612,6 +613,7 @@
                                             <div class="row">
                                                 <div class="col-6">
                                                     <p:selectOneMenu   id="cmbPs" value="#{billPackageController.paymentMethod}" >
+                                                        <f:selectItem itemLabel="Select Method" ></f:selectItem>
                                                         <f:selectItems value="#{enumController.paymentMethodsForPackageBilling}"  />
                                                         <p:ajax process="@this cmbPs" 
                                                                 update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  tblBillItem paymentDetails"
@@ -628,7 +630,7 @@
                                                             icon="fa fa-check"
                                                             action="#{billPackageController.settleBill()}" 
                                                             onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                        return false;"
+                                                                        return false;"
                                                             class="ui-button-success mx-1"
                                                             >
                                                         </p:commandButton>
@@ -1018,8 +1020,10 @@
                                                     <h:outputText value="Tendered" class="h5"></h:outputText>
                                                 </div>
                                                 <div class="col-5">
-                                                    <p:inputText autocomplete="off"  id="paid" value="#{billPackageController.cashPaid}" class="h5">
-                                                        <p:ajax event="keyup" process="netTotal paid" update="balance netTotal" listener="#{billPackageController.calTotals()}"/>
+                                                    <p:inputText
+                                                        onfocus="this.select();"
+                                                        autocomplete="off"  id="paid" value="#{billPackageController.tenderedAmount}" class="h5">
+                                                        <p:ajax event="keyup" process="netTotal paid" update=":#{p:resolveFirstComponentWithId('balance',view).clientId} netTotal" listener="#{billPackageController.calTotals()}"/>
                                                     </p:inputText>
                                                 </div>
                                             </div>
@@ -1049,19 +1053,13 @@
 
                     <div class="d-flex justify-content-end">
 
-                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                        <p:outputLabel value="Paper Type" class="mt-2 mx-2"></p:outputLabel>
                         <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
                             <f:selectItem itemLabel="Please Select Paper Type" />
                             <f:selectItems value="#{enumController.paperTypes}" />
                         </p:selectOneMenu>
                         <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-                        <p:commandButton 
-                            value="Print" 
-                            class="ui-button-info m-1"
-                            icon="fa fa-print"
-                            ajax="false">
-                            <p:printer target="printView" />
-                        </p:commandButton> 
+
                         <p:commandButton 
                             value="New Bill" 
                             class="m-1 ui-button-warning"
@@ -1073,25 +1071,95 @@
                         </p:commandButton>
                     </div>
 
-                    <h:panelGroup id="printView">
+                    <div class="row mt-3">
+                        <div class="col-1"/>
+                        <div class="col-5">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <p:outputLabel value="Bills" class="mt-2"></p:outputLabel>
+                                        <p:commandButton 
+                                            value="Print" 
+                                            class="ui-button-info"
+                                            icon="fa fa-print"
+                                            ajax="false">
+                                            <p:printer target="printView" />
+                                        </p:commandButton> 
+                                    </div>
+                                </f:facet>
+                                <h:panelGroup id="printView">
 
-                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                            <ui:repeat value="#{billPackageController.bills}" var="b">
-                                <bi:opdPackegePosBill bill="#{b}"/>
-                            </ui:repeat>
-                        </h:panelGroup>
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                        <ui:repeat value="#{billPackageController.bills}" var="b">
+                                            <bi:opdPackegePosBill bill="#{b}"/>
+                                        </ui:repeat>
+                                    </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                            <ui:repeat value="#{billPackageController.bills}" var="b">
-                                <bi:five_five_paper_with_headings_opd_package bill="#{b}"/>   
-                            </ui:repeat>
-                        </h:panelGroup>
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                        <ui:repeat value="#{billPackageController.bills}" var="b">
+                                            <bi:five_five_paper_with_headings_opd_package bill="#{b}"/>   
+                                        </ui:repeat>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                        <ui:repeat value="#{billPackageController.bills}" var="ffb" >
+                                            <prints:five_five_paper_coustom_1_package_single bill="#{ffb}" payments="#{billPackageController.payments}"/>                        
+                                        </ui:repeat>
+                                    </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >
+                                </h:panelGroup>
+                            </p:panel>
+                        </div>
+                        <div class="col-5">
+                             <div class="row">
+                                <p:panel>
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <p:outputLabel value="Package Bill" class="mt-2"></p:outputLabel>
+                                        <p:commandButton 
+                                            value="Print Package Bill" 
+                                            class="ui-button-info"
+                                            icon="fa fa-print"
+                                            ajax="false">
+                                            <p:printer target="packageBillView" />
+                                        </p:commandButton> 
+                                    </div>
+                                </f:facet>
+                                
+                                <h:panelGroup id="packageBillView">
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                        <prints:bill_template_of_5x5_C1_package_PackageBill bill="#{billPackageController.batchBill}" payments="#{opdBillController.payments}"/>                        
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                
+                            </p:panel>
+                            </div>
+                            <div class="row">
+                                <p:panel>
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <p:outputLabel value="Batch Bill" class="mt-2"></p:outputLabel>
+                                        <p:commandButton 
+                                            value="Print Batch Bill" 
+                                            class="ui-button-info"
+                                            icon="fa fa-print"
+                                            ajax="false">
+                                            <p:printer target="batchBillView" />
+                                        </p:commandButton> 
+                                    </div>
+                                </f:facet>
+                                
+                                <h:panelGroup id="batchBillView">
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                        <prints:bill_template_of_5x5_C1_package_BatchBill bill="#{billPackageController.batchBill}" payments="#{opdBillController.payments}"/>                        
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                
+                            </p:panel>
+                            </div>
+                        </div>
+                        <div class="col-1"/>
+                    </div>
 
-                        </h:panelGroup>
-
-                    </h:panelGroup>
                 </p:panel>
             </h:form>
         </h:panelGroup>

@@ -57,7 +57,7 @@
                             <p:commandButton id="btnSearch" ajax="false" value="Search" 
                                              action="#{searchController.createAllBillContacts()}" />
                             <p:commandButton ajax="false" value="Export Excel" styleClass="noPrintButton" >
-                                <p:dataExporter target="tb1" type="xls" fileName="Contacts" />
+                                <p:dataExporter target="tb1" type="xlsx" fileName="Contacts" />
                             </p:commandButton>
                             <p:outputLabel value="Message" />
                             <p:inputText maxlength="160" style="height: 50px;" value="#{searchController.smsText}"></p:inputText>

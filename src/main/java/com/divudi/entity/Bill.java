@@ -1,5 +1,5 @@
 /*
-* Dr M H B Ariyaratne
+ * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
@@ -44,7 +44,6 @@ import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
 /**
- *
  * @author buddhika
  */
 @Entity
@@ -127,6 +126,11 @@ public class Bill implements Serializable {
     //Pharmacy
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date invoiceDate;
+    //Theater
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date acceptedAt;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date releasedAt;
     //Enum
     @Enumerated(EnumType.STRING)
     private BillType billType;
@@ -160,6 +164,8 @@ public class Bill implements Serializable {
 
     private double billTotal;
     private double paidAmount;
+    private double settledAmountByPatient;
+    private double settledAmountBySponsor;
     private double refundAmount;
     private double balance;
     private double serviceCharge;
@@ -175,7 +181,7 @@ public class Bill implements Serializable {
     private double expenseTotal;
     //with minus tax and discount
     private double grnNetTotal;
-    
+
     private double hospitalFee;
     private double collctingCentreFee;
     private double professionalFee;
@@ -294,7 +300,7 @@ public class Bill implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Bill backwardReferenceBill;
-    
+
     @Transient
     private double tmpReturnTotal;
     @Transient
@@ -306,7 +312,7 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser fromWebUser;
     double claimableTotal;
-    
+
     private BankAccount bankAccount;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -401,11 +407,11 @@ public class Bill implements Serializable {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
         }
-        completed=false;
-        retired=false;
-        reactivated=false;
-        refunded=false;
-        cancelled=false;
+        completed = false;
+        retired = false;
+        reactivated = false;
+        refunded = false;
+        cancelled = false;
     }
 
     private void generateBillPrintFromBillTemplate() {
@@ -725,8 +731,8 @@ public class Bill implements Serializable {
     }
 
     public BillClassType getBillClassType() {
-        if(billClassType==null){
-            billClassType=BillClassType.Bill;
+        if (billClassType == null) {
+            billClassType = BillClassType.Bill;
         }
         return billClassType;
     }
@@ -795,7 +801,7 @@ public class Bill implements Serializable {
         discountPercent = 0 - bill.getDiscountPercent();
         paidAmount = 0 - bill.getPaidAmount();
         balance = 0 - bill.getBalance();
-        tax= 0- tax;
+        tax = 0 - tax;
         cashPaid = 0 - bill.getCashPaid();
         cashBalance = 0 - bill.getCashBalance();
         saleValue = 0 - bill.getSaleValue();
@@ -846,6 +852,8 @@ public class Bill implements Serializable {
         totalHospitalFee = 0 - getTotalHospitalFee();
         totalCenterFee = 0 - getTotalCenterFee();
         totalStaffFee = 0 - getTotalStaffFee();
+        settledAmountByPatient = 0 - getSettledAmountByPatient();
+        settledAmountBySponsor = 0 - getSettledAmountBySponsor();
     }
 
     public void copy(Bill bill) {
@@ -883,6 +891,8 @@ public class Bill implements Serializable {
         sessionId = bill.getSessionId();
         ipOpOrCc = bill.getIpOpOrCc();
         chequeRefNo = bill.getChequeRefNo();
+        settledAmountByPatient = bill.getSettledAmountByPatient();
+        settledAmountBySponsor = bill.getSettledAmountBySponsor();
         //      referenceBill=bill.getReferenceBill();
     }
 
@@ -895,9 +905,11 @@ public class Bill implements Serializable {
         this.hospitalFee = bill.getHospitalFee();
         this.margin = bill.getMargin();
         this.vat = bill.getVat();
-        this.tax=bill.getTax();
+        this.tax = bill.getTax();
         this.billTotal = bill.getBillTotal();
         this.vatPlusNetTotal = bill.getVatPlusNetTotal();
+        this.settledAmountByPatient = bill.getSettledAmountByPatient();
+        this.settledAmountBySponsor = bill.getSettledAmountBySponsor();
     }
 
     public List<BillComponent> getBillComponents() {
@@ -1379,6 +1391,22 @@ public class Bill implements Serializable {
 
     public double getPaidAmount() {
         return paidAmount;
+    }
+
+    public double getSettledAmountByPatient() {
+        return settledAmountByPatient;
+    }
+
+    public void setSettledAmountByPatient(double settledAmountByPatient) {
+        this.settledAmountByPatient = settledAmountByPatient;
+    }
+
+    public double getSettledAmountBySponsor() {
+        return settledAmountBySponsor;
+    }
+
+    public void setSettledAmountBySponsor(double settledAmountBySponsor) {
+        this.settledAmountBySponsor = settledAmountBySponsor;
     }
 
     public void setPaidAmount(double paidAmount) {
@@ -2285,8 +2313,7 @@ public class Bill implements Serializable {
     public String getLocalNumber() {
         return localNumber;
     }
-    
-    
+
 
     public void setLocalNumber(String localNumber) {
         this.localNumber = localNumber;
@@ -2437,6 +2464,19 @@ public class Bill implements Serializable {
         this.collctingCentreFee = collctingCentreFee;
     }
 
-    
-    
+    public Date getAcceptedAt() {
+        return acceptedAt;
+    }
+
+    public void setAcceptedAt(Date acceptedAt) {
+        this.acceptedAt = acceptedAt;
+    }
+
+    public Date getReleasedAt() {
+        return releasedAt;
+    }
+
+    public void setReleasedAt(Date releasedAt) {
+        this.releasedAt = releasedAt;
+    }
 }

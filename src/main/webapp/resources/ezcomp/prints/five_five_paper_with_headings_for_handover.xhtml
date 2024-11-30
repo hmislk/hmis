@@ -238,12 +238,12 @@
                                         </h:outputText>
                                     </div>
                                     <div class="col-3">
-                                        <h:outputText value="#{cc.attrs.bundle.cashHandoverValue}">
+                                        <h:outputText value="#{cc.attrs.bundle.denominatorValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </div>
                                     <div class="col-3">
-                                        <h:outputText value="#{cc.attrs.bundle.cashValue - cc.attrs.bundle.cashHandoverValue}">
+                                        <h:outputText value="#{cc.attrs.bundle.cashValue - cc.attrs.bundle.denominatorValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </div>
@@ -376,7 +376,7 @@
 
                                 </div>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}">
                                 <div class="row my-3" >
                                     <div class="col-3" >
@@ -400,7 +400,7 @@
 
                                 </div>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup rendered="#{cc.attrs.bundle.hasPatientPointsTransaction}">
                                 <div class="row my-3" >
                                     <div class="col-3" >
@@ -424,7 +424,7 @@
 
                                 </div>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup rendered="#{cc.attrs.bundle.hasOnlineSettlementTransaction}">
                                 <div class="row my-3" >
                                     <div class="col-3" >
@@ -448,7 +448,7 @@
 
                                 </div>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup rendered="#{cc.attrs.bundle.hasOnCallTransaction}">
                                 <div class="row my-3" >
                                     <div class="col-3" >
@@ -472,11 +472,11 @@
 
                                 </div>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup rendered="#{cc.attrs.bundle.hasSlipTransaction}">
                                 <div class="row my-3" >
                                     <div class="col-3" >
-                                        <p:outputLabel value="On Call"></p:outputLabel>
+                                        <p:outputLabel value="SLIP"></p:outputLabel>
                                     </div>
                                     <div class="col-3">
                                         <h:outputText value="#{cc.attrs.bundle.slipValue}">
@@ -496,7 +496,7 @@
 
                                 </div>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup rendered="#{cc.attrs.bundle.hasAgentTransaction}">
                                 <div class="row my-3" >
                                     <div class="col-3" >
@@ -520,11 +520,11 @@
 
                                 </div>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup rendered="#{cc.attrs.bundle.hasCreditTransaction}">
                                 <div class="row my-3" >
                                     <div class="col-3" >
-                                        <p:outputLabel value="Agent Value"></p:outputLabel>
+                                        <p:outputLabel value="Credit Value"></p:outputLabel>
                                     </div>
                                     <div class="col-3">
                                         <h:outputText value="#{cc.attrs.bundle.creditValue}">
@@ -544,11 +544,11 @@
 
                                 </div>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup rendered="#{cc.attrs.bundle.hasStaffTransaction}">
                                 <div class="row my-3" >
                                     <div class="col-3" >
-                                        <p:outputLabel value="Agent Value"></p:outputLabel>
+                                        <p:outputLabel value="Staff Value"></p:outputLabel>
                                     </div>
                                     <div class="col-3">
                                         <h:outputText value="#{cc.attrs.bundle.staffValue}">
@@ -695,6 +695,11 @@
                         <h:outputText value="#{summary.creditHandoverValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{cc.attrs.bundle.creditHandoverValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <!-- Staff Value Column -->

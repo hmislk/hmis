@@ -59,6 +59,118 @@
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="m-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="false"
+                                    styleClass="w-100 form-control"  
+                                    value="#{searchController.department}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
+                                        var="d" 
+                                        itemLabel="#{d.name}" 
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>  
+
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf084;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Admission Type" class="m-3"/>
                             </h:panelGroup>
@@ -130,7 +242,7 @@
                             <p:dataExporter type="pdf" target="tblExport"  fileName="payment_settlement_report.pdf" ></p:dataExporter>
                         </p:commandButton>
 
-                        <!--table 1 / report type - details-->
+                        <!--table 1 / report type - ip/ details-->
                         <p:dataTable 
                             id="tblExport" 
                             paginator="true" 
@@ -139,6 +251,12 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="10,25,50">
 
+                            <f:facet name="header">
+                                <h:outputText value="Visit Type - IP" 
+                                              style="font-weight: bold; text-align: left; display: block;" />
+                                <h:outputText value="Report Type - Details" 
+                                              style="font-weight: bold; text-align: left; display: block;" />
+                            </f:facet>
                             <p:column headerText="Receipt No" width="5rem">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
@@ -194,7 +312,7 @@
                         <br/>
                         <br/>
                         <br/>
-                        <!--table 2 / report type - summary-->
+                        <!--table 2 / report type - ip /summary-->
                         <p:dataTable 
                             id="tblExport2" 
                             paginator="true" 
@@ -203,6 +321,146 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="10,25,50">
 
+                            <f:facet name="header">
+                                <h:outputText value="Visit Type - IP" 
+                                              style="font-weight: bold; text-align: left; display: block;" />
+                                <h:outputText value="Report Type - Summary" 
+                                              style="font-weight: bold; text-align: left; display: block;" />
+                            </f:facet>
+                            <p:column headerText="Receipt No" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Credit Company" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Invoice Date" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Settlement Date" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Settlement By" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Payment Method" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Total Value" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Bank" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Cheque No" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Cheque Date" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Comments" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Cancelled Receipt No" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Receipt Cancelled By" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Receipt Cancelled Date" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <br/>
+                        <br/>
+                        <br/>
+                        <br/>
+                        <!--table 3 / report type - op/ details-->
+                        <p:dataTable 
+                            id="tblExport3" 
+                            paginator="true" 
+                            paginatorPosition="bottom"
+                            rows="10"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="10,25,50">
+
+                            <f:facet name="header">
+                                <h:outputText value="Visit Type - OP" 
+                                              style="font-weight: bold; text-align: left; display: block;" />
+                                <h:outputText value="Report Type - Details" 
+                                              style="font-weight: bold; text-align: left; display: block;" />
+                            </f:facet>
+                            <p:column headerText="Receipt No" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="OPD Bill No" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Credit Company" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Invoice Date" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Settlement Date" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Settlement By" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Payment Method" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Invoice Value" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Receipt Value" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Bank" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Cheque No" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Cheque Date" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Comments" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Cancelled Receipt No" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Receipt Cancelled By" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Receipt Cancelled Date" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+
+                                                <br/>
+                                                <br/>
+                                                <br/>
+                                                <br/>
+                        <!--table 2 / report type - op/ summary-->
+                        <p:dataTable 
+                            id="tblExport4" 
+                            paginator="true" 
+                            paginatorPosition="bottom"
+                            rows="10"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="10,25,50">
+
+                            <f:facet name="header">
+                                <h:outputText value="Visit Type - OP" 
+                                              style="font-weight: bold; text-align: left; display: block;" />
+                                <h:outputText value="Report Type - Summary" 
+                                              style="font-weight: bold; text-align: left; display: block;" />
+                            </f:facet>
                             <p:column headerText="Receipt No" width="5rem">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
