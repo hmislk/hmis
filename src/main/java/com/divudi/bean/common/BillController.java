@@ -1856,7 +1856,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         cancellationBatchBill.setBillType(BillType.OpdBathcBill);
         cancellationBatchBill.setBillTypeAtomic(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
         cancellationBatchBill.setInsId(deptId);
-        cancellationBatchBill.setInsId(deptId);
+        cancellationBatchBill.setDeptId(deptId);
         cancellationBatchBill.setCreatedAt(new Date());
         cancellationBatchBill.setCreater(getSessionController().getLoggedUser());
         cancellationBatchBill.setTotal(0 - Math.abs(batchBill.getTotal()));
