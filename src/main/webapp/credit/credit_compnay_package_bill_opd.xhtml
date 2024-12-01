@@ -97,7 +97,7 @@
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Due Amount"/>
                                                 </f:facet>
-                                                <h:outputLabel value="#{ix.netTotal+ix.vat +ix.paidAmount}" style="color: red;">
+                                                <h:outputLabel value="#{ix.netTotal+ix.vat - ix.paidAmount}" style="color: red;">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
@@ -142,7 +142,7 @@
                                     </div>
                                 </div>
 
-                                
+
                             </p:panel>
                         </div>
 
@@ -155,7 +155,7 @@
                                             <h:outputText value="Payment" class="mx-4"></h:outputText>
                                         </div>
 
-                                       
+
                                     </div>
 
                                 </f:facet>
@@ -173,24 +173,7 @@
                                     </div>
                                 </div>
 
-                                <div class="row my-2">
 
-                                    <div class="col-md-10">
-                                        <div>
-                                            <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                                <pa:creditCard paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="cheque" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                                <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="slip" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                                <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
-                                            </h:panelGroup>
-                                        </div>
-                                    </div>
-                                </div>
 
                                 <div class="row my-2">
                                     <div class="col-md-2"></div>
@@ -215,7 +198,32 @@
                                         <p:inputTextarea value="#{cashRecieveBillController.comment}" class="w-100"/>
                                     </div>
                                 </div>
+
+                                <div class="row my-2">
+
+                                    <div class="col-md-10">
+                                        <div>
+                                            <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                                <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="cheque" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                                <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="slip" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                                <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
                             </p:panel>
+
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
                             <p:panel>
                                 <f:facet name="header">
                                     <h:outputLabel value="Items For Billing"/>
@@ -233,8 +241,28 @@
                                     <p:column headerText="Credit Company">     
                                         <p:outputLabel value="#{b.referenceBill.creditCompany.name}" />                                
                                     </p:column>
-                                    <p:column headerText="Net Total">
+                                    <p:column headerText="Bill Net Total">
+                                        <h:outputLabel value="#{b.referenceBill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Paying this time">
                                         <h:outputLabel value="#{b.netValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Total Paid Before by Company">
+                                        <h:outputLabel value="#{b.referenceBill.settledAmountBySponsor}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Total Paid Before by Patient">
+                                        <h:outputLabel value="#{b.referenceBill.settledAmountByPatient}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Total Paid Before">
+                                        <h:outputLabel value="#{b.referenceBill.paidAmount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
@@ -244,7 +272,6 @@
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
-
                         </div>
                     </div>
                 </p:panel>

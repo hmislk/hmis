@@ -424,18 +424,12 @@ public class CashRecieveBillController implements Serializable {
         if (errorCheckForAdding()) {
             return;
         }
-
         getCurrent().setFromInstitution(getCurrentBillItem().getReferenceBill().getCreditCompany());
-        //     getCurrentBillItem().getBill().setNetTotal(getCurrentBillItem().getNetValue());
-        //     getCurrentBillItem().getBill().setTotal(getCurrent().getNetTotal());
-
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getSelectedBillItems().add(getCurrentBillItem());
         getBillItems().add(getCurrentBillItem());
-
         currentBillItem = null;
         calTotal();
-
     }
 
     public void addToBillForVoucher() {
@@ -751,7 +745,7 @@ public class CashRecieveBillController implements Serializable {
             getBillFacade().edit(getCurrent());
         }
 
-        for (BillItem savingBillItem : getSelectedBillItems()) {
+        for (BillItem savingBillItem : getBillItems()) {
             savingBillItem.setCreatedAt(new Date());
             savingBillItem.setCreater(getSessionController().getLoggedUser());
             savingBillItem.setBill(getCurrent());
