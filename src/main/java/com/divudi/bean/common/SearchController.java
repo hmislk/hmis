@@ -15126,6 +15126,10 @@ public class SearchController implements Serializable {
                 jpqlOP += " and bi.item.category=:cat ";
                 mOP.put("cat", category);
             }
+             if (item != null) {
+                jpqlOP += " and bi.item=:item ";
+                mOP.put("item", item);
+            }
 
             System.out.println("OP JPQL: " + jpqlOP);
             System.out.println("OP Params: " + mOP);
@@ -15178,6 +15182,10 @@ public class SearchController implements Serializable {
             if (category != null) {
                 jpqlIP += " and bi.item.category=:cat ";
                 mIP.put("cat", category);
+            }
+            if (item != null) {
+                jpqlIP += " and bi.item=:item ";
+                mIP.put("item", item);
             }
 
             System.out.println("IP JPQL: " + jpqlIP);
