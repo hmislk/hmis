@@ -501,26 +501,29 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void fillAvailableAgentReferanceNumbers(Institution ins) {
         bookSummeryRows = new ArrayList<>();
-        String sql;
+        String jpql;
         referralIds = new ArrayList<>();
         HashMap m = new HashMap();
-        sql = "select a from AgentReferenceBook a "
+        jpql = "select a from AgentReferenceBook a "
                 + " where a.retired=false "
                 + " and a.institution=:ins"
                 + " and a.deactivate=false "
                 + " and a.fullyUtilized=false "
+                + " and a.active=true "
                 + " order by a.id ";
         m.put("ins", ins);
-        agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m, 2);
+        
+        int maxAgentReferenceBooks = configOptionApplicationController.getLongValueByKey("Maximum number of reference books for collection center bills",3L).intValue();
+        
+        agentReferenceBooks = agentReferenceBookFacade.findByJpql(jpql, m, maxAgentReferenceBooks);
         // Fetch all used reference numbers for this institution in one query
         Set<String> usedReferenceNumbers = fetchUsedReferenceNumbers(ins);
-
         if (agentReferenceBooks.isEmpty()) {
             ins.setAgentReferenceBooks(null);
             return;
         }
         ins.setAgentReferenceBooks(agentReferenceBooks);
-
+ 
         for (AgentReferenceBook a : agentReferenceBooks) {
             CollectingCenterBookSummeryRow row = new CollectingCenterBookSummeryRow();
             row.setBookName(a.getStrbookNumber());
@@ -555,7 +558,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         Set<String> usedRefNumbers = new HashSet<>();
         Map m = new HashMap();
         // Adjust this query to fetch only the reference numbers
-        sql = "select b.referenceNumber from Bill b where b.retired=false and b.institution=:ins";
+        sql = "select b.referenceNumber from Bill b where b.institution=:ins";
         m.put("ins", ins);
         List<String> resultList = billFacade.findString(sql, m);
         usedRefNumbers.addAll(resultList);
