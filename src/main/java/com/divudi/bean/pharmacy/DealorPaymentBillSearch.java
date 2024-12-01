@@ -104,7 +104,7 @@ public class DealorPaymentBillSearch implements Serializable {
     WebUser user;
 
     public void approve() {
-        if (getBill().getReferenceBill() != null) {
+        if (getBill().getReferenceBill() != null  && getBill().isReactivated() == false) {
             JsfUtil.addErrorMessage("Already Approved");
             return;
         }
@@ -125,6 +125,9 @@ public class DealorPaymentBillSearch implements Serializable {
         newBill.setApprovedAnyTest(true);
         billFacade.create(newBill);
 
+        if(getBill().isReactivated()){
+            getBill().setReactivated(false);
+        }
         bill.setReferenceBill(newBill);
         billFacade.edit(bill);
 

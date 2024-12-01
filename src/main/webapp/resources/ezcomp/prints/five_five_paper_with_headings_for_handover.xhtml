@@ -199,8 +199,14 @@
                     </h:panelGroup>
 
                     <!-- Total Handover Value -->
-                    <h:outputText value="Total Handover Value:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="Total Due Handover Value:" styleClass="handover-label" style="font-weight: normal"/>
                     <h:outputText value="#{cc.attrs.bundle.total}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                    
+                     <!-- Total Handover Value -->
+                    <h:outputText value="Handingover Value:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="#{cc.attrs.bundle.totalOut}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
 

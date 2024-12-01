@@ -10,12 +10,32 @@
             <ui:define name="subcontent">
                 <h:form class="w-100">
                     <p:panel header="Credit Invoice Dispatch" class="w-100">
-                        <h:panelGrid columns="8" class="w-100" >
 
+                        <h:panelGrid columns="8" class="w-100">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Date Type" class="m-3"/>
+                            </h:panelGroup>
+
+                            <p:selectOneRadio>
+                                <f:selectItem itemValue="admission" itemLabel="Admission Date" />
+                                <f:selectItem itemValue="discharge" itemLabel="Discharge Date" />
+                                <f:selectItem itemValue="invoice" itemLabel="Invoice Date" />
+                            </p:selectOneRadio>
+                            
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+                        </h:panelGrid>
+                        
+                        <h:panelGrid columns="8" class="w-100" >
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="From Date"  class="mx-3">
+                                <p:outputLabel value="From Date"  class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:calendar 
@@ -33,7 +53,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="To Date" class="mx-3" >
+                                <p:outputLabel value="To Date" class="m-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:calendar 
@@ -49,7 +69,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Sponsor Name" class="mx-3"/>
+                                <h:outputLabel value="Sponsor Name" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -62,7 +82,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Settlement Status" class="mx-3"/>
+                                <h:outputLabel value="Settlement Status" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" />
@@ -76,7 +96,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Visit Type" for="visitType" class="mx-3"/>
+                                <h:outputLabel value="Visit Type" for="visitType" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu class="w-100" value="#{searchController.visitType}">
                                 <f:selectItem itemValue="Any" itemLabel="All"/>
@@ -90,7 +110,7 @@
                             <!--Need multiple selection-->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf084;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Admission Types" class="mx-3"/>
+                                <h:outputLabel value="Admission Types" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu  
                                 class="w-100">
@@ -101,7 +121,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0d1;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Dispatch Mode" class="mx-3"/>
+                                <h:outputLabel value="Dispatch Mode" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -111,95 +131,6 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-
-                            <p:spacer></p:spacer>
-                            <p:spacer></p:spacer>
-                            <p:spacer></p:spacer>
-                            <p:spacer></p:spacer>
-                            <p:spacer></p:spacer>
-                            <p:spacer></p:spacer>
-
-
-                            <!--Please change this {searchController.withProfessionalFee} in values of following date range filters and put the correct thing according to controller you working I just used this for wireframe-->
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Date Type" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectBooleanButton
-                                onLabel="Discharge Date" 
-                                offLabel="Admission Date" 
-                                value="#{searchController.withProfessionalFee}"
-                                onIcon="pi pi-minus" 
-                                class="w-100"
-                                offIcon="pi pi-plus" 
-                                >
-                                <p:ajax update="@form" />
-                            </p:selectBooleanButton>
-
-                            <p:spacer width="20"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group" rendered="#{!searchController.withProfessionalFee}">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Admission From" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar 
-                                class="w-100 " 
-                                inputStyleClass="w-100" 
-                                id="fromDateAdmission" 
-                                value="#{searchController.fromDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                rendered="#{!searchController.withProfessionalFee}">
-                            </p:calendar>
-
-
-                            <p:spacer width="20" rendered="#{!searchController.withProfessionalFee}"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group" rendered="#{!searchController.withProfessionalFee}">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Admission To" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar 
-                                class="w-100 " 
-                                inputStyleClass="w-100" 
-                                id="toDateAdmission" 
-                                value="#{searchController.toDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                rendered="#{!searchController.withProfessionalFee}">
-                            </p:calendar>
-
-                            <h:panelGroup layout="block" styleClass="form-group" rendered="#{searchController.withProfessionalFee}">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Discharge From" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar 
-                                class="w-100 " 
-                                inputStyleClass="w-100" 
-                                id="fromDateDischarge" 
-                                value="#{searchController.fromDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                rendered="#{searchController.withProfessionalFee}">
-                            </p:calendar>
-
-                            <p:spacer width="20" ></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group" rendered="#{searchController.withProfessionalFee}">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Discharge To" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar 
-                                class="w-100 " 
-                                inputStyleClass="w-100" 
-                                id="toDateDischarge" 
-                                value="#{searchController.toDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                rendered="#{searchController.withProfessionalFee}">
-                            </p:calendar>
 
                         </h:panelGrid>
 

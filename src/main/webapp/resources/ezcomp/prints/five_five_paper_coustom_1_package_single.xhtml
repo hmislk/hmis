@@ -19,52 +19,56 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
+        <style>
+            @media print {
+                .fiveinchbill {
+                    page-break-after: always !important;
+                    page-break-before: always !important;
+                    page-break-inside: avoid !important;
+                }
+            }
+        </style>
 
 
 
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
-        <div class="fiveinchbill" style="page-break-after: always" >
+        <div class="fiveinchbill" style="page-break-after: always!important;" >
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
             </div>
             <div class="institutionContact" >
-                <div>
-                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
-                </div>
-                <div >
-                    <h:outputLabel style="font-size: 9pt" value="Tel : #{cc.attrs.bill.department.telephone1} "/>
-                </div>
-            </div>
-            <div class="institutionContact" >
+                <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                <h:outputLabel value= "&nbsp;|&nbsp;" ></h:outputLabel>
+                <h:outputLabel style="font-size: 9pt" value="Tel : #{cc.attrs.bill.department.telephone1} "/>
+                <h:outputLabel value= "&nbsp;|&nbsp;" ></h:outputLabel>
                 <h:outputLabel style="font-size: 9pt" value="Email : #{cc.attrs.bill.department.email} "/>
-            </div>
-            <div  class="institutionContact" >
+                <h:outputLabel value= "&nbsp;|&nbsp;" ></h:outputLabel>
                 <h:outputLabel style="font-size: 9pt" value="Web : #{cc.attrs.bill.institution.web}"/>
             </div>
 
             <div class="headingBillFiveFive mt-2" style="text-align: center;font-weight: bold;">
                 <div class="d-flex align-items-center justify-content-center">
                     <h:panelGroup >
-                        <h:outputLabel value="OPD" />
+                        <h:outputLabel value="OPD Package" />
                     </h:panelGroup>
                     <h:panelGroup  rendered="#{cc.attrs.bill.refunded}" >
-                        <h:outputLabel value="&nbsp;&nbsp;" />
+                        <h:outputLabel value="&nbsp;" />
                         <h:outputLabel value="Refuned" />
                     </h:panelGroup>
 
                     <h:panelGroup  rendered="#{cc.attrs.bill.cancelled}" >
-                        <h:outputLabel value="&nbsp;&nbsp;" />
+                        <h:outputLabel value="&nbsp;" />
                         <h:outputLabel value="Cancelled" />
                     </h:panelGroup>
 
                     <h:panelGroup>
-                        <h:outputLabel value="&nbsp;&nbsp;" />
+                        <h:outputLabel value="&nbsp;" />
                         <h:outputLabel value=" Receipt"/>
                     </h:panelGroup>
                 </div>
                 <h:panelGroup  rendered="#{cc.attrs.duplicate eq true}"  >
-                    <h:outputLabel value="**Duplicate**" />
+                    <h:outputLabel style="font-size: 15px;" value="**Duplicate**" />
                 </h:panelGroup>
 
             </div>
@@ -155,7 +159,7 @@
                             <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide Print Individual Bill Prices in OPD Bills Package Billing')}" >
                                 <h:outputLabel value="Amount" ></h:outputLabel>
                             </h:panelGroup>
-                            
+
                         </td>
                     </tr>
 
@@ -184,59 +188,21 @@
                         </tr>
 
                     </ui:repeat>
+                    <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide Print Individual Bill Totals in OPD Package Billing')}" >
+                        <tr class="totalsBlock mt-3" style="font-weight: 600" >
+                            <td style="width:80%!important;text-align: left; ">
+                                <h:outputLabel value="Total" ></h:outputLabel>
+                            </td>
+                            <td  style="width:10%!important;">
 
-                    <tr class="totalsBlock mt-3" style="font-weight: 600" >
-                        <td style="width:80%!important;text-align: left; ">
-                            <h:outputLabel value="Total" ></h:outputLabel>
-                        </td>
-                        <td  style="width:10%!important;">
-
-                        </td>
-                        <td  style="width:10%!important;text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.total}" style="text-align: right;" class="w-100">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                    <tr class="totalsBlock mt-3" style="font-weight: 600" >
-                        <td style="width:80%!important;text-align: left; ">
-                            <h:outputLabel value="Discount" ></h:outputLabel>
-                        </td>
-                        <td  style="width:10%!important;">
-
-                        </td>
-                        <td  style="width:10%!important;text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.discount}" style="text-align: right;" class="w-100">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                    <tr class="totalsBlock mt-3" style="font-weight: 600" >
-                        <td style="width:80%!important;text-align: left; ">
-                            <h:outputLabel value="Net total" ></h:outputLabel>
-                        </td>
-                        <td  style="width:10%!important;">
-
-                        </td>
-                        <td  style="width:10%!important;text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="text-align: right;" class="w-100">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                    <tr class="totalsBlock mt-3" style="font-weight: 600" >
-                        <td style="width:80%!important;text-align: left; ">
-                            <h:outputLabel value="VAT" ></h:outputLabel>
-                        </td>
-                        <td  style="width:10%!important;">
-
-                        </td>
-                        <td  style="width:10%!important;text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.vat}" style="text-align: right;" class="w-100">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
+                            </td>
+                            <td  style="width:10%!important;text-align: right;">
+                                <h:outputLabel value="#{cc.attrs.bill.total}" style="text-align: right;" class="w-100">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
                 </table>
             </div>
 
@@ -244,13 +210,6 @@
                 <p:spacer height="5px" />
             </div>
 
-            <div style="width: 90%; margin-top: 10px; margin-left: 5%" >
-                <div class="d-flex justify-content-between w-100" style="font-size: 9pt">
-
-                    <h:outputLabel value="Generated By : #{sessionController.loggedUser.name}"/>
-                    <h:outputLabel value="Settle By : #{cc.attrs.bill.creater.name}"/>
-                </div>
-            </div>
 
             <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card'}" style="margin-top: 10px;font-size: 8pt">
                 <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
