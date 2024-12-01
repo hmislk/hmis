@@ -36,7 +36,7 @@ import javax.ejb.Stateless;
  */
 @Stateless
 public class PaymentService {
-
+    
     @EJB
     PatientFacade patientFacade;
     @EJB
@@ -72,18 +72,19 @@ public class PaymentService {
     public List<Payment> createPayment(Bill bill, PaymentMethodData paymentMethodData) {
         return createPayment(bill, bill.getPaymentMethod(), paymentMethodData, bill.getDepartment(), bill.getCreater());
     }
-
+    
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
         CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
         List<Payment> payments = new ArrayList<>();
         Date currentDate = new Date();
-
+        
         if (pm == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 Payment payment = createPaymentFromComponentDetail(cd, bill, department, webUser, currentDate);
                 if (payment != null) {
                     paymentFacade.create(payment);
                     cashbookService.writeCashBookEntryAtPaymentCreation(payment, webUser, cashbook, department);
+                    drawerService.updateDrawer(payment);
                     payments.add(payment);
                 }
             }
@@ -95,19 +96,19 @@ public class PaymentService {
             payment.setCreatedAt(currentDate);
             payment.setCreater(webUser);
             payment.setPaymentMethod(pm);
-
+            
             populatePaymentDetails(payment, pm, paymentMethodData);
-
+            payment.setPaidValue(bill.getNetTotal());
             paymentFacade.create(payment);
             cashbookService.writeCashBookEntryAtPaymentCreation(payment);
             drawerService.updateDrawer(payment);
-
+            
             payments.add(payment);
         }
-
+        
         return payments;
     }
-
+    
     private Payment createPaymentFromComponentDetail(ComponentDetail cd, Bill bill, Department department, WebUser webUser, Date currentDate) {
         Payment payment = new Payment();
         payment.setBill(bill);
@@ -116,12 +117,12 @@ public class PaymentService {
         payment.setCreatedAt(currentDate);
         payment.setCreater(webUser);
         payment.setPaymentMethod(cd.getPaymentMethod());
-
+        
         populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData());
-
+        
         return payment;
     }
-
+    
     private void populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
         switch (paymentMethod) {
             case Card:
@@ -163,7 +164,7 @@ public class PaymentService {
                 }
                 break;
             case PatientDeposit:
-
+                
                 break;
             case Slip:
                 payment.setPaidValue(paymentMethodData.getSlip().getTotalValue());
@@ -171,7 +172,7 @@ public class PaymentService {
                 payment.setBank(paymentMethodData.getSlip().getInstitution());
                 payment.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
                 payment.setRealizedAt(paymentMethodData.getSlip().getDate());
-
+                
                 break;
             case OnCall:
             case OnlineSettlement:
@@ -187,5 +188,5 @@ public class PaymentService {
                 break;
         }
     }
-
+    
 }
