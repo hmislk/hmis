@@ -7888,20 +7888,10 @@ public class SearchController implements Serializable {
     }
 
     public void searchOpdPackageBills() {
-        Date startTime = new Date();
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
-        if (selectedOpdPackageBillSelector == null) {
-            billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-            billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-        } else {
-            if (selectedOpdPackageBillSelector.equalsIgnoreCase("Single Package Bills")) {
-                billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-            } else if (selectedOpdPackageBillSelector.equalsIgnoreCase("Paackage Batch Bills")) {
-                billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-            }
-        }
+        billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        
         createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
-        checkLabReportsApproved(bills);
 
     }
 
