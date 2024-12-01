@@ -6,6 +6,8 @@
 package com.divudi.ejb;
 
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.CountedServiceType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -16,6 +18,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PatientEncounterFacade;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -284,13 +287,47 @@ public class CreditBean {
                 + " where b.retired=false "
                 + " and b.referenceBill=:rB "
                 + " and b.bill.billType=:btp ";
-
         HashMap hm = new HashMap();
         hm.put("rB", b);
         hm.put("btp", billType);
-
         return getBillItemFacade().findDoubleByJpql(sql, hm);
+    }
 
+    public double getPaidAmount(Bill b, BillTypeAtomic billTypeAtomic) {
+        String sql = "Select sum(b.netValue) From BillItem b "
+                + " where b.retired=false "
+                + " and b.referenceBill=:rB "
+                + " and b.bill.billTypeAtomic=:bta ";
+        HashMap hm = new HashMap();
+        hm.put("rB", b);
+        hm.put("bta", billTypeAtomic);
+        return getBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+
+    public double getSettledAmountByCompany(Bill b) {
+        String sql = "Select sum(b.netValue)"
+                + " from BillItem b "
+                + " where b.retired=false "
+                + " and b.referenceBill=:rB "
+                + " and b.bill.billTypeAtomic in :btas ";
+        HashMap hm = new HashMap();
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByCountedServiceType(CountedServiceType.CREDIT_SETTLE_BY_COMPANY);
+        hm.put("rB", b);
+        hm.put("btas", btas);
+        return getBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+    
+    public double getSettledAmountByPatient(Bill b) {
+        String sql = "Select sum(b.netValue)"
+                + " from BillItem b "
+                + " where b.retired=false "
+                + " and b.referenceBill=:rB "
+                + " and b.bill.billTypeAtomic in :btas ";
+        HashMap hm = new HashMap();
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByCountedServiceType(CountedServiceType.CREDIT_SETTLE_BY_PATIENT);
+        hm.put("rB", b);
+        hm.put("btas", btas);
+        return getBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public double getRefundAmount(Bill b) {

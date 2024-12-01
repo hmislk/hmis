@@ -1358,7 +1358,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return;
         }
         System.out.println("Runned");
-        settleReturnBill(BillType.PatientPaymentRefundBill, HistoryType.PatientDepositReturn, BillNumberSuffix.PDR, current, BillTypeAtomic.PATIENT_DEPOSIT_REFUND);
+        settleReturnBill(BillType.PatientPaymentRefundBill, HistoryType.PatientDepositReturn, BillNumberSuffix.PDR, current, BillTypeAtomic.PATIENT_DEPOSIT_REFUND, BillClassType.RefundBill);
         printPreview = true;
     }
 
@@ -1404,13 +1404,13 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return 6;
         }
         System.out.println("Runned");
-        settleReturnBill(BillType.PatientPaymentRefundBill, HistoryType.PatientDepositReturn, BillNumberSuffix.PDR, current, BillTypeAtomic.PATIENT_DEPOSIT_REFUND);
+        settleReturnBill(BillType.PatientPaymentRefundBill, HistoryType.PatientDepositReturn, BillNumberSuffix.PDR, current, BillTypeAtomic.PATIENT_DEPOSIT_REFUND, BillClassType.RefundBill);
         printPreview = true;
         return 0;
     }
 
-    public void settleReturnBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix, Patient patient, BillTypeAtomic billTypeAtomic) {
-        saveBill(billType, billNumberSuffix, patient, billTypeAtomic);
+    public void settleReturnBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix, Patient patient, BillTypeAtomic billTypeAtomic, BillClassType billClassType) {
+        saveBill(billType, billNumberSuffix, patient, billTypeAtomic, billClassType);
         billBeanController.setPaymentMethodData(getBill(), getBill().getPaymentMethod(), getPaymentMethodData());
         addToBill();
         saveBillItem();
@@ -1423,12 +1423,13 @@ public class PatientController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Bill Saved");
     }
 
-    private void saveBill(BillType billType, BillNumberSuffix billNumberSuffix, Patient patient, BillTypeAtomic billTypeAtomic) {
+    private void saveBill(BillType billType, BillNumberSuffix billNumberSuffix, Patient patient, BillTypeAtomic billTypeAtomic, BillClassType billClassType) {
         getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, billNumberSuffix));
 //        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
         getBill().setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(sessionController.getDepartment(), sessionController.getDepartment(), billType, BillClassType.BilledBill));
         getBill().setBillType(billType);
-
+        getBill().setBillClassType(billClassType);
+        System.out.println("billClassType ; " + getBill().getBillClassType());
         getBill().setPatient(patient);
 
         getBill().setCreatedAt(new Date());
@@ -1502,7 +1503,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
         getBill().setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(sessionController.getDepartment(), sessionController.getDepartment(), billType, BillClassType.BilledBill));
         getBill().setBillType(billType);
-
+        getBill().setBillClassType(BillClassType.BilledBill);
         getBill().setPatient(patient);
 
         getBill().setCreatedAt(new Date());

@@ -53,112 +53,108 @@ public class PaymentService {
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser, Patient patient) {
         CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
-        List<Payment> ps = new ArrayList<>();
+        List<Payment> payments = new ArrayList<>();
+        Date currentDate = new Date();
+
         if (pm == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                Payment p = new Payment();
-                p.setBill(bill);
-                p.setInstitution(department.getInstitution());
-                p.setDepartment(department);
-                p.setCreatedAt(new Date());
-                p.setCreater(webUser);
-                p.setPaymentMethod(cd.getPaymentMethod());
-
-                switch (cd.getPaymentMethod()) {
-                    case Card:
-                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
-                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
-                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
-                        break;
-                    case Cheque:
-                        p.setBank(cd.getPaymentMethodData().getCheque().getInstitution());
-                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
-                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
-                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
-                        break;
-                    case Cash:
-                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
-                        break;
-                    case ewallet:
-
-                    case Agent:
-                    case Credit:
-                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
-                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
-                    case PatientDeposit:
-                        if (patient.getRunningBalance() != null) {
-                            patient.setRunningBalance(patient.getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
-                        } else {
-                            patient.setRunningBalance(0.0 - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
-                        }
-                        patientFacade.edit(patient);
-                    case Slip:
-                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
-                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
-                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
-                    case OnCall:
-                    case OnlineSettlement:
-                    case Staff:
-                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
-                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-                        }
-                    case YouOweMe:
-                    case MultiplePaymentMethods:
+                Payment payment = createPaymentFromComponentDetail(cd, bill, department, webUser, patient, currentDate);
+                if (payment != null) {
+                    paymentFacade.create(payment);
+                    cashbookService.writeCashBookEntryAtPaymentCreation(payment, webUser, cashbook, department);
+                    payments.add(payment);
                 }
-
-                paymentFacade.create(p);
-                cashbookService.writeCashBookEntryAtPaymentCreation(p, webUser, cashbook, department);
-                ps.add(p);
             }
         } else {
-            Payment p = new Payment();
-            p.setBill(bill);
-            p.setInstitution(department.getInstitution());
-            p.setDepartment(department);
-            p.setCreatedAt(new Date());
-            p.setCreater(webUser);
-            p.setPaymentMethod(pm);
+            Payment payment = new Payment();
+            payment.setBill(bill);
+            payment.setInstitution(department.getInstitution());
+            payment.setDepartment(department);
+            payment.setCreatedAt(currentDate);
+            payment.setCreater(webUser);
+            payment.setPaymentMethod(pm);
 
-            switch (pm) {
-                case Card:
-                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
-                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
-                    p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
-                    break;
-                case Cheque:
-                    p.setBank(paymentMethodData.getCheque().getInstitution());
-                    p.setChequeDate(paymentMethodData.getCheque().getDate());
-                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
-                    p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
-                    break;
-                case Cash:
-                    p.setPaidValue(bill.getNetTotal());
-                    break;
-                case ewallet:
+            populatePaymentDetails(payment, pm, paymentMethodData, patient);
 
-                case Agent:
-                case Credit:
-                    p.setReferenceNo(paymentMethodData.getCredit().getReferralNo());
-                    p.setComments(paymentMethodData.getCredit().getComment());
-                case PatientDeposit:
-                case Slip:
-                    p.setBank(paymentMethodData.getSlip().getInstitution());
-                    p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
-                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
-                case OnCall:
-                case OnlineSettlement:
-                case Staff:
-                case YouOweMe:
-                case MultiplePaymentMethods:
-            }
-
-            p.setPaidValue(p.getBill().getNetTotal());
-            paymentFacade.create(p);
-            ps.add(p);
+            paymentFacade.create(payment);
+            cashbookService.writeCashBookEntryAtPaymentCreation(payment, webUser, cashbook, department);
+            payments.add(payment);
         }
-        return ps;
+
+        return payments;
+    }
+
+    private Payment createPaymentFromComponentDetail(ComponentDetail cd, Bill bill, Department department, WebUser webUser, Patient patient, Date currentDate) {
+        Payment payment = new Payment();
+        payment.setBill(bill);
+        payment.setInstitution(department.getInstitution());
+        payment.setDepartment(department);
+        payment.setCreatedAt(currentDate);
+        payment.setCreater(webUser);
+        payment.setPaymentMethod(cd.getPaymentMethod());
+
+        populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData(), patient);
+
+        return payment;
+    }
+
+    private void populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, Patient patient) {
+        switch (paymentMethod) {
+            case Card:
+                payment.setBank(paymentMethodData.getCreditCard().getInstitution());
+                payment.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                payment.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
+                payment.setComments(paymentMethodData.getCreditCard().getComment());
+                break;
+            case Cheque:
+                payment.setBank(paymentMethodData.getCheque().getInstitution());
+                payment.setChequeDate(paymentMethodData.getCheque().getDate());
+                payment.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                payment.setPaidValue(paymentMethodData.getCheque().getTotalValue());
+                payment.setComments(paymentMethodData.getCheque().getComment());
+                break;
+            case Cash:
+                payment.setPaidValue(paymentMethodData.getCash().getTotalValue());
+                payment.setComments(paymentMethodData.getCash().getComment());
+                break;
+            case ewallet:
+                payment.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
+                payment.setComments(paymentMethodData.getEwallet().getComment());
+                payment.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
+                payment.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
+                break;
+            case Agent:
+            case Credit:
+                payment.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
+                payment.setComments(paymentMethodData.getCredit().getComment());
+                payment.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
+                payment.setCreditCompany(paymentMethodData.getCredit().getInstitution());
+                break;
+            case PatientDeposit:
+                if (patient != null) {
+                    double newBalance = (patient.getRunningBalance() != null ? patient.getRunningBalance() : 0.0)
+                            - paymentMethodData.getPatient_deposit().getTotalValue();
+                    patient.setRunningBalance(newBalance);
+                    patientFacade.edit(patient);
+                }
+                break;
+            case Slip:
+                payment.setBank(paymentMethodData.getSlip().getInstitution());
+                payment.setPaidValue(paymentMethodData.getSlip().getTotalValue());
+                payment.setRealizedAt(paymentMethodData.getSlip().getDate());
+                break;
+            case OnCall:
+            case OnlineSettlement:
+            case Staff:
+                payment.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
+                if (paymentMethodData.getStaffCredit().getToStaff() != null) {
+                    staffBean.updateStaffCredit(paymentMethodData.getStaffCredit().getToStaff(), paymentMethodData.getStaffCredit().getTotalValue());
+                    JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                }
+                break;
+            default:
+                break;
+        }
     }
 
 }
