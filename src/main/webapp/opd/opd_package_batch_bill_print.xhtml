@@ -34,11 +34,12 @@
                                     </f:setPropertyActionListener>
                                 </p:commandButton>
                                 <p:commandButton 
-                                    value="New OPD Bill" 
-                                    class="ui-button-primary mx-1"
-                                    icon="fa fa-plus"
-                                    action="#{opdBillController.navigateToNewOpdBill()}"
-                                    ajax="false">
+                                    value="New Package Bill" 
+                                    style="float: right;"
+                                    icon="fas fa-plus"
+                                    ajax="false" 
+                                    action="/opd/opd_bill_package" 
+                                    actionListener="#{billPackageController.prepareNewBill()}" >
                                 </p:commandButton>
 
                                 <!-- Print Lookup Button -->
@@ -132,8 +133,7 @@
                                                         <prints:five_five_paper_coustom_1_package_single 
                                                             bill="#{ffb}"
                                                             duplicate="#{opdBillController.duplicatePrint}"
-                                                            payments="#{opdBillController.payments}"
-                                                            /> 
+                                                            payments="#{opdBillController.payments}"/> 
                                                     </div>
 
                                                 </ui:repeat>
@@ -202,14 +202,13 @@
 
                                     </p:panel>
                                 </div>
-                                <div class="row">
+                                <div class="row mt-3">
                                     <p:panel rendered="#{configOptionApplicationController.getBooleanValueByKey('Showing OPD Batch Bill to Print')}">
                                         <f:facet name="header">
                                             <div class="d-flex justify-content-between">
-                                                <p:outputLabel value="Batch Bill" class="mt-2"></p:outputLabel>
+                                                <p:outputLabel value="Package Batch Bill" class="mt-2"></p:outputLabel>
 
                                                 <p:commandButton 
-
                                                     value="Print Batch Bill" 
                                                     class="ui-button-info m-1"
                                                     icon="fa fa-print"
@@ -258,7 +257,7 @@
                                                         value="#{opdBillController.batchBill}" 
                                                         target="#{billController.batchBill}" />
                                                 </p:commandButton>
-                                                
+
                                             </div>
                                         </div>
                                     </f:facet>

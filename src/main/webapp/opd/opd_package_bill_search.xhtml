@@ -215,19 +215,19 @@
                                     value="#{searchController.bills}" 
                                     var="bill"  
                                     style="min-width: 100%;"  
-                                    rows ="10"
+                                    rows ="15"
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="5,10,25,50"
+                                    rowsPerPageTemplate="15,25,50"
                                     >
                                     
                                     <p:column 
                                         headerText="Bill NO" 
-                                        sortBy="#{bill.backwardReferenceBill.deptId}" 
+                                        sortBy="#{bill.deptId}" 
                                               filterMatchMode="contains"
-                                              filterBy="#{bill.backwardReferenceBill.deptId}">
-                                        <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="#{bill.deptId}">
+                                              filterBy="#{bill.deptId}">
+                                        <h:commandLink action="#{opdBillController.navigateToViewPackageBatchBill}" value="#{bill.deptId}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
                                         </h:commandLink>
                                         <h:panelGroup rendered="#{bill.cancelled}" style="display: grid">
@@ -293,10 +293,12 @@
                                         sortBy="#{bill.patient.person.name}" 
                                         filterBy="#{bill.patient.person.name}" >                               
                                         <h:panelGroup id="pt">
-                                            <h:commandLink  value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                            <h:commandLink  value="#{bill.patient.person.nameWithTitle}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                                 <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
                                             </h:commandLink>
-                                            <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                            <h:outputLabel 
+                                                value="#{bill.patient.person.nameWithTitle}" 
+                                                rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
@@ -304,9 +306,7 @@
                                     <p:column headerText="Remarks" >  
                                         <h:panelGroup id="remark">
                                             <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
-                                            <p:badge rendered="#{bill.billTypeAtomic eq 'PACKAGE_OPD_BILL_WITH_PAYMENT'}" value="Package Bill"></p:badge>
                                             <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
-<!--<p:badge rendered="#{bill.billTypeAtomic eq 'PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT'}" value="Package Batch Bill"></p:badge>-->
                                         </h:panelGroup>
 
                                         <p:tooltip for="remark" value="df" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD - Display Bill Details in Tooltip')}" >
