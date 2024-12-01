@@ -366,7 +366,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         bills = null;
         return "/opd/opd_bill_search?faces-redirect=true";
     }
-    
+
     public String navigateToSearchOpdPackageBills() {
         batchBill = null;
         bills = null;
@@ -3439,6 +3439,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
                         p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
                         p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCreditCard().getComment());
                         break;
                     case Cheque:
                         p.setBank(cd.getPaymentMethodData().getCheque().getInstitution());
@@ -3449,26 +3450,24 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         break;
                     case Cash:
                         p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCash().getComment());
                         break;
                     case ewallet:
-                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferralNo());
-                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
-                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
-                        p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
+                        p.setPolicyNo(cd.getPaymentMethodData().getEwallet().getReferralNo());
+                        p.setReferenceNo(cd.getPaymentMethodData().getEwallet().getReferenceNo());
+                        p.setCreditCompany(cd.getPaymentMethodData().getEwallet().getInstitution());
+                        p.setPaidValue(cd.getPaymentMethodData().getEwallet().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getEwallet().getComment());
                         break;
                     case Agent:
-                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferralNo());
-                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
-                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
-                        p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
+//                        TODO:Add Details
                         break;
                     case Credit:
                         p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferralNo());
-                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
                         p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
-                        System.out.println("cd.getPaymentMethodData().getCredit().getInstitution() = " + cd.getPaymentMethodData().getCredit().getInstitution());
                         p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
-                        System.out.println("p = " + p.getCreditCompany().getName());
+                        p.setPaidValue(cd.getPaymentMethodData().getCredit().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
                         break;
                     case PatientDeposit:
                         if (getPatient().getRunningBalance() != null) {
@@ -3514,6 +3513,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     p.setBank(paymentMethodData.getCreditCard().getInstitution());
                     p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
                     p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
+                    p.setComments(paymentMethodData.getCreditCard().getComment());
                     break;
                 case Cheque:
                     p.setBank(paymentMethodData.getCheque().getInstitution());
@@ -3523,8 +3523,16 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     break;
                 case Cash:
                     p.setPaidValue(paymentMethodData.getCash().getTotalValue());
+                    p.setComments(paymentMethodData.getCash().getComment());
                     break;
                 case ewallet:
+                    p.setBank(paymentMethodData.getEwallet().getInstitution());
+                    p.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
+                    p.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
+                    p.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
+                    p.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
+                    p.setComments(paymentMethodData.getEwallet().getComment());
+                    break;
 
                 case Agent:
                 case Credit:

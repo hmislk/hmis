@@ -643,6 +643,27 @@ public class CashRecieveBillController implements Serializable {
         return false;
     }
 
+    private void saveBill(BillType billType, BillTypeAtomic billTypeAtomic) {
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), billTypeAtomic);
+        getCurrent().setInsId(deptId);
+        getCurrent().setDeptId(deptId);
+        getCurrent().setBillType(billType);
+        getCurrent().setBillTypeAtomic(billTypeAtomic);
+        getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getCurrent().setComments(comment);
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
+        getCurrent().setCreatedAt(new Date());
+        getCurrent().setCreater(getSessionController().getLoggedUser());
+        getCurrent().setNetTotal(getCurrent().getNetTotal());
+        if (getCurrent().getId() == null) {
+            getBillFacade().create(getCurrent());
+        } else {
+            getBillFacade().edit(getCurrent());
+        }
+    }
+
     private void saveCancelBill(BillType billType, BillTypeAtomic billTypeAtomic, Bill b) {
 
         b.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
