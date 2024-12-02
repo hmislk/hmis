@@ -19,6 +19,14 @@
                                     <p:commandButton 
                                         class="w-100"
                                         ajax="false"
+                                        value="Payments to Settle - Half Payments"
+                                        icon="fas fa-search-dollar"
+                                        styleClass="p-button-info"
+                                        action="#{supplierPaymentController.navigateToDealerDuehalfPaymentsSearch}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
                                         value="Payments to Settle"
                                         icon="fas fa-search-dollar"
                                         styleClass="p-button-info"

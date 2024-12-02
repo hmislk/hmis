@@ -197,7 +197,7 @@
 
 
                                                 <h:outputText value="Department"></h:outputText>        
-                                                <p:selectOneMenu class="w-100" id="cmbDep" value="#{channelScheduleController.current.department}">
+                                                <p:selectOneMenu required="true" class="w-100" id="cmbDep" value="#{channelScheduleController.current.department}">
                                                     <f:selectItem itemLabel="Please select a Department" />
                                                     <f:selectItems value="#{channelScheduleController.institutionDepatrments}"
                                                                    var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
