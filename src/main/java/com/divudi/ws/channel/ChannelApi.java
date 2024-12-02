@@ -1599,7 +1599,7 @@ public class ChannelApi {
         response.put("data", result);
         response.put("message", "Accepted");
         response.put("code", 202);
-        response.put("detailMessage", "All the appoinment details listed");
+        response.put("detailMessage", "All the appoinment details listed within "+ fromDate +" to "+ toDate);
 
         System.out.println(billList.size());
 
@@ -1751,7 +1751,7 @@ public class ChannelApi {
 
         Map response = new HashMap();
         response.put("data", appoinment);
-        response.put("message", "Booking details for ref No");
+        response.put("message", "Booking details for ref No: "+refNo);
         response.put("detailMessage", bookingStatus);
 
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
@@ -1911,7 +1911,7 @@ public class ChannelApi {
 
         Map response = new HashMap();
         response.put("data", appoinment);
-        response.put("message", "Booking details for ref No");
+        response.put("message", "Booking details for ref No: "+refNo);
         response.put("detailMessage", "Your booking is cancelled");
 
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
