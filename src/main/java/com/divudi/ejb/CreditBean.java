@@ -293,6 +293,21 @@ public class CreditBean {
         return getBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
+    public double getTotalCreditSettledAmount(Bill b) {
+        String sql = "Select sum(b.netValue) "
+                + " From BillItem b "
+                + " where b.retired=false "
+                + " and b.referenceBill=:rB "
+                + " and b.bill.billTypeAtomic in :btas ";
+        HashMap hm = new HashMap();
+        hm.put("rB", b);
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.addAll(BillTypeAtomic.findByCountedServiceType(CountedServiceType.CREDIT_SETTLE_BY_COMPANY));
+        btas.addAll(BillTypeAtomic.findByCountedServiceType(CountedServiceType.CREDIT_SETTLE_BY_PATIENT));
+        hm.put("btas", btas);
+        return getBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+
     public double getPaidAmount(Bill b, BillTypeAtomic billTypeAtomic) {
         String sql = "Select sum(b.netValue) From BillItem b "
                 + " where b.retired=false "
@@ -305,18 +320,31 @@ public class CreditBean {
     }
 
     public double getSettledAmountByCompany(Bill b) {
+        System.out.println("Starting getSettledAmountByCompany");
+        System.out.println("Input Bill: " + b);
+
         String sql = "Select sum(b.netValue)"
                 + " from BillItem b "
                 + " where b.retired=false "
                 + " and b.referenceBill=:rB "
                 + " and b.bill.billTypeAtomic in :btas ";
-        HashMap hm = new HashMap();
+        System.out.println("JPQL Query: " + sql);
+
+        HashMap<String, Object> hm = new HashMap<>();
         List<BillTypeAtomic> btas = BillTypeAtomic.findByCountedServiceType(CountedServiceType.CREDIT_SETTLE_BY_COMPANY);
+        System.out.println("BillTypeAtomics for CREDIT_SETTLE_BY_COMPANY: " + btas);
+
         hm.put("rB", b);
         hm.put("btas", btas);
-        return getBillItemFacade().findDoubleByJpql(sql, hm);
+        System.out.println("Query Parameters: " + hm);
+
+        double result = getBillItemFacade().findDoubleByJpql(sql, hm);
+        System.out.println("Query Result (Settled Amount by Company): " + result);
+
+        System.out.println("Completed getSettledAmountByCompany");
+        return result;
     }
-    
+
     public double getSettledAmountByPatient(Bill b) {
         String sql = "Select sum(b.netValue)"
                 + " from BillItem b "
