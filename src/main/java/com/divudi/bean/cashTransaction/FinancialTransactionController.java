@@ -2245,6 +2245,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillTime(new Date());
         currentBill.setDeptId(deptId);
         currentBill.setInsId(deptId);
+        currentBill.setBillClassType(BillClassType.BilledBill);
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
