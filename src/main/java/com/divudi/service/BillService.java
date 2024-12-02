@@ -81,6 +81,7 @@ public class BillService {
             p.setComments("Created Payments to correct Erros of Not creating a payment");
             p.setPaymentMethod(bill.getPaymentMethod());
             p.setPaidValue(bill.getNetTotal());
+            paymentFacade.create(p);
             ps.add(p);
             return ps;
         }
