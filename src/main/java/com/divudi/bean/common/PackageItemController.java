@@ -53,6 +53,8 @@ public class PackageItemController implements Serializable {
     private PackegeFacade packegeFacade;
     @EJB
     private PackageFeeFacade packageFeeFacade;
+    @EJB
+    PackageItemFacade packageItemFacade;
     @Inject
     SessionController sessionController;
     private PackageItem current;
@@ -173,12 +175,11 @@ public class PackageItemController implements Serializable {
         PackageItem pi = current;
         pi.setPackege(getCurrentPackege());
         if(pi.getId() != null){
-            itemFacade.edit(pi.getItem());
+            packageItemFacade.edit(pi);
         }else{
             pi.setCreatedAt(new Date());
             pi.setCreater(sessionController.loggedUser);
-            itemFacade.create(pi.getItem());
-            
+            packageItemFacade.create(pi);
         }
         JsfUtil.addSuccessMessage("Added");
         recreateModel();
