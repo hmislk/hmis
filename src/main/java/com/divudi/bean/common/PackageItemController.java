@@ -162,28 +162,24 @@ public class PackageItemController implements Serializable {
             JsfUtil.addErrorMessage("Please select a package");
             return;
         }
-        if (getCurrentItem() == null) {
+        if (getCurrent() == null) {
             JsfUtil.addErrorMessage("Please select an item");
             return;
         }
-        PackageItem pi = new PackageItem();
-
-        pi.setPackege(getCurrentPackege());
-        pi.setItem(getCurrentItem());
-        pi.setCreatedAt(new Date());
-        pi.setDepartment(department);
-        pi.setInstitution(institution);
-        pi.setCreater(sessionController.loggedUser);
-        if(pi.getId() == null){
-            getFacade().create(pi);
+        if (getCurrent().getItem() == null) {
+            JsfUtil.addErrorMessage("Please select an item");
+            return;
         }
-        
-        pi.getItem().setCanRemoveItemfromPackage(canRemovePackageItemfromPackage);
-        
+        PackageItem pi = current;
+        pi.setPackege(getCurrentPackege());
         if(pi.getId() != null){
             itemFacade.edit(pi.getItem());
+        }else{
+            pi.setCreatedAt(new Date());
+            pi.setCreater(sessionController.loggedUser);
+            itemFacade.create(pi.getItem());
+            
         }
-        
         JsfUtil.addSuccessMessage("Added");
         recreateModel();
     }
@@ -293,6 +289,10 @@ public class PackageItemController implements Serializable {
 
     private PackageItemFacade getFacade() {
         return ejbFacade;
+    }
+    
+    public void prepareToAddNew(){
+        current = new PackageItem();
     }
     
     public void clearValus(){
