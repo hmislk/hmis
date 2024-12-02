@@ -26,14 +26,65 @@
                         </f:facet>
 
 
+                        <h:panelGrid columns="10" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{drawerEntryController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
 
-<!--                        <p:outputLabel value="#{drawerEntryController.userDrawerEntry}" />-->
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{drawerEntryController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <p:spacer width="50" ></p:spacer>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="Payment Method" for="cmbPaymentMethod" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="#{drawerEntryController.paymentMethod}" >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{enumController.paymentMethods}" var="pm" itemLabel="#{pm.label}" itemValue="#{pm}" >
+                                </f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" ></p:spacer>
+                            <p:commandButton 
+                                value="Process" 
+                                ajax="false"
+                                action="#{drawerEntryController.listMyDrawerHistory}"></p:commandButton>
+                        </h:panelGrid>
+
 
                         <p:dataTable 
-                            class="mt-3"
                             value="#{drawerEntryController.userDrawerEntry}" 
                             var="drawerentry"
-                            id="tblCashier">
+                            id="tblCashier"
+                            class="mt-3"
+                            paginator="true" 
+                            rows="10"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="5,10,15,20,{ShowAll|'All'}">
+
 
                             <p:column headerText="Bill" style=" padding: 6px;" width="15em;">
                                 <p:commandLink 
@@ -44,32 +95,29 @@
                                 </p:commandLink>
                             </p:column>
 
-                            <p:column headerText="Create" style=" padding: 6px;">
+                            <p:column headerText="Date/Time" style=" padding: 6px;">
                                 <h:outputText value="#{drawerentry.bill.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Payment" style=" padding: 6px;">
-                                <h:outputText value="#{drawerentry.payment}" />
-                            </p:column>
-
                             <p:column headerText="Payment Method" style=" padding: 6px; text-align: center;">
                                 <div class="d-flex justify-content-center">
                                     <p:badge rendered="#{drawerentry.paymentMethod eq 'Cash'}"  value="#{drawerentry.paymentMethod}" severity="success" styleClass="mr-2"></p:badge>
-                                <p:badge rendered="#{drawerentry.paymentMethod eq 'Card'}"  value="#{drawerentry.paymentMethod}" severity="warning" styleClass="mr-2"></p:badge>     
-                                <p:badge rendered="#{not (drawerentry.paymentMethod eq 'Card' or drawerentry.paymentMethod eq 'Cash')}"  value="#{drawerentry.paymentMethod}" severity="info" styleClass="mr-2"></p:badge>    
-                  
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Card'}"  value="#{drawerentry.paymentMethod}" severity="warning" styleClass="mr-2"></p:badge>     
+                                    <p:badge rendered="#{not (drawerentry.paymentMethod eq 'Card' or drawerentry.paymentMethod eq 'Cash')}"  value="#{drawerentry.paymentMethod}" severity="info" styleClass="mr-2"></p:badge>    
                                 </div>
-                                
-                            </p:column>
-
-                            <p:column headerText="Department" style=" padding: 6px;">
-                                <h:outputText value="#{drawerentry.bill.fromDepartment.name}" />
                             </p:column>
 
                             <p:column headerText="Before in Hand" style="background-color: c4fcff; text-align: right; padding: 6px;">
                                 <p:outputLabel value="#{drawerentry.beforeInHandValue}" class="d-flex justify-content-end">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Paid" style="text-align: right; padding: 6px;" >
+                                <p:outputLabel 
+                                    value="#{drawerentry.payment.paidValue}" class="d-flex justify-content-end" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </p:outputLabel>
                             </p:column>
@@ -81,12 +129,7 @@
                                 </p:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Paid" style="text-align: right; padding: 6px;" >
-                                <p:outputLabel 
-                                    value="#{drawerentry.payment.paidValue}" class="d-flex justify-content-end" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </p:outputLabel>
-                            </p:column>
+
 
                             <p:column headerText="Before Balance" style="background-color: b8ffc7; text-align: right; padding: 6px;" >
                                 <p:outputLabel 
