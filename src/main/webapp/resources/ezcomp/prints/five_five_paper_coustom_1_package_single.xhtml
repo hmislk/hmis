@@ -50,26 +50,26 @@
             <div class="headingBillFiveFive mt-2" style="text-align: center;font-weight: bold;">
                 <div class="d-flex align-items-center justify-content-center">
                     <h:panelGroup >
-                        <h:outputLabel value="OPD" />
+                        <h:outputLabel value="OPD Package" />
                     </h:panelGroup>
                     <h:panelGroup  rendered="#{cc.attrs.bill.refunded}" >
-                        <h:outputLabel value="&nbsp;&nbsp;" />
+                        <h:outputLabel value="&nbsp;" />
                         <h:outputLabel value="Refuned" />
                     </h:panelGroup>
 
                     <h:panelGroup  rendered="#{cc.attrs.bill.cancelled}" >
-                        <h:outputLabel value="&nbsp;&nbsp;" />
+                        <h:outputLabel value="&nbsp;" />
                         <h:outputLabel value="Cancelled" />
                     </h:panelGroup>
 
                     <h:panelGroup>
-                        <h:outputLabel value="&nbsp;&nbsp;" />
+                        <h:outputLabel value="&nbsp;" />
                         <h:outputLabel value=" Receipt"/>
                     </h:panelGroup>
                 </div>
-<!--                <h:panelGroup  rendered="#{cc.attrs.duplicate eq true}"  >
-                    <h:outputLabel value="**Duplicate**" />
-                </h:panelGroup>-->
+                <h:panelGroup  rendered="#{cc.attrs.duplicate eq true}"  >
+                    <h:outputLabel style="font-size: 15px;" value="**Duplicate**" />
+                </h:panelGroup>
 
             </div>
 
