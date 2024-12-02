@@ -25,7 +25,77 @@
 
                         </div>
                         <div class="col-7">
+                            <p:panelGrid columns="2" layout="tabular" class="w-100">
+                                <f:facet name="header">
+                                    <div class="d-flex gap-2 justify-content-end">
 
+
+                                        <p:spacer width="20"/>
+                                        <p:commandButton 
+                                            id="btnadd"
+                                            value="Add New Item" 
+                                            action="#{packageItemController.addToPackage()}" 
+                                            class="ui-button-success"
+                                            icon="fas fa-plus" 
+                                            ajax="false">
+                                        </p:commandButton>
+                                    </div>
+                                </f:facet>
+                                <p:outputLabel value="Item to add" ></p:outputLabel>
+                                <p:autoComplete
+                                    value="#{packageItemController.currentItem}"
+                                    completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
+                                    var="addingItem"
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    itemLabel="#{addingItem.name}"
+                                    itemValue="#{addingItem}"
+                                    >
+                                    <p:column headerText="Code" >
+                                        #{addingItem.code}
+                                    </p:column>
+                                    <p:column headerText="Item" >
+                                        #{addingItem.name}
+                                    </p:column>
+                                    <p:column headerText="Category" >
+                                        #{addingItem.category.name}
+                                    </p:column>
+                                    <p:column headerText="Parent Category" >
+                                        #{addingItem.category.parentCategory.name}
+                                    </p:column>
+                                    <p:column headerText="Department" >
+                                        #{addingItem.department.name}
+                                    </p:column>
+                                </p:autoComplete>
+
+
+                                <h:outputText value="Remove the Item at the Time of Billing" class="mt-1" ></h:outputText>
+                                <p:selectBooleanButton 
+                                    id="editrd" 
+                                    onLabel="Yes" 
+                                    offLabel="No"
+                                    class="w=100"
+                                    onIcon="pi pi-check" 
+                                    offIcon="pi pi-times" 
+                                    value="#{packageItemController.canRemovePackageItemfromPackage}" 
+                                    >
+                                </p:selectBooleanButton>
+
+
+                                <h:outputText value="Institution" class="mt-2"/>
+                                <p:selectOneMenu id="cmbInstitution" value="#{packageItemController.institution}" class="w-100">
+                                    <f:selectItem itemLabel="Please select an Institution"/>
+                                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                    <f:ajax execute="cmbInstitution" render="cmbDepartment" event="change"/> 
+                                </p:selectOneMenu>
+
+                                <h:outputText value="Department"/>
+                                <p:selectOneMenu id="cmbDepartment" value="#{packageItemController.department}" class="w-100">
+                                    <f:selectItem itemLabel="Please select an Department"/>
+                                    <f:selectItems value="#{departmentController.getInsDepartments(packageItemController.institution)}" var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
+                                </p:selectOneMenu>
+
+                            </p:panelGrid>
                         </div>
                     </div>   
 
@@ -147,64 +217,7 @@
                     </p:dialog>
 
                     <p:dialog header="Add Item for #{packageItemController.currentPackege.name} Package" modal="true" widgetVar="dlg3" id="dig" minHeight="500" width="1600" showEffect="fade" focus="btnadd" closeOnEscape="true">
-                        <p:panelGrid columns="2" >
-                            <p:outputLabel value="Item to add" ></p:outputLabel>
-                            <p:autoComplete
-                                value="#{packageItemController.currentItem}"
-                                completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
-                                var="addingItem"
-                                itemLabel="#{addingItem.name}"
-                                itemValue="#{addingItem}"
-                                >
-                                <p:column headerText="Code" >
-                                    #{addingItem.code}
-                                </p:column>
-                                <p:column headerText="Item" >
-                                    #{addingItem.name}
-                                </p:column>
-                                <p:column headerText="Category" >
-                                    #{addingItem.category.name}
-                                </p:column>
-                                <p:column headerText="Parent Category" >
-                                    #{addingItem.category.parentCategory.name}
-                                </p:column>
-                                <p:column headerText="Department" >
-                                    #{addingItem.department.name}
-                                </p:column>
-                            </p:autoComplete>
-                        </p:panelGrid>
 
-
-
-                        <f:facet name="footer">
-                            <div class="d-flex gap-2 justify-content-end">
-                                <h:outputText value="Remove the Item at the Time of Billing" class="mt-1" style="font-size: 18px; font-weight: 600;"></h:outputText>
-
-                                <p:selectBooleanButton 
-                                    id="editrd" 
-                                    onLabel="Yes" 
-                                    offLabel="No"
-                                    class=""
-                                    onIcon="pi pi-check" 
-                                    offIcon="pi pi-times" 
-                                    value="#{packageItemController.canRemovePackageItemfromPackage}" 
-                                    style="width:6rem" >
-                                </p:selectBooleanButton>
-
-                                <p:spacer width="20"/>
-                                <p:commandButton 
-                                    id="btnadd"
-                                    value="Add" 
-                                    action="#{packageItemController.addToPackage()}" 
-                                    style="width:150px;"
-                                    class="ui-button-success"
-                                    icon="fas fa-plus" 
-                                    ajax="false">
-                                </p:commandButton>
-                            </div>
-
-
-                        </f:facet>
                     </p:dialog>
 
                 </p:panel>

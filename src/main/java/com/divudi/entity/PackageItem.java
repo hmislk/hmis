@@ -31,6 +31,8 @@ public class PackageItem implements Serializable {
     @ManyToOne
     private Department department;
     @ManyToOne
+    private Institution institution;
+    @ManyToOne
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
@@ -152,4 +154,18 @@ public class PackageItem implements Serializable {
     public void setDepartment(Department department) {
         this.department = department;
     }
+
+    public Institution getInstitution() {
+        if (institution == null) {
+            if (item != null) {
+                institution = item.getInstitution();
+            }
+        }
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
 }

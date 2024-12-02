@@ -8,6 +8,8 @@
  */
 package com.divudi.bean.common;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PackageFee;
 import com.divudi.entity.PackageItem;
@@ -63,6 +65,9 @@ public class PackageItemController implements Serializable {
     private Double total = 0.0;
     private List<Item> filteredItems;
     List<Item> serviceItems;
+    private Institution institution;
+    private Department department;
+    
 
     private boolean canRemovePackageItemfromPackage;
 
@@ -166,6 +171,8 @@ public class PackageItemController implements Serializable {
         pi.setPackege(getCurrentPackege());
         pi.setItem(getCurrentItem());
         pi.setCreatedAt(new Date());
+        pi.setDepartment(department);
+        pi.setInstitution(institution);
         pi.setCreater(sessionController.loggedUser);
         if(pi.getId() == null){
             getFacade().create(pi);
@@ -493,6 +500,24 @@ public class PackageItemController implements Serializable {
     public void setCanRemovePackageItemfromPackage(boolean canRemovePackageItemfromPackage) {
         this.canRemovePackageItemfromPackage = canRemovePackageItemfromPackage;
     }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+    
+    
 
     /**
      *
