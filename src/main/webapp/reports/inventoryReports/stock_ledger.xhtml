@@ -21,7 +21,7 @@
                             <p:selectOneMenu 
                                 id="phmIns"
                                 class="w-100"
-                                value="#{pharmacyPurchaseController.institution}"
+                                value="#{pharmacyController.institution}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
@@ -58,7 +58,7 @@
                             <p:selectOneMenu 
                                 id="phmDept"
                                 class="w-100"
-                                value="#{pharmacyPurchaseController.department}"
+                                value="#{pharmacyController.department}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Departments" />
                                 <f:selectItems  value="#{departmentController.departmentsOfInstitutionAndSite}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" />
@@ -73,9 +73,14 @@
                                 <p:outputLabel value="Store" class="m-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems></f:selectItems>
+                            <p:selectOneMenu
+                                id="phmStore"
+                                class="w-100"
+                                value="#{pharmacyRequestForBhtController.department}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Stores" ></f:selectItem>
+                                <f:selectItems  value="#{storeController.items}" var="dept" itemLabel="#{store.name}" itemValue="#{store}" />
+                                <p:ajax process="phmStore"/>
                             </p:selectOneMenu>
 
 
