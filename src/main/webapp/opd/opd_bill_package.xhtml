@@ -1110,7 +1110,31 @@
                             </p:panel>
                         </div>
                         <div class="col-5">
-                            <p:panel>
+                             <div class="row">
+                                <p:panel>
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <p:outputLabel value="Package Bill" class="mt-2"></p:outputLabel>
+                                        <p:commandButton 
+                                            value="Print Batch Bill" 
+                                            class="ui-button-info"
+                                            icon="fa fa-print"
+                                            ajax="false">
+                                            <p:printer target="packageBillView" />
+                                        </p:commandButton> 
+                                    </div>
+                                </f:facet>
+                                
+                                <h:panelGroup id="packageBillView">
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                        <prints:bill_template_of_5x5_C1_package_PackageBill bill="#{billPackageController.batchBill}" payments="#{opdBillController.payments}"/>                        
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                
+                            </p:panel>
+                            </div>
+                            <div class="row">
+                                <p:panel>
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between">
                                         <p:outputLabel value="Batch Bill" class="mt-2"></p:outputLabel>
@@ -1131,6 +1155,7 @@
                                 </h:panelGroup>
                                 
                             </p:panel>
+                            </div>
                         </div>
                         <div class="col-1"/>
                     </div>
