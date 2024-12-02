@@ -258,6 +258,10 @@ public class DrawerService {
     public void updateDrawerForOuts(Payment payment) {
         updateDrawer(payment, -Math.abs(payment.getPaidValue()));
     }
+    
+    public void updateDrawer(Payment payment) {
+        updateDrawer(payment, payment.getPaidValue());
+    }
 
     public void updateDrawer(Payment payment, double paidValue) {
         System.out.println("paidValue = " + paidValue);
