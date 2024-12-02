@@ -169,6 +169,17 @@
                             </p:selectOneMenu>
 
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-exchange-alt ml-5" />
+                                <p:outputLabel value="Issuing/Returning Doc.Status" class="mx-3" />
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-people-carry ml-5" />
@@ -198,7 +209,9 @@
 
                         <div class="mt-5">
 
-                            <h5>Stock Issues</h5>
+                            <h5>Transit Store Transactions</h5>
+                            <br></br>
+                            <h6>Stock Issues</h6>
 
                             <p:dataTable id="tbl1" value="" 
                                          var="f" 
@@ -218,7 +231,13 @@
                                 <p:column headerText="Issue Doc. Type " width="10em">
                                     <h:outputText value="" />
                                 </p:column>
-                                <p:column headerText="Issuing Branch" width="10em">
+                                <p:column headerText="Issuing Institution" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Issuing Site" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Issuing Department" width="10em">
                                     <h:outputText value="" />
                                 </p:column>
                                 <p:column headerText="Issuing Store" width="10em">
@@ -245,7 +264,13 @@
                                 <p:column headerText="Receipt Doc. Type " width="10em">
                                     <h:outputText value="" />
                                 </p:column>
-                                <p:column headerText="Receiving Branch" width="10em">
+                                <p:column headerText="Receiving Institution" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receiving Site" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receiving Department" width="10em">
                                     <h:outputText value="" />
                                 </p:column>
                                 <p:column headerText="Receiving Store" width="10em">
@@ -276,7 +301,9 @@
                 </h:form>
 
             </ui:define>
+
         </ui:composition>
 
     </h:body>
+    
 </html>

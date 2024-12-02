@@ -320,7 +320,7 @@
                                     <p:inputTextarea value="#{bhtEditController.comment}" id="com" class="w-100">
                                     </p:inputTextarea>
 
-                                                                        <p:commandButton class="my-1 ui-button-danger" icon="fas fa-ban" value="Cancel Admission" action="#{bhtEditController.cancelBht}" ajax="false" >                            
+                                    <p:commandButton class="my-1 ui-button-danger" icon="fas fa-ban" value="Cancel Admission" action="#{bhtEditController.cancelBht}" ajax="false" >                            
                                     </p:commandButton>
                                 </p:panel>
                             </div>
@@ -398,7 +398,12 @@
 
                                         </f:facet>
                                         <h:panelGroup id="gpBillPreview" >
-                                            <bill:bht_sethma admission="#{bhtEditController.current}" controller="#{bhtEditController}"  />
+                                            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Admission Needed Header and Logo')}">
+                                                <bill:bht_sethma admission="#{admissionController.current}" controller="#{admissionController}" />
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Admission Needed Header and Logo')}">
+                                                <bill:bht_with_header_logo admission="#{admissionController.current}" controller="#{admissionController}" />
+                                            </h:panelGroup>
                                         </h:panelGroup>
                                     </p:panel>
                                 </h:panelGroup>

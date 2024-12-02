@@ -130,9 +130,27 @@
                                 <p:outputLabel value="Service Group" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100" >
-                                <f:selectItem itemLabel="Select service group"/>
-                            </p:selectOneMenu>
+                            <p:autoComplete 
+                                widgetVar="acCat" 
+                                id="acCat" 
+                                forceSelection="true" 
+                                value="#{searchController.category}" 
+                                completeMethod="#{categoryController.completeCategory}" 
+                                var="cat" 
+                                itemLabel="#{cat.name}" 
+                                inputStyleClass="w-100" 
+                                itemValue="#{cat}" 
+                                class="w-100" 
+                                size="10" 
+                                minQueryLength="3">
+                                <p:column headerText="Name">
+                                    #{cat.name}
+                                </p:column>
+                                <p:column headerText="Code">
+                                    #{cat.code}
+                                </p:column>
+                                <p:ajax event="itemSelect" process="acCat" update="gpItem" ></p:ajax>
+                            </p:autoComplete> 
 
                             <p:spacer width="20"></p:spacer>
 
@@ -141,9 +159,28 @@
                                 <p:outputLabel value="Service Name" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="Select service name"/>
-                            </p:selectOneMenu>
+                            <h:panelGroup id="gpItem" layout="block" styleClass="form-group">
+                                <p:autoComplete 
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    rendered="#{searchController.category eq null}"
+                                    completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
+                                    var="acitem"
+                                    itemLabel="#{acitem.name}"
+                                    itemValue="#{acitem}">
+                                </p:autoComplete>
+                                <p:selectOneMenu
+                                    rendered="#{searchController.category ne null}" 
+                                    class="w-100">
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems 
+                                        value="#{itemController.getItems(searchController.category)}" 
+                                        var="item"
+                                        itemLabel="#{item.name}"
+                                        itemValue="#{item}"></f:selectItems>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" />
@@ -179,7 +216,7 @@
                                 icon="fas fa-cogs" >
                             </p:commandButton>
 
-                            <p:commandButton 
+                            <p:commandButton  
                                 value="Download PDF" 
                                 ajax="false" 
                                 icon="pi pi-file-pdf" 

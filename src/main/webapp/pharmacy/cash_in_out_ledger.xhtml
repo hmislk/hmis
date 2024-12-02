@@ -119,22 +119,35 @@
                             </p:column>
 
                             <p:column headerText="Cash In Value" width="6em">
-                                <h:outputText value="#{bill.netTotal}" rendered="#{bill.billTypeAtomic.billFinanceType eq 'CASH_IN'}" >
-                                    <f:convertNumber pattern="###.00" />
-                                </h:outputText>
+                                <h:panelGroup>
+                                    <h:outputText value="#{bill.netTotal}" 
+                                                  rendered="#{bill.billTypeAtomic.billFinanceType eq 'CASH_IN' or bill.billTypeAtomic.billFinanceType eq 'FLOAT_STARTING_BALANCE'}">
+                                        <f:convertNumber pattern="###.00" />
+                                    </h:outputText>
+                                    <h:outputText value="--" rendered="#{not (bill.billTypeAtomic.billFinanceType eq 'CASH_IN' or bill.billTypeAtomic.billFinanceType eq 'FLOAT_STARTING_BALANCE')}" />
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacyReportController.calAllInTotal}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Cash Out Value" width="6em">
-                                <h:outputText value="#{bill.netTotal}" rendered="#{bill.billTypeAtomic.billFinanceType eq 'CASH_OUT'}" >
-                                    <f:convertNumber pattern="###.00" />
-                                </h:outputText>
+                                <h:panelGroup>
+                                    <h:outputText value="#{bill.netTotal}" 
+                                                  rendered="#{bill.billTypeAtomic.billFinanceType eq 'CASH_OUT' or bill.billTypeAtomic.billFinanceType eq 'FLOAT_CLOSING_BALANCE'}">
+                                        <f:convertNumber pattern="###.00" />
+                                    </h:outputText>
+                                    <h:outputText value="--" rendered="#{not (bill.billTypeAtomic.billFinanceType eq 'CASH_OUT' or bill.billTypeAtomic.billFinanceType eq 'FLOAT_CLOSING_BALANCE')}" />
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacyReportController.calAllOutTotal}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel>
+                                </f:facet>
                             </p:column>
-                            
-                            <p:column headerText="Other" width="6em">
-                                <h:outputText value="#{bill.netTotal}" rendered="#{bill.billTypeAtomic.billFinanceType eq 'FLOAT_STARTING_BALANCE' or bill.billTypeAtomic.billFinanceType eq 'FLOAT_CLOSING_BALANCE'}" >
-                                    <f:convertNumber pattern="###.00" />
-                                </h:outputText>
-                            </p:column>
+
 
                         </p:dataTable>
 
@@ -153,20 +166,40 @@
                                 <h:outputText value="#{row.billTypeAtomic}" />
                             </p:column>
 
-                            <p:column headerText="IN Total">
-                                <h:outputText value="#{row.total}" rendered="#{row.billTypeAtomic.billFinanceType eq 'CASH_IN'}">
-                                    <f:convertNumber />
-                                </h:outputText>
+                            <p:column headerText="Comment" >
+                                <h:outputText value="#{row.bill.comments}"></h:outputText>
                             </p:column>
-                            <p:column headerText="OUT Total" >
-                                <h:outputText value="#{row.total}" rendered="#{row.billTypeAtomic.billFinanceType eq 'CASH_OUT'}">
-                                    <f:convertNumber  />
-                                </h:outputText>
+
+                            <p:column headerText="IN Total" width="8em">
+                                <h:panelGroup>
+                                    <h:outputText value="#{row.total}" 
+                                                  rendered="#{row.billTypeAtomic.billFinanceType eq 'CASH_IN' or row.billTypeAtomic.billFinanceType eq 'FLOAT_STARTING_BALANCE'}">
+                                        <f:convertNumber pattern="###.00" />
+                                    </h:outputText>
+                                    <h:outputText value="--" 
+                                                  rendered="#{not (row.billTypeAtomic.billFinanceType eq 'CASH_IN' or row.billTypeAtomic.billFinanceType eq 'FLOAT_STARTING_BALANCE')}" />
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacyReportController.calAllInTotal}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel>
+                                </f:facet>
                             </p:column>
-                            <p:column headerText="Other" >
-                                <h:outputText value="#{row.total}" rendered="#{row.billTypeAtomic.billFinanceType eq 'FLOAT_STARTING_BALANCE' or row.billTypeAtomic.billFinanceType eq 'FLOAT_CLOSING_BALANCE'}">
-                                    <f:convertNumber  />
-                                </h:outputText>
+
+                            <p:column headerText="OUT Total" width="8em">
+                                <h:panelGroup>
+                                    <h:outputText value="#{row.total}" 
+                                                  rendered="#{row.billTypeAtomic.billFinanceType eq 'CASH_OUT' or row.billTypeAtomic.billFinanceType eq 'FLOAT_CLOSING_BALANCE'}">
+                                        <f:convertNumber pattern="###.00" />
+                                    </h:outputText>
+                                    <h:outputText value="--" 
+                                                  rendered="#{not (row.billTypeAtomic.billFinanceType eq 'CASH_OUT' or row.billTypeAtomic.billFinanceType eq 'FLOAT_CLOSING_BALANCE')}" />
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacyReportController.calAllOutTotal}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel>
+                                </f:facet>
                             </p:column>
 
                         </p:dataTable>

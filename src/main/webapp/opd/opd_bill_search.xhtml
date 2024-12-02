@@ -239,7 +239,9 @@
                                         </div>
 
                                     </p:column>
-                                    <p:column headerText="Batch Bill" sortBy="#{bill.backwardReferenceBill.deptId}" 
+                                    <p:column 
+                                        headerText="Batch Bill" 
+                                        sortBy="#{bill.backwardReferenceBill.deptId}" 
                                               filterMatchMode="contains"
                                               filterBy="#{bill.backwardReferenceBill.deptId}">
                                         <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="#{bill.backwardReferenceBill.deptId}">

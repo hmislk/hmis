@@ -41,6 +41,9 @@ public enum TriggerType {
     PURCHASE_ORDER_APPROVAL("Purchase Order Approval - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.PURCHASE_ORDER_APPROVAL),
     PURCHASE_ORDER_APPROVAL_SMS("Purchase Order Approval - SMS", NotificationMedium.SMS, TriggerTypeParent.PURCHASE_ORDER_APPROVAL),
     PURCHASE_ORDER_APPROVAL_EMAIL("Purchase Order Approval - Email", NotificationMedium.EMAIL, TriggerTypeParent.PURCHASE_ORDER_APPROVAL),
+    INWARD_PATIENT_DISCHARGED("Inward Patient Discharaged - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
+    INWARD_PATIENT_DISCHARGED_SMS("Inward Patient Discharaged - SMS", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
+    INWARD_PATIENT_DISCHARGED_EMAIL("Inward Patient Discharaged - Email", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
     OPD_BILL_CANCELLATION("Bill Cancellation - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.OPD_BILL_CANCELLATION),
     OPD_BILL_CANCELLATION_SMS("Bill Cancellation - SMS", NotificationMedium.SMS, TriggerTypeParent.OPD_BILL_CANCELLATION),
     OPD_BILL_CANCELLATION_EMAIL("Bill Cancellation - Email", NotificationMedium.EMAIL, TriggerTypeParent.OPD_BILL_CANCELLATION);

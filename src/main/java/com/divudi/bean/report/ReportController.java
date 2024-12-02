@@ -1683,7 +1683,7 @@ public class ReportController implements Serializable {
         jpql += " ORDER BY i.id DESC";
 
         params.put("ret", false);
-       
+
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
 
@@ -2252,11 +2252,18 @@ public class ReportController implements Serializable {
         return "/reports/lab/investigation_wise_report?faces-redirect=true";
     }
 
-    public String navigateToExternalLaborataryWorkloadReport() {
+    public String navigateToExternalLaboratoryWorkloadReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/lab/external_laboratary_workload?faces-redirect=true";
+        return "/reports/lab/external_laboratory_workload?faces-redirect=true";
+    }
+
+    public String navigateToSampleCarrierReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/sample_carrier?faces-redirect=true";
     }
 
     public String navigateToInvestigationMonthEndSummery() {
@@ -2401,6 +2408,11 @@ public class ReportController implements Serializable {
     public String navigateToSurgeryCountDoctorWise() {
 
         return "/reports/managementReports/surgery_count_doctor_wise?faces-redirect=true";
+    }
+
+    public String navigateToOpdWeeklyReport() {
+
+        return "/reports/managementReports/opd_weekly?faces-redirect=true";
     }
 
     public String navigateToLeaveReport() {
@@ -2582,9 +2594,9 @@ public class ReportController implements Serializable {
 
         return "/reports/inventoryReports/slow_fast_none_movement?faces-redirect=true";
     }
-    
+
     public String navigateToGrn() {
-        
+
         return "/reports/inventoryReports/grn?faces-redirect=true";
     }
 
@@ -3043,7 +3055,7 @@ public class ReportController implements Serializable {
                 + " and bi.bill.cancelled=:can"
                 + " and bi.bill.billDate between :fd and :td "
                 + " and bi.bill.billTypeAtomic = :billTypeAtomic ";
-       
+
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("can", false);

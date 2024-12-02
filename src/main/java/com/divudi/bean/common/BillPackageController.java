@@ -49,6 +49,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.service.StaffService;
@@ -60,8 +61,10 @@ import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
@@ -125,6 +128,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     ItemController itemController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    DrawerController drawerController;
+    @Inject
+    OpdBillController opdBillController;
+    @Inject
+    ApplicationController applicationController;
 
     private List<Item> malePackaes;
     private List<Item> femalePackaes;
@@ -132,8 +141,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private List<Item> packaes;
 
     //</editor-fold>
-    @Inject
-    DrawerController drawerController;
+    
     
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
@@ -150,7 +158,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private double total;
     private double discount;
     private double netTotal;
-    private double cashPaid;
+    private double tenderedAmount;
     private double cashBalance;
     private Institution chequeBank;
     private BillItem currentBillItem;
@@ -176,28 +184,42 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private List<Payment> payments;
 
     //</editor-fold>
+    
     private void savePatient() {
-        if (getPatient() == null) {
-            JsfUtil.addErrorMessage("No Patient to save");
-            return;
-        }
-        if (getPatient().getPerson() == null) {
-            JsfUtil.addErrorMessage("No person");
-            return;
-        }
-        if (getPatient().getPerson().getId() == null) {
-            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getPatient().getPerson().setCreatedAt(new Date());
-            getPersonFacade().create(getPatient().getPerson());
-        } else {
-            getPersonFacade().edit(getPatient().getPerson());
-        }
         if (getPatient().getId() == null) {
+            if (getPatient().getPerson().getName() != null) {
+                String updatedPatientName;
+                updatedPatientName = opdBillController.changeTextCases(getPatient().getPerson().getName(), getSessionController().getApplicationPreference().getChangeTextCasesPatientName());
+                getPatient().getPerson().setName(updatedPatientName);
+            }
+            getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+            getPatient().setCreatedInstitution(getSessionController().getInstitution());
             getPatient().setCreater(getSessionController().getLoggedUser());
             getPatient().setCreatedAt(new Date());
-            getPatientFacade().create(getPatient());
+            if (getPatient().getPerson().getId() != null) {
+//                getPatientFacade().edit(getPatient());
+                getPersonFacade().edit(getPatient().getPerson());
+            } else {
+                getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+                getPatient().getPerson().setCreatedAt(new Date());
+//                getPatientFacade().create(getPatient());
+                getPersonFacade().create(getPatient().getPerson());
+            }
+            try {
+                getPatientFacade().create(getPatient());
+            } catch (Exception e) {
+                getPatientFacade().edit(getPatient());
+            }
         } else {
-            getPatientFacade().edit(getPatient());
+            if (getPatient().getPerson().getId() != null) {
+//                getPatientFacade().edit(getPatient());
+                getPersonFacade().edit(getPatient().getPerson());
+            } else {
+                getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+                getPatient().getPerson().setCreatedAt(new Date());
+//                getPatientFacade().create(getPatient());
+                getPersonFacade().create(getPatient().getPerson());
+            }
         }
     }
 
@@ -239,6 +261,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         batchBill = new BilledBill();
         batchBill.setBillType(BillType.OpdBathcBill);
         batchBill.setBillTypeAtomic(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        batchBill.setBillPackege((Packege) currentBillItem.getItem());
         batchBill.setPaymentScheme(paymentScheme);
         batchBill.setPaymentMethod(paymentMethod);
         batchBill.setCreatedAt(new Date());
@@ -914,6 +937,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         setDiscount(dis);
         setTotal(net);
         setNetTotal(net);
+        if(paymentMethod==PaymentMethod.Cash){
+            cashBalance = getTenderedAmount() - getNetTotal();
+        }
+        System.out.println("Cash Balance = " + getCashBalance());
     }
 
     public void feeChanged() {
@@ -942,7 +969,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         //   setForeigner(false);
         calTotals();
 
-        setCashPaid(0.0);
+        setTenderedAmount(0.0);
         setDiscount(0.0);
         setCashBalance(0.0);
         printPreview = false;
@@ -961,7 +988,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         lstBillFees = null;
         lstBillItems = null;
         lstBillEntries = null;
-        setCashPaid(0.0);
+        setTenderedAmount(0.0);
         setDiscount(0.0);
         setCashBalance(0.0);
         setTotal(0.0);
@@ -990,6 +1017,21 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
         calTotals();
+    }
+    
+    public List<BillItem> fillPackageBillItem(Bill bill){
+        List<BillItem> billItem = new ArrayList<>();
+        
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select bi from BillItem bi "
+                + " where bi.retired = false "
+                + " and bi.bill.backwardReferenceBill =:pBill";
+        m.put("pBill", bill);
+        
+        billItem = getBillItemFacade().findByJpql(jpql, m);
+        
+        return billItem;
     }
 
     public void recreateList(BillEntry r) {
@@ -1184,11 +1226,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public PaymentMethod getPaymentMethod() {
-        if (paymentMethod != paymentMethod.Cash) {
-            setCashPaid(netTotal);
-        } else {
-            setCashPaid(0.00);
-        }
         return paymentMethod;
     }
 
@@ -1272,16 +1309,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setNetTotal(double netTotal) {
         this.netTotal = netTotal;
     }
-
-    public double getCashPaid() {
-        return cashPaid;
-    }
-
-    public void setCashPaid(double cashPaid) {
-        this.cashPaid = cashPaid;
-        cashBalance = cashPaid - getNetTotal();
-    }
-
+    
     public double getCashBalance() {
         return cashBalance;
     }
@@ -1303,7 +1331,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (currentBillItem == null) {
             currentBillItem = new BillItem();
         }
-
         return currentBillItem;
     }
 
@@ -1621,5 +1648,15 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setListOfTheNonExpiredPackages(List<Item> listOfTheNonExpiredPackages) {
         this.listOfTheNonExpiredPackages = listOfTheNonExpiredPackages;
     }
+
+    public double getTenderedAmount() {
+        return tenderedAmount;
+    }
+
+    public void setTenderedAmount(double tenderedAmount) {
+        this.tenderedAmount = tenderedAmount;
+    }
+
+   
 
 }

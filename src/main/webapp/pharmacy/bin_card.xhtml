@@ -22,8 +22,10 @@
                     <h:outputLabel value="To" ></h:outputLabel>
                     <p:datePicker class="w-100 m-1" inputStyleClass="w-100" value="#{pharmacyErrorChecking.toDate}" pattern="dd MMMM yyyy"></p:datePicker>
                     <p:spacer width="10" ></p:spacer>
-                    <p:commandButton class="m-1" ajax="false" value="Process" action="#{pharmacyErrorChecking.processBinCard()}" >
+                    <p:commandButton class="m-1 ui-button-success" icon="fa fa-file-excel" ajax="false" value="Download" >
+                        <p:dataExporter fileName="Stock Hx" target="tbl" type="xlsx" ></p:dataExporter>
                     </p:commandButton>
+                    
 
 
                     <p:outputLabel 
@@ -59,10 +61,9 @@
                         </p:column>
                     </p:autoComplete>
                     <p:spacer width="10" ></p:spacer>
-
-                    <p:commandButton class="m-1" ajax="false" value="Download" >
-                        <p:dataExporter fileName="Stock Hx" target="tbl" type="xlsx" ></p:dataExporter>
+                    <p:commandButton class="m-1 ui-button-warning" ajax="false" icon="fas fa-arrows-rotate" value="Process" action="#{pharmacyErrorChecking.processBinCard()}" >
                     </p:commandButton>
+                    
 
                 </h:panelGrid>
 
