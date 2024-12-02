@@ -12,7 +12,7 @@
                     <p:panel header="Stock Ledger" >
 
                         <h:panelGrid columns="8" class="w-100">                            
-                                                                               
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2" />
                                 <p:outputLabel value="Institution" class="m-3" >
@@ -27,10 +27,11 @@
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="phmIns" update="phmDept" />
                             </p:selectOneMenu>
-                            
-                            
-<p:spacer width="20"></p:spacer>                            
-                            
+
+
+                            <p:spacer width="20"></p:spacer>                            
+
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
                                 <p:outputLabel value="Site" class="m-3"></p:outputLabel>
@@ -44,10 +45,11 @@
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
                                 <p:ajax process="phmSite" />
                             </p:selectOneMenu>
-                            
-                            
-<p:spacer width="20"></p:spacer>
-                            
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2" />
                                 <p:outputLabel value="Department" class="m-3">
@@ -62,10 +64,10 @@
                                 <f:selectItems  value="#{departmentController.departmentsOfInstitutionAndSite}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" />
                                 <p:ajax process="phmDept"/>
                             </p:selectOneMenu>
-                            
-                            
 
-                            
+
+
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-store mr-2" />
                                 <p:outputLabel value="Store" class="m-3" >
@@ -76,21 +78,29 @@
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
 
-                            
-<p:spacer width="20"></p:spacer>                           
+
+                            <p:spacer width="20"></p:spacer>                           
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-box mr-2" />
                                 <p:outputLabel value="Item" class="m-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
+                            <p:selectOneMenu
+                                id="phmItem"
+                                class="w-100"
+                                value="#{pharmacyController.pharmacyItem}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Items" ></f:selectItem>
+                                <f:selectItems value="#{ampController.items}" var="item" itemLabel="#{item.name}" itemValue="#{item}" />
+                                <p:ajax process="phmItem"/>
                             </p:selectOneMenu>
 
-                           
-<p:spacer width="20"></p:spacer>                           
+
+
+                            <p:spacer width="20"></p:spacer>                           
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-file-alt mr-2" />
@@ -101,7 +111,7 @@
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
-                            
+
 
 
 
@@ -117,8 +127,8 @@
                             </p:datePicker>
 
 
-             <p:spacer width="20"></p:spacer>
-             
+                            <p:spacer width="20"></p:spacer>
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
@@ -131,11 +141,11 @@
                                           pattern="#{sessionController.applicationPreference.longDateFormat}">
                             </p:datePicker>
 
-             <p:spacer width="20"></p:spacer>
+
 
                         </h:panelGrid>
 
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center mt-5">
                             <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" >
                             </p:commandButton>
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
