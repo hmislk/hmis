@@ -10,6 +10,7 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
@@ -125,6 +126,7 @@ public class PaymentController implements Serializable {
         bill.setInstitution(sessionController.getInstitution());
         bill.setBillType(BillType.CHEQUE_PAID);
         bill.setBillTypeAtomic(BillTypeAtomic.CHEQUE_PAID);
+        bill.setBillClassType(BillClassType.BilledBill);
         bill.setTotal(total);
         bill.setNetTotal(total);
         bill.setGrantTotal(total);

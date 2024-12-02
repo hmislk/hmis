@@ -477,7 +477,7 @@ public class PharmacyPurchaseController implements Serializable {
         //   saveBillComponent();
 
 //        Payment p = createPayment(getBill());
-        List<Payment> ps = paymentService.createPayment(getBill(), getBill().getPaymentMethod(), paymentMethodData, sessionController.getDepartment(), sessionController.getLoggedUser(), null);
+        List<Payment> ps = paymentService.createPayment(getBill(), getBill().getPaymentMethod(), paymentMethodData, sessionController.getDepartment(), sessionController.getLoggedUser());
 
         billItemsTotalQty = 0;
         for (BillItem i : getBillItems()) {
