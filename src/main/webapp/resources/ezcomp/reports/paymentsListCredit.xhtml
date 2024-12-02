@@ -27,9 +27,13 @@
             <p:column  headerText="Comments">
                 <h:outputText value="#{cardPayment.payment.comments}" ></h:outputText>
             </p:column>
-            <p:column  headerText="Bank">
-                <h:outputText value="#{cardPayment.payment.bank.name}" ></h:outputText>
+            <p:column  headerText="Comments">
+                <h:outputText value="#{cardPayment.payment.bill.billedBill.deptId}" ></h:outputText>
             </p:column>
+            <p:column  headerText="Cancellation">
+                <h:outputText value="#{cardPayment.payment.bill.cancelled?'Cancelled':''}" ></h:outputText>
+            </p:column>
+            
             <p:column  headerText="Ref No">
                 <h:outputText value="#{cardPayment.payment.creditCardRefNo}" ></h:outputText>
                 <h:outputText value="#{cardPayment.payment.chequeRefNo}" ></h:outputText>
