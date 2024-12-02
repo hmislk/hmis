@@ -5321,7 +5321,7 @@ public class PatientInvestigationController implements Serializable {
                     m.put("bill", barcodeBill);
                     if (ix.isHasMoreThanOneComponant()) {
                         j += " and ps.investigationComponant=:sc ";
-                        //m.put("sc", ixi.getSampleComponent());
+                        m.put("sc", ixi.getSampleComponent());
                     }
                     PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
                     //System.out.println("pts = " + pts);
