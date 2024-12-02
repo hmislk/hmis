@@ -25,6 +25,8 @@ public class ItemMapping implements Serializable {
     @ManyToOne
     private Item item;
     
+    private Item itemPackage; 
+    
     @ManyToOne
     private Institution institution;
 
@@ -143,5 +145,15 @@ public class ItemMapping implements Serializable {
     public void setRetiredAt(Date retiredAt) {
         this.retiredAt = retiredAt;
     }
+
+    public Item getItemPackage() {
+        return itemPackage;
+    }
+
+    public void setItemPackage(Item itemPackage) {
+        this.itemPackage = itemPackage;
+    }
+    
+    
     
 }
