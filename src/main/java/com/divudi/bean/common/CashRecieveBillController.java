@@ -46,6 +46,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -81,7 +82,13 @@ public class CashRecieveBillController implements Serializable {
     private CreditBean creditBean;
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
-
+    @EJB
+    CashTransactionBean cashTransactionBean;
+    @EJB
+    PaymentService paymentService;
+    
+    @Inject
+    private BillBeanController billBean;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -693,11 +700,6 @@ public class CashRecieveBillController implements Serializable {
 
     }
 
-    @Inject
-    private BillBeanController billBean;
-    @EJB
-    CashTransactionBean cashTransactionBean;
-
     public CashTransactionBean getCashTransactionBean() {
         return cashTransactionBean;
     }
@@ -762,7 +764,8 @@ public class CashRecieveBillController implements Serializable {
             }
             updateSettlingCreditBillSettledValues(savingBillItem);
         }
-        List payments = createPayment(current, current.getPaymentMethod());
+        List payments =paymentService.createPayment(current,  paymentMethodData);
+        
         drawerController.updateDrawerForIns(payments);
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
