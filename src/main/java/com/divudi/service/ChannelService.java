@@ -307,6 +307,9 @@ public class ChannelService {
     public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
         saveOrUpdatePatientDetails(patient);
         Bill savingTemporaryBill = createAgentInitialBookingBill(patient, session);
+        if(savingTemporaryBill == null){
+            return null;
+        }
         BillItem savingBillItemForSession = createSessionItem(savingTemporaryBill, refNo, session);
         savingTemporaryBill.setAgentRefNo(refNo);
         savingTemporaryBill.setCreditCompany(creditCompany);
