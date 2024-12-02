@@ -2819,11 +2819,16 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> getItems(Category category) {
-        String temSql;
-        HashMap h = new HashMap();
-        temSql = "SELECT i FROM Item i where i.category=:cat and i.retired=false order by i.name";
-        h.put("cat", category);
-        return getFacade().findByJpql(temSql, h);
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "SELECT i "
+                + " FROM Item i "
+                + " where i.category=:cat "
+                + " and i.retired=:ret "
+                + " order by i.name";
+        params.put("cat", category);
+        params.put("ret", false);
+        return getFacade().findByJpql(jpql, params);
     }
 
     /**

@@ -29,6 +29,12 @@ public class CashbookService {
     @EJB
     CashBookFacade cashbookFacade;
 
+    
+    public void writeCashBookEntryAtPaymentCreation(Payment p) {
+        CashBook cashbook = findAndSaveCashBookBySite(p.getDepartment().getSite(), p.getInstitution(), p.getDepartment());
+        writeCashBookEntryAtPaymentCreation(p, p.getCreater(), cashbook, p.getDepartment());
+    }
+    
     public void writeCashBookEntryAtPaymentCreation(Payment p, WebUser user, CashBook cashbook, Department department) {
         if (p == null) {
             JsfUtil.addErrorMessage("Cashbook Entry Error !");
