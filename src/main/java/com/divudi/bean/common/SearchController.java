@@ -249,6 +249,8 @@ public class SearchController implements Serializable {
     private List<PatientInvestigation> patientInvestigationsSigle;
     private BillTypeAtomic billTypeAtomic;
     private BillClassType billClassType;
+    private String selectedOpdPackageBillSelector;
+    private List<String> OpdPackageBillSelector;
 
     private StreamedContent downloadingExcel;
 
@@ -832,11 +834,10 @@ public class SearchController implements Serializable {
         bills = null;
         return "/analytics/professional_payment_list?faces-redirect=true";
     }
-    
+
 //    public String navigateToWhtReport(){
 //        return "/reports/financialReports/wht?faces-redirect=true";
 //    }
-
     public String toSearchBills() {
         bills = null;
         return "/dataAdmin/search_bill?faces-redirect=true";
@@ -2209,6 +2210,27 @@ public class SearchController implements Serializable {
 
     public void setBilledDepartment(Department billedDepartment) {
         this.billedDepartment = billedDepartment;
+    }
+
+    public String getSelectedOpdPackageBillSelector() {
+        return selectedOpdPackageBillSelector;
+    }
+
+    public void setSelectedOpdPackageBillSelector(String selectedOpdPackageBillSelector) {
+        this.selectedOpdPackageBillSelector = selectedOpdPackageBillSelector;
+    }
+
+    public List<String> getOpdPackageBillSelector() {
+        if (OpdPackageBillSelector == null) {
+            OpdPackageBillSelector = new ArrayList<>();
+            OpdPackageBillSelector.add("Single Package Bills");
+            OpdPackageBillSelector.add("Paackage Batch Bills");
+        }
+        return OpdPackageBillSelector;
+    }
+
+    public void setOpdPackageBillSelector(List<String> OpdPackageBillSelector) {
+        this.OpdPackageBillSelector = OpdPackageBillSelector;
     }
 
     public class billsWithbill {
@@ -7865,6 +7887,24 @@ public class SearchController implements Serializable {
 
     }
 
+    public void searchOpdPackageBills() {
+        Date startTime = new Date();
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        if (selectedOpdPackageBillSelector == null) {
+            billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+            billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        } else {
+            if (selectedOpdPackageBillSelector.equalsIgnoreCase("Single Package Bills")) {
+                billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+            } else if (selectedOpdPackageBillSelector.equalsIgnoreCase("Paackage Batch Bills")) {
+                billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+            }
+        }
+        createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
+        checkLabReportsApproved(bills);
+
+    }
+
     @Deprecated
     public void listPaymentsExtra() {
         String jpql = "select p "
@@ -9482,6 +9522,7 @@ public class SearchController implements Serializable {
         fromDepartment = null;
         toInstitution = null;
         toDepartment = null;
+        selectedOpdPackageBillSelector = null;
 
     }
 
@@ -15091,7 +15132,6 @@ public class SearchController implements Serializable {
             bisIP = billItemFacade.findByJpql(jpqlIP, mIP, TemporalType.TIMESTAMP);
         }
 
-        
         // Combine OP and IP BillItems
         List<BillItem> bis = new ArrayList<>();
         bis.addAll(bisOP);
@@ -15330,7 +15370,7 @@ public class SearchController implements Serializable {
 
         opdServiceCollection.setName("OPD Service Collection - Credit");
         opdServiceCollection.setBundleType("opdServiceCollectionCredit");
-        
+
         opdServiceCollection.getReportTemplateRows().stream()
                 .forEach(rtr -> {
                     rtr.setInstitution(institution);
@@ -15343,7 +15383,6 @@ public class SearchController implements Serializable {
         return opdServiceCollection;
     }
 
-    
     public ReportTemplateRowBundle generateOpdServiceCollectionWithoutProfessionalFee(PaymentType paymentType) {
         ReportTemplateRowBundle opdServiceCollection = new ReportTemplateRowBundle();
         String jpql = "select bi "
@@ -16120,8 +16159,6 @@ public class SearchController implements Serializable {
 
     }
 
-    
-    
     public void billItemsToBundleForOpdUnderCategoryWithoutProfessionalFee(ReportTemplateRowBundle rtrb, List<BillItem> billItems, PaymentType paymentType) {
         System.out.println("billItemsToBundleForOpdUnderCategory");
         // Use TreeMap to maintain alphabetical order
@@ -16293,12 +16330,12 @@ public class SearchController implements Serializable {
             double iteratingDiscount = countModifier * Math.abs(iteratingBillItem.getDiscount());
             double staffFee = countModifier * Math.abs(iteratingBillItem.getStaffFee());
             double netValue = 0.0;
-            if(withProfessionalFee){
+            if (withProfessionalFee) {
                 netValue = countModifier * Math.abs(iteratingBillItem.getNetValue());
-            }else{
-                netValue = countModifier * Math.abs(iteratingBillItem.getNetValue()- iteratingBillItem.getStaffFee());
+            } else {
+                netValue = countModifier * Math.abs(iteratingBillItem.getNetValue() - iteratingBillItem.getStaffFee());
             }
-             
+
             totalIncome += grossValue;
             totalNetIncome += netValue;
             totalHospitalFees += hospitalFee;
@@ -16702,12 +16739,12 @@ public class SearchController implements Serializable {
             double discount = bi.getDiscount();
             double professionalFee = bi.getStaffFee();
             double netTotal = 0.0;
-            if(withProfessionalFee){
+            if (withProfessionalFee) {
                 netTotal = bi.getNetValue();
-            }else{
+            } else {
                 netTotal = bi.getNetValue() - bi.getStaffFee();
             }
-            
+
             long countModifier = (bi.getBill().getBillClassType() == BillClassType.CancelledBill
                     || bi.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
 
@@ -16720,7 +16757,7 @@ public class SearchController implements Serializable {
                 professionalFee = -Math.abs(professionalFee);
                 netTotal = -Math.abs(netTotal);
             }
-            
+
             totalOpdServiceCollection += netTotal;
 
             // Update the detailed row

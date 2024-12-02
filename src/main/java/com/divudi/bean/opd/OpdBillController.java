@@ -366,6 +366,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         bills = null;
         return "/opd/opd_bill_search?faces-redirect=true";
     }
+    
+    public String navigateToSearchOpdPackageBills() {
+        batchBill = null;
+        bills = null;
+        return "/opd/opd_package_bill_search?faces-redirect=true";
+    }
 
     public void fillOpdBillItems() {
         lstBillItems = new ArrayList<>();
