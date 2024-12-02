@@ -20,26 +20,27 @@ import javax.persistence.Temporal;
 @Entity
 public class PackageItem implements Serializable {
 
-     static final long serialVersionUID = 1L;
+    static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-     Long id;
+    Long id;
     @ManyToOne
-     Packege packege;
+    Packege packege;
     @ManyToOne
-     Item item;
-    //Created Properties
+    Item item;
     @ManyToOne
-     WebUser creater;
+    private Department department;
+    @ManyToOne
+    WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-     Date createdAt;
+    Date createdAt;
     //Retairing properties
-     boolean retired;
+    boolean retired;
     @ManyToOne
-     WebUser retirer;
+    WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-     Date retiredAt;
-     String retireComments;
+    Date retiredAt;
+    String retireComments;
 
     public Long getId() {
         return id;
@@ -59,7 +60,7 @@ public class PackageItem implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        
+
         if (!(object instanceof PackageItem)) {
             return false;
         }
@@ -137,5 +138,18 @@ public class PackageItem implements Serializable {
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public Department getDepartment() {
+        if (department == null) {
+            if (item != null) {
+                department = item.getDepartment();
+            }
+        }
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 }
