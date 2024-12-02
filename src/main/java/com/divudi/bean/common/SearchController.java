@@ -1119,11 +1119,17 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         return "/reports/financialReports/payment_settlement_report?faces-redirect=true";
     }
-    
-        public String navigateToDueSearch() {
+
+    public String navigateToDueSearch() {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
         return "/reports/financialReports/inward_due_search?faces-redirect=true";
+    }
+
+    public String navigateToDueSearchCreditCompany() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/inward_due_search_credit_company?faces-redirect=true";
     }
 
     public String navigatToShiftEndSummary() {
@@ -7896,7 +7902,7 @@ public class SearchController implements Serializable {
     public void searchOpdPackageBills() {
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-        
+
         createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
 
     }
@@ -15122,7 +15128,7 @@ public class SearchController implements Serializable {
                 jpqlOP += " and bi.item.category=:cat ";
                 mOP.put("cat", category);
             }
-             if (item != null) {
+            if (item != null) {
                 jpqlOP += " and bi.item=:item ";
                 mOP.put("item", item);
             }
