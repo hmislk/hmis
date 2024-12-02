@@ -75,31 +75,36 @@
                                         </p:commandButton>
 
 
-                                        <p:inputText placeholder="Bill No" 
+                                        <p:inputText 
+                                            placeholder="Bill No" 
                                                      autocomplete="off" 
                                                      class="w-100"
                                                      value="#{searchController.searchKeyword.billNo}" />
 
 
-                                        <p:inputText placeholder="Name" 
+                                        <p:inputText 
+                                            placeholder="Name" 
                                                      class="form-control my-1"
                                                      autocomplete="off" 
                                                      value="#{searchController.searchKeyword.patientName}" />
 
 
-                                        <p:inputText placeholder="Phone" 
+                                        <p:inputText 
+                                            placeholder="Phone" 
                                                      class="form-control"
                                                      autocomplete="off"  
                                                      value="#{searchController.searchKeyword.patientPhone}" />
 
 
-                                        <p:inputText placeholder="Total" 
+                                        <p:inputText 
+                                            placeholder="Total" 
                                                      class="form-control my-1"
                                                      autocomplete="off"  
                                                      value="#{searchController.searchKeyword.total}"
                                                      />
 
-                                        <p:inputText placeholder="Net Total"   
+                                        <p:inputText 
+                                            placeholder="Net Total"   
                                                      class="form-control"
                                                      autocomplete="off"
                                                      value="#{searchController.searchKeyword.netTotal}"/>
@@ -210,60 +215,24 @@
                                     value="#{searchController.bills}" 
                                     var="bill"  
                                     style="min-width: 100%;"  
-                                    rows ="10"
+                                    rows ="15"
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="5,10,25,50"
+                                    rowsPerPageTemplate="15,25,50"
                                     >
+                                    
                                     <p:column 
-                                        headerText="No" 
-                                        filterBy="#{bill.id}" 
-                                        filterMatchMode="contains"
-                                        sortBy="#{bill.id}"
-                                        rendered="false"
-                                        styleClass="alignTop" 
-                                        width="15">
-                                        <h:outputLabel value="#{bill.id}"/>
-                                    </p:column>
-                                    <p:column headerText="Bill No*" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">                                
-                                        <div>
-                                            <p:commandLink 
-                                                id="billNo" 
-                                                ajax="false" 
-                                                value="#{bill.deptId}" 
-                                                action="#{billSearch.navigateToViewSingleOpdBill()}">
-                                                <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
-                                            </p:commandLink>
-                                        </div>
-                                        <div>
-                                            <p:commandLink
-                                                id="CancelBillNo"
-                                                ajax="false"
-                                                value="#{bill.cancelledBill.deptId}"
-                                                action="#{billSearch.navigateToViewSingleOpdBill()}"
-                                                rendered="#{bill.cancelled}" style="color: red">
-                                                <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{billSearch.bill}"/>
-                                            </p:commandLink>
-                                            <p:commandLink
-                                                id="RefundBillNo"
-                                                ajax="false"
-                                                value="#{bill.refundedBill.deptId}"
-                                                action="#{billSearch.navigateToViewSingleOpdBill()}"
-                                                rendered="#{bill.refunded}" style="color: orange">
-                                                <f:setPropertyActionListener value="#{bill.refundedBill}" target="#{billSearch.bill}"/>
-                                            </p:commandLink>
-                                        </div>
-
-                                    </p:column>
-                                    <p:column 
-                                        headerText="Batch Bill" 
-                                        sortBy="#{bill.backwardReferenceBill.deptId}" 
+                                        headerText="Bill NO" 
+                                        sortBy="#{bill.deptId}" 
                                               filterMatchMode="contains"
-                                              filterBy="#{bill.backwardReferenceBill.deptId}">
-                                        <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="#{bill.backwardReferenceBill.deptId}">
+                                              filterBy="#{bill.deptId}">
+                                        <h:commandLink action="#{opdBillController.navigateToViewPackageBatchBill}" value="#{bill.deptId}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
-                                        </h:commandLink>  
+                                        </h:commandLink>
+                                        <h:panelGroup rendered="#{bill.cancelled}" style="display: grid">
+                                            <h:outputLabel value="#{bill.cancelledBill.deptId}" style="color: red"></h:outputLabel>
+                                        </h:panelGroup>
                                     </p:column>
 
                                     <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}">
@@ -307,11 +276,6 @@
                                             <h:outputLabel value="#{bill.refundedBill.department.name}" style="color: orange" rendered="#{bill.refunded}"></h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-                                    <p:column headerText="Billed For" sortBy="#{bill.toDepartment.name}" 
-                                              filterBy="#{bill.toDepartment.name}" filterMatchMode="contains" >                                
-                                        <h:outputLabel id="insDep" value="#{bill.toDepartment.name}" />
-                                    </p:column>
-
                                     <p:column headerText="Billed by" 
                                               sortBy="#{bill.creater.name}" 
                                               filterMatchMode="contains"
@@ -329,10 +293,12 @@
                                         sortBy="#{bill.patient.person.name}" 
                                         filterBy="#{bill.patient.person.name}" >                               
                                         <h:panelGroup id="pt">
-                                            <h:commandLink  value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                            <h:commandLink  value="#{bill.patient.person.nameWithTitle}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                                 <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
                                             </h:commandLink>
-                                            <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                            <h:outputLabel 
+                                                value="#{bill.patient.person.nameWithTitle}" 
+                                                rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
@@ -340,9 +306,7 @@
                                     <p:column headerText="Remarks" >  
                                         <h:panelGroup id="remark">
                                             <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
-                                            <p:badge rendered="#{bill.billTypeAtomic eq 'PACKAGE_OPD_BILL_WITH_PAYMENT'}" value="Package Bill"></p:badge>
                                             <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
-<!--<p:badge rendered="#{bill.billTypeAtomic eq 'PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT'}" value="Package Batch Bill"></p:badge>-->
                                         </h:panelGroup>
 
                                         <p:tooltip for="remark" value="df" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD - Display Bill Details in Tooltip')}" >

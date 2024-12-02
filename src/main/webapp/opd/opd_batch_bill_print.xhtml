@@ -198,16 +198,6 @@
                                                         value="#{opdBillController.batchBill}" 
                                                         target="#{billController.batchBill}" />
                                                 </p:commandButton>
-                                                <p:commandButton 
-                                                    ajax="false"
-                                                    value="View Batch Bill"
-                                                    icon="fa fa-file-invoice"
-                                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}"
-                                                    styleClass="m-1 ui-button-success">
-                                                    <f:setPropertyActionListener 
-                                                        value="#{opdBillController.batchBill}" 
-                                                        target="#{billSearch.bill}" />
-                                                </p:commandButton>
                                             </div>
                                         </div>
                                     </f:facet>
