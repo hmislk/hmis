@@ -21,6 +21,8 @@ public enum CountedServiceType {
     INWARD_PROFESSIONAL_PAYMENT_RETURN("Inward Professional Payment Cancellation or Returns"),
     COLLECTING_CENTRE("Collecting Centre"),
     OTHER("Other"),
+    CREDIT_SETTLE_BY_PATIENT("Credit Settle by Patient"),
+    CREDIT_SETTLE_BY_COMPANY("Credit Settle by Company"),
     OTHER_PROFESSIONAL_PAYMENT("Other Professional Payment"),
     OTHER_PROFESSIONAL_PAYMENT_RETURN("Other Professional Payment Cancellation or Returns"),
     AGENCY("Agency"),  // New entry for agency-related collections

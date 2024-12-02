@@ -111,7 +111,14 @@
                                             </p:commandButton> 
                                         </div>
                                     </f:facet>
-
+                                    <style>
+                                        @media print {
+                                            .billContainer {
+                                                page-break-after: always !important;
+                                                page-break-inside: avoid !important;
+                                            }
+                                        }
+                                    </style>
                                     <h:panelGroup id="groupPrint" >
                                         <ui:repeat value="#{sessionController.departmentPreference.OPDBillCopiesList}" var="copy">
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
@@ -121,7 +128,14 @@
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
                                                 <ui:repeat value="#{opdBillController.bills}" var="ffb" >
-                                                    <prints:five_five_paper_coustom_1_package_single bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>                        
+                                                    <div class="billContainer">
+                                                        <prints:five_five_paper_coustom_1_package_single 
+                                                            bill="#{ffb}"
+                                                            duplicate="#{opdBillController.duplicatePrint}"
+                                                            payments="#{opdBillController.payments}"
+                                                            /> 
+                                                    </div>
+
                                                 </ui:repeat>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
@@ -166,44 +180,44 @@
 
                             <div class="col-4" >
                                 <div class="row">
-                                <p:panel>
-                                <f:facet name="header">
-                                    <div class="d-flex justify-content-between">
-                                        <p:outputLabel value="Package Bill" class="mt-2"></p:outputLabel>
-                                        <p:commandButton 
-                                            value="Print Package Bill" 
-                                            class="ui-button-info"
-                                            icon="fa fa-print"
-                                            ajax="false">
-                                            <p:printer target="packageBillView" />
-                                        </p:commandButton> 
-                                    </div>
-                                </f:facet>
-                                
-                                <h:panelGroup id="packageBillView">
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
-                                        <prints:bill_template_of_5x5_C1_package_PackageBill bill="#{opdBillController.batchBill}" payments="#{opdBillController.payments}" duplicate="true"/>                        
-                                    </h:panelGroup>
-                                </h:panelGroup>
-                                
-                            </p:panel>
-                            </div>
-                                <div class="row">
-                                <p:panel rendered="#{configOptionApplicationController.getBooleanValueByKey('Showing OPD Batch Bill to Print')}">
-                                    <f:facet name="header">
-                                        <div class="d-flex justify-content-between">
-                                            <p:outputLabel value="Batch Bill" class="mt-2"></p:outputLabel>
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <div class="d-flex justify-content-between">
+                                                <p:outputLabel value="Package Bill" class="mt-2"></p:outputLabel>
+                                                <p:commandButton 
+                                                    value="Print Package Bill" 
+                                                    class="ui-button-info"
+                                                    icon="fa fa-print"
+                                                    ajax="false">
+                                                    <p:printer target="packageBillView" />
+                                                </p:commandButton> 
+                                            </div>
+                                        </f:facet>
 
-                                            <p:commandButton 
-                                               
-                                                value="Print Batch Bill" 
-                                                class="ui-button-info m-1"
-                                                icon="fa fa-print"
-                                                ajax="false">
-                                                <p:printer target="groupBatchBillPrint" />
-                                            </p:commandButton>
-                                        </div>
-                                    </f:facet>
+                                        <h:panelGroup id="packageBillView">
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                                <prints:bill_template_of_5x5_C1_package_PackageBill bill="#{opdBillController.batchBill}" payments="#{opdBillController.payments}" duplicate="true"/>                        
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                    </p:panel>
+                                </div>
+                                <div class="row">
+                                    <p:panel rendered="#{configOptionApplicationController.getBooleanValueByKey('Showing OPD Batch Bill to Print')}">
+                                        <f:facet name="header">
+                                            <div class="d-flex justify-content-between">
+                                                <p:outputLabel value="Batch Bill" class="mt-2"></p:outputLabel>
+
+                                                <p:commandButton 
+
+                                                    value="Print Batch Bill" 
+                                                    class="ui-button-info m-1"
+                                                    icon="fa fa-print"
+                                                    ajax="false">
+                                                    <p:printer target="groupBatchBillPrint" />
+                                                </p:commandButton>
+                                            </div>
+                                        </f:facet>
 
                                         <h:panelGroup id="groupBatchBillPrint">
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
@@ -222,7 +236,7 @@
                                                 <prints:bill_template_of_5x5_C1_package_BatchBill bill="#{opdBillController.batchBill}" payments="#{opdBillController.payments}" duplicate="true"/>                        
                                             </h:panelGroup>
                                         </h:panelGroup>
-                                </p:panel>
+                                    </p:panel>
                                 </div>
                             </div>
 
