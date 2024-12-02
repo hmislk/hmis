@@ -46,6 +46,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -81,7 +82,13 @@ public class CashRecieveBillController implements Serializable {
     private CreditBean creditBean;
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
+    @EJB
+    CashTransactionBean cashTransactionBean;
+    @EJB
+    PaymentService paymentService;
 
+    @Inject
+    private BillBeanController billBean;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -265,7 +272,7 @@ public class CashRecieveBillController implements Serializable {
         double refBallance = 0;
         double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal() + billItem.getReferenceBill().getVat());
         double refAmount = Math.abs(getCreditBean().getRefundAmount(billItem.getReferenceBill()));
-        double paidAmt = Math.abs(getCreditBean().getPaidAmount(billItem.getReferenceBill(), BillType.CashRecieveBill));
+        double paidAmt = Math.abs(getCreditBean().getTotalCreditSettledAmount(billItem.getReferenceBill()));
         refBallance = neTotal - (paidAmt + refAmount);
         return refBallance;
     }
@@ -417,18 +424,12 @@ public class CashRecieveBillController implements Serializable {
         if (errorCheckForAdding()) {
             return;
         }
-
         getCurrent().setFromInstitution(getCurrentBillItem().getReferenceBill().getCreditCompany());
-        //     getCurrentBillItem().getBill().setNetTotal(getCurrentBillItem().getNetValue());
-        //     getCurrentBillItem().getBill().setTotal(getCurrent().getNetTotal());
-
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getSelectedBillItems().add(getCurrentBillItem());
         getBillItems().add(getCurrentBillItem());
-
         currentBillItem = null;
         calTotal();
-
     }
 
     public void addToBillForVoucher() {
@@ -693,11 +694,6 @@ public class CashRecieveBillController implements Serializable {
 
     }
 
-    @Inject
-    private BillBeanController billBean;
-    @EJB
-    CashTransactionBean cashTransactionBean;
-
     public CashTransactionBean getCashTransactionBean() {
         return cashTransactionBean;
     }
@@ -749,7 +745,7 @@ public class CashRecieveBillController implements Serializable {
             getBillFacade().edit(getCurrent());
         }
 
-        for (BillItem savingBillItem : getSelectedBillItems()) {
+        for (BillItem savingBillItem : getBillItems()) {
             savingBillItem.setCreatedAt(new Date());
             savingBillItem.setCreater(getSessionController().getLoggedUser());
             savingBillItem.setBill(getCurrent());
@@ -762,15 +758,9 @@ public class CashRecieveBillController implements Serializable {
             }
             updateSettlingCreditBillSettledValues(savingBillItem);
         }
-        List payments = createPayment(current, current.getPaymentMethod());
-        drawerController.updateDrawerForIns(payments);
-
-        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
-        //   savePayments();
+        paymentService.createPayment(current, paymentMethodData);
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
-
     }
 
     public void settleBill() {
@@ -1206,13 +1196,30 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void updateSettlingCreditBillSettledValues(BillItem billItemWithReferanceToCreditBill) {
+        System.out.println("Starting updateSettlingCreditBillSettledValues");
+        System.out.println("Bill Item Reference: " + billItemWithReferanceToCreditBill);
+
         double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(billItemWithReferanceToCreditBill.getReferenceBill());
+        System.out.println("Settled Credit Value By Companies: " + settledCreditValueByCompanies);
+
         double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(billItemWithReferanceToCreditBill.getReferenceBill());
+        System.out.println("Settled Credit Value By Patient: " + settledCreditValueByPatient);
+
         double settleCreditValueTotal = settledCreditValueByCompanies + settledCreditValueByPatient;
+        System.out.println("Total Settled Credit Value: " + settleCreditValueTotal);
+
         billItemWithReferanceToCreditBill.getReferenceBill().setPaidAmount(settleCreditValueTotal);
+        System.out.println("Paid Amount Set: " + settleCreditValueTotal);
+
         billItemWithReferanceToCreditBill.getReferenceBill().setSettledAmountByPatient(settledCreditValueByPatient);
+        System.out.println("Settled Amount By Patient Set: " + settledCreditValueByPatient);
+
         billItemWithReferanceToCreditBill.getReferenceBill().setSettledAmountBySponsor(settledCreditValueByCompanies);
+        System.out.println("Settled Amount By Sponsor Set: " + settledCreditValueByCompanies);
+
         getBillFacade().edit(billItemWithReferanceToCreditBill.getReferenceBill());
+        System.out.println("Reference Bill Updated: " + billItemWithReferanceToCreditBill.getReferenceBill());
+        System.out.println("Completed updateSettlingCreditBillSettledValues");
     }
 
     private void updateReferenceBht(BillItem tmp) {

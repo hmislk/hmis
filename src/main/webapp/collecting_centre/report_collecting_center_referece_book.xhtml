@@ -163,9 +163,15 @@
                                                 </div>
                                             </f:facet>
                                             <div class="d-flex justify-content-center">
-                                                <p:badge rendered="#{refBook.retired}" value="Deleted" severity="danger" size="large" styleClass="mr-2"></p:badge>
-                                                <p:badge rendered="#{refBook.active eq true and refBook.retired eq false }" size="large" value="Active" severity="info" styleClass="mr-2"></p:badge>
-                                                <p:badge rendered="#{refBook.active eq  false and refBook.retired eq false}" value="Deactivate" size="large" severity="warning" styleClass="mr-2"></p:badge>
+                                                <h:panelGroup rendered="#{refBook.fullyUtilized}">
+                                                    <p:badge value="Utilized" severity="success" size="large" styleClass="mr-2"></p:badge>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{!refBook.fullyUtilized}">
+                                                    <p:badge rendered="#{refBook.retired}" value="Deleted" severity="danger" size="large" styleClass="mr-2"></p:badge>
+                                                    <p:badge rendered="#{refBook.active eq true and refBook.retired eq false }" size="large" value="Active" severity="info" styleClass="mr-2"></p:badge>
+                                                    <p:badge rendered="#{refBook.active eq  false and refBook.retired eq false}" value="Deactivate" size="large" severity="warning" styleClass="mr-2"></p:badge>
+                                                </h:panelGroup>
+
                                             </div>
                                         </p:column>
 
@@ -175,7 +181,7 @@
                                                     class="ui-button-warning"
                                                     icon="fas fa-edit"
                                                     title="To Update"
-                                                    disabled="#{refBook.retired}"
+                                                    disabled="#{refBook.retired or refBook.fullyUtilized}"
                                                     process="@this" 
                                                     update="edit"
                                                     oncomplete="PF('edit').show()"
@@ -185,7 +191,7 @@
                                                     class="ui-button-danger"
                                                     icon="bi bi-trash-fill"
                                                     title="To Delete"  
-                                                    disabled="#{refBook.retired}"
+                                                    disabled="#{refBook.retired or refBook.fullyUtilized}"
                                                     process="@this" 
                                                     update="dlg" 
                                                     oncomplete="PF('dlg').show()"
