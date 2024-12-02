@@ -558,7 +558,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         Set<String> usedRefNumbers = new HashSet<>();
         Map m = new HashMap();
         // Adjust this query to fetch only the reference numbers
-        sql = "select b.referenceNumber from Bill b where b.institution=:ins";
+        sql = "select b.referenceNumber from Bill b where b.collectingCentre=:ins";
         m.put("ins", ins);
         List<String> resultList = billFacade.findString(sql, m);
         usedRefNumbers.addAll(resultList);
