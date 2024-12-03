@@ -937,6 +937,7 @@ public class ChannelReportTemplateController implements Serializable {
             if (row != null) {
                 row.setCounter(idCounter++);
                 SessionInstance sessionInstance = row.getSessionInstance();
+                Bill bill = row.getBillSession().getBill();
                 if (sessionInstance != null) {
                     //System.out.println("inside");
                     bundle.setLong1(bundle.getLong1() + (sessionInstance.getBookedPatientCount() != null ? sessionInstance.getBookedPatientCount() : 0));
