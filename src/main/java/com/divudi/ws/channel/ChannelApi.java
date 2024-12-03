@@ -533,7 +533,7 @@ public class ChannelApi {
             doctorDetails.put("HosCode", si.getInstitution().getCode());
             doctorDetails.put("AppDate", dateFormat.format(si.getSessionDate()).toString());
             doctorDetails.put("DocName", si.getOriginatingSession().getStaff().getPerson().getNameWithTitle());
-            doctorDetails.put("DoctorNotes", si.getOriginatingSession().getSpecialNotice());
+            doctorDetails.put("DoctorNotes", si.getOriginatingSession().getSpecialNotice() == null ? "" : si.getOriginatingSession().getSpecialNotice());
             doctorDetails.put("DoctorNo", si.getStaff().getId().toString());
             doctorDetails.put("SessionStart", timeFormat.format(si.getOriginatingSession().getStartingTime()));
             resultMap.put("additionalProp" + additionalProp1.toString(), doctorDetails);
@@ -731,7 +731,7 @@ public class ChannelApi {
             session.put("docForeignFee", "");
             session.put("nextNo", s.getNextAvailableAppointmentNumber() != null ? s.getNextAvailableAppointmentNumber().intValue() : 1);
             session.put("hosId", s.getInstitution().getId().toString());
-            session.put("remarks", "");
+            session.put("remarks", s.getOriginatingSession().getSpecialNotice() == null ? "":s.getOriginatingSession().getSpecialNotice());
             session.put("vatDocCharge", null);
             session.put("docFee", s.getOriginatingSession().getChannelStaffFee());
             session.put("hosName", s.getInstitution().getName());
@@ -1095,6 +1095,11 @@ public class ChannelApi {
 
         //TODO : Handle Payment Method
         Bill bill = channelService.addToReserveAgentBookingThroughApi(false, newPatient, session, clientsReferanceNo, null, creditCompany);
+        
+        if(bill == null){
+            JSONObject response = commonFunctionToErrorResponse("Can't create booking. Session is not confirmed yet.");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
