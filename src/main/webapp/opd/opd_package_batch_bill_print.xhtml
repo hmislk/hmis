@@ -213,8 +213,8 @@
                                         title="Manage Bill"
                                         class="ui-button-warning m-1"
                                         icon="fa fa-file-invoice"
-                                        action="#{billSearch.navigateToManageBillByAtomicBillType()}">
-                                        <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                        action="#{billPackageController.navigateToCancelOpdPackageBill()}">
+                                        <f:setPropertyActionListener value="#{b}" target="#{billPackageController.bill}"/>
                                     </p:commandButton>
 
                                     <p:commandButton 
