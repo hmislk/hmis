@@ -310,22 +310,16 @@ public class PettyCashBillController implements Serializable {
     }
 
     public String settleReturnBill() {
-        System.out.println("settleReturnBill  Start ");
         if (comment == null || comment.trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return "";
         }
-        System.out.println("current = " + current);
 
         if (getCurrent() != null && getCurrent().getId() != null && getCurrent().getId() != 0) {
             currentReturnBill = createPettyCashReturnBill();
             paymentService.createPayment(currentReturnBill, paymentMethodData);
             getBillFacade().edit(getCurrent());
             printPriview = true;
-
-            System.out.println("Not Null");
-            System.out.println("rb = " + currentReturnBill);
-            System.out.println("settleReturnBill  End ");
         }
         return "/petty_cash_bill_return_print";
     }
