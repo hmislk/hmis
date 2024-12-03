@@ -1069,7 +1069,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         return "/opd/opd_bill_package?faces-redirect=true";
     }
 
-    public String navigateToViewOpdPackageBatchBill(Bill bb) {
+    public String navigateToManageOpdPackageBatchBill(Bill bb) {
+        System.out.println("navigateToManageOpdPackageBatchBill = ");
         if (bb == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return null;
@@ -1078,11 +1079,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("Nothing selected");
             return null;
         }
+        System.out.println("bb.getBillTypeAtomic() = " + bb.getBillTypeAtomic());
         if (bb.getBillTypeAtomic() == null) {
             JsfUtil.addErrorMessage("No bill type");
             return null;
         }
-        if (bb.getBillTypeAtomic() == BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT) {
+        if (bb.getBillTypeAtomic() != BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT) {
             JsfUtil.addErrorMessage("No bill type");
             return null;
         }
@@ -1095,7 +1097,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             billService.initiateBillItemsAndBillFees(b);
         }
         duplicatePrint = true;
-        return "/opd/opd_batch_bill_print?faces-redirect=true;";
+        return "/opd/opd_package_batch_bill_print?faces-redirect=true;";
     }
 
     public String navigateToMedicalPakageBillingFromMenu() {
