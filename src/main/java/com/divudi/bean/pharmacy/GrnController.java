@@ -158,6 +158,7 @@ public class GrnController implements Serializable {
     }
 
     public void clear() {
+        billExpenses = null;
         grnBill = null;
         total = 0;
         netTotal = 0;

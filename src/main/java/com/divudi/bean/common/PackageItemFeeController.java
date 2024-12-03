@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+
 import com.divudi.entity.Department;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Item;
@@ -34,10 +35,11 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import com.divudi.bean.common.util.JsfUtil;
+
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -117,13 +119,16 @@ public class PackageItemFeeController implements Serializable {
     }
 
     public void saveCharge() {
-
+        if (currentPackege == null) {
+            JsfUtil.addErrorMessage("Please select a Package");
+            return;
+        }
         if (currentFee == null) {
-            JsfUtil.addErrorMessage("Please select a charge");
+            JsfUtil.addErrorMessage("Please select a Fee");
             return;
         }
         if (currentIx == null) {
-            JsfUtil.addErrorMessage("Please select a Investigation");
+            JsfUtil.addErrorMessage("Please select a Test");
             return;
         }
 
@@ -159,10 +164,10 @@ public class PackageItemFeeController implements Serializable {
         currentPackege.setTotal(total);
         getPackegeFacade().edit(currentPackege);
     }
-    
-    public String navigateToPackageItemFees(){
-         return "/admin/pricing/package_item_prices?faces-redirect=true";
-     }
+
+    public String navigateToPackageItemFees() {
+        return "/admin/pricing/package_item_prices?faces-redirect=true";
+    }
 
     public ItemFacade getEjbFacade() {
         return ejbFacade;

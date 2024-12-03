@@ -232,7 +232,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         bills = new ArrayList<>();
         Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : lstBillEntries) {
-            billDepts.add(e.getBillItem().getItem().getDepartment());
+            billDepts.add(e.getBillItem().getItem().getTransDepartment());
 
         }
         for (Department d : billDepts) {
@@ -244,7 +244,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             List<BillItem> list = new ArrayList<>();
             for (BillEntry e : lstBillEntries) {
 
-                if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
+                if (Objects.equals(e.getBillItem().getItem().getTransDepartment().getId(), d.getId())) {
                     getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
                     // getBillBean().calculateBillItem(myBill, e);   
                     list.add(e.getBillItem());
@@ -388,7 +388,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         savePatient();
         if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
-            Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
+            Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getTransDepartment(), temp);
 //            getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser());
             b.setBillItems(getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser()));
             getBillBean().calculateBillItems(b, getLstBillEntries());
@@ -592,8 +592,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         BillFeePayment bfp = new BillFeePayment();
         bfp.setBillFee(bf);
         bfp.setAmount(amount);
-        bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
-        bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
+        bfp.setInstitution(bf.getBillItem().getItem().getTransInstitution());
+        bfp.setDepartment(bf.getBillItem().getItem().getTransDepartment());
         bfp.setCreater(getSessionController().getLoggedUser());
         bfp.setCreatedAt(new Date());
         bfp.setPayment(p);

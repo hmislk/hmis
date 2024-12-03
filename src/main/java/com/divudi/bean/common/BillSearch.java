@@ -3867,6 +3867,9 @@ public class BillSearch implements Serializable {
                 return navigateToManageCancelExpenseBill();
             case FUND_SHIFT_SHORTAGE_BILL:
                 return navigateToViewCashierShiftShortageBill(bill);
+            case PACKAGE_OPD_BILL_WITH_PAYMENT:
+                opdBillController.setBill(bill);
+                return opdBillController.navigateToViewPackageBatchBill();
 
         }
 
