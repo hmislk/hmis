@@ -37,17 +37,20 @@
                                                 class="ui-button-success" 
                                                 icon="fas fa-plus-circle" 
                                                 process="btnToAddNew"
-                                                update="digEdit"
+                                                update=":#{p:resolveFirstComponentWithId('digEdit',view).clientId}"
                                                 oncomplete="PF('dlg1').show()">
                                             </p:commandButton>
 
 
                                             <p:commandButton 
                                                 value="Edit Item" 
+                                                id="btnEdit"
                                                 disabled="#{packageItemController.current eq null}" 
                                                 actionListener="#{packageItemController.clearValus()}" 
                                                 class="ui-button-info" 
                                                 icon="fas fa-edit" 
+                                                process="btnEdit"
+                                                update=":#{p:resolveFirstComponentWithId('digEdit',view).clientId}"
                                                 oncomplete="PF('dlg1').show()">
                                             </p:commandButton>
 
@@ -77,6 +80,9 @@
                                     <p:column headerText="Item">
                                         <h:outputText value="#{i.item.name}"/>
                                     </p:column>
+                                    <p:column headerText="Institution">
+                                        <h:outputText value="#{i.institution.name}"/>
+                                    </p:column>
                                     <p:column headerText="Department">
                                         <h:outputText value="#{i.department.name}"/>
                                     </p:column>
@@ -90,116 +96,7 @@
                                 </p:dataTable>
                             </p:panel>
 
-                            <p:dialog 
-                                rendered="true" 
-                                modal="true" 
-                                widgetVar="dlg1" 
-                                id="digEdit" 
-                                minHeight="400" 
-                                width="800" 
-                                showEffect="fade" 
-                                focus="btnEdit" 
-                                closeOnEscape="true">
 
-                                <f:facet name="header">
-                                    <p:outputLabel value="Add New Item"  rendered="#{packageItemController.current.id eq null}" ></p:outputLabel>
-                                    <p:outputLabel value="Edit #{packageItemController.current.item} Item" rendered="#{packageItemController.current.id ne null}" ></p:outputLabel>
-
-                                    <p:commandButton 
-                                        id="btnadd"
-                                        rendered="#{packageItemController.current.id eq null}" 
-                                        value="Save" 
-                                        action="#{packageItemController.addToPackage()}" 
-                                        class="ui-button-success"
-                                        icon="fas fa-plus-circle" 
-                                        ajax="false">
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        id="btnEdit"
-                                        rendered="#{packageItemController.current.id ne null}" 
-                                        value="Update" 
-                                        action="#{packageItemController.EditPackageItem()}" 
-                                        class="ui-button-info"
-                                        icon="fas fa-edit" 
-                                        ajax="false">
-                                    </p:commandButton>
-                                </f:facet>
-
-                                <p:panelGrid columns="2" class="w-100" layout="tabular">
-                                    <h:outputText value="Item" ></h:outputText>
-                                    <p:inputText 
-                                        rendered="#{packageItemController.current.id ne null}" 
-                                        autocomplete="off"
-                                        class="w-100"
-                                        style="font-size: 16px; font-weight: 600;"
-                                        disabled="true"
-                                        value="#{packageItemController.current.item.name}">
-                                    </p:inputText>
-                                    <p:autoComplete
-                                        rendered="#{packageItemController.current.id eq null}" 
-                                        value="#{packageItemController.current.item}"
-                                        completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
-                                        var="addingItem"
-                                        class="w-100"
-                                        inputStyleClass="w-100"
-                                        itemLabel="#{addingItem.name}"
-                                        itemValue="#{addingItem}"
-                                        >
-                                        <p:column headerText="Code" >
-                                            #{addingItem.code}
-                                        </p:column>
-                                        <p:column headerText="Item" >
-                                            #{addingItem.name}
-                                        </p:column>
-                                        <p:column headerText="Category" >
-                                            #{addingItem.category.name}
-                                        </p:column>
-                                        <p:column headerText="Parent Category" >
-                                            #{addingItem.category.parentCategory.name}
-                                        </p:column>
-                                        <p:column headerText="Department" >
-                                            #{addingItem.department.name}
-                                        </p:column>
-                                    </p:autoComplete>
-
-
-                                    <h:outputText value="Institution" class="mt-2"/>
-
-                                    <p:selectOneMenu id="cmbInstitutionCurrent" value="#{packageItemController.current.institution}" class="w-100">
-                                        <f:selectItem itemLabel="Please select an Institution"/>
-                                        <f:selectItems value="#{institutionController.companies}" var="insc" itemLabel="#{insc.name}" itemValue="#{insc}" />
-                                        <p:ajax event="change" process="@this" update="departmentPanel"/>
-                                    </p:selectOneMenu>
-
-                                    <!-- Wrap the dependent components -->
-                                    <h:outputText value="Department" />
-                                    <p:outputPanel id="departmentPanel">
-                                        <h:outputText value="Select an Institution first" rendered="#{empty packageItemController.current.institution}"/>
-                                        <p:selectOneMenu id="cmbDepartmentCurrent" 
-                                                         value="#{packageItemController.current.department}" 
-                                                         class="w-100"
-                                                         rendered="#{not empty packageItemController.current.institution}">
-                                            <f:selectItem itemLabel="Please select a Department"/>
-                                            <f:selectItems 
-                                                value="#{departmentController.getInstitutionDepartments(packageItemController.current.institution)}" 
-                                                var="depc" 
-                                                itemLabel="#{depc.name}" 
-                                                itemValue="#{depc}" />
-                                        </p:selectOneMenu>
-                                    </p:outputPanel>
-
-
-                                </p:panelGrid>
-
-
-
-
-                                <f:facet name="footer">
-
-
-                                </f:facet>
-                            </p:dialog>
 
                         </div>
                     </div>
@@ -208,6 +105,116 @@
 
                 </p:panel>
             </h:form>
+
+            <h:form>
+                <p:dialog 
+                    rendered="true" 
+                    modal="true" 
+                    widgetVar="dlg1" 
+                    id="digEdit" 
+                    minHeight="400" 
+                    width="800" 
+                    showEffect="fade" 
+                    focus="btnEdit" 
+                    closeOnEscape="true">
+
+                    <f:facet name="header">
+                        <p:outputLabel value="Add New Item"  rendered="#{packageItemController.current.id eq null}" ></p:outputLabel>
+                        <p:outputLabel value="Edit #{packageItemController.current.item} Item" rendered="#{packageItemController.current.id ne null}" ></p:outputLabel>
+
+                        <p:commandButton 
+                            id="btnSave"
+                            rendered="#{packageItemController.current.id eq null}" 
+                            value="Save" 
+                            action="#{packageItemController.addToPackage()}" 
+                            class="ui-button-success"
+                            icon="fas fa-plus-circle" 
+                            process="btnSave piDetails"
+                            update="@form"
+                            ajax="false">
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            id="btnUpdate"
+                            rendered="#{packageItemController.current.id ne null}" 
+                            value="Update" 
+                            action="#{packageItemController.EditPackageItem()}" 
+                            class="ui-button-info"
+                            icon="fas fa-edit" 
+                            process="btnUpdate piDetails"
+                            update="@form"
+                            ajax="false">
+                        </p:commandButton>
+                    </f:facet>
+
+                    <p:panelGrid id="piDetails" columns="2" class="w-100" layout="tabular">
+                        <h:outputText value="Item" ></h:outputText>
+                        <p:inputText 
+                            rendered="#{packageItemController.current.id ne null}" 
+                            autocomplete="off"
+                            class="w-100"
+                            style="font-size: 16px; font-weight: 600;"
+                            disabled="true"
+                            value="#{packageItemController.current.item.name}">
+                        </p:inputText>
+                        <p:autoComplete
+                            rendered="#{packageItemController.current.id eq null}" 
+                            value="#{packageItemController.current.item}"
+                            completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
+                            var="addingItem"
+                            class="w-100"
+                            inputStyleClass="w-100"
+                            itemLabel="#{addingItem.name}"
+                            itemValue="#{addingItem}"
+                            >
+                            <p:column headerText="Code" >
+                                #{addingItem.code}
+                            </p:column>
+                            <p:column headerText="Item" >
+                                #{addingItem.name}
+                            </p:column>
+                            <p:column headerText="Category" >
+                                #{addingItem.category.name}
+                            </p:column>
+                            <p:column headerText="Parent Category" >
+                                #{addingItem.category.parentCategory.name}
+                            </p:column>
+                            <p:column headerText="Department" >
+                                #{addingItem.department.name}
+                            </p:column>
+                        </p:autoComplete>
+
+
+                        <h:outputText value="Institution" class="mt-2"/>
+
+                        <p:selectOneMenu id="cmbInstitutionCurrent" value="#{packageItemController.current.institution}" class="w-100">
+                            <f:selectItem itemLabel="Please select an Institution"/>
+                            <f:selectItems value="#{institutionController.companies}" var="insc" itemLabel="#{insc.name}" itemValue="#{insc}" />
+                            <p:ajax event="change" process="@this" update="departmentPanel"/>
+                        </p:selectOneMenu>
+
+                        <!-- Wrap the dependent components -->
+                        <h:outputText value="Department" />
+                        <p:outputPanel id="departmentPanel">
+                            <h:outputText value="Select an Institution first" rendered="#{empty packageItemController.current.institution}"/>
+                            <p:selectOneMenu id="cmbDepartmentCurrent" 
+                                             value="#{packageItemController.current.department}" 
+                                             class="w-100"
+                                             rendered="#{not empty packageItemController.current.institution}">
+                                <f:selectItem itemLabel="Please select a Department"/>
+                                <f:selectItems 
+                                    value="#{departmentController.getInstitutionDepartments(packageItemController.current.institution)}" 
+                                    var="depc" 
+                                    itemLabel="#{depc.name}" 
+                                    itemValue="#{depc}" />
+                            </p:selectOneMenu>
+                        </p:outputPanel>
+
+
+                    </p:panelGrid>
+                </p:dialog>
+            </h:form>
+
         </h:panelGroup>
     </ui:define>
 </ui:composition>

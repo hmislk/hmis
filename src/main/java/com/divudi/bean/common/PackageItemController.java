@@ -160,20 +160,25 @@ public class PackageItemController implements Serializable {
     }
 
     public void addToPackage() {
+        System.out.println("addToPackage");
+        System.out.println("getCurrentPackege() = " + getCurrentPackege());
         if (getCurrentPackege() == null) {
             JsfUtil.addErrorMessage("Please select a package");
             return;
         }
+        System.out.println("getCurrent() = " + getCurrent());
         if (getCurrent() == null) {
             JsfUtil.addErrorMessage("Please select an item");
             return;
         }
+        System.out.println("getCurrent().getItem() = " + getCurrent().getItem());
         if (getCurrent().getItem() == null) {
             JsfUtil.addErrorMessage("Please select an item");
             return;
         }
         PackageItem pi = current;
         pi.setPackege(getCurrentPackege());
+        System.out.println("pi.getId() = " + pi.getId());
         if(pi.getId() != null){
             packageItemFacade.edit(pi);
         }else{
@@ -195,7 +200,11 @@ public class PackageItemController implements Serializable {
             return;
         }else{
             getCurrent().getItem().setCanRemoveItemfromPackage(canRemovePackageItemfromPackage);
-            itemFacade.edit(getCurrent().getItem());
+        }
+        if(getCurrent().getId()==null){
+            packageItemFacade.create(getCurrent());
+        }else{
+            packageItemFacade.edit(getCurrent());
         }
 
         recreateModel();
