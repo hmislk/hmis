@@ -1120,16 +1120,22 @@ public class SearchController implements Serializable {
         return "/reports/financialReports/payment_settlement_report?faces-redirect=true";
     }
 
-    public String navigateToDueSearch() {
-        resetAllFiltersExceptDateRange();
-        bundle = new ReportTemplateRowBundle();
-        return "/reports/financialReports/inward_due_search?faces-redirect=true";
-    }
-
     public String navigateToDueSearchCreditCompany() {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
         return "/reports/financialReports/inward_due_search_credit_company?faces-redirect=true";
+    }
+
+    public String navigateToDueAge() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/inward_due_age?faces-redirect=true";
+    }
+
+    public String navigateToDueAgeCreditCompany() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/inward_due_age_credit_company?faces-redirect=true";
     }
 
     public String navigatToShiftEndSummary() {
