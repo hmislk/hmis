@@ -85,6 +85,13 @@
                                 </f:facet>
                                 <p:outputLabel value="#{i+1}" />
                             </p:column>
+                            
+                            <p:column width="10em">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Bill No" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.billSession.bill.deptId}" />
+                            </p:column>
 
                             <p:column width="6em">
                                 <f:facet name="header">
@@ -132,12 +139,10 @@
                             </p:column>
                             <p:column width="4em">
                                 <f:facet name="header">
-                                    <p:outputLabel value="Payment Type" />
+                                    <p:outputLabel value="Agent" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.bill.paymentMethod}" />
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long4}" ></h:outputText>
-                                </f:facet>
+                                <p:outputLabel value="#{a.billSession.bill.creditCompany.name}" />
+                               
                             </p:column>
 
                             <p:column>
@@ -145,9 +150,30 @@
                                     <p:outputLabel value="Phone Number" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.billSession.bill.patient.person.phone}" />
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long6}"></h:outputText>
+                                
+                            </p:column>
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="State" />
                                 </f:facet>
+                                <p:badge rendered="#{a.billSession.bill.cancelled eq true}" value="Cancelled Bill" severity="danger"></p:badge>
+                                <p:badge rendered="#{a.billSession.bill.refunded eq true}" value="Refunded bill" severity="warning"></p:badge>
+                                <p:badge rendered="#{a.billSession.bill.cancelled eq false and a.billSession.bill.refunded eq false}" value="Completed bill" severity="success"></p:badge>
+                               
+                            </p:column>
+
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Action" />
+                                </f:facet>
+                                <p:commandLink 
+                                    ajax="false" 
+                                    value="View BillSession" 
+                                    action="#{bookingControllerViewScope.navigateToViewBillSession(a.billSession)}">
+                                </p:commandLink>
+                               
+
                             </p:column>
                         </p:dataTable>
 
