@@ -357,18 +357,26 @@
                                     </p:column> 
 
                                     <p:column headerText="Actions" style="width: 12em;" >
-                                        <p:commandButton icon="pi pi-wallet" styleClass="m-1" ajax="false" title="Manage Bill" action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                        #{bill.billType}
+                                        #{bill.billTypeAtomic}
+                                        <p:commandButton
+                                            icon="pi pi-wallet" 
+                                            styleClass="m-1"
+                                            ajax="false" 
+                                            title="Manage Package Bill" 
+                                            action="#{billSearch.navigateToManageBillByAtomicBillType()}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandButton>
-                                        <p:commandButton icon="pi pi-list" styleClass="m-1" ajax="false" title="Manage Batch Bill" action="#{billSearch.navigateToManageBillByAtomicBillType}">
-                                            <f:setPropertyActionListener value="#{bill.backwardReferenceBill}" target="#{billSearch.bill}"/>
-                                        </p:commandButton>
-                                        <p:commandButton icon="pi pi-search" styleClass="m-1" ajax="false" title="View Bill" action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
-                                        </p:commandButton>
-                                        <p:commandButton icon="pi pi-search-plus" styleClass="m-1" ajax="false" title="View Batch Bill" action="#{billSearch.navigateToViewBillByAtomicBillType}">
-                                            <f:setPropertyActionListener value="#{bill.backwardReferenceBill}" target="#{billSearch.bill}"/>
-                                        </p:commandButton>
+                                        
+                                        
+                                        
+                                        
+                                        <h:commandLink action="#{opdBillController.navigateToViewPackageBatchBill}" value="#{bill.deptId}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
+                                        </h:commandLink>
+                                        
+                                        
+                                        
                                     </p:column>
 
 
