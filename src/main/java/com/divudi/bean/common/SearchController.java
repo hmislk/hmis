@@ -1119,8 +1119,8 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         return "/reports/financialReports/payment_settlement_report?faces-redirect=true";
     }
-
-    public String navigateToDueSearch() {
+    
+        public String navigateToDueSearch() {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
         return "/reports/financialReports/inward_due_search?faces-redirect=true";
@@ -1130,6 +1130,12 @@ public class SearchController implements Serializable {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
         return "/reports/financialReports/inward_due_search_credit_company?faces-redirect=true";
+    }
+
+    public String navigateToDueAge() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/inward_due_age?faces-redirect=true";
     }
 
     public String navigatToShiftEndSummary() {
@@ -7889,14 +7895,12 @@ public class SearchController implements Serializable {
     }
 
     public void searchOpdBills() {
-        Date startTime = new Date();
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-        billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+//        billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
-        checkLabReportsApproved(bills);
-
+//        checkLabReportsApproved(bills);
     }
 
     public void searchOpdPackageBills() {

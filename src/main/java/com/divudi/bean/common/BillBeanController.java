@@ -51,6 +51,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.PackageFee;
+import com.divudi.entity.PackageItem;
 import com.divudi.entity.Packege;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
@@ -79,6 +80,7 @@ import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PackageFeeFacade;
+import com.divudi.facade.PackageItemFacade;
 import com.divudi.facade.PackegeFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PaymentFacade;
@@ -116,6 +118,8 @@ public class BillBeanController implements Serializable {
     private ItemFacade itemFacade;
     @EJB
     private PackegeFacade packegeFacade;
+    @EJB
+    PackageItemFacade packageItemFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -3360,9 +3364,27 @@ public class BillBeanController implements Serializable {
     }
 
     public List<Item> itemFromPackage(Item packege) {
-        String sql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + packege.getId();
-        List<Item> packageItems = getItemFacade().findByJpql(sql);
-
+        List<Item> packageItems = new ArrayList<>();
+        String jpql = "Select p "
+                + " from PackageItem p"
+                + " where p.retired=:ret"
+                + " and p.packege.id=:pid ";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("pid", packege.getId());
+        List<PackageItem> pis = packageItemFacade.findByJpql(jpql, params);
+        if (pis == null) {
+            return packageItems;
+        }
+        for (PackageItem pi : pis) {
+            Item i = pi.getItem();
+            if (i == null) {
+                continue;
+            }
+            i.setTransDepartment(pi.getDepartment());
+            i.setTransInstitution(pi.getInstitution());
+            packageItems.add(i);
+        }
         return packageItems;
     }
 
@@ -3381,7 +3403,8 @@ public class BillBeanController implements Serializable {
     public int calculateNumberOfBillsPerOrder(List<BillEntry> billEntrys) {
         Set<Long> deptIdSet = new HashSet<>(); // Use Set to store department IDs
         for (BillEntry be : billEntrys) {
-            Department dept = be.getBillItem().getItem().getDepartment();
+            Department dept = be.getBillItem().getItem().getTransDepartment();
+            System.out.println("be.getBillItem() = " + be.getBillItem());
             if (dept != null) {
                 deptIdSet.add(dept.getId()); // Add department ID to the set
             }
