@@ -357,11 +357,13 @@
                                     </p:column> 
 
                                     <p:column headerText="Actions" style="width: 12em;" >
+                                        #{bill.billType}
+                                        #{bill.billTypeAtomic}
                                         <p:commandButton
                                             icon="pi pi-wallet" 
                                             styleClass="m-1"
                                             ajax="false" 
-                                            title="Manage Bill" 
+                                            title="Manage Package Bill" 
                                             action="#{billSearch.navigateToManageBillByAtomicBillType()}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandButton>
@@ -374,9 +376,6 @@
                                         </h:commandLink>
                                         
                                         
-                                        <p:commandButton icon="pi pi-list" styleClass="m-1" ajax="false" title="Manage Batch Bill" action="#{billSearch.navigateToManageBillByAtomicBillType}">
-                                            <f:setPropertyActionListener value="#{bill.backwardReferenceBill}" target="#{billSearch.bill}"/>
-                                        </p:commandButton>
                                         
                                     </p:column>
 
