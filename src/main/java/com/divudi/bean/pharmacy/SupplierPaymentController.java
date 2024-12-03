@@ -145,6 +145,10 @@ public class SupplierPaymentController implements Serializable {
         bills = new ArrayList<>();
         netTotal = 0.0;
         printPreview = false;
+        paymentMethodData = null;
+        current = null;
+        billItems = null;
+        selectedBillItems = null;
         return "/dealerPayment/bill_dealor_all?faces-redirect=true";
     }
 
