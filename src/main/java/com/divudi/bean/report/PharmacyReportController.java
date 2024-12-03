@@ -160,6 +160,7 @@ public class PharmacyReportController implements Serializable {
     private String visitType;
     private Patient patient;
     private String diagnosis;
+    private String documentType;
 
     private Investigation investigation;
     private Speciality currentSpeciality;
@@ -2326,6 +2327,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setCalAllOutTotal(double calAllOutTotal) {
         this.calAllOutTotal = calAllOutTotal;
+    }
+
+    public String getDocumentType() {
+        return documentType;
+    }
+
+    public void setDocumentType(String documentType) {
+        this.documentType = documentType;
     }
 
 }
