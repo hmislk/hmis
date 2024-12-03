@@ -257,6 +257,12 @@ public class Item implements Serializable, Comparable<Item> {
     @Transient
     private String transCodeFromName;
 
+    @Transient
+    private Institution transInstitution;
+
+    @Transient
+    private Department transDepartment;
+
     private boolean multipleReportsAllowed;
 
     private boolean alternativeReportAllowed;
@@ -1458,8 +1464,28 @@ public class Item implements Serializable, Comparable<Item> {
     public void setReserveNumbersForSubsequentVisits(String reserveNumbersForSubsequentVisits) {
         this.reserveNumbersForSubsequentVisits = reserveNumbersForSubsequentVisits;
     }
-    
-    
+
+    public Institution getTransInstitution() {
+        if (transInstitution == null) {
+            transInstitution = institution;
+        }
+        return transInstitution;
+    }
+
+    public void setTransInstitution(Institution transInstitution) {
+        this.transInstitution = transInstitution;
+    }
+
+    public Department getTransDepartment() {
+        if (transDepartment == null) {
+            transDepartment = department;
+        }
+        return transDepartment;
+    }
+
+    public void setTransDepartment(Department transDepartment) {
+        this.transDepartment = transDepartment;
+    }
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 
