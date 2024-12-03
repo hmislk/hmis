@@ -54,11 +54,13 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.service.StaffService;
 import com.divudi.entity.BillFeePayment;
+import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.Payment;
 import com.divudi.facade.BillFeePaymentFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.service.BillService;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -114,8 +116,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     StaffService staffBean;
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
-    //</editor-fold>
+    @EJB
+    BillNumberGenerator billNumberGenerator;
+    @EJB
+    StaffService staffService;
+    @EJB
+    PaymentService paymentService;
 
+    //</editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Injects">
     @Inject
     SessionController sessionController;
@@ -137,21 +145,23 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     OpdBillController opdBillController;
     @Inject
     ApplicationController applicationController;
-
+    @Inject
+    WebUserController webUserController;
+    @Inject
+    PatientDepositController patientDepositController;
+    //</editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private List<Item> malePackaes;
     private List<Item> femalePackaes;
     private List<Item> bothPackaes;
     private List<Item> packaes;
-
-    //</editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
     private boolean duplicatePrint;
     private Bill batchBill;
     private boolean printPreview;
     //Interface Data
     private PaymentScheme paymentScheme;
-    PaymentMethod paymentMethod;
+    private PaymentMethod paymentMethod;
     private Patient patient;
     private Doctor referredBy;
     private Institution creditCompany;
@@ -175,14 +185,18 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     List<Bill> bills;
     private YearMonthDay yearMonthDay;
-    PaymentMethodData paymentMethodData;
-    Institution referredByInstitution;
-    String referralId;
+    private PaymentMethodData paymentMethodData;
+    private Institution referredByInstitution;
+    private String referralId;
 
     private ItemLight itemLight;
     private List<ItemLight> opdPackages;
     private boolean patientDetailsEditable;
     private List<Payment> payments;
+
+    private String comment;
+    boolean batchBillCancellationStarted;
+    private List<PaymentMethod> paymentMethods;
 
     //</editor-fold>
     private void savePatient() {
@@ -373,6 +387,247 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
         return error;
+    }
+
+    public String cancelPackageBatchBill() {
+        batchBillCancellationStarted = true;
+        if (getBatchBill() == null) {
+            JsfUtil.addErrorMessage("No bill");
+            batchBillCancellationStarted = false;
+            return "";
+        }
+        if (getBatchBill().getId() == null) {
+            JsfUtil.addErrorMessage("No Saved bill");
+            batchBillCancellationStarted = false;
+            return "";
+        }
+        if (!webUserController.hasPrivilege("OpdCancel")) {
+            JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
+            batchBillCancellationStarted = false;
+            return "";
+        }
+        if (errorsPresentOnOpdBatchBillCancellation()) {
+            batchBillCancellationStarted = false;
+            return "";
+        }
+
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+
+        Bill cancellationBatchBill = new CancelledBill();
+        cancellationBatchBill.copy(batchBill);
+        cancellationBatchBill.setDepartment(sessionController.getDepartment());
+        cancellationBatchBill.setInstitution(sessionController.getInstitution());
+        cancellationBatchBill.setFromDepartment(batchBill.getFromDepartment());
+        cancellationBatchBill.setToDepartment(batchBill.getToDepartment());
+        cancellationBatchBill.setFromInstitution(batchBill.getFromInstitution());
+        cancellationBatchBill.setToInstitution(batchBill.getToInstitution());
+        cancellationBatchBill.setBillType(BillType.OpdBathcBill);
+        cancellationBatchBill.setBillTypeAtomic(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+        cancellationBatchBill.setInsId(deptId);
+        cancellationBatchBill.setDeptId(deptId);
+        cancellationBatchBill.setCreatedAt(new Date());
+        cancellationBatchBill.setCreater(getSessionController().getLoggedUser());
+        cancellationBatchBill.setTotal(0 - Math.abs(batchBill.getTotal()));
+        cancellationBatchBill.setHospitalFee(0 - Math.abs(batchBill.getHospitalFee()));
+        cancellationBatchBill.setCollctingCentreFee(0 - Math.abs(batchBill.getCollctingCentreFee()));
+        cancellationBatchBill.setProfessionalFee(0 - Math.abs(batchBill.getProfessionalFee()));
+        cancellationBatchBill.setGrantTotal(0 - Math.abs(batchBill.getGrantTotal()));
+        cancellationBatchBill.setDiscount(0 - Math.abs(batchBill.getDiscount()));
+        cancellationBatchBill.setNetTotal(0 - Math.abs(batchBill.getNetTotal()));
+        if (paymentMethod != null) {
+            cancellationBatchBill.setPaymentMethod(paymentMethod);
+        }
+        cancellationBatchBill.setBilledBill(batchBill);
+        getBillFacade().create(cancellationBatchBill);
+
+        batchBill.setCancelled(true);
+        batchBill.setCancelledBill(cancellationBatchBill);
+        getBillFacade().edit(batchBill);
+
+        bills = billService.fetchIndividualBillsOfBatchBill(batchBill);
+
+        for (Bill originalBill : bills) {
+            cancelSingleBillWhenCancellingPackageBatchBill(originalBill, cancellationBatchBill);
+        }
+        if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
+            patientDepositController.updateBalance(cancellationBatchBill, pd);
+        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit) {
+            if (cancellationBatchBill.getToStaff() != null) {
+                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + cancellationBatchBill.getVat()));
+                JsfUtil.addSuccessMessage("Staff Credit Updated");
+                cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
+                getBillFacade().edit(cancellationBatchBill);
+            }
+        }
+        payments  = paymentService.createPaymentsForCancelling(cancellationBatchBill);
+        printPreview = true;
+        batchBillCancellationStarted = false;
+        return "/opd/opd_package_batch_bill_print?faces-redirect=true";
+    }
+
+    public void cancelSingleBillWhenCancellingPackageBatchBill(Bill originalBill, Bill cancellationBatchBill) {
+        if (originalBill == null && originalBill == null) {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+            return;
+        }
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(originalBill.getDepartment(), BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+
+        CancelledBill individualCancelltionBill = new CancelledBill();
+        individualCancelltionBill.copy(originalBill);
+        individualCancelltionBill.invertAndAssignValuesFromOtherBill(originalBill);
+        individualCancelltionBill.setBillType(BillType.OpdBill);
+        individualCancelltionBill.setBillTypeAtomic(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        individualCancelltionBill.setDeptId(deptId);
+        individualCancelltionBill.setInsId(deptId);
+        individualCancelltionBill.setPaymentMethod(cancellationBatchBill.getPaymentMethod());
+        individualCancelltionBill.setBilledBill(cancellationBatchBill);
+        individualCancelltionBill.setBillDate(new Date());
+        individualCancelltionBill.setBillTime(new Date());
+        individualCancelltionBill.setCreatedAt(new Date());
+        individualCancelltionBill.setCreater(getSessionController().getLoggedUser());
+        individualCancelltionBill.setDepartment(getSessionController().getDepartment());
+        individualCancelltionBill.setInstitution(getSessionController().getInstitution());
+        individualCancelltionBill.setForwardReferenceBill(cancellationBatchBill);
+        individualCancelltionBill.setComments(comment);
+        billService.saveBill(individualCancelltionBill);
+
+        List<BillItem> list = createBillItemsForOpdBatchBillCancellation(originalBill, individualCancelltionBill);
+        try {
+            individualCancelltionBill.setBillItems(list);
+        } catch (Exception e) {
+
+        }
+        billService.saveBill(individualCancelltionBill);
+
+        originalBill.setCancelled(true);
+        originalBill.setCancelledBill(individualCancelltionBill);
+        billService.saveBill(originalBill);
+    }
+
+    private List<BillItem> createBillItemsForOpdBatchBillCancellation(Bill originalBill, Bill cancellationBill) {
+        List<BillItem> list = new ArrayList<>();
+        for (BillItem originalBillItem : originalBill.getBillItems()) {
+            BillItem newBillItem = new BillItem();
+            newBillItem.setBill(cancellationBill);
+            newBillItem.setItem(originalBillItem.getItem());
+            newBillItem.setNetValue(0 - originalBillItem.getNetValue());
+            newBillItem.setGrossValue(0 - originalBillItem.getGrossValue());
+            newBillItem.setHospitalFee(0 - originalBillItem.getHospitalFee());
+            newBillItem.setCollectingCentreFee(0 - originalBillItem.getCollectingCentreFee());
+            newBillItem.setStaffFee(0 - originalBillItem.getStaffFee());
+            newBillItem.setRate(0 - originalBillItem.getRate());
+            newBillItem.setVat(0 - originalBillItem.getVat());
+            newBillItem.setVatPlusNetValue(0 - originalBillItem.getVatPlusNetValue());
+            newBillItem.setCatId(originalBillItem.getCatId());
+            newBillItem.setDeptId(originalBillItem.getDeptId());
+            newBillItem.setInsId(originalBillItem.getInsId());
+            newBillItem.setDiscount(0 - originalBillItem.getDiscount());
+            newBillItem.setQty(0 - originalBillItem.getQty());
+            newBillItem.setRate(originalBillItem.getRate());
+            newBillItem.setCreatedAt(new Date());
+            newBillItem.setCreater(getSessionController().getLoggedUser());
+            newBillItem.setPaidForBillFee(originalBillItem.getPaidForBillFee());
+            newBillItem.setReferanceBillItem(originalBillItem);
+            billItemFacade.create(newBillItem);
+
+            cancelBillComponents(originalBill, cancellationBill, originalBillItem, newBillItem);
+
+            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + originalBillItem.getId();
+            List<BillFee> originalBillFees = getBillFeeFacade().findByJpql(sql);
+            cancelBillFee(originalBill, cancellationBill, originalBillItem, newBillItem, originalBillFees);
+
+            list.add(newBillItem);
+
+        }
+
+        return list;
+    }
+    
+    public void cancelBillFee(Bill originalBill, Bill cancellationBill, BillItem originalBillItem, BillItem cancellationBillItem, List<BillFee> originalBillFees) {
+        for (BillFee originalBillFee : originalBillFees) {
+            BillFee newBillFee = new BillFee();
+            newBillFee.setFee(originalBillFee.getFee());
+            newBillFee.setPatienEncounter(originalBillFee.getPatienEncounter());
+            newBillFee.setPatient(originalBillFee.getPatient());
+            newBillFee.setDepartment(originalBillFee.getDepartment());
+            newBillFee.setInstitution(originalBillFee.getInstitution());
+            newBillFee.setSpeciality(originalBillFee.getSpeciality());
+            newBillFee.setStaff(originalBillFee.getStaff());
+            newBillFee.setReferenceBillFee(originalBillFee);
+            newBillFee.setBill(cancellationBill);
+            newBillFee.setBillItem(originalBillItem);
+            newBillFee.setFeeValue(0 - originalBillFee.getFeeValue());
+            newBillFee.setFeeGrossValue(0 - originalBillFee.getFeeGrossValue());
+            newBillFee.setFeeDiscount(0 - originalBillFee.getFeeDiscount());
+            newBillFee.setSettleValue(0 - originalBillFee.getSettleValue());
+            newBillFee.setFeeVat(0 - originalBillFee.getFeeVat());
+            newBillFee.setFeeVatPlusValue(0 - originalBillFee.getFeeVatPlusValue());
+            newBillFee.setCreatedAt(new Date());
+            newBillFee.setCreater(getSessionController().getLoggedUser());
+            getBillFeeFacade().create(newBillFee);
+        }
+    }
+    
+    private void cancelBillComponents(Bill originalBill, Bill cancellationBill, BillItem originalBillItem, BillItem newBillItem) {
+        String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + originalBill.getId();
+        List<BillComponent> billComponents = billComponentFacade.findByJpql(sql);
+        if (billComponents == null) {
+            billComponents = new ArrayList<>();
+        }
+        for (BillComponent originalBillComponent : billComponents) {
+            BillComponent newBillComponent = new BillComponent();
+            newBillComponent.setCatId(originalBillComponent.getCatId());
+            newBillComponent.setDeptId(originalBillComponent.getDeptId());
+            newBillComponent.setInsId(originalBillComponent.getInsId());
+            newBillComponent.setDepartment(originalBillComponent.getDepartment());
+            newBillComponent.setDeptId(originalBillComponent.getDeptId());
+            newBillComponent.setInstitution(originalBillComponent.getInstitution());
+            newBillComponent.setItem(originalBillComponent.getItem());
+            newBillComponent.setName(originalBillComponent.getName());
+            newBillComponent.setPackege(originalBillComponent.getPackege());
+            newBillComponent.setSpeciality(originalBillComponent.getSpeciality());
+            newBillComponent.setStaff(originalBillComponent.getStaff());
+            newBillComponent.setBill(cancellationBill);
+            newBillComponent.setBillItem(newBillItem);
+            newBillComponent.setCreatedAt(new Date());
+            newBillComponent.setCreater(getSessionController().getLoggedUser());
+            billComponentFacade.create(newBillComponent);
+
+        }
+
+    }
+    
+    private boolean errorsPresentOnOpdBatchBillCancellation() {
+        if (getComment() == null || getComment().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return true;
+        }
+        batchBill = billService.reloadBill(batchBill);
+        if (batchBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Already Cancelled");
+            return true;
+        }
+        if (batchBill.isRefunded()) {
+            JsfUtil.addErrorMessage("Already Refunded");
+            return true;
+        }
+        List<Bill> individualBills = billService.fetchIndividualBillsOfBatchBill(batchBill);
+        if (individualBills == null) {
+            JsfUtil.addErrorMessage("No Individual Bills");
+            return true;
+        }
+        for (Bill individualBill : individualBills) {
+            if (individualBill.isCancelled()) {
+                JsfUtil.addErrorMessage("One individual bill of this batch bill is already Cancelled. Can not cancel Batch Bill !!! ");
+                return true;
+            }
+            if (individualBill.isRefunded()) {
+                JsfUtil.addErrorMessage("One individual bill of this batch bill is already Refunded. Can not cancel Batch Bill !!! ");
+                return true;
+            }
+        }
+        return false;
     }
 
     public void settleBill() {
@@ -1100,6 +1355,21 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         return "/opd/opd_package_batch_bill_print?faces-redirect=true;";
     }
 
+    public String navigateToCancelOpdPackageBatchBill() {
+        if (batchBill == null) {
+            JsfUtil.addErrorMessage("No Batch bill is selected");
+            return "";
+        }
+        bills = billService.fetchIndividualBillsOfBatchBill(batchBill);
+        paymentMethod = null;
+        patient = batchBill.getPatient();
+        paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
+        comment = null;
+        printPreview = false;
+        batchBillCancellationStarted = false;
+        return "/opd/opd_package_batch_bill_cancel?faces-redirect=true;";
+    }
+
     public String navigateToMedicalPakageBillingFromMenu() {
         clearBillValues();
         setPatient(getPatient());
@@ -1693,6 +1963,22 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void setDuplicatePrint(boolean duplicatePrint) {
         this.duplicatePrint = duplicatePrint;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public List<PaymentMethod> getPaymentMethods() {
+        return paymentMethods;
+    }
+
+    public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
+        this.paymentMethods = paymentMethods;
     }
 
 }
