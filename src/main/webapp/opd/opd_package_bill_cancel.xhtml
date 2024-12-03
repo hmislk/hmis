@@ -6,6 +6,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:pms="http://xmlns.jcp.org/jsf/composite/ezcomp/paymentMethod"
       xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
     <h:body>
@@ -66,10 +67,42 @@
                                             value="#{billPackageController.paymentMethod}" 
                                             rendered="#{billPackageController.bill.billType eq 'OpdBill'}">
                                             <f:selectItem itemLabel="Select paymentMethod"/>
-                                            <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
+                                            <f:selectItems value="#{billPackageController.paymentMethods}"/>
+                                            <p:ajax event="change" process="cmbPs" update="paymentDetails" ></p:ajax>
                                         </p:selectOneMenu>
 
-                                       
+                                        <h:panelGroup id="paymentDetails"  >
+                                            <h:panelGroup
+                                                class="row my-1"
+                                                layout="block"  
+                                                id="creditCard" rendered="#{billPackageController.paymentMethod eq 'Card'}" >
+                                                <pms:creditCardDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup
+                                                class="row my-1"
+                                                layout="block"  
+                                                id="credit" rendered="#{billPackageController.paymentMethod eq 'Credit'}" >
+                                                <pms:creditDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup 
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="eWallet"  rendered="#{billPackageController.paymentMethod eq 'ewallet'}" >
+                                                <pms:ewalletDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}" />
+                                            </h:panelGroup>
+                                            <h:panelGroup
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="cheque"  rendered="#{billPackageController.paymentMethod eq 'Cheque'}" >
+                                                <pms:chequeDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup 
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="slip"  rendered="#{billPackageController.paymentMethod eq 'Slip'}" >
+                                                <pms:slipDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
                                     </p:panel>
                                 </div>
                                 <div class="col-4">
@@ -159,7 +192,6 @@
                                 ajax="false">
                                 <p:printer target="groupPrint" />
                             </p:commandButton> 
-
                         </div>
                         <h:panelGroup id="groupPrint" >
                             <!-- Bill Print Templates -->
@@ -172,23 +204,23 @@
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                 <prints:five_five_paper_without_headings 
                                     bill="#{billPackageController.bill}" 
-                                    duplicate="#{opdBillController.duplicatePrint}" 
-                                    payments="#{opdBillController.payments}"/>
+                                    duplicate="#{billPackageController.duplicatePrint}" 
+                                    payments="#{billPackageController.payments}"/>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >     
-                                <prints:posOpdBillWithoutLogo bill="#{billPackageController.bill}" duplicate="#{opdBillController.duplicatePrint}"/>         
+                                <prints:posOpdBillWithoutLogo bill="#{billPackageController.bill}" duplicate="#{billPackageController.duplicatePrint}"/>         
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                <prints:posOpdBill bill="#{billPackageController.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                <prints:posOpdBill bill="#{billPackageController.bill}" duplicate="#{billPackageController.duplicatePrint}"/>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >   
-                                <prints:A4_paper_with_headings bill="#{billPackageController.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                <prints:A4_paper_with_headings bill="#{billPackageController.bill}" duplicate="#{billPackageController.duplicatePrint}"/>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
-                                <prints:A4_paper_without_headings bill="#{billPackageController.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                <prints:A4_paper_without_headings bill="#{billPackageController.bill}" duplicate="#{billPackageController.duplicatePrint}"/>
                             </h:panelGroup>
 
                         </h:panelGroup>

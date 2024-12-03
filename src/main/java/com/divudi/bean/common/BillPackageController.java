@@ -544,9 +544,27 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public String navigateToCancelOpdPackageBill() {
         if (bill == null) {
-            JsfUtil.addErrorMessage("Nothing to cancel");
+            JsfUtil.addErrorMessage("No Bill is selected to cancel");
             return "";
         }
+        if (bill.getBackwardReferenceBill() == null) {
+            JsfUtil.addErrorMessage("No Batch Bill is selected to cancel");
+            return "";
+        }
+        paymentMethods = new ArrayList<>();
+        paymentMethods.add(PaymentMethod.Cash);
+        paymentMethods.add(PaymentMethod.Card);
+        paymentMethods.add(PaymentMethod.Cheque);
+        paymentMethods.add(PaymentMethod.Slip);
+        if (bill.getBackwardReferenceBill().getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
+            paymentMethods.add(bill.getBackwardReferenceBill().getPaymentMethod());
+        } else {
+            List<Payment> ps = billService.fetchBillPayments(bill.getBackwardReferenceBill());
+            for (Payment p : ps) {
+                paymentMethods.add(p.getPaymentMethod());
+            }
+        }
+        paymentMethods = new ArrayList<>(new HashSet<>(paymentMethods));
         if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Cancelation Bill")) {
             paymentMethod = bill.getPaymentMethod();
         } else {
