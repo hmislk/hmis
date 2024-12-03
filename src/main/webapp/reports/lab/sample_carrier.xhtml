@@ -11,7 +11,7 @@
         <ui:composition template="/reports/index.xhtml" class="w-100 border">
             <ui:define name="subcontent">
                 <h:form class="w-100">
-                    <p:panel header="External Laboratory Workload Report" class="w-100">
+                    <p:panel header="Sample Carrier Report" class="w-100">
                         <h:panelGrid columns="8" class="w-100 ">
 
 
@@ -47,16 +47,8 @@
                             </p:calendar>
 
                             <p:spacer width="20"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf15b;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Report Type" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu class="w-100 ">
-                                <f:selectItem itemValue="Any" itemLabel="Any"/>
-                                <f:selectItem itemValue="" itemLabel="Detail"/>
-                                <f:selectItem itemValue="" itemLabel="Summary"/>
-                            </p:selectOneMenu>
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
@@ -77,7 +69,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
-                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                                <h:outputLabel value="Site" for="siteMenu" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="siteMenu"
@@ -94,7 +86,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                                <h:outputLabel value="Department" for="cmbDept" class="m-3"/>
                             </h:panelGroup>
                             <h:panelGroup id="cmbDept">
 
@@ -172,6 +164,7 @@
                                 </p:selectOneMenu>
                             </h:panelGroup>
 
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Visit Type" for="visitType" class="m-3"/>
@@ -180,77 +173,27 @@
                                 <f:selectItem itemLabel="Any"/>
                                 <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
                                 <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
-                                <f:selectItem itemValue="CC" itemLabel="Collecting Centre (CC)"/>
-                            </p:selectOneMenu>
-
-                            <p:spacer width="20"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
-                                <h:outputLabel value="CC Name" class="m-3"/>
-                            </h:panelGroup>
-                            <p:autoComplete 
-                                value="#{reportController.collectingCentre}" 
-                                forceSelection="true" id="acColl"
-                                completeMethod="#{institutionController.completeCollectingCenter}" 
-                                var="collectingCentre" itemLabel="#{collectingCentre.name}" itemValue="#{collectingCentre}" 
-                                maxResults="15"
-                                class="w-100 mb-1"
-                                inputStyleClass="w-100">
-                                <p:column style="padding: 6px;">#{collectingCentre.code}</p:column>
-                                <p:column style="padding: 6px;">#{collectingCentre.name}</p:column>
-                            </p:autoComplete>
-
-                            <p:spacer width="20"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf201;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="CC Route" for="cmbCCroute" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                style=" max-width: 100%; overflow-x: auto; "
-                                class="w-100"
-                                value="#{reportController.route}"
-                                filter="true"
-                                filterMatchMode="contains">
-                                <f:selectItem itemLabel="All" />
-                                <f:selectItems value="#{routeController.items}"
-                                               var="r"
-                                               itemLabel="#{r.name}"
-                                               itemValue="#{r}" />
-                            </p:selectOneMenu>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf007;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Patient MRN" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:inputText class="w-100"></p:inputText>
-
-                            <p:spacer width="20"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf492;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Investigation" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu class="w-100" >
-                                <f:selectItem  itemLabel="Any"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Referring Doctor" class="mx-3"/>
+                                <h:outputLabel value="Staff" class="m-3"/>
                             </h:panelGroup>
                             <p:autoComplete 
                                 inputStyleClass="w-100" 
-                                class="w-100"
-                                id="acReferringDoctor"
-                                value="#{reportController.referingDoctor}"
-                                completeMethod="#{doctorController.completeDoctor}" 
-                                var="rd" 
-                                itemLabel="#{rd.person.nameWithTitle}" 
-                                itemValue="#{rd}"/>
+                                class="w-100"/>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf492;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Investigation" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100" >
+                                <f:selectItem  itemLabel="Any"/>
+                            </p:selectOneMenu>
 
                         </h:panelGrid>
 
@@ -277,7 +220,7 @@
                             icon="fas fa-file-excel" 
                             ajax="false" 
                             value="Excel">
-                            <p:dataExporter type="xlsx" target="tblExport"  fileName="external_laboratary_workload.xlsx" ></p:dataExporter>
+                            <p:dataExporter type="xlsx" target="tblExport"  fileName="sample_carrier.xlsx" ></p:dataExporter>
                         </p:commandButton>
 
                         <p:commandButton 
@@ -286,10 +229,9 @@
                             icon= "fas fa-file-pdf" 
                             ajax="false" 
                             value="PDF">
-                            <p:dataExporter type="pdf" target="tblExport"  fileName="external_laboratary_workload.pdf" ></p:dataExporter>
+                            <p:dataExporter type="pdf" target="tblExport"  fileName="sample_carrier.pdf" ></p:dataExporter>
                         </p:commandButton>
 
-                        <!--table 1 / report type - details-->
                         <p:dataTable 
                             id="tblExport" 
                             paginator="true" 
@@ -299,101 +241,42 @@
                             rowsPerPageTemplate="10,25,50">
 
                             <f:facet name="header">
-                                <h:outputText value="Report Type - Detail" 
-                                              style="font-weight: bold; text-align: left; display: block;" />
+                                <h:outputText value="Sample Carrier" 
+                                              style="font-size: larger; font-weight: bold; text-align: center; display: block;" />
                             </f:facet>
 
-                            <p:column headerText="Sample ID" width="5rem">
+                            <p:column headerText="Sending Date and Time" width="7rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Recieved Date and Time" width="7rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Staff" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Duration" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Investigation" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Patient Name" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Sample ID" width="6rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Type" width="5rem">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="BHT No" width="5rem">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
                             <p:column headerText="Invoice No" width="5rem">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="MRN" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Name" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Age" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Gender" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Investigation" width="6rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Lab Department" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="CC" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="CC Route" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Invoiced Date" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Invoiced By" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Recieved Date" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Recieved By" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Remarks" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Patient Source" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Patient Type" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Referring Doctor" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Item Value" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
 
                         </p:dataTable>
-
-                        <br/>
-                        <br/>
-                        <br/>
-                        <br/>
-                        <!--table 2 / report type - summary-->
-                        <p:dataTable 
-                            id="tblExport2" 
-                            paginator="true" 
-                            paginatorPosition="bottom"
-                            rows="10"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="10,25,50">
-
-                            <f:facet name="header">
-                                <h:outputText value="Report Type - Summary" 
-                                              style="font-weight: bold; text-align: left; display: block;" />
-                            </f:facet>
-
-                            <p:column headerText="Sl. No." width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Test Name" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Total Test Performed" width="5rem">
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-
-                        </p:dataTable>
-
-
 
                     </p:panel>
                 </h:form>

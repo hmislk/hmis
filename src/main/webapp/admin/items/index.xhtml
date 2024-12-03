@@ -16,16 +16,18 @@
                             <p:tab title="Item Mapping">
                                 <div class="d-grid gap-2">
                                     <!-- Button to navigate to Manage Department Item Mappings -->
-                                    <p:commandButton class="w-100"  
-                                                     ajax="false" 
-                                                     value="Manage Department Item Mappings" 
-                                                     action="#{itemMappingController.navigateToManageDepartmentItemMappings}" />
+                                    <p:commandButton 
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Manage Department Item Mappings" 
+                                        action="#{itemMappingController.navigateToManageDepartmentItemMappings}" />
 
                                     <!-- Button to navigate to Manage Institution Item Mappings -->
-                                    <p:commandButton class="w-100"  
-                                                     ajax="false" 
-                                                     value="Manage Institution Item Mappings" 
-                                                     action="#{itemMappingController.navigateToManageInstitutionItemMappings}" />
+                                    <p:commandButton 
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Manage Institution Item Mappings" 
+                                        action="#{itemMappingController.navigateToManageInstitutionItemMappings}" />
                                 </div>
 
                             </p:tab>
@@ -53,13 +55,11 @@
                                         value="Services and Investigations by Institution" 
                                         action="#{investigationCategoryController.navigateToItemsAndServiceCountsByInstitution()}" />
 
-
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
                                         value="Services and Investigations by Department" 
                                         action="#{investigationCategoryController.navigateToItemsAndServiceCountsByDepartment()}" />
-
 
                                     <p:commandButton   
                                         class="w-100"  
@@ -72,73 +72,142 @@
                                         ajax="false" 
                                         value="OPD Service" 
                                         action="#{investigationCategoryController.navigateToOpdService()}" />
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
                                         value="Inward Service" 
                                         action="#{investigationCategoryController.navigateToInwardService()}" />
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
-                                        value="Theatre Service" action="#{investigationCategoryController.navigateToTheatreService()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bill Expenses" action="#{investigationCategoryController.navigateToBillExpenses()}" />
+                                        value="Theatre Service" 
+                                        action="#{investigationCategoryController.navigateToTheatreService()}" />
+                                    
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Bill Expenses" 
+                                        action="#{investigationCategoryController.navigateToBillExpenses()}" />
 
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Bulk Delete of Services" 
+                                        action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
 
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Bulk Un-Delete of Services" 
+                                        action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
 
-                                    <p:commandButton   class="w-100"  ajax="false" value="Item List"
-                                                       action="#{itemController.navigateToListAllItemsForAdmin()}" ></p:commandButton>
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Item List"
+                                        action="#{itemController.navigateToListAllItemsForAdmin()}" >
+                                    </p:commandButton>
 
-                                    <p:commandButton   class="w-100"  ajax="false" value="Reload List"
-                                                       action="#{itemApplicationController.reloadItems()}" ></p:commandButton>
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Reload List"
+                                        action="#{itemApplicationController.reloadItems()}" >
+                                    </p:commandButton>
                                 </div>
                             </p:tab>
                             <p:tab title="Metadata">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" value="Relationships" action="#{investigationCategoryController.navigateToRelationships()}" ></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Religions" action="#{investigationCategoryController.navigateToReligion()}" ></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Nationalities" action="#{investigationCategoryController.navigateToReligion()}" ></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Downloads"
-                                                       action="#{serviceController.navigateToDownloadItems()}" ></p:commandButton>
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Relationships" 
+                                        action="#{investigationCategoryController.navigateToRelationships()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Religions" 
+                                        action="#{investigationCategoryController.navigateToReligion()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Nationalities" 
+                                        action="#{investigationCategoryController.navigateToReligion()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Downloads"
+                                        action="#{serviceController.navigateToDownloadItems()}" >
+                                    </p:commandButton>
                                 </div>
                             </p:tab>
                             <p:tab title="Manage Metadata">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" value="Relationships" action="#{investigationCategoryController.navigateToRelationships()}" ></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Forms" action="#{investigationCategoryController.navigateToFormFormatCategory()}" ></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Form Format" action="#{investigationCategoryController.navigateToFormFormat()}" ></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Categories" action="#{investigationCategoryController.navigateToMetaDataSuperCategory()}" ></p:commandButton>
+                                    <p:commandButton   
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Relationships" 
+                                        action="#{investigationCategoryController.navigateToRelationships()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton   
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Forms"
+                                        action="#{investigationCategoryController.navigateToFormFormatCategory()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton  
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Form Format" 
+                                        action="#{investigationCategoryController.navigateToFormFormat()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Categories" 
+                                        action="#{investigationCategoryController.navigateToMetaDataSuperCategory()}" >
+                                    </p:commandButton>
                                 </div>
                             </p:tab>
-                            <p:tab title="Bulk Transactions*">
+                            <p:tab title="Bulk Transactions">
                                 <div class="d-grid gap-2">
-                                    
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
                                         value="Download, Change &amp; Upload Items" 
                                         action="/admin/items/download_items?faces-redirect=true" />
-                                    
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
                                         value="Collecting Center Special Fee Upload" 
                                         action="#{dataUploadController.navigateToCollectingCentreSpecialFeeUpload()}" />
-                                    
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
                                         value="Item &amp; Hospital Fee Upload" 
                                         action="#{dataUploadController.navigateToUploadOpdItemsAndHospitalFees()}" />
-                                    
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
                                         value="Item &amp; Doctor Fee Upload" 
                                         action="#{dataUploadController.navigateToUploadOpdItemsAndDoctorFees()}" />
-                                    
-                                    
+
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
@@ -150,6 +219,13 @@
                                         ajax="false" 
                                         value="Item &amp; Fee Upload for Collecting Centres" 
                                         action="#{dataUploadController.navigateToUploadCollectingCentreFees()}" />
+                                    
+                                    <p:commandButton   
+                                        class="w-100 ui-button-warning"  
+                                        ajax="false"
+                                        icon="fa fa-upload"
+                                        value="Item &amp; Fees Upload " 
+                                        action="#{dataUploadController.navigateToUploadItemAndFees()}" />
 
                                     <p:commandButton   
                                         class="w-100"  
@@ -161,52 +237,83 @@
                                         class="w-100"  
                                         ajax="false" 
                                         value="Investigations Upload" 
-                                        action="/admin/items/investigation_upload" />
-                                    
+                                        action="/admin/items/investigation_upload?faces-redirect=true" />
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
                                         value="Upload and Fix Item Categories by Code" 
-                                        action="/admin/items/fix_item_categories_by_code" />
+                                        action="/admin/items/fix_item_categories_by_code?faces-redirect=true" />
 
 
 
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Bulk Delete of Services" 
+                                        action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Bulk Un-Delete of Services" 
+                                        action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
 
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationListToRemove()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationBulkUnDelete()}" />
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Bulk Delete of Investigations" 
+                                        action="#{investigationCategoryController.navigateToInvestigationListToRemove()}" />
+                                    
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Bulk Un-Delete of Investigations" 
+                                        action="#{investigationCategoryController.navigateToInvestigationBulkUnDelete()}" />
 
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Bulk Delete of Services" 
+                                        action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
+                                    
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
 
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationListToRemove()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationBulkUnDelete()}" />
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Bulk Delete of Investigations" 
+                                        action="#{investigationCategoryController.navigateToInvestigationListToRemove()}" />
+                                    
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Bulk Un-Delete of Investigations" 
+                                        action="#{investigationCategoryController.navigateToInvestigationBulkUnDelete()}" />
 
                                     <p:commandButton   
                                         class="w-100" 
                                         ajax="false"
                                         value="Edit Features of Multiple Item" 
                                         action="#{itemController.navigateToEditFeaturesOfMultipleItems()}" />
-                                    
 
                                 </div>
                             </p:tab>
                             <p:tab title="Setup">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton  class="w-100" 
-                                                      ajax="false" 
-                                                      value="Create New Items for New Institution" 
-                                                      action="create_items_for_new_institution" 
-                                                      />
+                                    <p:commandButton  
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Create New Items for New Institution" 
+                                        action="create_items_for_new_institution?faces-redirect=true" />
 
-
-                                    <p:commandButton  class="w-100" 
-                                                      ajax="false" 
-                                                      value="Create New Items by Excel Upload" 
-                                                      action="/admin/items/create_items_for_new_institution" 
-                                                      />
-
+                                    <p:commandButton  
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Create New Items by Excel Upload" 
+                                        action="/admin/items/create_items_for_new_institution?faces-redirect=true" />
 
                                 </div>
                             </p:tab>

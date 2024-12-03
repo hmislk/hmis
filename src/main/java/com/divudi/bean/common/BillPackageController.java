@@ -49,6 +49,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.service.StaffService;
@@ -127,6 +128,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     ItemController itemController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    DrawerController drawerController;
+    @Inject
+    OpdBillController opdBillController;
+    @Inject
+    ApplicationController applicationController;
 
     private List<Item> malePackaes;
     private List<Item> femalePackaes;
@@ -134,8 +141,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private List<Item> packaes;
 
     //</editor-fold>
-    @Inject
-    DrawerController drawerController;
+    
     
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
@@ -178,28 +184,42 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private List<Payment> payments;
 
     //</editor-fold>
+    
     private void savePatient() {
-        if (getPatient() == null) {
-            JsfUtil.addErrorMessage("No Patient to save");
-            return;
-        }
-        if (getPatient().getPerson() == null) {
-            JsfUtil.addErrorMessage("No person");
-            return;
-        }
-        if (getPatient().getPerson().getId() == null) {
-            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getPatient().getPerson().setCreatedAt(new Date());
-            getPersonFacade().create(getPatient().getPerson());
-        } else {
-            getPersonFacade().edit(getPatient().getPerson());
-        }
         if (getPatient().getId() == null) {
+            if (getPatient().getPerson().getName() != null) {
+                String updatedPatientName;
+                updatedPatientName = opdBillController.changeTextCases(getPatient().getPerson().getName(), getSessionController().getApplicationPreference().getChangeTextCasesPatientName());
+                getPatient().getPerson().setName(updatedPatientName);
+            }
+            getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+            getPatient().setCreatedInstitution(getSessionController().getInstitution());
             getPatient().setCreater(getSessionController().getLoggedUser());
             getPatient().setCreatedAt(new Date());
-            getPatientFacade().create(getPatient());
+            if (getPatient().getPerson().getId() != null) {
+//                getPatientFacade().edit(getPatient());
+                getPersonFacade().edit(getPatient().getPerson());
+            } else {
+                getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+                getPatient().getPerson().setCreatedAt(new Date());
+//                getPatientFacade().create(getPatient());
+                getPersonFacade().create(getPatient().getPerson());
+            }
+            try {
+                getPatientFacade().create(getPatient());
+            } catch (Exception e) {
+                getPatientFacade().edit(getPatient());
+            }
         } else {
-            getPatientFacade().edit(getPatient());
+            if (getPatient().getPerson().getId() != null) {
+//                getPatientFacade().edit(getPatient());
+                getPersonFacade().edit(getPatient().getPerson());
+            } else {
+                getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+                getPatient().getPerson().setCreatedAt(new Date());
+//                getPatientFacade().create(getPatient());
+                getPersonFacade().create(getPatient().getPerson());
+            }
         }
     }
 
@@ -212,7 +232,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         bills = new ArrayList<>();
         Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : lstBillEntries) {
-            billDepts.add(e.getBillItem().getItem().getDepartment());
+            billDepts.add(e.getBillItem().getItem().getTransDepartment());
 
         }
         for (Department d : billDepts) {
@@ -224,7 +244,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             List<BillItem> list = new ArrayList<>();
             for (BillEntry e : lstBillEntries) {
 
-                if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
+                if (Objects.equals(e.getBillItem().getItem().getTransDepartment().getId(), d.getId())) {
                     getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
                     // getBillBean().calculateBillItem(myBill, e);   
                     list.add(e.getBillItem());
@@ -241,6 +261,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         batchBill = new BilledBill();
         batchBill.setBillType(BillType.OpdBathcBill);
         batchBill.setBillTypeAtomic(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        batchBill.setBillPackege((Packege) currentBillItem.getItem());
         batchBill.setPaymentScheme(paymentScheme);
         batchBill.setPaymentMethod(paymentMethod);
         batchBill.setCreatedAt(new Date());
@@ -367,7 +388,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         savePatient();
         if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
-            Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
+            Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getTransDepartment(), temp);
 //            getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser());
             b.setBillItems(getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser()));
             getBillBean().calculateBillItems(b, getLstBillEntries());
@@ -571,8 +592,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         BillFeePayment bfp = new BillFeePayment();
         bfp.setBillFee(bf);
         bfp.setAmount(amount);
-        bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
-        bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
+        bfp.setInstitution(bf.getBillItem().getItem().getTransInstitution());
+        bfp.setDepartment(bf.getBillItem().getItem().getTransDepartment());
         bfp.setCreater(getSessionController().getLoggedUser());
         bfp.setCreatedAt(new Date());
         bfp.setPayment(p);

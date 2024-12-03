@@ -208,6 +208,7 @@ public class PatientInvestigationController implements Serializable {
     private Machine equipment;
     private Staff referringDoctor;
     private Investigation investigation;
+    private String investigationName;
     private String itemName;
     private Department department;
     private SearchDateType searchDateType;
@@ -1768,6 +1769,7 @@ public class PatientInvestigationController implements Serializable {
         this.performingDepartment = null;
         this.printIndividualBarcodes = false;
         this.listingEntity = null;
+        this.investigationName = null;
         clearReportData();
         clearAlternativeReportData();
 
@@ -2299,9 +2301,9 @@ public class PatientInvestigationController implements Serializable {
             params.put("referringDoctor", getReferringDoctor());
         }
 
-        if (investigation != null) {
-            jpql += " AND r.patientInvestigation.investigation = :investigation ";
-            params.put("investigation", getInvestigation());
+        if (investigationName != null && !investigationName.trim().isEmpty()) {
+            jpql += " AND r.patientInvestigation.billItem.item.name like :investigation ";
+            params.put("investigation", "%"+ investigationName.trim() + "%");
         }
 
         if (department != null) {
@@ -2749,9 +2751,9 @@ public class PatientInvestigationController implements Serializable {
             params.put("referringDoctor", getReferringDoctor());
         }
 
-        if (investigation != null) {
-            jpql += " AND i.investigation = :investigation ";
-            params.put("investigation", getInvestigation());
+        if (investigationName != null && !investigationName.trim().isEmpty()) {
+            jpql += " AND i.billItem.item.name like :investigation ";
+            params.put("investigation", "%"+ investigationName.trim() + "%");
         }
 
         if (department != null) {
@@ -3398,9 +3400,9 @@ public class PatientInvestigationController implements Serializable {
             params.put("referringDoctor", getReferringDoctor());
         }
 
-        if (investigation != null) {
-            jpql += " AND i.investigation = :investigation ";
-            params.put("investigation", getInvestigation());
+        if (investigationName != null && !investigationName.trim().isEmpty()) {
+            jpql += " AND i.billItem.item.name like :investigation ";
+            params.put("investigation", "%"+ investigationName.trim() + "%");
         }
 
         if (department != null) {
@@ -4912,6 +4914,14 @@ public class PatientInvestigationController implements Serializable {
         this.itemName = itemName;
     }
 
+    public String getInvestigationName() {
+        return investigationName;
+    }
+
+    public void setInvestigationName(String investigationName) {
+        this.investigationName = investigationName;
+    }
+
     /**
      *
      */
@@ -5311,7 +5321,7 @@ public class PatientInvestigationController implements Serializable {
                     m.put("bill", barcodeBill);
                     if (ix.isHasMoreThanOneComponant()) {
                         j += " and ps.investigationComponant=:sc ";
-                        //m.put("sc", ixi.getSampleComponent());
+                        m.put("sc", ixi.getSampleComponent());
                     }
                     PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
                     //System.out.println("pts = " + pts);

@@ -249,6 +249,8 @@ public class SearchController implements Serializable {
     private List<PatientInvestigation> patientInvestigationsSigle;
     private BillTypeAtomic billTypeAtomic;
     private BillClassType billClassType;
+    private String selectedOpdPackageBillSelector;
+    private List<String> OpdPackageBillSelector;
 
     private StreamedContent downloadingExcel;
 
@@ -464,6 +466,11 @@ public class SearchController implements Serializable {
         //System.out.println("departments = " + departments);
         billSummaryRows = null;
         return "/analytics/financial_transaction_summary_Users_PaymentMethod?faces-redirect=true";
+    }
+
+    public String navigateToWhtReport() {
+        reportType = "individualReceipts";
+        return "/reports/financialReports/wht?faces-redirect=true";
     }
 
     public String navigateToFinancialTransactionSummaryByDepartment() {
@@ -827,11 +834,10 @@ public class SearchController implements Serializable {
         bills = null;
         return "/analytics/professional_payment_list?faces-redirect=true";
     }
-    
-    public String navigateToWhtReport(){
-        return "/reports/financialReports/wht?faces-redirect=true";
-    }
 
+//    public String navigateToWhtReport(){
+//        return "/reports/financialReports/wht?faces-redirect=true";
+//    }
     public String toSearchBills() {
         bills = null;
         return "/dataAdmin/search_bill?faces-redirect=true";
@@ -1112,6 +1118,18 @@ public class SearchController implements Serializable {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
         return "/reports/financialReports/payment_settlement_report?faces-redirect=true";
+    }
+
+    public String navigateToDueSearch() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/inward_due_search?faces-redirect=true";
+    }
+
+    public String navigateToDueSearchCreditCompany() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/inward_due_search_credit_company?faces-redirect=true";
     }
 
     public String navigatToShiftEndSummary() {
@@ -2204,6 +2222,27 @@ public class SearchController implements Serializable {
 
     public void setBilledDepartment(Department billedDepartment) {
         this.billedDepartment = billedDepartment;
+    }
+
+    public String getSelectedOpdPackageBillSelector() {
+        return selectedOpdPackageBillSelector;
+    }
+
+    public void setSelectedOpdPackageBillSelector(String selectedOpdPackageBillSelector) {
+        this.selectedOpdPackageBillSelector = selectedOpdPackageBillSelector;
+    }
+
+    public List<String> getOpdPackageBillSelector() {
+        if (OpdPackageBillSelector == null) {
+            OpdPackageBillSelector = new ArrayList<>();
+            OpdPackageBillSelector.add("Single Package Bills");
+            OpdPackageBillSelector.add("Paackage Batch Bills");
+        }
+        return OpdPackageBillSelector;
+    }
+
+    public void setOpdPackageBillSelector(List<String> OpdPackageBillSelector) {
+        this.OpdPackageBillSelector = OpdPackageBillSelector;
     }
 
     public class billsWithbill {
@@ -7860,6 +7899,14 @@ public class SearchController implements Serializable {
 
     }
 
+    public void searchOpdPackageBills() {
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+
+        createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
+
+    }
+
     @Deprecated
     public void listPaymentsExtra() {
         String jpql = "select p "
@@ -8011,9 +8058,8 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
         }
-        bundle = createBundleForBills(billTypesAtomics, institution, department, null, null, null, null);
+        bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
         bundle.calculateTotalNetTotalTaxByBills();
-        reportType = "irs";
     }
 
     public void processWhtMonthlySymmary() {
@@ -8043,10 +8089,9 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
         }
-        bundle = createBundleForBills(billTypesAtomics, institution, department, null, null, null, null);
-        bundle.calculateTotalNetTotalTaxByBills();
-        reportType = "mr";
-
+        bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
+        bundle = bundle.createBundleByAggregatingMonthlyTotalsFromBills();
+        bundle.calculateTotalByRowTotals();
     }
 
     public void processWhtConsultantSymmary() {
@@ -8076,10 +8121,9 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
         }
-        bundle = createBundleForBills(billTypesAtomics, institution, department, null, null, null, null);
-        bundle.calculateTotalNetTotalTaxByBills();
-        reportType = "cr";
-
+        bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
+        bundle = bundle.createBundleByAggregatingConsultantTotalsFromBills();
+        bundle.calculateTotalByRowTotals();
     }
 
     public void updateToStaffForChannelProfessionalPaymentBills() {
@@ -8707,11 +8751,36 @@ public class SearchController implements Serializable {
     }
 
     public ReportTemplateRowBundle createBundleForBills(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins, Department dep,
+            Institution ins,
+            Department dep,
             Institution fromIns,
             Department fromDep,
             Institution toIns,
             Department toDep) {
+        return createBundleForBills(
+                billTypesAtomics,
+                ins,
+                dep,
+                null,
+                fromIns,
+                fromDep,
+                toIns,
+                toDep,
+                null,
+                null
+        );
+    }
+
+    public ReportTemplateRowBundle createBundleForBills(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins,
+            Department dep,
+            Institution site,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Speciality paramSpeciality,
+            Staff paramStaff) {
         ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
         List<ReportTemplateRow> outputRows;
         bills = null;
@@ -8734,6 +8803,11 @@ public class SearchController implements Serializable {
             params.put("dep", dep);
         }
 
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
         if (toDep != null) {
             jpql += " and b.toDepartment=:todep ";
             params.put("todep", toDep);
@@ -8752,6 +8826,16 @@ public class SearchController implements Serializable {
         if (toIns != null) {
             jpql += " and b.toInstitution=:toins ";
             params.put("toins", toIns);
+        }
+
+        if (paramStaff != null) {
+            jpql += " and b.staff=:staff ";
+            params.put("staff", paramStaff);
+        }
+
+        if (paramSpeciality != null) {
+            jpql += " and b.staff.speciality=:speciality ";
+            params.put("speciality", paramSpeciality);
         }
 
         jpql += " order by b.createdAt desc  ";
@@ -9440,6 +9524,7 @@ public class SearchController implements Serializable {
         fromDepartment = null;
         toInstitution = null;
         toDepartment = null;
+        selectedOpdPackageBillSelector = null;
 
     }
 
@@ -10279,6 +10364,61 @@ public class SearchController implements Serializable {
             jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
             params.put("billTypeAtomic", billTypeAtomic);
         }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        // Execute the query
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        if (bills != null) {
+            for (Bill bill : bills) {
+                if (bill != null) {
+                    total += bill.getTotal();
+                    netTotal += bill.getNetTotal();
+                    discount += bill.getDiscount();
+                }
+            }
+        }
+
+    }
+
+    public void listBillsOpdCreditCompanySettle() {
+        bills = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dep", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+
+        jpql.append(" and b.billTypeAtomic in :btas ");
+        params.put("btas", btas);
 
         // Order by bill ID
         jpql.append(" order by b.id ");
@@ -13947,6 +14087,10 @@ public class SearchController implements Serializable {
             jpql += "AND p.creater = :wu ";
             parameters.put("wu", webUser);
         }
+        if (paymentMethod != null) {
+            jpql += "AND p.paymentMethod = :pm ";
+            parameters.put("pm", paymentMethod);
+        }
 
         jpql += "AND p.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
@@ -14984,6 +15128,10 @@ public class SearchController implements Serializable {
                 jpqlOP += " and bi.item.category=:cat ";
                 mOP.put("cat", category);
             }
+            if (item != null) {
+                jpqlOP += " and bi.item=:item ";
+                mOP.put("item", item);
+            }
 
             System.out.println("OP JPQL: " + jpqlOP);
             System.out.println("OP Params: " + mOP);
@@ -15037,6 +15185,10 @@ public class SearchController implements Serializable {
                 jpqlIP += " and bi.item.category=:cat ";
                 mIP.put("cat", category);
             }
+            if (item != null) {
+                jpqlIP += " and bi.item=:item ";
+                mIP.put("item", item);
+            }
 
             System.out.println("IP JPQL: " + jpqlIP);
             System.out.println("IP Params: " + mIP);
@@ -15045,7 +15197,6 @@ public class SearchController implements Serializable {
             bisIP = billItemFacade.findByJpql(jpqlIP, mIP, TemporalType.TIMESTAMP);
         }
 
-        
         // Combine OP and IP BillItems
         List<BillItem> bis = new ArrayList<>();
         bis.addAll(bisOP);
@@ -15284,7 +15435,7 @@ public class SearchController implements Serializable {
 
         opdServiceCollection.setName("OPD Service Collection - Credit");
         opdServiceCollection.setBundleType("opdServiceCollectionCredit");
-        
+
         opdServiceCollection.getReportTemplateRows().stream()
                 .forEach(rtr -> {
                     rtr.setInstitution(institution);
@@ -15297,7 +15448,6 @@ public class SearchController implements Serializable {
         return opdServiceCollection;
     }
 
-    
     public ReportTemplateRowBundle generateOpdServiceCollectionWithoutProfessionalFee(PaymentType paymentType) {
         ReportTemplateRowBundle opdServiceCollection = new ReportTemplateRowBundle();
         String jpql = "select bi "
@@ -16074,8 +16224,6 @@ public class SearchController implements Serializable {
 
     }
 
-    
-    
     public void billItemsToBundleForOpdUnderCategoryWithoutProfessionalFee(ReportTemplateRowBundle rtrb, List<BillItem> billItems, PaymentType paymentType) {
         System.out.println("billItemsToBundleForOpdUnderCategory");
         // Use TreeMap to maintain alphabetical order
@@ -16247,12 +16395,12 @@ public class SearchController implements Serializable {
             double iteratingDiscount = countModifier * Math.abs(iteratingBillItem.getDiscount());
             double staffFee = countModifier * Math.abs(iteratingBillItem.getStaffFee());
             double netValue = 0.0;
-            if(withProfessionalFee){
+            if (withProfessionalFee) {
                 netValue = countModifier * Math.abs(iteratingBillItem.getNetValue());
-            }else{
-                netValue = countModifier * Math.abs(iteratingBillItem.getNetValue()- iteratingBillItem.getStaffFee());
+            } else {
+                netValue = countModifier * Math.abs(iteratingBillItem.getNetValue() - iteratingBillItem.getStaffFee());
             }
-             
+
             totalIncome += grossValue;
             totalNetIncome += netValue;
             totalHospitalFees += hospitalFee;
@@ -16656,12 +16804,12 @@ public class SearchController implements Serializable {
             double discount = bi.getDiscount();
             double professionalFee = bi.getStaffFee();
             double netTotal = 0.0;
-            if(withProfessionalFee){
+            if (withProfessionalFee) {
                 netTotal = bi.getNetValue();
-            }else{
+            } else {
                 netTotal = bi.getNetValue() - bi.getStaffFee();
             }
-            
+
             long countModifier = (bi.getBill().getBillClassType() == BillClassType.CancelledBill
                     || bi.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
 
@@ -16674,7 +16822,7 @@ public class SearchController implements Serializable {
                 professionalFee = -Math.abs(professionalFee);
                 netTotal = -Math.abs(netTotal);
             }
-            
+
             totalOpdServiceCollection += netTotal;
 
             // Update the detailed row
