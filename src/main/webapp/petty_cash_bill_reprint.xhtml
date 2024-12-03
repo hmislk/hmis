@@ -20,29 +20,52 @@
                                 </div>
                                 <div>
                                     <h:panelGroup class="mx-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('Need Approvel For Petty Cash Bill Cancelletion') eq false}">
-                                        <p:commandButton  ajax="false" class="ui-button-danger" icon="fas fa-ban" value="Cancel" action="#{pettyCashBillSearch.navigateToPettyCashCancel()}" disabled="#{pettyCashBillSearch.bill.cancelled}"/> 
+                                        <p:commandButton  
+                                            ajax="false" 
+                                            class="ui-button-danger" 
+                                            icon="fas fa-ban" value="Cancel" 
+                                            action="#{pettyCashBillSearch.navigateToPettyCashCancel()}" 
+                                            disabled="#{pettyCashBillSearch.bill.cancelled}"/> 
                                     </h:panelGroup>
 
 
                                     <h:panelGroup class="mx-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('Need Approvel For Petty Cash Bill Cancelletion')}" >
                                         <h:panelGroup rendered="#{pettyCashBillSearch.bill.approveAt ne null}">
-                                            <p:commandButton class="mx-1 ui-button-danger" icon="fas fa-ban" ajax="false" value="Cancel" action="#{pettyCashBillSearch.navigateToPettyCashCancel()}" disabled="#{pettyCashBillSearch.bill.cancelled}">                           
+                                            <p:commandButton 
+                                                class="mx-1 ui-button-danger" 
+                                                icon="fas fa-ban" 
+                                                ajax="false" 
+                                                value="Cancel" action="#{pettyCashBillSearch.navigateToPettyCashCancel()}" 
+                                                disabled="#{pettyCashBillSearch.bill.cancelled}">                           
                                             </p:commandButton>
                                         </h:panelGroup>
-                                        <p:commandButton ajax="false" class="ui-button-danger" icon="fas fa-ban" value="To Cancel" action="#{pettyCashBillSearch.sendToApprovePettyCashBillCancellation}" disabled="#{pettyCashBillSearch.bill.approveAt ne null or pettyCashBillSearch.bill.cancelled}">                           
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            class="ui-button-danger" 
+                                            icon="fas fa-ban" 
+                                            value="To Cancel" 
+                                            action="#{pettyCashBillSearch.sendToApprovePettyCashBillCancellation}" 
+                                            disabled="#{pettyCashBillSearch.bill.approveAt ne null or pettyCashBillSearch.bill.cancelled}">                           
                                         </p:commandButton>
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('PettyCashBillCancellationApprove')}" >
-                                        <p:commandButton ajax="false" value="Approve" class="ui-button-success" icon="fas fa-check" action="#{pettyCashBillController.pettyCashCancelBillApprove}" disabled="#{pettyCashBillSearch.bill.approveAt ne null}">                           
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Approve" 
+                                            class="ui-button-success" 
+                                            icon="fas fa-check" 
+                                            action="#{pettyCashBillController.pettyCashCancelBillApprove}" 
+                                            disabled="#{pettyCashBillSearch.bill.approveAt ne null}">                           
                                         </p:commandButton>
                                     </h:panelGroup>
                                     <h:panelGroup class="mx-1" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Disable Petty Cash Return')}" >
                                         <p:commandButton  
                                             class="mx-1 ui-button-warning" 
                                             icon="fas fa-arrow-rotate-left" 
+                                            ajax="false"
                                             action="#{pettyCashBillController.navigateToPettyCashReturn()}"
-                                            value="TO Return">                           
+                                            value="To Return">                           
                                         </p:commandButton>
                                     </h:panelGroup>
 
