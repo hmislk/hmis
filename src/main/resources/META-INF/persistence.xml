@@ -15,13 +15,12 @@
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
-        <jta-data-source>jdbc/hmisaudit</jta-data-source>
+        <jta-data-source>jdbc/himsAduit</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
             <property name="eclipselink.logging.parameters" value="false"/>
             <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
-
         </properties>
     </persistence-unit>
 </persistence>
