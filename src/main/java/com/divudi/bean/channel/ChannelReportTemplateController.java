@@ -901,6 +901,7 @@ public class ChannelReportTemplateController implements Serializable {
                 + " where bs.retired=false "
                 + " and bs.bill.creditCompany is not null "
                 + " and bs.bill.creditCompany.name = 'DOC_990'"
+                + " and bs.bill.billTypeAtomic = :bta"
                 + " and bs.sessionInstance.sessionDate between :fd and :td ";
 
         if (institution != null) {
@@ -917,6 +918,7 @@ public class ChannelReportTemplateController implements Serializable {
 
         m.put("fd", fromDate);
         m.put("td", toDate);
+        m.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
 
@@ -935,6 +937,7 @@ public class ChannelReportTemplateController implements Serializable {
             if (row != null) {
                 row.setCounter(idCounter++);
                 SessionInstance sessionInstance = row.getSessionInstance();
+                Bill bill = row.getBillSession().getBill();
                 if (sessionInstance != null) {
                     //System.out.println("inside");
                     bundle.setLong1(bundle.getLong1() + (sessionInstance.getBookedPatientCount() != null ? sessionInstance.getBookedPatientCount() : 0));
