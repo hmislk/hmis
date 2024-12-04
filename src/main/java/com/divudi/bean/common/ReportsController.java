@@ -255,6 +255,8 @@ public class ReportsController implements Serializable {
     private double amountTotal;
     double totalPaying;
 
+    private String cashBookNumber;
+
     private boolean duplicateBillView;
 
     private ReportTemplateRowBundle bundle;
@@ -619,6 +621,14 @@ public class ReportsController implements Serializable {
 
     public void setToken(Token token) {
         this.token = token;
+    }
+
+    public String getCashBookNumber() {
+        return cashBookNumber;
+    }
+
+    public void setCashBookNumber(String cashBookNumber) {
+        this.cashBookNumber = cashBookNumber;
     }
 
     public boolean isDuplicateBillView() {
@@ -2022,6 +2032,77 @@ public class ReportsController implements Serializable {
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
         b.createRowValuesFromBillItems();
+        b.calculateTotalsWithCredit();
+        return b;
+    }
+
+    public void generateCollectionCenterBookWiseDetailReport() {
+        System.out.println("generateCollectionCenterBookWiseDetailReport = " + this);
+        bundle = new ReportTemplateRowBundle();
+
+        List<BillTypeAtomic> opdBts = new ArrayList<>();
+        bundle = new ReportTemplateRowBundle();
+
+        opdBts.add(BillTypeAtomic.CC_BILL);
+        opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
+        opdBts.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
+
+        bundle.setName("Bills");
+        bundle.setBundleType("billList");
+
+        bundle = generateCollectionCenterBookWiseBills(opdBts);
+    }
+
+    public ReportTemplateRowBundle generateCollectionCenterBookWiseBills(List<BillTypeAtomic> bts) {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "WHERE bill.retired <> :br ";
+
+        parameters.put("br", true);
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (institution != null) {
+            jpql += "AND bill.creditCompany = :ins ";
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND bill.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+
+        if (collectingCentre != null) {
+            jpql += "AND bill.collectingCentre = :cc ";
+            parameters.put("cc", collectingCentre);
+        }
+
+        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
+            jpql += "AND bill.referenceNumber = :cbn ";
+            parameters.put("cbn", cashBookNumber);
+        }
+
+        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+        b.setReportTemplateRows(rs);
+        b.createRowValuesFromBill();
         b.calculateTotalsWithCredit();
         return b;
     }
