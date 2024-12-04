@@ -870,22 +870,22 @@ public class PdfController {
             // Populate data rows
             for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
                 table.addCell(new Cell().add(new Paragraph(
-                        row.getPayment() != null && row.getPayment().getBill() != null ? row.getPayment().getBill().getDeptId() : "N/A")));
+                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getDeptId() != null ? row.getPayment().getBill().getDeptId() : "N/A")));
 
                 table.addCell(new Cell().add(new Paragraph(
-                        row.getPayment() != null && row.getPayment().getBill() != null ? row.getPayment().getBill().getBillClassType().toString() : "N/A")));
+                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getBillClassType() != null ? row.getPayment().getBill().getBillClassType().toString() : "N/A")));
 
                 table.addCell(new Cell().add(new Paragraph(
                         row.getPayment() != null && row.getPayment().getBill() != null ? row.getPayment().getBill().getCreatedAt().toString() : "N/A")));
 
                 table.addCell(new Cell().add(new Paragraph(
-                        row.getPayment() != null ? row.getPayment().getCreditCardRefNo() : "N/A")));
+                        (row.getPayment() != null && row.getPayment().getCreditCardRefNo() != null) ? row.getPayment().getCreditCardRefNo() : "N/A")));
 
                 table.addCell(new Cell().add(new Paragraph(
                         row.getPayment() != null && row.getPayment().getBank() != null ? row.getPayment().getBank().getName() : "N/A")));
 
                 table.addCell(new Cell().add(new Paragraph(
-                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getBackwardReferenceBill() != null ? row.getPayment().getBill().getBackwardReferenceBill().getDeptId() : "N/A")));
+                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getBackwardReferenceBill() != null && row.getPayment().getBill().getBackwardReferenceBill().getDeptId() != null ? row.getPayment().getBill().getBackwardReferenceBill().getDeptId() : "N/A")));
 
                 table.addCell(new Cell().add(new Paragraph(
                         String.format("%.2f", row.getPayment() != null ? row.getPayment().getPaidValue() : 0.0)))); // Format as string
@@ -957,11 +957,9 @@ public class PdfController {
 
             // Populate data rows
             for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
-                table.addCell(new Cell().add(new Paragraph(
-                        row.getBill() != null ? row.getBill().getDeptId() : "N/A")));
+                table.addCell(new Cell().add(new Paragraph((row.getBill() != null && row.getBill().getDeptId() != null) ? row.getBill().getDeptId() : "N/A")));
 
-                table.addCell(new Cell().add(new Paragraph(
-                        row.getBill() != null ? row.getBill().getBillTypeAtomic().getLabel() : "N/A")));
+                table.addCell(new Cell().add(new Paragraph(row.getBill() != null ? row.getBill().getBillTypeAtomic().getLabel() : "N/A")));
 
                 table.addCell(new Cell().add(new Paragraph(
                         String.format("%.2f", row.getBill() != null ? row.getBill().getNetTotal() : 0.0)))); // Format as string

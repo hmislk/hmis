@@ -53,8 +53,9 @@
                                     class="my-1 w-100  ui-button-danger" />
                                 
                                  <p:commandButton 
-                                    value="List All Pharmacy Bills"
+                                    value="List All Paid &amp; Missing Pharmacy Bills"
                                     action="#{supplierPaymentController.fillAllCreditBills()}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Missing Supplier Payment Search is enabled')}"
                                     ajax="false"
                                     icon="fas fa-file-invoice-dollar"
                                     class="my-1 w-100  ui-button-success" />
@@ -65,7 +66,7 @@
                                     ajax="false"
                                     icon="fas fa-file-invoice-dollar"
                                     class="my-1 w-100  ui-button-danger" />
-
+                                 
                                 <p:separator></p:separator>
 
                                 <p:commandButton 
@@ -176,7 +177,7 @@
                                                          update="@form" 
                                                          action="#{supplierPaymentController.navigateToStartSupplierPayment(b)}" 
                                                          ajax="false" 
-                                                         disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT'}" >
+                                                         disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}" >
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
