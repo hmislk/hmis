@@ -115,13 +115,13 @@
                                 id="phmDocType"
                                 value="#{pharmacyReportController.documentType}"
                                 class="w-100">
-                                <f:selectItem itemLabel="Document Type"/>
+                                <f:selectItem itemLabel="All Document Types"/>
                                 <f:selectItem itemLabel="OP Sale" itemValue="opSaleDoc"/>
                                 <f:selectItem itemLabel="IP Sale" itemValue="ipSaleDoc"/>
                                 <f:selectItem itemLabel="Transfer Issue" itemValue="transferIssueDoc"/>
                                 <f:selectItem itemLabel="Transfer Receive" itemValue="transferReceiveDoc"/>
                                 <f:selectItem itemLabel="Consumption" itemValue="consumptionDoc"/>
-                                <f:selectItem itemLabel="Purchase " itemValue="purchaseDoc"/>
+                                <f:selectItem itemLabel="Purchase" itemValue="purchaseDoc"/>
                                 <f:selectItem itemLabel="GRN" itemValue="grnDoc"/>
                             </p:selectOneMenu>
 
@@ -152,7 +152,7 @@
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center mt-5">
-                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" >
+                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" action="#{pharmacyReportController.processStockLedgerReport()}" >
                             </p:commandButton>
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
@@ -164,7 +164,7 @@
 
 
                         <p:dataTable id="tbl" 
-                                     value="#{pharmacyErrorChecking.stockHistories}" 
+                                     value="#{pharmacyReportController.stockLedgerHistories}" 
                                      var="f" 
                                      rowIndexVar="n" 
                                      paginator="true" 
@@ -215,7 +215,10 @@
                                 <h:outputText value="#{f.pbItem.billItem.bill.toDepartment.name}" />
                             </p:column>
                             <p:column headerText="Document Type" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.bill.billTypeAtomic.label}" />
+                                <h:outputText 
+                                    value="#{not empty f.pbItem.billItem.bill.billTypeAtomic ? 
+                                             f.pbItem.billItem.bill.billTypeAtomic.label : 
+                                             f.pbItem.billItem.bill.billType.label}" />
                             </p:column>
                             <p:column headerText="Stock In Quantity" width="5em">
                                 <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? f.pbItem.qty : 0.0}" />

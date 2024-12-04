@@ -12,6 +12,7 @@ import com.divudi.bean.pharmacy.StockHistoryController;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
+import static com.divudi.data.BillType.PharmacyBhtPre;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CategoryCount;
 import com.divudi.data.InstitutionType;
@@ -1851,6 +1852,30 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processStockLedgerReport() {
+        
+               
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+        List<BillType> billTypes = new ArrayList<>();
+        
+        if ("ipSaleDoc".equals(documentType)){
+            billTypes.add(BillType.PharmacyBhtPre);
+        }
+        else if ("opSaleDoc".equals(documentType)){
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);          
+        }
+        else if ("grnDoc".equals(documentType)){
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+        }
+        else if ("purchaseDoc".equals(documentType)){
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND);
+        }
+        
 
         stockLedgerHistories = new ArrayList();
          String jpql;
@@ -1869,14 +1894,25 @@ public class PharmacyReportController implements Serializable {
             jpql += " and s.department=:dep ";
             m.put("dep", department);
         }
-        if (site != null) {
-            jpql += " and s.site=:sit ";
-            m.put("sit", site);
+//        if (site != null) {
+//            jpql += " and s.site=:sit ";
+//            m.put("sit", site);
+//        }
+          if (!billTypeAtomics.isEmpty() || !billTypes.isEmpty()) {
+        jpql += " and (";
+        if (!billTypeAtomics.isEmpty()) {
+            jpql += " s.pbItem.billItem.bill.billTypeAtomic in :dtype";
+            m.put("dtype", billTypeAtomics);
         }
-        if (documentType != null) {
-            jpql += " and s.documentType=:dtype ";
-            m.put("dtype", documentType);
+        if (!billTypeAtomics.isEmpty() && !billTypes.isEmpty()) {
+            jpql += " or";
         }
+        if (!billTypes.isEmpty()) {
+            jpql += " s.pbItem.billItem.bill.billType in :doctype";
+            m.put("doctype", billTypes);
+        }
+        jpql += ")";
+    }
         if (item != null) {
             jpql += " and s.item=:itm ";
             m.put("itm", item);
@@ -1884,7 +1920,7 @@ public class PharmacyReportController implements Serializable {
         
 
         jpql += " order by s.createdAt ";
-        stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);          
     }
 
     public void processLabTestWiseCountReport() {
