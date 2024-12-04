@@ -38,7 +38,11 @@
                                         </p:commandButton>
                                     </h:panelGroup>
                                     <h:panelGroup class="mx-1" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Disable Petty Cash Return')}" >
-                                        <p:commandButton  class="mx-1 ui-button-warning" icon="fas fa-arrow-rotate-left" value="Return" onclick="PF('confirmationDialog').show()">                           
+                                        <p:commandButton  
+                                            class="mx-1 ui-button-warning" 
+                                            icon="fas fa-arrow-rotate-left" 
+                                            action="#{pettyCashBillController.navigateToPettyCashReturn()}"
+                                            value="TO Return">                           
                                         </p:commandButton>
                                     </h:panelGroup>
 
