@@ -2192,6 +2192,7 @@ public class ChannelApi {
             response.put("key", apiKey.getKeyType().toString());
             response.put("value", apiKey.getKeyValue());
             response.put("userName", userName);
+            response.put("expiryDate", apiKey.getDateOfExpiary().toString());
 
             return Response.status(Response.Status.ACCEPTED).entity(response).build();
         }

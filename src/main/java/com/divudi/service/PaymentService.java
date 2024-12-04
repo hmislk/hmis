@@ -36,7 +36,7 @@ import javax.ejb.Stateless;
  */
 @Stateless
 public class PaymentService {
-    
+
     @EJB
     PatientFacade patientFacade;
     @EJB
@@ -49,6 +49,8 @@ public class PaymentService {
     CashbookService cashbookService;
     @EJB
     DrawerService drawerService;
+    @EJB
+    BillService billService;
 
     /**
      * Creates payments for the given bill and updates relevant records.
@@ -58,8 +60,9 @@ public class PaymentService {
      * <ul>
      * <li>Creates payments based on the provided bill and payment method
      * data.</li>
-     * <li>Updates the balance of patient deposits, if applicable.</li>
-     * <li>Adjusts balances for credit companies, if required.</li>
+     * <li>DO NOT Update the balance of patient deposits.</li>
+     * <li>DO NOT Update balances for credit companies.</li>
+     * <li>DO NOT Update Staff Credit.</li>
      * <li>Writes to the drawer for transaction recording.</li>
      * <li>Updates the cashbook if required by the specified options.</li>
      * </ul>
@@ -72,12 +75,51 @@ public class PaymentService {
     public List<Payment> createPayment(Bill bill, PaymentMethodData paymentMethodData) {
         return createPayment(bill, bill.getPaymentMethod(), paymentMethodData, bill.getDepartment(), bill.getCreater());
     }
-    
+
+     /**
+     * Creates payments for the given Cancellation Bill and updates relevant records.
+     *
+     * <p>
+     * This method performs the following tasks:
+     * <ul>
+     * <li>Creates payments based on the provided cancellation bill
+     * using the payment data in the original bill.</li>
+     * <li>DO NOT Update the balance of patient deposits.</li>
+     * <li>DO NOT Update balances for credit companies.</li>
+     * <li>DO NOT Update Staff Credit.</li>
+     * <li>Writes to the drawer for transaction recording.</li>
+     * <li>Updates the cashbook if required by the specified options.</li>
+     * </ul>
+     *
+     * @param cancellationBill The cancellation bill for which payments are being created.
+     * @return A list of created payments associated with the bill.
+     */
+    public List<Payment> createPaymentsForCancelling(Bill cancellationBill) {
+        List<Payment> newPayments = new ArrayList<>();
+        List<Payment> originalBillPayments = billService.fetchBillPayments(cancellationBill.getBilledBill());
+        if (originalBillPayments != null) {
+            for (Payment originalBillPayment : originalBillPayments) {
+                Payment p = originalBillPayment.clonePaymentForNewBill();
+                p.invertValues();
+                p.setBill(cancellationBill);
+                p.setInstitution(cancellationBill.getInstitution());
+                p.setDepartment(cancellationBill.getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(cancellationBill.getCreater());
+                paymentFacade.create(p);
+                newPayments.add(p);
+                cashbookService.writeCashBookEntryAtPaymentCreation(p);
+                drawerService.updateDrawer(p);
+            }
+        }
+        return newPayments;
+    }
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
         CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
         List<Payment> payments = new ArrayList<>();
         Date currentDate = new Date();
-        
+
         if (pm == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 Payment payment = createPaymentFromComponentDetail(cd, bill, department, webUser, currentDate);
@@ -96,19 +138,19 @@ public class PaymentService {
             payment.setCreatedAt(currentDate);
             payment.setCreater(webUser);
             payment.setPaymentMethod(pm);
-            
+
             populatePaymentDetails(payment, pm, paymentMethodData);
             payment.setPaidValue(bill.getNetTotal());
             paymentFacade.create(payment);
             cashbookService.writeCashBookEntryAtPaymentCreation(payment);
             drawerService.updateDrawer(payment);
-            
+
             payments.add(payment);
         }
-        
+
         return payments;
     }
-    
+
     private Payment createPaymentFromComponentDetail(ComponentDetail cd, Bill bill, Department department, WebUser webUser, Date currentDate) {
         Payment payment = new Payment();
         payment.setBill(bill);
@@ -117,12 +159,10 @@ public class PaymentService {
         payment.setCreatedAt(currentDate);
         payment.setCreater(webUser);
         payment.setPaymentMethod(cd.getPaymentMethod());
-        
         populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData());
-        
         return payment;
     }
-    
+
     private void populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
         switch (paymentMethod) {
             case Card:
@@ -164,7 +204,6 @@ public class PaymentService {
                 }
                 break;
             case PatientDeposit:
-                
                 break;
             case Slip:
                 payment.setPaidValue(paymentMethodData.getSlip().getTotalValue());
@@ -172,21 +211,16 @@ public class PaymentService {
                 payment.setBank(paymentMethodData.getSlip().getInstitution());
                 payment.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
                 payment.setRealizedAt(paymentMethodData.getSlip().getDate());
-                
                 break;
             case OnCall:
             case OnlineSettlement:
             case Staff:
                 payment.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
                 payment.setComments(paymentMethodData.getCreditCard().getComment());
-                if (paymentMethodData.getStaffCredit().getToStaff() != null) {
-                    staffBean.updateStaffCredit(paymentMethodData.getStaffCredit().getToStaff(), paymentMethodData.getStaffCredit().getTotalValue());
-                    JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-                }
                 break;
             default:
                 break;
         }
     }
-    
+
 }

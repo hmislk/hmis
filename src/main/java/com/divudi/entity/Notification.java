@@ -5,6 +5,7 @@
 package com.divudi.entity;
 
 import com.divudi.data.TriggerType;
+import com.divudi.entity.inward.PatientRoom;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -30,6 +31,8 @@ public class Notification implements Serializable {
 
     @ManyToOne
     private Bill bill;
+    @ManyToOne
+    private PatientRoom patientRoom;
     private boolean completed;
     @Lob
     private String message;
@@ -163,6 +166,14 @@ public class Notification implements Serializable {
 
     public void setTriggerType(TriggerType triggerType) {
         this.triggerType = triggerType;
+    }
+
+    public PatientRoom getPatientRoom() {
+        return patientRoom;
+    }
+
+    public void setPatientRoom(PatientRoom patientRoom) {
+        this.patientRoom = patientRoom;
     }
 
     

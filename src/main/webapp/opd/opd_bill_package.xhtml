@@ -12,10 +12,7 @@
                 xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
                 xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
                 xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
-    >
-
     <ui:define name="content">
-
         <h:panelGroup rendered="true" styleClass="opdPanel" >
             <h:form id="form">
                 <p:growl id="msg"/>
@@ -1046,7 +1043,6 @@
                         </div>
                     </p:panel>
                 </h:panelGroup>
-
                 <p:panel rendered="#{billPackageController.printPreview}" >
                     <f:facet name="header" >
                         <h:outputLabel value="Package Bill View" class="mx-4"></h:outputLabel>

@@ -287,6 +287,19 @@ public class BillService {
         return tbs;
     }
 
+    public Bill fetchBatchBillOfIndividualBill(Bill individualBill) {
+        System.out.println("individualBill = " + individualBill);
+        String j = "SELECT b.backwardReferenceBill "
+                + "FROM Bill b "
+                + "WHERE b = :b";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("b", individualBill);
+        System.out.println("parameters = " + parameters);
+        System.out.println("j = " + j);
+        Bill batchBill = (Bill) billFacade.findFirstByJpql(j, parameters);
+        return batchBill;
+    }
+
     public void saveBill(Bill bill) {
         saveBill(bill, null);
     }
@@ -370,6 +383,23 @@ public class BillService {
             allBillItems.addAll(fetchBillItems(b));
         }
         return allBillItems;
+    }
+
+    public void initiateBillItemsAndBillFees(Bill b) {
+        if (b == null) {
+            return;
+        }
+        if (b.getBillItems() == null) {
+            b.setBillItems(fetchBillItems(b));
+        }
+        if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
+            return;
+        }
+        for (BillItem bi : b.getBillItems()) {
+            if (bi.getBillFees() == null || bi.getBillFees().isEmpty()) {
+                bi.setBillFees(fetchBillFees(bi));
+            }
+        }
     }
 
     public List<Payment> fetchBillPayments(Bill bill) {

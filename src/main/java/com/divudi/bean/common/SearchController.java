@@ -1138,6 +1138,18 @@ public class SearchController implements Serializable {
         return "/reports/financialReports/inward_due_age?faces-redirect=true";
     }
 
+    public String navigateToDueAgeCreditCompany() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/inward_due_age_credit_company?faces-redirect=true";
+    }
+
+    public String navigateToDueAgeDetail() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/inward_due_age_credit_company_detail?faces-redirect=true";
+    }
+
     public String navigatToShiftEndSummary() {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
@@ -7895,14 +7907,12 @@ public class SearchController implements Serializable {
     }
 
     public void searchOpdBills() {
-        Date startTime = new Date();
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-        billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+//        billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
-        checkLabReportsApproved(bills);
-
+//        checkLabReportsApproved(bills);
     }
 
     public void searchOpdPackageBills() {
