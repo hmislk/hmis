@@ -49,13 +49,26 @@
                                 <div class="d-flex m-1 col-6">
 
                                     <h:panelGroup rendered="#{billSearch.opdBillCancellationSameDay}">
+                                        <!--                                        <p:commandButton 
+                                                                                    ajax="false" 
+                                                                                    value="To Cancel" 
+                                                                                    action="#{billSearch.navigateToCancelOpdBill()}" 
+                                                                                    disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
+                                                                                    class="ui-button-danger m-1 w-25" icon="fa fa-times" > 
+                                                                                </p:commandButton>-->
+
+
                                         <p:commandButton 
-                                            ajax="false" 
+                                            ajax="false"
                                             value="To Cancel" 
-                                            action="#{billSearch.navigateToCancelOpdBill()}" 
-                                            disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
-                                            class="ui-button-danger m-1 w-25" icon="fa fa-times" > 
+                                            title="To Cancel Bill"
+                                            disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded or billSearch.bill.backwardReferenceBill.cancelled}" 
+                                            class="ui-button-danger m-1"
+                                            icon="fa fa-times"
+                                            action="#{billPackageController.navigateToCancelOpdPackageBill()}">
+                                            <f:setPropertyActionListener value="#{billSearch.bill}" target="#{billPackageController.bill}"/>
                                         </p:commandButton>
+
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{!billSearch.opdBillCancellationSameDay}">
@@ -89,7 +102,7 @@
                                             <f:setPropertyActionListener value="#{billSearch.bill}" target="#{billReturnController.originalBillToReturn}" ></f:setPropertyActionListener>
                                         </p:commandButton>
                                     </h:panelGroup>
-                                    
+
                                     <h:panelGroup rendered="#{!billSearch.opdBillRefundAllowedSameDay}">
                                         <p:commandButton
                                             ajax="false" 
