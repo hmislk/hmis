@@ -93,7 +93,9 @@
                         <tr>
                             <td><h:outputLabel value="Addmission Date"></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><h:outputLabel value="" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat} a "/>
+                                </h:outputLabel></td>
                         </tr>
                     </table>
 
