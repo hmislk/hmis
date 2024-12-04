@@ -132,14 +132,15 @@ public class NotificationController implements Serializable {
     }
     
     private void createInwardRoomDischargeNotifications(PatientRoom pr) {
-        System.out.println("pr = " + pr.getName());
+        System.out.println("pr = " + pr);
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_DISCHARGED)) {
             Notification nn = new Notification();
             nn.setCreatedAt(date);
+            nn.setPatientRoom(pr);
             nn.setTriggerType(tt);
             nn.setCreater(sessionController.getLoggedUser());
-            String msg = "You Have a Discharge Notification From" + pr.getName();
+            String msg = "You Have a Discharge Notification From " + pr.getRoomFacilityCharge().getName();
             nn.setMessage(msg);
             getFacade().create(nn);
             userNotificationController.createUserNotifications(nn);
