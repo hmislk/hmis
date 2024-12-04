@@ -159,7 +159,10 @@
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="billItem"   >
                         <tr class="billDetailsFiveFive">
                             <td  style="width:80%!important;">
-                                <h:outputLabel value="#{billItem.item.printName}"></h:outputLabel>
+                                <h:outputLabel value="#{billItem.item.printName}"></h:outputLabel> 
+                                <h:outputLabel value="&nbsp;X #{billItem.qty}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Quantity on OPD Bills') and billItem.item.requestForQuentity}">
+                                    <f:convertNumber pattern="0" />
+                                </h:outputLabel>
                             </td>
                             <td style="width:10%!important;">
                                 <h:panelGroup rendered="#{billItem.item.printSessionNumber}" >
