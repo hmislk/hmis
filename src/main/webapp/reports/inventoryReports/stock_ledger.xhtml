@@ -163,7 +163,8 @@
                         </div>
 
 
-                        <p:dataTable id="tbl" value="" 
+                        <p:dataTable id="tbl" 
+                                     value="#{pharmacyErrorChecking.stockHistories}" 
                                      var="f" 
                                      rowIndexVar="n" 
                                      paginator="true" 
@@ -175,31 +176,31 @@
 
 
                             <p:column headerText="S.No." width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{n+1}" />
                             </p:column>
-                            <p:column headerText="Store" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="Department" width="5em">
+                                <h:outputText value="#{f.department.name}" />
                             </p:column>
                             <p:column headerText="Item Category / Drug Form" width="10em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.billItem.item.category.name}" />
                             </p:column>
                             <p:column headerText="Item Code" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.billItem.item.code}" />
                             </p:column>
                             <p:column headerText="Item Name" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.billItem.item.name}" />
                             </p:column>
                             <p:column headerText="UOM" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.billItem.item.issueUnit}" />
                             </p:column>
                             <p:column headerText="Transaction Type" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? 'STOCK IN' : 'STOCK OUT'}" />
                             </p:column>
                             <p:column headerText="Doc No." width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.id}" />
                             </p:column>
                             <p:column headerText="Doc Date" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.createdAt}" />
                             </p:column>
                             <p:column headerText="Ref Doc No." width="5em">
                                 <h:outputText value="" />
@@ -208,49 +209,46 @@
                                 <h:outputText value="" />
                             </p:column>
                             <p:column headerText="From Store" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.billItem.bill.fromDepartment.name}" />
                             </p:column>
                             <p:column headerText="To Store" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Department" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.billItem.bill.toDepartment.name}" />
                             </p:column>
                             <p:column headerText="Document Type" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.billItem.bill.billTypeAtomic.label}" />
                             </p:column>
                             <p:column headerText="Stock In Quantity" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? f.pbItem.qty : 0.0}" />
                             </p:column>
                             <p:column headerText="Stock Out Quantity" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty : 0.0}" />
                             </p:column>
                             <p:column headerText="Closing Stock" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.itemStock}" />
                             </p:column>
                             <p:column headerText="Rate" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.purchaseRate}" />
                             </p:column>
                             <p:column headerText="Closing Stock Value" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.itemStock * f.pbItem.purchaseRate}" />
                             </p:column>
                             <p:column headerText="Locator" width="5em">
                                 <h:outputText value="" />
                             </p:column>
                             <p:column headerText="Batch Code" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.itemBatch.batchNo}" />
                             </p:column>
                             <p:column headerText="MRP" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.retailRate}" />
                             </p:column>
                             <p:column headerText="Expiry Date" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.doe}" />
                             </p:column>
                             <p:column headerText="Inserted Date" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.itemBatch.item.createdAt}" />
                             </p:column>
                             <p:column headerText="UserName" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.billItem.bill.creater.name}" />
                             </p:column>
 
                         </p:dataTable>
