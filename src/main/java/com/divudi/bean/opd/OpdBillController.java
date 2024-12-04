@@ -367,6 +367,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return "/opd/opd_bill_search?faces-redirect=true";
     }
 
+    @Deprecated
     public String navigateToSearchOpdPackageBills() {
         batchBill = null;
         bills = null;
