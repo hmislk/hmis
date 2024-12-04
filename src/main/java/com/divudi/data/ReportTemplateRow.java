@@ -139,6 +139,8 @@ public class ReportTemplateRow implements Serializable {
     private Double totalHospitalFee;
     private Double qty;
 
+    private long duration;
+
     private String rowType;
 
     private UUID id;
@@ -406,6 +408,14 @@ public class ReportTemplateRow implements Serializable {
 
     public void setItemName(String itemName) {
         this.itemName = itemName;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
     }
 
     public String getPaymentName() {

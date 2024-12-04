@@ -1386,6 +1386,112 @@ public class ReportsController implements Serializable {
         this.creditPaid = creditPaid;
     }
 
+    public void generateSampleCarrierReport() {
+        System.out.println("generateSampleCarrierReport = " + this);
+        bundle = new ReportTemplateRowBundle();
+
+        List<BillTypeAtomic> opdBts = new ArrayList<>();
+
+        if (visitType != null && visitType.equalsIgnoreCase("IP")) {
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+        } else {
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        }
+
+        System.out.println("bill items");
+
+        bundle.setName("Sample Carrier Bill Items");
+        bundle.setBundleType("billItemList");
+
+        bundle = generateSampleCarrierBillItems(opdBts);
+    }
+
+    private ReportTemplateRowBundle generateSampleCarrierBillItems(List<BillTypeAtomic> bts) {
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) " +
+                "FROM BillItem billItem " +
+                "JOIN billItem.bill bill " +
+                "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem " +
+                "WHERE bill.billTypeAtomic IN :bts " +
+                "AND bill.createdAt BETWEEN :fd AND :td ";
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (visitType != null) {
+            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND bill.ipOpOrCc = :type ";
+                parameters.put("type", visitType);
+            }
+        }
+
+        if (staff != null) {
+            jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
+            parameters.put("staff", staff.getPerson().getName());
+        }
+
+        if (item != null) {
+            jpql += "AND billItem.patientInvestigation.investigation.name = :item ";
+            parameters.put("item", item.getName());
+        }
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND bill.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+
+        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY billItem";
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        for (ReportTemplateRow row : rs) {
+            BillItem billItem = row.getBillItem();
+            PatientInvestigation investigation = billItem.getPatientInvestigation();
+
+            if (investigation != null && investigation.getSampleSentAt() != null && investigation.getReceivedAt() != null) {
+                long duration = investigation.getReceivedAt().getTime() - investigation.getSampleSentAt().getTime();
+                row.setDuration(duration / (1000 * 60)); // in minutes
+            } else {
+                row.setDuration(0);
+            }
+        }
+
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+        b.setReportTemplateRows(rs);
+        b.createRowValuesFromBillItems();
+        b.calculateTotalsWithCredit();
+        return b;
+    }
+
     public void generatePackageReport() {
         System.out.println("generatePackageReport = " + this);
         bundle = new ReportTemplateRowBundle();
