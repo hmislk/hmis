@@ -1922,4 +1922,107 @@ public class ReportsController implements Serializable {
         b.calculateTotalsWithCredit();
         return b;
     }
+
+    public void generatePaymentSettlementReport() {
+        if (visitType == null || visitType.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please select a visit type");
+            return;
+        }
+
+        System.out.println("generatePaymentSettlementReport = " + this);
+        bundle = new ReportTemplateRowBundle();
+
+        List<BillTypeAtomic> opdBts = new ArrayList<>();
+        bundle = new ReportTemplateRowBundle();
+
+        if (visitType.equalsIgnoreCase("IP")) {
+            opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+            opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        } else if (visitType.equalsIgnoreCase("OP")) {
+            opdBts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+            opdBts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        }
+
+        bundle.setName("Bills");
+        bundle.setBundleType("billList");
+
+        bundle = generateReportBillItems(opdBts, null);
+
+        bundle.calculateTotalByBills(visitType.equalsIgnoreCase("OP"));
+        bundle.calculateTotalBalance(visitType.equalsIgnoreCase("OP"));
+        bundle.calculateTotalSettledAmountByPatients(visitType.equalsIgnoreCase("OP"));
+        bundle.calculateTotalSettledAmountBySponsors(visitType.equalsIgnoreCase("OP"));
+    }
+
+    public ReportTemplateRowBundle generateReportBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+                + "FROM BillItem billItem "
+                + "JOIN billItem.bill bill "
+                + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (billPaymentMethods != null) {
+            jpql += "AND bill.paymentMethod in :bpms ";
+            parameters.put("bpms", billPaymentMethods);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && admissionType != null)) {
+            jpql += "AND bill.patientEncounter.admissionType = :type ";
+            parameters.put("type", admissionType);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && roomCategory != null)) {
+            jpql += "AND bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory = :category ";
+            parameters.put("category", roomCategory);
+        }
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND bill.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+
+        if (collectingCentre != null) {
+            jpql += "AND bill.collectingCentre = :cc ";
+            parameters.put("cc", collectingCentre);
+        }
+
+        if (creditCompany != null) {
+            jpql += "AND bill.creditCompany = :cc ";
+            parameters.put("cc", creditCompany);
+        }
+
+        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY billItem";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+        b.setReportTemplateRows(rs);
+        b.createRowValuesFromBillItems();
+        b.calculateTotalsWithCredit();
+        return b;
+    }
 }
