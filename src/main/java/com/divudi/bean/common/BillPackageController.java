@@ -58,6 +58,7 @@ import com.divudi.entity.Payment;
 import com.divudi.facade.BillFeePaymentFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -84,6 +85,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillFacade billFacade;
+    @EJB
+    BillService billService;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -141,11 +144,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private List<Item> packaes;
 
     //</editor-fold>
-    
-    
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
-
+    private boolean duplicatePrint;
     private Bill batchBill;
     private boolean printPreview;
     //Interface Data
@@ -184,7 +185,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private List<Payment> payments;
 
     //</editor-fold>
-    
     private void savePatient() {
         if (getPatient().getId() == null) {
             if (getPatient().getPerson().getName() != null) {
@@ -285,10 +285,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         batchBill.setPaymentScheme(getPaymentScheme());
 
         String deptID = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-        
+
         batchBill.setDeptId(deptID);
-        
-        
+
         batchBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(batchBill.getInstitution(), batchBill.getBillType(), BillClassType.BilledBill, BillNumberSuffix.PACK));
 
         getBillFacade().create(batchBill);
@@ -937,7 +936,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         setDiscount(dis);
         setTotal(net);
         setNetTotal(net);
-        if(paymentMethod==PaymentMethod.Cash){
+        if (paymentMethod == PaymentMethod.Cash) {
             cashBalance = getTenderedAmount() - getNetTotal();
         }
         System.out.println("Cash Balance = " + getCashBalance());
@@ -1018,19 +1017,19 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
         calTotals();
     }
-    
-    public List<BillItem> fillPackageBillItem(Bill bill){
+
+    public List<BillItem> fillPackageBillItem(Bill bill) {
         List<BillItem> billItem = new ArrayList<>();
-        
+
         String jpql;
         Map m = new HashMap();
         jpql = "select bi from BillItem bi "
                 + " where bi.retired = false "
                 + " and bi.bill.backwardReferenceBill =:pBill";
         m.put("pBill", bill);
-        
+
         billItem = getBillItemFacade().findByJpql(jpql, m);
-        
+
         return billItem;
     }
 
@@ -1068,6 +1067,35 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         printPreview = false;
         this.patient = patient;
         return "/opd/opd_bill_package?faces-redirect=true";
+    }
+
+    public String navigateToViewOpdPackageBatchBill(Bill bb) {
+        if (bb == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        if (bb.getId() == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        if (bb.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No bill type");
+            return null;
+        }
+        if (bb.getBillTypeAtomic() == BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT) {
+            JsfUtil.addErrorMessage("No bill type");
+            return null;
+        }
+        batchBill = bb;
+        Long batchBillId = bb.getId();
+        batchBill = billFacade.find(batchBillId);
+        bills = billService.fetchIndividualBillsOfBatchBill(batchBill);
+        payments = billService.fetchBillPayments(batchBill);
+        for (Bill b : bills) {
+            billService.initiateBillItemsAndBillFees(b);
+        }
+        duplicatePrint = true;
+        return "/opd/opd_batch_bill_print?faces-redirect=true;";
     }
 
     public String navigateToMedicalPakageBillingFromMenu() {
@@ -1309,7 +1337,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setNetTotal(double netTotal) {
         this.netTotal = netTotal;
     }
-    
+
     public double getCashBalance() {
         return cashBalance;
     }
@@ -1585,10 +1613,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     private List<Item> listOfTheNonExpiredPackages;
 
-    public void reloadPackages(){
+    public void reloadPackages() {
         itemController.reloadItems();
     }
-    
+
     private void fillPackages() {
         packaes = itemController.getPackaes();
         if (packaes == null) {
@@ -1657,6 +1685,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.tenderedAmount = tenderedAmount;
     }
 
-   
+    public boolean isDuplicatePrint() {
+        return duplicatePrint;
+    }
+
+    public void setDuplicatePrint(boolean duplicatePrint) {
+        this.duplicatePrint = duplicatePrint;
+    }
 
 }
