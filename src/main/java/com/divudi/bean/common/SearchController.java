@@ -15912,7 +15912,7 @@ public class SearchController implements Serializable {
                 institution,
                 department,
                 site,
-                true,
+                false,
                 true);
         ap.setName("Credit Bills");
         ap.setBundleType("creditBills");
