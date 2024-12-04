@@ -1216,7 +1216,13 @@ public class WebUserController implements Serializable {
 
     public int getUserNotificationCount() {
         if (userNotificationController.fillLoggedUserNotifications() != null) {
-            userNotificationCount = userNotificationController.fillLoggedUserNotifications().size();
+            userNotificationCount = 0;
+            List<UserNotification> allNotifications = userNotificationController.fillLoggedUserNotifications();
+            for(UserNotification un : allNotifications){
+                if(!un.isSeen()){
+                    userNotificationCount++;
+                }
+            }
         }
         return userNotificationCount;
     }
