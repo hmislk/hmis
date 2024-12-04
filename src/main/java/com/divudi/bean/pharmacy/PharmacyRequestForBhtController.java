@@ -1276,6 +1276,70 @@ public class PharmacyRequestForBhtController implements Serializable {
             return true;
         }
     }
+    public void saveBhtIssueRequestFrompharmacy(){
+//        Date startTime = new Date();
+//        Date fromDate = null;
+//        Date toDate = null;
+//        if (errorCheck()) {
+//            return;
+//        }
+        if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment() == null) {
+            JsfUtil.addErrorMessage("No Request Department");
+        }
+        Patient pt = getPatientEncounter().getPatient();
+        getPreBill().setPaidAmount(0);
+
+        List<BillItem> tmpBillItems = getPreBill().getBillItems();
+        getPreBill().setBillItems(null);
+        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyBhtPre, BillClassType.PreBill, BillNumberSuffix.POR));
+        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyBhtPre, BillClassType.PreBill, BillNumberSuffix.POR));
+
+        getPreBill().setCreater(getSessionController().getLoggedUser());
+        getPreBill().setCreatedAt(Calendar.getInstance().getTime());
+
+        getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        getPreBill().setEditedAt(null);
+        getPreBill().setEditor(null);
+
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.INWARD_PHARMACY_REQUEST);
+        getPreBill().setBillClassType(BillClassType.PreBill);
+        getPreBill().setBillType(BillType.PharmacyBhtPre);
+
+        if (getPreBill().getId() == null) {
+            getBillFacade().create(getPreBill());
+        } else {
+            getBillFacade().edit(getPreBill());
+        }
+        saveBillComponent();
+        JsfUtil.addSuccessMessage("Request Saved");
+    }
+     public void saveBillComponent() {
+        for (BillItem b : getBillItems()) {
+            b.setRate(b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            b.setNetValue(b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            b.setBill(getPreBill());
+            b.setCreatedAt(new Date());
+            b.setCreater(getSessionController().getLoggedUser());
+
+            if (b.getId() == null) {
+                getBillItemFacade().create(b);
+            } else {
+                getBillItemFacade().edit(b);
+            }
+
+            if (b.getPharmaceuticalBillItem().getId() == null) {
+                getPharmaceuticalBillItemFacade().create(b.getPharmaceuticalBillItem());
+            } else {
+                getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
+            }
+
+        }
+    }
 
     public SessionController getSessionController() {
         return sessionController;

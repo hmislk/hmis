@@ -27,15 +27,15 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Start Pharmacy Request for Inpatients"/>
                                 <p:commandButton
-                                        ajax="false"
-                                        icon="fa-solid fa-address-card"
-                                        class="ui-button-secondary " 
-                                        value="Inpatient Dashboard"
-                                        style="float: right;"
-                                        action="#{admissionController.navigateToAdmissionProfilePage}" 
-                                        >
-                                        <f:setPropertyActionListener value="#{pharmacyRequestForBhtController.patientEncounter}" target="#{admissionController.current}" />
-                                    </p:commandButton>
+                                    ajax="false"
+                                    icon="fa-solid fa-address-card"
+                                    class="ui-button-secondary " 
+                                    value="Inpatient Dashboard"
+                                    style="float: right;"
+                                    action="#{admissionController.navigateToAdmissionProfilePage}" 
+                                    >
+                                    <f:setPropertyActionListener value="#{pharmacyRequestForBhtController.patientEncounter}" target="#{admissionController.current}" />
+                                </p:commandButton>
                             </f:facet>
                             <div class="d-flex gap-3">
                                 <h:outputLabel value="Requesting Department"/>
@@ -184,6 +184,14 @@
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa-solid fa-circle-plus"  />
                                             <h:outputLabel value="Add items" class="mx-4"/>
+                                            <p:commandButton 
+                                                id="btnSave"
+                                                ajax="false" 
+                                                value="Save" 
+                                                action="#{pharmacyRequestForBhtController.saveBhtIssueRequestFrompharmacy()}"
+                                                icon="pi pi-save" 
+                                                class="ui-button-success m-1"
+                                                style="float: right;"/>
                                         </f:facet>
 
                                         <div class="row">
