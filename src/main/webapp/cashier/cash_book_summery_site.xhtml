@@ -233,13 +233,17 @@
                                             </td>
                                             <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sid">
                                                 <ui:repeat value="#{sid.sites}" var="s">
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate,s)}</td>
+                                                    <td class="text-end">
+                                                        #{cashBookEntryController.fetchStartingBalanceForFromSite(mydate,s)}
+                                                    </td>
                                                     <td class="text-end">
                                                         <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate,s)}" >
                                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                         </h:outputText> 
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate,s)}</td>
+                                                    <td class="text-end">
+                                                        #{cashBookEntryController.fetchEndingBalanceForFromSite(mydate,s)}
+                                                    </td>
 
                                                     <!-- Card -->
                                                     <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate,s,'Cash')}</td>
