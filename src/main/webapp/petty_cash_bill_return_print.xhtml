@@ -20,20 +20,33 @@
                                 <div>
                                     <p:commandButton  
                                         class="mx-1 ui-button-warning" 
-                                        icon="fas fa-arrow-rotate-left" 
+                                        icon="fas fa-arrow-left" 
                                         value="Back to Search Bill" 
-                                        action="#{pettyCashBillController.settleReturnBill()}"
+                                        action="/petty_cash_bill_search_own?faces-redirect=true" 
+                                        actionListener="#{searchController.makeListNull}"
                                         >                           
                                     </p:commandButton>
-                                    
+
                                 </div>
                             </div>
                         </f:facet>
-                        
-                        <bi:petty_return bill="#{pettyCashBillController.currentReturnBill}" />
-                                    
+
+                        <div class="d-flex justify-content-end mt-2 mb-2">
+                            <p:commandButton 
+                                value="Print" 
+                                class="ui-button-info m-1"
+                                icon="fa fa-print"
+                                ajax="false">
+                                <p:printer target="gpBillPreviewReturn" />
+                            </p:commandButton> 
+                        </div>
+
+                        <h:panelGroup id="gpBillPreviewReturn">
+                            <bi:petty_return bill="#{pettyCashBillController.currentReturnBill}" />
+                        </h:panelGroup>
+
                     </p:panel>
-                    
+
                 </h:form>
             </ui:define>
         </ui:composition>

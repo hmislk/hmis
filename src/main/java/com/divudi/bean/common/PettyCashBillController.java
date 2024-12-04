@@ -122,7 +122,10 @@ public class PettyCashBillController implements Serializable {
 
     public String navigateToPettyCashReturn() {
         printPriview = false;
-        return "pettycash_bill_return?faces-redirect=true";
+        comment = null;
+        returnAmount = 0.0;
+        paymentMethodData = null;
+        return "petty_cash_bill_return?faces-redirect=true";
     }
 
     public void fillBillsReferredByCurrentBill() {
@@ -314,12 +317,13 @@ public class PettyCashBillController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a comment");
             return "";
         }
-
+        System.out.println("current = " + current);
         if (getCurrent() != null && getCurrent().getId() != null && getCurrent().getId() != 0) {
             currentReturnBill = createPettyCashReturnBill();
             paymentService.createPayment(currentReturnBill, paymentMethodData);
             getBillFacade().edit(getCurrent());
             printPriview = true;
+            current = null;
         }
         return "/petty_cash_bill_return_print";
     }
@@ -409,11 +413,10 @@ public class PettyCashBillController implements Serializable {
         rb.setDiscountPercent(0.0);
         rb.setComments(comment);
         rb.setPaymentMethod(paymentMethod);
-        rb.setTotal(0 - returnAmount);
+        rb.setTotal(returnAmount);
         rb.setCashPaid(returnAmount);
-        rb.setNetTotal(0 - returnAmount);
+        rb.setNetTotal(returnAmount);
         getBillFacade().create(rb);
-
         return rb;
 
     }
