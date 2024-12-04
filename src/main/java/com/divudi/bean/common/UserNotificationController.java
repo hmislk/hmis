@@ -13,6 +13,11 @@ import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.bean.pharmacy.PurchaseOrderController;
 import com.divudi.bean.pharmacy.TransferIssueController;
+import static com.divudi.data.BillType.InwardPharmacyRequest;
+import static com.divudi.data.BillType.PharmacyOrder;
+import static com.divudi.data.BillType.PharmacyOrderApprove;
+import static com.divudi.data.BillType.PharmacyTransferIssue;
+import static com.divudi.data.BillType.PharmacyTransferRequest;
 import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_ORDER;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
@@ -296,22 +301,28 @@ public class UserNotificationController implements Serializable {
     public void removeUserNotification(UserNotification un) {
         Department todept = null;
         Notification n = un.getNotification();
-        switch (n.getBill().getBillType()) {
-            case PharmacyOrder:
-                todept = n.getBill().getFromDepartment();
-                break;
-            case PharmacyTransferIssue:
-                todept = n.getBill().getToDepartment();
-                break;
-            case PharmacyTransferRequest:
-                todept = n.getBill().getToDepartment();
-                break;
-            case InwardPharmacyRequest:
-                todept = n.getBill().getToDepartment();
-                break;
-            case PharmacyOrderApprove:
-                todept = n.getBill().getFromDepartment();
-                break;
+        if (n.getBill() != null) {
+            switch (n.getBill().getBillType()) {
+                case PharmacyOrder:
+                    todept = n.getBill().getFromDepartment();
+                    break;
+                case PharmacyTransferIssue:
+                    todept = n.getBill().getToDepartment();
+                    break;
+                case PharmacyTransferRequest:
+                    todept = n.getBill().getToDepartment();
+                    break;
+                case InwardPharmacyRequest:
+                    todept = n.getBill().getToDepartment();
+                    break;
+                case PharmacyOrderApprove:
+                    todept = n.getBill().getFromDepartment();
+                    break;
+            }
+        } else if (n.getPatientRoom() != null) {
+            todept = n.getPatientRoom().getRoomFacilityCharge().getDepartment();
+        } else {
+            return;
         }
 
         if (!todept.equals(sessionController.getLoggedUser().getDepartment())) {
@@ -334,9 +345,11 @@ public class UserNotificationController implements Serializable {
         String jpql = "select un "
                 + " from UserNotification un "
                 + " where un.webUser=:wu "
+                + " and un.seen=:seen "
                 + " and un.retired=:ret";
         Map m = new HashMap();
         m.put("ret", false);
+        m.put("seen", false);
         m.put("wu", sessionController.getLoggedUser());
         items = getFacade().findByJpql(jpql, m);
         return items;
@@ -345,6 +358,10 @@ public class UserNotificationController implements Serializable {
     public String navigateToCurrentNotificationRequest(UserNotification un) {
         un.setSeen(true);
         getFacade().edit(un);
+
+        if (un.getNotification().getBill() == null) {
+            return "";
+        }
 
         Department todept = null;
         Notification n = un.getNotification();
@@ -405,11 +422,13 @@ public class UserNotificationController implements Serializable {
         if (notification == null) {
             return;
         }
-        if (notification.getBill() == null) {
-            return;
-        }
-        if (notification.getBill().getBillTypeAtomic() == null) {
-            return;
+        if (notification.getPatientRoom() == null) {
+            if (notification.getBill() == null) {
+                return;
+            }
+            if (notification.getBill().getBillTypeAtomic() == null) {
+                return;
+            }
         }
         createUserNotificationsForMedium(notification);
     }
@@ -419,31 +438,35 @@ public class UserNotificationController implements Serializable {
         if (n == null) {
             return;
         }
-
-        switch (n.getBill().getBillType()) {
-            case PharmacyOrder:
-                todept = n.getBill().getFromDepartment();
-                break;
-            case PharmacyTransferIssue:
-                todept = n.getBill().getToDepartment();
-                System.out.println("todept = " + todept);
-                break;
-            case PharmacyTransferRequest:
-                todept = n.getBill().getToDepartment();
-                break;
-            case InwardPharmacyRequest:
-                todept = n.getBill().getToDepartment();
-                break;
-            case PharmacyOrderApprove:
-                todept = n.getBill().getFromDepartment();
-                break;
-            default:
-                todept = sessionController.getDepartment();
-        }
-
-        if (n.getBill() == null) {
+        if (n.getBill() == null && n.getPatientRoom() == null) {
             return;
         }
+
+        if (n.getBill() != null) {
+            switch (n.getBill().getBillType()) {
+                case PharmacyOrder:
+                    todept = n.getBill().getFromDepartment();
+                    break;
+                case PharmacyTransferIssue:
+                    todept = n.getBill().getToDepartment();
+                    System.out.println("todept = " + todept);
+                    break;
+                case PharmacyTransferRequest:
+                    todept = n.getBill().getToDepartment();
+                    break;
+                case InwardPharmacyRequest:
+                    todept = n.getBill().getToDepartment();
+                    break;
+                case PharmacyOrderApprove:
+                    todept = n.getBill().getFromDepartment();
+                    break;
+                default:
+                    todept = sessionController.getDepartment();
+            }
+        } else if (n.getPatientRoom() != null) {
+            todept = n.getPatientRoom().getRoomFacilityCharge().getDepartment();
+        }
+
         List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(), todept);
         System.out.println("notificationUsers = " + notificationUsers.size());
         switch (n.getTriggerType().getMedium()) {

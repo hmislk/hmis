@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    
+                    <p:panel>
+                        <f:facet name="header" >
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputLabel value="Petty Cash Return" ></h:outputLabel>
+                                </div>
+                                <div>
+                                    <p:commandButton  
+                                        class="mx-1 ui-button-warning" 
+                                        icon="fas fa-arrow-rotate-left" 
+                                        value="Return" 
+                                        ajax="false"
+                                        action="#{pettyCashBillController.settleReturnBill()}"
+                                        >                           
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="col-3">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText value="&#xf007;" styleClass="fa mr-2"></h:outputText>
+                                        <h:outputLabel value="Person Details" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Person Name:" ></h:outputLabel>
+                                        <h:outputLabel value="#{pettyCashBillSearch.bill.staff.person.nameWithTitle }" rendered="#{pettyCashBillSearch.bill.staff ne null}" ></h:outputLabel>                                        
+                                        <h:outputLabel value="#{pettyCashBillSearch.bill.person.nameWithTitle }" rendered="#{pettyCashBillSearch.bill.staff eq null}" ></h:outputLabel>                                        
+                                    </p:panelGrid>
+                                </p:panel>
+                            </div>
+                            <div class="col-3">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                        <h:outputLabel value="Bill Detail" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                        <h:outputLabel value="#{pettyCashBillSearch.bill.deptId}" ></h:outputLabel>
+                                        <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                        <h:outputLabel value="#{pettyCashBillSearch.bill.paymentMethod}" ></h:outputLabel>                                        
+                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{pettyCashBillSearch.bill.netTotal}" ></h:outputLabel>
+                                    </p:panelGrid>
+                                </p:panel>
+                            </div>
+                            <div class="col-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                        <h:outputLabel value="Return Detail" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <div class="d-flex">
+                                        <div class="col-3"><p:outputLabel value="Payment Method" /></div>
+                                        <div class="col-9">
+                                            <p:selectOneMenu 
+                                                style="width: 14em;" 
+                                                id="cmbPs" 
+                                                value="#{pettyCashBillController.paymentMethod}">                                                                     
+                                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                                <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex mt-1">
+                                        <div class="col-3"></div>
+                                        <div class="col-9">
+                                            <h:panelGroup id="creditCard" style="display: #{pettyCashBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                                <pa:creditCard paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="cheque" style="display: #{pettyCashBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                                <pa:cheque paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="slip" style="display: #{pettyCashBillController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                                <pa:slip paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex mt-1">
+                                        <div class="col-3"><p:outputLabel value="Amount" /></div>
+                                        <div class="col-9"><p:inputText class="w-100 " value="#{pettyCashBillController.returnAmount}" placeholder="Return Amount" /> </div>
+                                    </div>
+
+                                    <div class="d-flex mt-1">
+                                        <div class="col-3"><p:outputLabel value="Comment" /></div>
+                                        <div class="col-9"><p:inputText class="w-100 my-1 " value="#{pettyCashBillController.comment}" placeholder="Comment" /> </div>
+                                    </div>
+
+                                </p:panel>
+                            </div>
+                        </div>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
