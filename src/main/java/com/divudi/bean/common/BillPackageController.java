@@ -411,7 +411,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             batchBillCancellationStarted = false;
             return "";
         }
-        if (paymentMethod != null) {
+        if (paymentMethod == null) {
             JsfUtil.addErrorMessage("Please select a payment method.");
             batchBillCancellationStarted = false;
             return "";
@@ -459,7 +459,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 getBillFacade().edit(cancellationBill);
             }
         }
-        payments = paymentService.createPayment(cancellationBill, paymentMethodData);
+        payments = paymentService.createPayment(cancellationBill, getPaymentMethodData());
         printPreview = true;
         batchBillCancellationStarted = false;
         return null;
@@ -1670,6 +1670,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.paymentMethod = paymentMethod;
     }
 
+    @Override
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
             paymentMethodData = new PaymentMethodData();
