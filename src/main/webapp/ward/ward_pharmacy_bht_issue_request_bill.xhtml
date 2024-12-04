@@ -56,7 +56,7 @@
                                         update="@this acPt2" />
                                 </p:autoComplete>
 
-                                <h:outputLabel value="Patient Name or BHT" class="mt-2"/> 
+                                <h:outputLabel value="Patient Name or BHT or PHN No" class="mt-2"/> 
                                 <p:autoComplete 
                                     widgetVar="aPt2"  
                                     id="acPt2" 
@@ -76,6 +76,9 @@
                                     </p:column>
                                     <p:column >
                                         <h:outputLabel value="#{apt2.patient.person.name}"/> 
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputLabel value="#{apt2.patient.phn}"/> 
                                     </p:column>
                                     <p:column>
                                         <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
