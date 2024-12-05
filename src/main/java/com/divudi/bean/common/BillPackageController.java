@@ -572,7 +572,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         printPreview = false;
         return "/opd/opd_package_bill_cancel?faces-redirect=true;";
     }
-
+  
     public void cancelSingleBillWhenCancellingPackageBatchBill(Bill originalBill, Bill cancellationBatchBill) {
         if (originalBill == null && originalBill == null) {
             JsfUtil.addErrorMessage("No Bill to cancel");
@@ -1459,6 +1459,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.patient = patient;
         return "/opd/opd_bill_package?faces-redirect=true";
     }
+    
+    public String navigateToSearchOpdPackageBills() {
+        batchBill = null;
+        bills = null;
+        return "/opd/opd_package_bill_search?faces-redirect=true";
+    }
 
     public String navigateToManageOpdPackageBatchBill(Bill bb) {
         System.out.println("navigateToManageOpdPackageBatchBill = ");
@@ -2125,5 +2131,4 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setBill(Bill bill) {
         this.bill = bill;
     }
-
 }
