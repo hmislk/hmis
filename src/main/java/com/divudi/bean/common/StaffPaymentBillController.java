@@ -277,10 +277,10 @@ public class StaffPaymentBillController implements Serializable {
 
     public void calculateDueFeesForOpdForSelectedPeriod() {
         System.out.println("calculateDueFeesForOpdForSelectedPeriod");
-        if (currentStaff == null || currentStaff.getId() == null) {
-            dueBillFees = new ArrayList<>();
-            return;
-        }
+//        if (currentStaff == null || currentStaff.getId() == null) {
+//            dueBillFees = new ArrayList<>();
+//            return;
+//        }
         List<BillTypeAtomic> btcs = new ArrayList<>();
         btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
