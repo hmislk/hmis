@@ -276,7 +276,6 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public void calculateDueFeesForOpdForSelectedPeriod() {
-        System.out.println("calculateDueFeesForOpdForSelectedPeriod");
 //        if (currentStaff == null || currentStaff.getId() == null) {
 //            dueBillFees = new ArrayList<>();
 //            return;
@@ -322,8 +321,6 @@ public class StaffPaymentBillController implements Serializable {
             BillFee bf = new BillFee();
             bf.getBill();
         }
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         dueBillFees = getBillFeeFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         if (configOptionApplicationController.getBooleanValueByKey("Remove Refunded Bill From OPD Staff Payment")) {
@@ -450,11 +447,9 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public void performCalculations() {
-        System.out.println("performCalculations");
         calculateTotalDue();
         calculatePaymentsSelected();
 
-        System.out.println("withholdingTaxCalculationStatus = " + withholdingTaxCalculationStatus);
         switch (withholdingTaxCalculationStatus) {
             case "Depending On Payments":
                 calculateWithholdingTaxDependingOnPayments();
@@ -478,36 +473,22 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     private void calculateWithholdingTaxDependingOnPayments() {
-        System.out.println("Calculating Withholding Tax:");
-        System.out.println("totalPaying = " + totalPaying);
-        System.out.println("Total Paid For Current Professional This Month: " + totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute);
         if (totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute == 0.0) {
             withholdingTax = 0.0;
             totalPayingWithoutWht = totalPaying;
-            System.out.println("No previous payments found. Withholding Tax set to 0.");
             return;
         }
         Double paidValue = Math.abs(totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute);
-        System.out.println("Paid Value: " + paidValue);
-        System.out.println("Withholding Tax Limit: " + getWithholdingTaxLimit());
         if (getWithholdingTaxLimit() < paidValue) {
             withholdingTax = totalPaying * (getWithholdingTaxPercentage() / 100);
-            System.out.println("Withholding Tax Percentage: " + getWithholdingTaxPercentage());
-            System.out.println("Withholding Tax Calculated: " + withholdingTax);
         } else {
             withholdingTax = 0.0; // Ensure withholdingTax is set to 0.0
-            System.out.println("Paid Value is less than Withholding Tax Limit. No Withholding Tax applied.");
         }
         totalPayingWithoutWht = totalPaying - withholdingTax;
-        System.out.println("Total Paying Without WHT: " + totalPayingWithoutWht);
     }
 
     private void calculateWithWithholdingTax() {
-        System.out.println("calculateWithWithholdingTax");
         withholdingTax = totalPaying * (getWithholdingTaxPercentage() / 100);
-        System.out.println("totalPaying = " + totalPaying);
-        System.out.println("getWithholdingTaxPercentage() = " + getWithholdingTaxPercentage());
-        System.out.println("withholdingTax = " + withholdingTax);
         totalPayingWithoutWht = totalPaying - withholdingTax;
     }
 
@@ -613,10 +594,7 @@ public class StaffPaymentBillController implements Serializable {
     public String navigateToStaffPaymentFromDuePayment(Staff s) {
         currentStaff = s;
         speciality = s.getSpeciality();
-        System.out.println("Staff = " + currentStaff);
-        System.out.println("Speciality = " + speciality);
         calculateDueFeesOpdForSelectedPeriod();
-        System.out.println("Due Bill Fees = " + dueBillFees);
         return "/opd/professional_payments/payment_staff_bill?faces-redirect=true";
     }
 
