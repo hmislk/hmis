@@ -2387,6 +2387,15 @@ public class BillSearch implements Serializable {
                 getBillFacade().edit(cancellationBill);
             }
         }
+        
+        if (getBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+            if (getBill().getToStaff() != null) {
+                staffBean.updateStaffWelfare(getBill().getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
+                JsfUtil.addSuccessMessage("Staff Welfare Updated");
+                cancellationBill.setFromStaff(getBill().getToStaff());
+                getBillFacade().edit(cancellationBill);
+            }
+        }
 
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
