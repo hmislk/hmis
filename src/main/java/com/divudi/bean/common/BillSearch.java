@@ -2086,19 +2086,6 @@ public class BillSearch implements Serializable {
 
     }
 
-    private boolean checkPaid() {
-        String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBill().getId();
-        List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
-
-        for (BillFee f : tempFe) {
-            if (f.getPaidValue() != 0.0) {
-                return true;
-            }
-
-        }
-        return false;
-    }
-
     private boolean checkPaidIndividual(BillItem bi) {
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
         List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
@@ -2237,11 +2224,6 @@ public class BillSearch implements Serializable {
 
         if (getPaymentMethod() == PaymentMethod.Credit && getBill().getPaidAmount() != 0.0) {
             JsfUtil.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
-            return true;
-        }
-
-        if (checkPaid()) {
-            JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
         }
 
