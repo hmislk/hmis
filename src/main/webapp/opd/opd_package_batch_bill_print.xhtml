@@ -198,9 +198,20 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column  headerText="Actions" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                    <!-- To Bill Details Button -->
                                     <p:commandButton 
                                         ajax="false"
-                                        title="To Manage Bill"
+                                        rendered="false"
+                                        title="View Bill"
+                                        class="ui-button-success m-1"
+                                        icon="fa fa-file-invoice"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                        <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                    </p:commandButton>
+                                  
+                                    <p:commandButton 
+                                        ajax="false"
+                                        title="Manage Bill"
                                         class="ui-button-warning m-1"
                                         icon="fa fa-file-invoice"
                                         action="#{billSearch.navigateToManageBillByAtomicBillType()}">
@@ -215,6 +226,7 @@
                                         ajax="false">
                                     </p:commandButton>
 
+                                    <!-- To Cancel Button -->
                                     <p:commandButton 
                                         ajax="false"
                                         title="To Cancel Bill"
@@ -222,7 +234,7 @@
                                         class="ui-button-danger m-1"
                                         icon="fa fa-times"
                                         action="#{billPackageController.navigateToCancelOpdPackageBill()}">
-                                        <f:setPropertyActionListener value="#{b}" target="#{billPackageController.bill}"/>
+                                        <f:setPropertyActionListener value="#{b}" target="#{billPackageController.bill}">
                                     </p:commandButton>
 
                                 </p:column>
@@ -243,18 +255,11 @@
                                 </p:column>
                             </p:dataTable>
 
-
                         </div>
                     </div>
 
-
-
                 </p:panel>
             </h:panelGroup>
-
-
-
-
 
         </h:form>
 
