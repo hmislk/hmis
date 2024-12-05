@@ -22,77 +22,7 @@
                         rendered="#{!pharmacyRequestForBhtController.billPreview}"
                         style="width: fit-content;" >
 
-                        <p:panel
-                            rendered="#{pharmacyRequestForBhtController.department eq null or pharmacyRequestForBhtController.patientEncounter eq null}">                                        
-                            <f:facet name="header">
-                                <h:outputLabel value="Start Pharmacy Request for Inpatients"/>
-                                <p:commandButton
-                                    ajax="false"
-                                    icon="fa-solid fa-address-card"
-                                    class="ui-button-secondary " 
-                                    value="Inpatient Dashboard"
-                                    style="float: right;"
-                                    action="#{admissionController.navigateToAdmissionProfilePage}" 
-                                    >
-                                    <f:setPropertyActionListener value="#{pharmacyRequestForBhtController.patientEncounter}" target="#{admissionController.current}" />
-                                </p:commandButton>
-                            </f:facet>
-                            <div class="d-flex gap-3">
-                                <h:outputLabel value="Requesting Department"/>
-                                <p:autoComplete  
-                                    value="#{pharmacyRequestForBhtController.department}" 
-                                    required="true"
-                                    class=" col-md-3 mx-2"
-                                    inputStyleClass="form-control"
-                                    forceSelection="true" 
-                                    disabled="#{pharmacyRequestForBhtController.department ne null}"
-                                    completeMethod="#{departmentController.completeDeptPharmacy}" 
-                                    var="vt" 
-                                    itemLabel="#{vt.name}" 
-                                    itemValue="#{vt}" >
-                                    <p:ajax 
-                                        event="itemSelect" 
-                                        process="@this" 
-                                        update="@this acPt2" />
-                                </p:autoComplete>
-
-                                <h:outputLabel value="Patient Name or BHT or PHN No" class="mt-2"/> 
-                                <p:autoComplete 
-                                    widgetVar="aPt2"  
-                                    id="acPt2" 
-                                    forceSelection="true" 
-                                    value="#{pharmacyRequestForBhtController.patientEncounter}" 
-                                    completeMethod="#{admissionController.completePatient}"
-                                    var="apt2"
-                                    disabled="#{pharmacyRequestForBhtController.department eq null}"
-                                    itemLabel="#{apt2.bhtNo}"
-                                    itemValue="#{apt2}" 
-                                    size="30" 
-                                    class=" col-md-3"
-                                    inputStyleClass="form-control"
-                                    >
-                                    <p:column >
-                                        <h:outputLabel value="#{apt2.bhtNo}"/> 
-                                    </p:column>
-                                    <p:column >
-                                        <h:outputLabel value="#{apt2.patient.person.name}"/> 
-                                    </p:column>
-                                    <p:column >
-                                        <h:outputLabel value="#{apt2.patient.phn}"/> 
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
-                                    </p:column>
-                                    <p:ajax event="itemSelect" process="acPt2" />
-                                </p:autoComplete> 
-
-                                <p:commandButton 
-                                    ajax="false"  
-                                    class=""
-                                    value="Proceed" >
-                                </p:commandButton>
-                            </div>
-                        </p:panel>
+                        
 
                         <p:panel 
                             id="sale" 
@@ -153,7 +83,7 @@
                                             class="ui-button-success" 
                                             icon="fa fa-check"
                                             ajax="false"
-                                            action="#{pharmacyRequestForBhtController.settlePharmacyBhtIssueRequest}" 
+                                            action="#{pharmacyRequestForBhtController.settleEditedPharmacyBhtIssueRequest}" 
                                             actionListener="#{pharmacyRequestForBhtController.calculateAllRates}"  >
                                         </p:commandButton>
                                     </div>
