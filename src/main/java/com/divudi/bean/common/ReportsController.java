@@ -256,6 +256,7 @@ public class ReportsController implements Serializable {
     double totalPaying;
 
     private String cashBookNumber;
+    private String invoiceNumber;
 
     private boolean duplicateBillView;
 
@@ -412,6 +413,14 @@ public class ReportsController implements Serializable {
 
     public void setPatient(Patient patient) {
         this.patient = patient;
+    }
+
+    public String getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public void setInvoiceNumber(String invoiceNumber) {
+        this.invoiceNumber = invoiceNumber;
     }
 
     public Institution getFromInstitution() {
@@ -2209,6 +2218,113 @@ public class ReportsController implements Serializable {
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
         b.createRowValuesFromBill();
+        b.calculateTotalsWithCredit();
+        return b;
+    }
+
+    public void generateCollectionCenterBillWiseDetailReport() {
+        System.out.println("generateCollectionCenterBillWiseDetailReport = " + this);
+        bundle = new ReportTemplateRowBundle();
+
+        List<BillTypeAtomic> opdBts = new ArrayList<>();
+
+        opdBts.add(BillTypeAtomic.CC_BILL);
+        opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
+        opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+
+        System.out.println("bill items");
+
+        bundle.setName("Route Analysis Bill Items");
+        bundle.setBundleType("billItemList");
+
+        bundle = generateCollectingCenterBillWiseBillItems(opdBts);
+
+        if (reportType.equalsIgnoreCase("Report")) {
+            groupBillItems();
+        } else {
+            bundle.calculateTotalHospitalFeeByBillItems();
+            bundle.calculateTotalByBillItems();
+            bundle.calculateTotalStaffFeeByBillItems();
+        }
+    }
+
+    private void groupBillItems() {
+        Map<String, List<BillItem>> billItemMap = new HashMap<>();
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            BillItem billItem1 = row.getBillItem();
+
+            if (billItemMap.containsKey(billItem1.getBill().getDeptId())) {
+                billItemMap.get(billItem1.getBill().getDeptId()).add(billItem1);
+            } else {
+                List<BillItem> billItems = new ArrayList<>();
+                billItems.add(billItem1);
+                billItemMap.put(billItem1.getBill().getDeptId(), billItems);
+            }
+        }
+
+        bundle.setGroupedBillItems(billItemMap);
+    }
+
+    public ReportTemplateRowBundle generateCollectingCenterBillWiseBillItems(List<BillTypeAtomic> bts) {
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+                + "FROM BillItem billItem "
+                + "JOIN billItem.bill bill "
+                + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND bill.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+
+        if (collectingCentre != null) {
+            jpql += "AND bill.collectingCentre = :cc ";
+            parameters.put("cc", collectingCentre);
+        }
+
+        if (creditCompany != null) {
+            jpql += "AND bill.creditCompany = :cc ";
+            parameters.put("cc", creditCompany);
+        }
+
+        if (invoiceNumber != null && !invoiceNumber.trim().isEmpty()) {
+            jpql += "AND bill.deptId = :in ";
+            parameters.put("in", invoiceNumber);
+        }
+
+        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY billItem";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+        b.setReportTemplateRows(rs);
+        b.createRowValuesFromBillItems();
         b.calculateTotalsWithCredit();
         return b;
     }
