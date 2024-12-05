@@ -345,11 +345,9 @@ public class UserNotificationController implements Serializable {
         String jpql = "select un "
                 + " from UserNotification un "
                 + " where un.webUser=:wu "
-                + " and un.seen=:seen "
                 + " and un.retired=:ret";
         Map m = new HashMap();
         m.put("ret", false);
-        m.put("seen", false);
         m.put("wu", sessionController.getLoggedUser());
         items = getFacade().findByJpql(jpql, m);
         return items;
