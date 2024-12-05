@@ -629,7 +629,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
     }
-    
+
     public String navigateToViewPackageBatchBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -650,9 +650,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return "";
         }
 
-        
         batchBill = billFacade.find(bill.getId());
-        
+
         String jpql;
         Map m = new HashMap();
         jpql = "select b "
@@ -3049,6 +3048,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         double billGross = 0.0;
         double billNet = 0.0;
         double billVat = 0.0;
+
         for (BillEntry be : getLstBillEntries()) {
 
             double entryGross = 0.0;
@@ -3057,54 +3057,68 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             double entryVat = 0.0;
             double entryVatPlusNet = 0.0;
 
+            billGross = 0.0;
+            billNet = 0.0;
+            billDiscount = 0.0;
+            billVat = 0.0;
+
             BillItem bi = be.getBillItem();
-
+            
             for (BillFee bf : be.getLstBillFees()) {
-
+                entryGross = 0.0;
+                entryNet = 0.0;
+                entryDis = 0.0;
+                entryVat = 0.0;
+                entryVatPlusNet = 0.0;
                 boolean needToAdd = billFeeIsThereAsSelectedInBillFeeBundle(bf);
                 if (needToAdd) {
-
+                    
                     Department department = null;
                     Item item = null;
                     PriceMatrix priceMatrix;
                     Category category = null;
-
+                    
                     if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
                         department = bf.getBillItem().getItem().getDepartment();
-
+                        
                         item = bf.getBillItem().getItem();
                     }
-
+                    System.out.println("entryNet1 = " + entryNet);
                     priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
                     getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
-
                     if (bf.getBillItem().getItem().isVatable()) {
                         if (!(bf.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
                             bf.setFeeVat(bf.getFeeValue() * bf.getBillItem().getItem().getVatPercentage() / 100);
                             bf.setFeeVat(roundOff(bf.getFeeVat()));
+                            System.out.println("entryNet2 = " + entryNet);
                         }
                     }
+                    System.out.println("entryNet3 = " + entryNet);
                     bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
-
                     entryGross += bf.getFeeGrossValue();
                     entryNet += bf.getFeeValue();
                     entryDis += bf.getFeeDiscount();
                     entryVat += bf.getFeeVat();
                     entryVatPlusNet += bf.getFeeVatPlusValue();
-
+                    System.out.println("entryNet4 = " + entryNet);
                 }
             }
-
+            System.out.println("bi.getNetValue() = " + bi.getNetValue());
+            System.out.println("entryNet5 = " + entryNet);
+            
             bi.setDiscount(entryDis);
             bi.setGrossValue(entryGross);
             bi.setNetValue(entryNet);
             bi.setVat(entryVat);
             bi.setVatPlusNetValue(roundOff(entryVatPlusNet));
-
+            
+            System.out.println("entryNet6 = " + entryNet);
+            
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();
             billDiscount += bi.getDiscount();
             billVat += bi.getVat();
+            System.out.println("bi.getNetValue() = " + bi.getNetValue());
             //     billDis = billDis + entryDis;
         }
         setDiscount(billDiscount);
@@ -3112,13 +3126,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         setNetTotal(billNet);
         setVat(billVat);
         setNetPlusVat(getVat() + getNetTotal());
-
         if (getSessionController() != null) {
             if (getSessionController().getApplicationPreference() != null) {
 
             }
         }
-
+        System.out.println("billNet = " + billNet);
     }
 
     private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf) {
