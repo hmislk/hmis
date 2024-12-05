@@ -5,6 +5,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.entity.inward.PatientRoom;
 import com.divudi.entity.inward.RoomFacilityCharge;
@@ -30,6 +31,8 @@ public class RoomOccupancyController implements Serializable {
 
     @Inject
     CommonController commonController;
+    @Inject
+    NotificationController notificationController;
 
     @EJB
     private PatientRoomFacade patientRoomFacade;
@@ -94,6 +97,7 @@ public class RoomOccupancyController implements Serializable {
         patientRoom.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(patientRoom);
         createPatientRoom();
+        notificationController.createNotification(patientRoom,"Discharge");
     }
 
     public void dischargeCancelFromRoom(PatientRoom patientRoom) {

@@ -18,7 +18,14 @@
         <h:form >
             <div style="width: 210mm;">
                 <div class="">
-                    
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p:graphicImage url="#{configOptionApplicationController.getLongTextValueByKey('URL For Logo on Admission Sheet')}" height="#{configOptionApplicationController.getLongTextValueByKey('Height For Logo on Admission Sheet')}" width="#{configOptionApplicationController.getLongTextValueByKey('Width For Logo on Admission Sheet')}" />
+                        </div>
+                        <div>
+                            <p:barcode type="code128" value="#{cc.attrs.admission.patient.phn}" style="width: 400; height: 100" />
+                        </div>
+                    </div>
 <!--                    Add header here-->
 
                     <div class="col-12 text-center">
@@ -40,11 +47,11 @@
                         <tr>
                             <td style="width: 17%"><p:outputLabel value="MRN" /></td>
                             <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td style="width: 25%"><p:outputLabel value="" /></td>
+                            <td style="width: 25%"><p:outputLabel value="#{cc.attrs.admission.patient.phn}" /></td>
                             <td style="width: 3%"></td>
                             <td style="width: 17%"><h:outputLabel value="Admission No"></h:outputLabel></td>
                             <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td style="width: 25%"><h:outputLabel value="" ></h:outputLabel></td>
+                            <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.bhtNo}" ></h:outputLabel></td>
                         </tr>
                         <tr>
                             <td style="width: 17%"><p:outputLabel value="Patient Name" /></td>
@@ -63,7 +70,7 @@
                             <td></td>
                             <td><h:outputLabel value="Ward Name"></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><h:outputLabel value="" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.department.name}" ></h:outputLabel></td>
                         </tr>
                         <tr>
                             <td><h:outputLabel value="Address"></h:outputLabel></td>
@@ -72,7 +79,7 @@
                             <td></td>
                             <td><h:outputLabel value="Bed No"></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><h:outputLabel value="" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" ></h:outputLabel></td>
                         </tr>
                         <tr>
                             <td><h:outputLabel value="Phone No"></h:outputLabel></td>
@@ -86,7 +93,9 @@
                         <tr>
                             <td><h:outputLabel value="Addmission Date"></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><h:outputLabel value="" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat} a "/>
+                                </h:outputLabel></td>
                         </tr>
                     </table>
 

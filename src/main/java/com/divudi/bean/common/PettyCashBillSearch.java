@@ -112,9 +112,9 @@ public class PettyCashBillSearch implements Serializable {
         return "petty_cash_bill_cancel";
         
     }
-   
     
     
+
     public void sendToApprovePettyCashBillCancellation() {
         Bill b = new Bill();
         b.setCreatedAt(new Date());
@@ -125,24 +125,6 @@ public class PettyCashBillSearch implements Serializable {
         b.setReferenceBill(bill);
         billController.save(b);
         JsfUtil.addSuccessMessage("Send To Approve");
-    }
-
-    public WebUser getUser() {
-        return user;
-    }
-
-    public void setUser(WebUser user) {
-        // recreateModel();
-        this.user = user;
-        recreateModel();
-    }
-
-    public EjbApplication getEjbApplication() {
-        return ejbApplication;
-    }
-
-    public void setEjbApplication(EjbApplication ejbApplication) {
-        this.ejbApplication = ejbApplication;
     }
 
     public List<Bill> getUserBillsOwn() {
@@ -345,7 +327,7 @@ public class PettyCashBillSearch implements Serializable {
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
     }
-
+    
     public void cancelBill() {
         Date current = new Date();
         Date midNight = getMidnight();
@@ -556,7 +538,6 @@ public class PettyCashBillSearch implements Serializable {
                 billItems = new ArrayList<BillItem>();
             }
         }
-
         return billItems;
     }
 
@@ -581,7 +562,6 @@ public class PettyCashBillSearch implements Serializable {
                 }
             }
         }
-
         return billFees;
     }
 
@@ -771,4 +751,24 @@ public class PettyCashBillSearch implements Serializable {
     public List<Bill> getBills() {
         return bills;
     }
+    
+        
+public WebUser getUser() {
+        return user;
+    }
+
+    public void setUser(WebUser user) {
+        // recreateModel();
+        this.user = user;
+        recreateModel();
+    }
+
+    public EjbApplication getEjbApplication() {
+        return ejbApplication;
+    }
+
+    public void setEjbApplication(EjbApplication ejbApplication) {
+        this.ejbApplication = ejbApplication;
+    }
+
 }
