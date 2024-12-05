@@ -233,147 +233,260 @@
                                             </td>
                                             <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sid">
                                                 <ui:repeat value="#{sid.sites}" var="s">
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate,s)}</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate,s)}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                        </h:outputText> 
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate,s)}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate,s)}</td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate,s)}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate,s)}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <!-- Cash -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate,s,'Cash')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate,s,'Cash')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate,s,'Cash')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
 
                                                     <!-- Card -->
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate,s,'Cash')}</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate,s,'Cash')}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                        </h:outputText> 
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Card')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate,s,'Cash')}</td>
-
-
-                                                    <!-- Card -->
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Card')}</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Card')}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                        </h:outputText> 
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Card')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Card')}</td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Card')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
 
                                                     <!-- Cheque -->
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Cheque')}</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Cheque')}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                        </h:outputText> 
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Cheque')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Cheque')}</td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Cheque')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Cheque')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
 
                                                     <!-- Slip -->
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Slip')}</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Slip')}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                        </h:outputText> 
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Slip')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Slip')}</td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Slip')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Slip')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
 
                                                     <!-- ewallet -->
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'ewallet')}</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'ewallet')}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                        </h:outputText> 
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'ewallet')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'ewallet')}</td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'ewallet')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'ewallet')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
 
                                                     <!-- Credit -->
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Credit')}</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Credit')}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Credit')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Credit')}</td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Credit')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Credit')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
 
                                                     <!-- Staff -->
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Staff')}</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Staff')}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Staff')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Staff')}</td>
-
-
-
-
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Staff')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Staff')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
 
                                                     <!-- Staff_Welfare -->
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Staff_Welfare')}</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Staff_Welfare')}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Staff_Welfare')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Staff_Welfare')}</td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Staff_Welfare')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Staff_Welfare')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
 
                                                     <!-- Voucher -->
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Voucher')}</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Voucher')}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Voucher')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Voucher')}</td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Voucher')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Voucher')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
 
-                                                    <!-- IOOU -->
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'IOU')}</td>
+                                                    <!-- IOU -->
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'IOU')}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'IOU')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'IOU')}</td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'IOU')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'IOU')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
 
                                                     <!-- Agent -->
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Agent')}</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Agent')}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Agent')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Agent')}</td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Agent')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Agent')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
 
                                                     <!-- PatientDeposit -->
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'PatientDeposit')}</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'PatientDeposit')}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                        </h:outputText> 
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'PatientDeposit')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'PatientDeposit')}</td>
-
-
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'PatientDeposit')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'PatientDeposit')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
 
                                                     <!-- PatientPoints -->
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'PatientPoints')}</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'PatientPoints')}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'PatientPoints')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'PatientPoints')}</td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'PatientPoints')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'PatientPoints')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
 
                                                     <!-- OnlineSettlement -->
-                                                    <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'OnlineSettlement')}</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'OnlineSettlement')}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'OnlineSettlement')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'OnlineSettlement')}</td>
-
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'OnlineSettlement')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'OnlineSettlement')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
 
 
 

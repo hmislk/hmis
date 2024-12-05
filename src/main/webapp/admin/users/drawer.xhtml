@@ -118,6 +118,26 @@
                                     </p:inputText>
                                 </td>
                             </tr>
+                            
+                            <!-- Staff Welfare Payment Row -->
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-briefcase payment-icon"></i>&nbsp;Staff Welfare</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.staffWelfareInHandValue}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.staffWelfareShortageOrExcess}" styleClass="#{drawerController.current.staffWelfareShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.staffWelfareBalance}" styleClass="#{drawerController.current.staffWelfareShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
 
                             <!-- Voucher Payment Row -->
                             <tr class="ui-widget-content">
