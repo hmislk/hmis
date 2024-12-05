@@ -1459,6 +1459,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.patient = patient;
         return "/opd/opd_bill_package?faces-redirect=true";
     }
+    
+    public String navigateToSearchOpdPackageBills() {
+        batchBill = null;
+        bills = null;
+        return "/opd/opd_package_bill_search?faces-redirect=true";
+    }
 
     public String navigateToManageOpdPackageBatchBill(Bill bb) {
         System.out.println("navigateToManageOpdPackageBatchBill = ");

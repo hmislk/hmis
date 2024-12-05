@@ -50,7 +50,7 @@
                                         style="float: right"
                                         value="Back To Search"
                                         icon="fa-solid fa-arrow-left"
-                                        action="/opd/opd_bill_search?faces-redirect=true"
+                                        action="#{billPackageController.navigateToSearchOpdPackageBills}"
                                         ajax="false">
                                     </p:commandButton>
                                 </h:panelGrid>
@@ -194,6 +194,14 @@
                                 ajax="false">
                                 <p:printer target="groupPrint" />
                             </p:commandButton> 
+                            <p:commandButton  
+                                class="ui-button-secondary d-flex justify-content-end mx-2"
+                                style="float: right"
+                                value="Back To Search"
+                                icon="fa-solid fa-arrow-left"
+                                action="#{billPackageController.navigateToSearchOpdPackageBills}"
+                                ajax="false">
+                            </p:commandButton>
                         </div>
                         <h:panelGroup id="groupPrint" >
                             <!-- Bill Print Templates -->
