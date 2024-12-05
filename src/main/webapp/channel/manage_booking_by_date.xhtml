@@ -1513,7 +1513,7 @@
                             <p:panelGrid columns="2" class="w-100">
                                 <f:facet name="header" >
                                     <p:outputLabel value="Change Current Patient with a new Patient" ></p:outputLabel>
-                                    <p:commandButton ajax="false" value="Change Patient" action="#{bookingControllerViewScope.changePatient()}" ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Change Patient" disabled ="#{bookingControllerViewScope.selectedBillSession.bill.creditCompany.institutionCode.equalsIgnoreCase('WEB_DOC990') and (bookingControllerViewScope.selectedBillSession.absent == true or bookingControllerViewScope.selectedBillSession.bill.cancelled == true)}" action="#{bookingControllerViewScope.changePatient()}" ></p:commandButton>
                                 </f:facet>
                                 <p:panel header="Current Patient for Booking" >
                                     <ezcommon:patient patient="#{bookingControllerViewScope.selectedBillSession.bill.patient}" ></ezcommon:patient>
