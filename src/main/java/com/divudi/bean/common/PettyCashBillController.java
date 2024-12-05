@@ -417,7 +417,6 @@ public class PettyCashBillController implements Serializable {
         rb.setCashPaid(returnAmount);
         rb.setNetTotal(returnAmount);
         getBillFacade().create(rb);
-
         return rb;
 
     }
