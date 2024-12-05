@@ -45,6 +45,7 @@ import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.entity.PreBill;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -145,9 +146,25 @@ public class PharmacyBillSearch implements Serializable {
     PharmacySaleController pharmacySaleController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    PharmacyRequestForBhtController pharmacyRequestForBhtController;
     
     public String navigatePharmacyReprintPo(){
         return "pharmacy_reprint_po?faces-redirect=true";
+    }
+    public String editInwardPharmacyRequestBill(){
+        if (bill==null) {
+            JsfUtil.addErrorMessage("Not Bill Found !");
+            return "";
+        }
+        pharmacyRequestForBhtController.setBillPreview(false);
+        pharmacyRequestForBhtController.setPatientEncounter(bill.getPatientEncounter());
+        pharmacyRequestForBhtController.setDepartment(bill.getFromDepartment());
+        pharmacyRequestForBhtController.setPreBill((PreBill) bill);
+        System.out.println("setPatientEncounter" + bill.getPatientEncounter());
+        System.out.println("setDepartment" + bill.getFromDepartment());
+        billFacade.edit(bill);
+        return "/ward/ward_pharmacy_bht_issue_request_edit?faces-redirect=true";
     }
     
     public String cancelInwardPharmacyRequestBill(){
