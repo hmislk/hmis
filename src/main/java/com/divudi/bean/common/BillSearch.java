@@ -3824,7 +3824,7 @@ public class BillSearch implements Serializable {
             case PACKAGE_OPD_BILL_WITH_PAYMENT:
                 return navigateToManageOpdPackageBill();
             case PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT:
-                return billPackageController.navigateToViewOpdPackageBatchBill(bill);
+                return billPackageController.navigateToManageOpdPackageBatchBill(bill);
 
             case PHARMACY_RETAIL_SALE_CANCELLED:
                 pharmacyBillSearch.setBill(bill);
