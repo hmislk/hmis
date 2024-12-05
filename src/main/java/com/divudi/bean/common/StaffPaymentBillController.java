@@ -48,6 +48,8 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.entity.cashTransaction.Drawer;
+import com.divudi.service.DrawerService;
 import com.divudi.service.ProfessionalPaymentService;
 import java.text.DecimalFormat;
 
@@ -60,6 +62,8 @@ import java.text.DecimalFormat;
 @SessionScoped
 public class StaffPaymentBillController implements Serializable {
 
+    @EJB
+    DrawerService drawerService;
     @EJB
     private RefundBillFacade refundBillFacade;
     @EJB
@@ -612,7 +616,8 @@ public class StaffPaymentBillController implements Serializable {
             return;
         }
         if (paymentMethod == PaymentMethod.Cash) {
-            double drawerBalance = financialTransactionController.getLoggedUserDrawer().getCashInHandValue();
+            Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
+            double drawerBalance = userDrawer.getCashInHandValue();
             double paymentAmount = getTotalPayingWithoutWht();
 
             if (drawerBalance < paymentAmount) {
