@@ -181,19 +181,31 @@
                             </p:dataTable>
 
                             <p:panel id="pTotals"  >
-                                <f:facet name="header" >
-                                    <h:outputLabel value="Payment Details" class="mt-2"/>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Payment Details" class="mt-2" />
+
+                                    <p:selectOneButton 
+                                        rendered="#{staffPaymentBillController.allowUserToSelectPayWithholdingTaxDuringProfessionalPayments}"
+                                        value="#{staffPaymentBillController.withholdingTaxCalculationStatus}">
+                                        <f:selectItems value="#{staffPaymentBillController.withholdingTaxCalculationStatuses}" />
+                                    </p:selectOneButton>
+
+                                    <p:badge 
+                                        rendered="#{!staffPaymentBillController.allowUserToSelectPayWithholdingTaxDuringProfessionalPayments}" 
+                                        value="#{staffPaymentBillController.withholdingTaxCalculationStatus}" 
+                                        styleClass="ui-widget ui-corner-all ui-state-highlight p-badge" />
+
                                     <p:commandButton 
                                         id="btnPay"
                                         ajax="false"
-                                        value= "&nbsp;&nbsp;&nbsp;&nbsp; Settle Professional Payment" 
+                                        value="&nbsp;&nbsp;&nbsp;&nbsp; Settle Professional Payment" 
                                         style="float: right;"
                                         class="ui-button-success"
                                         action="#{staffPaymentBillController.settleBill()}" >
                                     </p:commandButton>
-
                                     <p:defaultCommand target="btnPay"/>
                                 </f:facet>
+
 
                                 <div class="row" >
                                     <div class="col " >
