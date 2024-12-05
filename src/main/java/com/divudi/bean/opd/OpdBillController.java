@@ -921,8 +921,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 //            return;
         }
 
-        dsdfsdfsdfsdf;
-        
         if (configOptionApplicationController.getBooleanValueByKey("Disable increasing the fee value in OPD Billing", false)) {
             if (bf.getFeeValue() < bf.getFeeGrossValue()) {
                 JsfUtil.addErrorMessage("Increasing the fee value is not allowed.");
