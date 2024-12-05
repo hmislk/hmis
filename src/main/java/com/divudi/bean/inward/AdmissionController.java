@@ -271,18 +271,18 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
 
     }
-    
-    public void admissionPaymentMethodChange(){
-        if(current.getPaymentMethod() == PaymentMethod.Credit){
+
+    public void admissionPaymentMethodChange() {
+        if (current.getPaymentMethod() == PaymentMethod.Credit) {
             isPatientHaveALastUsedCreditCompany(current.getPatient());
         }
     }
-    
-    public boolean isPatientHaveALastUsedCreditCompany(Patient p){
-        if(p == null){
+
+    public boolean isPatientHaveALastUsedCreditCompany(Patient p) {
+        if (p == null) {
             return false;
         }
-        
+
         Admission a = null;
         lastCreditCompany = null;
         String sql;
@@ -292,17 +292,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + " and c.paymentMethod= :pm"
                 + " and c.retired=false "
                 + " order by c.id desc";
-        
-         hash.put("pm", PaymentMethod.Credit);
-         hash.put("pt", p);
-         a = getFacade().findFirstByJpql(sql, hash);
-         System.out.println("a = " + a);
-         if(a == null){
-             return false;
-         }else{
-             lastCreditCompany = a.getCreditCompany();
-             return true;
-         } 
+
+        hash.put("pm", PaymentMethod.Credit);
+        hash.put("pt", p);
+        a = getFacade().findFirstByJpql(sql, hash);
+        System.out.println("a = " + a);
+        if (a == null) {
+            return false;
+        } else {
+            lastCreditCompany = a.getCreditCompany();
+            return true;
+        }
     }
 
     public List<Admission> completeBhtCredit(String qry) {
@@ -455,8 +455,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToPharmacyBhtRequest() {
-         pharmacyRequestForBhtController.resetAll();
-         pharmacyRequestForBhtController.setPatientEncounter(current);
+        pharmacyRequestForBhtController.resetAll();
+        pharmacyRequestForBhtController.setPatientEncounter(current);
         return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
     }
 
@@ -482,8 +482,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + " and c.discharged=false "
                 + " and ((c.bhtNo) like :q "
                 + " or (c.patient.person.name) like :q "
-                + " or (c.patient.code) like :q) "
+                + " or (c.patient.code) like :q "
+                + " or (c.patient.phn) like :q) "
                 + " order by c.bhtNo ";
+
         hm.put("q", "%" + query.toUpperCase() + "%");
         suggestions = getFacade().findByJpql(sql, hm, 20);
 
@@ -957,7 +959,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 return true;
             }
         }
-        if(getCurrent().getAdmissionType().isRoomChargesAllowed()){
+        if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
             if (getPatientRoom().getRoomFacilityCharge() == null) {
                 JsfUtil.addErrorMessage("Select Room ");
                 return true;
@@ -1119,11 +1121,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addSuccessMessage("Patient Admitted Succesfully");
         }
 
-         if(getCurrent().getAdmissionType().isRoomChargesAllowed()){
+        if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
             PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
-         }
-        
+        }
+
         getFacade().edit(getCurrent());
 
         double appointmentFee = 0;

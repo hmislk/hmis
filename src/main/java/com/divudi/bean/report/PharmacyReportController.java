@@ -8,9 +8,11 @@ import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PersonController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.pharmacy.StockHistoryController;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
+import static com.divudi.data.BillType.PharmacyBhtPre;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CategoryCount;
 import com.divudi.data.InstitutionType;
@@ -47,6 +49,7 @@ import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.PatientInvestigation;
+import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.BillFacade;
@@ -55,6 +58,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PatientDepositHistoryFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.facade.StockHistoryFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.PrescriptionSummaryReportRow;
@@ -109,6 +113,8 @@ public class PharmacyReportController implements Serializable {
     AgentReferenceBookFacade agentReferenceBookFacade;
     @EJB
     private PaymentFacade paymentFacade;
+    @EJB
+    StockHistoryFacade facade;
 
     @Inject
     private InstitutionController institutionController;
@@ -126,6 +132,8 @@ public class PharmacyReportController implements Serializable {
     WebUserController webUserController;
     @Inject
     PatientInvestigationFacade patientInvestigationFacade;
+    @Inject
+    StockHistoryController stockHistoryController;
 
     private int reportIndex;
     private Institution institution;
@@ -160,6 +168,7 @@ public class PharmacyReportController implements Serializable {
     private String visitType;
     private Patient patient;
     private String diagnosis;
+    private String documentType;
 
     private Investigation investigation;
     private Speciality currentSpeciality;
@@ -236,6 +245,8 @@ public class PharmacyReportController implements Serializable {
     private String type;
     private String reportType;
     private Speciality speciality;
+    
+    private List<StockHistory> stockLedgerHistories;
 
     //Constructor
     public PharmacyReportController() {
@@ -1840,6 +1851,78 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    public void processStockLedgerReport() {
+        
+               
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+        List<BillType> billTypes = new ArrayList<>();
+        
+        if ("ipSaleDoc".equals(documentType)){
+            billTypes.add(BillType.PharmacyBhtPre);
+        }
+        else if ("opSaleDoc".equals(documentType)){
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);          
+        }
+        else if ("grnDoc".equals(documentType)){
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+        }
+        else if ("purchaseDoc".equals(documentType)){
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND);
+        }
+        
+
+        stockLedgerHistories = new ArrayList();
+         String jpql;
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        jpql = "select s"
+                + " from StockHistory s "
+                + " where s.createdAt between :fd and :td ";
+        if (institution != null) {
+            jpql += " and s.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and s.department=:dep ";
+            m.put("dep", department);
+        }
+//        if (site != null) {
+//            jpql += " and s.site=:sit ";
+//            m.put("sit", site);
+//        }
+          if (!billTypeAtomics.isEmpty() || !billTypes.isEmpty()) {
+        jpql += " and (";
+        if (!billTypeAtomics.isEmpty()) {
+            jpql += " s.pbItem.billItem.bill.billTypeAtomic in :dtype";
+            m.put("dtype", billTypeAtomics);
+        }
+        if (!billTypeAtomics.isEmpty() && !billTypes.isEmpty()) {
+            jpql += " or";
+        }
+        if (!billTypes.isEmpty()) {
+            jpql += " s.pbItem.billItem.bill.billType in :doctype";
+            m.put("doctype", billTypes);
+        }
+        jpql += ")";
+    }
+        if (item != null) {
+            jpql += " and s.item=:itm ";
+            m.put("itm", item);
+        }
+        
+
+        jpql += " order by s.createdAt ";
+        stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);          
+    }
+
     public void processLabTestWiseCountReport() {
         String jpql = "select new com.divudi.data.TestWiseCountReport("
                 + "bi.item.name, "
@@ -2326,6 +2409,22 @@ public class PharmacyReportController implements Serializable {
 
     public void setCalAllOutTotal(double calAllOutTotal) {
         this.calAllOutTotal = calAllOutTotal;
+    }
+
+    public String getDocumentType() {
+        return documentType;
+    }
+
+    public void setDocumentType(String documentType) {
+        this.documentType = documentType;
+    }
+
+    public List<StockHistory> getStockLedgerHistories() {
+        return stockLedgerHistories;
+    }
+
+    public void setStockLedgerHistories(List<StockHistory> stockLedgerHistories) {
+        this.stockLedgerHistories = stockLedgerHistories;
     }
 
 }

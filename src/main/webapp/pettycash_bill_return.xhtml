@@ -18,6 +18,8 @@
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
                                     <h:outputLabel value="Petty Cash Return" ></h:outputLabel>
+                                    <h:outputLabel value="#{pettyCashBillController.current.id}" ></h:outputLabel><br/>
+                                    #{pettyCashBillController.printPreview}
                                 </div>
                                 <div>
                                     <p:commandButton  
@@ -97,21 +99,15 @@
                                             </h:panelGroup>
                                         </div>
                                     </div>
-                                    
-                                    <div class="d-flex mt-1">
-                                        <div class="col-3"><p:outputLabel value="Amount" /></div>
-                                        <div class="col-9">
-                                            <p:inputText 
-                                                class="w-100" 
-                                                onfocus="this.select()"
-                                                value="#{pettyCashBillController.returnAmount}" 
-                                                placeholder="Return Amount" /> 
-                                        </div>
-                                    </div>
 
                                     <div class="d-flex mt-1">
                                         <div class="col-3"><p:outputLabel value="Comment" /></div>
                                         <div class="col-9"><p:inputText class="w-100 my-1 " value="#{pettyCashBillController.comment}" placeholder="Comment" /> </div>
+                                    </div>
+
+                                    <div class="d-flex mt-1">
+                                        <div class="col-3"><p:outputLabel value="Amount" /></div>
+                                        <div class="col-9"><p:inputText class="w-100 " value="#{pettyCashBillController.returnAmount}" placeholder="Return Amount" /> </div>
                                     </div>
 
                                 </p:panel>
