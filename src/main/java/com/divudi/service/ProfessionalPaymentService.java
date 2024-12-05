@@ -50,7 +50,7 @@ public class ProfessionalPaymentService {
 
         return totalPaid > 0;
     }
-    
+
     public boolean isProfessionalFeePaid(Bill bill) {
         if (bill == null) {
             return false;
@@ -59,6 +59,23 @@ public class ProfessionalPaymentService {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("bill", bill);
         double totalPaid = billFacade.findDoubleByJpql(jpql, parameters, null); // No TemporalType needed here
+        return totalPaid > 0;
+    }
+
+    public boolean isProfessionalFeePaidForBatchBill(Bill batchBill) {
+        if (batchBill == null) {
+            return false;
+        }
+
+        String jpql = "SELECT SUM(bf.paidValue) "
+                + "FROM BillFee bf "
+                + "WHERE bf.bill IN (SELECT b FROM Bill b WHERE b.backwardReferenceBill = :batchBill)";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("batchBill", batchBill);
+
+        // Use the existing `findDoubleByJpql` method to execute the query
+        double totalPaid = billFacade.findDoubleByJpql(jpql, parameters, null); // No TemporalType needed here
+
         return totalPaid > 0;
     }
 
