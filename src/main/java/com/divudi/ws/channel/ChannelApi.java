@@ -1676,6 +1676,12 @@ public class ChannelApi {
         } else if (bill.getBillType() == BillType.ChannelAgent) {
             bookingStatus = "This booking is completed.";
         }
+        
+        String patientStatus = bookingStatus;
+        
+        if(bill.getSingleBillSession().isAbsent()){
+            patientStatus = "Patient is absent to the appoinment.";
+        }
 
         Map<String, Object> appoinment = new HashMap<>();
         appoinment.put("refNo", bill.getAgentRefNo());
@@ -1685,7 +1691,7 @@ public class ChannelApi {
         appoinment.put("showTime", "");
         appoinment.put("chRoom", bill.getSingleBillSession().getSessionInstance().getRoomNo());
         appoinment.put("timeInterval", "");
-        appoinment.put("status", bookingStatus);
+        appoinment.put("status", patientStatus);
 
         String sessionStatus = "Session will have on time.";
         if (session.isCompleted()) {
@@ -1821,6 +1827,16 @@ public class ChannelApi {
 
         if (bill.isCancelled()) {
             JSONObject response = commonFunctionToErrorResponse("Bill for ref No already Cancelled");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+        
+        if(bill.getSingleBillSession().getSessionInstance().isCompleted() == true){
+            JSONObject response = commonFunctionToErrorResponse("Session is already completed. Contact hospital for cancellation.");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+        
+        if(bill.getSingleBillSession().getSessionInstance().isCancelled() == true){
+            JSONObject response = commonFunctionToErrorResponse("Session is already cancelled. Contact hospital for cancellation.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
