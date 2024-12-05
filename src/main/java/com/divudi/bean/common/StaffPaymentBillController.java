@@ -300,11 +300,15 @@ public class StaffPaymentBillController implements Serializable {
         if (currentStaff != null) {
             jpql += " and bf.staff=:staff ";
             params.put("staff", currentStaff);
+        } else {
+            jpql += " and bf.staff is not null ";
         }
 
         if (speciality != null) {
             jpql += " and bf.staff.speciality=:speciality ";
             params.put("speciality", speciality);
+        } else {
+            jpql += " and bf.staff is not null ";
         }
 
         params.put("btcs", btcs);
@@ -446,10 +450,11 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public void performCalculations() {
+        System.out.println("performCalculations");
         calculateTotalDue();
         calculatePaymentsSelected();
 
-        // Determine withholding tax calculation logic based on selected status
+        System.out.println("withholdingTaxCalculationStatus = " + withholdingTaxCalculationStatus);
         switch (withholdingTaxCalculationStatus) {
             case "Depending On Payments":
                 calculateWithholdingTaxDependingOnPayments();
@@ -498,7 +503,11 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     private void calculateWithWithholdingTax() {
+        System.out.println("calculateWithWithholdingTax");
         withholdingTax = totalPaying * (getWithholdingTaxPercentage() / 100);
+        System.out.println("totalPaying = " + totalPaying);
+        System.out.println("getWithholdingTaxPercentage() = " + getWithholdingTaxPercentage());
+        System.out.println("withholdingTax = " + withholdingTax);
         totalPayingWithoutWht = totalPaying - withholdingTax;
     }
 
