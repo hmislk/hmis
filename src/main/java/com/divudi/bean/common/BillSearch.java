@@ -99,6 +99,7 @@ import com.divudi.facade.StaffFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.ProfessionalPaymentService;
 import com.divudi.service.StaffService;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -179,6 +180,8 @@ public class BillSearch implements Serializable {
     private PatientFacade patientFacade;
     @EJB
     BillService billService;
+    @EJB
+    ProfessionalPaymentService professionalPaymentService;
     /**
      * Controllers
      */
@@ -2323,6 +2326,11 @@ public class BillSearch implements Serializable {
         if (errorsPresentOnOpdBillCancellation()) {
             return;
         }
+        
+        if(professionalPaymentService.isProfessionalFeePaid(bill)){
+            JsfUtil.addErrorMessage("Payments are already made to Staff or Outside Institute. Please cancel them first before cancelling the bill.");
+            return;
+        }
 
         if (paymentMethod == PaymentMethod.PatientDeposit) {
 //            if (getBill().getPatient().getHasAnAccount() == null) {
@@ -2335,6 +2343,8 @@ public class BillSearch implements Serializable {
 //            }
         }
 
+        
+        
         if (paymentMethod == PaymentMethod.Staff) {
             if (getBill().getToStaff() == null) {
                 JsfUtil.addErrorMessage("Can't Select Staff Method");

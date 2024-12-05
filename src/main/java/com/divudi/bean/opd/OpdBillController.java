@@ -151,6 +151,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
      * Controllers
      */
     @Inject
+    MembershipSchemeController membershipSchemeController;
+    @Inject
     private BillController billController;
     @Inject
     private SessionController sessionController;
@@ -3036,8 +3038,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         this.priceMatrixController = priceMatrixController;
     }
 
-    @Inject
-    MembershipSchemeController membershipSchemeController;
+    
 
     public void calTotals() {
         if (paymentMethod == null) {
@@ -3048,7 +3049,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         double billGross = 0.0;
         double billNet = 0.0;
         double billVat = 0.0;
-
         for (BillEntry be : getLstBillEntries()) {
 
             double entryGross = 0.0;
@@ -3057,34 +3057,27 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             double entryVat = 0.0;
             double entryVatPlusNet = 0.0;
 
-            billGross = 0.0;
-            billNet = 0.0;
-            billDiscount = 0.0;
-            billVat = 0.0;
-
             BillItem bi = be.getBillItem();
-            
+
             for (BillFee bf : be.getLstBillFees()) {
-                entryGross = 0.0;
-                entryNet = 0.0;
-                entryDis = 0.0;
-                entryVat = 0.0;
-                entryVatPlusNet = 0.0;
+
                 boolean needToAdd = billFeeIsThereAsSelectedInBillFeeBundle(bf);
                 if (needToAdd) {
-                    
+
                     Department department = null;
                     Item item = null;
                     PriceMatrix priceMatrix;
                     Category category = null;
-                    
+
                     if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
                         department = bf.getBillItem().getItem().getDepartment();
-                        
+
                         item = bf.getBillItem().getItem();
                     }
+
                     priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
                     getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
+
                     if (bf.getBillItem().getItem().isVatable()) {
                         if (!(bf.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
                             bf.setFeeVat(bf.getFeeValue() * bf.getBillItem().getItem().getVatPercentage() / 100);
@@ -3092,35 +3085,40 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         }
                     }
                     bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
+
                     entryGross += bf.getFeeGrossValue();
                     entryNet += bf.getFeeValue();
                     entryDis += bf.getFeeDiscount();
                     entryVat += bf.getFeeVat();
                     entryVatPlusNet += bf.getFeeVatPlusValue();
+
                 }
             }
-            
+
             bi.setDiscount(entryDis);
             bi.setGrossValue(entryGross);
             bi.setNetValue(entryNet);
             bi.setVat(entryVat);
             bi.setVatPlusNetValue(roundOff(entryVatPlusNet));
-            
+
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();
             billDiscount += bi.getDiscount();
             billVat += bi.getVat();
+            //     billDis = billDis + entryDis;
         }
         setDiscount(billDiscount);
         setTotal(billGross);
         setNetTotal(billNet);
         setVat(billVat);
         setNetPlusVat(getVat() + getNetTotal());
+
         if (getSessionController() != null) {
             if (getSessionController().getApplicationPreference() != null) {
 
             }
         }
+
     }
 
     private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf) {
