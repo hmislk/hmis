@@ -18,7 +18,7 @@
                 </h:panelGroup>
 
                 <h:form id="form" rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" >
-                    
+
                     <p:growl id="msg"  />
                     <p:panel class="m-0 p-0" >
                         <f:facet name="header" >
@@ -52,10 +52,10 @@
 
                         <div class="row" >
                             <div class="col-md-12 text-center p-1" >
-                                
+
                             </div>
                         </div>
-                        
+
                         <div class="row" >
                             <div class="col-md-6" >
                                 <p:focus  context="txtQuickSearchPhoneNumber" ></p:focus>
@@ -440,7 +440,7 @@
                                                     <h:outputLabel value=" : " class="mx-3"/>
                                                     <h:outputText value="#{opdBillController.patient.person.area.name}" />
 
-                                                    
+
                                                     <h:outputLabel value="Membership" class="mx-3" rendered="#{opdBillController.patient.person.membershipScheme ne null}"/>
                                                     <h:outputLabel value=" : " class="mx-3" rendered="#{opdBillController.patient.person.membershipScheme ne null}"/>
                                                     <h:outputText value="#{opdBillController.patient.person.membershipScheme.name}"  rendered="#{opdBillController.patient.person.membershipScheme ne null}"/>
@@ -957,13 +957,13 @@
                                                                     </p:commandButton>
                                                                 </h:panelGroup>
                                                             </td>
-                                                           
+
                                                             <td >
                                                                 <p:outputLabel id="lblFeeBundleFeeValue" value="#{billFeeBundleEntry.selectedBillFee.fee.fee}" >
                                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                 </p:outputLabel>
                                                             </td>
-                                                            
+
                                                             <td >
                                                                 <p:inputText class="m-2" id="txtFeeBundleqty" value="#{billFeeBundleEntry.selectedBillFee.billItem.qty}" style="width:6em;">
                                                                     <f:convertNumber pattern="#,##0" ></f:convertNumber>
@@ -984,23 +984,26 @@
                                                                     onfocus="this.select();"
                                                                     >
                                                                     <f:convertNumber pattern="#,##0.00" />
-                                                                    <f:ajax event="keyup" execute="@this" 
-                                                                            render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
-                                                                            listener="#{opdBillController.feeChangeListener(billFeeBundleEntry.selectedBillFee)}" />
-                                                                    <f:ajax event="blur" execute="@this :#{p:resolveFirstComponentWithId('tabBillFeeBundled',view).clientId}" 
-                                                                            render=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
-                                                                            listener="#{opdBillController.feeChangeListener(billFeeBundleEntry.selectedBillFee)}" />
-
+                                                                    <f:ajax 
+                                                                        event="keyup" 
+                                                                        execute="@this" 
+                                                                        render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                                        listener="#{opdBillController.feeChangeListener(billFeeBundleEntry.selectedBillFee)}" />
+                                                                    <f:ajax 
+                                                                        event="blur" 
+                                                                        execute="@this :#{p:resolveFirstComponentWithId('tabBillFeeBundled',view).clientId}" 
+                                                                        render=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                                        listener="#{opdBillController.feeChangeListener(billFeeBundleEntry.selectedBillFee)}" />
 
                                                                 </p:inputText>
-                                                                <p:commandButton ajax="false" 
-                                                                                 icon="fa fa-refresh" 
-                                                                                 disabled="#{!billFeeBundleEntry.selectedBillFee.billItem.item.userChangable}"
-                                                                                 action="#{opdBillController.feeChangeListener(billFeeBundleEntry.selectedBillFee)}" />
+                                                                <p:commandButton 
+                                                                    ajax="false" 
+                                                                    icon="fa fa-refresh" 
+                                                                    disabled="#{!billFeeBundleEntry.selectedBillFee.billItem.item.userChangable}"
+                                                                    action="#{opdBillController.feeChangeListener(billFeeBundleEntry.selectedBillFee)}" />
                                                             </td>
 
                                                         </tr>
-
 
                                                     </ui:repeat>
                                                 </tbody>
@@ -1501,17 +1504,17 @@
                                         </h:panelGroup>
                                         <p:autoComplete 
                                             id="creditCom" 
-                                                        forceSelection="true" 
-                                                        class="w-100"
-                                                        value="#{opdBillController.collectingCentre}"  
-                                                        completeMethod="#{institutionController.completeCollectingCenter}" 
-                                                        var="ix" 
-                                                        placeholder="Type at least 4 letters to search"
-                                                        inputStyleClass="form-control"
-                                                        minQueryLength="4"
-                                                        itemLabel="#{ix.name}" 
-                                                        itemValue="#{ix}" 
-                                                        scrollHeight="500" >
+                                            forceSelection="true" 
+                                            class="w-100"
+                                            value="#{opdBillController.collectingCentre}"  
+                                            completeMethod="#{institutionController.completeCollectingCenter}" 
+                                            var="ix" 
+                                            placeholder="Type at least 4 letters to search"
+                                            inputStyleClass="form-control"
+                                            minQueryLength="4"
+                                            itemLabel="#{ix.name}" 
+                                            itemValue="#{ix}" 
+                                            scrollHeight="500" >
                                             <f:ajax  event="itemSelect" execute="creditCom"  />
                                             <p:column headerText="Collecting Centre Name" style="padding: 2px;">
                                                 <h:outputText value="#{ix.name}" ></h:outputText>
