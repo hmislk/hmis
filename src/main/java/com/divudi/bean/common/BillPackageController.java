@@ -572,7 +572,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         printPreview = false;
         return "/opd/opd_package_bill_cancel?faces-redirect=true;";
     }
-
+  
     public void cancelSingleBillWhenCancellingPackageBatchBill(Bill originalBill, Bill cancellationBatchBill) {
         if (originalBill == null && originalBill == null) {
             JsfUtil.addErrorMessage("No Bill to cancel");
@@ -2125,5 +2125,4 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setBill(Bill bill) {
         this.bill = bill;
     }
-
 }
