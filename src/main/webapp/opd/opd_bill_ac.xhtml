@@ -735,9 +735,6 @@
                                         </p:tab>
 
                                         <p:tab id="tabBillFee" title="Fees" rendered="false" >
-
-
-
                                             <p:dataTable rowIndexVar="rowIndex" value="#{opdBillController.lstBillFees}" var="bif" rowKey="#{bif.id}" class="w-100">
                                                 <p:column>
                                                     <f:facet name="header">Item Name</f:facet>
@@ -854,13 +851,16 @@
                                                 <thead class="thead-dark">
                                                     <tr>
                                                         <th>
-                                                            <p:outputLabel value="Item &and; Fees" />
+                                                            <p:outputLabel value="Item &amp; Fees" />
                                                         </th>
                                                         <th>
                                                             <p:outputLabel value="Fee for" />
                                                         </th>
                                                         <th>
                                                             <p:outputLabel value="Base Rate" />
+                                                        </th>
+                                                        <th>
+                                                            <p:outputLabel value="Qty"/>
                                                         </th>
                                                         <th>
                                                             <p:outputLabel value="Given Rate" />
@@ -957,13 +957,18 @@
                                                                     </p:commandButton>
                                                                 </h:panelGroup>
                                                             </td>
-
-                                                            <td>
+                                                           
+                                                            <td >
                                                                 <p:outputLabel id="lblFeeBundleFeeValue" value="#{billFeeBundleEntry.selectedBillFee.fee.fee}" >
                                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                 </p:outputLabel>
                                                             </td>
-
+                                                            
+                                                            <td >
+                                                                <p:inputText class="m-2" id="txtFeeBundleqty" value="#{billFeeBundleEntry.selectedBillFee.billItem.qty}" style="width:6em;">
+                                                                    <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                                                </p:inputText>
+                                                            </td>
 
                                                             <td>
 
