@@ -921,6 +921,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 //            return;
         }
 
+        dsdfsdfsdfsdf;
+        
         if (configOptionApplicationController.getBooleanValueByKey("Disable increasing the fee value in OPD Billing", false)) {
             if (bf.getFeeValue() < bf.getFeeGrossValue()) {
                 JsfUtil.addErrorMessage("Increasing the fee value is not allowed.");
@@ -938,7 +940,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         lstBillItems = null;
         getLstBillItems();
-        bf.setTmpChangedValue(bf.getFeeGrossValue());
+        bf.setTmpChangedValue(bf.getFee().getFee());
         calTotals();
         JsfUtil.addSuccessMessage("Fee Changed Successfully");
     }
