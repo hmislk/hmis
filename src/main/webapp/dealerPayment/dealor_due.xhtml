@@ -53,12 +53,20 @@
                                     class="my-1 w-100  ui-button-danger" />
                                 
                                  <p:commandButton 
-                                    value="List All Pharmacy Bills"
+                                    value="List All Paid &amp; Missing Pharmacy Bills"
                                     action="#{supplierPaymentController.fillAllCreditBills()}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Missing Supplier Payment Search is enabled')}"
                                     ajax="false"
                                     icon="fas fa-file-invoice-dollar"
                                     class="my-1 w-100  ui-button-success" />
-
+                                 
+                                 <p:commandButton 
+                                    value="List All Canceled Returned Supplier Payments"
+                                    action="#{supplierPaymentController.fillAllCanceledReturnedSupplierPayments()}"
+                                    ajax="false"
+                                    icon="fas fa-file-invoice-dollar"
+                                    class="my-1 w-100  ui-button-danger" />
+                                 
                                 <p:separator></p:separator>
 
                                 <p:commandButton 
@@ -96,21 +104,21 @@
 
                                     </p:column>
 
-                                    <p:column headerText="Bill No" sortBy="#{b.deptId}" filterBy="#{b.deptId}">
+                                    <p:column headerText="Bill No" sortBy="#{b.deptId}" filterBy="#{b.deptId}" filterMatchMode="contains">
                                         <h:outputText value="#{b.deptId}" />
                                     </p:column>
 
-                                    <p:column headerText="Date" sortBy="#{b.billDate}" filterBy="#{b.billDate}" filterMatchMode="exact">
+                                    <p:column headerText="Date" sortBy="#{b.billDate}" filterBy="#{b.billDate}" filterMatchMode="contains">
                                         <h:outputText value="#{b.billDate}">
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Supplier" sortBy="#{b.fromInstitution.name}" filterBy="#{b.fromInstitution.name}">
+                                    <p:column headerText="Supplier" sortBy="#{b.fromInstitution.name}" filterBy="#{b.fromInstitution.name}" filterMatchMode="contains">
                                         <h:outputText value="#{b.fromInstitution.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Bill Type" sortBy="#{b.billTypeAtomic.label}" filterBy="#{b.billTypeAtomic.label}">
+                                    <p:column headerText="Bill Type" sortBy="#{b.billTypeAtomic.label}" filterBy="#{b.billTypeAtomic.label}" filterMatchMode="contains">
                                         <h:outputText value="#{b.billTypeAtomic.label}" />
                                     </p:column>
                                     
@@ -120,7 +128,7 @@
                                         <h:outputText value="#{b.invoiceNumber}" />
                                     </p:column>
 
-                                    <p:column  class="text-end" headerText="Total" sortBy="#{b.netTotal}" filterBy="#{b.netTotal}">
+                                    <p:column  class="text-end" headerText="Total" sortBy="#{b.netTotal}" filterBy="#{b.netTotal}" filterMatchMode="contains">
                                         <h:outputText value="#{b.netTotal}">
                                             <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
                                         </h:outputText>
@@ -131,7 +139,7 @@
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column class="text-end" headerText="Returned" sortBy="#{b.refundAmount}" filterBy="#{b.refundAmount}">
+                                    <p:column class="text-end" headerText="Returned" sortBy="#{b.refundAmount}" filterBy="#{b.refundAmount}" filterMatchMode="contains">
                                         <h:outputText value="#{b.refundAmount}">
                                             <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
                                         </h:outputText>
@@ -142,7 +150,7 @@
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column  class="text-end" headerText="Paid Total" sortBy="#{b.paidAmount}" filterBy="#{b.paidAmount}">
+                                    <p:column  class="text-end" headerText="Paid Total" sortBy="#{b.paidAmount}" filterBy="#{b.paidAmount}" filterMatchMode="contains">
                                         <h:outputText value="#{b.paidAmount}">
                                             <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
                                         </h:outputText>
@@ -153,7 +161,7 @@
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column  class="text-end" headerText="Balance" sortBy="#{b.balance}" filterBy="#{b.balance}">
+                                    <p:column  class="text-end" headerText="Balance" sortBy="#{b.balance}" filterBy="#{b.balance}" filterMatchMode="contains">
                                         <h:outputText value="#{b.balance}">
                                             <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
                                         </h:outputText>
@@ -165,7 +173,11 @@
                                     </p:column>
 
                                     <p:column  headerText="Actions" >
-                                        <p:commandButton value="Pay" action="#{supplierPaymentController.navigateToStartSupplierPayment(b)}" ajax="false" >
+                                        <p:commandButton value="Pay" 
+                                                         update="@form" 
+                                                         action="#{supplierPaymentController.navigateToStartSupplierPayment(b)}" 
+                                                         ajax="false" 
+                                                         disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}" >
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>

@@ -127,7 +127,7 @@
                                                 <tr class="ui-widget-content" >
                                                     <td>Cash</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{financialTransactionController.bundle.cashHandoverValue}">
+                                                        <h:outputText value="#{financialTransactionController.bundle.cashValue}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -137,7 +137,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td class="text-end">
-                                                        <h:outputText id="txtCashHandover" value="#{financialTransactionController.bundle.cashHandoverValue - financialTransactionController.bundle.denominatorValue}">
+                                                        <h:outputText id="txtCashHandover" value="#{financialTransactionController.bundle.cashValue - financialTransactionController.bundle.denominatorValue}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -387,26 +387,29 @@
                                                 </h:panelGroup>
 
                                                 <!-- Patient Deposit Row -->
-                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasPatientDepositTransaction}">
-                                                    <tr class="ui-widget-content">
-                                                        <td>Patient Deposit</td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.patientDepositValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.patientDepositHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <h:outputText value="#{financialTransactionController.bundle.patientDepositValue - financialTransactionController.bundle.patientDepositHandoverValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputText>
-                                                        </td>
-                                                    </tr>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Deposits are considered in handingover', false)}">
+                                                    <h:panelGroup rendered="#{financialTransactionController.bundle.hasPatientDepositTransaction}">
+                                                        <tr class="ui-widget-content">
+                                                            <td>Patient Deposit</td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{financialTransactionController.bundle.patientDepositValue}">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{financialTransactionController.bundle.patientDepositHandoverValue}">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{financialTransactionController.bundle.patientDepositValue - financialTransactionController.bundle.patientDepositHandoverValue}">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                    </h:panelGroup>
                                                 </h:panelGroup>
+
 
                                                 <!-- Patient Points Row -->
                                                 <h:panelGroup rendered="#{financialTransactionController.bundle.hasPatientPointsTransaction}">
@@ -424,6 +427,29 @@
                                                         </td>
                                                         <td class="text-end">
                                                             <h:outputText value="#{financialTransactionController.bundle.patientPointsValue - financialTransactionController.bundle.patientPointsHandoverValue}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </h:panelGroup>
+                                                
+                                                
+                                                <!-- eWallet Points Row -->
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.hasEWalletTransaction}">
+                                                    <tr class="ui-widget-content">
+                                                        <td>e-Wallet Points</td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{financialTransactionController.bundle.ewalletValue}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{financialTransactionController.bundle.ewalletHandoverValue}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{financialTransactionController.bundle.ewalletValue - financialTransactionController.bundle.ewalletHandoverValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -505,10 +531,7 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </p:outputLabel>
                                             </p:column>
-
-
                                         </p:dataTable>
-
                                         <p:commandButton 
                                             value="Update" 
                                             class="m-1 ui-button-info" 

@@ -16,70 +16,165 @@
 
                     <p:panel header="Cashbook Entries" >
 
-                        <h:panelGrid columns="2" class="w-100">
-                            <h:outputLabel value="From"/>
-                            <p:datePicker
-
-                                class="w-100 " 
-                                inputStyleClass="w-100" 
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
                                 id="fromDate" 
                                 value="#{searchController.fromDate}" 
-                                showTime="true"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            </p:datePicker>
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
 
-                            <h:outputLabel value="To"/>                                
-                            <p:datePicker 
-                                class="w-100 " 
-                                inputStyleClass="w-100" 
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
                                 id="toDate" 
                                 value="#{searchController.toDate}" 
-                                showTime="true"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            </p:datePicker>
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
 
-                            <h:outputLabel value="Institution"/>                                
-                            <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
-                                <f:selectItem itemLabel="All Institution" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                            <p:spacer width="50" ></p:spacer>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Report Type" for="cmbReportType" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbReportType"
+                                value="#{searchController.reportType}" 
+                                class="w-100" required="true" >
+                                <f:selectItem
+                                    itemLabel="Select" ></f:selectItem>
+                                <f:selectItem
+                                    itemLabel="Institution"
+                                    itemValue="Institution"
+                                    ></f:selectItem>
+                                <f:selectItem
+                                    itemLabel="Site"
+                                    itemValue="Site"
+                                    ></f:selectItem>
+                                <f:selectItem
+                                    itemLabel="Department"
+                                    itemValue="department"
+                                    ></f:selectItem>
                             </p:selectOneMenu>
 
-                            <h:outputLabel value="Department"/>                                
-                            <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
-                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
                             </p:selectOneMenu>
 
-                            <h:outputLabel value="Site"/>                                
-                            <p:autoComplete 
-                                class="w-100  " 
-                                inputStyleClass="w-100" 
-                                id="cmbUser"  
-                                placeholder="All Sites"
-                                forceSelection="true" 
-                                completeMethod="#{institutionController.completeSite}" 
-                                var="s" itemLabel="#{s.name}" 
-                                itemValue="#{s}"
-                                value="#{searchController.site}" >
-                            </p:autoComplete>
+                            <p:spacer ></p:spacer>
 
-                            <h:outputLabel value="Payment Method"/>
-                            <p:autoComplete
-                                class="w-100  "
-                                inputStyleClass="w-100"
-                                id="cmbPayment"
-                                placeholder="All Payment Method"
-                                forceSelection="true"
-                                completeMethod="#{institutionController.completeSite}"
-                                var="s" itemLabel="#{s.name}"
-                                itemValue="#{s}"
-                                value="#{searchController.site}" >
-                            </p:autoComplete>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                            </h:panelGroup>
+
+
                         </h:panelGrid>
                         <h:panelGrid columns="3" class="my-2" >
 
                             <p:commandButton  
-                                value="Process" 
+                                value="Process*" 
                                 ajax="false"
                                 action="#{searchController.genarateCashBookEntries()}" 
                                 class="ui-button-warning" icon="fas fa-cogs">
@@ -87,66 +182,137 @@
 
                         </h:panelGrid>
                         <p:panel header="Cash book Entries" >
-                            <p:dataTable id="tblBills" value="#{searchController.cashBookEntries}" var="cb" rowKey="#{cb.key}" rowIndexVar="n" >
+                            <p:dataTable
+                                id="tblBills"
+                                value="#{searchController.cashBookEntries}" 
+                                var="cb" 
+                                rowKey="#{cb.key}" 
+                                rowIndexVar="n" >
                                 <f:facet name="header">
                                     <h:outputLabel value="Cash Book Entries"/>
                                 </f:facet>
 
-                                <p:column headerText="Entry AT" sortBy="#{cb.createdAt}" style="text-align: left; padding-left: 1em;">
+                                <p:column 
+                                    headerText="Entry AT" 
+                                    sortBy="#{cb.createdAt}" 
+                                    style="text-align: left; padding-left: 1em; width:6em;">
                                     <p:outputLabel value="#{cb.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column  headerText="Summary Date" style="text-align: left;">
+                                <p:column  
+                                    headerText="Summary Date" 
+                                    style="text-align: right; width:6em;">
                                     <p:outputLabel value="#{cb.cashbookDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                     </p:outputLabel>
                                 </p:column>
+                                <p:column 
+                                    style="text-align: right; width:6em;"
+                                    headerText="Institution" 
+                                    filterBy="#{cb.institution.name}" 
+                                    filterMatchMode="contains"
+                                    sortBy="#{cb.institution.name}">
+                                    <p:outputLabel value="#{cb.institution.name}" ></p:outputLabel>
+                                </p:column>
 
-                                <p:column headerText="Site" 
-                                          filterBy="#{cb.site.name}" filterMatchMode="contains"
-                                          sortBy="#{cb.site.name}">
+                                <p:column
+                                    headerText="Site" 
+                                    style="text-align: right; width:6em;"
+                                    filterBy="#{cb.site.name}" filterMatchMode="contains"
+                                    sortBy="#{cb.site.name}">
                                     <p:outputLabel value="#{cb.site.name}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:column  headerText="Balance Before" style="text-align: left;">
-                                    <p:outputLabel value="#{cb.fromDepartmentBalanceBefore}" ></p:outputLabel>
+                                <p:column 
+                                    headerText="Department" 
+                                    style="text-align: right; width:6em;"
+                                    filterBy="#{cb.department.name}" filterMatchMode="contains"
+                                    sortBy="#{cb.department.name}">
+                                    <p:outputLabel value="#{cb.department.name}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Value" style="text-align: left;" >
-                                    <p:outputLabel value="#{cb.entryValue}" ></p:outputLabel>
+                                <p:column 
+                                    rendered="#{searchController.reportType eq 'Site'}" 
+                                    headerText="Balance Before" 
+                                    style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromSiteBalanceBefore}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Balance After" style="text-align: left;" >
-                                    <p:outputLabel value="#{cb.fromDepartmentBalanceAfter}" ></p:outputLabel>
+                                <p:column 
+                                    rendered="#{searchController.reportType eq 'Site'}" 
+                                    headerText="Value" 
+                                    style="text-align: right; width:6em;"
+                                    >
+                                    <p:outputLabel value="#{cb.entryValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
                                 </p:column>
 
+                                <p:column 
+                                    rendered="#{searchController.reportType eq 'Site'}" 
+                                    headerText="Balance After" 
+                                    style="text-align: right; width:6em;" >
+                                    <p:outputLabel value="#{cb.fromSiteBalanceAfter}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+
+
+                                <p:column  
+                                    rendered="#{searchController.reportType eq 'Site'}" 
+                                    headerText="Cash Before" 
+                                    style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromSiteCashBalanceBefore}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column 
+                                    rendered="#{searchController.reportType eq 'Site'}" 
+                                    headerText="Cash" 
+                                    style="text-align: right; width:6em;" >
+                                    <p:outputLabel value="#{cb.cashValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column 
+                                    rendered="#{searchController.reportType eq 'Site'}" 
+                                    headerText="Cash After" 
+                                    style="text-align: right; width:6em;" >
+                                    <p:outputLabel value="#{cb.fromSiteCashBalanceAfter}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
                                 
-                                 <p:column  headerText="Cash Balance Before" style="text-align: left;">
-                                    <p:outputLabel value="#{cb.fromDepartmentCashBalanceBefore}" ></p:outputLabel>
+                                 <p:column  
+                                    rendered="#{searchController.reportType eq 'Site'}" 
+                                    headerText="Card Before" 
+                                    style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromSiteCardBalanceBefore}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Cash Value" style="text-align: left;" >
-                                    <p:outputLabel value="#{cb.cashValue}" ></p:outputLabel>
+                                <p:column 
+                                    rendered="#{searchController.reportType eq 'Site'}" 
+                                    headerText="Card" 
+                                    style="text-align: right; width:6em;" >
+                                    <p:outputLabel value="#{cb.cardValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Cash Balance After" style="text-align: left;" >
-                                    <p:outputLabel value="#{cb.fromDepartmentCashBalanceAfter}" ></p:outputLabel>
+                                <p:column 
+                                    rendered="#{searchController.reportType eq 'Site'}" 
+                                    headerText="Card After" 
+                                    style="text-align: right; width:6em;" >
+                                    <p:outputLabel value="#{cb.fromSiteCardBalanceAfter}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
                                 </p:column>
-                                
-                                 <p:column  headerText="Card Balance Before" style="text-align: left;">
-                                    <p:outputLabel value="#{cb.fromDepartmentCardBalanceBefore}" ></p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Card Value" style="text-align: left;" >
-                                    <p:outputLabel value="#{cb.cardValue}" ></p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Card Balance After" style="text-align: left;" >
-                                    <p:outputLabel value="#{cb.fromDepartmentCardBalanceAfter}" ></p:outputLabel>
-                                </p:column>
-
 
 
 

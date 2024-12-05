@@ -61,7 +61,7 @@
                                             ajax="false" 
                                             value="Download"
                                             class="w-100 mt-1">
-                                            <p:dataExporter fileName="OPD Bills" type="xls" target="tblBills" ></p:dataExporter>
+                                            <p:dataExporter fileName="OPD Bills" type="xlsx" target="tblBills" ></p:dataExporter>
                                         </p:commandButton>
 
                                         <p:commandButton 
@@ -239,7 +239,9 @@
                                         </div>
 
                                     </p:column>
-                                    <p:column headerText="Batch Bill" sortBy="#{bill.backwardReferenceBill.deptId}" 
+                                    <p:column 
+                                        headerText="Batch Bill" 
+                                        sortBy="#{bill.backwardReferenceBill.deptId}" 
                                               filterMatchMode="contains"
                                               filterBy="#{bill.backwardReferenceBill.deptId}">
                                         <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="#{bill.backwardReferenceBill.deptId}">

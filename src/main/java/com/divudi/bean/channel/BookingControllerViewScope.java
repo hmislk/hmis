@@ -275,6 +275,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private List<BillSession> billSessions;
     private List<BillSession> temporaryBillSessions;
     private List<BillSession> allBillSessionsWithTemporaryBookings;
+
     private List releasedAppoinmentNumbers;
     private Long assignedReleasedAppoinmentNumber;
 
@@ -383,6 +384,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     private List<BillFee> lstBillFees;
 
+    public List<BillSession> getAllBillSessionsWithTemporaryBookings() {
+        return allBillSessionsWithTemporaryBookings;
+    }
+
+    public void setAllBillSessionsWithTemporaryBookings(List<BillSession> allBillSessionsWithTemporaryBookings) {
+        this.allBillSessionsWithTemporaryBookings = allBillSessionsWithTemporaryBookings;
+    }
+
     public void makeNull() {
         consultant = null;
         speciality = null;
@@ -390,7 +399,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public long getAssignedReleasedAppoinmentNumber() {
-        if(assignedReleasedAppoinmentNumber == null){
+        if (assignedReleasedAppoinmentNumber == null) {
+
             assignedReleasedAppoinmentNumber = 0L;
         }
         return assignedReleasedAppoinmentNumber;
@@ -418,12 +428,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public List getReleasedAppoinmentNumbers() {
         long nextNumber = 1L;
-        if(selectedSessionInstance.getNextAvailableAppointmentNumber() != null){
+
+        List releasedNumberList = new ArrayList();
+
+        if (selectedSessionInstance == null) {
+            return releasedNumberList;
+        }
+
+        if (selectedSessionInstance.getNextAvailableAppointmentNumber() != null) {
             nextNumber = selectedSessionInstance.getNextAvailableAppointmentNumber();
         }
-      
-        List releasedNumberList = new ArrayList();
-        
+
         loadBillSessions();
 
         List<Integer> reservedSerialNumbers = allBillSessionsWithTemporaryBookings.stream()
@@ -435,7 +450,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             for (Integer number : reservedSerialNumbers) {
                 if (i == number) {
                     isAssign = true;
-                    
+
                 }
             }
 
@@ -514,7 +529,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         params.put("speciality", getSpeciality());
 
-        params.put("class", ServiceSession.class);
+        params
+                .put("class", ServiceSession.class
+                );
 
         if (consultant != null) {
             jpql += " and s.staff=:staff ";
@@ -1556,7 +1573,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstancesFiltered = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE, numberOfSessionToLoad.intValue());
 
         // Select the first item if the filtered list is not empty
-        if (!sessionInstancesFiltered.isEmpty()) {
+        if (sessionInstancesFiltered != null && !sessionInstancesFiltered.isEmpty()) {
             selectedSessionInstance = sessionInstancesFiltered.get(0);
             sessionInstanceSelected();
         }
@@ -1629,6 +1646,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         fillSessionInstanceDetails();
         fillBaseFees();
         calculateSelectedBillSessionTotal();
+        releasedAppoinmentNumbers = getReleasedAppoinmentNumbers();
     }
 
     public void clearSessionInstanceData() {
@@ -3555,6 +3573,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         fillBillSessions();
         billingStarted = false;
+        setSelectedSessionInstance(null);
 
     }
 
@@ -3572,12 +3591,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         fillBillSessions();
         billingStarted = false;
     }
-    
-    public boolean checkApoinmentNumberIsAvailable(int no){
+
+    public boolean checkApoinmentNumberIsAvailable(int no) {
         loadBillSessions();
         List<Integer> unavailableNumber = allBillSessionsWithTemporaryBookings.stream().map(BillSession::getSerialNo).collect(Collectors.toList());
-        for(Integer number : unavailableNumber){
-            if(no == number){
+        for (Integer number : unavailableNumber) {
+            if (no == number) {
                 return false;
             }
         }
@@ -3705,11 +3724,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
 
         }
-        if(getAssignedReleasedAppoinmentNumber() != 0L){
+        if (getAssignedReleasedAppoinmentNumber() != 0L) {
             Long num = getAssignedReleasedAppoinmentNumber();
             boolean checkNumber = checkApoinmentNumberIsAvailable(num.intValue());
-            
-            if(!checkNumber){
+
+            if (!checkNumber) {
                 JsfUtil.addErrorMessage("No is already Booked by Online Booking now. Change Number ");
                 return;
             }
@@ -4606,7 +4625,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void fillTemporaryBillSessions() {
 
-
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelOnCall};
 
         List<BillType> bts = Arrays.asList(billTypes);
@@ -4622,7 +4640,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 + " order by bs.serialNo ";
         HashMap hh = new HashMap();
         hh.put("bts", bts);
-        hh.put("class", BilledBill.class);
+        hh
+                .put("class", BilledBill.class
+                );
         //hh.put("ssDate", getSelectedServiceSession().getSessionAt());
         hh.put("ss", getSelectedSessionInstance());
         hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
@@ -6752,6 +6772,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return bs;
     }
 
+    public int getNextAvailableNumberWithTemporaryBookings(SessionInstance ss) {
+        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(ss.getOriginatingSession().getReserveNumbers());
+        return serviceSessionBean.getNextNonReservedSerialNumber(ss, reservedNumbers);
+    }
+
     public String generateBillNumberInsId(Bill bill) {
         String suffix = getSessionController().getInstitution().getInstitutionCode();
         BillClassType billClassType = null;
@@ -7364,7 +7389,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
             if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
                 if (settlePaymentMethod == PaymentMethod.Cash) {
-                    if (strTenderedValue.isEmpty()) {
+                    if (strTenderedValue == null || strTenderedValue.isEmpty()) {
                         JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                         return;
                     }

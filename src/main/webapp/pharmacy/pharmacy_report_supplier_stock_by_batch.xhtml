@@ -30,22 +30,22 @@
                                 itemValue="#{dept}" forceSelection="true" 
                                 value="#{reportsStock.institution}" >
                             </p:autoComplete>
-                            
+
                             <p:commandButton ajax="false" value="Process" class="ui-button-warning " icon="fas fa-cogs" 
-                                            actionListener="#{reportsStock.fillDistributorStocks()}" >
+                                             actionListener="#{reportsStock.fillDistributorStocks()}" >
                             </p:commandButton>
-                                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" >
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" >
                                 </p:printer>
                             </p:commandButton>
                             <p:commandButton class="ui-button-success" icon="fas fa-file-excel"  value="Excel" ajax="false">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Lab_Investigation_List"
-                                               
-                                                    
-                                               />
+
+
+                                                />
                             </p:commandButton>
                         </h:panelGrid>
-                       
+
 
                         <h:panelGroup styleClass="noBorder summeryBorder"  id="gpBillPreview">
 

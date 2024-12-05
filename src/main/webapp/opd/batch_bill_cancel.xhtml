@@ -28,7 +28,7 @@
                                         placeholder="Select or enter a comment"
                                         filterMatchMode="contains"
                                         style="float: right; width: 100%"
-                                        class="p-2">
+                                        class="">
                                         <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
                                         <f:selectItems
                                             value="#{configOptionApplicationController.getListOfCustomOptions('OPD Bill Cancellation Comments')}"
@@ -38,10 +38,21 @@
                                     </p:selectOneMenu>
                                     <p:commandButton 
                                         ajax="false"
-                                        value="Cancel Bill" 
+                                        value="Cancel Package Bill" 
                                         icon="fa fa-cancel"
                                         style="float: right"
-                                        class="ui-button-danger" action="#{billController.cancelBatchBill()}">
+                                        rendered="#{billController.batchBill.billTypeAtomic eq 'PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT'}"
+                                        class="ui-button-danger" 
+                                        action="#{billController.cancelPackageBatchBill()}">
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Cancel OPD Bill" 
+                                        icon="fa fa-cancel"
+                                        rendered="#{billController.batchBill.billTypeAtomic eq 'OPD_BATCH_BILL_WITH_PAYMENT'}"
+                                        style="float: right"
+                                        class="ui-button-danger" 
+                                        action="#{billController.cancelOpdBatchBill()}">
                                     </p:commandButton>
                                 </h:panelGrid>
                             </f:facet>
@@ -68,6 +79,8 @@
                                         <p:panelGrid columns="2">
                                             <h:outputLabel value="Bill No :" ></h:outputLabel>
                                             <h:outputLabel value="#{billController.batchBill.deptId}" ></h:outputLabel>
+                                            <h:outputLabel value="Bill Type Atomic :" ></h:outputLabel>
+                                            <h:outputLabel value="#{billController.batchBill.billTypeAtomic}" ></h:outputLabel>
                                             <h:outputLabel value="Total :" ></h:outputLabel>
                                             <h:outputLabel value="#{billController.batchBill.total}" ></h:outputLabel>
                                             <h:outputLabel value="Discount :" ></h:outputLabel>

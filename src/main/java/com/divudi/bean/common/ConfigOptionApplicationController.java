@@ -63,8 +63,6 @@ public class ConfigOptionApplicationController implements Serializable {
                 .collect(Collectors.toList());
     }
 
-   
-
     public void loadApplicationOptions() {
         applicationOptions = new HashMap<>();
         List<ConfigOption> options = getApplicationOptions();
@@ -99,7 +97,7 @@ public class ConfigOptionApplicationController implements Serializable {
         if (denominations == null) {
             initializeDenominations();
         }
-        for(Denomination d:denominations){
+        for (Denomination d : denominations) {
             d.setCount(0);
         }
         return denominations;
@@ -159,6 +157,32 @@ public class ConfigOptionApplicationController implements Serializable {
         }
 
         return getEnumValue(option, enumClass);
+    }
+
+    public Double getDoubleValueByKey(String key, Double defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setInstitution(null);
+            option.setDepartment(null);
+            option.setWebUser(null);
+            option.setValueType(OptionValueType.DOUBLE);
+            if (defaultValue == null) {
+                option.setOptionValue("");
+            } else {
+                option.setOptionValue(defaultValue + "");
+            }
+            optionFacade.create(option);
+            loadApplicationOptions();
+        }
+        try {
+            return Double.valueOf(option.getOptionValue());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     public Double getDoubleValueByKey(String key) {

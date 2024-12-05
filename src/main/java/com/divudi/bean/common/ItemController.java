@@ -1747,42 +1747,44 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeAmpItem(String query) {
-        List<Item> suggestions = new ArrayList<>();
-        if (query == null || query.trim().isEmpty()) {
-            return suggestions;
-        } else {
-            String[] words = query.split("\\s+");
-            String sql = "SELECT c FROM Item c WHERE c.retired = false AND type(c) = :amp AND "
-                    + "(c.departmentType IS NULL OR c.departmentType != :dep) AND (";
-
-            // Dynamic part of the query for the name field using each word
-            StringBuilder nameConditions = new StringBuilder();
-            for (int i = 0; i < words.length; i++) {
-                if (i > 0) {
-                    nameConditions.append(" AND ");
-                }
-                nameConditions.append("LOWER(c.name) LIKE :nameStr").append(i);
-            }
-
-            // Adding name conditions and the static conditions for code and barcode
-            sql += "(" + nameConditions + ") OR LOWER(c.code) LIKE :codeStr OR LOWER(c.barcode) LIKE :barcodeStr) "
-                    + "ORDER BY c.name";
-
-            // Setting parameters
-            HashMap<String, Object> tmpMap = new HashMap<>();
-            tmpMap.put("dep", DepartmentType.Store);
-            tmpMap.put("amp", Amp.class);
-            tmpMap.put("codeStr", "%" + query.toLowerCase() + "%");
-
-            tmpMap.put("barcodeStr", query.toLowerCase());
-
-            for (int i = 0; i < words.length; i++) {
-                tmpMap.put("nameStr" + i, "%" + words[i].toLowerCase() + "%");
-            }
-            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
-        }
+    List<Item> suggestions = new ArrayList<>();
+    if (query == null || query.trim().isEmpty()) {
         return suggestions;
+    } else {
+        String[] words = query.split("\\s+");
+        String sql = "SELECT c FROM Item c WHERE c.retired = false AND type(c) = :amp AND "
+                + "(c.departmentType IS NULL OR c.departmentType != :dep) AND (";
+
+        // Dynamic part of the query for the name field using each word
+        StringBuilder nameConditions = new StringBuilder();
+        for (int i = 0; i < words.length; i++) {
+            if (i > 0) {
+                nameConditions.append(" AND ");
+            }
+            nameConditions.append("LOWER(c.name) LIKE :nameStr").append(i);
+        }
+
+        // Adding name conditions and the static conditions for code and barcode
+        sql += "(" + nameConditions + ") OR LOWER(c.code) LIKE :codeStr "
+                + "OR LOWER(c.barcode) LIKE :barcodeStr OR c.barcode = :exactBarcodeStr) "
+                + "ORDER BY c.name";
+
+        // Setting parameters
+        HashMap<String, Object> tmpMap = new HashMap<>();
+        tmpMap.put("dep", DepartmentType.Store);
+        tmpMap.put("amp", Amp.class);
+        tmpMap.put("codeStr", "%" + query.toLowerCase() + "%");
+        tmpMap.put("barcodeStr", "%" + query.toLowerCase() + "%");
+        tmpMap.put("exactBarcodeStr", query);
+
+        for (int i = 0; i < words.length; i++) {
+            tmpMap.put("nameStr" + i, "%" + words[i].toLowerCase() + "%");
+        }
+        suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
     }
+    return suggestions;
+}
+
 
 //    @Deprecated(forRemoval = true)
 //    public List<Item> completeAmps(String query) {
@@ -2817,11 +2819,16 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> getItems(Category category) {
-        String temSql;
-        HashMap h = new HashMap();
-        temSql = "SELECT i FROM Item i where i.category=:cat and i.retired=false order by i.name";
-        h.put("cat", category);
-        return getFacade().findByJpql(temSql, h);
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "SELECT i "
+                + " FROM Item i "
+                + " where i.category=:cat "
+                + " and i.retired=:ret "
+                + " order by i.name";
+        params.put("cat", category);
+        params.put("ret", false);
+        return getFacade().findByJpql(jpql, params);
     }
 
     /**

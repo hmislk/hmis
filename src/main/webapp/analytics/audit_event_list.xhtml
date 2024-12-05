@@ -36,7 +36,7 @@
                                              value="Search" 
                                              action="#{auditEventController.fillAllAuditEvents}"/>
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="All Bills" type="xls" target="tblBills" ></p:dataExporter>
+                                <p:dataExporter fileName="All Bills" type="xlsx" target="tblBills" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
                         <p:dataTable rowIndexVar="i" id="tblBills" 

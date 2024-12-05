@@ -2,6 +2,7 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.PaymentMethod;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.Drawer;
@@ -41,13 +42,14 @@ public class DrawerEntryController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    
+
     CommonFunctions commonFunctions;
 
     private DrawerEntry current;
     private List<DrawerEntry> userDrawerEntry;
     private Date fromDate;
     private Date toDate;
+    private PaymentMethod paymentMethod;
 
     private WebUser webUser;
 
@@ -77,6 +79,10 @@ public class DrawerEntryController implements Serializable {
     }
 
     public void findDrawerEntrys(Date fromDate, Date toDate, WebUser webUser, int resultCount) {
+        findDrawerEntrys(fromDate, toDate, webUser, resultCount, null);
+    }
+
+    public void findDrawerEntrys(Date fromDate, Date toDate, WebUser webUser, int resultCount, PaymentMethod pm) {
         userDrawerEntry = new ArrayList();
         String jpql = "select de"
                 + " from DrawerEntry de"
@@ -89,6 +95,11 @@ public class DrawerEntryController implements Serializable {
             jpql += " and de.createdAt between :fd and :td";
             m.put("fd", fromDate);
             m.put("td", toDate);
+        }
+
+        if (pm != null) {
+            jpql += " and de.paymentMethod =:pm ";
+            m.put("pm", pm);
         }
 
         jpql += " order by de.id desc";
@@ -109,8 +120,8 @@ public class DrawerEntryController implements Serializable {
         userDrawerEntry = result;
         System.out.println("userDrawerEntry = " + userDrawerEntry);
     }
-    
-    public void findAllUsersDrawerDetails(){
+
+    public void findAllUsersDrawerDetails() {
         userDrawerEntry = new ArrayList();
         String jpql = "select de"
                 + " from DrawerEntry de"
@@ -123,8 +134,8 @@ public class DrawerEntryController implements Serializable {
             m.put("fd", fromDate);
             m.put("td", toDate);
         }
-        if (webUser != null){
-            jpql += " and de.webUser=:wu ";  
+        if (webUser != null) {
+            jpql += " and de.webUser=:wu ";
             m.put("wu", webUser);
         }
 
@@ -133,8 +144,6 @@ public class DrawerEntryController implements Serializable {
         m.put("ret", false);
         List<DrawerEntry> result = new ArrayList();
         result = ejbFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        
-        
 
         // Reverse the list to get the last entry at the end
         Collections.reverse(result);
@@ -145,8 +154,11 @@ public class DrawerEntryController implements Serializable {
     }
 
     public String navigateToMyDrawerEntry() {
-        findDrawerEntrys(null, null, sessionController.getLoggedUser(), 50);
         return "/cashier/my_drawer_entry_history?faces-redirect=true;";
+    }
+
+    public void listMyDrawerHistory() {
+        findDrawerEntrys(fromDate, toDate, sessionController.getLoggedUser(), 0, paymentMethod);
     }
 
     public String navigateToCashierDrawerEntry() {
@@ -204,7 +216,7 @@ public class DrawerEntryController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfMonth(new Date());
+            fromDate = CommonFunctions.getStartOfDay();
         }
         return fromDate;
     }
@@ -215,7 +227,7 @@ public class DrawerEntryController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfMonth(new Date());
+            toDate = CommonFunctions.getEndOfDay();
         }
         return toDate;
     }
@@ -232,6 +244,20 @@ public class DrawerEntryController implements Serializable {
         this.webUser = webUser;
     }
 
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    /*
+    Pubudu Start
+     */
+ /*
+    Pubudu End
+     */
     @FacesConverter(forClass = DrawerEntry.class)
     public static class DrawerEntryConverter implements Converter {
 

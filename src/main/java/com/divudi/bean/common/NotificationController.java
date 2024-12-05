@@ -16,6 +16,8 @@ import com.divudi.data.TriggerType;
 import com.divudi.data.TriggerTypeParent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Notification;
+import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.inward.PatientRoom;
 import com.divudi.facade.NotificationFacade;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -112,6 +114,36 @@ public class NotificationController implements Serializable {
                 break;
             default:
                 throw new AssertionError();
+        }
+    }
+    
+    public void createNotification(PatientRoom pr, String action) {
+        if (pr == null) {
+            return;
+        }
+        switch (action) {
+            case "Discharge":
+                createInwardRoomDischargeNotifications(pr);
+                break;
+                
+            default:
+                throw new AssertionError();
+        }
+    }
+    
+    private void createInwardRoomDischargeNotifications(PatientRoom pr) {
+        System.out.println("pr = " + pr);
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_DISCHARGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientRoom(pr);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            String msg = "You Have a Discharge Notification From " + pr.getRoomFacilityCharge().getName();
+            nn.setMessage(msg);
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
         }
     }
     

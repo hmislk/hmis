@@ -11,29 +11,74 @@
                 <h:form >
                     <p:panel header="Good In Transit" >
 
-                        <p:panelGrid columns="4" class="w-100">
-                            <p:outputLabel value="From Date" class="mx-2" >
-                            </p:outputLabel>
+                        <p:panelGrid columns="6" class="w-100">
+
+                            <h:panelGroup layout="block" styleClass="form-group" class="my-1">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="From Date" class="mx-2" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker value="" 
+                                          inputStyleClass="w-100"
                                           class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}">
+                            </p:datePicker>
 
-                            <p:outputLabel value="To Date" class="mx-2" >
-                            </p:outputLabel>
-                            <p:datePicker value="" 
+
+
+                            <h:panelGroup layout="block" styleClass="form-group" class="my-1">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="To Date" class="mx-2" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value=""
+                                          inputStyleClass="w-100"
                                           class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}">
+                            </p:datePicker>
 
-                            <p:outputLabel value="Receive Branch" class="mx-2" >
-                            </p:outputLabel>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university ml-5" />
+                                <p:outputLabel value="Receiving Institution" class="mx-2" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
 
 
-                            <p:outputLabel value="Receive Store" class="mx-2" >
-                            </p:outputLabel>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
+                                <p:outputLabel value="Receiving Site" class="mx-2"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>                           
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building ml-5" />
+                                <p:outputLabel value="Receiving Department" class="mx-2">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-store ml-5" />
+                                <p:outputLabel value="Receiving Store" class="mx-2">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
@@ -41,8 +86,11 @@
 
 
 
-                            <p:outputLabel value="Issue Branch" class="mx-2" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group" class="my-1">
+                                <h:outputText styleClass="fa fa-university ml-5" />
+                                <p:outputLabel value="Issue Institution" class="mx-2" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
@@ -50,25 +98,47 @@
 
 
 
-                            <p:outputLabel value="Issue Store" class="mx-2" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group" class="my-1">
+                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
+                                <p:outputLabel value="Issue Site" class="mx-2">                                   
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building ml-5" />
+                                <p:outputLabel value="Issue Department" class="mx-2">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-store ml-5" />
+                                <p:outputLabel value="Issue Store" class="mx-2">                           
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
 
 
-                            <p:outputLabel value="Item Name/Code" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
 
-
-
-                            <p:outputLabel value="Item Category" class="mx-2" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-tag ml-5" />
+                                <p:outputLabel value="Item Name/Code" class="mx-2">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
@@ -76,8 +146,33 @@
 
 
 
-                            <p:outputLabel value="Show only Pending Documents" class="mx-2" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-box ml-5" />
+                                <p:outputLabel value="Item Category" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-clock ml-5" />
+                                <p:outputLabel value="Show only Pending Docs" class="mx-2" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-exchange-alt ml-5" />
+                                <p:outputLabel value="Issuing/Returning Doc.Status" class="mx-3" />
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
@@ -85,8 +180,12 @@
 
 
 
-                            <p:outputLabel value="Transit Store/Staff" class="mx-2" >
-                            </p:outputLabel>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-people-carry ml-5" />
+                                <p:outputLabel value="Transit Store/Staff" class="mx-2" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
@@ -96,84 +195,115 @@
 
                         </p:panelGrid>
 
-                        <div class="d-flex align-items-center my-2">
-                            <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
+                        <div class="d-flex align-items-center">
+                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" >
                             </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Download"
-                                             action="null">
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            </p:commandButton>
+                        </div>
+
+
+                        <div class="mt-5">
+
+                            <h5>Transit Store Transactions</h5>
+                            <br></br>
+                            <h6>Stock Issues</h6>
+
+                            <p:dataTable id="tbl1" value="" 
+                                         var="f" 
+                                         rowIndexVar="n" 
+                                         paginator="true" 
+                                         rows="10" 
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+                                <p:column headerText="Item Code" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Issue Qty" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Issue Doc. Type " width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Issuing Institution" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Issuing Site" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Issuing Department" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Issuing Store" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Issue Doc. Approval Date" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Issue Prepared By" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receipt Qty" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receipt Stock Value" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receipt Approval Stock Value" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receipt Doc. No" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receipt Doc. Type " width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receiving Institution" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receiving Site" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receiving Department" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receiving Store" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receipt Doc. Date" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receipt Doc. Approval Date" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receipt Prepared By" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receipt Approved By" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Receipt Approval Status" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+
+                            </p:dataTable>
 
                         </div>
 
-                        <p:dataTable id="tbl" value="" 
-                                     paginator="true"
-                                     rows="10">
-
-                            <p:column headerText="Item Code">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Issue Qty">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Issue Doc. Type ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Issuing Branch">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Issuing Store	">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Issue Doc. Approval Date">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Issue Prepared By">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Qty">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Stock Value">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Approval Stock Value">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Doc. No">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Doc. Type ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receiving Branch">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receiving Store">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Doc. Date">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Doc. Approval Date">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Prepared By">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Approved By">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Approval Status">
-                                <h:outputText value="" />
-                            </p:column>
-
-                        </p:dataTable>
                     </p:panel>
 
                 </h:form>
 
             </ui:define>
+
         </ui:composition>
 
     </h:body>
+    
 </html>

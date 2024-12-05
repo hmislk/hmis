@@ -20,14 +20,13 @@
                         <h:panelGrid columns="4" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
 
                             <h:outputLabel value="Cheque From Date"/>
-                            <p:datePicker
-                                showTime="true"
+                            <p:calendar
                                 styleClass="dateTimePicker"
                                 id="cFromDate"
                                 value="#{supplierPaymentController.chequeFromDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 class="w-100" inputStyleClass="w-100">      
-                            </p:datePicker>
+                            </p:calendar>
                             <h:outputLabel value="Cheque To Date"/>
                             <p:datePicker 
                                 id="cToDate"
@@ -101,6 +100,11 @@
                                              class="my-1 w-100 ui-button-warning" 
                                              icon="fas fa-search-dollar"
                                              action="#{supplierPaymentController.fillAllSupplierPaymentsByChequDate()}"/>
+                            
+                            <p:commandButton ajax="false" value="Reapprove Canceled Payments for Settlement" 
+                                             class="my-1 w-100 ui-button-danger" 
+                                             icon="fas fa-search-dollar"
+                                             action="#{supplierPaymentController.fillAllCancelledSupplierPaymentsByChequDate()}"/>
                         </h:panelGrid>
                         <div class="col-12">
                             <p:dataTable 
@@ -190,7 +194,8 @@
                                 </p:column>
                                 <p:column headerText="Status">                                
                                     <p:badge value="Pending..." rendered="#{bill.referenceBill.billType == null}"/>
-                                    <p:badge value="Approved" rendered="#{bill.referenceBill.billType eq 'GrnPayment' and !bill.referenceBill.cancelled}" severity="success"/>
+                                    <p:badge value="Repay..." rendered="#{bill.reactivated}" severity="warning"/>
+                                    <p:badge value="Approved" rendered="#{bill.referenceBill.billType eq 'GrnPayment' and !bill.referenceBill.cancelled and not bill.reactivated}" severity="success"/>
                                     <p:badge value="Canceled" rendered="#{bill.referenceBill.cancelled}" severity="danger"/>
                                 </p:column> 
                                 <p:column headerText="Action">
@@ -198,7 +203,7 @@
                                                      value="Approve" 
                                                      update="@form" 
                                                      action="#{dealorPaymentBillSearch.approve()}"
-                                                     disabled="#{bill.referenceBill.billType eq 'GrnPayment'}"
+                                                     disabled="#{bill.referenceBill.billType eq 'GrnPayment' and not bill.reactivated}"
                                                      onclick="if (!confirm('Are you sure! you want to Approve This Cheque?'))
                                                                  return false;">
                                         <f:setPropertyActionListener value="#{bill}" 
