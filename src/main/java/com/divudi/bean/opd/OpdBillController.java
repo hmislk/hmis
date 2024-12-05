@@ -920,9 +920,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             bf.setFeeGrossValue(0.0);
 //            return;
         }
-
-        dsdfsdfsdfsdf;
-        
+       
         if (configOptionApplicationController.getBooleanValueByKey("Disable increasing the fee value in OPD Billing", false)) {
             if (bf.getFeeValue() < bf.getFeeGrossValue()) {
                 JsfUtil.addErrorMessage("Increasing the fee value is not allowed.");
@@ -3085,28 +3083,22 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         
                         item = bf.getBillItem().getItem();
                     }
-                    System.out.println("entryNet1 = " + entryNet);
                     priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
                     getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
                     if (bf.getBillItem().getItem().isVatable()) {
                         if (!(bf.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
                             bf.setFeeVat(bf.getFeeValue() * bf.getBillItem().getItem().getVatPercentage() / 100);
                             bf.setFeeVat(roundOff(bf.getFeeVat()));
-                            System.out.println("entryNet2 = " + entryNet);
                         }
                     }
-                    System.out.println("entryNet3 = " + entryNet);
                     bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
                     entryGross += bf.getFeeGrossValue();
                     entryNet += bf.getFeeValue();
                     entryDis += bf.getFeeDiscount();
                     entryVat += bf.getFeeVat();
                     entryVatPlusNet += bf.getFeeVatPlusValue();
-                    System.out.println("entryNet4 = " + entryNet);
                 }
             }
-            System.out.println("bi.getNetValue() = " + bi.getNetValue());
-            System.out.println("entryNet5 = " + entryNet);
             
             bi.setDiscount(entryDis);
             bi.setGrossValue(entryGross);
@@ -3114,14 +3106,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             bi.setVat(entryVat);
             bi.setVatPlusNetValue(roundOff(entryVatPlusNet));
             
-            System.out.println("entryNet6 = " + entryNet);
-            
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();
             billDiscount += bi.getDiscount();
             billVat += bi.getVat();
-            System.out.println("bi.getNetValue() = " + bi.getNetValue());
-            //     billDis = billDis + entryDis;
         }
         setDiscount(billDiscount);
         setTotal(billGross);
@@ -3133,7 +3121,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
             }
         }
-        System.out.println("billNet = " + billNet);
     }
 
     private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf) {
