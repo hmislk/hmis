@@ -203,7 +203,7 @@ public class IssueReturnController implements Serializable {
         getReturnBill().copy(getBill());
 
         getReturnBill().setBillType(BillType.PharmacyIssue);
-        //getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
+        getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
         getReturnBill().setBilledBill(getBill());
 
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());

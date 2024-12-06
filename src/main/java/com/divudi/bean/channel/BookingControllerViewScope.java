@@ -2974,7 +2974,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return null;
         }
         cb.setDeptId(deptId);
-        cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
+        cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITHOUT_PAYMENT);
         getBillFacade().create(cb);
 
         if (bill.getPaymentMethod() == PaymentMethod.Agent) {
