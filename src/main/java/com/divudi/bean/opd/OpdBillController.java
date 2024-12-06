@@ -3756,6 +3756,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     }
 
+    @Override
     public void listnerForPaymentMethodChange() {
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
@@ -4086,6 +4087,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    @Override
     public PaymentMethod getPaymentMethod() {
         if (!sessionController.getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
             if (paymentMethod != PaymentMethod.Cash) {
@@ -4098,6 +4100,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return paymentMethod;
     }
 
+    @Override
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
