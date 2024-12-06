@@ -1,6 +1,5 @@
 package com.divudi.service;
 
-import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Agent;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
@@ -44,11 +43,6 @@ public class DrawerService {
     @EJB
     DrawerFacade drawerFacade;
     DrawerEntry drawerEntry;
-    private Drawer current;
-    private List<Drawer> items = null;
-    List<Drawer> drawers;
-
-    private boolean editDrawerAccess;
 
     // <editor-fold defaultstate="collapsed" desc="UP">
     public void updateDrawerForIns(List<Payment> payments, WebUser webUser) {
@@ -177,6 +171,13 @@ public class DrawerService {
     }
 
     // </editor-fold>  
+    public Drawer reloadDrawer(Drawer drawer) {
+        if (drawer == null) {
+            return null;
+        }
+        return drawerFacade.find(drawer.getId());
+    }
+
     public void updateDrawerForIns(List<Payment> payments) {
         if (payments == null) {
             return;
