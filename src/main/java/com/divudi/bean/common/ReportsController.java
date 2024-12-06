@@ -239,6 +239,7 @@ public class ReportsController implements Serializable {
     boolean billPreview;
     private Long barcodeIdLong;
     private Date maxDate;
+    private Doctor referingDoctor;
 
     private double cashTotal;
     private double cardTotal;
@@ -437,6 +438,14 @@ public class ReportsController implements Serializable {
 
     public void setToInstitution(Institution toInstitution) {
         this.toInstitution = toInstitution;
+    }
+
+    public Doctor getReferingDoctor() {
+        return referingDoctor;
+    }
+
+    public void setReferingDoctor(Doctor referingDoctor) {
+        this.referingDoctor = referingDoctor;
     }
 
     public Institution getDealer() {
@@ -2327,5 +2336,9 @@ public class ReportsController implements Serializable {
         b.createRowValuesFromBillItems();
         b.calculateTotalsWithCredit();
         return b;
+    }
+
+    public void externalLaboratoryWorkloadReport() {
+        // TODO: Implement method
     }
 }
