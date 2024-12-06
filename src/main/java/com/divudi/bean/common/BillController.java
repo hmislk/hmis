@@ -79,6 +79,8 @@ import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.PaymentService;
+import com.divudi.service.ProfessionalPaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -145,6 +147,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     StaffService staffService;
     @Inject
     private BillSearch billSearch;
+    @Inject
+    ProfessionalPaymentService professionalPaymentService;
     /**
      * Controllers
      */
@@ -1755,6 +1759,11 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             batchBillCancellationStarted = false;
             return "";
         }
+        if(professionalPaymentService.isProfessionalFeePaidForBatchBill(batchBill)){
+            JsfUtil.addErrorMessage("Professional Fees or Outside Fees have already made this bill. Cancel them first and try again.");
+            batchBillCancellationStarted = false;
+            return "";
+        }
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
 
@@ -1768,7 +1777,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         cancellationBatchBill.setToInstitution(batchBill.getToInstitution());
         cancellationBatchBill.setBillType(BillType.OpdBathcBill);
         cancellationBatchBill.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-        cancellationBatchBill.setInsId(deptId);
+        cancellationBatchBill.setDeptId(deptId);
         cancellationBatchBill.setInsId(deptId);
         cancellationBatchBill.setCreatedAt(new Date());
         cancellationBatchBill.setCreater(getSessionController().getLoggedUser());

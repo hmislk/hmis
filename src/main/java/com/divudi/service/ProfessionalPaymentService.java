@@ -1,11 +1,10 @@
 package com.divudi.service;
 
-import com.divudi.bean.common.CommonController;
-import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
+import com.divudi.entity.Bill;
+import com.divudi.entity.BillFee;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
@@ -29,6 +28,56 @@ public class ProfessionalPaymentService {
 
     @EJB
     BillFacade billFacade;
+
+    public boolean isProfessionalFeePaid(BillFee billFee) {
+        if (billFee == null) {
+            return false;
+        }
+        return billFee.getPaidValue() > 0;
+    }
+
+    public boolean isProfessionalFeePaid(BillItem billItem) {
+        if (billItem == null) {
+            return false;
+        }
+
+        String jpql = "SELECT SUM(bf.paidValue) FROM BillFee bf WHERE bf.billItem = :billItem";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("billItem", billItem);
+
+        // Using the provided `findDoubleByJpql` method to execute the JPQL
+        double totalPaid = billFacade.findDoubleByJpql(jpql, parameters, null); // No TemporalType needed here
+
+        return totalPaid > 0;
+    }
+
+    public boolean isProfessionalFeePaid(Bill bill) {
+        if (bill == null) {
+            return false;
+        }
+        String jpql = "SELECT SUM(bf.paidValue) FROM BillFee bf WHERE bf.bill = :bill ";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("bill", bill);
+        double totalPaid = billFacade.findDoubleByJpql(jpql, parameters, null); // No TemporalType needed here
+        return totalPaid > 0;
+    }
+
+    public boolean isProfessionalFeePaidForBatchBill(Bill batchBill) {
+        if (batchBill == null) {
+            return false;
+        }
+
+        String jpql = "SELECT SUM(bf.paidValue) "
+                + "FROM BillFee bf "
+                + "WHERE bf.bill IN (SELECT b FROM Bill b WHERE b.backwardReferenceBill = :batchBill)";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("batchBill", batchBill);
+
+        // Use the existing `findDoubleByJpql` method to execute the query
+        double totalPaid = billFacade.findDoubleByJpql(jpql, parameters, null); // No TemporalType needed here
+
+        return totalPaid > 0;
+    }
 
     public Double findSumOfProfessionalPaymentsDone(
             Institution ins,
@@ -70,7 +119,7 @@ public class ProfessionalPaymentService {
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
         params.put("staff", staff);
-        
+
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
 

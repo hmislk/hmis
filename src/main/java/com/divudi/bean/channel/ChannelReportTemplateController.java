@@ -893,6 +893,7 @@ public class ChannelReportTemplateController implements Serializable {
                 bs.getBill().getPatient().getPerson();
                 bs.getBill().getCreditCompany().getName();
                 bs.getBill().getCreatedAt();
+                
             }
         }
 
@@ -901,7 +902,8 @@ public class ChannelReportTemplateController implements Serializable {
                 + " where bs.retired=false "
                 + " and bs.bill.creditCompany is not null "
                 + " and bs.bill.creditCompany.name = 'DOC_990'"
-                + " and bs.sessionInstance.sessionDate between :fd and :td ";
+                + " and bs.bill.billTypeAtomic = :bta"
+                + " and bs.bill.createdAt between :fd and :td ";
 
         if (institution != null) {
             m.put("ins", institution);
@@ -917,8 +919,9 @@ public class ChannelReportTemplateController implements Serializable {
 
         m.put("fd", fromDate);
         m.put("td", toDate);
+        m.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.TIMESTAMP);
 
         bundle.setReportTemplateRows(rs);
 
@@ -935,6 +938,7 @@ public class ChannelReportTemplateController implements Serializable {
             if (row != null) {
                 row.setCounter(idCounter++);
                 SessionInstance sessionInstance = row.getSessionInstance();
+                Bill bill = row.getBillSession().getBill();
                 if (sessionInstance != null) {
                     //System.out.println("inside");
                     bundle.setLong1(bundle.getLong1() + (sessionInstance.getBookedPatientCount() != null ? sessionInstance.getBookedPatientCount() : 0));

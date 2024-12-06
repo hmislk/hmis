@@ -20,14 +20,13 @@
                         <h:panelGrid columns="4" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
 
                             <h:outputLabel value="Cheque From Date"/>
-                            <p:datePicker
-                                showTime="true"
+                            <p:calendar
                                 styleClass="dateTimePicker"
                                 id="cFromDate"
                                 value="#{supplierPaymentController.chequeFromDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 class="w-100" inputStyleClass="w-100">      
-                            </p:datePicker>
+                            </p:calendar>
                             <h:outputLabel value="Cheque To Date"/>
                             <p:datePicker 
                                 id="cToDate"
@@ -101,6 +100,11 @@
                                              class="my-1 w-100 ui-button-warning" 
                                              icon="fas fa-search-dollar"
                                              action="#{supplierPaymentController.fillAllSupplierPaymentsByChequDate()}"/>
+                            
+                            <p:commandButton ajax="false" value="Reapprove Canceled Payments for Settlement" 
+                                             class="my-1 w-100 ui-button-danger" 
+                                             icon="fas fa-search-dollar"
+                                             action="#{supplierPaymentController.fillAllCancelledSupplierPaymentsByChequDate()}"/>
                         </h:panelGrid>
                         <div class="col-12">
                             <p:dataTable 

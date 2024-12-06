@@ -151,6 +151,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
      * Controllers
      */
     @Inject
+    MembershipSchemeController membershipSchemeController;
+    @Inject
     private BillController billController;
     @Inject
     private SessionController sessionController;
@@ -367,6 +369,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return "/opd/opd_bill_search?faces-redirect=true";
     }
 
+    @Deprecated
     public String navigateToSearchOpdPackageBills() {
         batchBill = null;
         bills = null;
@@ -628,7 +631,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
     }
-    
+
     public String navigateToViewPackageBatchBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -649,9 +652,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return "";
         }
 
-        
         batchBill = billFacade.find(bill.getId());
-        
+
         String jpql;
         Map m = new HashMap();
         jpql = "select b "
@@ -920,7 +922,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             bf.setFeeGrossValue(0.0);
 //            return;
         }
-
+       
         if (configOptionApplicationController.getBooleanValueByKey("Disable increasing the fee value in OPD Billing", false)) {
             if (bf.getFeeValue() < bf.getFeeGrossValue()) {
                 JsfUtil.addErrorMessage("Increasing the fee value is not allowed.");
@@ -938,7 +940,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         lstBillItems = null;
         getLstBillItems();
-        bf.setTmpChangedValue(bf.getFeeGrossValue());
+        bf.setTmpChangedValue(bf.getFee().getFee());
         calTotals();
         JsfUtil.addSuccessMessage("Fee Changed Successfully");
     }
@@ -3036,8 +3038,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         this.priceMatrixController = priceMatrixController;
     }
 
-    @Inject
-    MembershipSchemeController membershipSchemeController;
+    
 
     public void calTotals() {
         if (paymentMethod == null) {

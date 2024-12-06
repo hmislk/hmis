@@ -27,6 +27,7 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Payment;
 import com.divudi.entity.RefundBill;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -57,9 +58,11 @@ public class PettyCashBillController implements Serializable {
     WebUserController webUserController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    PaymentSchemeController paymentSchemeController;
+    @Inject
+    BillBeanController billBean;
 
-    private Bill current;
-    private boolean printPreview = false;
     @EJB
     private BillNumberGenerator billNumberBean;
     @Inject
@@ -70,6 +73,17 @@ public class PettyCashBillController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     PaymentFacade paymentFacade;
+    @EJB
+    PaymentService paymentService;
+    @EJB
+    BillNumberGenerator billNumberGenerator;
+    @EJB
+    private PersonFacade personFacade;
+    @EJB
+    private CashTransactionBean cashTransactionBean;
+
+    private Bill current;
+    private boolean printPreview = false;
     private Person newPerson;
     PaymentMethodData paymentMethodData;
     String comment;
@@ -79,6 +93,9 @@ public class PettyCashBillController implements Serializable {
     private PaymentMethod paymentMethod;
     private boolean printPriview;
     private List<Bill> billList;
+
+    public PettyCashBillController() {
+    }
 
     public void pettyCashCancelBillApprove() {
         if (current == null) {
@@ -90,56 +107,51 @@ public class PettyCashBillController implements Serializable {
         billController.save(b);
     }
 
-    public String NavigatePettyAndIouReprint() {
+    public String navigatePettyAndIouReprint() {
         if (current.getBillType() == BillType.PettyCash) {
-            return "petty_cash_bill_reprint";
+            fillBillsReferredByCurrentBill();
+            return "petty_cash_bill_reprint?faces-redirect=true";
         }
         if (current.getBillType() == BillType.IouIssue) {
-            return "iou_bill_reprint";
+            return "iou_bill_reprint?faces-redirect=true";
         }
         if (current.getBillType() == BillType.PettyCashCancelApprove) {
-            return "petty_cash_bill_reprint";
+            return "petty_cash_bill_reprint?faces-redirect=true";
         }
-
         return "";
     }
 
-    public PaymentMethodData getPaymentMethodData() {
-        if (paymentMethodData == null) {
-            paymentMethodData = new PaymentMethodData();
+    public String navigateToPettyCashReturn() {
+        returnAmount = Math.abs(getCurrent().getNetTotal()) - Math.abs(totalOfRedundedBills);
+        if (returnAmount > 0.0) {
+            printPriview = false;
+            comment = null;
+            paymentMethodData = null;
+            return "petty_cash_bill_return?faces-redirect=true";
+        } else {
+            JsfUtil.addErrorMessage("The full amount has been refunded.");
+            return "";
         }
-        return paymentMethodData;
+
     }
 
-    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
-        this.paymentMethodData = paymentMethodData;
-    }
-
-    public PettyCashBillController() {
-    }
-
-    public Title[] getTitle() {
-        return Title.values();
-    }
-
-    @Inject
-    PaymentSchemeController paymentSchemeController;
-
-    public PaymentSchemeController getPaymentSchemeController() {
-        return paymentSchemeController;
-    }
-
-    public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
-        this.paymentSchemeController = paymentSchemeController;
-    }
+    private double totalOfRedundedBills;
 
     public void fillBillsReferredByCurrentBill() {
         billList = new ArrayList<>();
+        totalOfRedundedBills = 0.0;
         String sql = "Select b from Bill b where b.retired=:ret and b.billedBill=:cb";
         HashMap m = new HashMap();
         m.put("ret", false);
         m.put("cb", getCurrent());
         billList = getBillFacade().findByJpql(sql, m);
+
+        if (billList != null) {
+            for (Bill b : billList) {
+                totalOfRedundedBills += b.getNetTotal();
+
+            }
+        }
     }
 
     private boolean errorCheck() {
@@ -152,7 +164,6 @@ public class PettyCashBillController implements Serializable {
 //            JsfUtil.addErrorMessage("Can't settle without Person");
 //            return true;
 //        }
-        
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
@@ -166,7 +177,6 @@ public class PettyCashBillController implements Serializable {
             JsfUtil.addErrorMessage("Invoice Number Already Exist");
             return true;
         }
-
         return false;
     }
 
@@ -216,36 +226,18 @@ public class PettyCashBillController implements Serializable {
         } else {
             s1 = Integer.toString(y);
             s2 = Integer.toString(y + 1);
-
         }
         String s = s1.substring(2, 4) + s2.substring(2, 4) + "-";
 
         return s;
     }
 
-    @Inject
-    BillBeanController billBean;
-
-    public BillBeanController getBillBean() {
-        return billBean;
-    }
-
-    public void setBillBean(BillBeanController billBean) {
-        this.billBean = billBean;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
     private void saveBill() {
 
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PettyCash, BillClassType.BilledBill, BillNumberSuffix.PTYPAY));
-        getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PettyCash, BillClassType.BilledBill, BillNumberSuffix.PTYPAY));
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PETTY_CASH_ISSUE);
+
+        getCurrent().setInsId(deptId);
+        getCurrent().setDeptId(deptId);
         getCurrent().setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_ISSUE);
         getCurrent().setBillType(BillType.PettyCash);
 
@@ -265,14 +257,6 @@ public class PettyCashBillController implements Serializable {
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
 
         getBillFacade().create(getCurrent());
-    }
-    @EJB
-    private PersonFacade personFacade;
-    @EJB
-    private CashTransactionBean cashTransactionBean;
-
-    public String navigateToPettyCashReturnBill() {
-        return "";
     }
 
     public void approveBill(Bill b) {
@@ -345,20 +329,36 @@ public class PettyCashBillController implements Serializable {
 
     }
 
-    public void settleReturnBill() {
+    public String settleReturnBill() {
         if (comment == null || comment.trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
-            return;
+            return "";
         }
+        fillBillsReferredByCurrentBill();
+        double maximumRefundedAmount = Math.abs(getCurrent().getNetTotal()) - Math.abs(totalOfRedundedBills);
 
-        if (getCurrent() != null && getCurrent().getId() != null && getCurrent().getId() != 0) {
-            Bill rb = createPettyCashReturnBill();
-            Payment p = createPaymentForPettyCashBillReturn(rb, paymentMethod);
-            p.setPaidValue(returnAmount);
-            paymentFacade.edit(p);
-            getBillFacade().edit(getCurrent());
-            savePettyCashReturnBill(rb);
-            printPriview = true;
+        if(returnAmount > maximumRefundedAmount){
+            String massage = "You can only refund a maximum amount of " + String.format("%.2f", maximumRefundedAmount);
+            JsfUtil.addErrorMessage(massage);
+            return "";
+        }
+        
+        if (maximumRefundedAmount > 0.0) {
+            System.out.println("current = " + current);
+            if (getCurrent() != null && getCurrent().getId() != null && getCurrent().getId() != 0) {
+                currentReturnBill = createPettyCashReturnBill();
+                paymentService.createPayment(currentReturnBill, paymentMethodData);
+                getBillFacade().edit(getCurrent());
+                printPriview = true;
+                current = null;
+                return "/petty_cash_bill_return_print";
+            }else{
+                JsfUtil.addErrorMessage("NO Bill.");
+                return "";
+            }
+        } else {
+            JsfUtil.addErrorMessage("The full amount has been refunded.");
+            return "";
         }
     }
 
@@ -386,7 +386,6 @@ public class PettyCashBillController implements Serializable {
         setPaymentMethodData(p, pm);
         payments.add(p);
         return payments;
-
     }
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
@@ -403,7 +402,6 @@ public class PettyCashBillController implements Serializable {
         if (p.getId() == null) {
             paymentFacade.create(p);
         }
-
     }
 
     public boolean checkForExpireofApproval(Bill b) {
@@ -429,14 +427,19 @@ public class PettyCashBillController implements Serializable {
     private Bill createPettyCashReturnBill() {
         Bill rb = new RefundBill();
         rb.copy(getCurrent());
+
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PETTY_CASH_RETURN);
+
         rb.invertAndAssignValuesFromOtherBill(getCurrent());
         rb.setBillType(BillType.PettyCashReturn);
         rb.setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_RETURN);
         rb.setBilledBill(getCurrent());
-        Date bd = Calendar.getInstance().getTime();
-        rb.setBillDate(bd);
-        rb.setBillTime(bd);
-        rb.setCreatedAt(bd);
+        rb.setReferenceBill(getCurrent());
+        rb.setBillDate(new Date());
+        rb.setInsId(deptId);
+        rb.setDeptId(deptId);
+        rb.setBillTime(new Date());
+        rb.setCreatedAt(new Date());
         rb.setCreater(getSessionController().getLoggedUser());
         rb.setDepartment(getSessionController().getDepartment());
         rb.setInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -444,13 +447,15 @@ public class PettyCashBillController implements Serializable {
         rb.setDiscountPercent(0.0);
         rb.setComments(comment);
         rb.setPaymentMethod(paymentMethod);
-        rb.setTotal(0 - returnAmount);
+        rb.setTotal(returnAmount);
+        rb.setCashPaid(returnAmount);
+        rb.setNetTotal(returnAmount);
         getBillFacade().create(rb);
-
         return rb;
 
     }
 
+    @Deprecated
     private boolean savePettyCashReturnBill(Bill rb) {
         if (rb == null) {
             JsfUtil.addErrorMessage("No bill");
@@ -653,6 +658,53 @@ public class PettyCashBillController implements Serializable {
 
     public void setBillList(List<Bill> billList) {
         this.billList = billList;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+
+    public Title[] getTitle() {
+        return Title.values();
+    }
+
+    public PaymentSchemeController getPaymentSchemeController() {
+        return paymentSchemeController;
+    }
+
+    public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
+        this.paymentSchemeController = paymentSchemeController;
+    }
+
+    public BillBeanController getBillBean() {
+        return billBean;
+    }
+
+    public void setBillBean(BillBeanController billBean) {
+        this.billBean = billBean;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public double getTotalOfRedundedBills() {
+        return totalOfRedundedBills;
+    }
+
+    public void setTotalOfRedundedBills(double totalOfRedundedBills) {
+        this.totalOfRedundedBills = totalOfRedundedBills;
     }
 
 }

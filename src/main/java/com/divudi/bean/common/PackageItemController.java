@@ -8,6 +8,8 @@
  */
 package com.divudi.bean.common;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PackageFee;
 import com.divudi.entity.PackageItem;
@@ -51,6 +53,8 @@ public class PackageItemController implements Serializable {
     private PackegeFacade packegeFacade;
     @EJB
     private PackageFeeFacade packageFeeFacade;
+    @EJB
+    PackageItemFacade packageItemFacade;
     @Inject
     SessionController sessionController;
     private PackageItem current;
@@ -63,6 +67,9 @@ public class PackageItemController implements Serializable {
     private Double total = 0.0;
     private List<Item> filteredItems;
     List<Item> serviceItems;
+    private Institution institution;
+    private Department department;
+    
 
     private boolean canRemovePackageItemfromPackage;
 
@@ -153,30 +160,32 @@ public class PackageItemController implements Serializable {
     }
 
     public void addToPackage() {
+        System.out.println("addToPackage");
+        System.out.println("getCurrentPackege() = " + getCurrentPackege());
         if (getCurrentPackege() == null) {
             JsfUtil.addErrorMessage("Please select a package");
             return;
         }
-        if (getCurrentItem() == null) {
+        System.out.println("getCurrent() = " + getCurrent());
+        if (getCurrent() == null) {
             JsfUtil.addErrorMessage("Please select an item");
             return;
         }
-        PackageItem pi = new PackageItem();
-
+        System.out.println("getCurrent().getItem() = " + getCurrent().getItem());
+        if (getCurrent().getItem() == null) {
+            JsfUtil.addErrorMessage("Please select an item");
+            return;
+        }
+        PackageItem pi = current;
         pi.setPackege(getCurrentPackege());
-        pi.setItem(getCurrentItem());
-        pi.setCreatedAt(new Date());
-        pi.setCreater(sessionController.loggedUser);
-        if(pi.getId() == null){
-            getFacade().create(pi);
-        }
-        
-        pi.getItem().setCanRemoveItemfromPackage(canRemovePackageItemfromPackage);
-        
+        System.out.println("pi.getId() = " + pi.getId());
         if(pi.getId() != null){
-            itemFacade.edit(pi.getItem());
+            packageItemFacade.edit(pi);
+        }else{
+            pi.setCreatedAt(new Date());
+            pi.setCreater(sessionController.loggedUser);
+            packageItemFacade.create(pi);
         }
-        
         JsfUtil.addSuccessMessage("Added");
         recreateModel();
     }
@@ -191,7 +200,11 @@ public class PackageItemController implements Serializable {
             return;
         }else{
             getCurrent().getItem().setCanRemoveItemfromPackage(canRemovePackageItemfromPackage);
-            itemFacade.edit(getCurrent().getItem());
+        }
+        if(getCurrent().getId()==null){
+            packageItemFacade.create(getCurrent());
+        }else{
+            packageItemFacade.edit(getCurrent());
         }
 
         recreateModel();
@@ -286,6 +299,10 @@ public class PackageItemController implements Serializable {
 
     private PackageItemFacade getFacade() {
         return ejbFacade;
+    }
+    
+    public void prepareToAddNew(){
+        current = new PackageItem();
     }
     
     public void clearValus(){
@@ -493,6 +510,24 @@ public class PackageItemController implements Serializable {
     public void setCanRemovePackageItemfromPackage(boolean canRemovePackageItemfromPackage) {
         this.canRemovePackageItemfromPackage = canRemovePackageItemfromPackage;
     }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+    
+    
 
     /**
      *

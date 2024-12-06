@@ -75,6 +75,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.annotation.security.PermitAll;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
@@ -119,6 +120,7 @@ public class ChannelService {
     ConfigOptionApplicationController configOptionApplicationController;
 
 
+    @PermitAll //TODO: Fix this to appropriate roles .
     public void retireNonSettledOnlineBills() {
         String jpql = "select b "
                 + " from Bill b "
@@ -303,7 +305,47 @@ public class ChannelService {
             patientFacade.edit(p);
         }
     }
+    
+    public Map getForeignFeesForDoctorAndInstitutionFromServiceSession(ServiceSession ss){
+    
+        String sql = "Select fee From ItemFee fee "
+                + " where fee.retired = false "
+                + " and fee.serviceSession = :ss ";
+        
+        Map params = new HashMap<>();
+        params.put("ss", ss);
+        
+        List<ItemFee> itemFeeList = itemFeeFacade.findAggregates(sql, params);
+        
+        double docForeignFee = 0;
+        double hosForeignFee = 0;
+        
+        for(ItemFee f : itemFeeList){
+            if(f.getFeeType() == FeeType.OwnInstitution && f.getFee() > 0){
+                hosForeignFee = f.getFfee();
+            }else if(f.getFeeType() == FeeType.Staff && f.getFee() > 0){
+                docForeignFee = f.getFfee();
+            }
+        }
+        
+        Map<String, Double> fees = new HashMap<>();
+        
+        fees.put("docForeignFee", docForeignFee);
+        fees.put("hosForeignFee", hosForeignFee);
+        
+        return fees;
+        
+//        ItemFee fee = new ItemFee();
+//        fee.isRetired();
+//        fee.getServiceSession();
+//        fee.getFeeType();
+//        fee.getName();
 
+        
+    }
+
+    
+    
     public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
         saveOrUpdatePatientDetails(patient);
         Bill savingTemporaryBill = createAgentInitialBookingBill(patient, session);
