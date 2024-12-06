@@ -62,6 +62,7 @@ public class PaymentService {
      * data.</li>
      * <li>DO NOT Update the balance of patient deposits.</li>
      * <li>DO NOT Update balances for credit companies.</li>
+     * <li>DO NOT Update balances for collecting centres.</li>
      * <li>DO NOT Update Staff Credit.</li>
      * <li>Writes to the drawer for transaction recording.</li>
      * <li>Updates the cashbook if required by the specified options.</li>
@@ -76,14 +77,15 @@ public class PaymentService {
         return createPayment(bill, bill.getPaymentMethod(), paymentMethodData, bill.getDepartment(), bill.getCreater());
     }
 
-     /**
-     * Creates payments for the given Cancellation Bill and updates relevant records.
+    /**
+     * Creates payments for the given Cancellation Bill and updates relevant
+     * records.
      *
      * <p>
      * This method performs the following tasks:
      * <ul>
-     * <li>Creates payments based on the provided cancellation bill
-     * using the payment data in the original bill.</li>
+     * <li>Creates payments based on the provided cancellation bill using the
+     * payment data in the original bill.</li>
      * <li>DO NOT Update the balance of patient deposits.</li>
      * <li>DO NOT Update balances for credit companies.</li>
      * <li>DO NOT Update Staff Credit.</li>
@@ -91,7 +93,8 @@ public class PaymentService {
      * <li>Updates the cashbook if required by the specified options.</li>
      * </ul>
      *
-     * @param cancellationBill The cancellation bill for which payments are being created.
+     * @param cancellationBill The cancellation bill for which payments are
+     * being created.
      * @return A list of created payments associated with the bill.
      */
     public List<Payment> createPaymentsForCancelling(Bill cancellationBill) {
@@ -138,7 +141,6 @@ public class PaymentService {
             payment.setCreatedAt(currentDate);
             payment.setCreater(webUser);
             payment.setPaymentMethod(pm);
-
             populatePaymentDetails(payment, pm, paymentMethodData);
             payment.setPaidValue(bill.getNetTotal());
             paymentFacade.create(payment);
@@ -183,13 +185,16 @@ public class PaymentService {
                 payment.setComments(paymentMethodData.getCash().getComment());
                 break;
             case ewallet:
+                payment.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
                 payment.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
                 payment.setComments(paymentMethodData.getEwallet().getComment());
                 payment.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
                 payment.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
                 break;
             case Agent:
+                break;
             case Credit:
+                payment.setPaidValue(paymentMethodData.getCredit().getTotalValue());
                 payment.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
                 payment.setComments(paymentMethodData.getCredit().getComment());
                 payment.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
@@ -204,19 +209,20 @@ public class PaymentService {
                 }
                 break;
             case PatientDeposit:
+                payment.setPaidValue(paymentMethodData.getPatient_deposit().getTotalValue());
                 break;
             case Slip:
                 payment.setPaidValue(paymentMethodData.getSlip().getTotalValue());
-                payment.setComments(paymentMethodData.getCreditCard().getComment());
+                payment.setComments(paymentMethodData.getSlip().getComment());
                 payment.setBank(paymentMethodData.getSlip().getInstitution());
-                payment.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
+                payment.setReferenceNo(paymentMethodData.getSlip().getReferenceNo());
                 payment.setRealizedAt(paymentMethodData.getSlip().getDate());
                 break;
             case OnCall:
             case OnlineSettlement:
             case Staff:
                 payment.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
-                payment.setComments(paymentMethodData.getCreditCard().getComment());
+                payment.setComments(paymentMethodData.getStaffCredit().getComment());
                 break;
             default:
                 break;
