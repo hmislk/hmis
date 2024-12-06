@@ -646,6 +646,65 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         return a;
     }
     
+//    public List<Bill> completeOpdCreditBatchBill(String qry) {
+//        List<Bill> a = null;
+//        String sql;
+//        HashMap hash = new HashMap();
+//        if (qry != null) {
+//            sql = "select c from BilledBill c "
+//                    + " where abs(c.netTotal)-abs(c.paidAmount)>:val "
+//                    + " and c.billType= :btp "
+//                    + " and c.paymentMethod= :pm "
+//                    + " and c.cancelledBill is null "
+//                    + " and c.refundedBill is null "
+//                    + " and c.retired=false "
+//                    + " and ((c.insId) like :q or"
+//                    + " (c.patient.person.name) like :q "
+//                    + " or (c.creditCompany.name) like :q ) "
+//                    + " order by c.creditCompany.name";
+//            hash.put("btp", BillType.OpdBathcBill);
+//            hash.put("pm", PaymentMethod.Credit);
+//            hash.put("val", 0.1);
+//            hash.put("q", "%" + qry.toUpperCase() + "%");
+//            a = getFacade().findByJpql(sql, hash);
+//        }
+//        if (a == null) {
+//            a = new ArrayList<>();
+//        }
+//        return a;
+//    }
+//    
+    public List<Bill> completeOpdCreditPackageBatchBill(String qry) {
+        List<Bill> a = null;
+        String sql;
+        HashMap hash = new HashMap();
+        if (qry != null) {
+            sql = "select c from BilledBill c "
+                    + " where abs(c.netTotal)-abs(c.paidAmount)>:val "
+                    + " and c.billTypeAtomic in :btas "
+                    + " and c.paymentMethod= :pm "
+                    + " and c.cancelledBill is null "
+                    + " and c.refundedBill is null "
+                    + " and c.retired=false "
+                    + " and ((c.deptId) like :q or"
+                    + " (c.patient.person.name) like :q "
+                    + " or (c.creditCompany.name) like :q ) "
+                    + " order by c.creditCompany.name";
+            List<BillTypeAtomic> btas = new ArrayList<>();
+            btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+            btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            hash.put("btas", btas);
+            hash.put("pm", PaymentMethod.Credit);
+            hash.put("val", 0.1);
+            hash.put("q", "%" + qry.toUpperCase() + "%");
+            a = getFacade().findByJpql(sql, hash);
+        }
+        if (a == null) {
+            a = new ArrayList<>();
+        }
+        return a;
+    }
+    
     public List<Bill> completeOpdCreditBatchBill(String qry) {
         List<Bill> a = null;
         String sql;
@@ -653,16 +712,19 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (qry != null) {
             sql = "select c from BilledBill c "
                     + " where abs(c.netTotal)-abs(c.paidAmount)>:val "
-                    + " and c.billType= :btp "
+                    + " and c.billTypeAtomic in :btas "
                     + " and c.paymentMethod= :pm "
                     + " and c.cancelledBill is null "
                     + " and c.refundedBill is null "
                     + " and c.retired=false "
-                    + " and ((c.insId) like :q or"
+                    + " and ((c.deptId) like :q or"
                     + " (c.patient.person.name) like :q "
                     + " or (c.creditCompany.name) like :q ) "
                     + " order by c.creditCompany.name";
-            hash.put("btp", BillType.OpdBathcBill);
+            List<BillTypeAtomic> btas = new ArrayList<>();
+            btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+            btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            hash.put("btas", btas);
             hash.put("pm", PaymentMethod.Credit);
             hash.put("val", 0.1);
             hash.put("q", "%" + qry.toUpperCase() + "%");
