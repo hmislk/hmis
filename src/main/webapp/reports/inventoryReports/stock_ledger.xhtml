@@ -202,10 +202,10 @@
                                 <h:outputText value="#{f.createdAt}" />
                             </p:column>
                             <p:column headerText="Ref Doc No." width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.deptId}" />
                             </p:column>
                             <p:column headerText="Ref Doc Date" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.billDate}" />
                             </p:column>
                             <p:column headerText="From Store" width="5em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.fromDepartment.name}" />
