@@ -10,58 +10,106 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Closing Stock Report" >
-                        <p:panelGrid columns="6" class="w-100">
+                        <h:panelGrid columns="8" class="w-100">
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
-                                <p:outputLabel value=" Till Date" class="mx-3">
+                           <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From Date" for="fromDate" class="m-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          inputStyleClass="w-100"
-                                          class=" w-100" ></p:datePicker>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{pharmacyReportController.fromDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
 
+
+                            <p:spacer width="20"></p:spacer>
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university ml-5" />
-                                <p:outputLabel value="Institution" class="mx-3" >
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="To Date" for="toDate" class="m-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>                            
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{pharmacyReportController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+                            
+                            
+                             <p:spacer width="20"></p:spacer>  
+                            <p:spacer width="20"></p:spacer>  
+                            <p:spacer width="20"></p:spacer>  
 
+
+
+                           <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university mr-2" />
+                                <p:outputLabel value="Institution" for="phmIns" class="m-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                id="phmIns"
+                                class="w-100"
+                                value="#{pharmacyReportController.institution}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="phmIns" update="phmDept" />
+                            </p:selectOneMenu>
+
+
+                            <p:spacer width="20"></p:spacer>                            
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
-                                <p:outputLabel value="Site" class="mx-3"></p:outputLabel>
+                                <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
+                                <p:outputLabel value="Site" for="phmSite" class="m-3"></p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
+                            <p:selectOneMenu 
+                                id="phmSite"
+                                class="w-100"
+                                value="#{pharmacyReportController.site}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="phmSite" update="phmDept" />
                             </p:selectOneMenu>
 
 
 
+
+
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building ml-5" />
-                                <p:outputLabel value="Department" class="mx-3">
+                                <h:outputText styleClass="fa fa-building mr-2" />
+                                <p:outputLabel value="Department" for="phmDept" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
+                            <p:selectOneMenu 
+                                id="phmDept"
+                                class="w-100"
+                                value="#{pharmacyReportController.department}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems  value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" />
                             </p:selectOneMenu>
 
 
+                            <p:spacer width="20"></p:spacer> 
+
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-store ml-5" />
-                                <p:outputLabel value="Store" class="mx-3">
+                                <h:outputText styleClass="fa fa-store mr-2" />
+                                <p:outputLabel value="Store" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true" class="w-100 ">
@@ -72,8 +120,8 @@
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-tags ml-5" />
-                                <p:outputLabel value="Item Category" class="mx-3">
+                                <h:outputText styleClass="fa fa-tags mr-2" />
+                                <p:outputLabel value="Item Category" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true" class="w-100 ">
@@ -84,8 +132,8 @@
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-barcode ml-5" />
-                                <p:outputLabel value="Item Code" class="mx-3">
+                                <h:outputText styleClass="fa fa-barcode mr-2" />
+                                <p:outputLabel value="Item Code" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
@@ -96,8 +144,8 @@
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-box ml-5" />
-                                <p:outputLabel value="Item Name" class="mx-3">
+                                <h:outputText styleClass="fa fa-box mr-2" />
+                                <p:outputLabel value="Item Name" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
@@ -108,8 +156,8 @@
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-boxes ml-5" />
-                                <p:outputLabel value="Stock type" class="mx-3">
+                                <h:outputText styleClass="fa fa-boxes mr-2" />
+                                <p:outputLabel value="Stock type" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
@@ -120,8 +168,8 @@
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-truck ml-5" />
-                                <p:outputLabel value="Is Consignment Item" class="mx-3">
+                                <h:outputText styleClass="fa fa-truck mr-2" />
+                                <p:outputLabel value="Is Consignment Item" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
@@ -131,7 +179,7 @@
                             
                             
 
-                        </p:panelGrid>
+                        </h:panelGrid>
 
                         <div class="d-flex align-items-center">
                             <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" >
