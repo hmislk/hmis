@@ -48,6 +48,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.service.BillService;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -96,6 +97,8 @@ public class AgentAndCcPaymentController implements Serializable {
     CashTransactionBean cashTransactionBean;
     @EJB
     BillService billService;
+    @EJB
+    PaymentService paymentService;
 
     @Inject
     private BillBeanController billBean;
@@ -156,6 +159,11 @@ public class AgentAndCcPaymentController implements Serializable {
         }
 
         if (getCurrent().getPaymentMethod() == null) {
+            return true;
+        }
+        
+        if(getCurrent().getNetTotal()<=0){
+            JsfUtil.addErrorMessage("Enter a value");
             return true;
         }
 
@@ -254,9 +262,11 @@ public class AgentAndCcPaymentController implements Serializable {
             ccDepositSettlingStarted = false;
             return;
         }
-        addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
+        
+        
+//        addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
         createAndAddBillItemToCcPaymentReceiptBill();
-        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+//        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
 
         getCurrent().setTotal(getCurrent().getNetTotal());
 
@@ -292,7 +302,7 @@ public class AgentAndCcPaymentController implements Serializable {
             }
         }
 
-        List<Payment> ps = billService.createPayment(current, getCurrent().getPaymentMethod(), paymentMethodData);
+        List<Payment> ps = paymentService.createPayment(current, paymentMethodData);
 //        drawerController.updateDrawerForIns(ps); //Done through bill service
         collectingCentreApplicationController.updateCcBalance(
                 current.getFromInstitution(),
@@ -593,6 +603,7 @@ public class AgentAndCcPaymentController implements Serializable {
 
     }
 
+    @Deprecated
     public void addPaymentMethordValueToTotal(Bill b, PaymentMethod pm) {
         switch (pm) {
             case Card:

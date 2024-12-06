@@ -61,6 +61,7 @@ public class BillService {
     @EJB
     DrawerService drawerService;
 
+    @Deprecated //Please use payment service > createPaymentMethod
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData) {
         List<Payment> ps = new ArrayList<>();
         if (paymentMethodData == null) {
