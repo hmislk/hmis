@@ -11,6 +11,7 @@ import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -202,6 +203,7 @@ public class IssueReturnController implements Serializable {
         getReturnBill().copy(getBill());
 
         getReturnBill().setBillType(BillType.PharmacyIssue);
+        //getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
         getReturnBill().setBilledBill(getBill());
 
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
