@@ -2719,7 +2719,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
-        cancel1(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
+        //cancel1(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         sendSmsOnChannelCancellationBookings();
         comment = null;

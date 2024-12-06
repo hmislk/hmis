@@ -1752,6 +1752,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             tmpBillItems.add(i);
         }
         getPreBill().setBillItems(null);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
 
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
