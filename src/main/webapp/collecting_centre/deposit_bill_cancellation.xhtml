@@ -37,11 +37,12 @@
                                                        class="w-100"
                                                        value="#{agentPaymentReceiveSearchController.paymentMethod}" 
                                                        required="true"  >
+                                        <f:selectItem itemLabel="Select Payment Method"/>
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                         <p:ajax event="change" process="cmbPs" update="paymentDetails" ></p:ajax>
                                     </p:selectOneMenu>
                                     
-                                     <p:outputLabel value="Cancellation" ></p:outputLabel>
+                                     <p:outputLabel value="Repayment Details" ></p:outputLabel>
                                      <h:panelGroup id="paymentDetails">
                                         <h:panelGroup id="creditCard"  rendered="#{agentPaymentReceiveSearchController.paymentMethod eq 'Card'}">
                                             <pa:creditCard paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
@@ -52,7 +53,7 @@
                                         </h:panelGroup>
 
                                         <h:panelGroup id="slip" rendered="#{agentPaymentReceiveSearchController.paymentMethod eq 'Slip'}">
-                                            <pa:slip paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
+                                            <pa:slipDetailsAsOnlyPayment paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                        

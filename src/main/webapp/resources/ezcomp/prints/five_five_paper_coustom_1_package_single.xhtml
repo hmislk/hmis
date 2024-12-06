@@ -118,9 +118,9 @@
                     </div>
                 </div>
                 <div class="d-flex">
-                    <div class="col-3"><h:outputLabel value="Payment" ></h:outputLabel></div>
+                    <div class="col-3"><h:outputLabel value="To Department" ></h:outputLabel></div>
                     <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
-                    <div class="col-7"><h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/></div>
+                    <div class="col-7"><h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"/></div>
                 </div>
                 <h:panelGroup  rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}">
                     <div class="d-flex">
