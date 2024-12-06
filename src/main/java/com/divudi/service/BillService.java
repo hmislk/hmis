@@ -1,6 +1,5 @@
 package com.divudi.service;
 
-import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
@@ -29,7 +28,6 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Payment;
-import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;

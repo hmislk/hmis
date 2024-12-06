@@ -99,6 +99,7 @@ import com.divudi.facade.StaffFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.ProfessionalPaymentService;
 import com.divudi.service.StaffService;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -179,6 +180,8 @@ public class BillSearch implements Serializable {
     private PatientFacade patientFacade;
     @EJB
     BillService billService;
+    @EJB
+    ProfessionalPaymentService professionalPaymentService;
     /**
      * Controllers
      */
@@ -2090,19 +2093,6 @@ public class BillSearch implements Serializable {
 
     }
 
-    private boolean checkPaid() {
-        String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBill().getId();
-        List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
-
-        for (BillFee f : tempFe) {
-            if (f.getPaidValue() != 0.0) {
-                return true;
-            }
-
-        }
-        return false;
-    }
-
     private boolean checkPaidIndividual(BillItem bi) {
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
         List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
@@ -2244,11 +2234,6 @@ public class BillSearch implements Serializable {
             return true;
         }
 
-        if (checkPaid()) {
-            JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
-            return true;
-        }
-
         if (getBill().getBillType() == BillType.LabBill) {
             if (patientInvestigation.getCollected()) {
                 JsfUtil.addErrorMessage("You can't cancell this bill. Sample is already taken");
@@ -2330,6 +2315,11 @@ public class BillSearch implements Serializable {
         if (errorsPresentOnOpdBillCancellation()) {
             return;
         }
+        
+        if(professionalPaymentService.isProfessionalFeePaid(bill)){
+            JsfUtil.addErrorMessage("Payments are already made to Staff or Outside Institute. Please cancel them first before cancelling the bill.");
+            return;
+        }
 
         if (paymentMethod == PaymentMethod.PatientDeposit) {
 //            if (getBill().getPatient().getHasAnAccount() == null) {
@@ -2342,6 +2332,8 @@ public class BillSearch implements Serializable {
 //            }
         }
 
+        
+        
         if (paymentMethod == PaymentMethod.Staff) {
             if (getBill().getToStaff() == null) {
                 JsfUtil.addErrorMessage("Can't Select Staff Method");
