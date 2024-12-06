@@ -120,7 +120,7 @@ public class ChannelService {
     ConfigOptionApplicationController configOptionApplicationController;
 
 
-    @PermitAll
+    @PermitAll //TODO: Fix this to appropriate roles .
     public void retireNonSettledOnlineBills() {
         String jpql = "select b "
                 + " from Bill b "
