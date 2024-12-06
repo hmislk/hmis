@@ -260,6 +260,11 @@ public class ChannelBookingController implements Serializable, ControllerWithPat
         patientDetailsEditable = !patientDetailsEditable;
     }
 
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
+
     
     
     
