@@ -808,13 +808,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public String settleCcBill() {
-
         if (errorCheck()) {
             return "";
         }
         savePatient();
         calTotals();
-
         Bill ccBill = createCcBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment());
         if (ccBill == null) {
             return "";
@@ -823,7 +821,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         for (BillEntry billEntry : getLstBillEntries()) {
             list.add(saveCcBillItem(ccBill, billEntry, getSessionController().getLoggedUser()));
         }
-
         ccBill.setBillItems(list);
         ccBill.setBillTotal(ccBill.getNetTotal());
         ccBill.setIpOpOrCc("CC");
