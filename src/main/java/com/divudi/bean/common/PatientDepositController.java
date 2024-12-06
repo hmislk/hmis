@@ -586,6 +586,11 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         this.latestPatientDepositHistory = latestPatientDepositHistory;
     }
 
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
+
     /**
      *
      */

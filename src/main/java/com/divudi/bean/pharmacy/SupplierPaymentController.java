@@ -514,6 +514,7 @@ public class SupplierPaymentController implements Serializable {
         getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.BilledBill, BillNumberSuffix.CRDPAY));
 
         getCurrent().setBillType(billType);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT);
 
         getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());

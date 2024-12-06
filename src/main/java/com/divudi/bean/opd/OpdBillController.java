@@ -2841,9 +2841,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Please set Category to Item");
             return;
         }
+        
         if (getCurrentBillItem().getItem().getPriority() != null) {
             getCurrentBillItem().setPriority(getCurrentBillItem().getItem().getPriority());
         }
+
+        if(getCurrentBillItem().getItem().isRequestForQuentity()){
+            if (getCurrentBillItem().getQty() == null || getCurrentBillItem().getQty() == 0.0) {
+                JsfUtil.addErrorMessage("Quentity is Missing ..! ");
+                return;
+            }
+        }
+        
         if (getCurrentBillItem().getQty() == null) {
             getCurrentBillItem().setQty(1.0);
         }
@@ -2853,6 +2862,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 return;
             }
         }
+        
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
         bi.setSessionDate(sessionDate);
@@ -3757,12 +3767,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     }
 
+    @Override
     public void listnerForPaymentMethodChange() {
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
-            if (pd.getId() != null) {
+            if (pd!=null && pd.getId() != null) {
                 getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
                 getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
             }
@@ -4087,6 +4098,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    @Override
     public PaymentMethod getPaymentMethod() {
         if (!sessionController.getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
             if (paymentMethod != PaymentMethod.Cash) {
@@ -4099,6 +4111,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return paymentMethod;
     }
 
+    @Override
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }

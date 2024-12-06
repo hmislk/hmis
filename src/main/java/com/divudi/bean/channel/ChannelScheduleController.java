@@ -1021,6 +1021,12 @@ public class ChannelScheduleController implements Serializable {
             JsfUtil.addErrorMessage("Can't save session without session endtime !");
             return;
         }
+        
+        if (current.getDepartment() == null) {
+            JsfUtil.addErrorMessage("Can't save session without a department !");
+            return;
+        }
+
 
         if (current.getSessionStartingNumber() != null) {
             if (!current.getSessionStartingNumber().trim().equals("")) {

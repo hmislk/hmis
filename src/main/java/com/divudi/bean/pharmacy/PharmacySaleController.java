@@ -1752,6 +1752,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             tmpBillItems.add(i);
         }
         getPreBill().setBillItems(null);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
 
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
@@ -2995,6 +2996,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void setCounter(Department counter) {
         this.counter = counter;
+    }
+
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
     }
 
 }

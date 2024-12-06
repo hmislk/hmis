@@ -1470,4 +1470,9 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         this.patientDetailsEditable = patientDetailsEditable;
     }
 
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
+
 }
