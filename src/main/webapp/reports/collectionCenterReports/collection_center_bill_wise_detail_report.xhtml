@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -7,361 +8,472 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
-    <h:body>
-        <ui:composition template="/reports/index.xhtml">
-            <ui:define name="subcontent">
+<h:body>
+    <ui:composition template="/reports/index.xhtml">
+        <ui:define name="subcontent">
 
-                <h:form >
-                    <p:panel header="Collection Center Bill Wise Detail Report" styleClass="w-100">
+            <h:form>
+                <p:panel header="Collection Center Bill Wise Detail Report" styleClass="w-100">
 
-                        <p:panelGrid columns="4" styleClass="" columnClasses="col-md-2, col-md-4, col-md-2, col-md-4">
-                            <h:panelGroup >
-                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
-                                <h:outputLabel value="From Date"  class="mx-3"/>
-                            </h:panelGroup>
-                            <p:calendar
+                    <p:panelGrid columns="4" styleClass="" columnClasses="col-md-2, col-md-4, col-md-2, col-md-4">
+                        <h:panelGroup>
+                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
+                            <h:outputLabel value="From Date" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:calendar
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="fromDate"
-                                value="#{searchController.fromDate}"
+                                value="#{reportsController.fromDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                />
+                        />
 
-
-                            <h:panelGroup >
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
-                                <h:outputLabel value="To Date"  class="mx-3"/>
-                            </h:panelGroup>
-                            <p:calendar
+                        <h:panelGroup>
+                            <h:outputText value="&#xf073;" styleClass="fa mr-2"/> <!-- FontAwesome calendar icon -->
+                            <h:outputLabel value="To Date" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:calendar
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="toDate"
-                                value="#{searchController.toDate}"
+                                value="#{reportsController.toDate}"
                                 navigator="false"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                />
+                        />
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
-                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
+                            <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
                                 id="cmbIns"
-                                styleClass="w-100 form-control" 
-                                value="#{searchController.institution}" 
+                                styleClass="w-100 form-control"
+                                value="#{reportsController.institution}"
                                 filter="true">
-                                <f:selectItem itemLabel="All Institutions" />
-                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                <p:ajax process="cmbIns" update="cmbDept" />
-                            </p:selectOneMenu>
+                            <f:selectItem itemLabel="All Institutions"/>
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                           itemValue="#{ins}"/>
+                            <p:ajax process="cmbIns" update="cmbDept"/>
+                        </p:selectOneMenu>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
-                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
+                            <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
                                 id="siteMenu"
-                                styleClass="w-100 form-control"  
-                                value="#{searchController.site}" 
+                                styleClass="w-100 form-control"
+                                value="#{reportsController.site}"
                                 filter="true">
-                                <f:selectItem itemLabel="All Sites" />
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                <p:ajax process="siteMenu" update="cmbDept" />
-                            </p:selectOneMenu>
+                            <f:selectItem itemLabel="All Sites"/>
+                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                           itemValue="#{site}"/>
+                            <p:ajax process="siteMenu" update="cmbDept"/>
+                        </p:selectOneMenu>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
-                            </h:panelGroup>
-                            <h:panelGroup id="cmbDept">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
+                            <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="cmbDept">
 
-                                <!-- Component 1: Without Institution and Site -->
-                                <p:selectOneMenu
-                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                            <!-- Component 1: Without Institution and Site -->
+                            <p:selectOneMenu
+                                    rendered="#{reportsController.institution eq null and reportsController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
+                                    value="#{reportsController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
                                         value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
                                         var="d"
                                         itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
-
-                                <!-- Component 2: With Site Only -->
-                                <p:selectOneMenu
-                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
-                                        var="d"
-                                        itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
-
-                                <!-- Component 3: With Institution Only -->
-                                <p:selectOneMenu
-                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
-                                        var="d"
-                                        itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
-
-                                <!-- Component 4: With Both Institution and Site -->
-                                <p:selectOneMenu
-                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
-                                        var="d"
-                                        itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
-
-                                <p:selectOneMenu
-                                    rendered="false"
-                                    styleClass="w-100 form-control"  
-                                    value="#{searchController.department}" 
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
-                                        var="d" 
-                                        itemLabel="#{d.name}" 
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
-                            </h:panelGroup>
-
-                            <h:panelGroup >
-                                <h:outputText value="&#xf543;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Invoice No"  class="mx-3"/>
-                                <p:outputLabel  />
-                            </h:panelGroup>
-                            <p:inputText class="w-100" placeholder="Enter Invoice No"></p:inputText>
-
-                            <h:panelGroup >
-                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Agent Name/Code"  class="mx-3"/>
-                                <p:outputLabel  />
-                            </h:panelGroup>
-                            <p:autoComplete 
-                                placeholder="Enter Agent Name or Code"
-                                converter="deal" 
-                                forceSelection="true" id="acColl"
-                                completeMethod="#{institutionController.completeCollectingCenter}" 
-                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" 
-                                maxResults="15"
-                                class="w-100 mb-1"
-                                inputStyleClass="form-control">
-                                <p:column style="padding: 6px;">#{vt.code}</p:column>
-                                <p:column style="padding: 6px;">#{vt.name}</p:column>
-                            </p:autoComplete>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf15b;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Report Type" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu class="w-100 ">
-                                <f:selectItem itemValue="" itemLabel="Report"/>
-                                <f:selectItem itemValue="" itemLabel="Summary With Letter"/>
-                                <f:selectItem itemValue="" itemLabel="Summary With Letter and Test Name"/>
+                                        itemValue="#{d}"/>
                             </p:selectOneMenu>
 
-                        </p:panelGrid>
-                        <h:panelGrid columns="6">
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Process" 
+                            <!-- Component 2: With Site Only -->
+                            <p:selectOneMenu
+                                    rendered="#{reportsController.institution eq null and reportsController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                            </p:selectOneMenu>
+
+                            <!-- Component 3: With Institution Only -->
+                            <p:selectOneMenu
+                                    rendered="#{reportsController.institution ne null and reportsController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(reportsController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                            </p:selectOneMenu>
+
+                            <!-- Component 4: With Both Institution and Site -->
+                            <p:selectOneMenu
+                                    rendered="#{reportsController.institution ne null and reportsController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.institution, reportsController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                            </p:selectOneMenu>
+
+                            <p:selectOneMenu
+                                    rendered="false"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.institution, reportsController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+
+                        <h:panelGroup>
+                            <h:outputText value="&#xf543;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Invoice No" class="mx-3"/>
+                            <p:outputLabel/>
+                        </h:panelGroup>
+                        <p:inputText class="w-100" placeholder="Enter Invoice No"
+                                     value="#{reportsController.invoiceNumber}"/>
+
+                        <h:panelGroup>
+                            <h:outputText value="&#xf1ad;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
+                            <h:outputLabel value="Agent Name/Code" class="mx-3"/>
+                            <p:outputLabel/>
+                        </h:panelGroup>
+                        <p:autoComplete
+                                placeholder="Enter Agent Name or Code"
+                                converter="deal"
+                                forceSelection="true" id="acColl"
+                                completeMethod="#{institutionController.completeCollectingCenter}"
+                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"
+                                maxResults="15"
+                                value="#{reportsController.collectingCentre}"
+                                class="w-100 mb-1"
+                                inputStyleClass="form-control">
+                            <p:column style="padding: 6px;">#{vt.code}</p:column>
+                            <p:column style="padding: 6px;">#{vt.name}</p:column>
+                        </p:autoComplete>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf15b;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Report Type" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu class="w-100 " value="#{reportsController.reportType}">
+                            <f:selectItem itemValue="Report" itemLabel="Report"/>
+                            <f:selectItem itemValue="SummaryWithLetter" itemLabel="Summary With Letter"/>
+                            <f:selectItem itemValue="SummaryWithLetterAndTestName"
+                                          itemLabel="Summary With Letter and Test Name"/>
+                        </p:selectOneMenu>
+
+                    </p:panelGrid>
+                    <h:panelGrid columns="6">
+                        <p:commandButton
+                                ajax="false"
+                                value="Process"
+                                action="#{reportsController.generateCollectionCenterBillWiseDetailReport()}"
                                 style="width: 150px"
                                 icon="fas fa-cogs"
                                 class="m-2 ui-button-warning">
 
-                            </p:commandButton>
+                        </p:commandButton>
 
-                            <p:commandButton 
+                        <p:commandButton
                                 icon="fa-solid fa-print"
                                 class="m-2 ui-button-info"
                                 style="width: 150px"
-                                ajax="false" 
+                                ajax="false"
                                 value="Print">
-                                <p:printer target="tblExport" />
-                            </p:commandButton>
-                            <p:commandButton 
-                                class="m-2 ui-button-success" 
+                            <p:printer target="tblExport"/>
+                        </p:commandButton>
+                        <p:commandButton
+                                class="m-2 ui-button-success"
                                 style="width: 150px"
                                 icon="fas fa-file-excel"
-                                ajax="false" 
+                                ajax="false"
                                 value="Excel">
-                                <p:dataExporter type="xlsx" target="tblExport"  fileName="collection_center_bill_wise_detail_report.pdf.xlsx" ></p:dataExporter>
-                            </p:commandButton>
+                            <p:dataExporter type="xlsx" target="tblExport"
+                                            fileName="collection_center_bill_wise_detail_report.pdf.xlsx"/>
+                        </p:commandButton>
 
-                            <p:commandButton 
-                                class="m-2 ui-button-danger" 
+                        <p:commandButton
+                                class="m-2 ui-button-danger"
                                 icon="fa-solid fa-file-pdf"
                                 style="width: 150px"
-                                ajax="false" 
+                                ajax="false"
                                 value="PDF">
-                                <p:dataExporter type="pdf" target="tblExport"  fileName="collection_center_bill_wise_detail_report.pdf" ></p:dataExporter>
-                            </p:commandButton>
+                            <p:dataExporter type="pdf" target="tblExport"
+                                            fileName="collection_center_bill_wise_detail_report.pdf"/>
+                        </p:commandButton>
 
-                        </h:panelGrid>
+                    </h:panelGrid>
 
-                        <h:panelGrid  columns="2" class="my-3">
-                            <h:outputLabel value="From Date :  "/>
-                            <h:outputLabel value="#{reportController.fromDate}"  >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
+                    <h:panelGrid columns="2" class="my-3">
+                        <h:outputLabel value="From Date :  "/>
+                        <h:outputLabel value="#{reportsController.fromDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                        </h:outputLabel>
 
-                            <h:outputLabel value="To Date :  "/>
-                            <h:outputLabel value="#{reportController.toDate}"  >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
-                        </h:panelGrid>
+                        <h:outputLabel value="To Date :  "/>
+                        <h:outputLabel value="#{reportsController.toDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                        </h:outputLabel>
+                    </h:panelGrid>
 
-                        <!--table 1 / report type - report-->
-                        <p:dataTable 
-                            id="tblExport" 
-                            paginator="true" 
-                            paginatorPosition="bottom"
+                    <p:dataTable
+                            id="tblExport"
+                            value="#{reportsController.bundle.groupedBillItems.entrySet()}"
                             rows="10"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="10,25,50">
-                            <p:column headerText="CC Code" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Leaf No" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="MRN" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Patient Name" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Invoice Date" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Invoice No" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            
-                        </p:dataTable>
-
-
-                        <Br/>
-                        <Br/>
-                        <Br/>
-                        <Br/>
-                        <!--table 2 / report type - Summary With Letter-->
-                        <p:dataTable 
-                            id="tblExport2" 
-                            paginator="true" 
+                            var="entry"
+                            rowKey="#{entry.key}"
+                            paginator="true"
                             paginatorPosition="bottom"
-                            rows="10"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rendered="#{reportsController.reportType eq 'Report'}"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="10,25,50">
 
-                            <f:facet name="header">
-                                <h:outputText value="SETTLEMENT OF INVESTIGATION BILL" 
-                                              style="font-size: 18px; font-weight: bold; text-align: center; display: block;" />
+                        <p:column headerText="CC Code" width="5rem">
+                            <h:outputText value="#{entry.value[0].bill.collectingCentre.code}"
+                                          rendered="#{not empty entry.value}"/>
+                        </p:column>
+                        <p:column headerText="Leaf No." width="5rem">
+                            <h:outputText value="#{entry.value[0].bill.referenceNumber}"
+                                          rendered="#{not empty entry.value}"/>
+                        </p:column>
+                        <p:column headerText="MRN" width="5rem">
+                            <h:outputText value="#{entry.value[0].bill.patient.phn}"
+                                          rendered="#{not empty entry.value}"/>
+                        </p:column>
+                        <p:column headerText="Patient Name" width="5rem">
+                            <h:outputText value="#{entry.value[0].bill.patient.person.name}"
+                                          rendered="#{not empty entry.value}"/>
+                        </p:column>
+                        <p:column headerText="Invoice Date" width="7rem">
+                            <h:outputText value="#{entry.value[0].bill.createdAt}" rendered="#{not empty entry.value}">
+                                <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Invoice No" width="10rem">
+                            <h:outputText value="#{entry.key}"/>
+                        </p:column>
+                        <p:column headerText="Details" width="40rem">
+                            <p:accordionPanel activeIndex="-1">
+                                <p:tab title="">
+                                    <p:dataTable value="#{entry.value}" var="bi" rowKey="#{bi.id}">
+                                        <p:column headerText="Service Name" width="5rem">
+                                            <h:outputText value="#{bi.item.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Hos Fee." width="5rem">
+                                            <h:outputText value="#{bi.hospitalFee}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{entry.value[0].bill.totalHospitalFee}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column headerText="Staff fee." width="5rem">
+                                            <h:outputText value="#{bi.staffFee}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{entry.value[0].bill.totalStaffFee}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column headerText="CC fee." width="5rem">
+                                            <h:outputText value="#{bi.collectingCentreFee}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{entry.value[0].bill.totalCenterFee}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column headerText="Net Amount" width="5rem">
+                                            <h:outputText value="#{bi.netValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{entry.value[0].bill.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:tab>
+                            </p:accordionPanel>
+                        </p:column>
+                    </p:dataTable>
+
+                    <!--table 2 / report type - Summary With Letter-->
+                    <p:dataTable
+                            id="tblExport2"
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            rows="10"
+                            var="row"
+                            rowIndexVar="b"
+                            value="#{reportsController.bundle.reportTemplateRows}"
+                            rendered="#{reportsController.reportType eq 'SummaryWithLetter'}"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="10,25,50">
+
+                        <f:facet name="header">
+                            <h:outputText value="SETTLEMENT OF INVESTIGATION BILL"
+                                          style="font-size: 18px; font-weight: bold; text-align: center; display: block;"/>
+                        </f:facet>
+
+                        <p:column headerText="S.No" width="3rem">
+                            <h:outputText value="#{b+1}"/>
+                        </p:column>
+                        <p:column headerText="Bill No (Invoice No)" width="5rem">
+                            <h:outputText value="#{row.billItem.bill.deptId}"/>
+                        </p:column>
+                        <p:column headerText="Ref No (Leaf No)" width="5rem">
+                            <h:outputText value="#{row.billItem.bill.referenceNumber}"/>
+                        </p:column>
+                        <p:column headerText="Bill Date" width="5rem">
+                            <h:outputText value="#{row.billItem.bill.createdAt}">
+                                <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Patient Name" width="5rem">
+                            <h:outputText value="#{row.billItem.bill.patient.person.name}"/>
+                        </p:column>
+                        <p:column headerText="Hospital Fee" width="5rem">
+                            <h:outputText value="#{row.billItem.hospitalFee}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{reportsController.bundle.hospitalTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                             </f:facet>
+                        </p:column>
+                        <p:column headerText="Professional Fee" width="5rem">
+                            <h:outputText value="#{row.billItem.staffFee}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{reportsController.bundle.staffTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Net Amount" width="5rem">
+                            <h:outputText value="#{row.billItem.netValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{reportsController.bundle.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+                    </p:dataTable>
 
-                            <p:column headerText="S.No" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Bill No (Invoice No)" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Ref No (Leaf No)" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Bill Date" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Patient Name" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Hospital Fee" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Professional Fee" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Net Amount" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                        </p:dataTable>
-
-                        <Br/>
-                        <Br/>
-                        <Br/>
-                        <Br/>
-                        <!--table 3 / report type - Summary With Letter and Test Name-->
-                        <p:dataTable 
-                            id="tblExport3" 
-                            paginator="true" 
+                    <!--table 3 / report type - Summary With Letter and Test Name-->
+                    <p:dataTable
+                            id="tblExport3"
+                            paginator="true"
                             paginatorPosition="bottom"
+                            value="#{reportsController.bundle.reportTemplateRows}"
                             rows="10"
+                            var="row"
+                            rowIndexVar="b"
+                            rendered="#{reportsController.reportType eq 'SummaryWithLetterAndTestName'}"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="10,25,50">
 
-                            <f:facet name="header">
-                                <h:outputText value="SETTLEMENT OF INVESTIGATION BILL" 
-                                              style="font-size: 18px; font-weight: bold; text-align: center; display: block;" />
+                        <f:facet name="header">
+                            <h:outputText value="SETTLEMENT OF INVESTIGATION BILL"
+                                          style="font-size: 18px; font-weight: bold; text-align: center; display: block;"/>
+                        </f:facet>
+
+                        <p:column headerText="S.No" width="3rem">
+                            <h:outputText value="#{b+1}"/>
+                        </p:column>
+                        <p:column headerText="Bill No (Invoice No)" width="5rem">
+                            <h:outputText value="#{row.billItem.bill.deptId}"/>
+                        </p:column>
+                        <p:column headerText="Ref No (Leaf No)" width="5rem">
+                            <h:outputText value="#{row.billItem.bill.referenceNumber}"/>
+                        </p:column>
+                        <p:column headerText="Bill Date" width="5rem">
+                            <h:outputText value="#{row.billItem.bill.createdAt}">
+                                <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Patient Name" width="5rem">
+                            <h:outputText value="#{row.billItem.bill.patient.person.name}"/>
+                        </p:column>
+                        <p:column headerText="Test Name" width="5rem">
+                            <h:outputText value="#{row.billItem.item.name}"/>
+                        </p:column>
+                        <p:column headerText="Hospital Fee" width="5rem">
+                            <h:outputText value="#{row.billItem.hospitalFee}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{reportsController.bundle.hospitalTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                             </f:facet>
-
-                            <p:column headerText="S.No" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Bill No (Invoice No)" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Ref No (Leaf No)" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Bill Date" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Patient Name" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Test Name" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Hospital Fee" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Professional Fee" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                            <p:column headerText="Net Amount" width="5rem">
-                                <h:outputText></h:outputText>
-                            </p:column>
-                        </p:dataTable>
-
-                    </p:panel>
-
-                </h:form>
-
-            </ui:define>
-        </ui:composition>
-
-    </h:body>
+                        </p:column>
+                        <p:column headerText="Professional Fee" width="5rem">
+                            <h:outputText value="#{row.billItem.staffFee}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{reportsController.bundle.staffTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Net Amount" width="5rem">
+                            <h:outputText value="#{row.billItem.netValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{reportsController.bundle.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
 </html>
