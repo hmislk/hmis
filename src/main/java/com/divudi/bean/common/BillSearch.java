@@ -1676,6 +1676,13 @@ public class BillSearch implements Serializable {
                 return "";
             }
         }
+        
+        if (paymentMethod == PaymentMethod.Staff_Welfare) {
+            if (getBill().getToStaff() == null) {
+                JsfUtil.addErrorMessage("Can't Select Staff Welfare Method");
+                return "";
+            }
+        }
 
         if (refundingBill.getBillItems() != null) {
             for (BillItem refundingBillItemTmp : refundingBill.getBillItems()) {
@@ -2338,6 +2345,13 @@ public class BillSearch implements Serializable {
         if (paymentMethod == PaymentMethod.Staff) {
             if (getBill().getToStaff() == null) {
                 JsfUtil.addErrorMessage("Can't Select Staff Method");
+                return;
+            }
+        }
+        
+        if (paymentMethod == PaymentMethod.Staff_Welfare) {
+            if (getBill().getToStaff() == null) {
+                JsfUtil.addErrorMessage("Can't Select Staff Welfare Method");
                 return;
             }
         }
