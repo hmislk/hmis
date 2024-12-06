@@ -598,17 +598,19 @@
                                                 <p:inputText 
                                                     rendered="#{opdBillController.currentBillItem.item.requestForQuentity}"
                                                     id="txtQty"
+                                                    placeholder="Quentity"
+                                                    onfocus="this.select();"
                                                     autocomplete="off" 
-                                                    class="w-100 m-1"
+                                                    class="w-100 mb-2"
                                                     value="#{opdBillController.currentBillItem.qty}" >
-                                                    <f:convertNumber pattern="#" ></f:convertNumber>
+                                                    <f:convertNumber pattern="#0.0" ></f:convertNumber>
                                                 </p:inputText>
                                             </h:panelGrid>
                                             <p:commandButton 
                                                 id="btnAddIx" 
                                                 value="Add" 
                                                 icon="fa fa-plus"
-                                                class="w-100 mx-1 ui-button-success"
+                                                class="w-100 ui-button-success"
                                                 action="#{opdBillController.addToBill()}"  
                                                 process="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
                                                 update=" msg tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty focusLstIx :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}  :#{p:resolveFirstComponentWithId('patientDeposit',view).clientId} :#{p:resolveFirstComponentWithId('txtVal',view).clientId}">
@@ -659,8 +661,6 @@
                                                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                                     </h:outputText>
 
-
-
                                                                 </f:facet>
                                                                 <p:column headerText="No.">
                                                                     <h:outputText value="#{bs.serialNo}" />
@@ -681,7 +681,7 @@
                                                 id="btnRefreshItemLight"
                                                 value="Refresh"
                                                 icon="fas fa-refresh"
-                                                class="w-100 mx-1 mt-5 ui-button-warning"
+                                                class="w-100 mt-5 ui-button-warning"
                                                 action="#{opdBillController.fillDepartmentOpdItems()}"
                                                 process="btnRefreshItemLight"
                                                 update="acIx departments"
@@ -965,9 +965,22 @@
                                                             </td>
 
                                                             <td >
-                                                                <p:inputText class="m-2" id="txtFeeBundleqty" value="#{billFeeBundleEntry.selectedBillFee.billItem.qty}" style="width:6em;">
-                                                                    <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                                                <p:inputText 
+                                                                    class="m-2" 
+                                                                    onfocus="this.select();"
+                                                                    id="txtFeeBundleqty" 
+                                                                    value="#{billFeeBundleEntry.selectedBillFee.billItem.qty}" 
+                                                                    style="width:6em;" 
+                                                                    rendered="#{billFeeBundleEntry.selectedBillFee.billItem.item.requestForQuentity}">
+                                                                    <f:convertNumber pattern="##0.0" ></f:convertNumber>
                                                                 </p:inputText>
+                                                                <p:outputLabel 
+                                                                    id="lblFeeTotal" 
+                                                                    value="#{billFeeBundleEntry.selectedBillFee.billItem.qty}" 
+                                                                    style="width:6em;" 
+                                                                    rendered="#{!billFeeBundleEntry.selectedBillFee.billItem.item.requestForQuentity}">
+                                                                    <f:convertNumber pattern="#,##0.0" ></f:convertNumber>
+                                                                </p:outputLabel>
                                                             </td>
 
                                                             <td>
