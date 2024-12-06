@@ -193,11 +193,8 @@
                                 <h:outputText value="#{f.pbItem.billItem.item.issueUnit}" />
                             </p:column>
                             <p:column headerText="Transaction Type" width="8em">
-<h:outputText>
-        <span style="#{f.pbItem.transThisIsStockIn ? 'color: green; font-weight: bold;' : 'color: red; font-weight: bold;'}">
-            #{f.pbItem.transThisIsStockIn ? 'STOCK IN' : 'STOCK OUT'}
-        </span>
-    </h:outputText>                            </p:column>
+                                <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? 'STOCK IN' : 'STOCK OUT'}" />
+                            </p:column>
                             <p:column headerText="Doc No." width="10em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.deptId}" />
                             </p:column>
