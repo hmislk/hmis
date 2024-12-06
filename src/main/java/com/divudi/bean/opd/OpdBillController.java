@@ -1892,8 +1892,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         BilledBill newBatchBill = new BilledBill();
 
         if (oneOpdBillForAllDepartments) {
-            Bill newSingleBill;
-            newSingleBill = saveBill(sessionController.getDepartment(), newBatchBill);
+            Bill newSingleBill=new BilledBill();
+            newSingleBill = saveBill(sessionController.getDepartment(), newSingleBill);
             if (newSingleBill == null) {
                 return false;
             }
@@ -2158,6 +2158,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setFromInstitution(sessionController.getInstitution());
         newBatchBill.setFromDepartment(sessionController.getDepartment());
         newBatchBill.setPatient(patient);
+        newBatchBill.setCreditCompany(creditCompany);
         newBatchBill.setIpOpOrCc("OP");
         newBatchBill.setInsId(
                 getBillNumberGenerator().institutionBillNumberGenerator(

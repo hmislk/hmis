@@ -675,6 +675,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 //    }
 //    
     public List<Bill> completeOpdCreditPackageBatchBill(String qry) {
+        System.out.println("completeOpdCreditPackageBatchBill");
         List<Bill> a = null;
         String sql;
         HashMap hash = new HashMap();
@@ -697,7 +698,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             hash.put("pm", PaymentMethod.Credit);
             hash.put("val", 0.1);
             hash.put("q", "%" + qry.toUpperCase() + "%");
+            System.out.println("qry = " + qry);
+            System.out.println("hash = " + hash);
             a = getFacade().findByJpql(sql, hash);
+            System.out.println("a = " + a);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -706,11 +710,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
     
     public List<Bill> completeOpdCreditBatchBill(String qry) {
+        System.out.println("completeOpdCreditBatchBill");
         List<Bill> a = null;
-        String sql;
-        HashMap hash = new HashMap();
+        String jpql;
+        HashMap params = new HashMap();
         if (qry != null) {
-            sql = "select c from BilledBill c "
+            jpql = "select c from BilledBill c "
                     + " where abs(c.netTotal)-abs(c.paidAmount)>:val "
                     + " and c.billTypeAtomic in :btas "
                     + " and c.paymentMethod= :pm "
@@ -724,11 +729,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             List<BillTypeAtomic> btas = new ArrayList<>();
             btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            hash.put("btas", btas);
-            hash.put("pm", PaymentMethod.Credit);
-            hash.put("val", 0.1);
-            hash.put("q", "%" + qry.toUpperCase() + "%");
-            a = getFacade().findByJpql(sql, hash);
+            params.put("btas", btas);
+            params.put("pm", PaymentMethod.Credit);
+            params.put("val", 0.1);
+            params.put("q", "%" + qry.toUpperCase() + "%");
+            a = getFacade().findByJpql(jpql, params);
+            System.out.println("jpql = " + jpql);
+            System.out.println("params = " + params);
+            System.out.println("a = " + a);
         }
         if (a == null) {
             a = new ArrayList<>();
