@@ -2670,6 +2670,11 @@ public class ReportController implements Serializable {
         return "/reports/financialReports/cash_inward_excess?faces-redirect=true";
     }
 
+    public String navigateToExcessAge() {
+
+        return "/reports/financialReports/cash_inward_excess_age?faces-redirect=true";
+    }
+
     public String navigateToOutsidePayment() {
 
         return "/reports/financialReports/outside_payment?faces-redirect=true";
