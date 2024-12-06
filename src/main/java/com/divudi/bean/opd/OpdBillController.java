@@ -2840,9 +2840,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Please set Category to Item");
             return;
         }
+        
         if (getCurrentBillItem().getItem().getPriority() != null) {
             getCurrentBillItem().setPriority(getCurrentBillItem().getItem().getPriority());
         }
+
+        if(getCurrentBillItem().getItem().isRequestForQuentity()){
+            if (getCurrentBillItem().getQty() == null || getCurrentBillItem().getQty() == 0.0) {
+                JsfUtil.addErrorMessage("Quentity is Missing ..! ");
+                return;
+            }
+        }
+        
         if (getCurrentBillItem().getQty() == null) {
             getCurrentBillItem().setQty(1.0);
         }
@@ -2852,6 +2861,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 return;
             }
         }
+        
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
         bi.setSessionDate(sessionDate);
