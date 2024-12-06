@@ -835,7 +835,10 @@
                                                         layout="block" 
                                                         id="multiplePaymentMethods"  rendered="#{billPackageController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                         >
-                                                        <pa:multiple_payment_methods controller="#{billPackageController}" class="w-100"/>
+                                                        <pa:multiple_payment_methods 
+                                                            paymentMethods="#{enumController.paymentMethodsForPackageBilling}"
+                                                            controller="#{billPackageController}" 
+                                                            class="w-100"/>
 
                                                     </h:panelGroup>
 
