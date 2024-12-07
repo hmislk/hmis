@@ -244,12 +244,12 @@ public class CashBookEntryController implements Serializable {
                 + " from CashBookEntry cbe "
                 + " where cbe.retired = :ret "
                 + " and cbe.fromSite.id = :siteId"
-                + " and cbe.createdAt > :ed"
-                + " order by cbe.id";
+                + " and cbe.createdAt < :st"
+                + " order by cbe.id desc";
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("siteId", site.getId());
-        params.put("ed", CommonFunctions.getStartOfDay(date));
+        params.put("st", CommonFunctions.getStartOfDay(date));
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
         CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -266,12 +266,14 @@ public class CashBookEntryController implements Serializable {
                 + " from CashBookEntry cbe "
                 + " where cbe.retired = :ret "
                 + " and cbe.fromSite.id = :siteId"
-                + " and cbe.createdAt > :ed"
-                + " order by cbe.id";
+                + " and cbe.createdAt < :st"
+                + " order by cbe.id desc";
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("siteId", site.getId());
-        params.put("ed", CommonFunctions.getStartOfDay(date));
+        params.put("st", CommonFunctions.getStartOfDay(date));
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
         CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
         PaymentMethod paymentMethod;
         try {
@@ -337,18 +339,20 @@ public class CashBookEntryController implements Serializable {
         }
         return null;
     }
-    
+
     public Double fetchEndingBalanceForFromSite(Date date, Institution site, String paymentMethodStr) {
         String jpql = "select cbe "
                 + " from CashBookEntry cbe "
                 + " where cbe.retired = :ret "
                 + " and cbe.fromSite.id = :siteId"
-                + " and cbe.createdAt > :ed"
-                + " order by cbe.id";
+                + " and cbe.createdAt < :et"
+                + " order by cbe.id desc";
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("siteId", site.getId());
-        params.put("ed", CommonFunctions.getStartOfDay(date));
+        params.put("et", CommonFunctions.getEndOfDay(date));
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
         CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
         PaymentMethod paymentMethod;
         try {
@@ -420,14 +424,12 @@ public class CashBookEntryController implements Serializable {
                 + " from CashBookEntry cbe "
                 + " where cbe.retired = :ret "
                 + " and cbe.fromSite.id = :siteId"
-                + " and cbe.createdAt > :sd"
-                + " and cbe.createdAt < :ed"
+                + " and cbe.createdAt < :et"
                 + " order by cbe.id desc";
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("siteId", site.getId());
-        params.put("ed", CommonFunctions.getEndOfDay(date));
-        params.put("sd", CommonFunctions.getStartOfDay(date));
+        params.put("et", CommonFunctions.getEndOfDay(date));
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
         CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -457,8 +459,8 @@ public class CashBookEntryController implements Serializable {
         System.out.println("result = " + result);
         return result;
     }
-    
-    public Double fetchSumOfEntryValuesForFromSite(Date date, Institution site, String paymentMethodStr ) {
+
+    public Double fetchSumOfEntryValuesForFromSite(Date date, Institution site, String paymentMethodStr) {
         PaymentMethod paymentMethod;
         try {
             paymentMethod = PaymentMethod.valueOf(paymentMethodStr);
@@ -467,58 +469,58 @@ public class CashBookEntryController implements Serializable {
         }
         String jpqlField = "";
         switch (paymentMethod) {
-                case Agent:
-                    jpqlField = "agentValue";
-                    break;
-                case Card:
-                    jpqlField = "cardValue";
-                    break;
-                case Cheque:
-                    jpqlField = "chequeValue";
-                    break;
-                case Slip:
-                    jpqlField = "slipValue";
-                    break;
-                case ewallet:
-                    jpqlField = "ewalletValue";
-                    break;
-                case PatientDeposit:
-                    jpqlField = "patientDepositValue";
-                    break;
-                case PatientPoints:
-                    jpqlField = "patientPointsValue";
-                    break;
-                case OnlineSettlement:
-                    jpqlField = "onlineSettlementValue";
-                    break;
-                case Cash:
-                    jpqlField = "cashValue";
-                    break;
-                case Credit:
-                    jpqlField = "creditValue";
-                    break;
-                case IOU:
-                    jpqlField = "iouValue";
-                    break;
-                case OnCall:
-                    jpqlField = "onCallValue";
-                    break;
-                case Staff:
-                    jpqlField ="staffValue";
-                    break;
-                case Staff_Welfare:
-                    jpqlField = "staffWelfareValue";
-                    break;
-                case Voucher:
-                    jpqlField = "voucherValue";
-                    break;
-                case MultiplePaymentMethods:
-                    jpqlField = "multiplePaymentMethodsValue";
-                    break;
+            case Agent:
+                jpqlField = "agentValue";
+                break;
+            case Card:
+                jpqlField = "cardValue";
+                break;
+            case Cheque:
+                jpqlField = "chequeValue";
+                break;
+            case Slip:
+                jpqlField = "slipValue";
+                break;
+            case ewallet:
+                jpqlField = "ewalletValue";
+                break;
+            case PatientDeposit:
+                jpqlField = "patientDepositValue";
+                break;
+            case PatientPoints:
+                jpqlField = "patientPointsValue";
+                break;
+            case OnlineSettlement:
+                jpqlField = "onlineSettlementValue";
+                break;
+            case Cash:
+                jpqlField = "cashValue";
+                break;
+            case Credit:
+                jpqlField = "creditValue";
+                break;
+            case IOU:
+                jpqlField = "iouValue";
+                break;
+            case OnCall:
+                jpqlField = "onCallValue";
+                break;
+            case Staff:
+                jpqlField = "staffValue";
+                break;
+            case Staff_Welfare:
+                jpqlField = "staffWelfareValue";
+                break;
+            case Voucher:
+                jpqlField = "voucherValue";
+                break;
+            case MultiplePaymentMethods:
+                jpqlField = "multiplePaymentMethodsValue";
+                break;
 
-                default:
-                    jpqlField = "cashValue";
-            }
+            default:
+                jpqlField = "cashValue";
+        }
         String jpql = "select sum(cbe." + jpqlField + ") "
                 + " from CashBookEntry cbe "
                 + " where cbe.retired=:ret "
