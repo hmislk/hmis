@@ -123,11 +123,23 @@
                                     <h:outputLabel value="#{bf.bill.deptId}">
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Bill Id">
+                                <p:column>
                                     <f:facet name="header">
                                         <h:outputLabel value="Status"/>
                                     </f:facet>   
                                     <p:badge value="Refunded" rendered="#{bf.billItem.refunded}" severity="warning"></p:badge>
+                                </p:column>
+                                <p:column headerText="Speciality" rendered="#{staffPaymentBillController.speciality eq null}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Doctor"/>
+                                    </f:facet>   
+                                    <p:outputLabel value="#{bf.staff.speciality.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Doctor" rendered="#{staffPaymentBillController.currentStaff eq null}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Doctor"/>
+                                    </f:facet>   
+                                    <p:outputLabel value="#{bf.staff.person.nameWithTitle}" ></p:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Payment Methord">
