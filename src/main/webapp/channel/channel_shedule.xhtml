@@ -43,8 +43,6 @@
                                             <p:ajax process="@this" update="scStaff" />
                                         </p:autoComplete>
 
-
-
                                         <h:outputLabel  value="Doctor" ></h:outputLabel>
                                         <p:selectOneMenu 
                                             filter="true"
@@ -115,8 +113,6 @@
                                             action="#{channelScheduleController.createOnCallFeeOldSession()}" />
                                     </h:panelGrid>
 
-
-
                                 </p:panel>
                             </div>
                             <div class="col-8">
@@ -133,13 +129,9 @@
                                         </p:commandButton>
                                     </h:panelGrid>
 
-
-
-
                                     <p:tabView id="tvDetails" style="width: 100%!important;" activeIndex="#{channelScheduleController.tabIndex}">
                                         <p:tab title="Details">
                                             <h:panelGrid columns="2" cellpadding="10">
-
 
                                                 <p:outputLabel value="Session Name"/>
                                                 <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.name}" disabled="#{channelScheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulName')}"/>
@@ -185,7 +177,6 @@
 
                                                 </h:panelGroup>
 
-
                                                 <h:outputText value="Institution" ></h:outputText>
                                                 <p:selectOneMenu class="w-100" id="cmbIns" value="#{channelScheduleController.current.institution}" >
                                                     <f:selectItem itemLabel="Please select a Institution"/>
@@ -194,10 +185,8 @@
                                                     <f:ajax execute="cmbIns" render="cmbDep" event="change"/>
                                                 </p:selectOneMenu>
 
-
-
                                                 <h:outputText value="Department"></h:outputText>        
-                                                <p:selectOneMenu required="true" class="w-100" id="cmbDep" value="#{channelScheduleController.current.department}">
+                                                <p:selectOneMenu class="w-100" id="cmbDep" value="#{channelScheduleController.current.department}">
                                                     <f:selectItem itemLabel="Please select a Department" />
                                                     <f:selectItems value="#{channelScheduleController.institutionDepatrments}"
                                                                    var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
@@ -208,7 +197,6 @@
                                                     value="#{channelScheduleController.current.startingTime}" 
                                                     timeOnly="true">                            
                                                 </p:datePicker>
-
 
                                                 <p:outputLabel value="End Time"/>                        
                                                 <p:datePicker
@@ -269,7 +257,6 @@
                                                 <h:outputLabel value="Special Notice" />
                                                 <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{channelScheduleController.current.specialNotice}"/>
 
-
                                             </h:panelGrid>
                                         </p:tab>
                                         <p:tab title="Date Details">
@@ -310,7 +297,6 @@
                                             </h:panelGrid>
                                         </p:tab>
 
-
                                         <p:tab title="Number Details">
                                             <h:panelGrid columns="2" class="w-100">
                                                 <p:outputLabel value="Reserved Numbers (Ex. 5,10,15,20)"/>
@@ -339,7 +325,6 @@
                                                 <p:outputLabel value="Setup Session Starting Number"/>
                                                 <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.sessionStartingNumber}"/>
 
-
                                             </h:panelGrid>
                                         </p:tab>
 
@@ -351,7 +336,6 @@
                                                     </f:facet>
                                                     <p:outputLabel value="Session Value - "/>
                                                     <p:outputLabel value="#{channelScheduleController.current.total}"/>
-
 
                                                     <p:outputLabel value="Session Value for Foreigners - "/>
                                                     <p:outputLabel value="#{channelScheduleController.current.totalForForeigner}"/>
@@ -464,21 +448,10 @@
                                                             <p:outputLabel value="Foreigner Fee" ></p:outputLabel>
                                                             <p:inputText value="#{channelScheduleController.itemFee.ffee}"  onfocus="this.select()"  class="w-100"></p:inputText>
 
-
-
-
                                                         </p:panelGrid>
-
-
-
                                                     </p:dialog>
                                                 </h:panelGroup>
                                             </p:panelGrid>
-
-
-
-
-
 
                                             <h:panelGrid columns="1">
                                                 <p:dataTable id="tblFees" value="#{channelScheduleController.itemFees}" var="i" >
@@ -556,7 +529,7 @@
                                                     id="btnAddAdditionalItem"
                                                     class="ui-button-success"
                                                     icon="fa fa-plus"
-                                                    value="Add Item to Session" 
+                                                    value="Add Item to Session"                                                  
                                                     process="btnAddAdditionalItem acAdditionalItem @this"
                                                     update=":form:msg acAdditionalItem  :#{p:resolveClientId('@id(tblAdditionalItems)', view)}"
                                                     action="#{channelScheduleController.addAdditionalItems()}" >
@@ -564,7 +537,7 @@
 
                                             </h:panelGrid>
 
-                                            
+
                                             <p:dataTable 
                                                 id="tblAdditionalItems"
                                                 value="#{channelScheduleController.additionalItemsAddedForCurrentSession}" 

@@ -18,24 +18,31 @@
             <p:column  headerText="Bill Number">
                 <h:outputText value="#{cardPayment.payment.bill.deptId}" ></h:outputText>
             </p:column>
-            <p:column  headerText="Company">
-                <h:outputText value="#{cardPayment.payment.creditCompany.name}" ></h:outputText>
+            <p:column  headerText="Bill Type">
+                <h:outputText value="#{cardPayment.payment.bill.billTypeAtomic.label}" ></h:outputText>
             </p:column>
-            <p:column  headerText="Policy Number">
-                <h:outputText value="#{cardPayment.payment.policyNo}" ></h:outputText>
-            </p:column>
-            <p:column  headerText="Comments">
-                <h:outputText value="#{cardPayment.payment.comments}" ></h:outputText>
+            <p:column  headerText="Bill Date">
+                <h:outputText value="#{cardPayment.payment.bill.createdAt}" >
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                </h:outputText>
             </p:column>
             <p:column  headerText="Bank">
                 <h:outputText value="#{cardPayment.payment.bank.name}" ></h:outputText>
+            </p:column>
+            <p:column  headerText="Date">
+                <h:outputText value="#{cardPayment.payment.paymentDate}" >
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                </h:outputText>
             </p:column>
             <p:column  headerText="Ref No">
                 <h:outputText value="#{cardPayment.payment.creditCardRefNo}" ></h:outputText>
                 <h:outputText value="#{cardPayment.payment.chequeRefNo}" ></h:outputText>
                 <h:outputText value="#{cardPayment.payment.referenceNo}" ></h:outputText>
             </p:column>
-            <p:column headerText="Value">
+            <p:column  headerText="Comments">
+                <h:outputText value="#{cardPayment.payment.comments}" ></h:outputText>
+            </p:column>
+            <p:column headerText="Value" class="text-end">
                 <h:outputText value="#{cardPayment.payment.paidValue}" >
                     <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
                 </h:outputText>

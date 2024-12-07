@@ -2119,4 +2119,9 @@ public class PharmacyWholeSaleController1 implements Serializable, ControllerWit
     public void toggalePatientEditable() {
         patientDetailsEditable = !patientDetailsEditable;
     }
+
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
 }

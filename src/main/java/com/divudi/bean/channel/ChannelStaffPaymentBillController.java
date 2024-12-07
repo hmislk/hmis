@@ -846,7 +846,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getDepartment());
-
         tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
         tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
         tmp.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
