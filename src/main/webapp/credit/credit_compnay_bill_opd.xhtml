@@ -166,9 +166,12 @@
                                         <p:outputLabel value="Payment Method" />      
                                     </div>
                                     <div class="col-md-8">
-                                        <p:selectOneMenu  class="w-100"  id="cmbPs" value="#{cashRecieveBillController.current.paymentMethod}">                                                                     
+                                        <p:selectOneMenu  
+                                            class="w-100"  
+                                            id="cmbPs" 
+                                            value="#{cashRecieveBillController.current.paymentMethod}">                                                                     
                                             <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                            <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                            <p:ajax process="cmbPs" update="gpPaymentDetails" event="change" />
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
@@ -198,21 +201,27 @@
                                         <p:inputTextarea value="#{cashRecieveBillController.comment}" class="w-100"/>
                                     </div>
                                 </div>
-
                                 <div class="row my-2">
-
                                     <div class="col-md-10">
                                         <div>
-                                            <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                                <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
-                                            </h:panelGroup>
+                                            <h:panelGroup id="gpPaymentDetails" >
+                                                <h:panelGroup 
+                                                    id="creditCard" 
+                                                    rendered="#{cashRecieveBillController.current.paymentMethod eq 'Card'}">
+                                                    <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
 
-                                            <h:panelGroup id="cheque" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                                <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
-                                            </h:panelGroup>
+                                                <h:panelGroup 
+                                                    id="cheque" 
+                                                    rendered="#{cashRecieveBillController.current.paymentMethod eq 'Cheque'}" >
+                                                    <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
 
-                                            <h:panelGroup id="slip" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                                <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                <h:panelGroup 
+                                                    id="slip" 
+                                                    rendered="#{cashRecieveBillController.current.paymentMethod eq 'Slip'}">
+                                                    <pa:slipDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
                                             </h:panelGroup>
                                         </div>
                                     </div>
