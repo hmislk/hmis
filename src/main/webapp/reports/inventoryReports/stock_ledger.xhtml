@@ -193,7 +193,10 @@
                                 <h:outputText value="#{f.pbItem.billItem.item.issueUnit}" />
                             </p:column>
                             <p:column headerText="Transaction Type" width="8em">
-                                <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? 'STOCK IN' : 'STOCK OUT'}" />
+                                <p:badge 
+                                    value="#{f.pbItem.transThisIsStockIn ? 'STOCK IN' : 'STOCK OUT'}" 
+                                    severity="#{f.pbItem.transThisIsStockIn ? 'success' : 'danger'}" 
+                                    styleClass="mr-2" />
                             </p:column>
                             <p:column headerText="Doc No." width="10em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.deptId}" />
@@ -201,11 +204,11 @@
                             <p:column headerText="Doc Date" width="5em">
                                 <h:outputText value="#{f.createdAt}" />
                             </p:column>
-                            <p:column headerText="Ref Doc No." width="5em">
+                            <p:column headerText="Ref Doc No." width="10em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.deptId}" />
                             </p:column>
                             <p:column headerText="Ref Doc Date" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.billDate}" />
+                                <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.createdAt}" />
                             </p:column>
                             <p:column headerText="From Store" width="5em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.fromDepartment.name}" />
