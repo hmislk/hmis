@@ -680,7 +680,9 @@ public class ChannelScheduleController implements Serializable {
             return;
         }
         if (current.getId() == null) {
-            saveSelected();
+            JsfUtil.addErrorMessage("Please save the session and add the additional items");
+            return;
+           // saveSelected();
         }
         if (additionalItemToAdd == null) {
             JsfUtil.addErrorMessage("No Item Selected to add");
@@ -1010,6 +1012,7 @@ public class ChannelScheduleController implements Serializable {
         //System.out.println("session name"+current.getName());
         if (checkError()) {
             return;
+            
         }
 
         if (getCurrent().getSessionNumberGenerator() == null) {
@@ -1056,6 +1059,7 @@ public class ChannelScheduleController implements Serializable {
             channelScheduleController.channelSheduleForAllDoctor(getCurrent().getStaff());
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
+            System.out.println("start persisting");
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             if (current.getEndingTime().equals(current.getStartingTime()) || current.getEndingTime().before(current.getStartingTime())) {
@@ -1072,7 +1076,7 @@ public class ChannelScheduleController implements Serializable {
         getCurrent().setTotalForForeigner(calFTot());
         facade.edit(getCurrent());
         updateCreatedServicesesions(getCurrent());
-        prepareAdd();
+        //prepareAdd();
         getItems();
     }
 
