@@ -240,6 +240,9 @@ public class CashBookEntryController implements Serializable {
     }
 
     public Double fetchStartingBalanceForFromSite(Date date, Institution site) {
+        if (site == null) {
+            return null;
+        }
         String jpql = "select cbe "
                 + " from CashBookEntry cbe "
                 + " where cbe.retired = :ret "
@@ -262,6 +265,9 @@ public class CashBookEntryController implements Serializable {
     }
 
     public Double fetchStartingBalanceForFromSite(Date date, Institution site, String paymentMethodStr) {
+        if (site == null) {
+            return null;
+        }
         String jpql = "select cbe "
                 + " from CashBookEntry cbe "
                 + " where cbe.retired = :ret "
@@ -285,52 +291,52 @@ public class CashBookEntryController implements Serializable {
             Double result;
             switch (paymentMethod) {
                 case Agent:
-                    result = cbe.getFromSiteAgentBalanceBefore();
+                    result = cbe.getFromSiteAgentBalanceAfter();
                     break;
                 case Card:
-                    result = cbe.getFromSiteCardBalanceBefore();
+                    result = cbe.getFromSiteCardBalanceAfter();
                     break;
                 case Cheque:
-                    result = cbe.getFromSiteChequeBalanceBefore();
+                    result = cbe.getFromSiteChequeBalanceAfter();
                     break;
                 case Slip:
-                    result = cbe.getFromSiteSlipBalanceBefore();
+                    result = cbe.getFromSiteSlipBalanceAfter();
                     break;
                 case ewallet:
-                    result = cbe.getFromSiteEwalletBalanceBefore();
+                    result = cbe.getFromSiteEwalletBalanceAfter();
                     break;
                 case PatientDeposit:
-                    result = cbe.getFromSitePatientDepositBalanceBefore();
+                    result = cbe.getFromSitePatientDepositBalanceAfter();
                     break;
                 case PatientPoints:
-                    result = cbe.getFromSitePatientPointsBalanceBefore();
+                    result = cbe.getFromSitePatientPointsBalanceAfter();
                     break;
                 case OnlineSettlement:
-                    result = cbe.getFromSiteOnlineSettlementBalanceBefore();
+                    result = cbe.getFromSiteOnlineSettlementBalanceAfter();
                     break;
                 case Cash:
-                    result = cbe.getFromSiteCashBalanceBefore();
+                    result = cbe.getFromSiteCashBalanceAfter();
                     break;
                 case Credit:
-                    result = cbe.getFromSiteCreditBalanceBefore();
+                    result = cbe.getFromSiteCreditBalanceAfter();
                     break;
                 case IOU:
-                    result = cbe.getFromSiteIouBalanceBefore();
+                    result = cbe.getFromSiteIouBalanceAfter();
                     break;
                 case OnCall:
-                    result = cbe.getFromSiteOnCallBalanceBefore();
+                    result = cbe.getFromSiteOnCallBalanceAfter();
                     break;
                 case Staff:
-                    result = cbe.getFromSiteStaffBalanceBefore();
+                    result = cbe.getFromSiteStaffBalanceAfter();
                     break;
                 case Staff_Welfare:
-                    result = cbe.getFromSiteStaffWelfareBalanceBefore();
+                    result = cbe.getFromSiteStaffWelfareBalanceAfter();
                     break;
                 case Voucher:
-                    result = cbe.getFromSiteVoucherBalanceBefore();
+                    result = cbe.getFromSiteVoucherBalanceAfter();
                     break;
                 case MultiplePaymentMethods:
-                    result = cbe.getFromSiteMultiplePaymentMethodsBalanceBefore();
+                    result = cbe.getFromSiteMultiplePaymentMethodsBalanceAfter();
                     break;
                 default:
                     result = cbe.getFromSiteBalanceAfter();
@@ -341,6 +347,9 @@ public class CashBookEntryController implements Serializable {
     }
 
     public Double fetchEndingBalanceForFromSite(Date date, Institution site, String paymentMethodStr) {
+        if (site == null) {
+            return null;
+        }
         String jpql = "select cbe "
                 + " from CashBookEntry cbe "
                 + " where cbe.retired = :ret "
@@ -420,6 +429,9 @@ public class CashBookEntryController implements Serializable {
     }
 
     public Double fetchEndingBalanceForFromSite(Date date, Institution site) {
+        if (site == null) {
+            return null;
+        }
         String jpql = "select cbe "
                 + " from CashBookEntry cbe "
                 + " where cbe.retired = :ret "
@@ -442,6 +454,9 @@ public class CashBookEntryController implements Serializable {
     }
 
     public Double fetchSumOfEntryValuesForFromSite(Date date, Institution site) {
+        if (site == null) {
+            return null;
+        }
         String jpql = "select sum(cbe.entryValue) "
                 + " from CashBookEntry cbe "
                 + " where cbe.retired=:ret "
@@ -461,6 +476,9 @@ public class CashBookEntryController implements Serializable {
     }
 
     public Double fetchSumOfEntryValuesForFromSite(Date date, Institution site, String paymentMethodStr) {
+        if (site == null) {
+            return null;
+        }
         PaymentMethod paymentMethod;
         try {
             paymentMethod = PaymentMethod.valueOf(paymentMethodStr);
