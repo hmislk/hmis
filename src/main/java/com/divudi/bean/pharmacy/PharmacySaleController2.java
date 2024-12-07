@@ -3020,4 +3020,9 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         this.counter = counter;
     }
 
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
+
 }

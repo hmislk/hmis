@@ -2536,6 +2536,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         this.ccMaxCreditLimit = ccMaxCreditLimit;
     }
 
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
+
     public class CollectingCenterBookSummeryRow {
 
         private String bookName;
