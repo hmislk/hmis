@@ -45,7 +45,7 @@
                                     <div class="d-flex justify-content-between">
                                         <div class="d-flex align-items-center">
                                             <h:outputText styleClass="fa fa-money-bill-wave" />
-                                            <h:outputText value="Select OPD Batch Bill" class="mx-4"></h:outputText>
+                                            <h:outputText value="Select OPD Package Bill" class="mx-4"></h:outputText>
                                         </div>
 
                                         <p:commandButton 
@@ -61,7 +61,7 @@
 
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
-                                        <p:outputLabel value="Select Credit Bill" />      
+                                        <p:outputLabel value="Select Credit Package Bill" />      
                                     </div>
                                     <div class="col-md-8">
                                         <p:autoComplete 
@@ -70,7 +70,7 @@
                                             placeholder="Type here to get suggestions"
                                             forceSelection="true" 
                                             value="#{cashRecieveBillController.currentBillItem.referenceBill}" 
-                                            completeMethod="#{billController.completeOpdCreditBatchBill}" 
+                                            completeMethod="#{billController.completeOpdCreditPackageBatchBill}" 
                                             var="ix" itemLabel="#{ix.patient.person.name}"
                                             itemValue="#{ix}" class="w-100" inputStyleClass="w-100">
                                             <p:column>
