@@ -13252,7 +13252,7 @@ public class SearchController implements Serializable {
         ReportTemplateRowBundle opdServiceCollectionCredit;
         opdServiceCollectionCredit = generateCreditOpdServiceCollection();
         bundle.getBundles().add(opdServiceCollectionCredit);
-        netCollectionPlusCredits = netCashCollection + Math.abs(getSafeTotal(creditBills)); // NOT Deducted from Totals
+        netCollectionPlusCredits = netCashCollection + Math.abs(getSafeTotal(opdServiceCollectionCredit)); // NOT Deducted from Totals
 
         // Final net cash for the day
         ReportTemplateRowBundle netCashForTheDayBundlePlusCredits = new ReportTemplateRowBundle();
@@ -13888,6 +13888,7 @@ public class SearchController implements Serializable {
 // Generate Credit Company Payment OP - Receive and add to the main bundle
         List<BillTypeAtomic> creditCompanyPaymentOpReceive = new ArrayList<>();
         creditCompanyPaymentOpReceive.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
+        creditCompanyPaymentOpReceive.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         ReportTemplateRowBundle creditCompanyPaymentOpReceiveBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentOpReceive);
         creditCompanyPaymentOpReceiveBundle.setBundleType("CreditCompanyPaymentOPReceive");
         creditCompanyPaymentOpReceiveBundle.setName("Credit Company OP Payment Reception");
@@ -13898,6 +13899,8 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> creditCompanyPaymentOpCancel = new ArrayList<>();
         creditCompanyPaymentOpCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_CANCELLATION);
         creditCompanyPaymentOpCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_REFUND);
+        creditCompanyPaymentOpCancel.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+
         ReportTemplateRowBundle creditCompanyPaymentOpCancelBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentOpCancel);
         creditCompanyPaymentOpCancelBundle.setBundleType("CreditCompanyPaymentOPCancel");
         creditCompanyPaymentOpCancelBundle.setName("Credit Company OP Payment Cancellations and Refunds");
@@ -13970,25 +13973,34 @@ public class SearchController implements Serializable {
         collectionForTheDay += getSafeTotal(collectingCentrePaymentCancelBundle);
 
 // Generate OPD Credit, Cancellation, and Refund and add to the main bundle
-        List<BillTypeAtomic> opdCredit = new ArrayList<>();
-        opdCredit.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
-        ReportTemplateRowBundle opdCreditBundle = generatePaymentMethodColumnsByBills(opdCredit);
-        opdCreditBundle.setBundleType("OpdCredit");
-        opdCreditBundle.setName("OPD Credit Payments");
-        bundle.getBundles().add(opdCreditBundle);
-        collectionForTheDay += getSafeTotal(opdCreditBundle);
+        List<BillTypeAtomic> opdCreditBills = new ArrayList<>();
+        opdCreditBills.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        opdCreditBills.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        opdCreditBills.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        opdCreditBills.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        ReportTemplateRowBundle opdCreditBillBundle = generatePaymentMethodColumnsByBills(opdCreditBills, creditPaymentMethods);
+        opdCreditBillBundle.setBundleType("OpdCredit");
+        opdCreditBillBundle.setName("OPD Credit Payments");
+        bundle.getBundles().add(opdCreditBillBundle);
+        collectionForTheDay += getSafeTotal(opdCreditBillBundle);
 
-        List<BillTypeAtomic> opdCreditCancel = new ArrayList<>();
-        opdCreditCancel.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-        ReportTemplateRowBundle opdCreditCancelBundle = generatePaymentMethodColumnsByBills(opdCreditCancel);
+        List<BillTypeAtomic> opdCreditBillCancel = new ArrayList<>();
+        opdCreditBillCancel.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        opdCreditBillCancel.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        opdCreditBillCancel.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        opdCreditBillCancel.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        ReportTemplateRowBundle opdCreditCancelBundle = generatePaymentMethodColumnsByBills(opdCreditBillCancel, creditPaymentMethods);
         opdCreditCancelBundle.setBundleType("OpdCreditCancelled");
         opdCreditCancelBundle.setName("OPD Credit Cancellations");
         bundle.getBundles().add(opdCreditCancelBundle);
         collectionForTheDay += getSafeTotal(opdCreditCancelBundle);
 
         List<BillTypeAtomic> opdCreditRefund = new ArrayList<>();
-        opdCreditRefund.add(BillTypeAtomic.OPD_CREDIT_COMPANY_CREDIT_NOTE);
-        ReportTemplateRowBundle opdCreditRefundBundle = generatePaymentMethodColumnsByBills(opdCreditRefund);
+        opdCreditRefund.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        opdCreditRefund.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        opdCreditRefund.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        opdCreditRefund.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        ReportTemplateRowBundle opdCreditRefundBundle = generatePaymentMethodColumnsByBills(opdCreditRefund,creditPaymentMethods);
         opdCreditRefundBundle.setBundleType("OpdCreditRefund");
         opdCreditRefundBundle.setName("OPD Credit Refunds");
         bundle.getBundles().add(opdCreditRefundBundle);
@@ -16118,8 +16130,8 @@ public class SearchController implements Serializable {
                     || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
                 // System.out.println("continue 1");
                 continue;
-            }else{
-                thisBillItemsBillsPaymentType=bi.getBill().getPaymentMethod().getPaymentType();
+            } else {
+                thisBillItemsBillsPaymentType = bi.getBill().getPaymentMethod().getPaymentType();
             }
 
             if (paymentType == PaymentType.NON_CREDIT) {
@@ -16128,7 +16140,7 @@ public class SearchController implements Serializable {
                     continue;
                 }
             }
-            
+
             if (paymentType == PaymentType.CREDIT) {
                 if (thisBillItemsBillsPaymentType == PaymentType.NON_CREDIT) {
                     // System.out.println("Skipping as this is credit");

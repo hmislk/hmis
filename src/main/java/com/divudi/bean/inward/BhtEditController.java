@@ -12,6 +12,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.clinical.ClinicalFindingValueType;
@@ -104,6 +105,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     CommonFunctions commonFunctions;
 
     YearMonthDay yearMonthDay;
+    private PaymentMethod paymentMethod;
 
     private Speciality referringSpeciality;
     private Speciality opdSpeciality;
@@ -111,7 +113,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     EncounterCreditCompany encounterCreditCompany;
     private ClinicalFindingValue currentPatientAllergy;
     private List<ClinicalFindingValue> patientAllergies;
-    
 
     public void addPatientAllergy() {
         if (currentPatientAllergy == null) {
@@ -145,16 +146,16 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             }
         }
     }
-    
+
     public void fillCurrentPatientAllergies(Patient pt) {
-        if (pt==null) {
+        if (pt == null) {
             return;
         }
-        patientAllergies =new ArrayList<>();
-        Map params =new HashMap<>();
+        patientAllergies = new ArrayList<>();
+        Map params = new HashMap<>();
         String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt";
         params.put("pt", pt);
-        patientAllergies=clinicalFindingValueFacade.findByJpql(s,params); 
+        patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
     }
 
     public void setSelectedCompany(EncounterCreditCompany ecc) {
@@ -393,8 +394,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         prepereForNew();
     }
 
-
-
     public void saveCurrent() {
         getPatientFacade().edit(getCurrent().getPatient());
         getPersonFacade().edit(getCurrent().getPatient().getPerson());
@@ -459,9 +458,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 //        }
         return current;
     }
-    
-    public String navigateToEditAdmissionDetails(){
-        if(current==null){
+
+    public String navigateToEditAdmissionDetails() {
+        if (current == null) {
             JsfUtil.addErrorMessage("No Admission to edit");
             return "";
         }
@@ -473,10 +472,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     public void setCurrent(Admission current) {
         this.current = current;
-        
+
     }
-    
-    
 
     private AdmissionFacade getFacade() {
         return ejbFacade;
@@ -672,7 +669,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     @Override
     public void toggalePatientEditable() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        // ToDo: Add Logic
     }
 
     public List<ClinicalFindingValue> getPatientAllergies() {
@@ -694,6 +691,21 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     public void setCurrentPatientAllergy(ClinicalFindingValue currentPatientAllergy) {
         this.currentPatientAllergy = currentPatientAllergy;
+    }
+
+    @Override
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    @Override
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
     }
 
     /**

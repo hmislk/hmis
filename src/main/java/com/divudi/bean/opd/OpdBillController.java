@@ -1892,8 +1892,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         BilledBill newBatchBill = new BilledBill();
 
         if (oneOpdBillForAllDepartments) {
-            Bill newSingleBill;
-            newSingleBill = saveBill(sessionController.getDepartment(), newBatchBill);
+            Bill newSingleBill=new BilledBill();
+            newSingleBill = saveBill(sessionController.getDepartment(), newSingleBill);
             if (newSingleBill == null) {
                 return false;
             }
@@ -2158,6 +2158,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setFromInstitution(sessionController.getInstitution());
         newBatchBill.setFromDepartment(sessionController.getDepartment());
         newBatchBill.setPatient(patient);
+        newBatchBill.setCreditCompany(creditCompany);
         newBatchBill.setIpOpOrCc("OP");
         newBatchBill.setInsId(
                 getBillNumberGenerator().institutionBillNumberGenerator(
@@ -3766,6 +3767,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     }
 
+    @Override
     public void listnerForPaymentMethodChange() {
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
@@ -4096,6 +4098,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    @Override
     public PaymentMethod getPaymentMethod() {
         if (!sessionController.getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
             if (paymentMethod != PaymentMethod.Cash) {
@@ -4108,6 +4111,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return paymentMethod;
     }
 
+    @Override
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
