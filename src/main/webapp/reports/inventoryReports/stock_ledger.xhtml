@@ -154,11 +154,11 @@
                         <div class="d-flex align-items-center mt-5">
                             <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" action="#{pharmacyReportController.processStockLedgerReport()}" >
                             </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"><p:printer target="tbl" />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download"><p:dataExporter type="xlsx" fileName="Stock Ledger Report" target="tbl"  />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF"><p:dataExporter type="pdf" target="tbl" fileName="Stock Ledger Report" />
                             </p:commandButton>
                         </div>
 
