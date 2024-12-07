@@ -171,7 +171,7 @@
                             class="ui-button-warning" icon="fas fa-cogs">
                         </p:commandButton>
 
-
+                        
                         <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
 
                             <ez:opdServiceBilled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceBilled'}"/>
@@ -206,8 +206,10 @@
                             <ez:inwardPaymentsRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'InwardPaymentsRefund'}"/>
 
                             <!-- Credit Company Payments OPD -->
+                            <h:outputLabel value="Editing 1" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPReceive'}" ></h:outputLabel>
                             <ez:creditCompanyPaymentOpReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPReceive'}"/>
                             <ez:creditCompanyPaymentOpCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPCancel'}"/>
+                            <h:outputLabel value="Editing 2" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPCancel'}" ></h:outputLabel>
 
                             <!-- Credit Company Payments Inpatient -->
                             <ez:creditCompanyPaymentIpReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPReceive'}"/>
