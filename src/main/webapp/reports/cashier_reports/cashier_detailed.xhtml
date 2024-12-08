@@ -206,7 +206,6 @@
                             <ez:inwardPaymentsRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'InwardPaymentsRefund'}"/>
 
                             <!-- Credit Company Payments OPD -->
-                            <h:outputLabel value="Editing 1" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPReceive'}" ></h:outputLabel>
                             <ez:creditCompanyPaymentOpReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPReceive'}"/>
                             <ez:creditCompanyPaymentOpCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPCancel'}"/>
                             <h:outputLabel value="Editing 2" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPCancel'}" ></h:outputLabel>
