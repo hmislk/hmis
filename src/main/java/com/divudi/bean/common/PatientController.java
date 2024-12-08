@@ -136,6 +136,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private WebUserFacade webUserFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    PatientFacade patientFacade;
     /**
      *
      * Controllers
@@ -1992,6 +1994,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void quickSearchPatientLongPhoneNumber(ControllerWithPatient controller) {
+        System.out.println("quickSearchPatientLongPhoneNumber");
+        System.out.println("controller = " + controller);
         boolean checkOnlyNumeric = CommonFunctions.checkOnlyNumeric(quickSearchPhoneNumber);
         Patient patientSearched = null;
         boolean usePHN = false;
@@ -2007,7 +2011,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
             quickSearchPatientList = findPatientUsingPhnNumber(quickSearchPhoneNumber);
             usePHN = true;
         }
-        opdBillController.setPaymentMethod(null);
+        controller.setPaymentMethod(null);
+        System.out.println("quickSearchPatientList = " + quickSearchPatientList);
         if (quickSearchPatientList == null) {
             
             controller.setPatient(null);
@@ -2030,12 +2035,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return;
         } else if (quickSearchPatientList.size() == 1) {
             patientSearched = quickSearchPatientList.get(0);
+            System.out.println("patientSearched = " + patientSearched);
             controller.setPatient(patientSearched);
             controller.setPatientDetailsEditable(false);
             controller.setPaymentMethod(null);
-
+            System.out.println("controller.getPatient() = " + controller.getPatient());
+            boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
+            System.out.println("automaticallySetPatientDeposit = " + automaticallySetPatientDeposit);
             if (controller.getPatient().getHasAnAccount() != null) {
-                if (patientSearched.getHasAnAccount() && configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false)) {
+                if (patientSearched.getHasAnAccount() && automaticallySetPatientDeposit) {
 
                     controller.setPatient(controller.getPatient());
                     controller.setPaymentMethod(PaymentMethod.PatientDeposit);
@@ -2069,15 +2077,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
         controller.setPatient(current);
         admissionController.fillCurrentPatientAllergies(current);
         controller.setPatientDetailsEditable(false);
-        opdBillController.setPaymentMethod(null);
+        controller.setPaymentMethod(null);
         if (patientDepositController.checkDepositOfThePatient(current, sessionController.getDepartment()) != null) {
             controller.getPatient().setHasAnAccount(true);
             controller.getPatient().setRunningBalance(patientDepositController.checkDepositOfThePatient(current, sessionController.getDepartment()).getBalance());
         }
         if (controller.getPatient().getHasAnAccount() != null) {
             if (controller.getPatient().getHasAnAccount() && configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false)) {
-                opdBillController.setPaymentMethod(PaymentMethod.PatientDeposit);
-                opdBillController.listnerForPaymentMethodChange();
+                controller.setPaymentMethod(PaymentMethod.PatientDeposit);
+                controller.listnerForPaymentMethodChange();
             }
         }
 
@@ -2836,6 +2844,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         saveSelected(current);
+        if (current.getCreditLimit() == null){
+           current.setCreditLimit(0.0);
+           patientFacade.edit(current);
+        }
         return "/opd/patient?faces-redirect=true;";
     }
 
