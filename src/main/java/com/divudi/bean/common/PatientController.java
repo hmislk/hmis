@@ -2012,7 +2012,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         controller.setPaymentMethod(null);
         System.out.println("quickSearchPatientList = " + quickSearchPatientList);
         if (quickSearchPatientList == null) {
-            
+
             controller.setPatient(null);
             if (!usePHN) {
                 controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
@@ -2022,7 +2022,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Patient found !");
             return;
         } else if (quickSearchPatientList.isEmpty()) {
-            
+
             controller.setPatient(null);
             if (!usePHN) {
                 controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
@@ -2841,22 +2841,25 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-        saveSelected(current);
+        boolean savedSuccessfully = saveSelected(current);
+        if(!savedSuccessfully){
+            return null;
+        }
         return "/opd/patient?faces-redirect=true;";
     }
 
-    public void saveSelected(Patient p) {
+    public boolean saveSelected(Patient p) {
         if (p == null) {
             JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
-            return;
+            return false;
         }
         if (p.getPerson() == null) {
             JsfUtil.addErrorMessage("No Person. Not Saved");
-            return;
+            return false;
         }
         if (p.getPerson().getName().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a name");
-            return;
+            return false;
         }
         if (p.getHasAnAccount() && p.getCreditLimit() == null) {
             p.setCreditLimit(0.0);
@@ -2864,17 +2867,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender to Save Patient", false)) {
             if (p.getPerson().getTitle() == null) {
                 JsfUtil.addErrorMessage("Please select title");
-                return;
+                return false;
             }
             if (p.getPerson().getSex() == null) {
                 JsfUtil.addErrorMessage("Please select gender");
-                return;
+                return false;
             }
         }
         if (configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient", false)) {
             if (p.getPerson().getDob() == null) {
                 JsfUtil.addErrorMessage("Please select patient date of birth");
-                return;
+                return false;
             }
         }
         if (p.getPerson().getId() == null) {
@@ -2894,6 +2897,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(p);
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
+        return true;
     }
 
     public List<Patient> findPatientUsingPhnNumber(String phn) {
@@ -4218,8 +4222,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
-
-    
 
     /**
      *
