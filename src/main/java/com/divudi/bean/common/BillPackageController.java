@@ -572,7 +572,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         printPreview = false;
         return "/opd/opd_package_bill_cancel?faces-redirect=true;";
     }
-  
+
     public void cancelSingleBillWhenCancellingPackageBatchBill(Bill originalBill, Bill cancellationBatchBill) {
         if (originalBill == null && originalBill == null) {
             JsfUtil.addErrorMessage("No Bill to cancel");
@@ -793,7 +793,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         paymentService.updateBalances(ps);
         payments = ps;
 //        calculateBillfeePayments(lstBillFees, payments.get(0));
-        
+
 //        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
 //            staffBean.updateStaffWelfare(toStaff, batchBill.getNetTotal());
 //            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
@@ -1461,7 +1461,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.patient = patient;
         return "/opd/opd_bill_package?faces-redirect=true";
     }
-    
+
     public String navigateToSearchOpdPackageBills() {
         batchBill = null;
         bills = null;
@@ -1714,13 +1714,33 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
-            if (pd!=null && pd.getId() != null) {
+            if (pd != null && pd.getId() != null) {
                 getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
                 getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
             }
-        }
-        if (paymentMethod == PaymentMethod.Card) {
+        } else if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
+            System.out.println("this = " + this);
+        } else if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            getPaymentMethodData().getPatient_deposit().setPatient(patient);
+            getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
+
+            if (pd != null && pd.getId() != null) {
+                System.out.println("pd = " + pd);
+                boolean hasPatientDeposit = false;
+                for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    System.out.println("cd = " + cd);
+                    if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                        System.out.println("cd = " + cd);
+                        hasPatientDeposit = true;
+                        cd.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                        cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+
+                    }
+                }
+            }
+
         }
         calTotals();
     }
