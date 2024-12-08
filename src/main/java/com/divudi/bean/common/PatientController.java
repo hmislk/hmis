@@ -2869,6 +2869,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Please enter a name");
             return false;
         }
+        if (p.getHasAnAccount() == null) {
+            p.setHasAnAccount(false);
+        }
         if (p.getHasAnAccount() && p.getCreditLimit() == null) {
             p.setCreditLimit(0.0);
         }

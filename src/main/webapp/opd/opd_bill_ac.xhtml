@@ -99,9 +99,8 @@
                                                             process="btnDone editPatient"
                                                             action="#{patientController.saveSelected(opdBillController.patient)}" 
                                                             rendered="#{opdBillController.patientDetailsEditable}" 
-                                                            update="msg txtMsgs :#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"  />
+                                                            update="msg :#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"  />
                                                     </h:panelGroup>
-                                                    <p:messages id="txtMsgs" ></p:messages>
                                                 </h:panelGroup>
                                             </h:panelGroup>
 
