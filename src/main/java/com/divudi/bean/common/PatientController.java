@@ -2827,12 +2827,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return str;
     }
 
-    public void saveSelected() {
-        saveSelected(current);
+    public boolean saveSelected() {
+        return saveSelected(current);
     }
 
     public String saveSelectedAndToFamily() {
         saveSelected(current);
+        boolean savedSuccessfully = saveSelected(current);
+        if (!savedSuccessfully) {
+            return null;
+        }
         return "/membership/add_family?faces-redirect=true;";
     }
 
@@ -2842,7 +2846,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         boolean savedSuccessfully = saveSelected(current);
-        if(!savedSuccessfully){
+        if (!savedSuccessfully) {
             return null;
         }
         return "/opd/patient?faces-redirect=true;";
@@ -2855,6 +2859,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         if (p.getPerson() == null) {
             JsfUtil.addErrorMessage("No Person. Not Saved");
+            return false;
+        }
+        if (p.getPerson().getName() == null) {
+            JsfUtil.addErrorMessage("Please enter a name");
             return false;
         }
         if (p.getPerson().getName().trim().equals("")) {
