@@ -2443,8 +2443,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return false;
     }
 
+    @Override
     public double calculatRemainForMultiplePaymentTotal() {
-
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {

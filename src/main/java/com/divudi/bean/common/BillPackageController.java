@@ -51,6 +51,14 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillTypeAtomic;
+import static com.divudi.data.PaymentMethod.Card;
+import static com.divudi.data.PaymentMethod.Cash;
+import static com.divudi.data.PaymentMethod.Cheque;
+import static com.divudi.data.PaymentMethod.Credit;
+import static com.divudi.data.PaymentMethod.PatientDeposit;
+import static com.divudi.data.PaymentMethod.Slip;
+import static com.divudi.data.PaymentMethod.Staff;
+import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.service.StaffService;
 import com.divudi.entity.BillFeePayment;
@@ -197,6 +205,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private String comment;
     boolean batchBillCancellationStarted;
     private List<PaymentMethod> paymentMethods;
+    private double remainAmount;
 
     //</editor-fold>
     private void savePatient() {
@@ -992,8 +1001,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         billFeePaymentFacade.create(bfp);
     }
 
+    @Override
     public double calculatRemainForMultiplePaymentTotal() {
-
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
@@ -1006,38 +1015,61 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
 
             }
+            remainAmount = total - multiplePaymentMethodTotalValue;
             return total - multiplePaymentMethodTotalValue;
+
         }
+        remainAmount = total;
         return total;
     }
 
+    @Override
     public void recieveRemainAmountAutomatically() {
-        double remainAmount = calculatRemainForMultiplePaymentTotal();
+        //double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
-            if (pm.getPaymentMethod() == PaymentMethod.Cash) {
-                pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
-            } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
-                pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
-            } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
-                pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
-            } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
-                pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
-            } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
-                pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
-            } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                if (patient != null) {
-                    pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
-                }
-                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
-            } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
-                pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
-            } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
-                pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+            switch (pm.getPaymentMethod()) {
+                case Cash:
+                    pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+                    break;
+                case Card:
+                    pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+                    break;
+                case Cheque:
+                    pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+                    break;
+                case Slip:
+                    pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+                    break;
+                case ewallet:
+                    pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+                    break;
+                case PatientDeposit:
+                    if (patient != null) {
+                        pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                    }
+                    if (remainAmount >= patient.getRunningBalance()) {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(patient.getRunningBalance());
+                    }else {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                    }
+
+                    break;
+                case Credit:
+                    pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+                    break;
+                case Staff:
+                    pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
             }
 
         }
+        System.out.println("this = " + this);
+        listnerForPaymentMethodChange();
+
     }
 
     private boolean errorCheck() {
@@ -2159,4 +2191,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setBill(Bill bill) {
         this.bill = bill;
     }
+
+    public double getRemainAmount() {
+        return remainAmount;
+    }
+
+    public void setRemainAmount(double remainAmount) {
+        this.remainAmount = remainAmount;
+    }
+    
+    
 }
