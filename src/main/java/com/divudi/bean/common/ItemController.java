@@ -286,6 +286,9 @@ public class ItemController implements Serializable {
             itemFee.setFee(feeValue);
             itemFee.setFfee(feeValue);
             itemFeeFacade.edit(itemFee);
+            
+            itemFeeService.updateFeeValue(itemFee.getItem(), site, feeValue, feeValue);
+            
             output += rowNumber + " - Successfully added Fee for Item with Code " + itemCode + "/n<br/>";
 
         }
