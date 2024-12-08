@@ -254,15 +254,15 @@ public class ItemController implements Serializable {
             List<ItemFee> itemFeesMatchingTheCodeAndSite = itemFeeService.fetchSiteFeesByItem(itemCode, site);
 
             if (itemFeesMatchingTheCodeAndSite == null) {
-                output = rowNumber + " - No Mathing Item Fee for Code " + itemCode + "/n<br/>";
+                output += rowNumber + " - No Mathing Item Fee for Code " + itemCode + "/n<br/>";
                 continue;
             }
             if (itemFeesMatchingTheCodeAndSite.isEmpty()) {
-                output = rowNumber + " - No Mathing Item Fee for Code " + itemCode + "/n<br/>";
+                output += rowNumber + " - No Mathing Item Fee for Code " + itemCode + "/n<br/>";
                 continue;
             }
             if (itemFeesMatchingTheCodeAndSite.size() > 1) {
-                output = rowNumber + " - More than one Mathing Item Fees for Code " + itemCode + "/n<br/>";
+                output += rowNumber + " - More than one Mathing Item Fees for Code " + itemCode + "/n<br/>";
                 continue;
             }
 
@@ -286,7 +286,7 @@ public class ItemController implements Serializable {
             itemFee.setFee(feeValue);
             itemFee.setFfee(feeValue);
             itemFeeFacade.edit(itemFee);
-            output = rowNumber + " - Successfully added Fee for Item with Code " + itemCode + "/n<br/>";
+            output += rowNumber + " - Successfully added Fee for Item with Code " + itemCode + "/n<br/>";
 
         }
 
