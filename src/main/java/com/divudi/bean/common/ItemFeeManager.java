@@ -119,6 +119,11 @@ public class ItemFeeManager implements Serializable {
         itemFees = new ArrayList<>();
         return "/admin/pricing/download_base_item_fees?faces-redirect=true";
     }
+    
+    public String navigateToUploadToReplaceSiteFeesByItemCode() {
+        itemFees = new ArrayList<>();
+        return "/admin/pricing/download_base_item_fees?faces-redirect=true";
+    }
 
     public String navigateToDownloadItemFeesForSites() {
         itemFees = new ArrayList<>();
