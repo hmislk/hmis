@@ -327,7 +327,7 @@ public class PaymentService {
         }
         patientFacade.editAndCommit(pt);
         PatientDeposit pd = patientDepositService.getDepositOfThePatient(pt, p.getDepartment());
-        patientDepositService.updateBalance(p.getBill(), pd);
+        patientDepositService.updateBalance(p, pd);
 
     }
 

@@ -17,7 +17,7 @@
         <h:panelGroup rendered="#{cc.attrs.paymentMethodData.patient_deposit.patient.hasAnAccount}" >
             <div class="row" >
                 <div class="col mx-1" style="font-size: 1.2em; font-weight: 700" >
-                    <h:outputText value="Patient Deposit Balance : " ></h:outputText>
+                    <h:outputText value="Patient's Department Deposit Balance : " ></h:outputText>
                     <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost.balance}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>

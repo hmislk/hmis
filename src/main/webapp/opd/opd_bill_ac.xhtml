@@ -96,11 +96,11 @@
                                                             alt="Save Patient Details" 
                                                             class="ui-button-success" 
                                                             icon="fas fa-check" 
+                                                            process="btnDone editPatient"
                                                             action="#{patientController.saveSelected(opdBillController.patient)}" 
                                                             rendered="#{opdBillController.patientDetailsEditable}" 
-                                                            update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"  />
+                                                            update="msg :#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"  />
                                                     </h:panelGroup>
-
                                                 </h:panelGroup>
                                             </h:panelGroup>
 
@@ -1240,7 +1240,10 @@
                                                 layout="block" 
                                                 id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                 >
-                                                <pa:multiple_payment_methods controller="#{opdBillController}" paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}" class="w-100"/>
+                                                <pa:multiple_payment_methods 
+                                                    controller="#{opdBillController}" 
+                                                    paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}" 
+                                                    class="w-100"/>
 
                                             </h:panelGroup>
 
