@@ -136,6 +136,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private WebUserFacade webUserFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    PatientFacade patientFacade;
     /**
      *
      * Controllers
@@ -2842,6 +2844,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         saveSelected(current);
+        if (current.getCreditLimit() == null){
+           current.setCreditLimit(0.0);
+           patientFacade.edit(current);
+        }
         return "/opd/patient?faces-redirect=true;";
     }
 
