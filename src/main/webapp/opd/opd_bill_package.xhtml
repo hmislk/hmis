@@ -70,7 +70,15 @@
                                                                             process="@this" 
                                                                             update="viewPatient editPatient btnDone edit" />
                                                                     </p:selectBooleanButton>
-                                                                    <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(billPackageController.patient)}" rendered="#{billPackageController.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} " />
+                                                                    <p:commandButton 
+                                                                        id="btnDone" 
+                                                                        alt="Save Patient Details" 
+                                                                        class="ui-button-success" 
+                                                                        icon="fas fa-check" 
+                                                                        process="btnDone editPatient"
+                                                                        action="#{patientController.saveSelected(billPackageController.patient)}" 
+                                                                        rendered="#{billPackageController.patientDetailsEditable}" 
+                                                                        update="msg :#{p:resolveFirstComponentWithId('ptImp',view).clientId} " />
                                                                 </h:panelGroup>
 
                                                             </h:panelGroup>
