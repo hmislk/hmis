@@ -20,8 +20,9 @@
                                 <h:outputLabel value="From" for="fromDate" class="mx-3"/>
                             </h:panelGroup>
                             <p:calendar 
-                                styleClass="w-100" 
-                                inputStyleClass="w-100 form-control" 
+                                style="width: 400px;"
+                                class="w-100"
+                                inputStyleClass="form-control" 
                                 id="fromDate" 
                                 value="#{searchController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
@@ -35,7 +36,7 @@
                             </h:panelGroup>
                             <p:calendar 
                                 styleClass="w-100" 
-                                inputStyleClass="w-100 form-control" 
+                                inputStyleClass="form-control" 
                                 id="toDate" 
                                 value="#{searchController.toDate}" 
                                 navigator="false" 
@@ -69,8 +70,9 @@
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="cmbIns"
-                                styleClass="w-100 form-control" 
+                                style="width: 400px;"
                                 value="#{searchController.institution}" 
+                                class="w-100"
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
@@ -120,9 +122,10 @@
                             </h:panelGroup>
                             <p:selectOneMenu
                                 filter="true"
+                                style="width: 400px;"
                                 filterMatchMode="contains"
-                                id="billTypeAtomic" 
-                                class=""  value="#{searchController.billTypeAtomic}" >
+                                id="billTypeAtomic"  
+                                value="#{searchController.billTypeAtomic}" >
                                 <f:selectItem itemLabel="All Types" ></f:selectItem>
                                 <f:selectItems 
                                     var="billTypeAtomic"
@@ -173,17 +176,19 @@
 
 
                         <div style="width: 100%; overflow-x: auto;">
-                            <p:dataTable rowIndexVar="i" id="tblBills" 
-                                         value="#{searchController.bills}" 
-                                         scrollable="true"
-                                         var="bill"
-                                         rows="10"
-                                         paginatorAlwaysVisible="false"
-                                         paginator="true"
-                                         paginatorPosition="top"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="5,10,15,50"
-                                         >
+                            <p:dataTable 
+                                rowIndexVar="i" 
+                                id="tblBills" 
+                                value="#{searchController.bills}" 
+                                scrollable="true"
+                                var="bill"
+                                rows="10"
+                                paginatorAlwaysVisible="false"
+                                paginator="true"
+                                paginatorPosition="top"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="10,15,50"
+                                >
 
                                 <p:column 
                                     width="1em"
@@ -202,7 +207,7 @@
                                     <h:outputLabel value="#{bill.billClass}"/>
                                 </p:column>
                                 <p:column headerText="Bill Type" >                                
-                                    <h:outputLabel value="#{bill.billTypeAtomic.label}"/>
+                                    <h:outputLabel value="#{bill.billTypeAtomic}"/>
                                 </p:column>
                                 <p:column headerText="Payment Method" >                                
                                     <h:outputLabel value="#{bill.paymentMethod}"/>
@@ -223,7 +228,7 @@
                                     </h:panelGroup>
                                 </p:column>
 
-                               
+
                                 <p:column headerText="Net Value" styleClass="averageNumericColumn">
                                     <h:outputLabel value="#{bill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -235,7 +240,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="No" exportable="false" styleClass="alignTop">
+                                <p:column headerText="Action" exportable="false" styleClass="alignTop">
                                     <p:commandButton 
                                         value="View" 
                                         icon="fa fa-eye" 
