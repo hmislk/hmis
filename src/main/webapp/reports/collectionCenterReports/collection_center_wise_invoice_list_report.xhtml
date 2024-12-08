@@ -270,10 +270,10 @@
                             </f:facet>
                         </p:column>
                         <p:column headerText="CC(%)" class="text-end" style="width: 100px;">
-                            <h:outputText value="#{(bi.bill.collctingCentreFee / bi.bill.netTotal) * 100}"/>
+                            <h:outputText value="#{(bi.bill.totalCenterFee / bi.bill.netTotal) * 100}"/>
                         </p:column>
                         <p:column headerText="CC Amount" class="text-end" style="width: 150px;">
-                            <h:outputText value="#{bi.bill.collctingCentreFee}">
+                            <h:outputText value="#{bi.bill.totalCenterFee}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
