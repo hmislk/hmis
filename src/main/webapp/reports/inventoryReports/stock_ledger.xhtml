@@ -206,9 +206,11 @@
                             </p:column>
                             <p:column headerText="Ref Doc No." width="10em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.deptId}" />
+                                <h:outputText value="#{f.pbItem.billItem.bill.referenceBill.deptId}" />
                             </p:column>
                             <p:column headerText="Ref Doc Date" width="5em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.createdAt}" />
+                                <h:outputText value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" />
                             </p:column>
                             <p:column headerText="From Store" width="5em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.fromDepartment.name}" />

@@ -9,6 +9,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PharmacyItemData;
 import com.divudi.ejb.BillNumberGenerator;
@@ -217,6 +218,7 @@ public class PurchaseReturnController implements Serializable {
             }
 
             getReturnBill().getBillItems().add(i);
+            returnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
         }
 
     }
