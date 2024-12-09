@@ -218,7 +218,7 @@ public class PurchaseReturnController implements Serializable {
             }
 
             getReturnBill().getBillItems().add(i);
-            returnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            returnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         }
 
     }
