@@ -94,7 +94,7 @@
                                                                     title="Quick Search from Phone Number"
                                                                     action="#{patientController.quickSearchPatientLongPhoneNumber(billPackageController)}" 
                                                                     process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                                                    update="ptImp selectPatient editPatient viewPatient advanced msg"
+                                                                    update="ptImp selectPatient editPatient viewPatient advanced msg cmbPs paymentDetails"
                                                                     styleClass="btn-sm mx-1">
                                                                 </p:commandButton>
                                                                 <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
@@ -527,7 +527,7 @@
                                                     </p:column>
                                                     <p:column  style="width: 200px;">
                                                         <f:facet name="header">Department</f:facet>
-                                                            #{bi.billItem.item.department.name}
+                                                            #{bi.billItem.item.transDepartment.name}
                                                     </p:column>
                                                     <p:column  style="width: 50px;">
                                                         <p:commandButton 
@@ -835,7 +835,10 @@
                                                         layout="block" 
                                                         id="multiplePaymentMethods"  rendered="#{billPackageController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                         >
-                                                        <pa:multiple_payment_methods controller="#{billPackageController}" class="w-100"/>
+                                                        <pa:multiple_payment_methods 
+                                                            paymentMethods="#{enumController.paymentMethodsForPackageBilling}"
+                                                            controller="#{billPackageController}" 
+                                                            class="w-100"/>
 
                                                     </h:panelGroup>
 

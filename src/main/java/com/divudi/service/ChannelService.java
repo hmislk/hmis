@@ -75,6 +75,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.annotation.security.PermitAll;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
@@ -119,6 +120,7 @@ public class ChannelService {
     ConfigOptionApplicationController configOptionApplicationController;
 
 
+    @PermitAll //TODO: Fix this to appropriate roles .
     public void retireNonSettledOnlineBills() {
         String jpql = "select b "
                 + " from Bill b "

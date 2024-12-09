@@ -465,6 +465,10 @@ public class PharmacyPurchaseController implements Serializable {
             JsfUtil.addErrorMessage("Please Fill Invoice Date");
             return;
         }
+        if (getBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            JsfUtil.addErrorMessage("MultiplePayments Not Allowed.");
+            return;
+        }
 
         //Need to Add History
         String msg = errorCheck();
@@ -477,7 +481,7 @@ public class PharmacyPurchaseController implements Serializable {
         //   saveBillComponent();
 
 //        Payment p = createPayment(getBill());
-        List<Payment> ps = paymentService.createPayment(getBill(), getBill().getPaymentMethod(), paymentMethodData, sessionController.getDepartment(), sessionController.getLoggedUser());
+        List<Payment> ps = paymentService.createPayment(getBill(), getPaymentMethodData());
 
         billItemsTotalQty = 0;
         for (BillItem i : getBillItems()) {

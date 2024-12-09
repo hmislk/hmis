@@ -152,6 +152,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private ClinicalFindingValue currentPatientAllergy;
     private Institution lastCreditCompany;
 
+    private PaymentMethod paymentMethod;
+
     public void addPatientAllergy() {
         if (currentPatientAllergy == null) {
             return;
@@ -1639,6 +1641,21 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setLastCreditCompany(Institution lastCreditCompany) {
         this.lastCreditCompany = lastCreditCompany;
+    }
+
+    @Override
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    @Override
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
     }
 
     /**
