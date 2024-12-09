@@ -226,7 +226,7 @@
                                 <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? f.pbItem.qty + f.pbItem.freeQty : 0.0}" />
                             </p:column>
                             <p:column headerText="Stock Out Quantity" width="5em">
-                                <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty : 0.0}" />
+                                <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty + f.pbItem.freeQty : 0.0}" />
                             </p:column>
                             <p:column headerText="Closing Stock" width="5em">
                                 <h:outputText value="#{f.itemStock}" />
@@ -250,7 +250,7 @@
                                 <h:outputText value="#{f.pbItem.doe}" />
                             </p:column>
                             <p:column headerText="Inserted Date" width="5em">
-                                <h:outputText value="#{f.itemBatch.item.createdAt}" />
+                                <h:outputText value="#{f.pbItem.billItem.createdAt}" />
                             </p:column>
                             <p:column headerText="UserName" width="5em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.creater.name}" />

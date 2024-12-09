@@ -224,6 +224,7 @@ public class PurchaseReturnController implements Serializable {
     private void saveComponent(Payment p) {
         for (BillItem i : getBillItems()) {
             i.getPharmaceuticalBillItem().setQtyInUnit((double) (double) (0 - i.getQty()));
+            i.getPharmaceuticalBillItem().setFreeQtyInUnit(0-i.getPharmaceuticalBillItem().getFreeQty());
 
             if (i.getPharmaceuticalBillItem().getQtyInUnit() == 0.0) {
                 continue;
