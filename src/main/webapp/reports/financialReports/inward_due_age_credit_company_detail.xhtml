@@ -13,6 +13,124 @@
                 <h:form class="w-100">
                     <p:panel header="Inward Due Age Detail" class="w-100">
 
+                        <h:panelGrid columns="8" class="w-100 ">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control"
+                                value="#{reportsController.institution}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions"/>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                               itemValue="#{ins}"/>
+                                <p:ajax process="cmbIns" update="cmbDept"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"
+                                value="#{reportsController.site}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites"/>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                               itemValue="#{site}"/>
+                                <p:ajax process="siteMenu" update="cmbDept"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="m-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{reportsController.institution eq null and reportsController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{reportsController.institution eq null and reportsController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{reportsController.institution ne null and reportsController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(reportsController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{reportsController.institution ne null and reportsController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.institution, reportsController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="false"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.institution, reportsController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+                        </h:panelGrid>
+
                         <p:commandButton 
                             id="btnSearch"
                             class="ui-button-warning my-4 mx-2"
@@ -46,7 +164,7 @@
                         <p:defaultCommand target="btnSearch"/>
 
                         <p:dataTable id="lst" value="#{creditCompanyDueController.creditCompanyAge}" var="i" rendered="#{creditCompanyDueController.creditCompanyAge.size() > 0.0}" >                       
-                            <p:column headerText="Supplier Name" filterBy="#{i.institution.name}">       
+                            <p:column headerText="Credit Company" filterBy="#{i.institution.name}">       
                                 <h:outputLabel id="colComDetailDue"  value="#{i.institution.name}"/>
                                 <p:tooltip for="colComDetailDue"  >
                                     <h:outputLabel value="Address : #{i.institution.address}" >
@@ -265,36 +383,36 @@
                                      rendered="#{creditCompanyDueController.dealerDueDetailRows.size() > 0.0}">   
                             <p:columnGroup type="header">
                                 <p:row>  
-                                    <p:column rowspan="2" headerText="Supplier Name"/> 
-                                    <p:column rowspan="2" headerText="Supplier NetTotal"/> 
+                                    <p:column rowspan="2" headerText="Credit Company"/> 
+                                    <p:column rowspan="2" headerText="Credit Company NetTotal"/> 
                                     <p:column colspan="6" headerText="0-30"/>
                                     <p:column colspan="6" headerText="30-60"/> 
                                     <p:column colspan="6" headerText="60-90"/> 
                                     <p:column colspan="6" headerText="90 more"/> 
                                 </p:row> 
                                 <p:row>  
-                                    <p:column headerText="Supplier Tolal"/>
+                                    <p:column headerText="Credit Company Total"/>
                                     <p:column headerText="BHT No"/>  
                                     <p:column headerText="Patient"/>
                                     <p:column headerText="Admit Date"/> 
                                     <p:column headerText="Discharge Date"/> 
                                     <p:column headerText="Total"/> 
 
-                                    <p:column headerText="Supplier Tolal"/>
+                                    <p:column headerText="Credit Company Total"/>
                                     <p:column headerText="BHT No"/>  
                                     <p:column headerText="Patient"/>
                                     <p:column headerText="Admit Date"/> 
                                     <p:column headerText="Discharge Date"/> 
                                     <p:column headerText="Total"/> 
 
-                                    <p:column headerText="Supplier Tolal"/>
+                                    <p:column headerText="Credit Company Total"/>
                                     <p:column headerText="BHT No"/>  
                                     <p:column headerText="Patient"/>
                                     <p:column headerText="Admit Date"/> 
                                     <p:column headerText="Discharge Date"/> 
                                     <p:column headerText="Total"/> 
 
-                                    <p:column headerText="Supplier Tolal"/>
+                                    <p:column headerText="Credit Company Total"/>
                                     <p:column headerText="BHT No"/>  
                                     <p:column headerText="Patient"/>
                                     <p:column headerText="Admit Date"/> 
@@ -304,7 +422,7 @@
                             </p:columnGroup>
 
 
-                            <p:column headerText="Supplier Name" >       
+                            <p:column headerText="Credit Company" >       
                                 <h:outputLabel id="colComDetailDue"  value="#{r.dealer.name}"/>
                                 <p:tooltip for="colComDetailDue"  >
                                     <h:outputLabel value="Address : #{r.dealer.address}" >
