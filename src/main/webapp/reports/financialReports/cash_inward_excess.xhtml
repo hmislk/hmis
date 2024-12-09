@@ -47,13 +47,131 @@
                                 <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
                             </p:calendar>
 
+                            <p:spacer width="20"/>
+                            <p:spacer width="20"/>
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control"
+                                value="#{reportsController.institution}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions"/>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                               itemValue="#{ins}"/>
+                                <p:ajax process="cmbIns" update="cmbDept"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"
+                                value="#{reportsController.site}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites"/>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                               itemValue="#{site}"/>
+                                <p:ajax process="siteMenu" update="cmbDept"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="m-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{reportsController.institution eq null and reportsController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{reportsController.institution eq null and reportsController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{reportsController.institution ne null and reportsController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(reportsController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{reportsController.institution ne null and reportsController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.institution, reportsController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="false"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.institution, reportsController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
                         </h:panelGrid>
 
                         <p:commandButton 
                             class="ui-button-warning my-4 mx-2"
-                            style="width: 200px"
+                            style="width: 150px"
                             ajax="false" 
-                            value="Process Cash Excess" 
+                            value="Process" 
                             icon="fas fa-cogs" 
                             action="#{creditCompanyDueController.createInwardCashAccess()}">
                         </p:commandButton>
@@ -89,7 +207,7 @@
                         </p:commandButton>
 
                         <p:dataTable id="lst" value="#{creditCompanyDueController.institutionEncounters}" var="i">
-                        <f:facet name="header">
+                            <f:facet name="header">
                                 <h:outputLabel value="EXCESS SEARCH"/>
                                 <h:outputLabel value="&emsp;&emsp;From :  " style="white-space: pre-line"/>
                                 <h:outputLabel value="#{creditCompanyDueController.fromDate}">
@@ -100,77 +218,77 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
-                        <p:columnGroup type="header">
-                            <p:row>
-                                <p:column headerText="Patient Encounter">                                    
-                                </p:column>
-                                <p:column headerText="Patient Name">                                    
-                                </p:column>
-                                <p:column headerText="Used Amount">                                    
-                                </p:column>
-                                <p:column headerText="Paid Amount">                                    
-                                </p:column>
-                                 <p:column headerText="Net Amount">                                    
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
-                        <p:subTable value="#{i.patientEncounters}" var="b">
-                            <f:facet name="header">
-                                <h:outputLabel  value="#{i.institution.name}"/>
-                            </f:facet>
-                            <p:column>                              
-                                <h:outputLabel value="#{b.bhtNo}" />                                
-                            </p:column>
-                            <p:column>                               
-                                <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
-                            </p:column>
-                            <p:column style="text-align: right;">                                
-                                <h:outputLabel value="#{b.creditUsedAmount}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>                                 
-                            </p:column>
-                            <p:column style="text-align: right;">                              
-                                <h:outputLabel value="#{b.creditPaidAmount}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column style="text-align: right;">                              
-                                <h:outputLabel value="#{b.creditUsedAmount+b.creditPaidAmount}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>
-                            <p:columnGroup type="footer">
+                            <p:columnGroup type="header">
                                 <p:row>
-                                    <p:column footerText="Total" colspan="2" />
-                                    <p:column style="text-align: right;">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{i.total}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
+                                    <p:column headerText="Patient Encounter">                                    
                                     </p:column>
-                                    <p:column style="text-align: right;" >
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{i.paidTotal}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
+                                    <p:column headerText="Patient Name">                                    
                                     </p:column>
-                                     <p:column style="text-align: right;" >
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{i.total+i.paidTotal}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
+                                    <p:column headerText="Used Amount">                                    
+                                    </p:column>
+                                    <p:column headerText="Paid Amount">                                    
+                                    </p:column>
+                                    <p:column headerText="Net Amount">                                    
                                     </p:column>
                                 </p:row>
                             </p:columnGroup>
-                        </p:subTable>
+                            <p:subTable value="#{i.patientEncounters}" var="b">
+                                <f:facet name="header">
+                                    <h:outputLabel  value="#{i.institution.name}"/>
+                                </f:facet>
+                                <p:column>                              
+                                    <h:outputLabel value="#{b.bhtNo}" />                                
+                                </p:column>
+                                <p:column>                               
+                                    <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
+                                </p:column>
+                                <p:column style="text-align: right;">                                
+                                    <h:outputLabel value="#{b.creditUsedAmount}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>                                 
+                                </p:column>
+                                <p:column style="text-align: right;">                              
+                                    <h:outputLabel value="#{b.creditPaidAmount}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right;">                              
+                                    <h:outputLabel value="#{b.creditUsedAmount+b.creditPaidAmount}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Total" colspan="2" />
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{i.total}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="text-align: right;" >
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{i.paidTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="text-align: right;" >
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{i.total+i.paidTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:subTable>
                             <f:facet name="footer" >
                                 <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                             </f:facet>
 
-                    </p:dataTable>
+                        </p:dataTable>
 
                     </p:panel>
                 </h:form>
