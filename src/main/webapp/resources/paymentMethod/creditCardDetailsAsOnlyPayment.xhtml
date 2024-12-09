@@ -14,7 +14,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid columns="2" class="w-100" >
+        <h:panelGrid columns="2" class="w-75 mx-3" >
             <p:outputLabel value="Card Number" for="txtCardNumber"></p:outputLabel>
             <p:inputText 
                 autocomplete="off"
@@ -40,7 +40,7 @@
             <p:outputLabel 
                 value="Comments" 
                 for="txtCcComments"></p:outputLabel>
-            <p:inputText id="txtCcComments" value="#{cc.attrs.paymentMethodData.creditCard.comment}" placeholder="Enter Credit Card Comments" ></p:inputText>
+            <p:inputText id="txtCcComments" class="w-100" value="#{cc.attrs.paymentMethodData.creditCard.comment}" placeholder="Enter Credit Card Comments" ></p:inputText>
         </h:panelGrid>
     </cc:implementation>
 </html>

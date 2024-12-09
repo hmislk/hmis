@@ -40,6 +40,7 @@ import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.ItemMappingFacade;
 import com.divudi.facade.ServiceFacade;
 import com.divudi.java.CommonFunctions;
+import com.divudi.service.ItemFeeService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -109,6 +110,8 @@ public class ItemController implements Serializable {
     ItemMappingFacade itemMappingFacade;
     @EJB
     DepartmentFacade departmentFacade;
+    @EJB
+    ItemFeeService itemFeeService;
     /**
      * Managed Beans
      */
@@ -138,27 +141,28 @@ public class ItemController implements Serializable {
     /**
      * Properties
      */
+    private Institution site;
     private Item current;
     private Item sampleComponent;
     private List<Item> items = null;
     private List<Item> investigationsAndServices = null;
     private List<Item> itemlist;
-    List<ItemLight> allItems;
+    private List<ItemLight> allItems;
     private List<ItemLight> filteredItems;
     private ItemLight selectedItemLight;
     private List<ItemLight> departmentItems;
     private List<ItemLight> institutionItems;
     private List<ItemLight> ccDeptItems;
     private List<ItemLight> ccInstitutionItems;
-    List<ItemFee> allItemFees;
-    List<Item> selectedList;
-    List<ItemFee> selectedItemFeeList;
+    private List<ItemFee> allItemFees;
+    private List<Item> selectedList;
+    private List<ItemFee> selectedItemFeeList;
     private Institution institution;
     private Department department;
     private Institution filterInstitution;
     private Department filterDepartment;
-    FeeType feeType;
-    List<Department> departments;
+    private FeeType feeType;
+    private List<Department> departments;
     private Machine machine;
     private List<Item> machineTests;
     private List<Item> investigationSampleComponents;
@@ -174,9 +178,11 @@ public class ItemController implements Serializable {
     private UploadedFile file;
     private Category selectedCategory;
 
-    ReportKeyWord reportKeyWord;
+    private ReportKeyWord reportKeyWord;
 
     private List<Item> packaes;
+
+    private String output;
 
     public void uploadAddReplaceItemsFromId() {
         items = new ArrayList<>();
@@ -189,12 +195,106 @@ public class ItemController implements Serializable {
         }
     }
 
+    public void uploadAddReplaceSiteFeesByItemCode() {
+        if (site == null) {
+            JsfUtil.addErrorMessage("Please select a site");
+            return;
+        }
+        allItemFees = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                allItemFees = replaceSiteFeesFromItemCodeFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public UploadedFile getFile() {
         return file;
     }
 
     public void setFile(UploadedFile file) {
         this.file = file;
+    }
+
+    private List<ItemFee> replaceSiteFeesFromItemCodeFromExcel(InputStream inputStream) throws IOException {
+        output = "";
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<ItemFee> itemFeesSaved = new ArrayList<>();
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        int rowNumber = 0;
+
+        while (rowIterator.hasNext()) {
+            rowNumber++;
+            Row row = rowIterator.next();
+            // Ensure item is initialized correctly
+            String itemCode = null;
+            Long itemCodeLong;
+
+            // Column 0: Item ID
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null) {
+                if (codeCell.getCellType() == CellType.STRING) {
+                    itemCode = codeCell.getStringCellValue();
+                } else if (codeCell.getCellType() == CellType.NUMERIC) {
+                    itemCodeLong = (long) codeCell.getNumericCellValue();
+                    itemCode = itemCodeLong.toString();
+                }
+            }
+
+            List<ItemFee> itemFeesMatchingTheCodeAndSite = itemFeeService.fetchSiteFeesByItem(itemCode, site);
+
+            if (itemFeesMatchingTheCodeAndSite == null) {
+                output += rowNumber + " - No Mathing Item Fee for Code " + itemCode + "/n<br/>";
+                continue;
+            }
+            if (itemFeesMatchingTheCodeAndSite.isEmpty()) {
+                output += rowNumber + " - No Mathing Item Fee for Code " + itemCode + "/n<br/>";
+                continue;
+            }
+            if (itemFeesMatchingTheCodeAndSite.size() > 1) {
+                output += rowNumber + " - More than one Mathing Item Fees for Code " + itemCode + "/n<br/>";
+                continue;
+            }
+
+            ItemFee itemFee = itemFeesMatchingTheCodeAndSite.get(0);
+            Double feeValue = 0.0;
+
+            // Column 0: Item ID
+            Cell feeCell = row.getCell(1);
+            if (feeCell != null) {
+                if (feeCell.getCellType() == CellType.STRING) {
+                    feeValue = CommonFunctions.stringToDouble(feeCell.getStringCellValue());
+                } else if (feeCell.getCellType() == CellType.NUMERIC) {
+                    feeValue = (double) feeCell.getNumericCellValue();
+                }
+            }
+            if (feeValue < 1) {
+                output = rowNumber + " - Fee Value is wrong for Item with Code " + itemCode + "/n<br/>";
+                continue;
+            }
+
+            itemFee.setFee(feeValue);
+            itemFee.setFfee(feeValue);
+            itemFeeFacade.edit(itemFee);
+            
+            itemFeeService.updateFeeValue(itemFee.getItem(), site, feeValue, feeValue);
+            
+            output += rowNumber + " - Successfully added Fee for Item with Code " + itemCode + "/n<br/>";
+
+        }
+
+        workbook.close(); // Always close the workbook to prevent memory leaks
+        return itemFeesSaved;
     }
 
     private List<Item> replaceItemsFromExcel(InputStream inputStream) throws IOException {
@@ -805,6 +905,19 @@ public class ItemController implements Serializable {
         m.put("code", code);
         Item item = getFacade().findFirstByJpql(jpql, m);
         return item;
+    }
+
+    public List<Item> findItemsByCode(String code) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.code=:code";
+        m.put("ret", false);
+        m.put("code", code);
+        List<Item> items = getFacade().findByJpql(jpql, m);
+        return items;
     }
 
     public Item findItem(Long id) {
@@ -1747,44 +1860,43 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeAmpItem(String query) {
-    List<Item> suggestions = new ArrayList<>();
-    if (query == null || query.trim().isEmpty()) {
-        return suggestions;
-    } else {
-        String[] words = query.split("\\s+");
-        String sql = "SELECT c FROM Item c WHERE c.retired = false AND type(c) = :amp AND "
-                + "(c.departmentType IS NULL OR c.departmentType != :dep) AND (";
+        List<Item> suggestions = new ArrayList<>();
+        if (query == null || query.trim().isEmpty()) {
+            return suggestions;
+        } else {
+            String[] words = query.split("\\s+");
+            String sql = "SELECT c FROM Item c WHERE c.retired = false AND type(c) = :amp AND "
+                    + "(c.departmentType IS NULL OR c.departmentType != :dep) AND (";
 
-        // Dynamic part of the query for the name field using each word
-        StringBuilder nameConditions = new StringBuilder();
-        for (int i = 0; i < words.length; i++) {
-            if (i > 0) {
-                nameConditions.append(" AND ");
+            // Dynamic part of the query for the name field using each word
+            StringBuilder nameConditions = new StringBuilder();
+            for (int i = 0; i < words.length; i++) {
+                if (i > 0) {
+                    nameConditions.append(" AND ");
+                }
+                nameConditions.append("LOWER(c.name) LIKE :nameStr").append(i);
             }
-            nameConditions.append("LOWER(c.name) LIKE :nameStr").append(i);
+
+            // Adding name conditions and the static conditions for code and barcode
+            sql += "(" + nameConditions + ") OR LOWER(c.code) LIKE :codeStr "
+                    + "OR LOWER(c.barcode) LIKE :barcodeStr OR c.barcode = :exactBarcodeStr) "
+                    + "ORDER BY c.name";
+
+            // Setting parameters
+            HashMap<String, Object> tmpMap = new HashMap<>();
+            tmpMap.put("dep", DepartmentType.Store);
+            tmpMap.put("amp", Amp.class);
+            tmpMap.put("codeStr", "%" + query.toLowerCase() + "%");
+            tmpMap.put("barcodeStr", "%" + query.toLowerCase() + "%");
+            tmpMap.put("exactBarcodeStr", query);
+
+            for (int i = 0; i < words.length; i++) {
+                tmpMap.put("nameStr" + i, "%" + words[i].toLowerCase() + "%");
+            }
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
-
-        // Adding name conditions and the static conditions for code and barcode
-        sql += "(" + nameConditions + ") OR LOWER(c.code) LIKE :codeStr "
-                + "OR LOWER(c.barcode) LIKE :barcodeStr OR c.barcode = :exactBarcodeStr) "
-                + "ORDER BY c.name";
-
-        // Setting parameters
-        HashMap<String, Object> tmpMap = new HashMap<>();
-        tmpMap.put("dep", DepartmentType.Store);
-        tmpMap.put("amp", Amp.class);
-        tmpMap.put("codeStr", "%" + query.toLowerCase() + "%");
-        tmpMap.put("barcodeStr", "%" + query.toLowerCase() + "%");
-        tmpMap.put("exactBarcodeStr", query);
-
-        for (int i = 0; i < words.length; i++) {
-            tmpMap.put("nameStr" + i, "%" + words[i].toLowerCase() + "%");
-        }
-        suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+        return suggestions;
     }
-    return suggestions;
-}
-
 
 //    @Deprecated(forRemoval = true)
 //    public List<Item> completeAmps(String query) {
@@ -2511,7 +2623,7 @@ public class ItemController implements Serializable {
         }
         return mySuggestions;
     }
-    
+
     public List<Item> getServicesPlusInvestigationsOfSelectedCategory(Category cat) {
         List<Item> mySuggestions;
         HashMap m = new HashMap();
@@ -2526,7 +2638,7 @@ public class ItemController implements Serializable {
                     + " order by c.name";
             m.put("ser", Service.class);
             m.put("inv", Investigation.class);
-            m.put("cat",  cat);
+            m.put("cat", cat);
 
             mySuggestions = getFacade().findByJpql(sql, m, 20);
         }
@@ -3230,11 +3342,11 @@ public class ItemController implements Serializable {
 
         return insItems;
     }
-    
-    public void reloadItems(){
-        departmentItems=null;
-        institutionItems=null;
-        packaes=null;
+
+    public void reloadItems() {
+        departmentItems = null;
+        institutionItems = null;
+        packaes = null;
     }
 
     public List<ItemLight> getDepartmentItems() {
@@ -3418,6 +3530,22 @@ public class ItemController implements Serializable {
 
     public void setSelectedCategory(Category selectedCategory) {
         this.selectedCategory = selectedCategory;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void setOutput(String output) {
+        this.output = output;
     }
 
     @FacesConverter("itemLightConverter")

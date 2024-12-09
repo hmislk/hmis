@@ -95,11 +95,11 @@
                                                             alt="Save Patient Details" 
                                                             class="ui-button-success" 
                                                             icon="fas fa-check" 
+                                                            process="btnDone editPatient"
                                                             action="#{patientController.saveSelected(opdBillController.patient)}" 
                                                             rendered="#{opdBillController.patientDetailsEditable}" 
-                                                            update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} " />
+                                                            update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} msg" />
                                                     </h:panelGroup>
-
                                                 </h:panelGroup>
                                             </h:panelGroup>
 
