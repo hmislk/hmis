@@ -460,12 +460,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             return true;
         }
 
-        if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
-            return true;
-        }
-
         if (getPaymentMethod() == PaymentMethod.Credit) {
-            if (getPaymentMethodData().getCredit().getComment()==null
+            if (getPaymentMethodData().getCredit().getComment() == null
                     && configOptionApplicationController.getBooleanValueByKey("Package Billing - Credit Comment is Mandatory", false)) {
                 JsfUtil.addErrorMessage("Please enter a Credit comment.");
                 return true;
@@ -481,6 +477,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             } else {
                 creditCompany = getPaymentMethodData().getCredit().getInstitution();
             }
+        }
+
+        if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
+            return true;
         }
 
         if (getPaymentMethod() == PaymentMethod.Card
