@@ -110,6 +110,14 @@
                                          value="View Bill"  
                                         actionListener="#{inwardSearch.selectBillItem(ser)}" >  
                         </p:commandButton>
+                        <p:commandButton 
+                                                    value="To Manage Samples" 
+                                                    class="ui-button-warning" 
+                                                    ajax="false" 
+                                                    action="#{billBhtController.navigateToSampleManegmentFromInwardIntrimBill(ser.bill)}" icon="fa-solid fa-cogs" 
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Sample Management for Inward Service and Investigations')}"
+                                                    >
+                                                </p:commandButton>
                     </p:column>
 
                 </p:dataTable>
