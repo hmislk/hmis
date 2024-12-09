@@ -465,6 +465,11 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         if (getPaymentMethod() == PaymentMethod.Credit) {
+            if (getPaymentMethodData().getCredit().getComment()==null
+                    && configOptionApplicationController.getBooleanValueByKey("Package Billing - Credit Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please enter a Credit comment.");
+                return true;
+            }
             if (getPaymentMethodData().getCredit().getComment().trim().isEmpty()
                     && configOptionApplicationController.getBooleanValueByKey("Package Billing - Credit Comment is Mandatory", false)) {
                 JsfUtil.addErrorMessage("Please enter a Credit comment.");
