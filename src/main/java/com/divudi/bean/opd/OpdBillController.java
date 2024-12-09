@@ -79,6 +79,7 @@ import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -146,6 +147,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private TokenFacade tokenFacade;
     @EJB
     BillService billService;
+    @EJB
+    PaymentService paymentService;
 
     /**
      * Controllers
@@ -1960,6 +1963,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(getBatchBill(), pd);
         }
+        if(paymentMethod==PaymentMethod.MultiplePaymentMethods){
+            paymentService.updateBalances(payments);
+        }
+      
 
         if (getToken() != null) {
             getToken().setBill(getBatchBill());
