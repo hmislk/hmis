@@ -82,7 +82,6 @@
                                     </h:panelGrid>
                                     <h:panelGrid id="gpSelectButtons" columns="3" class="my-1 d-flex justify-content-end">
                                         <p:commandButton 
-                                            ajax="false" 
                                             id="btnAdd" 
                                             value="New" 
                                             title="Clear Current &amp; Add New Session"
@@ -93,10 +92,11 @@
                                             update="lstSelect gpDetail">
                                         </p:commandButton>
                                         <p:commandButton 
-                                            ajax="false" 
                                             class="ui-button-danger" 
                                             icon="fas fa-trash" 
                                             id="btnDelete" 
+                                            process="btnDelete lstSelect"
+                                            update="@form"
                                             onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                         return false;" 
                                             action="#{channelScheduleController.delete()}" 
@@ -138,7 +138,7 @@
 
                                     <p:tabView id="tvDetails" style="width: 100%!important;" activeIndex="#{channelScheduleController.tabIndex}">
                                         <p:tab title="Details">
-                                            <h:panelGrid columns="2" cellpadding="10">
+                                            <p:panelGrid columns="2" columnClasses="custom-col-38 , custom-col-58" class="w-100" >
 
 
                                                 <p:outputLabel value="Session Name"/>
@@ -196,8 +196,13 @@
 
 
 
-                                                <h:outputText value="Department"></h:outputText>        
-                                                <p:selectOneMenu class="w-100" id="cmbDep" value="#{channelScheduleController.current.department}">
+                                                <p:outputLabel for="cmbDep" value="Department"></p:outputLabel>        
+                                                <p:selectOneMenu 
+                                                    class="w-100" 
+                                                    id="cmbDep" 
+                                                    required="true"
+                                                    requiredMessage="Please enter a department"
+                                                    value="#{channelScheduleController.current.department}">
                                                     <f:selectItem itemLabel="Please select a Department" />
                                                     <f:selectItems value="#{channelScheduleController.institutionDepatrments}"
                                                                    var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
@@ -270,7 +275,7 @@
                                                 <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{channelScheduleController.current.specialNotice}"/>
 
 
-                                            </h:panelGrid>
+                                            </p:panelGrid>
                                         </p:tab>
                                         <p:tab title="Date Details">
                                             <h:panelGrid columns="1" class="w-100">
@@ -564,7 +569,7 @@
 
                                             </h:panelGrid>
 
-                                            
+
                                             <p:dataTable 
                                                 id="tblAdditionalItems"
                                                 value="#{channelScheduleController.additionalItemsAddedForCurrentSession}" 
