@@ -27,6 +27,8 @@ import com.divudi.entity.RefundBill;
 import com.divudi.entity.cashTransaction.Drawer;
 
 import com.divudi.facade.BillFacade;
+import com.divudi.facade.StaffFacade;
+import com.divudi.service.StaffService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -48,6 +50,8 @@ public class BillReturnController implements Serializable {
     BillFacade billFacade;
     @EJB
     BillNumberGenerator billNumberGenerator;
+    @EJB
+    StaffService staffBean;
 
     // </editor-fold>
     
@@ -360,18 +364,11 @@ public class BillReturnController implements Serializable {
         returningBillPayments.add(returningPayment);
         
         if (paymentMethod == PaymentMethod.PatientDeposit) {
-//            //System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
-//            if (bill.getPatient().getRunningBalance() == null) {
-//                //System.out.println("Null");
-//                bill.getPatient().setRunningBalance(Math.abs(bill.getNetTotal()));
-//            } else {
-//                //System.out.println("Not Null - Add BillValue");
-//                bill.getPatient().setRunningBalance(bill.getPatient().getRunningBalance() + Math.abs(bill.getNetTotal()));
-//            }
-//            patientFacade.edit(bill.getPatient());
-//            //System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(newlyReturnedBill.getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(newlyReturnedBill, pd);
+        } else if (paymentMethod == PaymentMethod.Staff_Welfare){
+            staffBean.updateStaffWelfare(newlyReturnedBill.getToStaff(), - Math.abs(newlyReturnedBill.getNetTotal()));
+            System.out.println("updated = ");
         }
         
         // drawer Update
