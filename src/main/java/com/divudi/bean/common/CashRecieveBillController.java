@@ -827,7 +827,7 @@ public class CashRecieveBillController implements Serializable {
             }
             updateSettlingCreditBillSettledValues(savingBillItem);
         }
-        paymentService.createPayment(current, paymentMethodData);
+        paymentService.createPayment(current, getPaymentMethodData());
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
     }
