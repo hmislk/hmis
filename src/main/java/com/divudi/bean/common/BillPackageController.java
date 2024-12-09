@@ -366,6 +366,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
     }
 
+    @Deprecated // Instead Use checkPaymentDetails
     public boolean validatePaymentMethodDeta() {
         boolean error = false;
 
@@ -394,8 +395,118 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 JsfUtil.addErrorMessage("Please Enter a Credit Comment..");
                 error = true;
             }
+            if (getPaymentMethodData().getCredit().getInstitution() == null) {
+                JsfUtil.addErrorMessage("Please Enter a Credit Company.");
+                error = true;
+            } else {
+                creditCompany = getPaymentMethodData().getCredit().getInstitution();
+            }
         }
         return error;
+    }
+
+    private boolean checkPatientDetails() {
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Name to Save Patient in Package Billing", false)) {
+            if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().isEmpty()
+                    || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
+                JsfUtil.addErrorMessage("Cannot bill without Patient Name, Age or Sex.");
+                return true;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender To Save Patient in Package Billing", false)) {
+            if (getPatient().getPerson().getTitle() == null) {
+                JsfUtil.addErrorMessage("Please select title.");
+                return true;
+            }
+            if (getPatient().getPerson().getSex() == null) {
+                JsfUtil.addErrorMessage("Please select gender.");
+                return true;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient in Package Billing", false)) {
+            if (getPatient().getPerson().getDob() == null) {
+                JsfUtil.addErrorMessage("Please select patient date of birth.");
+                return true;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Phone Number to save Patient in Package Billing", false)) {
+            if (getPatient().getPerson().getPhone() == null || getPatient().getPerson().getPhone().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please enter a phone number.");
+                return true;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Area to save Patient in Package Billing", false)) {
+            if (getPatient().getPerson().getArea() == null || getPatient().getPerson().getArea().getName().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please select patient area.");
+                return true;
+            }
+        }
+
+        if (getLstBillEntries().isEmpty()) {
+            JsfUtil.addErrorMessage("No investigations are added to the bill to settle.");
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean checkPaymentDetails() {
+        if (getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a payment method.");
+            return true;
+        }
+
+        if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
+            return true;
+        }
+
+        if (getPaymentMethod() == PaymentMethod.Credit) {
+            if (getPaymentMethodData().getCredit().getComment().trim().isEmpty()
+                    && configOptionApplicationController.getBooleanValueByKey("Package Billing - Credit Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please enter a Credit comment.");
+                return true;
+            }
+            if (getPaymentMethodData().getCredit().getInstitution() == null) {
+                JsfUtil.addErrorMessage("Please enter a Credit Company.");
+                return true;
+            } else {
+                creditCompany = getPaymentMethodData().getCredit().getInstitution();
+            }
+        }
+
+        if (getPaymentMethod() == PaymentMethod.Card
+                && getPaymentMethodData().getCreditCard().getComment().trim().isEmpty()
+                && configOptionApplicationController.getBooleanValueByKey("Package Billing - CreditCard Comment is Mandatory", false)) {
+            JsfUtil.addErrorMessage("Please enter a Credit Card comment.");
+            return true;
+        }
+
+        if (getPaymentMethod() == PaymentMethod.Cheque
+                && getPaymentMethodData().getCheque().getComment().trim().isEmpty()
+                && configOptionApplicationController.getBooleanValueByKey("Package Billing - Cheque Comment is Mandatory", false)) {
+            JsfUtil.addErrorMessage("Please enter a Cheque comment.");
+            return true;
+        }
+
+        if (getPaymentMethod() == PaymentMethod.ewallet
+                && getPaymentMethodData().getEwallet().getComment().trim().isEmpty()
+                && configOptionApplicationController.getBooleanValueByKey("Package Billing - E-Wallet Comment is Mandatory", false)) {
+            JsfUtil.addErrorMessage("Please enter an E-Wallet comment.");
+            return true;
+        }
+
+        if (getPaymentMethod() == PaymentMethod.Slip
+                && getPaymentMethodData().getSlip().getComment().trim().isEmpty()
+                && configOptionApplicationController.getBooleanValueByKey("Package Billing - Slip Comment is Mandatory", false)) {
+            JsfUtil.addErrorMessage("Please enter a Slip comment.");
+            return true;
+        }
+
+        return false;
     }
 
     public String cancelPackageBill() {
@@ -775,12 +886,25 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         return false;
     }
 
-    public void settleBill() {
-        if (errorCheck()) {
-            return;
+    private boolean performErrorChecks() {
+        if (checkPatientDetails()) {
+            return true;
         }
+        if (checkPaymentDetails()) {
+            return true;
+        }
+        return false;
+    }
 
-        if (validatePaymentMethodDeta()) {
+    public void settleBill() {
+//        if (validatePaymentMethodDeta()) {
+//            return;
+//        }
+//        if (errorCheck()) {
+//            return;
+//        }
+
+        if (performErrorChecks()) {
             return;
         }
 
@@ -1051,7 +1175,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     }
                     if (remainAmount >= patient.getRunningBalance()) {
                         pm.getPaymentMethodData().getPatient_deposit().setTotalValue(patient.getRunningBalance());
-                    }else {
+                    } else {
                         pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
                     }
 
@@ -1072,6 +1196,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     }
 
+    @Deprecated //Instead use checkPaymentDetails
     private boolean errorCheck() {
 
         if (configOptionApplicationController.getBooleanValueByKey("Need Patient Name to Save Patient in Package Billing", false)) {
@@ -2199,6 +2324,5 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setRemainAmount(double remainAmount) {
         this.remainAmount = remainAmount;
     }
-    
-    
+
 }
