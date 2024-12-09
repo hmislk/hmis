@@ -455,12 +455,15 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     private boolean checkPaymentDetails() {
+        System.out.println("checkPaymentDetails");
+        System.out.println("getPaymentMethod() = " + getPaymentMethod());
         if (getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a payment method.");
             return true;
         }
 
         if (getPaymentMethod() == PaymentMethod.Credit) {
+            System.out.println("credit");
             if (getPaymentMethodData().getCredit().getComment() == null
                     && configOptionApplicationController.getBooleanValueByKey("Package Billing - Credit Comment is Mandatory", false)) {
                 JsfUtil.addErrorMessage("Please enter a Credit comment.");
@@ -471,17 +474,16 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 JsfUtil.addErrorMessage("Please enter a Credit comment.");
                 return true;
             }
+            System.out.println("getPaymentMethodData().getCredit().getInstitution() = " + getPaymentMethodData().getCredit().getInstitution());
             if (getPaymentMethodData().getCredit().getInstitution() == null) {
-                JsfUtil.addErrorMessage("Please enter a Credit Company.");
+                JsfUtil.addErrorMessage("Please enter a Credit Company !");
                 return true;
             } else {
                 creditCompany = getPaymentMethodData().getCredit().getInstitution();
             }
         }
 
-        if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
-            return true;
-        }
+        
 
         if (getPaymentMethod() == PaymentMethod.Card
                 && getPaymentMethodData().getCreditCard().getComment().trim().isEmpty()
@@ -508,6 +510,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 && getPaymentMethodData().getSlip().getComment().trim().isEmpty()
                 && configOptionApplicationController.getBooleanValueByKey("Package Billing - Slip Comment is Mandatory", false)) {
             JsfUtil.addErrorMessage("Please enter a Slip comment.");
+            return true;
+        }
+        
+        if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
         }
 
