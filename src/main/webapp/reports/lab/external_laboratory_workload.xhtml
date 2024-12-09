@@ -242,7 +242,7 @@
                             <h:outputText value="&#xf007;" styleClass="fa mr-2"/>
                             <h:outputLabel value="Patient MRN" class="m-3"/>
                         </h:panelGroup>
-                        <p:inputText class="w-100"/>
+                        <p:inputText class="w-100" value="#{reportsController.mrnNo}"/>
 
                         <p:spacer width="20"/>
 
@@ -324,62 +324,79 @@
                                           style="font-weight: bold; text-align: left; display: block;"/>
                         </f:facet>
 
-                        <p:column headerText="Sample ID" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                        <p:column headerText="Sample ID" width="8rem">
+                            <h:outputText value="#{row.billItem.item.code}"/>
                         </p:column>
-                        <p:column headerText="Invoice No" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                        <p:column headerText="Invoice No" width="14rem">
+                            <h:outputText value="#{row.billItem.patientEncounter != null ?
+                                                    row.billItem.patientEncounter.finalBill.deptId :
+                                                    row.billItem.bill.deptId}"/>
                         </p:column>
-                        <p:column headerText="MRN" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                        <p:column headerText="MRN" width="8rem">
+                            <h:outputText value="#{row.billItem.patientEncounter != null ?
+                                                    row.billItem.patientEncounter.bhtNo :
+                                                    row.billItem.bill.patient.phn}"/>
                         </p:column>
-                        <p:column headerText="Name" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                        <p:column headerText="Name" width="8rem">
+                            <h:outputText value="#{row.billItem.bill.patient.person.name}"/>
                         </p:column>
                         <p:column headerText="Age" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                            <h:outputText value="#{row.billItem.bill.patient.person.ageAsString}"/>
                         </p:column>
                         <p:column headerText="Gender" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                            <h:outputText value="#{row.billItem.bill.patient.person.sex}"/>
                         </p:column>
                         <p:column headerText="Investigation" width="6rem">
-                            <h:outputText value=""></h:outputText>
+                            <h:outputText value="#{row.billItem.patientInvestigation.investigation.name}"/>
                         </p:column>
                         <p:column headerText="Lab Department" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                            <h:outputText value="#{row.billItem.patientInvestigation.investigation.category.name}"/>
                         </p:column>
-                        <p:column headerText="CC" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                        <p:column headerText="CC" width="5rem" rendered="#{reportsController.visitType eq 'CC'}">
+                            <h:outputText value="#{row.billItem.bill.collectingCentre.name}"/>
                         </p:column>
-                        <p:column headerText="CC Route" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                        <p:column headerText="CC Route" width="5rem" rendered="#{reportsController.visitType eq 'CC'}">
+                            <h:outputText value="#{row.billItem.bill.collectingCentre.route.name}"/>
                         </p:column>
                         <p:column headerText="Invoiced Date" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                            <h:outputText value="#{row.billItem.bill.createdAt}">
+                                <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputText>
                         </p:column>
                         <p:column headerText="Invoiced By" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                            <h:outputText value="#{row.billItem.bill.creater.webUserPerson.name}"/>
                         </p:column>
                         <p:column headerText="Recieved Date" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                            <h:outputText value="#{row.billItem.patientInvestigation.createdAt}">
+                                <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputText>
                         </p:column>
                         <p:column headerText="Recieved By" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                            <h:outputText value="#{row.billItem.patientInvestigation.creater.webUserPerson.name}"/>
                         </p:column>
                         <p:column headerText="Remarks" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                            <h:outputText value="#{row.billItem.patientInvestigation.investigation.comments}"/>
                         </p:column>
                         <p:column headerText="Patient Source" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                            <h:outputText value="#{row.billItem.bill.ipOpOrCc}"/>
                         </p:column>
                         <p:column headerText="Patient Type" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                            <h:outputText value="#{row.billItem.bill.paymentMethod.name()}"/>
                         </p:column>
                         <p:column headerText="Referring Doctor" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                            <h:outputText value="#{row.billItem.bill.referredInstituteOrDoctor.name}"/>
                         </p:column>
                         <p:column headerText="Item Value" width="5rem">
-                            <h:outputText value=""></h:outputText>
+                            <h:outputText value="#{row.billItem.netValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{reportsController.bundle.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
                     </p:dataTable>
 
@@ -399,20 +416,21 @@
                             <h:outputText value="Report Type - Summary"
                                           style="font-weight: bold; text-align: left; display: block;"/>
                         </f:facet>
-                        <p:column headerText="Sl. No." width="5rem">
+                        <p:column headerText="Sl. No." width="1rem">
                             <h:outputText value="#{b+1}"/>
                         </p:column>
                         <p:column headerText="Test Name" width="5rem">
-                            <h:outputText value="#{row.billItem.item.name}"/>
+                            <h:outputText value="#{row.categoryName}"/>
                         </p:column>
                         <p:column headerText="Total Test Performed" width="5rem">
-                            <h:outputText value="#{row.billItem.qty}"/>
+                            <h:outputText value="#{row.rowValue}">
+                                <f:convertNumber pattern="#,##0.0"/>
+                            </h:outputText>
                         </p:column>
                     </p:dataTable>
                 </p:panel>
             </h:form>
         </ui:define>
     </ui:composition>
-
 </h:body>
 </html>
