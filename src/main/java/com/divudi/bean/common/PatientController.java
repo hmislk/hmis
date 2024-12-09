@@ -264,6 +264,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private Department department;
 
     private boolean reGenerateePhn;
+    private PaymentMethod paymentMethod;
 
     /**
      *
@@ -2031,14 +2032,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
             patientSearched = quickSearchPatientList.get(0);
             controller.setPatient(patientSearched);
             controller.setPatientDetailsEditable(false);
-            opdBillController.setPaymentMethod(null);
+            controller.setPaymentMethod(null);
 
             if (controller.getPatient().getHasAnAccount() != null) {
                 if (patientSearched.getHasAnAccount() && configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false)) {
 
-                    opdBillController.setPatient(controller.getPatient());
-                    opdBillController.setPaymentMethod(PaymentMethod.PatientDeposit);
-                    opdBillController.listnerForPaymentMethodChange();
+                    controller.setPatient(controller.getPatient());
+                    controller.setPaymentMethod(PaymentMethod.PatientDeposit);
+                    controller.listnerForPaymentMethodChange();
                 }
             }
             quickSearchPatientList = null;
@@ -4201,6 +4202,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void setReGenerateePhn(boolean reGenerateePhn) {
         this.reGenerateePhn = reGenerateePhn;
     }
+
+    @Override
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    @Override
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    
 
     /**
      *

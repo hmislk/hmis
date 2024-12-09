@@ -87,9 +87,9 @@ public class EnumController implements Serializable {
     SessionNumberType[] sessionNumberTypes;
     private List<PatientInvestigationStatus> patientInvestigationStatuses;
     private List<PaymentMethod> paymentTypeOfPaymentMethods;
-    
+
     private List<PatientInvestigationStatus> availableStatusforCancel;
-        
+
     @PostConstruct
     public void init() {
         enumList = new ArrayList<>();
@@ -109,6 +109,18 @@ public class EnumController implements Serializable {
     public List<PaymentMethod> getPaymentMethodsForPackageBilling() {
         if (paymentMethodsForOpdBilling == null) {
             fillPaymentMethodsForPackageBilling();
+        }
+        return paymentMethodsForOpdBilling;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPackageBillingWIthoutMultiple() {
+        if (paymentMethodsForOpdBilling == null) {
+            fillPaymentMethodsForPackageBilling();
+        }
+        try {
+            paymentMethodsForOpdBilling.remove(PaymentMethod.MultiplePaymentMethods);
+        } catch (Exception e) {
+
         }
         return paymentMethodsForOpdBilling;
     }
@@ -204,7 +216,7 @@ public class EnumController implements Serializable {
             }
         }
     }
-   
+
     public List<PaymentMethod> getPaymentTypeOfPaymentMethods(PaymentType paymentType) {
         paymentTypeOfPaymentMethods = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.asList()) {
@@ -756,8 +768,6 @@ public class EnumController implements Serializable {
         return p;
     }
 
-    
-
     public PaymentMethod[] getPaymentMethodsForIou() {
         PaymentMethod[] p = {PaymentMethod.Cash,
             PaymentMethod.Cheque,
@@ -981,7 +991,7 @@ public class EnumController implements Serializable {
     }
 
     public List<PaymentMethod> getPaymentMethodsForMultiplePaymentMethod() {
-        List <PaymentMethod> p = new ArrayList<>();
+        List<PaymentMethod> p = new ArrayList<>();
         p.add(PaymentMethod.Cash);
         p.add(PaymentMethod.Card);
         p.add(PaymentMethod.Cheque);

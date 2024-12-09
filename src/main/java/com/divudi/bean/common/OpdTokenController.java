@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSF/JSFManagedBean.java to edit this template
- */
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
@@ -9,6 +5,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.TokenCount;
 import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -79,6 +76,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     private Token removeingToken;
     private List<Token> currentTokens;
     private Patient patient;
+    private PaymentMethod paymentMethod;
 
     private Department department;
     private Institution institution;
@@ -676,6 +674,24 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
 
     public void setTokenCounts(List<TokenCount> tokenCounts) {
         this.tokenCounts = tokenCounts;
+    }
+
+
+    
+
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
+
+    @Override
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    @Override
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
 }

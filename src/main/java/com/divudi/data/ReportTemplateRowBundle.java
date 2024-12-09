@@ -19,11 +19,7 @@ import static com.divudi.data.PaymentMethod.Voucher;
 import static com.divudi.data.PaymentMethod.YouOweMe;
 import static com.divudi.data.PaymentMethod.ewallet;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.ReportTemplate;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
+import com.divudi.entity.*;
 import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
 
@@ -59,6 +55,7 @@ public class ReportTemplateRowBundle implements Serializable {
     List<DenominationTransaction> denominationTransactions;
     private ReportTemplate reportTemplate;
     private List<ReportTemplateRow> reportTemplateRows;
+    private Map<String, List<BillItem>> groupedBillItems;
 
     private Double grossTotal;
     private Double discount;
@@ -1151,6 +1148,34 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public void calculateTotalHospitalFeeByBillItems() {
+        hospitalTotal = 0.0;
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBillItem().getBill().getTotalHospitalFee());
+                hospitalTotal += amount;
+            }
+        }
+    }
+
+    public void calculateTotalStaffFeeByBillItems() {
+        staffTotal = 0.0;
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBillItem().getBill().getTotalStaffFee());
+                staffTotal += amount;
+            }
+        }
+    }
+
     public void calculateTotalByRowTotals() {
         total = 0.0;        // Ensure all counters are reset before starting calculations
         grossTotal = 0.0;
@@ -1721,6 +1746,14 @@ public class ReportTemplateRowBundle implements Serializable {
         } else {
             System.out.println("No reportTemplateRows to process.");
         }
+    }
+
+    public Map<String, List<BillItem>> getGroupedBillItems() {
+        return groupedBillItems;
+    }
+
+    public void setGroupedBillItems(Map<String, List<BillItem>> groupedBillItems) {
+        this.groupedBillItems = groupedBillItems;
     }
 
     private void resetTotalsAndFlags() {
