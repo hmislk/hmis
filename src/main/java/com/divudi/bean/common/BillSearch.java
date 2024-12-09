@@ -1721,28 +1721,14 @@ public class BillSearch implements Serializable {
 
         //TODO: Create Payments for Bill Items
         if (getBill().getPaymentMethod() == PaymentMethod.Staff) {
-            //System.out.println("PaymentMethod - Staff");
-
-            //System.out.println("Before Balance = " + getBill().getToStaff().getCurrentCreditValue());
             getBill().getToStaff().setCurrentCreditValue(getBill().getToStaff().getCurrentCreditValue() - Math.abs(getRefundingBill().getNetTotal()));
-
-            //System.out.println("After Balance = " + getBill().getToStaff().getCurrentCreditValue());
             staffFacade.edit(getBill().getToStaff());
-            //System.out.println("Staff Credit Updated");
 
         } else if (paymentMethod == PaymentMethod.PatientDeposit) {
-//            //System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
-//            if (bill.getPatient().getRunningBalance() == null) {
-//                //System.out.println("Null");
-//                bill.getPatient().setRunningBalance(Math.abs(bill.getNetTotal()));
-//            } else {
-//                //System.out.println("Not Null - Add BillValue");
-//                bill.getPatient().setRunningBalance(bill.getPatient().getRunningBalance() + Math.abs(bill.getNetTotal()));
-//            }
-//            patientFacade.edit(bill.getPatient());
-//            //System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(getRefundingBill().getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(getRefundingBill(), pd);
+        } else if (paymentMethod == PaymentMethod.Staff_Welfare){
+            staffBean.updateStaffWelfare(getBill().getToStaff(), - Math.abs(getRefundingBill().getNetTotal()));
         }
         drawerController.updateDrawerForOuts(p);
         printPreview = true;
