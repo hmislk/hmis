@@ -369,16 +369,18 @@
                                             <h:outputLabel value="#{pt.item.name}"/>
                                         </p:column>
                                         <p:column headerText="Start Time">
-                                            <p:calendar navigator="true"  
-                                                        id="serviceStartTimeStamp"
-                                                        value="#{pt.fromTime}" 
-                                                        pattern="dd/MM/yyyy  hh:mm:ss a" />           
+                                            <p:datePicker showTime="true"
+                                                          timeInput="true"  
+                                                          id="serviceStartTimeStamp"
+                                                          value="#{pt.fromTime}" 
+                                                          pattern="dd/MM/yyyy  hh:mm:ss a" />           
                                         </p:column>
                                         <p:column headerText="Stopped Time">
-                                            <p:calendar navigator="true"  
-                                                        id="serviceStoppedTimeStamp"
-                                                        value="#{pt.toTime}" 
-                                                        pattern="dd/MM/yyyy  hh:mm:ss a" />                                    
+                                            <p:datePicker showTime="true"
+                                                          timeInput="true" 
+                                                          id="serviceStoppedTimeStamp"
+                                                          value="#{pt.toTime}" 
+                                                          pattern="dd/MM/yyyy  hh:mm:ss a" />                                    
                                         </p:column>
                                         <p:column headerText="Total" >
                                             <h:outputLabel value="#{pt.serviceValue}">

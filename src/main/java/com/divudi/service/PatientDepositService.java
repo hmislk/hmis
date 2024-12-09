@@ -5,6 +5,10 @@ import static com.divudi.data.BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION;
 import static com.divudi.data.BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT;
 import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION;
 import static com.divudi.data.BillTypeAtomic.OPD_BILL_REFUND;
+import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION;
+import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT;
+import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION;
+import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BILL_REFUND;
 import static com.divudi.data.BillTypeAtomic.PATIENT_DEPOSIT;
 import static com.divudi.data.BillTypeAtomic.PATIENT_DEPOSIT_CANCELLED;
 import static com.divudi.data.BillTypeAtomic.PATIENT_DEPOSIT_REFUND;
@@ -14,6 +18,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.PatientDepositHistory;
+import com.divudi.entity.Payment;
 import com.divudi.facade.PatientDepositFacade;
 import com.divudi.facade.PatientDepositHistoryFacade;
 import com.divudi.facade.PatientFacade;
@@ -77,6 +82,9 @@ public class PatientDepositService {
         }
     }
     
+    public void updateBalance(Payment p, PatientDeposit pd) {
+        handlePayment(p, pd);
+    }
     
     public void updateBalance(Bill b, PatientDeposit pd) {
         switch (b.getBillTypeAtomic()) {
@@ -151,6 +159,15 @@ public class PatientDepositService {
         patientDepositFacade.edit(pd);
         JsfUtil.addSuccessMessage("Balance Updated.");
         createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, b, beforeBalance, afterBalance, 0 - Math.abs(b.getNetTotal()));
+    }
+    
+    public void handlePayment(Payment p, PatientDeposit pd) {
+        Double beforeBalance = pd.getBalance();
+        Double afterBalance = beforeBalance - p.getPaidValue();
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        JsfUtil.addSuccessMessage("Balance Updated.");
+        createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, p.getBill(), beforeBalance, afterBalance,  p.getPaidValue());
     }
 
     public void handleOPDBillCancel(Bill b, PatientDeposit pd) {
