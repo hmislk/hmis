@@ -26,6 +26,7 @@ import com.divudi.entity.PatientDepositHistory;
 import com.divudi.entity.Payment;
 import com.divudi.facade.PatientDepositFacade;
 import com.divudi.facade.PatientDepositHistoryFacade;
+import com.divudi.facade.PatientFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -65,10 +66,14 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     OpdBillController opdBillController;
+    
+    @EJB
+    PatientFacade patientFacade;
     @EJB
     private PatientDepositFacade patientDepositFacade;
     @EJB
     private PatientDepositHistoryFacade patientDepositHistoryFacade;
+    
     private PatientDeposit current;
     private List<PatientDeposit> items = null;
     private boolean printPreview;
@@ -168,6 +173,9 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             return;
         }
         opdBillController.savePatient(patient);
+        
+        patient.setHasAnAccount(true);
+        patientFacade.edit(patient);
         patientController.setBillNetTotal();
         int code = patientController.settlePatientDepositReceiveNew();
 

@@ -41,6 +41,7 @@ import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -987,6 +988,7 @@ public class PharmacyIssueController implements Serializable {
         if (preBill == null) {
             preBill = new PreBill();
             preBill.setBillType(BillType.PharmacyIssue);
+            preBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE);
             //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
         return preBill;

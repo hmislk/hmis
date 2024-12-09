@@ -5,38 +5,24 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-
     <h:head>
     </h:head>
     <h:body>
-
-        
-        
         <ui:composition template="/admin/items/index.xhtml">
-
             <ui:define name="item">
-
-
                 <p:growl id="msg"/>
                 <p:panel>
                     <f:facet name="header">
                         <h:outputText styleClass="fa fa-fw fa-money-bill-wave"></h:outputText>
                         <h:outputText value="Download &amp; Upload Items" styleClass="m-2"></h:outputText>
-
-
-
-
                     </f:facet>
-
                     <p:panelGrid columns="4" >
-
                         <h:form id="fill" >
                             <p:commandButton value="Fill Base Item Fees" ajax="false" 
                                              action="#{itemController.fillItemsWithInvestigationsAndServices()}" 
                                              icon="fa fa-file" 
                                              styleClass="ui-button-primary m-2"></p:commandButton>
                         </h:form>
-
                         <h:form id="download" >
                             <p:commandButton value="Download Base Item Fees as Excel" 
                                              ajax="false" 
@@ -44,9 +30,7 @@
                                              styleClass="ui-button-success m-2" 
                                              action="#{itemController.downloadItems()}"/>
                         </h:form>
-
                         <p:spacer width="50"/>
-
                         <h:form id="upload" enctype="multipart/form-data">
                             <p:fileUpload value="#{itemController.file}"
                                           mode="simple"
@@ -57,14 +41,8 @@
                                 action="#{itemController.uploadAddReplaceItemsFromId()}"
                                 ajax="false"/>
                         </h:form>
-
                     </p:panelGrid>
-
-
                     <h:form id="dataForm" >
-
-
-
                         <p:dataTable id="tblFees" value="#{itemController.items}" var="f" rowIndexVar="n" rowKey="#{f.id}" paginator="true" rows="5" 
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" rowsPerPageTemplate="5,10,15,25,50,100,500,1000">

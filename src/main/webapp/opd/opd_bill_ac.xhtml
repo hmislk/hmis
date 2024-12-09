@@ -96,11 +96,11 @@
                                                             alt="Save Patient Details" 
                                                             class="ui-button-success" 
                                                             icon="fas fa-check" 
+                                                            process="btnDone editPatient"
                                                             action="#{patientController.saveSelected(opdBillController.patient)}" 
                                                             rendered="#{opdBillController.patientDetailsEditable}" 
-                                                            update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"  />
+                                                            update="msg :#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"  />
                                                     </h:panelGroup>
-
                                                 </h:panelGroup>
                                             </h:panelGroup>
 
@@ -278,6 +278,7 @@
                                                                     placeholder="Mobile Number"
                                                                     value="#{opdBillController.patient.mobileNumberStringTransient}"
                                                                     class="form-control" 
+                                                                    required="true"
                                                                     requiredMessage="Please enter a Mobile Number"
                                                                     validatorMessage="Please enter valid Number">
                                                                     <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
@@ -1203,7 +1204,7 @@
                                                 class="row my-1"
                                                 layout="block"  
                                                 id="creditCard" rendered="#{opdBillController.paymentMethod eq 'Card'}" >
-                                                <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup
                                                 class="row my-1"
@@ -1240,7 +1241,10 @@
                                                 layout="block" 
                                                 id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                 >
-                                                <pa:multiple_payment_methods controller="#{opdBillController}" paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}" class="w-100"/>
+                                                <pa:multiple_payment_methods 
+                                                    controller="#{opdBillController}" 
+                                                    paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}" 
+                                                    class="w-100"/>
 
                                             </h:panelGroup>
 
