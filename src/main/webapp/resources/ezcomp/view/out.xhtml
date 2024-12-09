@@ -41,7 +41,15 @@
             <h:outputLabel value="#{cc.attrs.bill.deptId}" ></h:outputLabel>
 
             <h:outputLabel value="Payment Type " ></h:outputLabel>
-            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" />
+            <p:selectOneMenu   
+                value="#{cc.attrs.bill.paymentMethod}"
+                >     
+                <f:selectItems 
+                    value="#{enumController.paymentMethods}"  
+                    var="pm"
+                    itemLabel="#{pm.label}"
+                    itemValue="#{pm}"/>
+            </p:selectOneMenu>
 
 
             <p:outputLabel value="Institution" ></p:outputLabel>
@@ -86,7 +94,7 @@
                         itemValue="#{d}" />
                 </p:selectOneMenu>
             </h:panelGroup>
-            
+
             <p:outputLabel value="From Institution" ></p:outputLabel>
             <h:panelGroup >
                 <p:outputLabel 
@@ -129,7 +137,7 @@
                         itemValue="#{d}" />
                 </p:selectOneMenu>
             </h:panelGroup>
-            
+
             <p:outputLabel value="To Institution" ></p:outputLabel>
             <h:panelGroup >
                 <p:outputLabel 
@@ -187,13 +195,13 @@
 
             <h:outputLabel value="Discount" ></h:outputLabel>
             <h:inputText value="#{cc.attrs.bill.discount}" ></h:inputText>
-            
-             <h:outputLabel value="Tax" ></h:outputLabel>
-             <h:inputText value="#{cc.attrs.bill.tax}" ></h:inputText>
+
+            <h:outputLabel value="Tax" ></h:outputLabel>
+            <h:inputText value="#{cc.attrs.bill.tax}" ></h:inputText>
 
             <h:outputLabel value="Net Total" ></h:outputLabel>
             <h:inputText value="#{cc.attrs.bill.netTotal}" ></h:inputText>
-            
+
 
             <p:separator/>
             <p:separator/>

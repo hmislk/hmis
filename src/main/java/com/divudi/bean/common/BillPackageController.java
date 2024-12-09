@@ -789,27 +789,29 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         saveBatchBill();
-        List<Payment> ps = createPayments(getBatchBill(), paymentMethod);
+        List<Payment> ps = paymentService.createPayment(getBatchBill(), paymentMethodData);
+        paymentService.updateBalances(ps);
         payments = ps;
-        calculateBillfeePayments(lstBillFees, payments.get(0));
-        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
-            staffBean.updateStaffWelfare(toStaff, batchBill.getNetTotal());
-            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-        } else if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
-            staffBean.updateStaffCredit(toStaff, batchBill.getNetTotal());
-            JsfUtil.addSuccessMessage("Staff Credit Updated");
-        }
-
-        if (paymentMethod == PaymentMethod.PatientDeposit) {
-            if (getPatient().getRunningBalance() != null) {
-                getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
-            } else {
-                getPatient().setRunningBalance(0.0 - netTotal);
-            }
-            getPatientFacade().edit(getPatient());
-        }
+//        calculateBillfeePayments(lstBillFees, payments.get(0));
+        
+//        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+//            staffBean.updateStaffWelfare(toStaff, batchBill.getNetTotal());
+//            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+//        } else if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
+//            staffBean.updateStaffCredit(toStaff, batchBill.getNetTotal());
+//            JsfUtil.addSuccessMessage("Staff Credit Updated");
+//        }
+//
+//        if (paymentMethod == PaymentMethod.PatientDeposit) {
+//            if (getPatient().getRunningBalance() != null) {
+//                getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
+//            } else {
+//                getPatient().setRunningBalance(0.0 - netTotal);
+//            }
+//            getPatientFacade().edit(getPatient());
+//        }
         saveBillItemSessions();
-        drawerController.updateDrawerForIns(ps);
+//        drawerController.updateDrawerForIns(ps);
         clearBillItemValues();
 
         JsfUtil.addSuccessMessage(
