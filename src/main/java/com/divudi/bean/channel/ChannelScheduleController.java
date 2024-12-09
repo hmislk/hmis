@@ -156,6 +156,7 @@ public class ChannelScheduleController implements Serializable {
     private String sessionInstanceOldTimeFormatted;
     private Date sessionInstanceOldDayMonth;
     private Date sessionInstanceOldTime;
+    private List<ServiceSession> retiredItems;
 
     public void channelSheduleForAllDoctor(Staff stf) {
         if (stf == null) {
@@ -266,6 +267,10 @@ public class ChannelScheduleController implements Serializable {
     public String navigateToChannelSchedule() {
 //        itemController.fillItemsForInward();
         return "/channel/channel_shedule?faces-redirect=true";
+    }
+    
+    public String navigateToListRetiredChannelSchedules() {
+        return "/channel/retired_channel_shedules?faces-redirect=true";
     }
 
     public String navigateToChannelScheduleManagement() {
@@ -682,7 +687,7 @@ public class ChannelScheduleController implements Serializable {
         if (current.getId() == null) {
             JsfUtil.addErrorMessage("Please save the session and add the additional items");
             return;
-           // saveSelected();
+            // saveSelected();
         }
         if (additionalItemToAdd == null) {
             JsfUtil.addErrorMessage("No Item Selected to add");
@@ -795,6 +800,37 @@ public class ChannelScheduleController implements Serializable {
         items = getFacade().findByJpql(sql, hm);
 
         return items;
+    }
+
+    public void fillRetiredServiceSessions() {
+        System.out.println("fillRetiredServiceSessions");
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "Select s From ServiceSession s "
+                + " where s.retired=:ret "
+                + " and type(s)=:class "
+                + " and s.staff=:stf "
+                + " and s.originatingSession is null "
+                + " order by s.sessionWeekday,s.startingTime ";
+        hm.put("ret", true);
+        hm.put("stf", currentStaff);
+        hm.put("class", ServiceSession.class);
+        retiredItems = getFacade().findByJpql(sql, hm);
+        System.out.println("retiredItems = " + retiredItems);
+    }
+    
+    public void unretireCurrentServiceSession(){
+        System.out.println("unretireCurrentServiceSession");
+        if(current==null){
+            JsfUtil.addErrorMessage("No Current Service Session");
+            return;
+        }
+        if (current.isRetired()==false){
+            JsfUtil.addErrorMessage("THis is NOT a retired Service Session");
+            return;
+        }
+        current.setRetired(false);
+        getFacade().edit(current);
     }
 
     public List<ItemFee> fetchStaffServiceSessions() {
@@ -1012,7 +1048,7 @@ public class ChannelScheduleController implements Serializable {
         //System.out.println("session name"+current.getName());
         if (checkError()) {
             return;
-            
+
         }
 
         if (getCurrent().getSessionNumberGenerator() == null) {
@@ -1024,12 +1060,11 @@ public class ChannelScheduleController implements Serializable {
             JsfUtil.addErrorMessage("Can't save session without session endtime !");
             return;
         }
-        
+
         if (current.getDepartment() == null) {
             JsfUtil.addErrorMessage("Can't save session without a department !");
             return;
         }
-
 
         if (current.getSessionStartingNumber() != null) {
             if (!current.getSessionStartingNumber().trim().equals("")) {
@@ -1700,6 +1735,14 @@ public class ChannelScheduleController implements Serializable {
 
     public void setSessionInstanceOldTime(Date sessionInstanceOldTime) {
         this.sessionInstanceOldTime = sessionInstanceOldTime;
+    }
+
+    public List<ServiceSession> getRetiredItems() {
+        return retiredItems;
+    }
+
+    public void setRetiredItems(List<ServiceSession> retiredItems) {
+        this.retiredItems = retiredItems;
     }
 
 }
