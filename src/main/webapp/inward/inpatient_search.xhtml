@@ -31,8 +31,8 @@
                                 <p:datePicker 
                                     class="w-100"
                                     showTime="true"
-                                            showButtonBar="true"
-                                            timeInput="true"
+                                    showButtonBar="true"
+                                    timeInput="true"
                                     inputStyleClass="form-control"
                                     value="#{admissionController.toDate}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
@@ -105,13 +105,40 @@
                                     autoWidth="false"
                                     >
                                     <f:selectItem itemLabel="All"></f:selectItem>
-                                    <f:selectItems 
-                                        value="#{institutionController.items}"
-                                        var="i"
-                                        itemLabel="#{i.name}"
-                                        itemValue="#{i}">
-                                    </f:selectItems>
+                                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                    <p:ajax process="cmbFromInstitution" update="cmbSite" />
                                 </p:selectOneMenu>
+
+                                <h:panelGroup  rendered="#{webUserController.hasPrivilege('InwardSearchServiceBillUnrestrictedAccess') or !configOptionApplicationController.getBooleanValueByKey('Restirct Inward Admission Search to Logged Department of the User')}" >
+                                    <p:outputLabel value="Site"></p:outputLabel>
+                                    <p:selectOneMenu 
+                                        class="w-100"
+                                        id="cmbSite"
+                                        value="#{admissionController.site}"
+                                        filter="true"
+                                        autoWidth="false"
+                                        >
+                                        <f:selectItem itemLabel="All"></f:selectItem>
+                                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                        <p:ajax process="cmbSite" update="cmbFromLoggedDepartment" />
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel value="Department"></p:outputLabel>
+                                    <p:selectOneMenu 
+                                        class="w-100"
+                                        id="cmbFromLoggedDepartment"
+                                        value="#{admissionController.loggedDepartment}"
+                                        filter="true"
+                                        autoWidth="false"
+                                        >
+                                        <f:selectItem itemLabel="All"></f:selectItem>
+                                        <f:selectItems 
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(admissionController.institutionForSearch,admissionController.site)}"
+                                            var="d"
+                                            itemLabel="#{d.name}"
+                                            itemValue="#{d}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
 
 
                             </div>
