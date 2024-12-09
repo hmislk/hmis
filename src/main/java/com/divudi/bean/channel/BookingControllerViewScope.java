@@ -2779,6 +2779,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             billSessionFacade.edit(billSession);
 
             CancelledBill cpb = createCancelBill(bill.getPaidBill());
+            cpb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
             BillItem cpItem = cancelBillItems(bill.getPaidBill().getSingleBillItem(), cb);
             BillSession cpbs = cancelBillSession(billSession.getPaidBillSession(), cpb, cpItem);
             bill.getPaidBill().setCancelled(true);
@@ -3004,6 +3005,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
         cb.setComments(comment);
+        
 
 //        cb.setInsId(billNumberBean.institutionChannelBillNumberGenerator(sessionController.getInstitution(), cb));
         String insId = generateBillNumberInsId(cb);
