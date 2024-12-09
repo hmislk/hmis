@@ -119,6 +119,19 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     ItemFeeFacade itemFeeFacade;
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
+    @EJB
+    private PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    private PersonFacade personFacade;
+    @EJB
+    private PatientFacade patientFacade;
+    @EJB
+    private BillComponentFacade billComponentFacade;
+    @EJB
+    private BillFeeFacade billFeeFacade;
+    @EJB
+    private CashTransactionBean cashTransactionBean;
+
     /**
      * Controllers
      */
@@ -154,6 +167,20 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     FeeValueController feeValueController;
     @Inject
     AgentAndCcApplicationController collectingCentreApplicationController;
+    @Inject
+    SearchController searchController;
+    @Inject
+    MembershipSchemeController membershipSchemeController;
+    @Inject
+    PriceMatrixController priceMatrixController;
+    @Inject
+    AgentReferenceBookController agentReferenceBookController;
+    @Inject
+    private BillSearch billSearch;
+    @Inject
+    private BillBeanController billBean;
+    CommonFunctions commonFunctions;
+
     /**
      * Properties
      */
@@ -221,8 +248,33 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private double totalCCFee = 0.0;
     private double totalStaffFee = 0.0;
 
+    List<Bill> bills;
+    List<Bill> selectedBills;
+    Double grosTotal;
+    Bill bill;
+    boolean foreigner = false;
+    Date sessionDate;
+    String strTenderedValue;
+    private YearMonthDay yearMonthDay;
+    private PaymentMethodData paymentMethodData;
+
     public List<AgentReferenceBook> getAgentReferenceBooks() {
         return agentReferenceBooks;
+    }
+
+    public double findCCBalanceAfterBilling(Bill bill) {
+        String jpql;
+        Map params = new HashMap();
+        jpql = " select ah from AgentHistory ah "
+                + " where ah.bill =:b "
+                + " and ah.bill.retired=false ";
+        params.put("b", bill);
+        
+        AgentHistory history = agentHistoryFacade.findFirstByJpql(jpql, params);
+        System.out.println("history = " + history);
+        double billingAfterCCBalance = history.getBalanceAfterTransaction();
+        System.out.println("Balance = " + billingAfterCCBalance);
+        return billingAfterCCBalance;
     }
 
     public void setAgentReferenceBooks(List<AgentReferenceBook> agentReferenceBooks) {
@@ -264,36 +316,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     public void setCashRemain(double cashRemain) {
         this.cashRemain = cashRemain;
     }
-
-    @EJB
-    private PatientInvestigationFacade patientInvestigationFacade;
-    @Inject
-    private BillBeanController billBean;
-
-    CommonFunctions commonFunctions;
-    @EJB
-    private PersonFacade personFacade;
-    @EJB
-    private PatientFacade patientFacade;
-    @EJB
-    private BillComponentFacade billComponentFacade;
-    @EJB
-    private BillFeeFacade billFeeFacade;
-
-    List<Bill> bills;
-    List<Bill> selectedBills;
-    Double grosTotal;
-    Bill bill;
-    boolean foreigner = false;
-    Date sessionDate;
-    String strTenderedValue;
-    private YearMonthDay yearMonthDay;
-    private PaymentMethodData paymentMethodData;
-    @EJB
-    private CashTransactionBean cashTransactionBean;
-
-    @Inject
-    SearchController searchController;
 
     public List<Bill> getSelectedBills() {
         return selectedBills;
@@ -507,9 +529,9 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 + " and a.active=true "
                 + " order by a.id ";
         m.put("ins", ins);
-        
-        int maxAgentReferenceBooks = configOptionApplicationController.getLongValueByKey("Maximum number of reference books for collection center bills",3L).intValue();
-        
+
+        int maxAgentReferenceBooks = configOptionApplicationController.getLongValueByKey("Maximum number of reference books for collection center bills", 3L).intValue();
+
         agentReferenceBooks = agentReferenceBookFacade.findByJpql(jpql, m, maxAgentReferenceBooks);
         // Fetch all used reference numbers for this institution in one query
         Set<String> usedReferenceNumbers = fetchUsedReferenceNumbers(ins);
@@ -518,7 +540,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
         ins.setAgentReferenceBooks(agentReferenceBooks);
- 
+
         for (AgentReferenceBook a : agentReferenceBooks) {
             CollectingCenterBookSummeryRow row = new CollectingCenterBookSummeryRow();
             row.setBookName(a.getStrbookNumber());
@@ -873,7 +895,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         return "/collecting_centre/bill_print?faces-redirect=true;";
 
     }
-    
+
     public BillItem saveCcBillItem(Bill b, BillEntry e, WebUser wu) {
         e.getBillItem().setCreatedAt(new Date());
         e.getBillItem().setCreater(wu);
@@ -910,7 +932,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
         }
     }
-    
+
     private void savePatientInvestigation(BillEntry e, BillComponent bc, WebUser wu) {
         PatientInvestigation ptIx = new PatientInvestigation();
 
@@ -962,7 +984,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         }
 
     }
-    
+
     public List<BillFee> saveBillFee(BillEntry e, Bill b, WebUser wu) {
         List<BillFee> list = new ArrayList<>();
         double ccfee = 0.0;
@@ -996,7 +1018,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
         return list;
     }
-    
+
     public Payment createPaymentForRefunds(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
@@ -1036,7 +1058,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         double billFeeTotal = billFeeValues[0];
         double billFeeDiscount = billFeeValues[1];
         double billFeeNetTotal = billFeeValues[2];
-
 
         if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal()) {
             return true;
@@ -1105,9 +1126,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         getSessionController().setLoggedUser(wb);
     }
 
-    @Inject
-    private BillSearch billSearch;
-
     @Deprecated
     public void cancellAll() {
         Bill tmp = new CancelledBill();
@@ -1168,7 +1186,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
         //SETTING INS ID
         recurseCount = 0;
-        String deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(sessionController.getDepartment(),BillTypeAtomic.CC_BILL);
+        String deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_BILL);
         ccBill.setDeptId(deptId);
         ccBill.setInsId(deptId);
         if (ccBill.getId() == null) {
@@ -1211,9 +1229,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         }
         return true;
     }
-
-    @Inject
-    AgentReferenceBookController agentReferenceBookController;
 
     private boolean errorCheck() {
         if (getPatient().getPerson().getName() == null
@@ -1279,10 +1294,10 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public void fillBillSessions(SelectEvent event) {
- 
+
         if (lastBillItem != null && lastBillItem.getItem() != null) {
             billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
-        } else{
+        } else {
             if (billSessions == null || !billSessions.isEmpty()) {
                 billSessions = new ArrayList<>();
             }
@@ -1481,9 +1496,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         lstBillItems = null;
     }
 
-    @Inject
-    PriceMatrixController priceMatrixController;
-
     public PriceMatrixController getPriceMatrixController() {
         return priceMatrixController;
     }
@@ -1491,9 +1503,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     public void setPriceMatrixController(PriceMatrixController priceMatrixController) {
         this.priceMatrixController = priceMatrixController;
     }
-
-    @Inject
-    MembershipSchemeController membershipSchemeController;
 
     public void calTotals() {
 
@@ -1694,22 +1703,22 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         setPatient(getPatient());
         return "/collecting_centre/bill?faces-redirect=true";
     }
-    
+
     private double ccBalance;
     private double ccAvailableBalance;
     private double ccAllowedCreditLImit;
     private double ccMaxCreditLimit;
-    
-    public void resetCCFinancialData(){
+
+    public void resetCCFinancialData() {
         ccBalance = 0.0;
         ccAvailableBalance = 0.0;
         ccAllowedCreditLImit = 0.0;
-        ccMaxCreditLimit  = 0.0;
+        ccMaxCreditLimit = 0.0;
     }
-    
-    public void loadCCFinancialData(Institution collectingCentre){
+
+    public void loadCCFinancialData(Institution collectingCentre) {
         Institution cc = institutionFacade.find(collectingCentre.getId());
-        
+
         ccBalance = cc.getBallance();
         ccAllowedCreditLImit = cc.getAllowedCreditLimit();
         ccAvailableBalance = ccBalance + ccAllowedCreditLImit;

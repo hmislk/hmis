@@ -469,8 +469,7 @@
                                     </p:selectOneMenu>
 
                                     <h:panelGroup id="panelGroup" style="display: #{patientController.bill.paymentMethod eq 'Card' or patientController.bill.paymentMethod eq 'Cheque' or patientController.bill.paymentMethod eq 'Slip' or patientController.bill.paymentMethod eq 'ewallet' ? 'none' : 'block' };">
-                                        <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
-
+                                        <p:inputText onfocus="this.select()" class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
                                         <p:inputText value="#{patientController.bill.comments}" placeholder="Enter a Comment" id="comment"/>
                                     </h:panelGroup>
 

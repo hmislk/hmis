@@ -273,6 +273,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         drawerController.updateDrawerForOuts(ps);
     }
 
+    @Deprecated // Use the methods in  PatientDepositService
     public void updateBalance(Bill b, PatientDeposit pd) {
         switch (b.getBillTypeAtomic()) {
             case PATIENT_DEPOSIT:
@@ -308,6 +309,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         }
     }
 
+    @Deprecated // Use the methods in  PatientDepositService
     public void handlePatientDepositBill(Bill b, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + b.getNetTotal();
@@ -317,6 +319,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         createPatientDepositHitory(HistoryType.PatientDeposit, pd, b, beforeBalance, afterBalance, Math.abs(b.getNetTotal()));
     }
 
+    @Deprecated // Use the methods in  PatientDepositService
     public void handlePatientDepositBillReturn(Bill b, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance - Math.abs(b.getNetTotal());
@@ -326,6 +329,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         createPatientDepositHitory(HistoryType.PatientDepositReturn, pd, b, beforeBalance, afterBalance, 0 - Math.abs(b.getNetTotal()));
     }
 
+    @Deprecated // Use the methods in  PatientDepositService
     public void handlePatientDepositBillCancel(Bill b, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance - Math.abs(b.getNetTotal());
@@ -335,6 +339,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         createPatientDepositHitory(HistoryType.PatientDepositCancel, pd, b, beforeBalance, afterBalance, 0 - Math.abs(b.getNetTotal()));
     }
 
+    @Deprecated // Use the methods in  PatientDepositService
     public void handleOPDBill(Bill b, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance - Math.abs(b.getNetTotal());
@@ -344,6 +349,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, b, beforeBalance, afterBalance, 0 - Math.abs(b.getNetTotal()));
     }
 
+    @Deprecated // Use the methods in  PatientDepositService
     public void handleOPDBillCancel(Bill b, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + Math.abs(b.getNetTotal());
@@ -353,6 +359,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         createPatientDepositHitory(HistoryType.PatientDepositUtilizationCancel, pd, b, beforeBalance, afterBalance, Math.abs(b.getNetTotal()));
     }
 
+    @Deprecated // Use the methods in  PatientDepositService
     public void handleOPDBillRefund(Bill b, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + Math.abs(b.getNetTotal());
@@ -362,6 +369,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         createPatientDepositHitory(HistoryType.PatientDepositUtilizationReturn, pd, b, beforeBalance, afterBalance, Math.abs(b.getNetTotal()));
     }
 
+    @Deprecated // Use the methods in  PatientDepositService
     public void createPatientDepositHitory(HistoryType ht, PatientDeposit pd, Bill b, Double beforeBalance, Double afterBalance, Double transactionValue) {
         PatientDepositHistory pdh = new PatientDepositHistory();
         pdh.setPatientDeposit(pd);
@@ -378,6 +386,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         patientDepositHistoryFacade.create(pdh);
     }
 
+    @Deprecated // Use the methods in  PatientDepositService
     public PatientDeposit getDepositOfThePatient(Patient p, Department d) {
         Map m = new HashMap<>();
         String jpql = "select pd from PatientDeposit pd"
