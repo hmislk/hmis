@@ -2875,11 +2875,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (p.getHasAnAccount() && p.getCreditLimit() == null) {
             p.setCreditLimit(0.0);
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender to Save Patient", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Patients Title is Mandatory", false)) {
             if (p.getPerson().getTitle() == null) {
                 JsfUtil.addErrorMessage("Please select title");
                 return false;
             }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Patients Gender is Mandatory", false)) {
             if (p.getPerson().getSex() == null) {
                 JsfUtil.addErrorMessage("Please select gender");
                 return false;
@@ -2888,6 +2891,13 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient", false)) {
             if (p.getPerson().getDob() == null) {
                 JsfUtil.addErrorMessage("Please select patient date of birth");
+                return false;
+            }
+        }
+        
+         if (configOptionApplicationController.getBooleanValueByKey("Patients Area is Mandatory", false)) {
+            if (p.getPerson().getArea() == null) {
+                JsfUtil.addErrorMessage("Please select area of the patient");
                 return false;
             }
         }
