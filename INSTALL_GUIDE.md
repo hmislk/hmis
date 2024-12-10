@@ -29,84 +29,80 @@ After the successful build you will see the absolute path of the built war file,
 
 `[INFO] Building war: D:\forks\build\hmis\target\arogya2022-3.0.0.war`
 
-## Installing Glassfish
+## Installing Payara Server
 
-**You need to have JDK 8 on your server for this step** 
+**You need to have JDK 11 on your server for this step** 
 
-I haven't had any success to run the project on Glassfish of version 6+, so the version 5.1.0 is recommended for now.
+Payara server verison 5.2022.5 is the highest tested version and therefore it is recommended.
 
-You can download it [here](https://www.eclipse.org/downloads/download.php?file=/glassfish/glassfish-5.1.0.zip).
+You can download it [here](https://nexus.payara.fish/#browse/browse:payara-community:fish%2Fpayara%2Fdistributions%2Fpayara%2F5.2022.5%2Fpayara-5.2022.5.zip).
 
-Download .zip file and extract it somewhere, for example into `D:\glassfish`
+Download .zip file and extract it where you want your server files to be, for example into `D:\Payara`
 
-Edit file `D:\glassfish\glassfish\config\asenv.bat` and add following line:
+Edit file `D:Payara\payara5\glassfish\config\asenv.bat` and add following line:
 
-`set AS_JAVA=<JDK8 location>`
+`set AS_JAVA=<JDK location>`
 
 In my case: 
 
-`set AS_JAVA=D:\JAVA\jdk1.8.0_252`
+`set AS_JAVA=D:\JAVA\jdk-11.0.25`
 
 Make sure the port 8080 is not being used on your server.
 
-Run you command line, change directory to `<GLASSFISH_HOME>/bin` and run:
+In your command line, change directory to `<PAYARA_HOME>/bin` and run:
 ```
 asadmin start-domain domain1
 ```
 
-After launch, your can open the Glassfish admin console in your browser: `localhost:4848`
+After launch, your can open the Payara admin console in your browser: `localhost:4848`
 
 ## Preparing the database
 
 I assume you have a MySQL server instance running somewhere, I will be using the MySQL instance running on the same machine.
 
-You need to create an empty database and user with appropriate privileges to access it (both `hmis/hmis` in my case).
+You need to create an empty database (named `hmis`) and a user with appropriate privileges to access it (username/password both as `hmis/hmis` in my case).
 
-After that you need to download JDBC driver jar file, for example, [here](https://mvnrepository.com/artifact/mysql/mysql-connector-java/8.0.18), and put into your glassfish `lib` folder, in my case the path is like that:
+After that you need to download JDBC driver jar file, for example, [here](https://mvnrepository.com/artifact/mysql/mysql-connector-java/8.0.30), and put into your `D:\Payara\payara5\glassfish\lib` folder, in my case the path is like that:
 
-`D:\glassfish\glassfish\lib\mysql-connector-java-8.0.18.jar`
+`D:\Payara\payara5\glassfish\lib\mysql-connector-java-8.0.30.jar`
 
 Now, restart the Glassfish:
 
-`D:\glassfish\bin\asadmin stop-domain domain1`
+`D:\Payara\payara5\bin\asadmin stop-domain domain1`
 
-`D:\glassfish\bin\asadmin start-domain domain1`
+`D:\Payara\payara5\bin\asadmin start-domain domain1`
 
-Open glassfish admin console and add the JDBC Connection Pool with settings like these:
+Open Payara admin console and create a new JDBC Connection Pool with settings like these:
 
-![pic1](https://i.ibb.co/SBfsWvg/1.png)
+![pic1](https://i.ibb.co/bvr5bp2/Screenshot-2024-12-09-at-21-59-55.png)
 
-![pic2](https://i.ibb.co/KX3gyWf/2.png)
+![pic2](https://i.ibb.co/Nxtr1FV/Screenshot-2024-12-09-at-22-01-26.png)
 
-Change user/password as needed
+Change username/password as needed.
 
-You need to make sure that test connection to your database is working (ping button in Glassfish)
+You need to make sure that test connection to your database is working (Ping button to the left).
 
-![pic 3](https://i.ibb.co/Zf3ZCh3/3.png)
+![pic 3](https://i.ibb.co/7vVQD87/Screenshot-2024-12-09-at-22-55-13.png)
 
-If not, I can recommend to copy the file `mysql-connector-java-8.0.18.jar` into directories 
+If not, I can recommend to copy the file `mysql-connector-java-8.0.30.jar` into directory `<PAYARA_HOME>\glassfish\lib`.
 
-`<GLASSFISH_HOME>\glassfish\domains\domain1\lib`
+Restart the Payara server and try again.
 
-`<GLASSFISH_HOME>\glassfish\glassfish\domains\domain1\lib`
+After creating the connection pool resource, you need to create the JNDI resource `jdbc/Ruhunu` as follows:
 
-Restart the Glassfish and try again.
+![pic 4](https://i.ibb.co/ZJ7LhGm/Screenshot-2024-12-09-at-22-55-37.png)
 
-After creating the connection pool resourse you need to create the JNDI resource `jndi/arogya` like that:
-
-![pic 4](https://i.ibb.co/hYp8CQf/4.png)
-
-Now you're ready to deploy the project, the tables in your database will be created automatically.
+Now you're ready to deploy the project and the tables in your database will be created automatically.
 
 ## Deploying the project
 
 Simply run the command:
 
-`<GLASSFISH_HOME>\bin\asadmin deploy <built war file path>`
+`<PAYARA_HOME>\bin\asadmin deploy <built war file path>`
 
 In my case:
 
-`D:\glassfish\bin deploy D:\forks\build\hmis\target\arogya2022-3.0.0.war`
+`D:\Payara\payara5\bin\asadmin deploy D:\forks\build\hmis\target\arogya2022-3.0.0.war`
 
 When deploying is done, you can open the page `http://localhost:8080/arogya2022/` in your browser, create your first institution/user
 
