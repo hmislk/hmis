@@ -49,12 +49,12 @@
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value="Refuned" />
                     </h:panelGroup>
-                    
+
                     <h:panelGroup  rendered="#{cc.attrs.bill.cancelled}" >
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value="Cancelled" />
                     </h:panelGroup>
-                    
+
                     <h:panelGroup>
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value=" Receipt"/>
@@ -94,7 +94,7 @@
                     <div class="col-3"><h:outputLabel value="Contact No" ></h:outputLabel></div>
                     <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
                     <div class="col-7"><h:outputLabel rendered="#{cc.attrs.bill.patient.person.mobile ne ''}" value="#{cc.attrs.bill.patient.person.mobile}"/>
-                    <h:outputLabel rendered="#{cc.attrs.bill.patient.person.mobile eq ''}" value="#{cc.attrs.bill.patient.person.phone}"/>
+                        <h:outputLabel rendered="#{cc.attrs.bill.patient.person.mobile eq ''}" value="#{cc.attrs.bill.patient.person.phone}"/>
                     </div>
 
                 </div>
@@ -136,7 +136,7 @@
 
             <div class="d-flex justify-content-center " >
                 <table width="90%" style="width: 90%; " >
-                    
+
                     <tr class="totalsBlock mt-3" style="font-weight: 600" >
                         <td style="width:80%!important;text-align: left; ">
                             <h:outputLabel value="Total" ></h:outputLabel>
@@ -204,23 +204,39 @@
 
             <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card'}" style="margin-top: 4px;font-size: 8pt; margin-left: 5%">
                 <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
-<!--                <ui:repeat value="#{cc.attrs.payments}" var="p">
-                    <div class="d-flex align-items-center mt-1">
-                        <div>#{p.paymentMethod}</div>
-                        <div>&nbsp;&nbsp;(#{p.creditCardRefNo})</div>
-                        <div class="mx-2">#{p.paidValue}</div>
+                <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill)}" var="p">
+                    <div class="d-flex gap-3">
+                        <div style="margin-left: 5%">
+                            <h:outputLabel value="#{p.paymentMethod}" ></h:outputLabel>
+                        </div>
+                        <div>
+                            <h:outputLabel value="&nbsp;&nbsp;" ></h:outputLabel>
+                            <h:outputLabel value="( #{p.creditCardRefNo} )"></h:outputLabel>
+                        </div>
+                        <div class="mx-2">
+                            <h:outputLabel value="#{p.paidValue}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                        </div>
                     </div>
-                </ui:repeat>-->
+                </ui:repeat>
             </h:panelGroup>
 
+
             <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" style="margin-top: 4px;font-size: 8pt;margin-left: 5%">
-                <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
-<!--                <ui:repeat value="#{cc.attrs.payments}" var="p">
-                    <div class="d-flex align-items-center m-1">
-                        <div>#{p.paymentMethod}</div>
-                        <div class="mx-2">#{p.paidValue}</div>
+                <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod.label}"/>
+                <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill)}" var="p">
+                    <div class="d-flex align-items-center" >
+                        <div style="margin-left: 5%">
+                            <h:outputLabel value="#{p.paymentMethod}" ></h:outputLabel>
+                        </div>
+                        <div class="mx-2">
+                            <h:outputLabel value="#{p.paidValue}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                        </div>
                     </div>
-                </ui:repeat>-->
+                </ui:repeat>
             </h:panelGroup>
 
             <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
