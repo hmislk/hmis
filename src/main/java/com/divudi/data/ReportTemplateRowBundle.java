@@ -56,6 +56,7 @@ public class ReportTemplateRowBundle implements Serializable {
     private ReportTemplate reportTemplate;
     private List<ReportTemplateRow> reportTemplateRows;
     private Map<String, List<BillItem>> groupedBillItems;
+    private Map<Institution, List<Bill>> groupedBillItemsByInstitution;
 
     private Double grossTotal;
     private Double discount;
@@ -1768,6 +1769,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setGroupedBillItems(Map<String, List<BillItem>> groupedBillItems) {
         this.groupedBillItems = groupedBillItems;
+    }
+
+    public Map<Institution, List<Bill>> getGroupedBillItemsByInstitution() {
+        return groupedBillItemsByInstitution;
+    }
+
+    public void setGroupedBillItemsByInstitution(Map<Institution, List<Bill>> groupedBillItemsByInstitution) {
+        this.groupedBillItemsByInstitution = groupedBillItemsByInstitution;
     }
 
     private void resetTotalsAndFlags() {
