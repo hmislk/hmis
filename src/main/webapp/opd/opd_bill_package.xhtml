@@ -620,7 +620,11 @@
                                                 <div class="col-6">
                                                     <p:selectOneMenu   id="cmbPs" value="#{billPackageController.paymentMethod}" >
                                                         <f:selectItem itemLabel="Select Method" ></f:selectItem>
-                                                        <f:selectItems value="#{enumController.paymentMethodsForPackageBilling}"  />
+                                                        <f:selectItems 
+                                                            value="#{enumController.paymentMethodsForPackageBilling}"  
+                                                            var="pm"
+                                                            itemLabel="#{pm.label}"
+                                                            itemValue="#{pm}"/>
                                                         <p:ajax process="@this cmbPs" 
                                                                 update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  tblBillItem paymentDetails"
                                                                 event="change"
@@ -668,55 +672,7 @@
                                                         class="row"
                                                         layout="block"  
                                                         rendered="#{billPackageController.paymentMethod eq 'Credit'}" >
-                                                        <div class="my-1" id="credit">
-                                                            <div class="row">
-                                                                <div class="col-12 d-flex gap-2">
-                                                                    <p:autoComplete 
-                                                                        id="creditCompany" 
-                                                                        class="w-100 -mx-2"
-                                                                        inputStyleClass="form-control"
-                                                                        forceSelection="true"
-                                                                        value="#{billPackageController.creditCompany}"  
-                                                                        completeMethod="#{creditCompanyController.completeCredit}" 
-                                                                        var="ix"
-                                                                        minQueryLength="4"
-                                                                        placeholder="Company (Type at least 4 letters to search)"
-                                                                        itemLabel="#{ix.name}" 
-                                                                        itemValue="#{ix}" 
-                                                                        size="10"  >
-
-                                                                        <f:ajax  
-                                                                            event="itemSelect" 
-                                                                            listener="#{billPackageController.calTotals()}"
-                                                                            execute="@this" 
-                                                                            render=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
-                                                                    </p:autoComplete> 
-
-                                                                    <p:inputText 
-                                                                        id="polNo" 
-                                                                        style="width: 200px;"
-                                                                        value="#{billPackageController.paymentMethodData.credit.referralNo}" 
-                                                                        placeholder="Policy NO" >
-                                                                    </p:inputText>
-
-                                                                    <p:inputText 
-                                                                        id="memo" 
-                                                                        style="width: 300px;"
-                                                                        value="#{billPackageController.paymentMethodData.credit.comment}" 
-                                                                        placeholder="Comment" >
-                                                                    </p:inputText>
-
-                                                                    <p:commandLink 
-                                                                        id="btnAddNewCreditCom" 
-                                                                        value="(+)"
-                                                                        class="mx-3 mt-1"
-                                                                        title="Add New Credit Company"
-                                                                        ajax="false" 
-                                                                        action="#{navigationController.navigateToCreditCompany()}"
-                                                                        actionListener="#{creditCompanyController.prepareAdd()}" />  
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        <pa:creditDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup
                                                         class="row"
@@ -865,6 +821,8 @@
                                         <h:panelGrid 
                                             columns="2" 
                                             class="w-100">
+
+
                                             <p:outputLabel for="refIns" value="Institution" ></p:outputLabel>
                                             <p:autoComplete 
                                                 id="refIns" 
@@ -981,6 +939,8 @@
 
                                             </p:autoComplete>
 
+                                            <p:outputLabel for="txtComments" value="Comments" ></p:outputLabel>
+                                            <p:inputTextarea id="txtComments" value="#{billPackageController.comment}" class="w-100" ></p:inputTextarea>
 
                                         </h:panelGrid>
                                     </p:panel>
