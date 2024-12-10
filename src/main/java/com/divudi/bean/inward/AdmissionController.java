@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ClinicalFindingValueController;
 import com.divudi.bean.common.CommonFunctionsController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 
@@ -42,6 +43,7 @@ import com.divudi.facade.RoomFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
 import com.divudi.data.clinical.ClinicalFindingValueType;
+import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.facade.ClinicalFindingValueFacade;
@@ -88,6 +90,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     CommonFunctionsController commonFunctionsController;
     @Inject
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -151,6 +155,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private List<ClinicalFindingValue> patientAllergies;
     private ClinicalFindingValue currentPatientAllergy;
     private Institution lastCreditCompany;
+    private Department loggedDepartment;
+    private Institution site;
 
     private PaymentMethod paymentMethod;
 
@@ -561,6 +567,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             j += "  and c.institution=:ins ";
             m.put("ins", institutionForSearch);
         }
+        
+        if (loggedDepartment != null) {
+            j += "  and c.department=:dept ";
+            m.put("dept", loggedDepartment);
+        }
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
     }
 
@@ -695,6 +706,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public String navigateToListAdmissions() {
         institutionForSearch = sessionController.getLoggedUser().getInstitution();
+        if(configOptionApplicationController.getBooleanValueByKey("Restirct Inward Admission Search to Logged Department of the User")){
+            loggedDepartment = sessionController.getLoggedUser().getDepartment();
+        }
         clearSearchValues();
         return "/inward/inpatient_search?faces-redirect=true;";
     }
@@ -1656,6 +1670,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @Override
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
+    }
+
+    public Department getLoggedDepartment() {
+        return loggedDepartment;
+    }
+
+    public void setLoggedDepartment(Department loggedDepartment) {
+        this.loggedDepartment = loggedDepartment;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
     }
 
     /**
