@@ -1729,7 +1729,6 @@ public class BillSearch implements Serializable {
             patientDepositController.updateBalance(getRefundingBill(), pd);
         } else if (paymentMethod == PaymentMethod.Staff_Welfare){
             staffBean.updateStaffWelfare(getBill().getToStaff(), - Math.abs(getRefundingBill().getNetTotal()));
-            System.out.println("updated " );
         }
         drawerController.updateDrawerForOuts(p);
         printPreview = true;
