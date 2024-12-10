@@ -15,6 +15,11 @@
 
         <p:dataTable
             value="#{financialTransactionController.selectedBundle.getPaymentRows(financialTransactionController.selectedPaymentMethod)}" var="cardPayment" >
+            <p:column  headerText="Select to Handover">
+                <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForHandover}" >
+                    <p:ajax process="checkCardSelected" ></p:ajax>
+                </p:selectBooleanCheckbox>
+            </p:column>
             <p:column  headerText="Bill Number">
                 <h:outputText value="#{cardPayment.payment.bill.deptId}" ></h:outputText>
             </p:column>
@@ -29,32 +34,40 @@
                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                 </h:outputText>
             </p:column>
-            <p:column  headerText="Comments">
+            <p:column  headerText="Cheque Comments">
                 <h:outputText value="#{cardPayment.payment.comments}" ></h:outputText>
             </p:column>
+            <p:column  headerText="Bill Comments">
+                <h:outputText value="#{cardPayment.payment.bill.comments}" ></h:outputText>
+            </p:column>
             <p:column  headerText="Status">
+                <h:panelGroup rendered="#{cardPayment.payment.bill.cancelled}" >
+                    <p:badge value="Cancelled"  severity="warning" styleClass="mx-2"></p:badge>
+
+                </h:panelGroup>
                 <h:outputText 
                     value="#{cardPayment.payment.bill.cancelledBill.deptId}"
                     rendered="#{cardPayment.payment.bill.cancelled}"
                     ></h:outputText>
+                <h:outputText 
+                    value="Cancelled Bill Number : "
+                    ></h:outputText>
+                <h:outputText 
+                    value="#{cardPayment.payment.bill.cancelledBill.deptId}"
+                    rendered="#{cardPayment.payment.bill.cancelled}"
+                    ></h:outputText>
+                <br/>
                 <h:outputText 
                     class="text-danger"
                     value="#{cardPayment.payment.bill.cancelled?'Bill Cancelled':''}" ></h:outputText>
-                <h:outputText 
-                    value="#{cardPayment.payment.bill.cancelledBill.deptId}"
-                    rendered="#{cardPayment.payment.bill.cancelled}"
-                    ></h:outputText>
+
             </p:column>
             <p:column headerText="Value">
                 <h:outputText value="#{cardPayment.payment.paidValue}" >
                     <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
                 </h:outputText>
             </p:column>
-            <p:column  headerText="Select to Handover">
-                <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForHandover}" >
-                    <p:ajax process="checkCardSelected" ></p:ajax>
-                </p:selectBooleanCheckbox>
-            </p:column>
+
         </p:dataTable>
 
     </cc:implementation>
