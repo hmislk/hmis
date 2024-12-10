@@ -467,7 +467,12 @@ public class PaymentService {
                     }
                     break;
                 case PatientDeposit:
-                    if (patient.getHasAnAccount()) {
+                    if (patient == null) {
+                        bv.setErrorMessage("No Patient is selected. Can't proceed with Patient Deposits");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+                    if (!patient.getHasAnAccount()) {
                         bv.setErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
                         bv.setErrorPresent(true);
                         return bv;
@@ -481,10 +486,10 @@ public class PaymentService {
                     }
                     double availableForPurchase = runningBalance + creditLimitAbsolute;
                     double payhingThisTimeValue;
-                    if(netTotal==null){
+                    if (netTotal == null) {
                         payhingThisTimeValue = paymentMethodData.getPatient_deposit().getTotalValue();
-                    }else{
-                        payhingThisTimeValue=netTotal;
+                    } else {
+                        payhingThisTimeValue = netTotal;
                     }
 
                     if (payhingThisTimeValue > availableForPurchase) {
