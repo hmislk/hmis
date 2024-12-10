@@ -133,6 +133,7 @@ public class ChannelReportTemplateController implements Serializable {
     private List<Category> categories;
     WebUser webUser;
     Staff staff;
+    Speciality speciality;
     ChannelBillTotals billTotals;
     Department department;
     boolean paid = false;
@@ -199,6 +200,14 @@ public class ChannelReportTemplateController implements Serializable {
 
     @EJB
     SessionInstanceFacade sessionInstanceFacade;
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
 
     public void clearAll() {
         billedBills = new ArrayList<>();
@@ -809,7 +818,6 @@ public class ChannelReportTemplateController implements Serializable {
             long8 += cancelPaidCount;
         }
 
-
         if (bundle != null) {
             bundle.setReportTemplateRows(rs);
             bundle.setLong1(long1);
@@ -893,13 +901,15 @@ public class ChannelReportTemplateController implements Serializable {
                 bs.getBill().getPatient().getPerson();
                 bs.getBill().getCreditCompany().getName();
                 bs.getBill().getCreatedAt();
-                
+                bs.getSessionInstance().getOriginatingSession().getStaff().getSpeciality();
+                bs.getSessionInstance().getOriginatingSession().getSpeciality().getName();
+
             }
         }
 
         j = "select new com.divudi.data.ReportTemplateRow(bs) "
                 + " from BillSession bs "
-                + " where bs.retired=false "
+                + " where bs.retired = false "
                 + " and bs.bill.creditCompany is not null "
                 + " and bs.bill.creditCompany.name = 'DOC_990'"
                 + " and bs.bill.billTypeAtomic = :bta"
@@ -914,7 +924,19 @@ public class ChannelReportTemplateController implements Serializable {
             m.put("cat", category);
             j += " and bs.originatingSession.category=:cat ";
         }
-        
+
+        if (speciality != null) {
+            j += " and bs.sessionInstance.originatingSession.staff.speciality =:sp";
+            m.put("sp", speciality);
+
+        }
+        System.out.println("here2");
+        if (staff != null) {
+            j += " and bs.sessionInstance.originatingSession.staff =:staff";
+            m.put("staff", staff);
+       
+        }
+
         j += " order by bs.bill.createdAt desc";
 
         m.put("fd", fromDate);
