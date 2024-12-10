@@ -178,18 +178,22 @@
                                         <f:setPropertyActionListener value="#{b}" target="#{grnController.grnBill}" ></f:setPropertyActionListener>
                                         <f:setPropertyActionListener value="true" target="#{grnController.printPreview}" ></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <f:facet name="footer">
+                                    <f:facet name="footer" >
                                         <h:outputText value="Net Purchase Value" />
                                         <br />
                                         <h:outputText value="Net Sale Value" />
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Invoice No" width="6em">
-                                    <h:outputText value="#{b.invoiceNumber}" />
+                                    <h:outputText value="#{b.invoiceNumber}" style="float: right; padding-right: 15px"/>
                                     <f:facet name="footer">
-                                        <h:outputText value="#{pharmacyController.totalPurchase}" />
+                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" style="float: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                         <br />
-                                        <h:outputText value="#{pharmacyController.totalSaleValue}" />
+                                        <h:outputLabel value="#{pharmacyController.totalSaleValue}" style="float: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Created Date" width="8em">
@@ -218,39 +222,47 @@
                                     <h:outputText value="#{b.referenceBill.deptId}" />
                                 </p:column>
                                 <p:column headerText="Purchase Value Cash" width="6em">
-                                    <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                                    <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" style="float: right; padding-right: 15px">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                                    <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" style="float: right; padding-right: 15px"/>
                                     <f:facet name="footer">
-                                        <h:outputText value="#{pharmacyController.totalCashPurchaseValue}" />
+                                        <h:outputLabel value="#{pharmacyController.totalCashPurchaseValue}" style="float: right; padding-right: 15px">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Purchase Value Credit" width="6em">
-                                    <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                                    <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}" style="float: right; padding-right: 15px" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                                    <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00" style="float: right; padding-right: 15px"/>
                                     <f:facet name="footer">
-                                        <h:outputText value="#{pharmacyController.totalCreditPurchaseValue}" />
+                                        <h:outputLabel value="#{pharmacyController.totalCreditPurchaseValue}" style="float: right; padding-right: 15px">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Sale Value Cash" width="6em">
-                                    <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.saleValue}" >
+                                    <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.saleValue}" style="float: right; padding-right: 15px">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                                    <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" style="float: right; padding-right: 15px"/>
                                     <f:facet name="footer">
-                                        <h:outputText value="#{pharmacyController.totalCashSaleValue}" />
+                                        <h:outputLabel value="#{pharmacyController.totalCashSaleValue}" style="float: right; padding-right: 15px">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Sale Value Credit" width="6em">
-                                    <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.saleValue}"  >
+                                    <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.saleValue}" style="float: right; padding-right: 15px" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                                    <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00" style="float: right; padding-right: 15px"/>
                                     <f:facet name="footer">
-                                        <h:outputText value="#{pharmacyController.totalCreditSaleValue}" />
+                                        <h:outputLabel value="#{pharmacyController.totalCreditSaleValue}" style="float: right; padding-right: 15px" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Remark" width="6em">
@@ -308,7 +320,7 @@
                                 </p:column>
                                 <p:column headerText="Purchase Value" width="5em">
                                     <h:outputText value="#{r.netTotal}" />
-                                    
+
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyController.totalPurchase}" />
                                     </f:facet>
