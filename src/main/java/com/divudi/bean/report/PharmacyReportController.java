@@ -27,6 +27,7 @@ import com.divudi.data.Sex;
 import com.divudi.data.TestWiseCountReport;
 import com.divudi.data.dataStructure.BillAndItemDataRow;
 import com.divudi.data.dataStructure.ItemDetailsCell;
+import com.divudi.data.dataStructure.PharmacyStockRow;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
@@ -259,6 +260,8 @@ public class PharmacyReportController implements Serializable {
     private double stockSaleValue;
     private double stockPurchaseValue;
     private double stockTotal;
+    private List<PharmacyStockRow> pharmacyStockRows;
+    private double stockTottal;
 
     //Constructor
     public PharmacyReportController() {
@@ -1945,69 +1948,110 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processClosingStockReport() {
-
-    List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-    List<BillType> billTypes = new ArrayList<>();
-
-    Map<String, Object> params = new HashMap<>();
-    StringBuilder jpql = new StringBuilder("select s from Stock s where s.stock > 0 ");
-
-    // Filter by department type
-    jpql.append("and (s.itemBatch.item.departmentType is null or s.itemBatch.item.departmentType = :depty) ");
-    params.put("depty", DepartmentType.Pharmacy);
-
-    // Institution filter
-    if (institution != null) {
-        jpql.append("and s.institution = :ins ");
-        params.put("ins", institution);
-    }
-
-    // Department filter
-    if (department != null) {
-        jpql.append("and s.department = :dep ");
-        params.put("dep", department);
-    }
-
-    // Bill type filters
-    if (!billTypeAtomics.isEmpty() || !billTypes.isEmpty()) {
-        jpql.append("and (");
-        if (!billTypeAtomics.isEmpty()) {
-            jpql.append("s.pbItem.billItem.bill.billTypeAtomic in :dtype ");
-            params.put("dtype", billTypeAtomics);
+        switch (reportType) {
+            case "itemWise":
+                processClosingStockItemWiseReport();
+                break;
+            case "batchWise":
+                processClosingStockBatchWiseReport();
+                break;
         }
-        if (!billTypeAtomics.isEmpty() && !billTypes.isEmpty()) {
-            jpql.append("or ");
+    }
+
+    public void processClosingStockBatchWiseReport() {
+
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select s from Stock s where s.stock > 0 ");
+
+        // Filter by department type
+        jpql.append("and (s.itemBatch.item.departmentType is null or s.itemBatch.item.departmentType = :depty) ");
+        params.put("depty", DepartmentType.Pharmacy);
+
+        // Institution filter
+        if (institution != null) {
+            jpql.append("and s.institution = :ins ");
+            params.put("ins", institution);
         }
-        if (!billTypes.isEmpty()) {
-            jpql.append("s.pbItem.billItem.bill.billType in :doctype ");
-            params.put("doctype", billTypes);
+
+        // Department filter
+        if (department != null) {
+            jpql.append("and s.department = :dep ");
+            params.put("dep", department);
         }
-        jpql.append(") ");
+
+        // Item filter
+        if (item != null) {
+            jpql.append("and s.itemBatch.item = :itm ");
+            params.put("itm", item);
+        }
+
+        // Ordering by itemBatch.item.name
+        jpql.append("order by s.itemBatch.item.name");
+
+        // Execute query
+        stocks = getStockFacade().findByJpql(jpql.toString(), params);
+
+        // Calculate purchase and sale values
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        stockTotal = 0.0;
+
+        for (Stock stock : stocks) {
+            stockPurchaseValue += stock.getItemBatch().getPurcahseRate() * stock.getStock();
+            stockSaleValue += stock.getItemBatch().getRetailsaleRate() * stock.getStock();
+            stockTotal += stock.getStock();
+        }
     }
 
-    // Item filter
-    if (item != null) {
-        jpql.append("and s.itemBatch.item = :itm ");
-        params.put("itm", item);
+    public void processClosingStockItemWiseReport() {
+        Date startTime = new Date();
+        Map<String, Object> m = new HashMap<>();
+
+        String jpql = "select new com.divudi.data.dataStructure.PharmacyStockRow"
+                + "(s.itemBatch.item.code, "
+                + "s.itemBatch.item.name, "
+                + "sum(s.stock), "
+                + "sum(s.itemBatch.purcahseRate * s.stock), "
+                + "sum(s.itemBatch.retailsaleRate * s.stock)) "
+                + "from Stock s "
+                + "where s.stock > :z ";
+
+        m.put("z", 0.0);
+       
+
+        // Institution filter
+        if (institution != null) {
+            jpql += "and s.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        // Department filter
+        if (department != null) {
+            jpql += "and s.department = :dep ";
+            m.put("dep", department);
+        }
+
+        // Item filter
+        if (item != null) {
+            jpql += "and s.itemBatch.item = :itm ";
+            m.put("itm", item);
+        }
+        
+        jpql += "group by s.itemBatch.item.name, s.itemBatch.item.code";
+
+        List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(jpql, m);
+
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        stockTottal = 0.0;
+        for (PharmacyStockRow r : lsts) {
+            stockPurchaseValue += r.getPurchaseValue();
+            stockSaleValue += r.getSaleValue();
+            stockTotal += r.getQty();
+        }
+
+        pharmacyStockRows = lsts;
     }
-
-    // Ordering by itemBatch.item.name
-    jpql.append("order by s.itemBatch.item.name");
-
-    // Execute query
-    stocks = getStockFacade().findByJpql(jpql.toString(), params);
-
-    // Calculate purchase and sale values
-    stockPurchaseValue = 0.0;
-    stockSaleValue = 0.0;
-    stockTotal = 0.0;
-    
-    for (Stock stock : stocks) {
-        stockPurchaseValue += stock.getItemBatch().getPurcahseRate() * stock.getStock();
-        stockSaleValue += stock.getItemBatch().getRetailsaleRate() * stock.getStock();
-        stockTotal += stock.getStock();
-    }
-}
 
     public void processLabTestWiseCountReport() {
         String jpql = "select new com.divudi.data.TestWiseCountReport("
@@ -2551,6 +2595,22 @@ public class PharmacyReportController implements Serializable {
 
     public void setStockTotal(double stockTotal) {
         this.stockTotal = stockTotal;
+    }
+
+    public List<PharmacyStockRow> getPharmacyStockRows() {
+        return pharmacyStockRows;
+    }
+
+    public void setPharmacyStockRows(List<PharmacyStockRow> pharmacyStockRows) {
+        this.pharmacyStockRows = pharmacyStockRows;
+    }
+
+    public double getStockTottal() {
+        return stockTottal;
+    }
+
+    public void setStockTottal(double stockTottal) {
+        this.stockTottal = stockTottal;
     }
 
 }

@@ -151,8 +151,7 @@
                             <p:selectOneMenu 
                                 id="phmItem"
                                 value="#{pharmacyReportController.item}" 
-                                filter="true" 
-                                required="true"
+                                filter="true"
                                 class="w-100 " >
                                 <f:selectItem itemLabel="All Items" ></f:selectItem>
                                 <f:selectItems value="#{ampController.items}" var="item" itemLabel="#{item.name}" itemValue="#{item}" />
@@ -215,8 +214,8 @@
                             id="gpItemWise" 
                             header="Report Data By Item Wise" 
                             rendered="#{pharmacyReportController.reportType eq 'itemWise'}">
-                            <p:dataTable id="itemWise" value="#{pharmacyReportController.stocks}" 
-                                         var="f" 
+                            <p:dataTable id="itemWise" value="#{pharmacyReportController.pharmacyStockRows}" 
+                                         var="p" 
                                          rowIndexVar="n" 
                                          paginator="true" 
                                          rows="10" 
@@ -225,32 +224,28 @@
                                          rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                                 <p:column headerText="S.No">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{n+1}" />
                                     <f:facet name="footer">
                                         <h:outputText value="Total" />
                                     </f:facet>
                                 </p:column>
-
                                 <p:column headerText="Item Category">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{p.item.category.name}" />
                                 </p:column>
-
                                 <p:column headerText="Item Code">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{p.code}" />
                                 </p:column>
-
                                 <p:column headerText="Item Name">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{p.name}" />
                                 </p:column>
-
                                 <p:column headerText="UOM">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{p.item.measurementUnit.name}" />
                                 </p:column>
                                 <p:column headerText="Closing Stock">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{p.qty}" />
                                 </p:column>
                                 <p:column headerText="Closing Stock Value">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{p.purchaseValue}" />
                                 </p:column>
 
                             </p:dataTable>
@@ -296,7 +291,7 @@
                                     <h:outputText value="#{f.itemBatch.dateOfExpire}" />
                                 </p:column>
                                 <p:column headerText="Batch No">
-                                    <h:outputText value="#{f.itemBatch.id}" />
+                                    <h:outputText value="#{f.itemBatch.batchNo}" />
                                 </p:column>
                                 <p:column headerText="Qty">
                                     <h:outputText value="#{f.stock}"><f:convertNumber pattern="#,##0" /></h:outputText>
