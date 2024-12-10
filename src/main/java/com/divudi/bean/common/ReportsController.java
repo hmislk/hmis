@@ -2675,4 +2675,173 @@ public class ReportsController implements Serializable {
         b.calculateTotalsWithCredit();
         return b;
     }
+
+    public void generateOpdAndInwardDueReport() {
+        if (visitType == null || visitType.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please select a visit type");
+            return;
+        }
+
+        System.out.println("generatePaymentSettlementReport = " + this);
+        bundle = new ReportTemplateRowBundle();
+
+        List<BillTypeAtomic> opdBts = new ArrayList<>();
+        bundle = new ReportTemplateRowBundle();
+
+        if (visitType.equalsIgnoreCase("IP")) {
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+        } else if (visitType.equalsIgnoreCase("OP")) {
+            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        }
+
+        bundle.setName("Bills");
+        bundle.setBundleType("billList");
+
+        bundle = generateOpdAndInwardDueBills(opdBts);
+
+        groupBills();
+    }
+
+    public ReportTemplateRowBundle generateOpdAndInwardDueBills(List<BillTypeAtomic> bts) {
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.creditCompany is not null ";
+
+        parameters.put("br", true);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (paymentMethod != null) {
+            List<PaymentMethod> billPaymentMethods = new ArrayList<>();
+            billPaymentMethods.add(paymentMethod);
+
+            jpql += "AND bill.paymentMethod in :bpms ";
+            parameters.put("bpms", billPaymentMethods);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && admissionType != null)) {
+            jpql += "AND bill.patientEncounter.admissionType = :type ";
+            parameters.put("type", admissionType);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && roomCategory != null)) {
+            jpql += "AND bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory = :category ";
+            parameters.put("category", roomCategory);
+        }
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND bill.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+
+        if (collectingCentre != null) {
+            jpql += "AND bill.collectingCentre = :cc ";
+            parameters.put("cc", collectingCentre);
+        }
+
+        if (creditCompany != null) {
+            jpql += "AND bill.creditCompany = :cc ";
+            parameters.put("cc", creditCompany);
+        }
+
+        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill, bill.creditCompany";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+        b.setReportTemplateRows(rs);
+        b.createRowValuesFromBill();
+        b.calculateTotalsWithCredit();
+        return b;
+    }
+
+    private void groupBills() {
+        Map<Institution, List<Bill>> billMap = new HashMap<>();
+
+        if (visitType != null && visitType.equalsIgnoreCase("OP")) {
+            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                Bill bill1 = row.getBill();
+
+                if (reportType != null && reportType.equalsIgnoreCase("paid")) {
+                    if (bill1.getBalance() != 0) {
+                        continue;
+                    }
+                }
+
+                if (reportType != null && reportType.equalsIgnoreCase("due")) {
+                    if (bill1.getBalance() == 0) {
+                        continue;
+                    }
+                }
+
+                if (billMap.containsKey(bill1.getCreditCompany())) {
+                    billMap.get(bill1.getCreditCompany()).add(bill1);
+                } else {
+                    List<Bill> bills = new ArrayList<>();
+                    bills.add(bill1);
+                    billMap.put(bill1.getCreditCompany(), bills);
+                }
+            }
+        } else if (visitType != null && visitType.equalsIgnoreCase("IP")) {
+            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                Bill bill1 = row.getBill();
+
+                if (reportType != null && reportType.equalsIgnoreCase("paid")) {
+                    if (bill1.getBalance() != 0) {
+                        continue;
+                    }
+                }
+
+                if (reportType != null && reportType.equalsIgnoreCase("due")) {
+                    if (bill1.getBalance() == 0) {
+                        continue;
+                    }
+                }
+
+                if (billMap.containsKey(bill1.getPatientEncounter().getFinalBill().getCreditCompany())) {
+                    billMap.get(bill1.getPatientEncounter().getFinalBill().getCreditCompany()).add(bill1);
+                } else {
+                    List<Bill> bills = new ArrayList<>();
+                    bills.add(bill1);
+                    billMap.put(bill1.getPatientEncounter().getFinalBill().getCreditCompany(), bills);
+                }
+            }
+        }
+
+        bundle.setGroupedBillItemsByInstitution(billMap);
+    }
 }

@@ -97,6 +97,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         clearDataForPatientDeposit();
         patient = p;
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
+        patientController.listnerForPaymentMethodChange();
         return "/patient_deposit/pay?faces-redirect=true";
     }
 
