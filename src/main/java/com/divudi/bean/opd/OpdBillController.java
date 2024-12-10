@@ -2169,6 +2169,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setFromDepartment(sessionController.getDepartment());
         newBatchBill.setPatient(patient);
         newBatchBill.setCreditCompany(creditCompany);
+        newBatchBill.setComments(comment);
         newBatchBill.setIpOpOrCc("OP");
         newBatchBill.setInsId(
                 getBillNumberGenerator().institutionBillNumberGenerator(

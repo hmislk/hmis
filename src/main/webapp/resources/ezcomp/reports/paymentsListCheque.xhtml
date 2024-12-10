@@ -15,7 +15,7 @@
 
         <p:dataTable
             value="#{financialTransactionController.selectedBundle.getPaymentRows(financialTransactionController.selectedPaymentMethod)}" var="cardPayment" >
-            <p:column  headerText="Select to Handover">
+            <p:column  headerText="Select to Handover" width="3em">
                 <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForHandover}" >
                     <p:ajax process="checkCardSelected" ></p:ajax>
                 </p:selectBooleanCheckbox>
@@ -42,24 +42,35 @@
             </p:column>
             <p:column  headerText="Status">
                 <h:panelGroup rendered="#{cardPayment.payment.bill.cancelled}" >
-                    <p:badge value="Cancelled"  severity="warning" styleClass="mx-2"></p:badge>
-
+                    <p:badge value="Cancelled"  severity="danger" styleClass="mx-2"></p:badge><br/>
+                    <h:outputText 
+                        value="Cancelled Bill Number : "
+                        ></h:outputText>
+                    <h:outputText 
+                        value="#{cardPayment.payment.bill.cancelledBill.deptId}"
+                        ></h:outputText>
+                    <br/>
                 </h:panelGroup>
-                <h:outputText 
-                    value="#{cardPayment.payment.bill.cancelledBill.deptId}"
-                    rendered="#{cardPayment.payment.bill.cancelled}"
-                    ></h:outputText>
-                <h:outputText 
-                    value="Cancelled Bill Number : "
-                    ></h:outputText>
-                <h:outputText 
-                    value="#{cardPayment.payment.bill.cancelledBill.deptId}"
-                    rendered="#{cardPayment.payment.bill.cancelled}"
-                    ></h:outputText>
-                <br/>
-                <h:outputText 
-                    class="text-danger"
-                    value="#{cardPayment.payment.bill.cancelled?'Bill Cancelled':''}" ></h:outputText>
+                <h:panelGroup rendered="#{cardPayment.payment.bill.billClassType eq 'CancelledBill'}" >
+                    <p:badge value="Cancellation"  severity="warning" styleClass="mx-2"></p:badge><br/>
+                    <h:outputText 
+                        value="Original Bill Number : "
+                        ></h:outputText>
+                    <h:outputText 
+                        value="#{cardPayment.payment.bill.billedBill.deptId}"
+                        ></h:outputText>
+                    <br/>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{cardPayment.payment.bill.billClassType eq 'RefundBill'}" >
+                    <p:badge value="Refund"  severity="warning" styleClass="mx-2"></p:badge><br/>
+                    <h:outputText 
+                        value="Original Bill Number : "
+                        ></h:outputText>
+                    <h:outputText 
+                        value="#{cardPayment.payment.bill.billedBill.deptId}"
+                        ></h:outputText>
+                    <br/>
+                </h:panelGroup>
 
             </p:column>
             <p:column headerText="Value">
