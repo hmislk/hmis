@@ -51,6 +51,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.BillValidation;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
 import static com.divudi.data.PaymentMethod.Cheque;
@@ -454,6 +455,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         return false;
     }
 
+    @Deprecated // Use PaymentService
     private boolean checkPaymentDetails() {
         System.out.println("checkPaymentDetails");
         System.out.println("getPaymentMethod() = " + getPaymentMethod());
@@ -901,8 +903,15 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (checkPatientDetails()) {
             return true;
         }
-        if (checkPaymentDetails()) {
+        BillValidation bv = paymentService.checkForErrorsInPaymentDetailsForInBills(getPaymentMethod(), getPaymentMethodData(), netTotal, getPatient());
+        
+        if (bv.isErrorPresent()) {
+            JsfUtil.addErrorMessage(bv.getErrorMessage());
             return true;
+        }else{
+            if(bv.getCompany()!=null && getCreditCompany()==null){
+                setCreditCompany(bv.getCompany());
+            }
         }
         return false;
     }
