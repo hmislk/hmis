@@ -811,6 +811,7 @@ public class ChannelService {
 
         BillSession bs = bill.getSingleBillSession();
         CancelledBill cb = createCancelBill1(bill);
+        
         BillItem cItem = cancelBillItems(bs.getBillItem(), cb);
         BillSession cbs = cancelBillSession(bs, cb, cItem);
         //  bill.getSingleBillSession().getBill().setCancelled(true);
@@ -819,7 +820,6 @@ public class ChannelService {
         System.out.println(bs.getBill().getBillClass());
 
         if (bill.getPaidBill() != null) {
-            System.out.println("inside");
             bill.getPaidBill().setCancelled(true);
         }
         bs.getBill().setCancelledBill(cb);
