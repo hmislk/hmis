@@ -224,7 +224,7 @@
                             id="gpItemWise" 
                             header="Report Data By Item Wise" 
                             rendered="#{pharmacyReportController.reportType eq 'itemWise'}">
-                                <p:dataTable id="itemWise" value="" 
+                                <p:dataTable id="itemWise" value="#{pharmacyReportController.stockLedgerHistories}" 
                                              var="f" 
                                              rowIndexVar="n" 
                                              paginator="true" 
@@ -273,7 +273,8 @@
                             id="gpBatchWise" 
                             header="Report Data By Batch Wise" 
                             rendered="#{pharmacyReportController.reportType eq 'batchWise'}">
-                                <p:dataTable id="batchWise" value="" 
+                                <p:dataTable id="batchWise" 
+                                             value="#{pharmacyReportController.stockLedgerHistories}" 
                                              var="f" 
                                              rowIndexVar="n" 
                                              paginator="true" 
@@ -283,44 +284,44 @@
                                              rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                                     <p:column headerText="S.No">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{n+1}" />
                                         <f:facet name="footer">
                                             <h:outputText value="Total" />
                                         </f:facet>
                                     </p:column>
 
                                     <p:column headerText="Item Category">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.pbItem.billItem.item.category.name}" />
                                     </p:column>
 
                                     <p:column headerText="Item Code">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.pbItem.billItem.item.code}" />
                                     </p:column>
 
                                     <p:column headerText="Item Name">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.pbItem.billItem.item.name}" />
                                     </p:column>
 
                                     <p:column headerText="UOM">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.pbItem.billItem.item.measurementUnit.name}" />
                                     </p:column>
                                     <p:column headerText="Expiry">
-                                        <h:outputText value="" />
+                                         <h:outputText value="#{f.pbItem.doe}" />
                                     </p:column>
                                     <p:column headerText="Batch No">
-                                        <h:outputText value="" />
+                                       <h:outputText value="#{f.itemBatch.batchNo}" />
                                     </p:column>
                                     <p:column headerText="Qty">
-                                        <h:outputText value="" />
+                                       <h:outputText value="#{f.itemStock}" />
                                     </p:column>
                                     <p:column headerText="Purchase Rate">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.pbItem.purchaseRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
                                     </p:column>
                                     <p:column headerText="Purchase Value">
                                         <h:outputText value="" />
                                     </p:column>
                                     <p:column headerText="Retail Rate">
-                                        <h:outputText value="" />
+                                         <h:outputText value="#{f.pbItem.retailRate}" ><f:convertNumber pattern="#,##0.00" /></h:outputText>
                                     </p:column>
                                     <p:column headerText="Sale Value">
                                         <h:outputText value="" />
