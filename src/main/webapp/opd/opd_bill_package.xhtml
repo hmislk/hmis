@@ -672,7 +672,7 @@
                                                         class="row"
                                                         layout="block"  
                                                         rendered="#{billPackageController.paymentMethod eq 'Credit'}" >
-                                                        <pa:creditDetailsAsOnlyPayment paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                        <pa:creditDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup
                                                         class="row"
@@ -768,7 +768,7 @@
                                                         class="row my-1"
                                                         layout="block"  
                                                         id="creditCard" rendered="#{billPackageController.paymentMethod eq 'Card'}" >
-                                                        <pa:creditCard paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                                        <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup 
                                                         class="row my-1"
@@ -821,6 +821,8 @@
                                         <h:panelGrid 
                                             columns="2" 
                                             class="w-100">
+
+
                                             <p:outputLabel for="refIns" value="Institution" ></p:outputLabel>
                                             <p:autoComplete 
                                                 id="refIns" 
@@ -937,6 +939,8 @@
 
                                             </p:autoComplete>
 
+                                            <p:outputLabel for="txtComments" value="Comments" ></p:outputLabel>
+                                            <p:inputTextarea id="txtComments" value="#{billPackageController.comment}" class="w-100" ></p:inputTextarea>
 
                                         </h:panelGrid>
                                     </p:panel>
