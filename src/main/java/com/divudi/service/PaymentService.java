@@ -12,17 +12,22 @@ import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import static com.divudi.data.PaymentMethod.PatientDeposit;
 import static com.divudi.data.PaymentMethod.Slip;
 import static com.divudi.data.PaymentMethod.Staff;
+import static com.divudi.data.PaymentMethod.Staff_Welfare;
 import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
+import com.divudi.entity.Patient;
+import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.Payment;
+import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.facade.StaffFacade;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -42,15 +47,19 @@ public class PaymentService {
     @EJB
     BillFacade billFacade;
     @EJB
+    StaffFacade staffFacade;
+    @EJB
     PaymentFacade paymentFacade;
     @EJB
-    StaffService staffBean;
+    StaffService staffService;
     @EJB
     CashbookService cashbookService;
     @EJB
     DrawerService drawerService;
     @EJB
     BillService billService;
+    @EJB
+    PatientDepositService patientDepositService;
 
     /**
      * Creates payments for the given bill and updates relevant records.
@@ -118,7 +127,7 @@ public class PaymentService {
         return newPayments;
     }
 
-    public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
+    private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
         CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
         List<Payment> payments = new ArrayList<>();
         Date currentDate = new Date();
@@ -227,6 +236,99 @@ public class PaymentService {
             default:
                 break;
         }
+    }
+
+    public void updateBalances(List<Payment> payments) {
+        if (payments == null) {
+            return;
+        }
+        for (Payment p : payments) {
+            switch (p.getPaymentMethod()) {
+                case Agent:
+                case Card:
+                case Cash:
+                case Cheque:
+                case IOU:
+                case MultiplePaymentMethods:
+                case None:
+                case OnCall:
+                case OnlineSettlement:
+                case PatientPoints:
+                case Slip:
+                case Voucher:
+                case ewallet:
+                case YouOweMe:
+                    break;
+                case PatientDeposit:
+                    updatePatientDeposits(p);
+                    break;
+                case Staff_Welfare:
+                    updateStaffWelare(p);
+                    break;
+                case Staff:
+                    updateStaffCredit(p);
+                    break;
+                case Credit:
+                    updateCompanyCredit(p);
+                    break;
+                default:
+                    continue;
+            }
+        }
+    }
+
+    private void updateCompanyCredit(Payment p) {
+        //TODO: Add Logic Here
+    }
+
+    private void updateStaffCredit(Payment p) {
+        if (p == null) {
+            return;
+        }
+        if (p.getBill() == null) {
+            return;
+        }
+        if (p.getBill().getToStaff() == null) {
+            return;
+        }
+        Staff toStaff = p.getBill().getToStaff();
+        staffService.updateStaffWelfare(toStaff, p.getPaidValue());
+    }
+
+    private void updateStaffWelare(Payment p) {
+        if (p == null) {
+            return;
+        }
+        if (p.getBill() == null) {
+            return;
+        }
+        if (p.getBill().getToStaff() == null) {
+            return;
+        }
+        Staff toStaff = p.getBill().getToStaff();
+        staffService.updateStaffWelfare(toStaff, p.getPaidValue());
+    }
+
+    private void updatePatientDeposits(Payment p) {
+        if (p == null) {
+            return;
+        }
+        if (p.getBill() == null) {
+            return;
+        }
+        if (p.getBill().getPatient() == null) {
+            return;
+        }
+        Patient pt = patientFacade.findWithoutCache(p.getBill().getPatient().getId());
+        if (pt.getRunningBalance() != null) {
+            pt.setRunningBalance(pt.getRunningBalance() - p.getPaidValue());
+        } else {
+            pt.setRunningBalance(0.0 - p.getPaidValue());
+        }
+        patientFacade.editAndCommit(pt);
+        PatientDeposit pd = patientDepositService.getDepositOfThePatient(pt, p.getDepartment());
+        patientDepositService.updateBalance(p, pd);
+
     }
 
 }
