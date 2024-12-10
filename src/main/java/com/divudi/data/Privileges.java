@@ -67,6 +67,7 @@ public enum Privileges {
     InwardBillingInterimBillSearch("Inward Interim Bill Search"),
     InwardSearch("Inward Search"),
     InwardSearchServiceBill("Inward Search Service Bill"),
+    InwardSearchServiceBillUnrestrictedAccess("Inward Search Service Bill Without Restricted"),
     InwardSearchProfessionalBill("Inward Search Professional Bill"),
     InwardSearchFinalBill("Inward Search Final Bill"),
     InwardReport("Inward Report"),

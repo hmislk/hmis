@@ -96,11 +96,11 @@
                                                             alt="Save Patient Details" 
                                                             class="ui-button-success" 
                                                             icon="fas fa-check" 
+                                                            process="btnDone editPatient"
                                                             action="#{patientController.saveSelected(opdBillController.patient)}" 
                                                             rendered="#{opdBillController.patientDetailsEditable}" 
-                                                            update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"  />
+                                                            update="msg :#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"  />
                                                     </h:panelGroup>
-
                                                 </h:panelGroup>
                                             </h:panelGroup>
 
@@ -128,7 +128,7 @@
                                                         title="Quick Search from Phone Number"
                                                         action="#{patientController.quickSearchPatientLongPhoneNumber(opdBillController)}" 
                                                         process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                                        update="ptImp selectPatient editPatient viewPatient payment paymentDetails pBillDetails msg :#{p:resolveFirstComponentWithId('pay:',view).clientId}"
+                                                        update="ptImp selectPatient editPatient viewPatient payment paymentDetails pBillDetails msg :#{p:resolveFirstComponentWithId('pay',view).clientId}"
                                                         styleClass="btn-sm mx-1">
                                                     </p:commandButton>
                                                     <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
@@ -278,6 +278,7 @@
                                                                     placeholder="Mobile Number"
                                                                     value="#{opdBillController.patient.mobileNumberStringTransient}"
                                                                     class="form-control" 
+                                                                    required="true"
                                                                     requiredMessage="Please enter a Mobile Number"
                                                                     validatorMessage="Please enter valid Number">
                                                                     <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
@@ -505,6 +506,7 @@
                                                 value="#{opdBillController.itemLight}" 
                                                 completeMethod="#{opdBillController.completeOpdItemsByWord}" 
                                                 var="ix" 
+                                                onfocus="this.select();"
                                                 inputStyleClass="w-100"
                                                 itemLabel="#{ix.name}" 
                                                 itemValue="#{ix}" 
@@ -602,12 +604,11 @@
                                                     onfocus="this.select();"
                                                     autocomplete="off" 
                                                     class="w-100 mb-2"
-                                                    value="#{opdBillController.currentBillItem.qty}" >
-                                                    <f:convertNumber pattern="#0.0" ></f:convertNumber>
+                                                    value="#{opdBillController.currentBillItemQty}" >
                                                 </p:inputText>
                                             </h:panelGrid>
                                             <p:commandButton 
-                                                id="btnAddIx" 
+                                                id="btnAddIx"
                                                 value="Add" 
                                                 icon="fa fa-plus"
                                                 class="w-100 ui-button-success"
@@ -1203,7 +1204,7 @@
                                                 class="row my-1"
                                                 layout="block"  
                                                 id="creditCard" rendered="#{opdBillController.paymentMethod eq 'Card'}" >
-                                                <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup
                                                 class="row my-1"
@@ -1240,7 +1241,10 @@
                                                 layout="block" 
                                                 id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                 >
-                                                <pa:multiple_payment_methods controller="#{opdBillController}" paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}" class="w-100"/>
+                                                <pa:multiple_payment_methods 
+                                                    controller="#{opdBillController}" 
+                                                    paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}" 
+                                                    class="w-100"/>
 
                                             </h:panelGroup>
 

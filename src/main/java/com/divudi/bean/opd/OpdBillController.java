@@ -79,6 +79,7 @@ import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -146,6 +147,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private TokenFacade tokenFacade;
     @EJB
     BillService billService;
+    @EJB
+    PaymentService paymentService;
 
     /**
      * Controllers
@@ -317,6 +320,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     private String refNo;
     private double remainAmount;
+    private Double currentBillItemQty;
 
     /**
      *
@@ -922,7 +926,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             bf.setFeeGrossValue(0.0);
 //            return;
         }
-       
+
         if (configOptionApplicationController.getBooleanValueByKey("Disable increasing the fee value in OPD Billing", false)) {
             if (bf.getFeeValue() < bf.getFeeGrossValue()) {
                 JsfUtil.addErrorMessage("Increasing the fee value is not allowed.");
@@ -1600,6 +1604,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             getPatient().setCreatedInstitution(getSessionController().getInstitution());
             getPatient().setCreater(getSessionController().getLoggedUser());
             getPatient().setCreatedAt(new Date());
+            getPatient().setHasAnAccount(false);
+            getPatient().setCreditLimit(0.0);
             if (getPatient().getPerson().getId() != null) {
 //                getPatientFacade().edit(getPatient());
                 getPersonFacade().edit(getPatient().getPerson());
@@ -1821,6 +1827,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         boolean error = false;
 
         if (getPaymentMethod() == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
             if (getPaymentMethodData().getCreditCard().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("OPD Billing - CreditCard Comment is Mandatory", false)) {
                 JsfUtil.addErrorMessage("Please Enter a Credit Card Comment..");
                 error = true;
@@ -1892,7 +1899,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         BilledBill newBatchBill = new BilledBill();
 
         if (oneOpdBillForAllDepartments) {
-            Bill newSingleBill=new BilledBill();
+            Bill newSingleBill = new BilledBill();
             newSingleBill = saveBill(sessionController.getDepartment(), newSingleBill);
             if (newSingleBill == null) {
                 return false;
@@ -1956,6 +1963,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             getPatientFacade().edit(getPatient());
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(getBatchBill(), pd);
+        }
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            paymentService.updateBalances(payments);
         }
 
         if (getToken() != null) {
@@ -2433,8 +2443,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return false;
     }
 
+    @Override
     public double calculatRemainForMultiplePaymentTotal() {
-
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
@@ -2481,7 +2491,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     if (patient != null) {
                         pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                     }
-                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                    if (remainAmount >= patient.getRunningBalance()) {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(patient.getRunningBalance());
+                    } else {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                    }
+
                     break;
                 case Credit:
                     pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
@@ -2494,6 +2509,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
 
         }
+        System.out.println("this = " + this);
+        listnerForPaymentMethodChange();
+
     }
 
     private boolean errorCheck() {
@@ -2841,30 +2859,35 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Please set Category to Item");
             return;
         }
-        
+
         if (getCurrentBillItem().getItem().getPriority() != null) {
             getCurrentBillItem().setPriority(getCurrentBillItem().getItem().getPriority());
         }
 
-        if(getCurrentBillItem().getItem().isRequestForQuentity()){
-            if (getCurrentBillItem().getQty() == null || getCurrentBillItem().getQty() == 0.0) {
+        if (getCurrentBillItem().getItem().isRequestForQuentity()) {
+            if (getCurrentBillItemQty() == null || getCurrentBillItemQty() == 0.0) {
+                setCurrentBillItemQty(null);
                 JsfUtil.addErrorMessage("Quentity is Missing ..! ");
                 return;
             }
+        }else{
+            setCurrentBillItemQty(1.0);
         }
-        
-        if (getCurrentBillItem().getQty() == null) {
-            getCurrentBillItem().setQty(1.0);
-        }
+
         for (BillEntry bi : lstBillEntries) {
             if (bi.getBillItem() != null && getCurrentBillItem() != null && getCurrentBillItem().getItem() != null && bi.getBillItem().getItem().equals(getCurrentBillItem().getItem())) {
                 JsfUtil.addErrorMessage("Can't select same item " + getCurrentBillItem().getItem());
+                setCurrentBillItem(null);
+                setCurrentBillItemQty(null);
                 return;
             }
         }
         
+        System.out.println("Current BillItem QTY= " + getCurrentBillItemQty());
+        
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
+        bi.setTmpQty(getCurrentBillItemQty());
         bi.setSessionDate(sessionDate);
         lastBillItem = bi;
         BillEntry addingEntry = new BillEntry();
@@ -2917,6 +2940,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else {
             setItemLight(itemLight);
         }
+        setCurrentBillItemQty(null);
         JsfUtil.addSuccessMessage("Added");
     }
 
@@ -2966,6 +2990,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         lstBillComponents = null;
         lstBillFees = null;
         lstBillItems = null;
+        currentBillItemQty = null;
     }
 
     private void clearBillValues() {
@@ -3048,8 +3073,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public void setPriceMatrixController(PriceMatrixController priceMatrixController) {
         this.priceMatrixController = priceMatrixController;
     }
-
-    
 
     public void calTotals() {
         if (paymentMethod == null) {
@@ -3528,6 +3551,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                             getPatient().setRunningBalance(0.0 - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
                         }
                         getPatientFacade().edit(getPatient());
+                        p.setPaidValue(cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
                         break;
                     case Slip:
                         p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
@@ -3773,13 +3797,33 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
-            if (pd!=null && pd.getId() != null) {
+            if (pd != null && pd.getId() != null) {
                 getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
                 getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
             }
-        }
-        if (paymentMethod == PaymentMethod.Card) {
+        } else if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
+            System.out.println("this = " + this);
+        } else if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            getPaymentMethodData().getPatient_deposit().setPatient(patient);
+            getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
+
+            if (pd != null && pd.getId() != null) {
+                System.out.println("pd = " + pd);
+                boolean hasPatientDeposit = false;
+                for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    System.out.println("cd = " + cd);
+                    if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                        System.out.println("cd = " + cd);
+                        hasPatientDeposit = true;
+                        cd.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                        cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+
+                    }
+                }
+            }
+
         }
         calTotals();
     }
@@ -4601,6 +4645,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setReferredByName(String referredByName) {
         this.referredByName = referredByName;
+    }
+
+    public Double getCurrentBillItemQty() {
+        return currentBillItemQty;
+    }
+
+    public void setCurrentBillItemQty(Double currentBillItemQty) {
+        this.currentBillItemQty = currentBillItemQty;
     }
 
 }

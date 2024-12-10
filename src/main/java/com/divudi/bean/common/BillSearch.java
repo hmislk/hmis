@@ -229,7 +229,8 @@ public class BillSearch implements Serializable {
     OpdBillController opdBillController;
     @Inject
     SearchController searchController;
-
+    @Inject
+    CashRecieveBillController cashRecieveBillController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -323,6 +324,10 @@ public class BillSearch implements Serializable {
 
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
+    }
+    
+    public List<Payment> fetchBillPayments(Bill bill) {
+        return billService.fetchBillPayments(bill);
     }
 
     public void fillBillFees() {
@@ -1679,6 +1684,13 @@ public class BillSearch implements Serializable {
                 return "";
             }
         }
+        
+        if (paymentMethod == PaymentMethod.Staff_Welfare) {
+            if (getBill().getToStaff() == null) {
+                JsfUtil.addErrorMessage("Can't Select Staff Welfare Method");
+                return "";
+            }
+        }
 
         if (refundingBill.getBillItems() != null) {
             for (BillItem refundingBillItemTmp : refundingBill.getBillItems()) {
@@ -1713,28 +1725,14 @@ public class BillSearch implements Serializable {
 
         //TODO: Create Payments for Bill Items
         if (getBill().getPaymentMethod() == PaymentMethod.Staff) {
-            //System.out.println("PaymentMethod - Staff");
-
-            //System.out.println("Before Balance = " + getBill().getToStaff().getCurrentCreditValue());
             getBill().getToStaff().setCurrentCreditValue(getBill().getToStaff().getCurrentCreditValue() - Math.abs(getRefundingBill().getNetTotal()));
-
-            //System.out.println("After Balance = " + getBill().getToStaff().getCurrentCreditValue());
             staffFacade.edit(getBill().getToStaff());
-            //System.out.println("Staff Credit Updated");
 
         } else if (paymentMethod == PaymentMethod.PatientDeposit) {
-//            //System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
-//            if (bill.getPatient().getRunningBalance() == null) {
-//                //System.out.println("Null");
-//                bill.getPatient().setRunningBalance(Math.abs(bill.getNetTotal()));
-//            } else {
-//                //System.out.println("Not Null - Add BillValue");
-//                bill.getPatient().setRunningBalance(bill.getPatient().getRunningBalance() + Math.abs(bill.getNetTotal()));
-//            }
-//            patientFacade.edit(bill.getPatient());
-//            //System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(getRefundingBill().getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(getRefundingBill(), pd);
+        } else if (paymentMethod == PaymentMethod.Staff_Welfare){
+            staffBean.updateStaffWelfare(getBill().getToStaff(), - Math.abs(getRefundingBill().getNetTotal()));
         }
         drawerController.updateDrawerForOuts(p);
         printPreview = true;
@@ -2333,6 +2331,13 @@ public class BillSearch implements Serializable {
                 return;
             }
         }
+        
+        if (paymentMethod == PaymentMethod.Staff_Welfare) {
+            if (getBill().getToStaff() == null) {
+                JsfUtil.addErrorMessage("Can't Select Staff Welfare Method");
+                return;
+            }
+        }
 
         if (configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling OPD Bills", true)) {
             if (!checkCancelBill(getBill())) {
@@ -2375,6 +2380,15 @@ public class BillSearch implements Serializable {
             if (getBill().getToStaff() != null) {
                 staffBean.updateStaffCredit(getBill().getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
+                cancellationBill.setFromStaff(getBill().getToStaff());
+                getBillFacade().edit(cancellationBill);
+            }
+        }
+        
+        if (getBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+            if (getBill().getToStaff() != null) {
+                staffBean.updateStaffWelfare(getBill().getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
+                JsfUtil.addSuccessMessage("Staff Welfare Updated");
                 cancellationBill.setFromStaff(getBill().getToStaff());
                 getBillFacade().edit(cancellationBill);
             }
@@ -3506,6 +3520,18 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_batch_bill?faces-redirect=true;";
     }
+    
+    public String navigateToViewOpdCreditBatchBillSettle() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        cashRecieveBillController.setPrintPreview(true);
+        cashRecieveBillController.setCurrent(getBill());
+        System.out.println("Preview = " + cashRecieveBillController.isPrintPreview());
+        System.out.println("Bill = " + cashRecieveBillController.getCurrent());
+        return "/credit/credit_compnay_bill_opd?faces-redirect=true;";
+    }
 
     public String navigateToViewOpdProfessionalPaymentBill() {
         if (viewingBill == null) {
@@ -3661,7 +3687,8 @@ public class BillSearch implements Serializable {
                 return navigateToViewOpdBill();
             case OPD_BATCH_BILL_WITH_PAYMENT:
                 return navigateToViewOpdBatchBill();
-
+            case OPD_CREDIT_COMPANY_PAYMENT_RECEIVED:
+                return navigateToViewOpdCreditBatchBillSettle();
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
 

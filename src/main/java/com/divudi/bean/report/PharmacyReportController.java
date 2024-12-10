@@ -1873,52 +1873,58 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        } else if ("consumptionDoc".equals(documentType)) {
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
         }
 
-        stockLedgerHistories = new ArrayList();
-        String jpql;
-        Map m = new HashMap();
-        m.put("fd", fromDate);
-        m.put("td", toDate);
+            stockLedgerHistories = new ArrayList();
+            String jpql;
+            Map m = new HashMap();
+            m.put("fd", fromDate);
+            m.put("td", toDate);
 
-        jpql = "select s"
-                + " from StockHistory s "
-                + " where s.createdAt between :fd and :td ";
-        if (institution != null) {
-            jpql += " and s.institution=:ins ";
-            m.put("ins", institution);
-        }
-        if (department != null) {
-            jpql += " and s.department=:dep ";
-            m.put("dep", department);
-        }
+            jpql = "select s"
+                    + " from StockHistory s "
+                    + " where s.createdAt between :fd and :td ";
+            if (institution != null) {
+                jpql += " and s.institution=:ins ";
+                m.put("ins", institution);
+            }
+            if (department != null) {
+                jpql += " and s.department=:dep ";
+                m.put("dep", department);
+            }
 //        if (site != null) {
 //            jpql += " and s.site=:sit ";
 //            m.put("sit", site);
 //        }
-        if (!billTypeAtomics.isEmpty() || !billTypes.isEmpty()) {
-            jpql += " and (";
-            if (!billTypeAtomics.isEmpty()) {
-                jpql += " s.pbItem.billItem.bill.billTypeAtomic in :dtype";
-                m.put("dtype", billTypeAtomics);
+            if (!billTypeAtomics.isEmpty() || !billTypes.isEmpty()) {
+                jpql += " and (";
+                if (!billTypeAtomics.isEmpty()) {
+                    jpql += " s.pbItem.billItem.bill.billTypeAtomic in :dtype";
+                    m.put("dtype", billTypeAtomics);
+                }
+                if (!billTypeAtomics.isEmpty() && !billTypes.isEmpty()) {
+                    jpql += " or";
+                }
+                if (!billTypes.isEmpty()) {
+                    jpql += " s.pbItem.billItem.bill.billType in :doctype";
+                    m.put("doctype", billTypes);
+                }
+                jpql += ")";
             }
-            if (!billTypeAtomics.isEmpty() && !billTypes.isEmpty()) {
-                jpql += " or";
+            if (item != null) {
+                jpql += " and s.item=:itm ";
+                m.put("itm", item);
             }
-            if (!billTypes.isEmpty()) {
-                jpql += " s.pbItem.billItem.bill.billType in :doctype";
-                m.put("doctype", billTypes);
-            }
-            jpql += ")";
-        }
-        if (item != null) {
-            jpql += " and s.item=:itm ";
-            m.put("itm", item);
+
+            jpql += " order by s.createdAt ";
+            stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         }
 
-        jpql += " order by s.createdAt ";
-        stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-    }
+    
 
     public void processLabTestWiseCountReport() {
         String jpql = "select new com.divudi.data.TestWiseCountReport("
