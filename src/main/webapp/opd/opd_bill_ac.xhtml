@@ -506,6 +506,7 @@
                                                 value="#{opdBillController.itemLight}" 
                                                 completeMethod="#{opdBillController.completeOpdItemsByWord}" 
                                                 var="ix" 
+                                                onfocus="this.select();"
                                                 inputStyleClass="w-100"
                                                 itemLabel="#{ix.name}" 
                                                 itemValue="#{ix}" 
@@ -603,8 +604,7 @@
                                                     onfocus="this.select();"
                                                     autocomplete="off" 
                                                     class="w-100 mb-2"
-                                                    value="#{opdBillController.currentBillItem.qty}" >
-                                                    <f:convertNumber pattern="#0.0" ></f:convertNumber>
+                                                    value="#{opdBillController.currentBillItemQty}" >
                                                 </p:inputText>
                                             </h:panelGrid>
                                             <p:commandButton 
