@@ -21,6 +21,7 @@ import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.UserStock;
@@ -35,7 +36,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -94,7 +97,28 @@ public class TransferIssueController implements Serializable {
             return "";
         }
         createRequestIssueBillItems(requestedBill);
+
+        if (isFullyIssued(requestedBill)) {
+            JsfUtil.addErrorMessage("All items have already been issued.");
+            return "";
+        }
+
         return "/pharmacy/pharmacy_transfer_issue";
+    }
+
+    public boolean isFullyIssued(Bill bill) {
+        if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+            return false; // Null or empty bills are not considered fully issued
+        }        
+        
+        for (BillItem originalItem : billItems) {
+            
+            if (originalItem.getPharmaceuticalBillItem().getQty() > 0) {
+                return false; // If any item's issued quantity is less than its original quantity
+            }
+        }
+
+        return true; // All items are fully issued
     }
 
     public String navigateToPharmacyDirectIssueForRequests() {
@@ -376,7 +400,7 @@ public class TransferIssueController implements Serializable {
         } else {
             getBillFacade().edit(getIssuedBill());
         }
-        if (getBillItems()==null || getBillItems().isEmpty()){
+        if (getBillItems() == null || getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please Add Bill Items");
             return;
         }
@@ -468,7 +492,6 @@ public class TransferIssueController implements Serializable {
         //     getRequestedBill().setReferenceBill(getIssuedBill());
 //        getRequestedBill().getForwardReferenceBills().add(getIssuedBill());
 //        getBillFacade().edit(getRequestedBill());
-
         Bill b = getBillFacade().find(getIssuedBill().getId());
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         issuedBill = null;
