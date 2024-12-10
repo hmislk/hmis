@@ -112,7 +112,7 @@
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
                                                 <ui:repeat value="#{opdBillController.bills}" var="ffb" >
-                                                    <prints:five_five_paper_coustom_1 bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>                        
+                                                    <prints:five_five_paper_coustom_1 bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.bills.size()}"/>                        
                                                 </ui:repeat>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
@@ -162,7 +162,7 @@
                                             <p:outputLabel value="Batch Bill" class="mt-2"></p:outputLabel>
                                             <p:commandButton
                                                 value="Print" 
-                                                class="ui-button-info m-1"
+                                                class="ui-button-info"
                                                 icon="fa fa-print"
                                                 ajax="false">
                                                 <p:printer target="groupBatchBillPrint" />
@@ -172,7 +172,7 @@
 
                                     <h:panelGroup id="groupBatchBillPrint" rendered="#{configOptionApplicationController.getBooleanValueByKey('Showing OPD Batch Bill to Print')}">
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
-                                            <prints:five_five_paper_coustom_1_OPD_Batch_Bill bill="#{opdBillController.batchBill}" duplicate="true"/>                        
+                                            <prints:five_five_paper_coustom_1_OPD_Batch_Bill bill="#{opdBillController.batchBill}" duplicate="#{opdBillController.duplicatePrint}"/>                        
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                             <prints:five_five_paper_with_headings_badge_bill billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>
