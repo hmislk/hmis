@@ -56,6 +56,7 @@ public class ReportTemplateRowBundle implements Serializable {
     private ReportTemplate reportTemplate;
     private List<ReportTemplateRow> reportTemplateRows;
     private Map<String, List<BillItem>> groupedBillItems;
+    private Map<Institution, List<Bill>> groupedBillItemsByInstitution;
 
     private Double grossTotal;
     private Double discount;
@@ -1148,6 +1149,20 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public void calculateTotalByBillItemsNetTotal() {
+        total = 0.0;
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBillItem().getNetValue());
+                total += amount;
+            }
+        }
+    }
+
     public void calculateTotalHospitalFeeByBillItems() {
         hospitalTotal = 0.0;
 
@@ -1754,6 +1769,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setGroupedBillItems(Map<String, List<BillItem>> groupedBillItems) {
         this.groupedBillItems = groupedBillItems;
+    }
+
+    public Map<Institution, List<Bill>> getGroupedBillItemsByInstitution() {
+        return groupedBillItemsByInstitution;
+    }
+
+    public void setGroupedBillItemsByInstitution(Map<Institution, List<Bill>> groupedBillItemsByInstitution) {
+        this.groupedBillItemsByInstitution = groupedBillItemsByInstitution;
     }
 
     private void resetTotalsAndFlags() {

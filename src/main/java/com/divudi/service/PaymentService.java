@@ -1,6 +1,8 @@
 package com.divudi.service;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillValidation;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Agent;
 import static com.divudi.data.PaymentMethod.Card;
@@ -14,10 +16,12 @@ import static com.divudi.data.PaymentMethod.Slip;
 import static com.divudi.data.PaymentMethod.Staff;
 import static com.divudi.data.PaymentMethod.Staff_Welfare;
 import static com.divudi.data.PaymentMethod.ewallet;
+import com.divudi.data.PaymentType;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.Payment;
@@ -29,10 +33,12 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.StaffFacade;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 
 /**
  *
@@ -60,6 +66,11 @@ public class PaymentService {
     BillService billService;
     @EJB
     PatientDepositService patientDepositService;
+    @EJB
+    PatientService patientService;
+
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      * Creates payments for the given bill and updates relevant records.
@@ -190,8 +201,9 @@ public class PaymentService {
                 payment.setComments(paymentMethodData.getCheque().getComment());
                 break;
             case Cash:
-                payment.setPaidValue(paymentMethodData.getCash().getTotalValue());
-                payment.setComments(paymentMethodData.getCash().getComment());
+                payment.getBill().getNetTotal();
+//                payment.setPaidValue(paymentMethodData.getCash().getTotalValue());
+//                payment.setComments(paymentMethodData.getCash().getComment());
                 break;
             case ewallet:
                 payment.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
@@ -329,6 +341,181 @@ public class PaymentService {
         PatientDeposit pd = patientDepositService.getDepositOfThePatient(pt, p.getDepartment());
         patientDepositService.updateBalance(p, pd);
 
+    }
+
+    public BillValidation checkForErrorsInPaymentDetailsForInBills(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, Double netTotal, Patient patient) {
+        BillValidation bv = new BillValidation();
+
+        // Check for null payment method
+        if (paymentMethod == null) {
+            bv.setErrorMessage("Please select a payment method.");
+            bv.setErrorPresent(true);
+            return bv;
+        }
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            boolean creditPaymentFound = false;
+            List<PaymentMethod> usedPaymentMethods = new ArrayList<>();
+
+            // Iterate over each payment component in the multiple payment method
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                PaymentMethod pm = cd.getPaymentMethod();
+                PaymentMethodData pmd = cd.getPaymentMethodData();
+
+                // Check if any component is a Credit payment method
+                if (pm.getPaymentType() == PaymentType.CREDIT) {
+                    bv.setErrorMessage("Credit payments are not allowed inside Multiple Payment Methods.");
+                    bv.setErrorPresent(true);
+                    return bv;
+                }
+
+                // Ensure no duplicates of restricted methods
+                if (!Arrays.asList(PaymentMethod.Slip, PaymentMethod.Cheque, PaymentMethod.ewallet).contains(pm)) {
+                    if (usedPaymentMethods.contains(pm)) {
+                        bv.setErrorMessage("Duplicate payment methods found in Multiple Payment Methods: " + pm.getLabel());
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+                    usedPaymentMethods.add(pm);
+                }
+
+                // Recursively call the validation method for each component
+                BillValidation componentValidation = checkForErrorsInPaymentDetailsForInBills(pm, pmd, null, patient);
+                if (componentValidation.isErrorPresent()) {
+                    return componentValidation; // If any component has an error, return immediately with that error
+                }
+            }
+        } else {
+            switch (paymentMethod) {
+                case Credit:
+                    if (paymentMethodData.getCredit().getComment() == null
+                            && configOptionApplicationController.getBooleanValueByKey("Package Billing - Credit Comment is Mandatory", false)) {
+                        bv.setErrorMessage("Please enter a Credit comment.");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+                    if (paymentMethodData.getCredit().getComment().trim().isEmpty()
+                            && configOptionApplicationController.getBooleanValueByKey("Package Billing - Credit Comment is Mandatory", false)) {
+                        bv.setErrorMessage("Please enter a Credit comment.");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+                    if (paymentMethodData.getCredit().getInstitution() == null) {
+                        bv.setErrorMessage("Please enter a Credit Company.");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    } else {
+                        bv.setCompany(paymentMethodData.getCredit().getInstitution()); // Handling the case where institution is valid
+                    }
+                    break;
+
+                case Card:
+                    if (paymentMethodData.getCreditCard().getComment().trim().isEmpty()
+                            && configOptionApplicationController.getBooleanValueByKey("Package Billing - CreditCard Comment is Mandatory", false)) {
+                        bv.setErrorMessage("Please enter a Credit Card comment.");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+                    if (paymentMethodData.getCreditCard().getInstitution() == null
+                            || paymentMethodData.getCreditCard().getNo() == null) {
+                        bv.setErrorMessage("Please Fill Credit Card Number and Bank.");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+                    break;
+
+                case Cheque:
+                    if (paymentMethodData.getCheque().getComment().trim().isEmpty()
+                            && configOptionApplicationController.getBooleanValueByKey("Package Billing - Cheque Comment is Mandatory", false)) {
+                        bv.setErrorMessage("Please enter a Cheque comment.");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+                    if (paymentMethodData.getCheque().getInstitution() == null
+                            || paymentMethodData.getCheque().getNo() == null
+                            || paymentMethodData.getCheque().getDate() == null) {
+                        bv.setErrorMessage("Please select Cheque Number, Bank and Cheque Date.");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+                    break;
+
+                case ewallet:
+                    if (paymentMethodData.getEwallet().getComment().trim().isEmpty()
+                            && configOptionApplicationController.getBooleanValueByKey("Package Billing - E-Wallet Comment is Mandatory", false)) {
+                        bv.setErrorMessage("Please enter an E-Wallet comment.");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+                    if (paymentMethodData.getEwallet().getInstitution() == null
+                            || paymentMethodData.getEwallet().getNo() == null) {
+                        bv.setErrorMessage("Please Fill eWallet Reference Number and Bank.");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+                    break;
+
+                case Slip:
+                    if (paymentMethodData.getSlip().getComment().trim().isEmpty()
+                            && configOptionApplicationController.getBooleanValueByKey("Package Billing - Slip Comment is Mandatory", false)) {
+                        bv.setErrorMessage("Please enter a Slip comment.");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+                    if (paymentMethodData.getSlip().getInstitution() == null
+                            || paymentMethodData.getSlip().getDate() == null) {
+                        bv.setErrorMessage("Please Fill Memo, Bank and Slip Date.");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+                    break;
+                case PatientDeposit:
+                    if (patient == null) {
+                        bv.setErrorMessage("No Patient is selected. Can't proceed with Patient Deposits");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+                    patient = patientService.reloadPatient(patient);
+                    if (!patient.getHasAnAccount()) {
+                        bv.setErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+                    double creditLimitAbsolute = Math.abs(patient.getCreditLimit());
+                    double runningBalance;
+                    if (patient.getRunningBalance() != null) {
+                        runningBalance = patient.getRunningBalance();
+                    } else {
+                        runningBalance = 0.0;
+                    }
+                    double availableForPurchase = runningBalance + creditLimitAbsolute;
+                    double payhingThisTimeValue;
+                    if (netTotal == null) {
+                        payhingThisTimeValue = paymentMethodData.getPatient_deposit().getTotalValue();
+                    } else {
+                        payhingThisTimeValue = netTotal;
+                    }
+
+                    if (payhingThisTimeValue > availableForPurchase) {
+
+                        System.out.println("payhingThisTimeValue = " + payhingThisTimeValue);
+
+                        System.out.println("availableForPurchase = " + availableForPurchase);
+
+                        System.out.println("no sufficient data = ");
+
+                        bv.setErrorMessage("No Sufficient Patient Deposit");
+                        bv.setErrorPresent(true);
+                        return bv;
+                    }
+
+                default:
+                    // No additional checks for other methods
+                    break;
+            }
+        }
+
+        return bv;
     }
 
 }

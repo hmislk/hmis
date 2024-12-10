@@ -128,7 +128,7 @@
                                                         title="Quick Search from Phone Number"
                                                         action="#{patientController.quickSearchPatientLongPhoneNumber(opdBillController)}" 
                                                         process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                                        update="ptImp selectPatient editPatient viewPatient payment paymentDetails pBillDetails msg :#{p:resolveFirstComponentWithId('pay:',view).clientId}"
+                                                        update="ptImp selectPatient editPatient viewPatient payment paymentDetails pBillDetails msg :#{p:resolveFirstComponentWithId('pay',view).clientId}"
                                                         styleClass="btn-sm mx-1">
                                                     </p:commandButton>
                                                     <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
@@ -278,6 +278,7 @@
                                                                     placeholder="Mobile Number"
                                                                     value="#{opdBillController.patient.mobileNumberStringTransient}"
                                                                     class="form-control" 
+                                                                    required="true"
                                                                     requiredMessage="Please enter a Mobile Number"
                                                                     validatorMessage="Please enter valid Number">
                                                                     <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
@@ -505,6 +506,7 @@
                                                 value="#{opdBillController.itemLight}" 
                                                 completeMethod="#{opdBillController.completeOpdItemsByWord}" 
                                                 var="ix" 
+                                                onfocus="this.select();"
                                                 inputStyleClass="w-100"
                                                 itemLabel="#{ix.name}" 
                                                 itemValue="#{ix}" 
@@ -602,12 +604,11 @@
                                                     onfocus="this.select();"
                                                     autocomplete="off" 
                                                     class="w-100 mb-2"
-                                                    value="#{opdBillController.currentBillItem.qty}" >
-                                                    <f:convertNumber pattern="#0.0" ></f:convertNumber>
+                                                    value="#{opdBillController.currentBillItemQty}" >
                                                 </p:inputText>
                                             </h:panelGrid>
                                             <p:commandButton 
-                                                id="btnAddIx" 
+                                                id="btnAddIx"
                                                 value="Add" 
                                                 icon="fa fa-plus"
                                                 class="w-100 ui-button-success"

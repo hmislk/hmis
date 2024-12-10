@@ -97,6 +97,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         clearDataForPatientDeposit();
         patient = p;
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
+        patientController.listnerForPaymentMethodChange();
         return "/patient_deposit/pay?faces-redirect=true";
     }
 
@@ -399,11 +400,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         Map m = new HashMap<>();
         String jpql = "select pd from PatientDeposit pd"
                 + " where pd.patient.id=:pt "
-                + " and pd.department.id=:dep "
                 + " and pd.retired=:ret";
 
         m.put("pt", p.getId());
-        m.put("dep", d.getId());
+//        m.put("dep", d.getId());
         m.put("ret", false);
 
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
@@ -431,11 +431,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         Map m = new HashMap<>();
         String jpql = "select pd from PatientDeposit pd"
                 + " where pd.patient.id=:pt "
-                + " and pd.department.id=:dep "
                 + " and pd.retired=:ret";
 
         m.put("pt", p.getId());
-        m.put("dep", d.getId());
+//        m.put("dep", d.getId());
         m.put("ret", false);
 
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);

@@ -29,27 +29,34 @@
                 itemLabel="#{ix.name}" 
                 itemValue="#{ix}" 
                 size="10"  >
+                <p:ajax process="@this" ></p:ajax>
             </p:autoComplete>
 
             <p:outputLabel value="Policy Number" ></p:outputLabel>
             <p:inputText 
                 id="polNo" 
+                class="w-100"
                 value="#{cc.attrs.paymentMethodData.credit.referralNo}" 
                 placeholder="Policy NO" >
+                <p:ajax process="@this" ></p:ajax>
             </p:inputText>
 
             <p:outputLabel value="Referance No" ></p:outputLabel>
             <p:inputText 
                 id="refNo" 
+                class="w-100"
                 value="#{cc.attrs.paymentMethodData.credit.referenceNo}" 
                 placeholder="Reference NO" >
+                <p:ajax process="@this" ></p:ajax>
             </p:inputText>
 
             <p:outputLabel value="Comments" ></p:outputLabel>
             <p:inputTextarea 
                 id="memo" 
+                class="w-100"
                 value="#{cc.attrs.paymentMethodData.credit.comment}" 
                 placeholder="Memo" >
+                <p:ajax process="@this" ></p:ajax>
             </p:inputTextarea>
 
         </h:panelGrid>
