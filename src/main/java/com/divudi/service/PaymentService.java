@@ -66,6 +66,8 @@ public class PaymentService {
     BillService billService;
     @EJB
     PatientDepositService patientDepositService;
+    @EJB
+    PatientService patientService;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -472,6 +474,7 @@ public class PaymentService {
                         bv.setErrorPresent(true);
                         return bv;
                     }
+                    patient = patientService.reloadPatient(patient);
                     if (!patient.getHasAnAccount()) {
                         bv.setErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
                         bv.setErrorPresent(true);
