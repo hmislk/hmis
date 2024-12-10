@@ -201,8 +201,9 @@ public class PaymentService {
                 payment.setComments(paymentMethodData.getCheque().getComment());
                 break;
             case Cash:
-                payment.setPaidValue(paymentMethodData.getCash().getTotalValue());
-                payment.setComments(paymentMethodData.getCash().getComment());
+                payment.getBill().getNetTotal();
+//                payment.setPaidValue(paymentMethodData.getCash().getTotalValue());
+//                payment.setComments(paymentMethodData.getCash().getComment());
                 break;
             case ewallet:
                 payment.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
