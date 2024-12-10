@@ -1168,6 +1168,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 JsfUtil.addErrorMessage("Entered Value is Wrong..");
                 error = true;
             }
+        } else if (bill.getPaymentMethod() == PaymentMethod.Cash) {
+            if (getPaymentMethodData().getCash().getTotalValue() <= 0) {
+                JsfUtil.addErrorMessage("Please Enter Correct Value");
+                error = true;
+            }
         }
         return error;
     }
@@ -2894,8 +2899,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 return false;
             }
         }
-        
-         if (configOptionApplicationController.getBooleanValueByKey("Patients Area is Mandatory", false)) {
+
+        if (configOptionApplicationController.getBooleanValueByKey("Patients Area is Mandatory", false)) {
             if (p.getPerson().getArea() == null) {
                 JsfUtil.addErrorMessage("Please select area of the patient");
                 return false;
