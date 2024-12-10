@@ -12,11 +12,7 @@ import com.divudi.data.dataStructure.InstitutionEncounters;
 import com.divudi.data.table.String1Value5;
 
 import com.divudi.ejb.CreditBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.*;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.AdmissionFacade;
@@ -77,12 +73,40 @@ public class CreditCompanyDueController implements Serializable {
     double finalTransPaidTotal;
     double finalTransPaidTotalPatient;
 
+    private Institution institutionOfDepartment;
+    private Department department;
+    private Institution site;
+
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
     }
 
     public void setPatientEncounters(List<PatientEncounter> patientEncounters) {
         this.patientEncounters = patientEncounters;
+    }
+
+    public Institution getInstitutionOfDepartment() {
+        return institutionOfDepartment;
+    }
+
+    public void setInstitutionOfDepartment(Institution institutionOfDepartment) {
+        this.institutionOfDepartment = institutionOfDepartment;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
     }
 
     public void makeNull() {
@@ -734,6 +758,7 @@ public class CreditCompanyDueController implements Serializable {
 
         HashMap m = new HashMap();
         String sql = " Select b from PatientEncounter b"
+                + " JOIN b.finalBill fb"
                 + " where b.retired=false "
                 + " and b.paymentFinalized=true "
                 + " and b.dateOfDischarge between :fd and :td "
@@ -751,6 +776,21 @@ public class CreditCompanyDueController implements Serializable {
         if (paymentMethod != null) {
             sql += " and b.paymentMethod =:pm ";
             m.put("pm", paymentMethod);
+        }
+
+        if (institutionOfDepartment != null) {
+            sql += "AND fb.institution = :insd ";
+            m.put("insd", institutionOfDepartment);
+        }
+
+        if (department != null) {
+            sql += "AND fb.department = :dep ";
+            m.put("dep", department);
+        }
+
+        if (site != null) {
+            sql += "AND fb.department.site = :site ";
+            m.put("site", site);
         }
 
         sql += " order by  b.dateOfDischarge";
@@ -771,8 +811,6 @@ public class CreditCompanyDueController implements Serializable {
             paidByCompany += p.getPaidByCreditCompany();
 
         }
-
-        
     }
 
     double billed;
