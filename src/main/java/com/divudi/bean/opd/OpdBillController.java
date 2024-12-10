@@ -320,6 +320,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     private String refNo;
     private double remainAmount;
+    private Double currentBillItemQty;
 
     /**
      *
@@ -1963,10 +1964,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(getBatchBill(), pd);
         }
-        if(paymentMethod==PaymentMethod.MultiplePaymentMethods){
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             paymentService.updateBalances(payments);
         }
-      
 
         if (getToken() != null) {
             getToken().setBill(getBatchBill());
@@ -2493,7 +2493,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     }
                     if (remainAmount >= patient.getRunningBalance()) {
                         pm.getPaymentMethodData().getPatient_deposit().setTotalValue(patient.getRunningBalance());
-                    }else {
+                    } else {
                         pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
                     }
 
@@ -2865,24 +2865,29 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         if (getCurrentBillItem().getItem().isRequestForQuentity()) {
-            if (getCurrentBillItem().getQty() == null || getCurrentBillItem().getQty() == 0.0) {
+            if (getCurrentBillItemQty() == null || getCurrentBillItemQty() == 0.0) {
+                setCurrentBillItemQty(null);
                 JsfUtil.addErrorMessage("Quentity is Missing ..! ");
                 return;
             }
+        }else{
+            setCurrentBillItemQty(1.0);
         }
 
-        if (getCurrentBillItem().getQty() == null) {
-            getCurrentBillItem().setQty(1.0);
-        }
         for (BillEntry bi : lstBillEntries) {
             if (bi.getBillItem() != null && getCurrentBillItem() != null && getCurrentBillItem().getItem() != null && bi.getBillItem().getItem().equals(getCurrentBillItem().getItem())) {
                 JsfUtil.addErrorMessage("Can't select same item " + getCurrentBillItem().getItem());
+                setCurrentBillItem(null);
+                setCurrentBillItemQty(null);
                 return;
             }
         }
-
+        
+        System.out.println("Current BillItem QTY= " + getCurrentBillItemQty());
+        
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
+        bi.setTmpQty(getCurrentBillItemQty());
         bi.setSessionDate(sessionDate);
         lastBillItem = bi;
         BillEntry addingEntry = new BillEntry();
@@ -2935,6 +2940,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else {
             setItemLight(itemLight);
         }
+        setCurrentBillItemQty(null);
         JsfUtil.addSuccessMessage("Added");
     }
 
@@ -2984,6 +2990,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         lstBillComponents = null;
         lstBillFees = null;
         lstBillItems = null;
+        currentBillItemQty = null;
     }
 
     private void clearBillValues() {
@@ -4638,6 +4645,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setReferredByName(String referredByName) {
         this.referredByName = referredByName;
+    }
+
+    public Double getCurrentBillItemQty() {
+        return currentBillItemQty;
+    }
+
+    public void setCurrentBillItemQty(Double currentBillItemQty) {
+        this.currentBillItemQty = currentBillItemQty;
     }
 
 }
