@@ -184,20 +184,20 @@
                                         <h:outputText value="Net Sale Value" />
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Invoice No" width="10em">
+                                <p:column headerText="Invoice No" width="6em">
                                     <h:outputText value="#{b.invoiceNumber}" />
                                 </p:column>
-                                <p:column headerText="Created Date" width="10em">
+                                <p:column headerText="Created Date" width="8em">
                                     <h:outputText value="#{b.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
                                 </p:column>
-                                <p:column headerText="Approved Date" width="10em">
+                                <p:column headerText="Approved Date" width="8em">
                                     <h:outputText value="#{b.referenceBill.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
                                 </p:column>
-                                <p:column headerText="Supplier Name" width="10em">
+                                <p:column headerText="Supplier Name" width="8em">
                                     <h:outputText value="#{b.fromInstitution.name}" />
                                 </p:column>
                                 <p:column headerText="Institution" width="10em">
@@ -206,37 +206,37 @@
                                 <p:column headerText="Site" width="10em">
                                     <h:outputText value="" />
                                 </p:column>
-                                <p:column headerText="Department" width="10em">
+                                <p:column headerText="Department" width="8em">
                                     <h:outputText value="#{b.department.name}" />
                                 </p:column>
-                                <p:column headerText="Po No" width="10em">
+                                <p:column headerText="Po No" width="6em">
                                     <h:outputText value="#{b.referenceBill.deptId}" />
                                 </p:column>
-                                <p:column headerText="Purchase Value Cash" width="15em">
+                                <p:column headerText="Purchase Value Cash" width="6em">
                                     <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
                                 </p:column>
-                                <p:column headerText="Purchase Value Credit" width="15em">
+                                <p:column headerText="Purchase Value Credit" width="6em">
                                     <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
                                 </p:column>
-                                <p:column headerText="Sale Value Cash" width="10em">
+                                <p:column headerText="Sale Value Cash" width="6em">
                                     <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.saleValue}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
                                 </p:column>
-                                <p:column headerText="Sale Value Credit" width="10em">
+                                <p:column headerText="Sale Value Credit" width="6em">
                                     <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.saleValue}"  >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
                                 </p:column>
-                                <p:column headerText="Remark" width="10em">
+                                <p:column headerText="Remark" width="6em">
                                     <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
                                 </p:column>
 
