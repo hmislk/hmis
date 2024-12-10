@@ -1824,6 +1824,11 @@ public class ChannelApi {
         }
         System.out.println(billList.size());
         System.out.println(billList.get(0).getAgentRefNo());
+        
+        if(bill.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT){
+            JSONObject response = commonFunctionToErrorResponse("Temporary Bookings unable to cancel");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
 
         if (bill.isCancelled()) {
             JSONObject response = commonFunctionToErrorResponse("Bill for ref No already Cancelled");
