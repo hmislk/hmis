@@ -186,6 +186,11 @@
                                 </p:column>
                                 <p:column headerText="Invoice No" width="6em">
                                     <h:outputText value="#{b.invoiceNumber}" />
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{pharmacyController.totalPurchase}" />
+                                        <br />
+                                        <h:outputText value="#{pharmacyController.totalSaleValue}" />
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Created Date" width="8em">
                                     <h:outputText value="#{b.createdAt}" >
@@ -217,24 +222,36 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{pharmacyController.totalCashPurchaseValue}" />
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Purchase Value Credit" width="6em">
                                     <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{pharmacyController.totalCreditPurchaseValue}" />
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Sale Value Cash" width="6em">
                                     <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.saleValue}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{pharmacyController.totalCashSaleValue}" />
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Sale Value Credit" width="6em">
                                     <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.saleValue}"  >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{pharmacyController.totalCreditSaleValue}" />
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Remark" width="6em">
                                     <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>

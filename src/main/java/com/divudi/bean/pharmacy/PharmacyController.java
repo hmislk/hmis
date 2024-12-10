@@ -718,10 +718,13 @@ public class PharmacyController implements Serializable {
     private Institution fromInstitution;
     private PaymentMethod paymentMethod;
     private String reportType;
-    private double totalCredit;
-    private double totalCash;
+    private double totalCreditPurchaseValue;
+    private double totalCashPurchaseValue;
     private double totalPurchase;
     private List<String1Value1> data;
+    private double totalSaleValue;
+    private double totalCreditSaleValue;
+    private double totalCashSaleValue;
 
     public void clearItemHistory() {
 
@@ -759,8 +762,8 @@ public class PharmacyController implements Serializable {
 
     public void generateGRNReportTable() {
         bills = null;
-        totalCredit = 0.0;
-        totalCash = 0.0;
+        totalCreditPurchaseValue = 0.0;
+        totalCashPurchaseValue = 0.0;
         totalPurchase = 0.0;
 
         List<BillType> bt = new ArrayList<>();
@@ -821,9 +824,9 @@ public class PharmacyController implements Serializable {
     public List<String1Value1> calculateTotals(List<Bill> billList) {
         data = new ArrayList<>();
 
-        double totalSaleValue = 0.0;
-        double totalCreditSaleValue = 0.0;
-        double totalCashSaleValue = 0.0;
+        totalSaleValue = 0.0;
+       totalCreditSaleValue = 0.0;
+        totalCashSaleValue = 0.0;
 
         String1Value1 credit = new String1Value1();
         String1Value1 cash = new String1Value1();
@@ -835,19 +838,19 @@ public class PharmacyController implements Serializable {
 
         for (Bill bill : billList) {
             if (bill.getPaymentMethod() == PaymentMethod.Credit) {
-                totalCredit += bill.getNetTotal();
+                totalCreditPurchaseValue += bill.getNetTotal();
                 totalCreditSaleValue += bill.getSaleValue();
             } else if (bill.getPaymentMethod() == PaymentMethod.Cash) {
-                totalCash += bill.getNetTotal();
+                totalCashPurchaseValue += bill.getNetTotal();
                 totalCashSaleValue += bill.getSaleValue();
             }
             totalPurchase += bill.getNetTotal();
             totalSaleValue += bill.getSaleValue();
         }
-        credit.setValue(totalCredit);
+        credit.setValue(totalCreditPurchaseValue);
         credit.setValue2(totalCreditSaleValue);
 
-        cash.setValue(totalCash);
+        cash.setValue(totalCashPurchaseValue);
         cash.setValue2(totalCashSaleValue);
 
         cashAndCredit.setValue(totalPurchase);
@@ -3124,20 +3127,20 @@ public class PharmacyController implements Serializable {
         this.reportType = reportType;
     }
 
-    public double getTotalCredit() {
-        return totalCredit;
+    public double getTotalCreditPurchaseValue() {
+        return totalCreditPurchaseValue;
     }
 
-    public void setTotalCredit(double totalCredit) {
-        this.totalCredit = totalCredit;
+    public void setTotalCreditPurchaseValue(double totalCreditPurchaseValue) {
+        this.totalCreditPurchaseValue = totalCreditPurchaseValue;
     }
 
-    public double getTotalCash() {
-        return totalCash;
+    public double getTotalCashPurchaseValue() {
+        return totalCashPurchaseValue;
     }
 
-    public void setTotalCash(double totalCash) {
-        this.totalCash = totalCash;
+    public void setTotalCashPurchaseValue(double totalCashPurchaseValue) {
+        this.totalCashPurchaseValue = totalCashPurchaseValue;
     }
 
     public double getTotalPurchase() {
@@ -3154,6 +3157,30 @@ public class PharmacyController implements Serializable {
 
     public void setData(List<String1Value1> data) {
         this.data = data;
+    }
+
+    public double getTotalSaleValue() {
+        return totalSaleValue;
+    }
+
+    public void setTotalSaleValue(double totalSaleValue) {
+        this.totalSaleValue = totalSaleValue;
+    }
+
+    public double getTotalCreditSaleValue() {
+        return totalCreditSaleValue;
+    }
+
+    public void setTotalCreditSaleValue(double totalCreditSaleValue) {
+        this.totalCreditSaleValue = totalCreditSaleValue;
+    }
+
+    public double getTotalCashSaleValue() {
+        return totalCashSaleValue;
+    }
+
+    public void setTotalCashSaleValue(double totalCashSaleValue) {
+        this.totalCashSaleValue = totalCashSaleValue;
     }
 
 }
