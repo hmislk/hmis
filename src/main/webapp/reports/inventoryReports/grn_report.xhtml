@@ -174,6 +174,10 @@
 
                                 <p:column headerText="GRN No" width="10em">
                                     <h:outputText value="#{b.deptId}" />
+                                    <p:commandButton ajax="false" class="mx-1" title="View" icon="fa fa-eye" action="/pharmacy/pharmacy_grn" >
+                                        <f:setPropertyActionListener value="#{b}" target="#{grnController.grnBill}" ></f:setPropertyActionListener>
+                                        <f:setPropertyActionListener value="true" target="#{grnController.printPreview}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
                                     <f:facet name="footer">
                                         <h:outputText value="Net Purchase Value" />
                                         <br />

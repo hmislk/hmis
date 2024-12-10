@@ -820,19 +820,19 @@ public class PharmacyController implements Serializable {
 
     public List<String1Value1> calculateTotals(List<Bill> billList) {
         data = new ArrayList<>();
-        
+
         double totalSaleValue = 0.0;
         double totalCreditSaleValue = 0.0;
         double totalCashSaleValue = 0.0;
-        
+
         String1Value1 credit = new String1Value1();
         String1Value1 cash = new String1Value1();
         String1Value1 cashAndCredit = new String1Value1();
-        
+
         cash.setString("Final Cash Total");
         credit.setString("Final Credit Total");
         cashAndCredit.setString("Final Cash and Credit Total");
-        
+
         for (Bill bill : billList) {
             if (bill.getPaymentMethod() == PaymentMethod.Credit) {
                 totalCredit += bill.getNetTotal();
@@ -846,17 +846,17 @@ public class PharmacyController implements Serializable {
         }
         credit.setValue(totalCredit);
         credit.setValue2(totalCreditSaleValue);
-        
+
         cash.setValue(totalCash);
         cash.setValue2(totalCashSaleValue);
-        
+
         cashAndCredit.setValue(totalPurchase);
         cashAndCredit.setValue2(totalSaleValue);
-        
+
         data.add(cash);
         data.add(credit);
         data.add(cashAndCredit);
-        
+
         return data;
     }
 
