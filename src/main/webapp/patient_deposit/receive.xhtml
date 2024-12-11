@@ -31,7 +31,6 @@
                                                  action="#{patientDepositController.settlePatientDeposit}"
                                                  ajax="false"
                                                  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
-                                    <f:setPropertyActionListener value="#{patientDepositController.patient}" target="#{patientDepositController.current}" />
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSettle"/>
                                 <p:commandButton icon="fas fa-plus" 
@@ -53,24 +52,24 @@
                                     <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
                                         <!-- Left aligned content -->
                                         <h:panelGroup id="headerFacet">
-                                            <h:outputText value="Select a Patient" rendered="#{patientDepositController.patient eq null}"></h:outputText>
+                                            <h:outputText value="Select a Patient" rendered="#{patientController.patient eq null}"></h:outputText>
                                             <h:outputText styleClass="fas fa-user" />
                                             <h:panelGroup
                                                 rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
                                                 <h:outputText
-                                                    rendered="#{patientDepositController.patient.id eq null}"
+                                                    rendered="#{patientController.patient.id eq null}"
                                                     value="Patient"
                                                     class="mx-4"
                                                     >
                                                 </h:outputText>
                                                 <h:outputText
-                                                    rendered="#{patientDepositController.patient.id ne null}"
+                                                    rendered="#{patientController.patient.id ne null}"
                                                     value="Searched Patient Details"
                                                     class="mx-2"
                                                     ></h:outputText>
                                                 <h:panelGroup rendered="true" id="edit" >
                                                     <p:selectBooleanButton
-                                                        value="#{patientDepositController.patientDetailsEditable}"
+                                                        value="#{patientController.patientDetailsEditable}"
                                                         offIcon="pi pi-pencil"
                                                         onIcon="pi pi-eye"
                                                         class="mx-2"
@@ -79,7 +78,7 @@
                                                             process="@this"
                                                             update="viewPatient editPatient btnDone edit" />
                                                     </p:selectBooleanButton>
-                                                    <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientDepositController.saveSelected(patientDepositController.patient)}" rendered="#{patientDepositController.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} " />
+                                                    <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(patientController.patient)}" rendered="#{patientController.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} " />
                                                 </h:panelGroup>
 
                                             </h:panelGroup>
@@ -145,8 +144,8 @@
                                                     id="btnSelectPt"
                                                     process="btnSelectPt tblPatients"
                                                     update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('details',view).clientId} :#{p:resolveFirstComponentWithId('lateTr',view).clientId} :#{p:resolveFirstComponentWithId('lateDp',view).clientId}"
-                                                    value="select">
-                                                    <f:setPropertyActionListener value="#{ps}" target="#{patientDepositController.current}" />
+                                                    value="Select">
+                                                    <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                                                 </p:commandButton>
                                             </p:column>
                                         </p:dataTable>
@@ -480,18 +479,18 @@
 
                                 <div class="d-flex flex-wrap w-100 gap-2">
                                     <h:panelGroup id="gpPaymentDetails" >
-                                        <h:panelGroup id="creditCard" class="m-1" >
+                                        <h:panelGroup id="creditCard" class="m-1" rendered="#{patientDepositController.bill.paymentMethod eq 'Card'}">
                                             <pa:creditCard paymentMethodData="#{patientDepositController.paymentMethodData}"/>
                                         </h:panelGroup>
-                                        <h:panelGroup id="cheque" >
+                                        <h:panelGroup id="cheque"  rendered="#{patientDepositController.bill.paymentMethod eq 'Cheque'}" >
                                             <pa:cheque paymentMethodData="#{patientDepositController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="slip" >
+                                        <h:panelGroup id="slip"   rendered="#{patientDepositController.bill.paymentMethod eq 'Slip'}" >
                                             <pa:slip paymentMethodData="#{patientDepositController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="eWallet" >
+                                        <h:panelGroup id="eWallet"   rendered="#{patientDepositController.bill.paymentMethod eq 'ewallet'}" >
                                             <pa:ewallet_collect class="m-2" paymentMethodData="#{patientDepositController.paymentMethodData}" />
                                         </h:panelGroup>
                                     </h:panelGroup>
@@ -588,17 +587,17 @@
                                              ajax="false" action="#{patientDepositController.navigateToAddNewPatientDeposit()}" >
                             </p:commandButton>
                             <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-1 ui-button-warning"
-                                             action="#{patientDepositController.navigateToSearchPatients}"></p:commandButton>
+                                             action="#{patientController.navigateToSearchPatients}"></p:commandButton>
                             <p:commandButton
                                 value="Profile"
                                 ajax="false"
                                 icon="fa fa-user"
                                 class="ui-button-warning  w-100"
-                                action="#{patientDepositController.navigateToOpdPatientProfile()}"
+                                action="#{patientController.navigateToOpdPatientProfile()}"
                                 >
                                 <f:setPropertyActionListener
                                     value="#{patientDepositController.bill.patient}"
-                                    target="#{patientDepositController.current}" ></f:setPropertyActionListener>
+                                    target="#{patientController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
                         </h:panelGrid>
                     </f:facet>

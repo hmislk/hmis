@@ -132,13 +132,19 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         return "/patient_deposit/receive?faces-redirect=true";
     }
 
+    
     public void clearDataForPatientDeposit() {
         patientController.setCurrent(null);
         current = null;
         patient = new Patient();
+        bill=null;
+        paymentMethodData=null;
         latestPatientDepositHistory = new ArrayList<>();
         latestPatientDeposits = new ArrayList<>();
         patientController.clearDataForPatientDeposite();
+        paymentMethodData = new PaymentMethodData();
+        billItem = new BillItem();
+        printPreview = false;
     }
 
     public String navigateToNewPatientDepositCancel() {
@@ -185,45 +191,45 @@ public class PatientDepositController implements Serializable, ControllerWithPat
 
     private boolean validatePaymentMethodDataForPatientDeposit() {
         boolean error = false;
-        if (patientController.getBill().getNetTotal() < 0.01) {
+        if (getBill().getNetTotal() < 0.01) {
             JsfUtil.addErrorMessage("Please Enter a value to deposit");
             error = true;
         }
-        if (null == patientController.getBill().getPaymentMethod()) {
+        if (null == getBill().getPaymentMethod()) {
             JsfUtil.addErrorMessage("Please select a payment method");
             error = true;
         } else {
-            switch (patientController.getBill().getPaymentMethod()) {
+            switch (getBill().getPaymentMethod()) {
                 case Card:
                     if (getPaymentMethodData().getCreditCard().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - CreditCard Comment is Mandatory", false)) {
                         JsfUtil.addErrorMessage("Please Enter a Credit Card Comment..");
                         error = true;
                     }
-                    getPaymentMethodData().getCreditCard().setTotalValue(patientController.getBill().getNetTotal());
+                    getPaymentMethodData().getCreditCard().setTotalValue(getBill().getNetTotal());
                     break;
                 case Cheque:
                     if (getPaymentMethodData().getCheque().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - Cheque Comment is Mandatory", false)) {
                         JsfUtil.addErrorMessage("Please Enter a Cheque Comment..");
                         error = true;
                     }
-                    getPaymentMethodData().getCheque().setTotalValue(patientController.getBill().getNetTotal());
+                    getPaymentMethodData().getCheque().setTotalValue(getBill().getNetTotal());
                     break;
                 case ewallet:
                     if (getPaymentMethodData().getEwallet().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - E-Wallet Comment is Mandatory", false)) {
                         JsfUtil.addErrorMessage("Please Enter a E-Wallet Comment..");
                         error = true;
                     }
-                    getPaymentMethodData().getEwallet().setTotalValue(patientController.getBill().getNetTotal());
+                    getPaymentMethodData().getEwallet().setTotalValue(getBill().getNetTotal());
                     break;
                 case Slip:
                     if (getPaymentMethodData().getSlip().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - Slip Comment is Mandatory", false)) {
                         JsfUtil.addErrorMessage("Please Enter a Slip Comment..");
                         error = true;
                     }
-                    getPaymentMethodData().getSlip().setTotalValue(patientController.getBill().getNetTotal());
+                    getPaymentMethodData().getSlip().setTotalValue(getBill().getNetTotal());
                     break;
                 case Cash:
-                    getPaymentMethodData().getCash().setTotalValue(patientController.getBill().getNetTotal());
+                    getPaymentMethodData().getCash().setTotalValue(getBill().getNetTotal());
                     break;
                 default:
                     JsfUtil.addErrorMessage("This payment method is NOT valid for Patient Deposits");
