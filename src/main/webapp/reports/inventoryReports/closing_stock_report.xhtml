@@ -150,7 +150,7 @@
                             </h:panelGroup>
                             <p:autoComplete 
                                 id="phmItem"
-                                value="#{pharmacyReportController.item}" 
+                                value="#{pharmacyReportController.amp}" 
                                 completeMethod="#{ampController.completeAmp}"
                                 var="item" 
                                 class="w-100"
@@ -248,7 +248,7 @@
                                     <h:outputText value="#{p.item.name}" />
                                 </p:column>
                                 <p:column headerText="UOM">
-                                    <h:outputText value="#{p.item.measurementUnit.name}" />
+                                    <h:outputText value="#{p.item.issueUnit.name}" />
                                 </p:column>
                                 <p:column headerText="Closing Stock">
                                     <h:outputText value="#{p.itemStock}" />

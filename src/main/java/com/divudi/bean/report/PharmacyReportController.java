@@ -52,6 +52,7 @@ import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.PatientInvestigation;
+import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.AgentHistoryFacade;
@@ -155,6 +156,7 @@ public class PharmacyReportController implements Serializable {
     private Date toDate;
     private Category category;
     private Item item;
+    private Amp amp;
     private Machine machine;
     private String processBy;
     private Institution collectingCentre;
@@ -1986,8 +1988,11 @@ public class PharmacyReportController implements Serializable {
             params.put("cat", category);
         }
 
-        if (item != null) {
-            jpql.append("and sh.itemBatch.item = :itm ");
+        System.out.println("amp = " + amp);
+        if (amp != null) {
+            item = amp;
+            System.out.println("item = " + item);
+            jpql.append("and sh.itemBatch.item=:itm ");
             params.put("itm", item);
         }
 
@@ -1997,7 +2002,10 @@ public class PharmacyReportController implements Serializable {
         jpql.append("group by sh.itemBatch ");
         jpql.append("order by sh.itemBatch.item.name");
 
-        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params);
+        System.out.println("jpql.toString() = " + jpql.toString());
+        System.out.println("params = " + params);
+
+        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
         // Calculate purchase and sale values
         stockPurchaseValue = 0.0;
@@ -2005,6 +2013,13 @@ public class PharmacyReportController implements Serializable {
         stockTotal = 0.0;
 
         rows = new ArrayList<>();
+
+        if (ids == null) {
+            return;
+        }
+        if (ids.isEmpty()) {
+            return;
+        }
         for (Long shid : ids) {
             System.out.println("shid = " + shid);
             PharmacyRow pr = new PharmacyRow();
@@ -2645,5 +2660,15 @@ public class PharmacyReportController implements Serializable {
     public void setRows(List<PharmacyRow> rows) {
         this.rows = rows;
     }
+
+    public Amp getAmp() {
+        return amp;
+    }
+
+    public void setAmp(Amp amp) {
+        this.amp = amp;
+    }
+    
+    
 
 }
