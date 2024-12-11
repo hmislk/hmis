@@ -211,8 +211,6 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
-
-
     }
 
     public void createInwardAgeTable() {
@@ -241,8 +239,6 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
-
-
     }
 
     public void createInwardAgeTableWithFilters() {
