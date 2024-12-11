@@ -826,6 +826,49 @@ public class CreditBean {
         return getPatientEncounterFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
+    public List<PatientEncounter> getCreditPatientEncounters(Institution institution, boolean lessThan, PaymentMethod paymentMethod,
+                                                             Institution institutionOfDepartment, Department department, Institution site) {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "Select b From PatientEncounter b "
+                + " JOIN b.finalBill fb"
+                + " where b.retired=false "
+                + " and b.discharged=true "
+                + " and b.paymentMethod=:pm "
+                + " and (b.creditCompany=:ins ) ";
+
+//        if (lessThan) {
+//            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)> :val ";
+//        } else {
+//            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)< :val ";
+//        }
+        if (lessThan) {
+            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) >:val ";
+        } else {
+            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) <:val ";
+        }
+
+        if (institutionOfDepartment != null) {
+            sql += " and fb.institution = :insd ";
+            hm.put("insd", institutionOfDepartment);
+        }
+
+        if (department != null) {
+            sql += " and fb.department = :dep ";
+            hm.put("dep", department);
+        }
+
+        if (site != null) {
+            sql += " and fb.department.site = :site ";
+            hm.put("site", site);
+        }
+
+        hm.put("val", 0.1);
+        hm.put("ins", institution);
+        hm.put("pm", paymentMethod);
+        return getPatientEncounterFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
     public List<Institution> getDealorFromBills(Date frmDate, Date toDate, List<BillType> billTypes) {
         String sql;
         HashMap hm;

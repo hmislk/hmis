@@ -211,8 +211,6 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
-
-
     }
 
     public void createInwardAgeTable() {
@@ -241,8 +239,35 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
+    }
 
+    public void createInwardAgeTableWithFilters() {
+        Date startTime = new Date();
 
+        makeNull();
+        Set<Institution> setIns = new HashSet<>();
+
+        List<Institution> list = getCreditBean().getCreditCompanyFromBht(
+                true, PaymentMethod.Credit, institutionOfDepartment, department, site);
+        setIns.addAll(list);
+
+        creditCompanyAge = new ArrayList<>();
+        for (Institution ins : setIns) {
+            if (ins == null) {
+                continue;
+            }
+
+            String1Value5 newRow = new String1Value5();
+            newRow.setInstitution(ins);
+            setInwardValues(ins, newRow, PaymentMethod.Credit, institutionOfDepartment, department, site);
+
+            if (newRow.getValue1() != 0
+                    || newRow.getValue2() != 0
+                    || newRow.getValue3() != 0
+                    || newRow.getValue4() != 0) {
+                creditCompanyAge.add(newRow);
+            }
+        }
     }
 
     List<DealerDueDetailRow> dealerDueDetailRows;
@@ -307,8 +332,59 @@ public class CreditCompanyDueController implements Serializable {
         }
 
         creditCompanyAge = new ArrayList<>();
+    }
 
+    public void createInwardAgeDetailAnalysisWithFilters() {
+        Date startTime = new Date();
 
+        dealerDueDetailRows = new ArrayList<>();
+        createInwardAgeTableWithFilters();
+        Institution dealer = null;
+        for (String1Value5 s : creditCompanyAge) {
+            DealerDueDetailRow row = new DealerDueDetailRow();
+            if (dealer == null || dealer != s.getInstitution()) {
+                dealer = s.getInstitution();
+                row.setDealer(dealer);
+                row.setZeroToThirty(s.getValue1());
+                row.setThirtyToSixty(s.getValue2());
+                row.setSixtyToNinty(s.getValue3());
+                row.setMoreThanNinty(s.getValue4());
+                dealerDueDetailRows.add(row);
+            }
+
+            int rowsForDealer = 0;
+            if (rowsForDealer < s.getValue1PatientEncounters().size()) {
+                rowsForDealer = s.getValue1PatientEncounters().size();
+            }
+            if (rowsForDealer < s.getValue2PatientEncounters().size()) {
+                rowsForDealer = s.getValue2PatientEncounters().size();
+            }
+            if (rowsForDealer < s.getValue3PatientEncounters().size()) {
+                rowsForDealer = s.getValue3PatientEncounters().size();
+            }
+            if (rowsForDealer < s.getValue4PatientEncounters().size()) {
+                rowsForDealer = s.getValue4PatientEncounters().size();
+            }
+
+            for (int i = 0; i < rowsForDealer; i++) {
+                DealerDueDetailRow rowi = new DealerDueDetailRow();
+                if (s.getValue1PatientEncounters().size() > i) {
+                    rowi.setZeroToThirtyEncounter(s.getValue1PatientEncounters().get(i));
+                }
+                if (s.getValue2PatientEncounters().size() > i) {
+                    rowi.setThirtyToSixtyEncounter(s.getValue2PatientEncounters().get(i));
+                }
+                if (s.getValue3PatientEncounters().size() > i) {
+                    rowi.setSixtyToNintyEncounter(s.getValue3PatientEncounters().get(i));
+                }
+                if (s.getValue4PatientEncounters().size() > i) {
+                    rowi.setMoreThanNintyEncounter(s.getValue4PatientEncounters().get(i));
+                }
+                dealerDueDetailRows.add(rowi);
+            }
+        }
+
+        creditCompanyAge = new ArrayList<>();
     }
 
     public void createInwardCashAgeTable() {
@@ -546,9 +622,31 @@ public class CreditCompanyDueController implements Serializable {
                 dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
                 dataTable5Value.getValue4PatientEncounters().add(b);
             }
-
         }
+    }
 
+    private void setInwardValues(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod,
+                                 Institution institutionOfDepartment, Department department, Institution site) {
+        List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(
+                inst, true, paymentMethod, institutionOfDepartment, department, site);
+        for (PatientEncounter b : lst) {
+            Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
+            b.setTransDayCount(dayCount);
+            double finalValue = b.getFinalBill().getNetTotal() - (Math.abs(b.getFinalBill().getPaidAmount()) + Math.abs(b.getCreditPaidAmount()));
+            if (dayCount < 30) {
+                dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
+                dataTable5Value.getValue1PatientEncounters().add(b);
+            } else if (dayCount < 60) {
+                dataTable5Value.setValue2(dataTable5Value.getValue2() + finalValue);
+                dataTable5Value.getValue2PatientEncounters().add(b);
+            } else if (dayCount < 90) {
+                dataTable5Value.setValue3(dataTable5Value.getValue3() + finalValue);
+                dataTable5Value.getValue3PatientEncounters().add(b);
+            } else {
+                dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
+                dataTable5Value.getValue4PatientEncounters().add(b);
+            }
+        }
     }
 
     private void setInwardValuesAccess(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod) {
@@ -1164,6 +1262,10 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public CommonFunctions getCommonFunctions() {
+        if (commonFunctions == null) {
+            commonFunctions = new CommonFunctions();
+        }
+
         return commonFunctions;
     }
 
