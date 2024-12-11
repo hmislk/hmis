@@ -13972,39 +13972,36 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(collectingCentrePaymentCancelBundle);
         collectionForTheDay += getSafeTotal(collectingCentrePaymentCancelBundle);
 
-// Generate OPD Credit, Cancellation, and Refund and add to the main bundle
-        List<BillTypeAtomic> opdCreditBills = new ArrayList<>();
-        opdCreditBills.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-        opdCreditBills.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        opdCreditBills.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-        opdCreditBills.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        ReportTemplateRowBundle opdCreditBillBundle = generatePaymentMethodColumnsByBills(opdCreditBills, creditPaymentMethods);
-        opdCreditBillBundle.setBundleType("OpdCredit");
-        opdCreditBillBundle.setName("OPD Credit Payments");
-        bundle.getBundles().add(opdCreditBillBundle);
-        collectionForTheDay += getSafeTotal(opdCreditBillBundle);
-
-        List<BillTypeAtomic> opdCreditBillCancel = new ArrayList<>();
-        opdCreditBillCancel.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-        opdCreditBillCancel.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        opdCreditBillCancel.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-        opdCreditBillCancel.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        ReportTemplateRowBundle opdCreditCancelBundle = generatePaymentMethodColumnsByBills(opdCreditBillCancel, creditPaymentMethods);
-        opdCreditCancelBundle.setBundleType("OpdCreditCancelled");
-        opdCreditCancelBundle.setName("OPD Credit Cancellations");
-        bundle.getBundles().add(opdCreditCancelBundle);
-        collectionForTheDay += getSafeTotal(opdCreditCancelBundle);
-
-        List<BillTypeAtomic> opdCreditRefund = new ArrayList<>();
-        opdCreditRefund.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-        opdCreditRefund.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        opdCreditRefund.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-        opdCreditRefund.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        ReportTemplateRowBundle opdCreditRefundBundle = generatePaymentMethodColumnsByBills(opdCreditRefund,creditPaymentMethods);
-        opdCreditRefundBundle.setBundleType("OpdCreditRefund");
-        opdCreditRefundBundle.setName("OPD Credit Refunds");
-        bundle.getBundles().add(opdCreditRefundBundle);
-        collectionForTheDay += getSafeTotal(opdCreditRefundBundle);
+//// Generate OPD Credit, Cancellation, and Refund and add to the main bundle
+//        List<BillTypeAtomic> opdCreditBills = new ArrayList<>();
+//        opdCreditBills.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+//        opdCreditBills.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+//        opdCreditBills.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+//        opdCreditBills.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+//        ReportTemplateRowBundle opdCreditBillBundle = generatePaymentMethodColumnsByBills(opdCreditBills, creditPaymentMethods);
+//        opdCreditBillBundle.setBundleType("OpdCredit");
+//        opdCreditBillBundle.setName("OPD Credit Payments");
+//        bundle.getBundles().add(opdCreditBillBundle);
+//        collectionForTheDay += getSafeTotal(opdCreditBillBundle);
+//
+//        List<BillTypeAtomic> opdCreditBillCancel = new ArrayList<>();
+//        opdCreditBillCancel.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+//        opdCreditBillCancel.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+//        opdCreditBillCancel.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+//        opdCreditBillCancel.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+//        ReportTemplateRowBundle opdCreditCancelBundle = generatePaymentMethodColumnsByBills(opdCreditBillCancel, creditPaymentMethods);
+//        opdCreditCancelBundle.setBundleType("OpdCreditCancelled");
+//        opdCreditCancelBundle.setName("OPD Credit Cancellations");
+//        bundle.getBundles().add(opdCreditCancelBundle);
+//        collectionForTheDay += getSafeTotal(opdCreditCancelBundle);
+//
+//        List<BillTypeAtomic> opdCreditRefund = new ArrayList<>();
+//        opdCreditRefund.add(BillTypeAtomic.OPD_BILL_REFUND);
+//        ReportTemplateRowBundle opdCreditRefundBundle = generatePaymentMethodColumnsByBills(opdCreditRefund, creditPaymentMethods);
+//        opdCreditRefundBundle.setBundleType("OpdCreditRefund");
+//        opdCreditRefundBundle.setName("OPD Credit Refunds");
+//        bundle.getBundles().add(opdCreditRefundBundle);
+//        collectionForTheDay += getSafeTotal(opdCreditRefundBundle);
 
 // Generate Pharmacy Credit Bills, Cancellation, and Refund and add to the main bundle
         List<BillTypeAtomic> pharmacyCreditBills = new ArrayList<>();
