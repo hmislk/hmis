@@ -261,9 +261,7 @@
 
                         </p:panel>
 
-sdf
-#{pharmacyReportController.rows}
-sdf
+
 
                         <p:panel 
                             id="gpBatchWise" 
@@ -328,7 +326,7 @@ sdf
                                     <h:outputText value="#{f.stockHistory.itemBatch.retailsaleRate}" ><f:convertNumber pattern="#,##0.00" /></h:outputText>
                                 </p:column>
                                 <p:column headerText="Sale Value">
-                                    <h:outputText value="#{f.stockHistory.stock*f.itemBatch.retailsaleRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                    <h:outputText value="#{f.stockHistory.stockQty * f.stockHistory.itemBatch.retailsaleRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyReportController.stockSaleValue}">
                                             <f:convertNumber pattern="#,##0.00" />
