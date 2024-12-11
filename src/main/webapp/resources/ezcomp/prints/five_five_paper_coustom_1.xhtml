@@ -13,18 +13,14 @@
         <cc:attribute name="bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="refunded" type="java.lang.Boolean" default="false"/>
-        <cc:attribute name="payments" ></cc:attribute>
+        <cc:attribute name="payments" type="java.lang.Integer"></cc:attribute>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-
-
-
-
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
         <div class="fiveinchbill" style="page-break-after: always" >
-
+            
             <div class="institutionName">
                 <h:outputLabel style="font-size: 14pt" value="#{cc.attrs.bill.department.printingName}" />
             </div>
@@ -52,12 +48,12 @@
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value="Refuned" />
                     </h:panelGroup>
-                    
+
                     <h:panelGroup  rendered="#{cc.attrs.bill.cancelled}" >
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value="Cancelled" />
                     </h:panelGroup>
-                    
+
                     <h:panelGroup>
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value=" Receipt"/>
@@ -97,7 +93,7 @@
                     <div class="col-3"><h:outputLabel value="Contact No" ></h:outputLabel></div>
                     <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
                     <div class="col-7"><h:outputLabel rendered="#{cc.attrs.bill.patient.person.mobile ne ''}" value="#{cc.attrs.bill.patient.person.mobile}"/>
-                    <h:outputLabel rendered="#{cc.attrs.bill.patient.person.mobile eq ''}" value="#{cc.attrs.bill.patient.person.phone}"/>
+                        <h:outputLabel rendered="#{cc.attrs.bill.patient.person.mobile eq ''}" value="#{cc.attrs.bill.patient.person.phone}"/>
                     </div>
 
                 </div>
@@ -245,23 +241,39 @@
 
             <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card'}" style="margin-top: 4px; font-size: 8pt;margin-left: 5%">
                 <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
-                <ui:repeat value="#{cc.attrs.payments}" var="p">
-                    <div class="d-flex align-items-center mt-1">
-                        <div>#{p.paymentMethod}</div>
-                        <div>&nbsp;&nbsp;(#{p.creditCardRefNo})</div>
-                        <div class="mx-2">#{p.paidValue}</div>
+                <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill.backwardReferenceBill)}" var="p">
+                    <div class="d-flex gap-3">
+                        <div style="margin-left: 5%">
+                            <h:outputLabel value="#{p.paymentMethod}" ></h:outputLabel>
+                        </div>
+                        <div>
+                            <h:outputLabel value="&nbsp;&nbsp;" ></h:outputLabel>
+                            <h:outputLabel value="( #{p.creditCardRefNo} )"></h:outputLabel>
+                        </div>
+                        <div class="mx-2">
+                            <h:outputLabel value="#{p.paidValue}" >
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber></h:outputLabel>
+                        </div>
                     </div>
                 </ui:repeat>
             </h:panelGroup>
-
+            
             <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" style="margin-top: 4px;font-size: 8pt;margin-left: 5%">
-                <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
-                <ui:repeat value="#{cc.attrs.payments}" var="p">
-                    <div class="d-flex align-items-center m-1">
-                        <div>#{p.paymentMethod}</div>
-                        <div class="mx-2">#{p.paidValue}</div>
-                    </div>
-                </ui:repeat>
+                <h:panelGroup rendered="#{cc.attrs.payments eq 1}">
+                    <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod.label}"/>
+                    <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill.backwardReferenceBill)}" var="p">
+                        <div class="d-flex align-items-center">
+                            <div style="margin-left: 5%">
+                                <h:outputLabel value="#{p.paymentMethod}" ></h:outputLabel>
+                            </div>
+                            <div class="mx-2">
+                                <h:outputLabel value="#{p.paidValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </div>
+                        </div>
+                    </ui:repeat>
+                </h:panelGroup>
             </h:panelGroup>
 
             <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
