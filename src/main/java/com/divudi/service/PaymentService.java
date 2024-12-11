@@ -238,6 +238,9 @@ public class PaymentService {
                 payment.setBank(paymentMethodData.getSlip().getInstitution());
                 payment.setReferenceNo(paymentMethodData.getSlip().getReferenceNo());
                 payment.setRealizedAt(paymentMethodData.getSlip().getDate());
+                payment.setPaymentDate(paymentMethodData.getSlip().getDate());
+                payment.setChequeDate(paymentMethodData.getSlip().getDate());
+                payment.setRealizedAt(paymentMethodData.getSlip().getDate());
                 break;
             case OnCall:
             case OnlineSettlement:
