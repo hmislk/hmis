@@ -2446,6 +2446,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     @Override
     public double calculatRemainForMultiplePaymentTotal() {
+        System.out.println("calculatRemainForMultiplePaymentTotal");
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
@@ -2456,18 +2457,22 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
-
+                System.out.println("multiplePaymentMethodTotalValue = " + multiplePaymentMethodTotalValue);
             }
+            System.out.println("remainAmount = " + remainAmount);
+            System.out.println("total = " + total);
             remainAmount = total - multiplePaymentMethodTotalValue;
             return total - multiplePaymentMethodTotalValue;
 
         }
         remainAmount = total;
+        System.out.println("total = " + total);
         return total;
     }
 
     @Override
     public void recieveRemainAmountAutomatically() {
+        System.out.println("recieveRemainAmountAutomatically");
         //double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
@@ -2491,11 +2496,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 case PatientDeposit:
                     if (patient != null) {
                         pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
-                    }
-                    if (remainAmount >= patient.getRunningBalance()) {
-                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(patient.getRunningBalance());
-                    } else {
-                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                        PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
+                        pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                        System.out.println("remainAmount = " + remainAmount);
+                        System.out.println("patient.getRunningBalance() = " + patient.getRunningBalance());
+                        System.out.println("remainAmount = " + remainAmount);
+                        System.out.println("patient.getRunningBalance() = " + patient.getRunningBalance());
+                        if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
+                            pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
+                        } else {
+                            pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                        }
                     }
 
                     break;
@@ -2727,12 +2738,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         return true;
                     }
                     double creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
-                    double runningBalance;
-                    if (getPatient().getRunningBalance() != null) {
-                        runningBalance = getPatient().getRunningBalance();
-                    } else {
-                        runningBalance = 0.0;
+                    PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
+                    if(pd==null){
+                        JsfUtil.addErrorMessage("No Patient Deposit.");
+                        return true;
                     }
+                    double runningBalance=pd.getBalance();
+                    
                     double availableForPurchase = runningBalance + creditLimitAbsolute;
 
                     if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
