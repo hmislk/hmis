@@ -349,7 +349,7 @@ public class UserNotificationController implements Serializable {
         Map m = new HashMap();
         m.put("ret", false);
         m.put("wu", sessionController.getLoggedUser());
-        items = getFacade().findByJpql(jpql, m);
+        items = getFacade().findByJpql(jpql, m, 20);
         return items;
     }
 

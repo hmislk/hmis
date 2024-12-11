@@ -148,14 +148,18 @@
                                 <p:outputLabel value="Item Name" for="phmItem" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu 
+                            <p:autoComplete 
                                 id="phmItem"
                                 value="#{pharmacyReportController.item}" 
-                                filter="true"
-                                class="w-100 " >
-                                <f:selectItem itemLabel="All Items" ></f:selectItem>
-                                <f:selectItems value="#{ampController.items}" var="item" itemLabel="#{item.name}" itemValue="#{item}" />
-                            </p:selectOneMenu>
+                                completeMethod="#{ampController.completeAmp}"
+                                var="item" 
+                                class="w-100"
+                                minQueryLength="3"
+                                maxResults="20"
+                                inputStyleClass="w-100"
+                                itemLabel="#{item.name}" 
+                                itemValue="#{item}" 
+                                ></p:autoComplete>
 
 
 
@@ -167,7 +171,12 @@
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center">
-                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" action="#{pharmacyReportController.processClosingStockReport()}" >
+                            <p:commandButton 
+                                class="ui-button-warning mx-1" 
+                                icon="fas fa-cogs" 
+                                ajax="false"  
+                                value="Process" 
+                                action="#{pharmacyReportController.processClosingStockReport()}" >
                             </p:commandButton>
 
                             <!-- Buttons for Item Wise -->
@@ -252,15 +261,16 @@
 
                         </p:panel>
 
-
-
+sdf
+#{pharmacyReportController.rows}
+sdf
 
                         <p:panel 
                             id="gpBatchWise" 
                             header="Report Data By Batch Wise" 
                             rendered="#{pharmacyReportController.reportType eq 'batchWise'}">
                             <p:dataTable id="batchWise" 
-                                         value="#{pharmacyReportController.stocks}" 
+                                         value="#{pharmacyReportController.rows}" 
                                          var="f" 
                                          rowIndexVar="n" 
                                          paginator="true" 
@@ -276,25 +286,25 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Item Category">
-                                    <h:outputText value="#{f.itemBatch.item.category.name}" />
+                                    <h:outputText value="#{f.stockHistory.itemBatch.item.category.name}" />
                                 </p:column>
                                 <p:column headerText="Item Code">
-                                    <h:outputText value="#{f.itemBatch.item.code}" />
+                                    <h:outputText value="#{f.stockHistory.itemBatch.item.code}" />
                                 </p:column>
                                 <p:column headerText="Item Name">
-                                    <h:outputText value="#{f.itemBatch.item.name}" />
+                                    <h:outputText value="#{f.stockHistory.itemBatch.item.name}" />
                                 </p:column>
                                 <p:column headerText="UOM">
-                                    <h:outputText value="#{f.itemBatch.item.measurementUnit.name}" />
+                                    <h:outputText value="#{f.stockHistory.itemBatch.item.measurementUnit.name}" />
                                 </p:column>
                                 <p:column headerText="Expiry">
-                                    <h:outputText value="#{f.itemBatch.dateOfExpire}" />
+                                    <h:outputText value="#{f.stockHistory.itemBatch.dateOfExpire}" />
                                 </p:column>
                                 <p:column headerText="Batch No">
-                                    <h:outputText value="#{f.itemBatch.batchNo}" />
+                                    <h:outputText value="#{f.stockHistory.itemBatch.batchNo}" />
                                 </p:column>
                                 <p:column headerText="Qty">
-                                    <h:outputText value="#{f.stock}"><f:convertNumber pattern="#,##0" /></h:outputText>
+                                    <h:outputText value="#{f.stockHistory.stockQty}"><f:convertNumber pattern="#,##0" /></h:outputText>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyReportController.stockTotal}">
                                             <f:convertNumber pattern="#,##0" />
@@ -302,10 +312,10 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Purchase Rate">
-                                    <h:outputText value="#{f.itemBatch.purcahseRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                    <h:outputText value="#{f.stockHistory.itemBatch.purcahseRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
                                 </p:column>
                                 <p:column headerText="Purchase Value">
-                                    <h:outputText value="#{f.stock*f.itemBatch.purcahseRate}">
+                                    <h:outputText value="#{f.stockHistory.stock*f.itemBatch.purcahseRate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
@@ -315,10 +325,10 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Retail Rate">
-                                    <h:outputText value="#{f.itemBatch.retailsaleRate}" ><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                    <h:outputText value="#{f.stockHistory.itemBatch.retailsaleRate}" ><f:convertNumber pattern="#,##0.00" /></h:outputText>
                                 </p:column>
                                 <p:column headerText="Sale Value">
-                                    <h:outputText value="#{f.stock*f.itemBatch.retailsaleRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                    <h:outputText value="#{f.stockHistory.stock*f.itemBatch.retailsaleRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyReportController.stockSaleValue}">
                                             <f:convertNumber pattern="#,##0.00" />
