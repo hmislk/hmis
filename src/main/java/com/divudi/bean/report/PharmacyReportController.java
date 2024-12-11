@@ -2004,20 +2004,20 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processClosingStockItemWiseReport() {
-        Date startTime = new Date();
         Map<String, Object> m = new HashMap<>();
 
-        String jpql = "select new com.divudi.data.dataStructure.PharmacyStockRow"
-                + "(s.itemBatch.item.code, "
-                + "s.itemBatch.item.name, "
-                + "sum(s.stock), "
-                + "sum(s.itemBatch.purcahseRate * s.stock), "
-                + "sum(s.itemBatch.retailsaleRate * s.stock)) "
-                + "from Stock s "
-                + "where s.stock > :z ";
+        stockLedgerHistories = new ArrayList();
+
+        String jpql = "select s from StockHistory s "
+                + "where s.stockAt = (select max(subS.stockAt) "
+                + "                    from StockHistory subS "
+                + "                    where subS.item = s.item "
+                + "                      and subS.stockQty > :z "
+                + "                      and subS.stockAt between :fd and :td) ";
 
         m.put("z", 0.0);
-       
+        m.put("fd", fromDate);
+        m.put("td", toDate);
 
         // Institution filter
         if (institution != null) {
@@ -2033,24 +2033,31 @@ public class PharmacyReportController implements Serializable {
 
         // Item filter
         if (item != null) {
-            jpql += "and s.itemBatch.item = :itm ";
+            jpql += "and s.item = :itm ";
             m.put("itm", item);
         }
+
+        jpql += "order by s.stockAt DSEC";
+
+        stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         
-        jpql += "group by s.itemBatch.item.name, s.itemBatch.item.code";
-
-        List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(jpql, m);
-
-        stockPurchaseValue = 0.0;
-        stockSaleValue = 0.0;
-        stockTottal = 0.0;
-        for (PharmacyStockRow r : lsts) {
-            stockPurchaseValue += r.getPurchaseValue();
-            stockSaleValue += r.getSaleValue();
-            stockTotal += r.getQty();
+        Map<String, Object> tempMap = new HashMap<>();
+        
+        for (StockHistory r : stockLedgerHistories){
+            if (tempMap == null){
+                
+            }
         }
 
-        pharmacyStockRows = lsts;
+        
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        stockTotal = 0.0;
+        for (StockHistory r : stockLedgerHistories) {
+            stockPurchaseValue += r.getStockPurchaseValue();
+            stockSaleValue += r.getStockSaleValue();
+            stockTotal += r.getStockQty();
+        }
     }
 
     public void processLabTestWiseCountReport() {

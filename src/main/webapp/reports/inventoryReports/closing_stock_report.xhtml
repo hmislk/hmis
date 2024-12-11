@@ -214,7 +214,7 @@
                             id="gpItemWise" 
                             header="Report Data By Item Wise" 
                             rendered="#{pharmacyReportController.reportType eq 'itemWise'}">
-                            <p:dataTable id="itemWise" value="#{pharmacyReportController.pharmacyStockRows}" 
+                            <p:dataTable id="itemWise" value="#{pharmacyReportController.stockLedgerHistories}" 
                                          var="p" 
                                          rowIndexVar="n" 
                                          paginator="true" 
@@ -233,19 +233,19 @@
                                     <h:outputText value="#{p.item.category.name}" />
                                 </p:column>
                                 <p:column headerText="Item Code">
-                                    <h:outputText value="#{p.code}" />
+                                    <h:outputText value="#{p.item.code}" />
                                 </p:column>
                                 <p:column headerText="Item Name">
-                                    <h:outputText value="#{p.name}" />
+                                    <h:outputText value="#{p.item.name}" />
                                 </p:column>
                                 <p:column headerText="UOM">
                                     <h:outputText value="#{p.item.measurementUnit.name}" />
                                 </p:column>
                                 <p:column headerText="Closing Stock">
-                                    <h:outputText value="#{p.qty}" />
+                                    <h:outputText value="#{p.itemStock}" />
                                 </p:column>
                                 <p:column headerText="Closing Stock Value">
-                                    <h:outputText value="#{p.purchaseValue}" />
+                                    <h:outputText value="" />
                                 </p:column>
 
                             </p:dataTable>
