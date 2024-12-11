@@ -128,7 +128,7 @@
                                                         title="Quick Search from Phone Number"
                                                         action="#{patientController.quickSearchPatientLongPhoneNumber(opdBillController)}" 
                                                         process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                                        update="ptImp selectPatient editPatient viewPatient payment paymentDetails pBillDetails msg :#{p:resolveFirstComponentWithId('pay:',view).clientId}"
+                                                        update="ptImp selectPatient editPatient viewPatient payment paymentDetails pBillDetails msg :#{p:resolveFirstComponentWithId('pay',view).clientId}"
                                                         styleClass="btn-sm mx-1">
                                                     </p:commandButton>
                                                     <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
@@ -608,7 +608,7 @@
                                                 </p:inputText>
                                             </h:panelGrid>
                                             <p:commandButton 
-                                                id="btnAddIx" 
+                                                id="btnAddIx"
                                                 value="Add" 
                                                 icon="fa fa-plus"
                                                 class="w-100 ui-button-success"
