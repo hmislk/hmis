@@ -137,6 +137,7 @@
                                                       selection="#{supplierPaymentController.selectedBillItems}" 
                                                       var="b" id="itms" rowKey="#{b.searialNo}" 
                                                       selectionMode="multiple"
+                                                      selectionRowMode="add"
                                                       scrollable="true"
                                                       scrollHeight="300">
                                             <f:facet name="header">
@@ -153,7 +154,7 @@
                                                     update=":#{p:resolveFirstComponentWithId('total',view).clientId}"
                                                     listener="#{supplierPaymentController.calTotalBySelectedBillTems()}" />  
 
-
+                                            <p:column selectionBox="true"></p:column>
                                             <p:column >  
                                                 <f:facet name="header">
                                                     <h:outputLabel value="GRN No"/>                                  
