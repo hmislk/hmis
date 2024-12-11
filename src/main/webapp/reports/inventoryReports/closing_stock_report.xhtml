@@ -121,47 +121,22 @@
                             </p:selectOneMenu>
 
 
-                            <p:spacer width="20"></p:spacer> 
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-barcode mr-2" />
-                                <p:outputLabel value="Item Code" for="phmCode" class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="phmCode"
-                                value="#{pharmacyReportController.item.code}" 
-                                filter="true"  
-                                class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="" var="category" itemLabel="#{category.name}" itemValue="#{category}" />
-                            </p:selectOneMenu>
-
-
 
                             <p:spacer width="20"></p:spacer> 
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-box mr-2" />
-                                <p:outputLabel value="Item Name" class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
-
-
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-boxes mr-2" />
-                                <p:outputLabel value="Stock type" class="m-3">
+                                <p:outputLabel value="Report type" for="phmRepType" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
+                            <p:selectOneMenu 
+                                id="phmRepType"
+                                value="#{pharmacyReportController.reportType}" 
+                                required="true"  
+                                class="w-100 " >
+                                <f:selectItem itemLabel="Item Wise" itemValue="itemWise"/>
+                                <f:selectItem itemLabel="Batch Wise" itemValue="batchWise"/>
                             </p:selectOneMenu>
 
 
@@ -169,34 +144,78 @@
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-truck mr-2" />
-                                <p:outputLabel value="Is Consignment Item" class="m-3">
+                                <h:outputText styleClass="fa fa-box mr-2" />
+                                <p:outputLabel value="Item Name" for="phmItem" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
+                            <p:selectOneMenu 
+                                id="phmItem"
+                                value="#{pharmacyReportController.item}" 
+                                filter="true"
+                                class="w-100 " >
+                                <f:selectItem itemLabel="All Items" ></f:selectItem>
+                                <f:selectItems value="#{ampController.items}" var="item" itemLabel="#{item.name}" itemValue="#{item}" />
                             </p:selectOneMenu>
+
+
+
+
+
 
 
 
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center">
-                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" >
+                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" action="#{pharmacyReportController.processClosingStockReport()}" >
                             </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+
+                            <!-- Buttons for Item Wise -->
+                            <p:commandButton 
+                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
+                                class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                                <p:printer target="gpItemWise" />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                            <p:commandButton 
+                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
+                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                                <p:dataExporter type="xlsx" target="itemWIse" fileName="Item Wise Report" />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            <p:commandButton 
+                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
+                                class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                                <p:dataExporter type="pdf" target="itemWise" fileName="Item Wise Report" />
+                            </p:commandButton>
+
+
+                            <!-- Buttons for Batch Wise -->
+                            <p:commandButton 
+                                rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
+                                class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                                <p:printer target="gpBatchWise" />
+                            </p:commandButton>
+                            <p:commandButton 
+                                rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
+                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                                <p:dataExporter type="xlsx" target="batchWIse" fileName="Batch Wise Report" />
+                            </p:commandButton>
+                            <p:commandButton 
+                                rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
+                                class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                                <p:dataExporter type="pdf" target="batchWise" fileName="Batch Wise Report" />
                             </p:commandButton>
                         </div>
 
-                        <div class="mt-5">
-                            <h5>Report Data By Item</h5>
-                            <p:dataTable id="tbl1" value="" 
-                                         var="f" 
+
+
+
+
+                        <p:panel 
+                            id="gpItemWise" 
+                            header="Report Data By Item Wise" 
+                            rendered="#{pharmacyReportController.reportType eq 'itemWise'}">
+                            <p:dataTable id="itemWise" value="#{pharmacyReportController.stockLedgerHistories}" 
+                                         var="p" 
                                          rowIndexVar="n" 
                                          paginator="true" 
                                          rows="10" 
@@ -205,29 +224,25 @@
                                          rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                                 <p:column headerText="S.No">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{n+1}" />
                                     <f:facet name="footer">
                                         <h:outputText value="Total" />
                                     </f:facet>
                                 </p:column>
-
                                 <p:column headerText="Item Category">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{p.item.category.name}" />
                                 </p:column>
-
                                 <p:column headerText="Item Code">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{p.item.code}" />
                                 </p:column>
-
                                 <p:column headerText="Item Name">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{p.item.name}" />
                                 </p:column>
-
                                 <p:column headerText="UOM">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{p.item.measurementUnit.name}" />
                                 </p:column>
                                 <p:column headerText="Closing Stock">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{p.itemStock}" />
                                 </p:column>
                                 <p:column headerText="Closing Stock Value">
                                     <h:outputText value="" />
@@ -235,13 +250,17 @@
 
                             </p:dataTable>
 
-                        </div>
+                        </p:panel>
 
 
 
-                        <div class="mt-5">
-                            <h5>Report Data By Batch</h5>
-                            <p:dataTable id="tbl2" value="" 
+
+                        <p:panel 
+                            id="gpBatchWise" 
+                            header="Report Data By Batch Wise" 
+                            rendered="#{pharmacyReportController.reportType eq 'batchWise'}">
+                            <p:dataTable id="batchWise" 
+                                         value="#{pharmacyReportController.stocks}" 
                                          var="f" 
                                          rowIndexVar="n" 
                                          paginator="true" 
@@ -251,53 +270,66 @@
                                          rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                                 <p:column headerText="S.No">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{n+1}" />
                                     <f:facet name="footer">
                                         <h:outputText value="Total" />
                                     </f:facet>
                                 </p:column>
-
                                 <p:column headerText="Item Category">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.item.category.name}" />
                                 </p:column>
-
                                 <p:column headerText="Item Code">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.item.code}" />
                                 </p:column>
-
                                 <p:column headerText="Item Name">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.item.name}" />
                                 </p:column>
-
                                 <p:column headerText="UOM">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.item.measurementUnit.name}" />
                                 </p:column>
                                 <p:column headerText="Expiry">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.dateOfExpire}" />
                                 </p:column>
                                 <p:column headerText="Batch No">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.batchNo}" />
                                 </p:column>
                                 <p:column headerText="Qty">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.stock}"><f:convertNumber pattern="#,##0" /></h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{pharmacyReportController.stockTotal}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Purchase Rate">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.purcahseRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
                                 </p:column>
                                 <p:column headerText="Purchase Value">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.stock*f.itemBatch.purcahseRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{pharmacyReportController.stockPurchaseValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Retail Rate">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.retailsaleRate}" ><f:convertNumber pattern="#,##0.00" /></h:outputText>
                                 </p:column>
                                 <p:column headerText="Sale Value">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.stock*f.itemBatch.retailsaleRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{pharmacyReportController.stockSaleValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
                                 </p:column>
 
 
                             </p:dataTable>
 
-                        </div>
+                        </p:panel>
 
                     </p:panel>
 
