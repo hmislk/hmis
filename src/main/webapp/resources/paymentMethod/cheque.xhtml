@@ -42,7 +42,7 @@
             </div>
 
             <div class="flex-fill">
-<!--                <p:outputLabel for="ChequeDate" value="Cheque Date:"/>-->
+                <!--                <p:outputLabel for="ChequeDate" value="Cheque Date:"/>-->
                 <p:calendar id="ChequeDate" placeholder="Cheque Date" value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}"  >
                     <p:tooltip value="Select the date of the cheque."/>
                     <p:ajax process="@this"/>
@@ -50,9 +50,10 @@
             </div>
 
             <div class="flex-fill">
-<!--                <p:outputLabel for="chequeComment" value="Comments:"/>-->
+                <!--                <p:outputLabel for="chequeComment" value="Comments:"/>-->
                 <p:inputText id="chequeComment" value="#{cc.attrs.paymentMethodData.cheque.comment}" placeholder="Enter Cheque Comments" style="width: auto; max-width: 200px;" class="form-control">
                     <p:tooltip value="Add any additional comments about the cheque."/>
+                    <p:ajax process="@this"/>
                 </p:inputText>
             </div>
         </div>

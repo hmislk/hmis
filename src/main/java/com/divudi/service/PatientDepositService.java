@@ -83,7 +83,42 @@ public class PatientDepositService {
     }
     
     public void updateBalance(Payment p, PatientDeposit pd) {
-        handlePayment(p, pd);
+        switch (p.getBill().getBillTypeAtomic()) {
+            case PATIENT_DEPOSIT:
+                handleInPayment(p, pd);
+                break;
+
+            case PATIENT_DEPOSIT_REFUND:
+                handleOutPayment(p, pd);
+                break;
+
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+            case PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT:
+                handleOutPayment(p, pd);
+                break;
+
+            case OPD_BATCH_BILL_CANCELLATION:
+            case PACKAGE_OPD_BATCH_BILL_CANCELLATION:
+            case PACKAGE_OPD_BILL_CANCELLATION:
+            case PACKAGE_OPD_BILL_REFUND:
+                handleInPayment(p, pd);
+                break;
+
+            case OPD_BILL_CANCELLATION:
+                handleInPayment(p, pd);
+                break;
+
+            case OPD_BILL_REFUND:
+                handleInPayment(p, pd);
+                break;
+
+            case PATIENT_DEPOSIT_CANCELLED:
+                handleOutPayment(p, pd);
+                break;
+
+            default:
+                throw new AssertionError();
+        }
     }
     
     public void updateBalance(Bill b, PatientDeposit pd) {
@@ -161,13 +196,22 @@ public class PatientDepositService {
         createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, b, beforeBalance, afterBalance, 0 - Math.abs(b.getNetTotal()));
     }
     
-    public void handlePayment(Payment p, PatientDeposit pd) {
+    public void handleInPayment(Payment p, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
-        Double afterBalance = beforeBalance - p.getPaidValue();
+        Double afterBalance = beforeBalance + Math.abs(p.getPaidValue());
         pd.setBalance(afterBalance);
         patientDepositFacade.edit(pd);
         JsfUtil.addSuccessMessage("Balance Updated.");
-        createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, p.getBill(), beforeBalance, afterBalance,  p.getPaidValue());
+        createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, p.getBill(), beforeBalance, afterBalance,  Math.abs(p.getPaidValue()));
+    }
+    
+    public void handleOutPayment(Payment p, PatientDeposit pd) {
+        Double beforeBalance = pd.getBalance();
+        Double afterBalance = beforeBalance - Math.abs( p.getPaidValue());
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        JsfUtil.addSuccessMessage("Balance Updated.");
+        createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, p.getBill(), beforeBalance, afterBalance,  0 - Math.abs(p.getPaidValue()));
     }
 
     public void handleOPDBillCancel(Bill b, PatientDeposit pd) {

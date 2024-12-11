@@ -325,6 +325,10 @@ public class BillSearch implements Serializable {
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
     }
+    
+    public List<Payment> fetchBillPayments(Bill bill) {
+        return billService.fetchBillPayments(bill);
+    }
 
     public void fillBillFees() {
         for (BillItem bi : getRefundingBill().getBillItems()) {
