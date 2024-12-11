@@ -211,8 +211,6 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
-
-
     }
 
     public void createInwardAgeTable() {
@@ -241,8 +239,6 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
-
-
     }
 
     public void createInwardAgeTableWithFilters() {
@@ -336,8 +332,59 @@ public class CreditCompanyDueController implements Serializable {
         }
 
         creditCompanyAge = new ArrayList<>();
+    }
 
+    public void createInwardAgeDetailAnalysisWithFilters() {
+        Date startTime = new Date();
 
+        dealerDueDetailRows = new ArrayList<>();
+        createInwardAgeTableWithFilters();
+        Institution dealer = null;
+        for (String1Value5 s : creditCompanyAge) {
+            DealerDueDetailRow row = new DealerDueDetailRow();
+            if (dealer == null || dealer != s.getInstitution()) {
+                dealer = s.getInstitution();
+                row.setDealer(dealer);
+                row.setZeroToThirty(s.getValue1());
+                row.setThirtyToSixty(s.getValue2());
+                row.setSixtyToNinty(s.getValue3());
+                row.setMoreThanNinty(s.getValue4());
+                dealerDueDetailRows.add(row);
+            }
+
+            int rowsForDealer = 0;
+            if (rowsForDealer < s.getValue1PatientEncounters().size()) {
+                rowsForDealer = s.getValue1PatientEncounters().size();
+            }
+            if (rowsForDealer < s.getValue2PatientEncounters().size()) {
+                rowsForDealer = s.getValue2PatientEncounters().size();
+            }
+            if (rowsForDealer < s.getValue3PatientEncounters().size()) {
+                rowsForDealer = s.getValue3PatientEncounters().size();
+            }
+            if (rowsForDealer < s.getValue4PatientEncounters().size()) {
+                rowsForDealer = s.getValue4PatientEncounters().size();
+            }
+
+            for (int i = 0; i < rowsForDealer; i++) {
+                DealerDueDetailRow rowi = new DealerDueDetailRow();
+                if (s.getValue1PatientEncounters().size() > i) {
+                    rowi.setZeroToThirtyEncounter(s.getValue1PatientEncounters().get(i));
+                }
+                if (s.getValue2PatientEncounters().size() > i) {
+                    rowi.setThirtyToSixtyEncounter(s.getValue2PatientEncounters().get(i));
+                }
+                if (s.getValue3PatientEncounters().size() > i) {
+                    rowi.setSixtyToNintyEncounter(s.getValue3PatientEncounters().get(i));
+                }
+                if (s.getValue4PatientEncounters().size() > i) {
+                    rowi.setMoreThanNintyEncounter(s.getValue4PatientEncounters().get(i));
+                }
+                dealerDueDetailRows.add(rowi);
+            }
+        }
+
+        creditCompanyAge = new ArrayList<>();
     }
 
     public void createInwardCashAgeTable() {
