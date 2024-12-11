@@ -85,6 +85,24 @@
                                              completeMethod="#{institutionController.completeIns}" 
                                              var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                             </p:autoComplete>
+                            
+                             <h:panelGroup>
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="Bill Type"/>
+                            </h:panelGroup>
+                            
+                            <p:selectOneMenu id="billType" 
+                                             value="#{channelReportTemplateController.selectedBillTypeInOBReport}" 
+                                             filter="true" 
+                                             filterMatchMode="contains" 
+                                             class="w-100">
+                                <f:selectItem itemLabel="Please Select" noSelectionOption="true" />
+                                <f:selectItems
+                                    value="#{channelReportTemplateController.billTypeInOBReport}" 
+                                    var="type" 
+                                    itemLabel="#{type}" 
+                                    itemValue="#{type}" />
+                            </p:selectOneMenu>
 
 
                         </h:panelGrid>
@@ -171,6 +189,9 @@
                                 <f:facet name="header">
                                     <p:outputLabel value="Patient Name" />
                                 </f:facet>
+                                 <f:facet name="footer">
+                                    <p:outputLabel value="Net Amount" />
+                                </f:facet>
                                 <p:outputLabel value="#{a.billSession.bill.patient.person.nameWithTitle}" />
                                 <!--                                <f:facet name="footer" >
                                                                     <h:outputText value="#{channelReportTemplateController.bundle.long1}"></h:outputText>
@@ -179,6 +200,9 @@
                             <p:column width="4em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Amount" />
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{channelReportTemplateController.bundle.long7}" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.billSession.bill.paidAmount}" />
                                 <!--                                <f:facet name="footer" >
