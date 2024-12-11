@@ -291,6 +291,50 @@ public class CreditBean {
         return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
+    public List<Institution> getCreditCompanyFromBht(boolean lessThan, PaymentMethod paymentMethod,
+                                                     Institution institutionOfDepartment, Department department, Institution site) {
+        String sql;
+        HashMap hm;
+        sql = "Select distinct(b.creditCompany) "
+                + " From PatientEncounter b "
+                + " JOIN b.finalBill fb "
+                + " where b.retired=false "
+                + " and b.discharged=true "
+                + " and b.paymentMethod=:pm ";
+
+//        if (lessThan) {
+//            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)> :val ";
+//        } else {
+//            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)< :val ";
+//        }
+        if (lessThan) {
+            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) >:val ";
+        } else {
+            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) <:val ";
+        }
+
+        hm = new HashMap();
+
+        if (institutionOfDepartment != null) {
+            sql += " and fb.institution = :insd ";
+            hm.put("insd", institutionOfDepartment);
+        }
+
+        if (department != null) {
+            sql += " and fb.department = :dep ";
+            hm.put("dep", department);
+        }
+
+        if (site != null) {
+            sql += " and fb.department.site = :site ";
+            hm.put("site", site);
+        }
+
+        hm.put("val", 0.1);
+        hm.put("pm", paymentMethod);
+        return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
     public List<Institution> getCreditInstitutionByPatientEncounter(Date fromDate, Date toDate, PaymentMethod paymentMethod, boolean lessThan) {
         String sql;
         HashMap hm;
@@ -321,6 +365,7 @@ public class CreditBean {
 
         return setIns;
     }
+
 
     public List<Institution> getCreditInstitutionByPatientEncounter(Date fromDate, Date toDate, PaymentMethod paymentMethod, boolean lessThan,
                                                                     Institution institution, Department department, Institution site) {
