@@ -12,11 +12,20 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.report.ReportController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
+import static com.divudi.data.BillTypeAtomic.PATIENT_DEPOSIT;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
+import static com.divudi.data.PaymentMethod.Card;
+import static com.divudi.data.PaymentMethod.Cash;
+import static com.divudi.data.PaymentMethod.Cheque;
+import static com.divudi.data.PaymentMethod.Slip;
+import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
@@ -24,9 +33,13 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.PatientDepositHistory;
 import com.divudi.entity.Payment;
+import com.divudi.facade.BillFacade;
+import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientDepositFacade;
 import com.divudi.facade.PatientDepositHistoryFacade;
 import com.divudi.facade.PatientFacade;
+import com.divudi.service.PatientDepositService;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -66,14 +79,24 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     OpdBillController opdBillController;
-    
+
     @EJB
     PatientFacade patientFacade;
     @EJB
     private PatientDepositFacade patientDepositFacade;
     @EJB
     private PatientDepositHistoryFacade patientDepositHistoryFacade;
-    
+    @EJB
+    BillNumberGenerator billNumberGenerator;
+    @EJB
+    BillFacade billFacade;
+    @EJB
+    BillItemFacade billItemFacade;
+    @EJB
+    PatientDepositService patientDepositService;
+    @EJB
+    PaymentService paymentService;
+
     private PatientDeposit current;
     private List<PatientDeposit> items = null;
     private boolean printPreview;
@@ -97,6 +120,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         clearDataForPatientDeposit();
         patient = p;
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
+        patientController.listnerForPaymentMethodChange();
         return "/patient_deposit/pay?faces-redirect=true";
     }
 
@@ -109,13 +133,19 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         return "/patient_deposit/receive?faces-redirect=true";
     }
 
+    
     public void clearDataForPatientDeposit() {
         patientController.setCurrent(null);
         current = null;
         patient = new Patient();
+        bill=null;
+        paymentMethodData=null;
         latestPatientDepositHistory = new ArrayList<>();
         latestPatientDeposits = new ArrayList<>();
         patientController.clearDataForPatientDeposite();
+        paymentMethodData = new PaymentMethodData();
+        billItem = new BillItem();
+        printPreview = false;
     }
 
     public String navigateToNewPatientDepositCancel() {
@@ -160,6 +190,108 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         System.out.println("current = " + current);
     }
 
+    private boolean validatePaymentMethodDataForPatientDeposit() {
+        boolean error = false;
+        if (getBill().getNetTotal() < 0.01) {
+            JsfUtil.addErrorMessage("Please Enter a value to deposit");
+            error = true;
+        }
+        if (null == getBill().getPaymentMethod()) {
+            JsfUtil.addErrorMessage("Please select a payment method");
+            error = true;
+        } else {
+            switch (getBill().getPaymentMethod()) {
+                case Card:
+                    if (getPaymentMethodData().getCreditCard().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - CreditCard Comment is Mandatory", false)) {
+                        JsfUtil.addErrorMessage("Please Enter a Credit Card Comment..");
+                        error = true;
+                    }
+                    getPaymentMethodData().getCreditCard().setTotalValue(getBill().getNetTotal());
+                    break;
+                case Cheque:
+                    if (getPaymentMethodData().getCheque().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - Cheque Comment is Mandatory", false)) {
+                        JsfUtil.addErrorMessage("Please Enter a Cheque Comment..");
+                        error = true;
+                    }
+                    getPaymentMethodData().getCheque().setTotalValue(getBill().getNetTotal());
+                    break;
+                case ewallet:
+                    if (getPaymentMethodData().getEwallet().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - E-Wallet Comment is Mandatory", false)) {
+                        JsfUtil.addErrorMessage("Please Enter a E-Wallet Comment..");
+                        error = true;
+                    }
+                    getPaymentMethodData().getEwallet().setTotalValue(getBill().getNetTotal());
+                    break;
+                case Slip:
+                    if (getPaymentMethodData().getSlip().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - Slip Comment is Mandatory", false)) {
+                        JsfUtil.addErrorMessage("Please Enter a Slip Comment..");
+                        error = true;
+                    }
+                    getPaymentMethodData().getSlip().setTotalValue(getBill().getNetTotal());
+                    break;
+                case Cash:
+                    getPaymentMethodData().getCash().setTotalValue(getBill().getNetTotal());
+                    break;
+                default:
+                    JsfUtil.addErrorMessage("This payment method is NOT valid for Patient Deposits");
+                    error = true;
+                    break;
+            }
+        }
+        return error;
+    }
+
+    private boolean validatePaymentMethodDataForPatientDepositReturn() {
+        boolean error = false;
+        if (patientController.getBill().getNetTotal() < 0.01) {
+            JsfUtil.addErrorMessage("Please Enter a value to deposit");
+            error = true;
+        }
+        if (null == patientController.getBill().getPaymentMethod()) {
+            JsfUtil.addErrorMessage("Please select a payment method");
+            error = true;
+        } else {
+            switch (patientController.getBill().getPaymentMethod()) {
+                case Card:
+                    if (getPaymentMethodData().getCreditCard().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - CreditCard Comment is Mandatory", false)) {
+                        JsfUtil.addErrorMessage("Please Enter a Credit Card Comment..");
+                        error = true;
+                    }
+                    getPaymentMethodData().getCreditCard().setTotalValue(patientController.getBill().getNetTotal());
+                    break;
+                case Cheque:
+                    if (getPaymentMethodData().getCheque().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - Cheque Comment is Mandatory", false)) {
+                        JsfUtil.addErrorMessage("Please Enter a Cheque Comment..");
+                        error = true;
+                    }
+                    getPaymentMethodData().getCheque().setTotalValue(patientController.getBill().getNetTotal());
+                    break;
+                case ewallet:
+                    if (getPaymentMethodData().getEwallet().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - E-Wallet Comment is Mandatory", false)) {
+                        JsfUtil.addErrorMessage("Please Enter a E-Wallet Comment..");
+                        error = true;
+                    }
+                    getPaymentMethodData().getEwallet().setTotalValue(patientController.getBill().getNetTotal());
+                    break;
+                case Slip:
+                    if (getPaymentMethodData().getSlip().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - Slip Comment is Mandatory", false)) {
+                        JsfUtil.addErrorMessage("Please Enter a Slip Comment..");
+                        error = true;
+                    }
+                    getPaymentMethodData().getSlip().setTotalValue(patientController.getBill().getNetTotal());
+                    break;
+                case Cash:
+                    getPaymentMethodData().getCash().setTotalValue(patientController.getBill().getNetTotal());
+                    break;
+                default:
+                    JsfUtil.addErrorMessage("This payment method is NOT valid for Patient Deposits");
+                    error = true;
+                    break;
+            }
+        }
+        return error;
+    }
+
     public void settlePatientDeposit() {
         if (patient == null) {
             JsfUtil.addErrorMessage("Please Select a Patient");
@@ -169,29 +301,52 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             JsfUtil.addErrorMessage("No Patient Deposit");
             return;
         }
-        if (patientController.validatePaymentMethodData()) {
+        if (validatePaymentMethodDataForPatientDeposit()) {
             return;
         }
-        opdBillController.savePatient(patient);
-        
         patient.setHasAnAccount(true);
-        patientFacade.edit(patient);
-        patientController.setBillNetTotal();
-        int code = patientController.settlePatientDepositReceiveNew();
+        patientController.save(patient);
 
-        if (code == 1) {
-            JsfUtil.addErrorMessage("Please select a Payment Method");
-            return;
-        } else if (code == 2) {
-            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
-            return;
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PATIENT_DEPOSIT);
+        
+        getBill().setInsId(deptId);
+        getBill().setDeptId(deptId);
+
+        getBill().setBillType(BillType.PatientPaymentReceiveBill);
+        getBill().setBillClassType(BillClassType.BilledBill);
+        getBill().setBillTypeAtomic(BillTypeAtomic.PATIENT_DEPOSIT);
+        getBill().setPatient(patient);
+
+        getBill().setCreatedAt(new Date());
+        getBill().setCreater(sessionController.getLoggedUser());
+        getBill().setBillDate(new Date());
+        getBill().setBillTime(new Date());
+
+        getBill().setDepartment(sessionController.getLoggedUser().getDepartment());
+        getBill().setInstitution(sessionController.getLoggedUser().getInstitution());
+        getBill().setGrantTotal(getBill().getNetTotal());
+        getBill().setTotal(getBill().getNetTotal());
+        getBill().setDiscount(0.0);
+        getBill().setDiscountPercent(0);
+
+        if (getBill().getId() == null) {
+            billFacade.create(getBill());
+        } else {
+            billFacade.edit(getBill());
         }
 
-        updateBalance(patientController.getBill(), current);
-        List<Payment> payments = billBeanController.createPayment(patientController.getBill(),
-                patientController.getBill().getPaymentMethod(),
-                patientController.getPaymentMethodData());
-        drawerController.updateDrawerForIns(payments);
+        BillItem addingSingleBillItem = new BillItem();
+        addingSingleBillItem.setNetValue(getBill().getNetTotal());
+        addingSingleBillItem.setBill(getBill());
+        addingSingleBillItem.setGrossValue(getBill().getNetTotal());
+        addingSingleBillItem.setDiscount(0.0);
+        addingSingleBillItem.setItem(null);
+        addingSingleBillItem.setQty(1.0);
+        addingSingleBillItem.setRate(getBill().getNetTotal());
+        billItemFacade.create(addingSingleBillItem);
+        paymentService.createPayment(bill, getPaymentMethodData());
+        patientDepositService.updateBalance(bill, current);
+        printPreview = true;
     }
 
     public void settlePatientDepositCancel() {
@@ -231,7 +386,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             JsfUtil.addErrorMessage("Please Select a Patient");
             return;
         }
-        if (patientController.validatePaymentMethodData()) {
+        if (validatePaymentMethodDataForPatientDepositReturn()) {
             return;
         }
 
@@ -409,7 +564,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         System.out.println("pd = " + pd);
 
         patientController.save(p);
-        
+
         if (pd == null) {
             pd = new PatientDeposit();
             pd.setBalance(0.0);
@@ -510,6 +665,9 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     }
 
     public PaymentMethodData getPaymentMethodData() {
+        if(paymentMethodData==null){
+            paymentMethodData = new PaymentMethodData();
+        }
         return paymentMethodData;
     }
 
@@ -518,6 +676,9 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     }
 
     public Bill getBill() {
+        if (bill == null) {
+            bill = new Bill();
+        }
         return bill;
     }
 

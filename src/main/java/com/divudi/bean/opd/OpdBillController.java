@@ -2169,6 +2169,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setFromDepartment(sessionController.getDepartment());
         newBatchBill.setPatient(patient);
         newBatchBill.setCreditCompany(creditCompany);
+        newBatchBill.setComments(comment);
         newBatchBill.setIpOpOrCc("OP");
         newBatchBill.setInsId(
                 getBillNumberGenerator().institutionBillNumberGenerator(
@@ -3596,6 +3597,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     p.setChequeDate(paymentMethodData.getCheque().getDate());
                     p.setChequeRefNo(paymentMethodData.getCheque().getNo());
                     p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
+                    p.setComments(paymentMethodData.getCheque().getComment());
                     break;
                 case Cash:
                     p.setPaidValue(paymentMethodData.getCash().getTotalValue());
