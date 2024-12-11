@@ -141,28 +141,22 @@ public class PaymentService {
     }
 
     private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
-        System.out.println("createPayment");
-        System.out.println("bill = " + bill);
-        System.out.println("pm = " + pm);
         
         CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
         List<Payment> payments = new ArrayList<>();
         Date currentDate = new Date();
 
         if (pm == PaymentMethod.MultiplePaymentMethods) {
-            System.out.println("multiple payment method");
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 Payment payment = createPaymentFromComponentDetail(cd, bill, department, webUser, currentDate);
                 if (payment != null) {
                     paymentFacade.create(payment);
                     cashbookService.writeCashBookEntryAtPaymentCreation(payment, webUser, cashbook, department);
                     drawerService.updateDrawer(payment);
-                    System.out.println("payment = " + payment);
                     payments.add(payment);
                 }
             }
         } else {
-            System.out.println("single payment");
             Payment payment = new Payment();
             payment.setBill(bill);
             payment.setInstitution(department.getInstitution());
@@ -175,10 +169,8 @@ public class PaymentService {
             paymentFacade.create(payment);
             cashbookService.writeCashBookEntryAtPaymentCreation(payment);
             drawerService.updateDrawer(payment);
-            System.out.println("payment = " + payment);
             payments.add(payment);
         }
-        System.out.println("payments = " + payments);
         return payments;
     }
 
@@ -542,11 +534,6 @@ public class PaymentService {
 
                     if (payhingThisTimeValue > availableForPurchase) {
 
-                        System.out.println("payhingThisTimeValue = " + payhingThisTimeValue);
-
-                        System.out.println("availableForPurchase = " + availableForPurchase);
-
-                        System.out.println("no sufficient data = ");
 
                         bv.setErrorMessage("No Sufficient Patient Deposit");
                         bv.setErrorPresent(true);
