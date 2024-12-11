@@ -1026,6 +1026,29 @@ public class CreditCompanyDueController implements Serializable {
 
     }
 
+    public void createInwardCashAccessWithFilters() {
+        Date startTime = new Date();
+
+        List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(),
+                PaymentMethod.Cash, false, institutionOfDepartment, department, site);
+
+        institutionEncounters = new ArrayList<>();
+        for (Institution ins : setIns) {
+            List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(),
+                    PaymentMethod.Cash, false, institutionOfDepartment, department, site);
+            InstitutionEncounters newIns = new InstitutionEncounters();
+            newIns.setInstitution(ins);
+            newIns.setPatientEncounters(lst);
+
+            for (PatientEncounter b : lst) {
+                newIns.setTotal(newIns.getTotal() + b.getCreditUsedAmount());
+                newIns.setPaidTotal(newIns.getPaidTotal() + b.getCreditPaidAmount());
+            }
+
+            institutionEncounters.add(newIns);
+        }
+    }
+
     public List<InstitutionBills> getItems() {
         return items;
     }
