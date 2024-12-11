@@ -15,6 +15,7 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -36,7 +37,7 @@ public class StockHistory implements Serializable {
 
     @Temporal(javax.persistence.TemporalType.DATE)
     Date stockAt;
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     PharmaceuticalBillItem pbItem;
 
     double stockQty;

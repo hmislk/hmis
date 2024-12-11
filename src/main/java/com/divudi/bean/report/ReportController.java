@@ -2631,7 +2631,6 @@ public class ReportController implements Serializable {
     }
 
     public String navigateToClosingStockReport() {
-
         return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
     }
 

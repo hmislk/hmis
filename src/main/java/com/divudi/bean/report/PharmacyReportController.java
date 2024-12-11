@@ -20,6 +20,7 @@ import com.divudi.data.InstitutionType;
 import com.divudi.data.ItemCount;
 import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.PharmacyRow;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
@@ -51,6 +52,7 @@ import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.PatientInvestigation;
+import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.AgentHistoryFacade;
@@ -154,6 +156,7 @@ public class PharmacyReportController implements Serializable {
     private Date toDate;
     private Category category;
     private Item item;
+    private Amp amp;
     private Machine machine;
     private String processBy;
     private Institution collectingCentre;
@@ -262,6 +265,8 @@ public class PharmacyReportController implements Serializable {
     private double stockTotal;
     private List<PharmacyStockRow> pharmacyStockRows;
     private double stockTottal;
+
+    private List<PharmacyRow> rows;
 
     //Constructor
     public PharmacyReportController() {
@@ -1959,48 +1964,77 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processClosingStockBatchWiseReport() {
-
+        List<Long> ids;
         Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select s from Stock s where s.stock > 0 ");
+        StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
+                + " from StockHistory sh where sh.retired=:ret "
+                + "and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
 
-        // Filter by department type
-        jpql.append("and (s.itemBatch.item.departmentType is null or s.itemBatch.item.departmentType = :depty) ");
         params.put("depty", DepartmentType.Pharmacy);
+        params.put("ret", false);
 
-        // Institution filter
         if (institution != null) {
-            jpql.append("and s.institution = :ins ");
+            jpql.append("and sh.institution = :ins ");
             params.put("ins", institution);
         }
 
-        // Department filter
         if (department != null) {
-            jpql.append("and s.department = :dep ");
+            jpql.append("and sh.department = :dep ");
             params.put("dep", department);
         }
 
-        // Item filter
-        if (item != null) {
-            jpql.append("and s.itemBatch.item = :itm ");
+        if (category != null) {
+            jpql.append("and sh.itemBatch.item.category = :cat ");
+            params.put("cat", category);
+        }
+
+        System.out.println("amp = " + amp);
+        if (amp != null) {
+            item = amp;
+            System.out.println("item = " + item);
+            jpql.append("and sh.itemBatch.item=:itm ");
             params.put("itm", item);
         }
 
-        // Ordering by itemBatch.item.name
-        jpql.append("order by s.itemBatch.item.name");
+        jpql.append("and sh.createdAt < :et ");
+        params.put("et", CommonFunctions.getEndOfDay(toDate));
 
-        // Execute query
-        stocks = getStockFacade().findByJpql(jpql.toString(), params);
+        jpql.append("group by sh.itemBatch ");
+        jpql.append("order by sh.itemBatch.item.name");
+
+        System.out.println("jpql.toString() = " + jpql.toString());
+        System.out.println("params = " + params);
+
+        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
         // Calculate purchase and sale values
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         stockTotal = 0.0;
 
-        for (Stock stock : stocks) {
-            stockPurchaseValue += stock.getItemBatch().getPurcahseRate() * stock.getStock();
-            stockSaleValue += stock.getItemBatch().getRetailsaleRate() * stock.getStock();
-            stockTotal += stock.getStock();
+        rows = new ArrayList<>();
+
+        if (ids == null) {
+            return;
         }
+        if (ids.isEmpty()) {
+            return;
+        }
+        for (Long shid : ids) {
+            System.out.println("shid = " + shid);
+            PharmacyRow pr = new PharmacyRow();
+            pr.setId(shid);
+            pr.setStockHistory(facade.find(shid));
+            if (pr.getStockHistory() != null) {
+                StockHistory stockHx = pr.getStockHistory();
+                stockPurchaseValue += stockHx.getItemBatch().getPurcahseRate() * stockHx.getStockQty();
+                stockSaleValue += stockHx.getItemBatch().getRetailsaleRate() * stockHx.getStockQty();
+                stockTotal += stockHx.getStockQty();
+                rows.add(pr);
+            }
+
+        }
+
     }
 
     public void processClosingStockItemWiseReport() {
@@ -2040,16 +2074,15 @@ public class PharmacyReportController implements Serializable {
         jpql += "order by s.stockAt DSEC";
 
         stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        
+
         Map<String, Object> tempMap = new HashMap<>();
-        
-        for (StockHistory r : stockLedgerHistories){
-            if (tempMap == null){
-                
+
+        for (StockHistory r : stockLedgerHistories) {
+            if (tempMap == null) {
+
             }
         }
 
-        
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         stockTotal = 0.0;
@@ -2619,5 +2652,23 @@ public class PharmacyReportController implements Serializable {
     public void setStockTottal(double stockTottal) {
         this.stockTottal = stockTottal;
     }
+
+    public List<PharmacyRow> getRows() {
+        return rows;
+    }
+
+    public void setRows(List<PharmacyRow> rows) {
+        this.rows = rows;
+    }
+
+    public Amp getAmp() {
+        return amp;
+    }
+
+    public void setAmp(Amp amp) {
+        this.amp = amp;
+    }
+    
+    
 
 }
