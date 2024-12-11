@@ -35,7 +35,9 @@ import com.divudi.facade.StaffFacade;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -139,21 +141,28 @@ public class PaymentService {
     }
 
     private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
+        System.out.println("createPayment");
+        System.out.println("bill = " + bill);
+        System.out.println("pm = " + pm);
+        
         CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
         List<Payment> payments = new ArrayList<>();
         Date currentDate = new Date();
 
         if (pm == PaymentMethod.MultiplePaymentMethods) {
+            System.out.println("multiple payment method");
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 Payment payment = createPaymentFromComponentDetail(cd, bill, department, webUser, currentDate);
                 if (payment != null) {
                     paymentFacade.create(payment);
                     cashbookService.writeCashBookEntryAtPaymentCreation(payment, webUser, cashbook, department);
                     drawerService.updateDrawer(payment);
+                    System.out.println("payment = " + payment);
                     payments.add(payment);
                 }
             }
         } else {
+            System.out.println("single payment");
             Payment payment = new Payment();
             payment.setBill(bill);
             payment.setInstitution(department.getInstitution());
@@ -166,10 +175,10 @@ public class PaymentService {
             paymentFacade.create(payment);
             cashbookService.writeCashBookEntryAtPaymentCreation(payment);
             drawerService.updateDrawer(payment);
-
+            System.out.println("payment = " + payment);
             payments.add(payment);
         }
-
+        System.out.println("payments = " + payments);
         return payments;
     }
 
@@ -344,6 +353,38 @@ public class PaymentService {
         PatientDeposit pd = patientDepositService.getDepositOfThePatient(pt, p.getDepartment());
         patientDepositService.updateBalance(p, pd);
 
+    }
+
+    public List<PaymentMethod> fetchAvailablePaymentMethodsForRefundsAndCancellations(Bill originalBill) {
+        Set<PaymentMethod> uniqueMethods = new LinkedHashSet<>();
+        uniqueMethods.add(PaymentMethod.Cash);
+
+        if (originalBill == null) {
+            return new ArrayList<>(uniqueMethods);
+        }
+
+        if (originalBill.getPaymentMethod() == null) {
+            return new ArrayList<>(uniqueMethods);
+        }
+
+        if (originalBill.getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
+            uniqueMethods.add(originalBill.getPaymentMethod());
+            return new ArrayList<>(uniqueMethods);
+        }
+
+        List<Payment> originalBillPayments = billService.fetchBillPayments(originalBill);
+        if (originalBillPayments == null) {
+            originalBillPayments = billService.fetchBillPayments(originalBill.getBackwardReferenceBill());
+        }
+        if (originalBillPayments == null) {
+            return new ArrayList<>(uniqueMethods);
+        }
+
+        for (Payment p : originalBillPayments) {
+            uniqueMethods.add(p.getPaymentMethod());
+        }
+
+        return new ArrayList<>(uniqueMethods);
     }
 
     public BillValidation checkForErrorsInPaymentDetailsForInBills(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, Double netTotal, Patient patient) {
