@@ -713,6 +713,7 @@ public class PharmacyController implements Serializable {
     private Date toDate;
     private Department department;
     private Department dept;
+    private Department forDepartment;
     private Institution site;
     private Institution toInstitution;
     private Institution fromInstitution;
@@ -725,6 +726,7 @@ public class PharmacyController implements Serializable {
     private double totalSaleValue;
     private double totalCreditSaleValue;
     private double totalCashSaleValue;
+    private Item item;
 
     public void clearItemHistory() {
 
@@ -3181,6 +3183,22 @@ public class PharmacyController implements Serializable {
 
     public void setTotalCashSaleValue(double totalCashSaleValue) {
         this.totalCashSaleValue = totalCashSaleValue;
+    }
+
+    public Department getForDepartment() {
+        return forDepartment;
+    }
+
+    public void setForDepartment(Department forDepartment) {
+        this.forDepartment = forDepartment;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
     }
 
 }

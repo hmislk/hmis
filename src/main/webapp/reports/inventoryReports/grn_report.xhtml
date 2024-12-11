@@ -81,7 +81,7 @@
                                              class="w-100 mr-5"
                                              value="#{pharmacyController.dept}">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyPurchaseController.institution, pharmacyPurchaseController.site)}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" ></f:selectItems>
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.institution, pharmacyController.site)}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" ></f:selectItems>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>  
