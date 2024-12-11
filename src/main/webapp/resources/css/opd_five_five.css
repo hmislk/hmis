@@ -16,13 +16,16 @@
 
     .fiveinchbill{
         position: relative!important;
-        width: 11cm!important;
-        height: 13.5cm!important;
+        padding: 5px!important;
+        width: 12cm!important;
+        height: 14cm!important;
+
         font-family: sans-serif!important;
-        font-size: 9px!important;
-/*        background-size: 80% auto!important;
-        border: 1px solid!important;*/
-        font-size: 80%;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
+        /*        border: 1px solid!important;*/
+        font-size: 130%;
         text-transform: capitalize!important;
 
     }
@@ -116,15 +119,17 @@
 @media screen{
     .fiveinchbill {
         position: relative;
+        padding: 5px;
         width: 12cm; /* Consider adjusting if too wide for the screen */
         height: auto; /* Changed to 'auto' to accommodate content */
         min-height: 18cm; /* Ensures it doesn't shrink below 18cm */
         border: 1px solid;
         font-family: sans-serif;
         background-color: lightgray;
-        background-size: 800% auto;
-        font-size: 800%;
-        text-transform: capitalize; /* Adjusted to '0 auto' to center horizontally without pushing down */
+        background-size: 100% auto;
+        font-size: 100%;
+        text-transform: capitalize;
+        margin: 0 auto; /* Adjusted to '0 auto' to center horizontally without pushing down */
     }
 
     .posbill{
@@ -349,7 +354,7 @@ itemsBlockRight{
 }
 
 .totalsBlock{
-    font-size: 13px!important;
+    font-size: 15px!important;
     font-family:Verdana, Helvetica, sans-serif!important;
 }
 

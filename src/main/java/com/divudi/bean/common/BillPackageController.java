@@ -669,6 +669,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
         payments = paymentService.createPaymentsForCancelling(cancellationBatchBill);
+        
+        if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            paymentService.updateBalances(payments);
+        }
         printPreview = true;
         batchBillCancellationStarted = false;
         return "/opd/opd_package_batch_bill_print?faces-redirect=true";
