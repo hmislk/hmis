@@ -16,6 +16,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
+import static com.divudi.data.BillTypeAtomic.PATIENT_DEPOSIT;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Card;
@@ -313,6 +314,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
 
         getBill().setBillType(BillType.PatientPaymentReceiveBill);
         getBill().setBillClassType(BillClassType.BilledBill);
+        getBill().setBillTypeAtomic(BillTypeAtomic.PATIENT_DEPOSIT);
         getBill().setPatient(patient);
 
         getBill().setCreatedAt(new Date());
