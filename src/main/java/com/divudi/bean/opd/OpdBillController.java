@@ -2871,7 +2871,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 JsfUtil.addErrorMessage("Quentity is Missing ..! ");
                 return;
             }
-        }else{
+        } else {
             setCurrentBillItemQty(1.0);
         }
 
@@ -2883,9 +2883,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 return;
             }
         }
-        
+
         System.out.println("Current BillItem QTY= " + getCurrentBillItemQty());
-        
+
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
         bi.setTmpQty(getCurrentBillItemQty());
@@ -3558,6 +3558,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
                         p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
                         p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        p.setComments(cd.getPaymentMethodData().getSlip().getComment());
+                        p.setReferenceNo(cd.getPaymentMethodData().getSlip().getReferenceNo());
+                        p.setPaymentDate(cd.getPaymentMethodData().getSlip().getDate());
+                        p.setChequeDate(cd.getPaymentMethodData().getSlip().getDate());
+
                         break;
                     case OnCall:
                     case OnlineSettlement:
@@ -3613,6 +3618,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     break;
 
                 case Agent:
+                    break;
                 case Credit:
                     p.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
                     p.setComments(paymentMethodData.getCredit().getComment());
@@ -3620,9 +3626,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     p.setCreditCompany(paymentMethodData.getCredit().getInstitution());
                     break;
                 case PatientDeposit:
+                    break;
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
                     p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
+                    p.setPaymentDate(paymentMethodData.getSlip().getDate());
+                    p.setChequeDate(paymentMethodData.getSlip().getDate());
+                    p.setComments(paymentMethodData.getSlip().getComment());
+                    p.setReferenceNo(paymentMethodData.getSlip().getReferenceNo());
                     p.setRealizedAt(paymentMethodData.getSlip().getDate());
                     break;
                 case OnCall:
