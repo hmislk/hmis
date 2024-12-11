@@ -426,8 +426,36 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
+    }
 
+    public void createInwardCashAgeTableAccessWithFilters() {
+        Date startTime = new Date();
 
+        makeNull();
+        Set<Institution> setIns = new HashSet<>();
+
+        List<Institution> list = getCreditBean().getCreditCompanyFromBht(
+                false, PaymentMethod.Cash, institutionOfDepartment, department, site);
+
+        setIns.addAll(list);
+
+        creditCompanyAge = new ArrayList<>();
+        for (Institution ins : setIns) {
+            if (ins == null) {
+                continue;
+            }
+
+            String1Value5 newRow = new String1Value5();
+            newRow.setString(ins.getName());
+            setInwardValuesAccess(ins, newRow, PaymentMethod.Cash);
+
+            if (newRow.getValue1() != 0
+                    || newRow.getValue2() != 0
+                    || newRow.getValue3() != 0
+                    || newRow.getValue4() != 0) {
+                creditCompanyAge.add(newRow);
+            }
+        }
     }
 
     private void setValues(Institution inst, String1Value5 dataTable5Value) {
