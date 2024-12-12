@@ -1,5 +1,6 @@
 package com.divudi.service;
 
+import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Agent;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
@@ -481,6 +482,63 @@ public class DrawerService {
             save(drawer);
         }
         return drawer;
+    }
+
+    /**
+     * Checks if the specified drawer has enough balance for the given refund
+     * amount using the specified payment method.
+     *
+     * @param drawer the drawer to check balance from
+     * @param paymentMethod the payment method to consider
+     * @param refundAmount the amount to be refunded
+     * @return true if the drawer has sufficient balance, false otherwise
+     */
+    public boolean hasSufficientDrawerBalance(Drawer drawer, PaymentMethod paymentMethod, Double refundAmount) {
+        // method implementation
+        boolean canReturn = false;
+        switch (paymentMethod) {
+            case Cash:
+                if (drawer.getCashInHandValue() != null) {
+                    if (drawer.getCashInHandValue() < refundAmount) {
+                        canReturn = false;
+                    } else {
+                        canReturn = true;
+                    }
+                } else {
+                    canReturn = false;
+                }
+                break;
+            case Card:
+                canReturn = true;
+                break;
+            case MultiplePaymentMethods:
+                canReturn = true;
+                break;
+            case Staff:
+                canReturn = true;
+                break;
+            case Credit:
+                canReturn = true;
+                break;
+            case Staff_Welfare:
+                canReturn = true;
+                break;
+            case Cheque:
+                canReturn = true;
+                break;
+            case Slip:
+                canReturn = true;
+                break;
+            case OnlineSettlement:
+                canReturn = true;
+                break;
+            case PatientDeposit:
+                canReturn = true;
+                break;
+            default:
+                break;
+        }
+        return canReturn;
     }
 
 }
