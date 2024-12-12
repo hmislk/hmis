@@ -794,6 +794,11 @@ public class PharmacyController implements Serializable {
             sql += " and b.institution = :fIns";
             tmp.put("fIns", institution);
         }
+        
+        if (site != null) {
+            sql += " and b.department.site = :site";
+            tmp.put("site", site);
+        }
 
         if (dept != null) {
             sql += " and b.department = :dept";
@@ -2582,7 +2587,7 @@ public class PharmacyController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }

@@ -18,11 +18,11 @@
                                 <p:outputLabel value="From Date" class="mx-3" for="rfd">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker id="rfd"
+                            <p:calendar id="rfd"
                                           class="w-100"
                                           inputStyleClass="w-100"
                                           value="#{pharmacyController.fromDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:calendar>
 
                             <p:spacer width="20"></p:spacer> 
 
@@ -31,11 +31,11 @@
                                 <p:outputLabel value="To Date" class="mx-3" for="rtd">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker id="rtd"
+                            <p:calendar id="rtd"
                                           class="w-100"
                                           inputStyleClass="w-100"
                                           value="#{pharmacyController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
 
                             <p:spacer width="20"></p:spacer>  
                             <p:spacer width="20"></p:spacer>  
@@ -81,7 +81,7 @@
                                              class="w-100 mr-5"
                                              value="#{pharmacyController.dept}">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyPurchaseController.institution, pharmacyPurchaseController.site)}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" ></f:selectItems>
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.institution, pharmacyController.site)}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" ></f:selectItems>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>  
@@ -97,7 +97,7 @@
                                              class="w-100"
                                              value="#{pharmacyController.paymentMethod}">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{pharmacyPurchaseController.paymentMethods}"></f:selectItems>
+                                <f:selectItems value="#{enumController.paymentMethodsForPo}"></f:selectItems>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer> 
@@ -131,7 +131,6 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu class="w-100" id="grnReportType" required="true" value="#{pharmacyController.reportType}">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItem itemLabel="Detail" itemValue="detailReport"/>
                                 <f:selectItem itemLabel="Return" itemValue="returnReport"/>
                                 <f:selectItem itemLabel="Summery" itemValue="summeryReport"/>
@@ -213,7 +212,7 @@
                                     <h:outputText value="#{b.institution.name}" />
                                 </p:column>
                                 <p:column headerText="Site" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{b.department.site.name}" />
                                 </p:column>
                                 <p:column headerText="Department" width="8em">
                                     <h:outputText value="#{b.department.name}" />
@@ -255,18 +254,18 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Sale Value Credit" width="6em">
-                                    <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.saleValue}" style="float: right; padding-right: 15px" >
+                                    <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.saleValue}" style="float: right; padding-right: 20px" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00" style="float: right; padding-right: 15px"/>
+                                    <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00" style="float: right; padding-right: 20px"/>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.totalCreditSaleValue}" style="float: right; padding-right: 15px" >
+                                        <h:outputLabel value="#{pharmacyController.totalCreditSaleValue}" style="float: right; padding-right: 20px" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Remark" width="6em">
-                                    <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
+                                    <h:outputLabel value="#{b.comments}" ></h:outputLabel>
                                 </p:column>
 
                             </p:dataTable>
@@ -319,14 +318,14 @@
                                     <h:outputLabel value="#{r.toInstitution.name}"/>
                                 </p:column>
                                 <p:column headerText="Purchase Value" width="5em">
-                                    <h:outputText value="#{r.netTotal}" />
+                                    <h:outputText value="#{r.referenceBill.netTotal}" />
 
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyController.totalPurchase}" />
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Sale Value" width="5em">
-                                    <h:outputText value="#{r.saleValue}" />
+                                    <h:outputText value="#{r.referenceBill.saleValue}" />
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyController.totalSaleValue}" />
                                     </f:facet>
