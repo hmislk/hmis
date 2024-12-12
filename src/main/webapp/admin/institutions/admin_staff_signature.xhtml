@@ -17,20 +17,17 @@
                         <h:form >
                             <i class="fa fa-signature"/>
                             <p:outputLabel value="Add Staff Signature" class="mx-2 mt-2" ></p:outputLabel>
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Back" 
-                                action="#{webUserController.backToViewUsers()}"
-                                style="float: right;"
-                                icon="fa fa-arrow-left"
-                                >
-<!--                                backToManageSignatureType-->
+                            <p:commandButton ajax="false" value="Back" 
+                                             action="#{webUserController.backToViewUsers()}"
+                                             style="float: right;"
+                                             icon="fa fa-arrow-left"
+                                             >
                             </p:commandButton>
                         </h:form>
                     </f:facet>
-
+                    
                     <div class="row">
-
+                        
                         <div class="col-6">
                             <p:panel header="Add New Signature" >
                                 <h:form enctype="multipart/form-data" >
@@ -40,17 +37,13 @@
                                             </h:outputLabel>
                                         </div>
                                         <div class="col-6 d-flex justify-content-end">
-                                           <h:outputLabel class="w-100" value="#{staffController.current.person.nameWithTitle}"/> 
+                                            <autocomplete:completeStaff value="#{staffController.current}"/>
                                         </div>
                                     </div>
 
                                     <div class="row">
                                         <div class="col-6">
-                                            <p:fileUpload
-                                                skinSimple="true"
-                                                value="#{staffImageController.file}" 
-                                                class="my-1" 
-                                                mode="simple"/>
+                                            <p:fileUpload value="#{staffImageController.file}" class="my-1" mode="simple"/>
                                         </div>
                                         <div class="col-6 d-flex justify-content-end">
                                             <p:commandButton 
@@ -86,11 +79,7 @@
                                         </div>
                                     </f:facet>
                                     <div class="w-100">
-
-                                        <p:graphicImage 
-                                            cache="false" 
-                                            value="#{staffImageController.signatureFromStaffController}" 
-                                            class="w-100">
+                                        <p:graphicImage cache="false" value="#{staffImageController.signatureFromStaffController}" class="w-100">
                                         </p:graphicImage>
                                     </div>
                                 </p:panel>
