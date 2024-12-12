@@ -830,21 +830,31 @@ public class PharmacyController implements Serializable {
     }
 
     public void createConsumptionReportTable() {
-        bills = null;
-        totalCreditPurchaseValue = 0.0;
-        totalCashPurchaseValue = 0.0;
-        totalPurchase = 0.0;
-
+        
         if ("byBillItem".equals(reportType)) {
+            
+            bills = null;
+            departmentSummaries = null;
             generateConsumptionReportTableByBillItems(BillType.PharmacyTransferIssue);
+            
         } else if ("byBill".equals(reportType)) {
+            
+            billItems = null;
+            departmentSummaries = null;
             generateConsumptionReportTableByBill();
+            
         } else if ("summeryReport".equals(reportType)) {
+            
+            bills = null;
+            billItems = null;
             generateConsumptionReportTableAsSummary();
+            
         } else {
+            
             generateConsumptionReportTableByBill();
             generateConsumptionReportTableByBillItems(BillType.PharmacyTransferIssue);
             generateConsumptionReportTableAsSummary();
+            
         }
 
     }
@@ -898,62 +908,17 @@ public class PharmacyController implements Serializable {
     public void generateConsumptionReportTableByBillItems(BillType billType) {
         billItems = new ArrayList<>();
         Map<String, Object> parameters = new HashMap<>();
-        StringBuilder sql = new StringBuilder();
 
-        // Construct SQL query
-        sql.append("SELECT bi FROM BillItem bi WHERE ");
-        sql.append("bi.bill.createdAt BETWEEN :fromDate AND :toDate ");
-        sql.append("AND bi.bill.billType = :billType ");
+        String sql = "select bi from BillItem bi where "
+                + " bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billType=:bt ";
 
-        parameters.put("fromDate", fromDate);
-        parameters.put("toDate", toDate);
-        parameters.put("billType", billType);
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+        parameters.put("bt", billType);
 
-        if (institution != null) {
-            sql.append("AND bi.bill.institution = :institution ");
-            parameters.put("institution", institution);
-        }
+        billItems = getBillItemFacade().findByJpql(sql, parameters, TemporalType.TIMESTAMP);
 
-        if (site != null) {
-            sql.append("AND bi.bill.department.site = :site ");
-            parameters.put("site", site);
-        }
-
-        if (dept != null) {
-            sql.append("AND bi.bill.department = :department ");
-            parameters.put("department", dept);
-        }
-
-        if (category != null) {
-            sql.append("AND bi.item.category = :category "); // Corrected field
-            parameters.put("category", category);
-        }
-
-        if (item != null) {
-            sql.append("AND bi.item = :item "); // Corrected field
-            parameters.put("item", item);
-        }
-
-        if (toDepartment != null) {
-            sql.append("AND bi.bill.toDepartment = :toDepartment ");
-            parameters.put("toDepartment", toDepartment);
-        }
-
-        sql.append("ORDER BY bi.id DESC");
-
-        // Debug log for the generated query
-        System.out.println("Generated SQL Query: " + sql.toString());
-        System.out.println("Query Parameters: " + parameters);
-
-        try {
-            // Execute query
-            billItems = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
-        } catch (Exception e) {
-            // Log exception details
-            e.printStackTrace();
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
-        }
     }
 
     public void generateConsumptionReportTableAsSummary() {
