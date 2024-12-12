@@ -243,7 +243,7 @@
                 </div>
             </div>
 
-            <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card'}" style="margin-top: 4px; font-size: 8pt;margin-left: 5%">
+            <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card'}" style="margin-top: 4px;font-size: 8pt">
                 <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
                 <ui:repeat value="#{cc.attrs.payments}" var="p">
                     <div class="d-flex align-items-center mt-1">
@@ -254,7 +254,7 @@
                 </ui:repeat>
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" style="margin-top: 4px;font-size: 8pt;margin-left: 5%">
+            <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" style="margin-top: 4px;font-size: 8pt">
                 <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
                 <ui:repeat value="#{cc.attrs.payments}" var="p">
                     <div class="d-flex align-items-center m-1">
@@ -277,6 +277,12 @@
                     </div>
                 </h:panelGroup>
             </div>
+
+<!--            <div class="footer" style="text-align: center;">
+                <br/>
+                <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
+                <br/>
+            </div>-->
 
         </div>
 
