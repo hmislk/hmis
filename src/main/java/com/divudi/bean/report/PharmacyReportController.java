@@ -15,10 +15,12 @@ import com.divudi.data.BillType;
 import static com.divudi.data.BillType.PharmacyBhtPre;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CategoryCount;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.ItemCount;
 import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.PharmacyRow;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
@@ -26,6 +28,7 @@ import com.divudi.data.Sex;
 import com.divudi.data.TestWiseCountReport;
 import com.divudi.data.dataStructure.BillAndItemDataRow;
 import com.divudi.data.dataStructure.ItemDetailsCell;
+import com.divudi.data.dataStructure.PharmacyStockRow;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
@@ -49,6 +52,8 @@ import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.PatientInvestigation;
+import com.divudi.entity.pharmacy.Amp;
+import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.AgentReferenceBookFacade;
@@ -58,6 +63,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PatientDepositHistoryFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
@@ -78,6 +84,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import org.apache.poi.ss.usermodel.Cell;
@@ -115,6 +122,8 @@ public class PharmacyReportController implements Serializable {
     private PaymentFacade paymentFacade;
     @EJB
     StockHistoryFacade facade;
+    @EJB
+    private StockFacade stockFacade;
 
     @Inject
     private InstitutionController institutionController;
@@ -147,6 +156,7 @@ public class PharmacyReportController implements Serializable {
     private Date toDate;
     private Category category;
     private Item item;
+    private Amp amp;
     private Machine machine;
     private String processBy;
     private Institution collectingCentre;
@@ -156,6 +166,7 @@ public class PharmacyReportController implements Serializable {
     private Doctor referingDoctor;
     private Staff toStaff;
     private WebUser webUser;
+    private String code;
 
     private double investigationResult;
     private double hospitalFeeTotal;
@@ -247,6 +258,15 @@ public class PharmacyReportController implements Serializable {
     private Speciality speciality;
 
     private List<StockHistory> stockLedgerHistories;
+
+    private List<Stock> stocks;
+    private double stockSaleValue;
+    private double stockPurchaseValue;
+    private double stockTotal;
+    private List<PharmacyStockRow> pharmacyStockRows;
+    private double stockTottal;
+
+    private List<PharmacyRow> rows;
 
     //Constructor
     public PharmacyReportController() {
@@ -1753,6 +1773,14 @@ public class PharmacyReportController implements Serializable {
         this.doctor = doctor;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
     public void processCollectingCentreTestWiseCountReport() {
         String jpql = "select new  com.divudi.data.TestWiseCountReport("
                 + "bi.item.name, "
@@ -1879,52 +1907,191 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
         }
 
-            stockLedgerHistories = new ArrayList();
-            String jpql;
-            Map m = new HashMap();
-            m.put("fd", fromDate);
-            m.put("td", toDate);
+        stockLedgerHistories = new ArrayList();
+        String jpql;
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
 
-            jpql = "select s"
-                    + " from StockHistory s "
-                    + " where s.createdAt between :fd and :td ";
-            if (institution != null) {
-                jpql += " and s.institution=:ins ";
-                m.put("ins", institution);
-            }
-            if (department != null) {
-                jpql += " and s.department=:dep ";
-                m.put("dep", department);
-            }
+        jpql = "select s"
+                + " from StockHistory s "
+                + " where s.createdAt between :fd and :td ";
+        if (institution != null) {
+            jpql += " and s.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and s.department=:dep ";
+            m.put("dep", department);
+        }
 //        if (site != null) {
 //            jpql += " and s.site=:sit ";
 //            m.put("sit", site);
 //        }
-            if (!billTypeAtomics.isEmpty() || !billTypes.isEmpty()) {
-                jpql += " and (";
-                if (!billTypeAtomics.isEmpty()) {
-                    jpql += " s.pbItem.billItem.bill.billTypeAtomic in :dtype";
-                    m.put("dtype", billTypeAtomics);
-                }
-                if (!billTypeAtomics.isEmpty() && !billTypes.isEmpty()) {
-                    jpql += " or";
-                }
-                if (!billTypes.isEmpty()) {
-                    jpql += " s.pbItem.billItem.bill.billType in :doctype";
-                    m.put("doctype", billTypes);
-                }
-                jpql += ")";
+        if (!billTypeAtomics.isEmpty() || !billTypes.isEmpty()) {
+            jpql += " and (";
+            if (!billTypeAtomics.isEmpty()) {
+                jpql += " s.pbItem.billItem.bill.billTypeAtomic in :dtype";
+                m.put("dtype", billTypeAtomics);
             }
-            if (item != null) {
-                jpql += " and s.item=:itm ";
-                m.put("itm", item);
+            if (!billTypeAtomics.isEmpty() && !billTypes.isEmpty()) {
+                jpql += " or";
             }
-
-            jpql += " order by s.createdAt ";
-            stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+            if (!billTypes.isEmpty()) {
+                jpql += " s.pbItem.billItem.bill.billType in :doctype";
+                m.put("doctype", billTypes);
+            }
+            jpql += ")";
+        }
+        if (item != null) {
+            jpql += " and s.item=:itm ";
+            m.put("itm", item);
         }
 
-    
+        jpql += " order by s.createdAt ";
+        stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
+
+    public void processClosingStockReport() {
+        switch (reportType) {
+            case "itemWise":
+                processClosingStockItemWiseReport();
+                break;
+            case "batchWise":
+                processClosingStockBatchWiseReport();
+                break;
+        }
+    }
+
+    public void processClosingStockBatchWiseReport() {
+        List<Long> ids;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
+                + " from StockHistory sh where sh.retired=:ret "
+                + "and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
+
+        params.put("depty", DepartmentType.Pharmacy);
+        params.put("ret", false);
+
+        if (institution != null) {
+            jpql.append("and sh.institution = :ins ");
+            params.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql.append("and sh.department = :dep ");
+            params.put("dep", department);
+        }
+
+        if (category != null) {
+            jpql.append("and sh.itemBatch.item.category = :cat ");
+            params.put("cat", category);
+        }
+
+        System.out.println("amp = " + amp);
+        if (amp != null) {
+            item = amp;
+            System.out.println("item = " + item);
+            jpql.append("and sh.itemBatch.item=:itm ");
+            params.put("itm", item);
+        }
+
+        jpql.append("and sh.createdAt < :et ");
+        params.put("et", CommonFunctions.getEndOfDay(toDate));
+
+        jpql.append("group by sh.itemBatch ");
+        jpql.append("order by sh.itemBatch.item.name");
+
+        System.out.println("jpql.toString() = " + jpql.toString());
+        System.out.println("params = " + params);
+
+        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        // Calculate purchase and sale values
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        stockTotal = 0.0;
+
+        rows = new ArrayList<>();
+
+        if (ids == null) {
+            return;
+        }
+        if (ids.isEmpty()) {
+            return;
+        }
+        for (Long shid : ids) {
+            System.out.println("shid = " + shid);
+            PharmacyRow pr = new PharmacyRow();
+            pr.setId(shid);
+            pr.setStockHistory(facade.find(shid));
+            if (pr.getStockHistory() != null) {
+                StockHistory stockHx = pr.getStockHistory();
+                stockPurchaseValue += stockHx.getItemBatch().getPurcahseRate() * stockHx.getStockQty();
+                stockSaleValue += stockHx.getItemBatch().getRetailsaleRate() * stockHx.getStockQty();
+                stockTotal += stockHx.getStockQty();
+                rows.add(pr);
+            }
+
+        }
+
+    }
+
+    public void processClosingStockItemWiseReport() {
+        Map<String, Object> m = new HashMap<>();
+
+        stockLedgerHistories = new ArrayList();
+
+        String jpql = "select s from StockHistory s "
+                + "where s.stockAt = (select max(subS.stockAt) "
+                + "                    from StockHistory subS "
+                + "                    where subS.item = s.item "
+                + "                      and subS.stockQty > :z "
+                + "                      and subS.stockAt between :fd and :td) ";
+
+        m.put("z", 0.0);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        // Institution filter
+        if (institution != null) {
+            jpql += "and s.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        // Department filter
+        if (department != null) {
+            jpql += "and s.department = :dep ";
+            m.put("dep", department);
+        }
+
+        // Item filter
+        if (item != null) {
+            jpql += "and s.item = :itm ";
+            m.put("itm", item);
+        }
+
+        jpql += "order by s.stockAt DSEC";
+
+        stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        Map<String, Object> tempMap = new HashMap<>();
+
+        for (StockHistory r : stockLedgerHistories) {
+            if (tempMap == null) {
+
+            }
+        }
+
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        stockTotal = 0.0;
+        for (StockHistory r : stockLedgerHistories) {
+            stockPurchaseValue += r.getStockPurchaseValue();
+            stockSaleValue += r.getStockSaleValue();
+            stockTotal += r.getStockQty();
+        }
+    }
 
     public void processLabTestWiseCountReport() {
         String jpql = "select new com.divudi.data.TestWiseCountReport("
@@ -2429,5 +2596,79 @@ public class PharmacyReportController implements Serializable {
     public void setStockLedgerHistories(List<StockHistory> stockLedgerHistories) {
         this.stockLedgerHistories = stockLedgerHistories;
     }
+
+    public List<Stock> getStocks() {
+        return stocks;
+    }
+
+    public void setStocks(List<Stock> stocks) {
+        this.stocks = stocks;
+    }
+
+    public double getStockSaleValue() {
+        return stockSaleValue;
+    }
+
+    public void setStockSaleValue(double stockSaleValue) {
+        this.stockSaleValue = stockSaleValue;
+    }
+
+    public double getStockPurchaseValue() {
+        return stockPurchaseValue;
+    }
+
+    public void setStockPurchaseValue(double stockPurchaseValue) {
+        this.stockPurchaseValue = stockPurchaseValue;
+    }
+
+    public StockFacade getStockFacade() {
+        return stockFacade;
+    }
+
+    public void setStockFacade(StockFacade stockFacade) {
+        this.stockFacade = stockFacade;
+    }
+
+    public double getStockTotal() {
+        return stockTotal;
+    }
+
+    public void setStockTotal(double stockTotal) {
+        this.stockTotal = stockTotal;
+    }
+
+    public List<PharmacyStockRow> getPharmacyStockRows() {
+        return pharmacyStockRows;
+    }
+
+    public void setPharmacyStockRows(List<PharmacyStockRow> pharmacyStockRows) {
+        this.pharmacyStockRows = pharmacyStockRows;
+    }
+
+    public double getStockTottal() {
+        return stockTottal;
+    }
+
+    public void setStockTottal(double stockTottal) {
+        this.stockTottal = stockTottal;
+    }
+
+    public List<PharmacyRow> getRows() {
+        return rows;
+    }
+
+    public void setRows(List<PharmacyRow> rows) {
+        this.rows = rows;
+    }
+
+    public Amp getAmp() {
+        return amp;
+    }
+
+    public void setAmp(Amp amp) {
+        this.amp = amp;
+    }
+    
+    
 
 }

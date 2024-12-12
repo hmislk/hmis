@@ -91,7 +91,7 @@
                                             id="cmbPs" 
                                             value="#{billReturnController.paymentMethod}">
                                             <f:selectItem itemLabel="Select paymentMethod"/>
-                                            <f:selectItems value="#{enumController.paymentMethodsForOpdBilling}"/>
+                                            <f:selectItems value="#{billReturnController.paymentMethods}"/>
                                             <p:ajax process="cmbPs" update="paymentDetails" ></p:ajax>
                                         </p:selectOneMenu>
                                     </p:panelGrid>
@@ -228,18 +228,6 @@
                                             id="patientDeposit"  rendered="#{billReturnController.paymentMethod eq 'PatientDeposit'}" >
                                             <pa:patient_deposit paymentMethodData="#{billReturnController.paymentMethodData}"/>
                                         </h:panelGroup>
-                                        <h:panelGroup
-                                            class="row my-1 w-100"
-                                            layout="block" 
-                                            id="multiplePaymentMethods"  rendered="#{billReturnController.paymentMethod eq 'MultiplePaymentMethods'}" 
-                                            >
-                                            <pa:multiple_payment_methods 
-                                                paymentMethods="#{enumController.paymentMethodsForPackageBilling}"
-                                                controller="#{billReturnController}" 
-                                                class="w-100"/>
-
-                                        </h:panelGroup>
-
                                     </h:panelGroup>
                                 </p:panel>
 

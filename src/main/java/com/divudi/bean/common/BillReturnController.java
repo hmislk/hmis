@@ -29,6 +29,7 @@ import com.divudi.entity.cashTransaction.Drawer;
 
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.StaffService;
 import javax.inject.Named;
@@ -45,7 +46,7 @@ import javax.inject.Inject;
  */
 @Named
 @SessionScoped
-public class BillReturnController implements Serializable {
+public class BillReturnController implements Serializable, ControllerWithMultiplePayments {
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -56,6 +57,8 @@ public class BillReturnController implements Serializable {
     StaffService staffBean;
     @EJB
     PaymentService paymentService;
+    @EJB
+    DrawerService drawerService;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -90,7 +93,7 @@ public class BillReturnController implements Serializable {
     private List<Payment> returningBillPayments;
 
     private PaymentMethod paymentMethod;
-
+    private List<PaymentMethod> paymentMethods;
     private boolean returningStarted = false;
 
     private double refundingTotalAmount;
@@ -105,10 +108,10 @@ public class BillReturnController implements Serializable {
         if (originalBillToReturn == null) {
             return null;
         }
-
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
         returningStarted = false;
         paymentMethod = originalBillToReturn.getPaymentMethod();
+        paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(originalBillToReturn);
         return "/opd/bill_return?faces-redirect=true";
     }
 
@@ -257,13 +260,15 @@ public class BillReturnController implements Serializable {
 
         Drawer loggedUserDraver = drawerController.getUsersDrawer(sessionController.getLoggedUser());
 
-        if (!checkDraverBalance(loggedUserDraver, paymentMethod)) {
+       
+        if (!drawerService.hasSufficientDrawerBalance(loggedUserDraver, paymentMethod, refundingTotalAmount)) {
             JsfUtil.addErrorMessage("Your Draver does not have enough Money");
             returningStarted = false;
             return null;
         }
 
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
+        
         if (originalBillToReturn.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
             returningStarted = false;
@@ -375,7 +380,6 @@ public class BillReturnController implements Serializable {
 //            staffBean.updateStaffWelfare(newlyReturnedBill.getToStaff(), -Math.abs(newlyReturnedBill.getNetTotal()));
 //            System.out.println("updated = ");
 //        }
-
         // drawer Update
 //        drawerController.updateDrawerForOuts(returningPayment);
         returningStarted = false;
@@ -579,6 +583,8 @@ public class BillReturnController implements Serializable {
         this.originalBillItemsToSelectedToReturn = originalBillItemsToSelectedToReturn;
     }
 
+    
+    
     public Bill getNewlyReturnedBill() {
         return newlyReturnedBill;
     }
@@ -652,4 +658,26 @@ public class BillReturnController implements Serializable {
     }
 
     // </editor-fold>
+    @Override
+    public double calculatRemainForMultiplePaymentTotal() {
+        throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds.");
+    }
+
+    @Override
+    public void recieveRemainAmountAutomatically() {
+        throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds");
+    }
+
+    @Override
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds");
+    }
+
+    public List<PaymentMethod> getPaymentMethods() {
+        return paymentMethods;
+    }
+
+    public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
+        this.paymentMethods = paymentMethods;
+    }
 }
