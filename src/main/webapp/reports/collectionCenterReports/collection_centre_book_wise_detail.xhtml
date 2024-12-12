@@ -1,54 +1,51 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <h:body>
-        <ui:composition template="/reports/index.xhtml">
-            <ui:define name="subcontent">
-                <h:form>
-                    <p:panel header="Collection Center Book Wise Detail">
+<h:body>
+    <ui:composition template="/reports/index.xhtml">
+        <ui:define name="subcontent">
+            <h:form>
+                <p:panel header="Collection Center Book Wise Detail">
 
-                        <p:panelGrid columns="5" layout="tabular" class="w-100">
-                            <h:panelGroup>
-                                <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
-                                <p:outputLabel value="From Date" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar
-                                class="w-100 "
-                                inputStyleClass="w-100"
-                                id="fromDate"
+                    <p:panelGrid columns="5" layout="tabular" class="w-100">
+                        <h:panelGroup>
+                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
+                            <p:outputLabel value="From Date" class="mx-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:datePicker
                                 value="#{reportsController.fromDate}"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                            </p:calendar>
-
-                            <p:spacer width="5em"/>
-
-                            <h:panelGroup>
-                                <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
-                                <p:outputLabel value="To Date" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar
-                                class="w-100 "
+                                pattern="#{sessionController.applicationPreference.longDateFormat}"
                                 inputStyleClass="w-100"
-                                id="toDate"
-                                value="#{reportsController.toDate}"
-                                navigator="false"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                            </p:calendar>
+                                class="w-100"/>
 
-                            <h:panelGroup class="col-md-2">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="Collecting Centre" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:autoComplete
+                        <p:spacer width="5em"/>
+
+                        <h:panelGroup>
+                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
+                            <p:outputLabel value="To Date" class="mx-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+
+                        <p:datePicker
+                                value="#{reportsController.toDate}"
+                                inputStyleClass="w-100"
+                                class="w-100"
+                                pattern="#{sessionController.applicationPreference.longDateFormat}">
+                        </p:datePicker>
+
+                        <h:panelGroup class="col-md-2">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
+                            <p:outputLabel value="Collecting Centre" class="mx-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:autoComplete
                                 converter="deal"
                                 value="#{reportsController.collectingCentre}"
                                 forceSelection="true" id="acColl"
@@ -57,94 +54,94 @@
                                 maxResults="15"
                                 class="w-100 mb-1"
                                 inputStyleClass="form-control">
-                                <p:column style="padding: 6px;">#{vt.code}</p:column>
-                                <p:column style="padding: 6px;">#{vt.name}</p:column>
-                            </p:autoComplete>
+                            <p:column style="padding: 6px;">#{vt.code}</p:column>
+                            <p:column style="padding: 6px;">#{vt.name}</p:column>
+                        </p:autoComplete>
 
-                            <p:spacer width="5em"/>
+                        <p:spacer width="5em"/>
 
-                            <h:panelGroup class="col-md-2">
-                                <i class="fa fa-object-group"/>
-                                <p:outputLabel value="Book Number" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:inputText value="#{reportsController.cashBookNumber}" class="w-100"/>
-                        </p:panelGrid>
+                        <h:panelGroup class="col-md-2">
+                            <i class="fa fa-object-group"/>
+                            <p:outputLabel value="Book Number" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:inputText value="#{reportsController.cashBookNumber}" class="w-100"/>
+                    </p:panelGrid>
 
-                        <div class="row mb-2">
-                            <div class="col-md-12">
-                                <p:commandButton ajax="false"
-                                                 value="Process"
-                                                 icon="fas fa-cogs"
-                                                 class="ui-button-warning"
-                                                 style="width: 150px"
-                                                 action="#{reportsController.generateCollectionCenterBookWiseDetailReport()}">
-                                </p:commandButton>
+                    <div class="row mb-2">
+                        <div class="col-md-12">
+                            <p:commandButton ajax="false"
+                                             value="Process"
+                                             icon="fas fa-cogs"
+                                             class="ui-button-warning"
+                                             style="width: 150px"
+                                             action="#{reportsController.generateCollectionCenterBookWiseDetailReport()}">
+                            </p:commandButton>
 
-                                <p:commandButton
+                            <p:commandButton
                                     icon="fa-solid fa-print"
                                     class="mx-1 ui-button-info mx-2"
                                     ajax="false"
                                     style="width: 150px"
                                     value="Print">
-                                    <p:printer target="tbl"/>
-                                </p:commandButton>
-                                <p:commandButton
+                                <p:printer target="tbl"/>
+                            </p:commandButton>
+                            <p:commandButton
                                     id="btnExcel" class="m-1 ui-button-success"
                                     icon="fas fa-file-excel"
                                     style="width: 150px"
                                     ajax="false" value="Excel">
-                                    <p:dataExporter type="xlsx" target="tbl"
-                                                    fileName="collection_center_book_wise_detail_report"/>
-                                </p:commandButton>
-                                <p:commandButton
+                                <p:dataExporter type="xlsx" target="tbl"
+                                                fileName="collection_center_book_wise_detail_report"/>
+                            </p:commandButton>
+                            <p:commandButton
                                     class="m-2 ui-button-danger"
                                     icon="fa-solid fa-file-pdf"
                                     ajax="false"
                                     style="width: 150px"
                                     value="PDF">
-                                    <p:dataExporter type="pdf" target="tbl"
-                                                    fileName="collection_center_book_wise_detail_report"/>
-                                </p:commandButton>
-                            </div>
+                                <p:dataExporter type="pdf" target="tbl"
+                                                fileName="collection_center_book_wise_detail_report"/>
+                            </p:commandButton>
                         </div>
+                    </div>
 
-                        <p:dataTable id="tbl"
-                                     class="w-100 m-2"
-                                     value="#{reportsController.bundle.reportTemplateRows}"
-                                     var="c"
-                                     paginator="true"
-                                     paginatorAlwaysVisible="false"
-                                     rows="10"
-                                     rowIndexVar="b"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,20">
-                            <p:column headerText="Bill No" width="5rem">
-                                <h:outputText value="#{c.bill.deptId}"/>
-                            </p:column>
-                            <p:column headerText="Book Reference No" width="5rem">
-                                <h:outputText value="#{c.bill.referenceNumber}"/>
-                            </p:column>
-                            <p:column headerText="Patient" width="5rem">
-                                <h:outputText value="#{c.bill.patient.person.nameWithTitle}"/>
-                            </p:column>
-                            <p:column headerText="Creater" width="5rem">
-                                <h:outputText value="#{c.bill.creater.webUserPerson.name}"/>
-                            </p:column>
-                            <p:column headerText="Created Date" width="5rem">
-                                <h:outputText value="#{c.bill.createdAt}">
-                                    <f:convertDateTime
+                    <p:dataTable id="tbl"
+                                 class="w-100 m-2"
+                                 value="#{reportsController.bundle.reportTemplateRows}"
+                                 var="c"
+                                 paginator="true"
+                                 paginatorAlwaysVisible="false"
+                                 rows="10"
+                                 rowIndexVar="b"
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,20">
+                        <p:column headerText="Bill No" width="5rem">
+                            <h:outputText value="#{c.bill.deptId}"/>
+                        </p:column>
+                        <p:column headerText="Book Referance No." width="5rem">
+                            <h:outputText value="#{c.bill.referenceNumber}"/>
+                        </p:column>
+                        <p:column headerText="Patient" width="5rem">
+                            <h:outputText value="#{c.bill.patient.person.nameWithTitle}"/>
+                        </p:column>
+                        <p:column headerText="Creater" width="5rem">
+                            <h:outputText value="#{c.bill.creater.webUserPerson.name}"/>
+                        </p:column>
+                        <p:column headerText="Created Date" width="5rem">
+                            <h:outputText value="#{c.bill.createdAt}">
+                                <f:convertDateTime
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Bill Value" width="5rem">
-                                <h:outputText value="#{c.bill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                            </p:column>
-                        </p:dataTable>
-                    </p:panel>
-                </h:form>
-            </ui:define>
-        </ui:composition>
-    </h:body>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Bill Value" width="5rem">
+                            <h:outputText value="#{c.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
 </html>

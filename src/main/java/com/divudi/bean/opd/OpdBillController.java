@@ -2169,7 +2169,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setFromDepartment(sessionController.getDepartment());
         newBatchBill.setPatient(patient);
         newBatchBill.setCreditCompany(creditCompany);
-        newBatchBill.setComments(comment);
         newBatchBill.setIpOpOrCc("OP");
         newBatchBill.setInsId(
                 getBillNumberGenerator().institutionBillNumberGenerator(
@@ -2446,7 +2445,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     @Override
     public double calculatRemainForMultiplePaymentTotal() {
-        System.out.println("calculatRemainForMultiplePaymentTotal");
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
@@ -2457,22 +2455,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
-                System.out.println("multiplePaymentMethodTotalValue = " + multiplePaymentMethodTotalValue);
+
             }
-            System.out.println("remainAmount = " + remainAmount);
-            System.out.println("total = " + total);
             remainAmount = total - multiplePaymentMethodTotalValue;
             return total - multiplePaymentMethodTotalValue;
 
         }
         remainAmount = total;
-        System.out.println("total = " + total);
         return total;
     }
 
     @Override
     public void recieveRemainAmountAutomatically() {
-        System.out.println("recieveRemainAmountAutomatically");
         //double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
@@ -2496,17 +2490,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 case PatientDeposit:
                     if (patient != null) {
                         pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
-                        PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
-                        pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
-                        System.out.println("remainAmount = " + remainAmount);
-                        System.out.println("patient.getRunningBalance() = " + patient.getRunningBalance());
-                        System.out.println("remainAmount = " + remainAmount);
-                        System.out.println("patient.getRunningBalance() = " + patient.getRunningBalance());
-                        if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
-                            pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
-                        } else {
-                            pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
-                        }
+                    }
+                    if (remainAmount >= patient.getRunningBalance()) {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(patient.getRunningBalance());
+                    } else {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
                     }
 
                     break;
@@ -2738,13 +2726,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         return true;
                     }
                     double creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
-                    PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
-                    if(pd==null){
-                        JsfUtil.addErrorMessage("No Patient Deposit.");
-                        return true;
+                    double runningBalance;
+                    if (getPatient().getRunningBalance() != null) {
+                        runningBalance = getPatient().getRunningBalance();
+                    } else {
+                        runningBalance = 0.0;
                     }
-                    double runningBalance=pd.getBalance();
-                    
                     double availableForPurchase = runningBalance + creditLimitAbsolute;
 
                     if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
@@ -2883,7 +2870,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 JsfUtil.addErrorMessage("Quentity is Missing ..! ");
                 return;
             }
-        } else {
+        }else{
             setCurrentBillItemQty(1.0);
         }
 
@@ -2895,9 +2882,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 return;
             }
         }
-
+        
         System.out.println("Current BillItem QTY= " + getCurrentBillItemQty());
-
+        
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
         bi.setTmpQty(getCurrentBillItemQty());
@@ -3570,11 +3557,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
                         p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
                         p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
-                        p.setComments(cd.getPaymentMethodData().getSlip().getComment());
-                        p.setReferenceNo(cd.getPaymentMethodData().getSlip().getReferenceNo());
-                        p.setPaymentDate(cd.getPaymentMethodData().getSlip().getDate());
-                        p.setChequeDate(cd.getPaymentMethodData().getSlip().getDate());
-
                         break;
                     case OnCall:
                     case OnlineSettlement:
@@ -3614,7 +3596,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     p.setChequeDate(paymentMethodData.getCheque().getDate());
                     p.setChequeRefNo(paymentMethodData.getCheque().getNo());
                     p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
-                    p.setComments(paymentMethodData.getCheque().getComment());
                     break;
                 case Cash:
                     p.setPaidValue(paymentMethodData.getCash().getTotalValue());
@@ -3630,7 +3611,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     break;
 
                 case Agent:
-                    break;
                 case Credit:
                     p.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
                     p.setComments(paymentMethodData.getCredit().getComment());
@@ -3638,15 +3618,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     p.setCreditCompany(paymentMethodData.getCredit().getInstitution());
                     break;
                 case PatientDeposit:
-                    break;
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
                     p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
-                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
-                    p.setPaymentDate(paymentMethodData.getSlip().getDate());
-                    p.setChequeDate(paymentMethodData.getSlip().getDate());
-                    p.setComments(paymentMethodData.getSlip().getComment());
-                    p.setReferenceNo(paymentMethodData.getSlip().getReferenceNo());
                     p.setRealizedAt(paymentMethodData.getSlip().getDate());
                     break;
                 case OnCall:

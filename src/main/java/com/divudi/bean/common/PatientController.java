@@ -1324,12 +1324,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void settlePatientDepositReturn() {
+        System.out.println("started = ");
         if (getPatient().getId() == null) {
             JsfUtil.addErrorMessage("Please Create Patient Account");
+            System.out.println("error 1");
             return;
         }
         if (getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a Payment Method");
+            System.out.println("`error 2 = ");
             return;
         }
 
@@ -1339,34 +1342,42 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //        }
         if (getBill().getNetTotal() <= 0.0) {
             JsfUtil.addErrorMessage("The Refunded Value is Missing");
+            System.out.println("error 3");
             return;
         }
 
         if (getPatient().getRunningBalance() < getBill().getNetTotal()) {
             JsfUtil.addErrorMessage("The Refunded Value is more than the Current Deposit Value of the Patient");
+            System.out.println("error 4 = ");
             return;
         }
 
         if (getBill().getComments().trim().equalsIgnoreCase("")) {
             JsfUtil.addErrorMessage("Please Add Comment");
+            System.out.println("erior 5");
             return;
         }
 
         if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
             JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            System.out.println("error 6 = ");
             return;
         }
+        System.out.println("Runned");
         settleReturnBill(BillType.PatientPaymentRefundBill, HistoryType.PatientDepositReturn, BillNumberSuffix.PDR, current, BillTypeAtomic.PATIENT_DEPOSIT_REFUND, BillClassType.RefundBill);
         printPreview = true;
     }
 
     public int settlePatientDepositReturnNew() {
+        System.out.println("started = ");
         if (getPatient().getId() == null) {
             JsfUtil.addErrorMessage("Please Create Patient Account");
+            System.out.println("error 1");
             return 1;
         }
         if (getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a Payment Method");
+            System.out.println("`error 2 = ");
             return 2;
         }
 
@@ -1376,6 +1387,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //        }
         if (getBill().getNetTotal() <= 0.0) {
             JsfUtil.addErrorMessage("The Refunded Value is Missing");
+            System.out.println("error 3");
             return 3;
         }
 
@@ -1387,14 +1399,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (getBill().getPaymentMethod() == PaymentMethod.Cash) {
             if (getBill().getComments().trim().equalsIgnoreCase("")) {
                 JsfUtil.addErrorMessage("Please Add Comment");
+                System.out.println("erior 5");
                 return 5;
             }
         }
 
         if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
             JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            System.out.println("error 6 = ");
             return 6;
         }
+        System.out.println("Runned");
         settleReturnBill(BillType.PatientPaymentRefundBill, HistoryType.PatientDepositReturn, BillNumberSuffix.PDR, current, BillTypeAtomic.PATIENT_DEPOSIT_REFUND, BillClassType.RefundBill);
         printPreview = true;
         return 0;
@@ -1406,6 +1421,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         addToBill();
         saveBillItem();
         billFacade.edit(getBill());
+        System.out.println("getBill() = " + getBill());
         //TODO: Add Patient Balance History
         patient.setRunningBalance(Math.abs(patient.getRunningBalance()) - Math.abs(getBill().getNetTotal()));
         getFacade().edit(patient);
@@ -1419,6 +1435,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getBill().setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(sessionController.getDepartment(), sessionController.getDepartment(), billType, BillClassType.BilledBill));
         getBill().setBillType(billType);
         getBill().setBillClassType(billClassType);
+        System.out.println("billClassType ; " + getBill().getBillClassType());
         getBill().setPatient(patient);
 
         getBill().setCreatedAt(new Date());
@@ -1980,6 +1997,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void quickSearchPatientLongPhoneNumber(ControllerWithPatient controller) {
+        System.out.println("quickSearchPatientLongPhoneNumber");
+        System.out.println("controller = " + controller);
         boolean checkOnlyNumeric = CommonFunctions.checkOnlyNumeric(quickSearchPhoneNumber);
         Patient patientSearched = null;
         boolean usePHN = false;
@@ -1996,6 +2015,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             usePHN = true;
         }
         controller.setPaymentMethod(null);
+        System.out.println("quickSearchPatientList = " + quickSearchPatientList);
         if (quickSearchPatientList == null) {
 
             controller.setPatient(null);
@@ -2018,17 +2038,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return;
         } else if (quickSearchPatientList.size() == 1) {
             patientSearched = quickSearchPatientList.get(0);
-
+            System.out.println("patientSearched = " + patientSearched);
             controller.setPatient(patientSearched);
             controller.setPatientDetailsEditable(false);
             controller.setPaymentMethod(null);
-
-            admissionController.fillCurrentPatientAllergies(current);//TODO
-
+            System.out.println("controller.getPatient() = " + controller.getPatient());
             boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
-            System.out.println("One patient found - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
+            System.out.println("automaticallySetPatientDeposit = " + automaticallySetPatientDeposit);
             if (controller.getPatient().getHasAnAccount() != null) {
-                if (controller.getPatient().getHasAnAccount() && automaticallySetPatientDeposit) {
+                if (patientSearched.getHasAnAccount() && automaticallySetPatientDeposit) {
+
                     controller.setPatient(controller.getPatient());
                     controller.setPaymentMethod(PaymentMethod.PatientDeposit);
                     controller.listnerForPaymentMethodChange();
@@ -2058,22 +2077,21 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Programming Error. Controller is null.");
             return;
         }
-
         controller.setPatient(current);
+        admissionController.fillCurrentPatientAllergies(current);
         controller.setPatientDetailsEditable(false);
         controller.setPaymentMethod(null);
-
-        admissionController.fillCurrentPatientAllergies(current); //TODO
-
-        boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
-        System.out.println("Select Patient - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
+        if (patientDepositController.checkDepositOfThePatient(current, sessionController.getDepartment()) != null) {
+            controller.getPatient().setHasAnAccount(true);
+            controller.getPatient().setRunningBalance(patientDepositController.checkDepositOfThePatient(current, sessionController.getDepartment()).getBalance());
+        }
         if (controller.getPatient().getHasAnAccount() != null) {
-            if (controller.getPatient().getHasAnAccount() && automaticallySetPatientDeposit) {
-                controller.setPatient(controller.getPatient());
+            if (controller.getPatient().getHasAnAccount() && configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false)) {
                 controller.setPaymentMethod(PaymentMethod.PatientDeposit);
                 controller.listnerForPaymentMethodChange();
             }
         }
+
         quickSearchPatientList = null;
     }
 
