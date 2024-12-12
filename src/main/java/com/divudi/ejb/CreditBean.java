@@ -9,12 +9,15 @@ import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CountedServiceType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.entity.*;
+import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
+import com.divudi.entity.BilledBill;
+import com.divudi.entity.Institution;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PatientEncounterFacade;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -25,6 +28,7 @@ import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
 
 /**
+ *
  * @author safrin
  */
 @Stateless
@@ -221,50 +225,6 @@ public class CreditBean {
         return lst;
     }
 
-    public List<PatientEncounter> getCreditPatientEncounter(Institution institution, Date fromDate, Date toDate, PaymentMethod paymentMethod, boolean lessThan,
-                                                            Institution institutionOfDepartment, Department department, Institution site) {
-        String sql;
-        HashMap hm = new HashMap();
-
-        sql = "Select b From PatientEncounter b "
-                + " JOIN b.finalBill fb"
-                + " where b.retired=false ";
-
-        if (institutionOfDepartment != null) {
-            sql += " and fb.institution = :insd ";
-            hm.put("insd", institutionOfDepartment);
-        }
-
-        if (department != null) {
-            sql += " and fb.department = :dep ";
-            hm.put("dep", department);
-        }
-
-        if (site != null) {
-            sql += " and fb.department.site = :site ";
-            hm.put("site", site);
-        }
-
-        if (lessThan) {
-            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) >=:val ";
-        } else {
-            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) <=:val ";
-        }
-        sql += " and b.dateOfDischarge between :frm and :to "
-                + " and b.discharged = true "
-                + " and b.paymentMethod= :pm "
-                + " and b.creditCompany=:ins  ";
-
-        hm.put("frm", fromDate);
-        hm.put("to", toDate);
-        hm.put("pm", paymentMethod);
-        hm.put("ins", institution);
-        hm.put("val", 0.01);
-        List<PatientEncounter> lst = getPatientEncounterFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-        return lst;
-    }
-
     public List<Institution> getCreditCompanyFromBht(boolean lessThan, PaymentMethod paymentMethod) {
         String sql;
         HashMap hm;
@@ -286,50 +246,6 @@ public class CreditBean {
         }
 
         hm = new HashMap();
-        hm.put("val", 0.1);
-        hm.put("pm", paymentMethod);
-        return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
-    }
-
-    public List<Institution> getCreditCompanyFromBht(boolean lessThan, PaymentMethod paymentMethod,
-                                                     Institution institutionOfDepartment, Department department, Institution site) {
-        String sql;
-        HashMap hm;
-        sql = "Select distinct(b.creditCompany) "
-                + " From PatientEncounter b "
-                + " JOIN b.finalBill fb "
-                + " where b.retired=false "
-                + " and b.discharged=true "
-                + " and b.paymentMethod=:pm ";
-
-//        if (lessThan) {
-//            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)> :val ";
-//        } else {
-//            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)< :val ";
-//        }
-        if (lessThan) {
-            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) >:val ";
-        } else {
-            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) <:val ";
-        }
-
-        hm = new HashMap();
-
-        if (institutionOfDepartment != null) {
-            sql += " and fb.institution = :insd ";
-            hm.put("insd", institutionOfDepartment);
-        }
-
-        if (department != null) {
-            sql += " and fb.department = :dep ";
-            hm.put("dep", department);
-        }
-
-        if (site != null) {
-            sql += " and fb.department.site = :site ";
-            hm.put("site", site);
-        }
-
         hm.put("val", 0.1);
         hm.put("pm", paymentMethod);
         return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
@@ -361,52 +277,6 @@ public class CreditBean {
         hm.put("to", toDate);
         hm.put("pm", paymentMethod);
         hm.put("val", 0.01);
-        List<Institution> setIns = getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-        return setIns;
-    }
-
-
-    public List<Institution> getCreditInstitutionByPatientEncounter(Date fromDate, Date toDate, PaymentMethod paymentMethod, boolean lessThan,
-                                                                    Institution institution, Department department, Institution site) {
-        String sql;
-        HashMap<String, Object> hm = new HashMap<>();
-        sql = "Select distinct(b.creditCompany)"
-                + " From PatientEncounter b "
-                + " JOIN b.finalBill fb "
-                + " where b.retired=false ";
-
-        if (lessThan) {
-            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) >=:val ";
-        } else {
-            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) <=:val ";
-        }
-        sql += " and b.dateOfDischarge between :frm and :to "
-                + " and b.discharged = true "
-                + " and b.paymentMethod = :pm ";
-
-        if (institution != null) {
-            sql += " and fb.institution = :insd ";
-            hm.put("insd", institution);
-        }
-
-        if (department != null) {
-            sql += " and fb.department = :dep ";
-            hm.put("dep", department);
-        }
-
-        if (site != null) {
-            sql += " and fb.department.site = :site ";
-            hm.put("site", site);
-        }
-
-        sql += " order by b.creditCompany.name";
-
-        hm.put("frm", fromDate);
-        hm.put("to", toDate);
-        hm.put("pm", paymentMethod);
-        hm.put("val", 0.01);
-
         List<Institution> setIns = getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return setIns;
@@ -818,49 +688,6 @@ public class CreditBean {
             sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) >:val ";
         } else {
             sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) <:val ";
-        }
-
-        hm.put("val", 0.1);
-        hm.put("ins", institution);
-        hm.put("pm", paymentMethod);
-        return getPatientEncounterFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
-    }
-
-    public List<PatientEncounter> getCreditPatientEncounters(Institution institution, boolean lessThan, PaymentMethod paymentMethod,
-                                                             Institution institutionOfDepartment, Department department, Institution site) {
-        String sql;
-        HashMap hm = new HashMap();
-        sql = "Select b From PatientEncounter b "
-                + " JOIN b.finalBill fb"
-                + " where b.retired=false "
-                + " and b.discharged=true "
-                + " and b.paymentMethod=:pm "
-                + " and (b.creditCompany=:ins ) ";
-
-//        if (lessThan) {
-//            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)> :val ";
-//        } else {
-//            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)< :val ";
-//        }
-        if (lessThan) {
-            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) >:val ";
-        } else {
-            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) <:val ";
-        }
-
-        if (institutionOfDepartment != null) {
-            sql += " and fb.institution = :insd ";
-            hm.put("insd", institutionOfDepartment);
-        }
-
-        if (department != null) {
-            sql += " and fb.department = :dep ";
-            hm.put("dep", department);
-        }
-
-        if (site != null) {
-            sql += " and fb.department.site = :site ";
-            hm.put("site", site);
         }
 
         hm.put("val", 0.1);
