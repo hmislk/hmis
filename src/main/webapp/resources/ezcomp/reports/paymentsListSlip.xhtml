@@ -14,84 +14,44 @@
     <cc:implementation>
 
         <p:dataTable
-            value="#{financialTransactionController.selectedBundle.getPaymentRows(financialTransactionController.selectedPaymentMethod)}" var="selectedPayment" >
-            <p:column  headerText="Select to Handover" width="3em">
-                <p:selectBooleanCheckbox id="checkCardSelected" value="#{selectedPayment.payment.selectedForHandover}" >
-                    <p:ajax process="checkCardSelected" ></p:ajax>
-                </p:selectBooleanCheckbox>
-            </p:column>
+            value="#{financialTransactionController.selectedBundle.getPaymentRows(financialTransactionController.selectedPaymentMethod)}" var="cardPayment" >
             <p:column  headerText="Bill Number">
-                <h:outputText value="#{selectedPayment.payment.bill.deptId}" ></h:outputText>
+                <h:outputText value="#{cardPayment.payment.bill.deptId}" ></h:outputText>
             </p:column>
             <p:column  headerText="Bill Type">
-                <h:outputText value="#{selectedPayment.payment.bill.billTypeAtomic.label}" ></h:outputText>
+                <h:outputText value="#{cardPayment.payment.bill.billTypeAtomic.label}" ></h:outputText>
             </p:column>
             <p:column  headerText="Bill Date">
-                <h:outputText value="#{selectedPayment.payment.bill.createdAt}" >
+                <h:outputText value="#{cardPayment.payment.bill.createdAt}" >
                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                 </h:outputText>
             </p:column>
             <p:column  headerText="Bank">
-                <h:outputText value="#{selectedPayment.payment.bank.name}" ></h:outputText>
+                <h:outputText value="#{cardPayment.payment.bank.name}" ></h:outputText>
             </p:column>
-
-            <p:column  headerText="Ref No">
-                <h:outputText value="#{selectedPayment.payment.creditCardRefNo}" ></h:outputText>
-                <h:outputText value="#{selectedPayment.payment.chequeRefNo}" ></h:outputText>
-                <h:outputText value="#{selectedPayment.payment.referenceNo}" ></h:outputText>
-            </p:column>
-            
-            
-            <p:column  headerText="Slip Date">
-                <h:outputText value="#{selectedPayment.payment.chequeDate}" >
+            <p:column  headerText="Date">
+                <h:outputText value="#{cardPayment.payment.paymentDate}" >
                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                 </h:outputText>
             </p:column>
-            <p:column  headerText="Slip Comments">
-                <h:outputText value="#{selectedPayment.payment.comments}" ></h:outputText>
+            <p:column  headerText="Ref No">
+                <h:outputText value="#{cardPayment.payment.creditCardRefNo}" ></h:outputText>
+                <h:outputText value="#{cardPayment.payment.chequeRefNo}" ></h:outputText>
+                <h:outputText value="#{cardPayment.payment.referenceNo}" ></h:outputText>
             </p:column>
-            <p:column  headerText="Bill Comments">
-                <h:outputText value="#{selectedPayment.payment.bill.comments}" ></h:outputText>
-            </p:column>
-            <p:column  headerText="Status">
-                <h:panelGroup rendered="#{selectedPayment.payment.bill.cancelled}" >
-                    <p:badge value="Cancelled"  severity="danger" styleClass="mx-2"></p:badge><br/>
-                    <h:outputText 
-                        value="Cancelled Bill Number : "
-                        ></h:outputText>
-                    <h:outputText 
-                        value="#{selectedPayment.payment.bill.cancelledBill.deptId}"
-                        ></h:outputText>
-                    <br/>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{selectedPayment.payment.bill.billClassType eq 'CancelledBill'}" >
-                    <p:badge value="Cancellation"  severity="warning" styleClass="mx-2"></p:badge><br/>
-                    <h:outputText 
-                        value="Original Bill Number : "
-                        ></h:outputText>
-                    <h:outputText 
-                        value="#{selectedPayment.payment.bill.billedBill.deptId}"
-                        ></h:outputText>
-                    <br/>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{selectedPayment.payment.bill.billClassType eq 'RefundBill'}" >
-                    <p:badge value="Refund"  severity="warning" styleClass="mx-2"></p:badge><br/>
-                    <h:outputText 
-                        value="Original Bill Number : "
-                        ></h:outputText>
-                    <h:outputText 
-                        value="#{selectedPayment.payment.bill.billedBill.deptId}"
-                        ></h:outputText>
-                    <br/>
-                </h:panelGroup>
-
+            <p:column  headerText="Comments">
+                <h:outputText value="#{cardPayment.payment.comments}" ></h:outputText>
             </p:column>
             <p:column headerText="Value" class="text-end">
-                <h:outputText value="#{selectedPayment.payment.paidValue}" >
+                <h:outputText value="#{cardPayment.payment.paidValue}" >
                     <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
                 </h:outputText>
             </p:column>
-            
+            <p:column  headerText="Select to Handover">
+                <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForHandover}" >
+                    <p:ajax process="checkCardSelected" ></p:ajax>
+                </p:selectBooleanCheckbox>
+            </p:column>
         </p:dataTable>
 
     </cc:implementation>

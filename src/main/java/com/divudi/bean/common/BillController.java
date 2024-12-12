@@ -647,7 +647,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
         return a;
     }
-
+    
 //    public List<Bill> completeOpdCreditBatchBill(String qry) {
 //        List<Bill> a = null;
 //        String sql;
@@ -710,7 +710,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
         return a;
     }
-
+    
     public List<Bill> completeOpdCreditBatchBill(String qry) {
         System.out.println("completeOpdCreditBatchBill");
         List<Bill> a = null;
@@ -1831,7 +1831,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             batchBillCancellationStarted = false;
             return "";
         }
-        if (professionalPaymentService.isProfessionalFeePaidForBatchBill(batchBill)) {
+        if(professionalPaymentService.isProfessionalFeePaidForBatchBill(batchBill)){
             JsfUtil.addErrorMessage("Professional Fees or Outside Fees have already made this bill. Cancel them first and try again.");
             batchBillCancellationStarted = false;
             return "";
@@ -1860,7 +1860,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         cancellationBatchBill.setGrantTotal(0 - Math.abs(batchBill.getGrantTotal()));
         cancellationBatchBill.setDiscount(0 - Math.abs(batchBill.getDiscount()));
         cancellationBatchBill.setNetTotal(0 - Math.abs(batchBill.getNetTotal()));
-        cancellationBatchBill.setComments(comment);
         if (paymentMethod != null) {
             cancellationBatchBill.setPaymentMethod(paymentMethod);
         }
@@ -1890,7 +1889,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
 
         List<Payment> cancelPayments = createPaymentForOpdBatchBillCancellation(cancellationBatchBill, paymentMethod);
-
+        
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             paymentService.updateBalances(cancelPayments);
         }
@@ -1906,7 +1905,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         batchBillCancellationStarted = false;
         return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
-
+    
     public String cancelPackageBatchBill() {
         batchBillCancellationStarted = true;
         if (getBatchBill() == null) {
@@ -1993,7 +1992,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         batchBillCancellationStarted = false;
         return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
-
+    
     public void cancelSingleBillWhenCancellingPackageBatchBill(Bill originalBill, Bill cancellationBatchBill) {
         if (originalBill == null && originalBill == null) {
             JsfUtil.addErrorMessage("No Bill to cancel");
@@ -2032,6 +2031,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         originalBill.setCancelledBill(individualCancelltionBill);
         billService.saveBill(originalBill);
     }
+
 
     private boolean errorsPresentOnOpdBatchBillCancellation() {
         if (getComment() == null || getComment().trim().equals("")) {
@@ -2173,7 +2173,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 for (Payment originalBillPayment : originalBillPayments) {
                     Payment p = originalBillPayment.clonePaymentForNewBill();
                     p.invertValues();
-                    p.setReferancePayment(originalBillPayment);
                     p.setBill(cancellationBatchBill);
                     p.setInstitution(getSessionController().getInstitution());
                     p.setDepartment(getSessionController().getDepartment());
@@ -2198,22 +2197,17 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                         p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
                         p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
                         p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
-                        p.setComments(cd.getPaymentMethodData().getCreditCard().getComment());
                         break;
                     case Cheque:
                         p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
                         p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
                         p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
-                        p.setComments(cd.getPaymentMethodData().getCheque().getComment());
                         break;
                     case Cash:
                         p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
-                        p.setComments(cd.getPaymentMethodData().getCash().getComment());
                         break;
                     case ewallet:
-                        p.setPaidValue(cd.getPaymentMethodData().getEwallet().getTotalValue());
-                        p.setComments(cd.getPaymentMethodData().getEwallet().getComment());
-                        break;
+
                     case Agent:
                     case Credit:
                     case PatientDeposit:
@@ -2242,19 +2236,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 case Card:
                     p.setBank(getPaymentMethodData().getCreditCard().getInstitution());
                     p.setCreditCardRefNo(getPaymentMethodData().getCreditCard().getNo());
-                    p.setComments(getPaymentMethodData().getCreditCard().getComment());
                     break;
                 case Cheque:
                     p.setChequeDate(getPaymentMethodData().getCheque().getDate());
                     p.setChequeRefNo(getPaymentMethodData().getCheque().getNo());
-                    p.setComments(getPaymentMethodData().getCheque().getComment());
                     break;
                 case Cash:
-                    p.setComments(getPaymentMethodData().getCash().getComment());
                     break;
                 case ewallet:
-                    p.setComments(getPaymentMethodData().getEwallet().getComment());
-                    break;
 
                 case Agent:
                 case Credit:
