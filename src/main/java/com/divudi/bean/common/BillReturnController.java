@@ -15,7 +15,6 @@ import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import static com.divudi.data.PaymentMethod.Slip;
 import static com.divudi.data.PaymentMethod.Staff;
 import static com.divudi.data.PaymentMethod.Staff_Welfare;
-import com.divudi.data.dataStructure.PaymentMethodData;
 
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
@@ -29,7 +28,6 @@ import com.divudi.entity.cashTransaction.Drawer;
 
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.service.PaymentService;
 import com.divudi.service.StaffService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -54,10 +52,9 @@ public class BillReturnController implements Serializable {
     BillNumberGenerator billNumberGenerator;
     @EJB
     StaffService staffBean;
-    @EJB
-    PaymentService paymentService;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     SessionController sessionController;
@@ -96,10 +93,10 @@ public class BillReturnController implements Serializable {
     private double refundingTotalAmount;
     private String refundComment;
     private boolean selectAll;
-
-    private PaymentMethodData paymentMethodData;
-
+    
+    
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToReturnOpdBill() {
         if (originalBillToReturn == null) {
@@ -111,12 +108,12 @@ public class BillReturnController implements Serializable {
         paymentMethod = originalBillToReturn.getPaymentMethod();
         return "/opd/bill_return?faces-redirect=true";
     }
-
+    
     public String navigateToReturnCCBill() {
         if (originalBillToReturn == null) {
             return null;
         }
-
+        
         //System.out.println("Original Bill= " + originalBillToReturn);
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
         //System.out.println("Bill Items Available To Return = " + originalBillItemsAvailableToReturn.size());
@@ -133,13 +130,14 @@ public class BillReturnController implements Serializable {
     public String navigateToRefundBillViewFormOPDBillSearch() {
         return "/opd/bill_return_print?faces-redirect=true";
     }
-
+    
     public String navigateToRefundCCBillViewFormCCBillSearch() {
         return "/opd/bill_return_print?faces-redirect=true";
     }
     // </editor-fold>
-
+    
     // <editor-fold defaultstate="collapsed" desc="Method">
+
     public BillReturnController() {
     }
 
@@ -195,7 +193,7 @@ public class BillReturnController implements Serializable {
                     } else {
                         canReturn = true;
                     }
-                } else {
+                }else{
                     canReturn = false;
                 }
                 break;
@@ -356,28 +354,26 @@ public class BillReturnController implements Serializable {
         newlyReturnedBill.setDiscount(0 - returningDiscount);
         billController.save(newlyReturnedBill);
 
-        returningBillPayments = paymentService.createPayment(newlyReturnedBill, getPaymentMethodData());
-
-//        Payment returningPayment = new Payment();
-//        returningPayment.setBill(newlyReturnedBill);
-//        returningPayment.setPaymentMethod(paymentMethod);
-//        returningPayment.setInstitution(sessionController.getInstitution());
-//        returningPayment.setDepartment(sessionController.getDepartment());
-//        returningPayment.setPaidValue(newlyReturnedBill.getNetTotal());
-//        paymentController.save(returningPayment);
-//        returningBillPayments.add(returningPayment);
-        paymentService.updateBalances(returningBillPayments);
-
-//        if (paymentMethod == PaymentMethod.PatientDeposit) {
-//            PatientDeposit pd = patientDepositController.getDepositOfThePatient(newlyReturnedBill.getPatient(), sessionController.getDepartment());
-//            patientDepositController.updateBalance(newlyReturnedBill, pd);
-//        } else if (paymentMethod == PaymentMethod.Staff_Welfare) {
-//            staffBean.updateStaffWelfare(newlyReturnedBill.getToStaff(), -Math.abs(newlyReturnedBill.getNetTotal()));
-//            System.out.println("updated = ");
-//        }
-
+        Payment returningPayment = new Payment();
+        returningPayment.setBill(newlyReturnedBill);
+        returningPayment.setPaymentMethod(paymentMethod);
+        returningPayment.setInstitution(sessionController.getInstitution());
+        returningPayment.setDepartment(sessionController.getDepartment());
+        returningPayment.setPaidValue(newlyReturnedBill.getNetTotal());
+        paymentController.save(returningPayment);
+        returningBillPayments.add(returningPayment);
+        
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            PatientDeposit pd = patientDepositController.getDepositOfThePatient(newlyReturnedBill.getPatient(), sessionController.getDepartment());
+            patientDepositController.updateBalance(newlyReturnedBill, pd);
+        } else if (paymentMethod == PaymentMethod.Staff_Welfare){
+            staffBean.updateStaffWelfare(newlyReturnedBill.getToStaff(), - Math.abs(newlyReturnedBill.getNetTotal()));
+            System.out.println("updated = ");
+        }
+        
         // drawer Update
-//        drawerController.updateDrawerForOuts(returningPayment);
+        drawerController.updateDrawerForOuts(returningPayment);
+
         returningStarted = false;
         return "/opd/bill_return_print?faces-redirect=true";
 
@@ -394,7 +390,7 @@ public class BillReturnController implements Serializable {
             selectAll = false;
         }
     }
-
+    
     public String settleCCReturnBill() {
         if (returningStarted) {
             JsfUtil.addErrorMessage("Already Returning Started");
@@ -416,7 +412,7 @@ public class BillReturnController implements Serializable {
             returningStarted = false;
             return null;
         }
-
+        
         calculateRefundingAmount();
 
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
@@ -513,11 +509,11 @@ public class BillReturnController implements Serializable {
         newlyReturnedBill.setCollctingCentreFee(0 - returningCCTotal);
         newlyReturnedBill.setProfessionalFee(0 - returningStaffTotal);
         newlyReturnedBill.setDiscount(0 - returningDiscount);
-
+        
         newlyReturnedBill.setTotalHospitalFee(0 - returningHospitalTotal);
         newlyReturnedBill.setTotalCenterFee(0 - returningCCTotal);
         newlyReturnedBill.setTotalStaffFee(0 - returningStaffTotal);
-
+        
         billController.save(newlyReturnedBill);
 
         System.out.println("CC Balance Update ");
@@ -529,7 +525,7 @@ public class BillReturnController implements Serializable {
 //        System.out.println("Net Total = " + newlyReturnedBill.getNetTotal());
 //        System.out.println("History Type = " + HistoryType.CollectingCentreBillingRefund);
 //        System.out.println("Bill = " + newlyReturnedBill);
-
+        
         agentAndCcApplicationController.updateCcBalance(
                 originalBillToReturn.getCollectingCentre(),
                 newlyReturnedBill.getHospitalFee(),
@@ -538,25 +534,21 @@ public class BillReturnController implements Serializable {
                 newlyReturnedBill.getNetTotal(),
                 HistoryType.CollectingCentreBillingRefund,
                 newlyReturnedBill);
-
+        
         // drawer Update (No Need Update Drawer)
 //      drawerController.updateDrawerForOuts(returningPayment);
+
         returningStarted = false;
         return "/collecting_centre/cc_bill_return_print?faces-redirect=true";
 
     }
-
+    
+    
     // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public Bill getOriginalBillToReturn() {
         return originalBillToReturn;
-    }
-
-    public PaymentMethodData getPaymentMethodData() {
-        if (paymentMethodData == null) {
-            paymentMethodData = new PaymentMethodData();
-        }
-        return paymentMethodData;
     }
 
     public void setOriginalBillToReturn(Bill originalBillToReturn) {
@@ -650,6 +642,6 @@ public class BillReturnController implements Serializable {
     public void setSelectAll(boolean selectAll) {
         this.selectAll = selectAll;
     }
-
+    
     // </editor-fold>
 }
