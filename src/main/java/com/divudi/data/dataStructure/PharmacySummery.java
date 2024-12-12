@@ -19,6 +19,16 @@ public class PharmacySummery {
     private Double cancelledTotal = 0.0;
     private Double refundedTotal = 0.0;
     private Long count;
+    private String departmentName;
+    private double netTotal;
+
+    public PharmacySummery(String departmentName, double netTotal) {
+        this.departmentName = departmentName;
+        this.netTotal = netTotal;
+    }
+    public PharmacySummery() {
+        
+    }
 
     public Long getCount() {
         return count;
@@ -58,6 +68,22 @@ public class PharmacySummery {
 
     public void setRefundedTotal(Double refundedTotal) {
         this.refundedTotal = refundedTotal;
+    }
+
+    public String getDepartmentName() {
+        return departmentName;
+    }
+
+    public void setDepartmentName(String departmentName) {
+        this.departmentName = departmentName;
+    }
+
+    public double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(double netTotal) {
+        this.netTotal = netTotal;
     }
 
 }
