@@ -328,11 +328,11 @@
                                 </p:column>
 
                                 <p:column headerText="Rate" width="10em">
-                                    <h:outputText value="#{i.rate}" />
+                                    <h:outputText value="#{i.pharmaceuticalBillItem.purchaseRate}" />
                                 </p:column>
 
                                 <p:column headerText="Value" width="10em">
-                                    <h:outputText value="#{i.netValue}" />
+                                    <h:outputText value="#{i.qty * i.pharmaceuticalBillItem.purchaseRate}" />
                                 </p:column>
 
                                 <p:column headerText="Created Date and Time" width="10em">
