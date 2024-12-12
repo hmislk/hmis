@@ -89,8 +89,7 @@ public class StaffImageController implements Serializable {
             JsfUtil.addErrorMessage("Please select staff member");
             return "";
         }
-        //////System.out.println("file name is not null");
-        //////System.out.println(file.getFileName());
+        
         try {
             in = getFile().getInputStream();
             File f = new File(getStaffController().getCurrent().toString() + getStaffController().getCurrent().getFileType());

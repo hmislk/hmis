@@ -1028,9 +1028,8 @@ public class WebUserController implements Serializable {
         return "/admin/users/user_list";
     }
     
-    
     public String backToManageSignatureType() {
-        return "/admin/institutions/admin_staff_signature?faces-redirect=true";
+        return "/admin/users/manage_user_signature?faces-redirect=true";
     }
     
     public String changeCurrentUserPassword() {
