@@ -49,9 +49,9 @@ public class ComponentDetail {
         if (multiplePaymentMethodComponentDetails == null) {
             multiplePaymentMethodComponentDetails = new ArrayList<>();
         }
-        if (multiplePaymentMethodComponentDetails.isEmpty()) {
-            multiplePaymentMethodComponentDetails.add(new ComponentDetail());
-        }
+//        if (multiplePaymentMethodComponentDetails.isEmpty()) {
+//            multiplePaymentMethodComponentDetails.add(new ComponentDetail());
+//        }
         return multiplePaymentMethodComponentDetails;
     }
 
