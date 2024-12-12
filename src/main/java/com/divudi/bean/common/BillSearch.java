@@ -1469,7 +1469,7 @@ public class BillSearch implements Serializable {
             bi.setStaffFee(billItemStaffTotal);
             bi.setHospitalFee(billItemHospitalTotal);
             bi.setNetRate(billItemNetTotal);
-            bi.setQty(1.0);
+            bi.setQty(-1.0);
             bi.setNetValue(billItemNetTotal);
             bi.setGrossValue(billItemNetTotal);
 
