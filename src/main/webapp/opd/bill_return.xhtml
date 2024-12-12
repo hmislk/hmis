@@ -7,7 +7,6 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -29,9 +28,45 @@
                                 </div>
                             </div>
                         </f:facet>
-
+                      
                         <p:growl ></p:growl>
+                        <div class="d-flex justify-content-end">
+                            <div class="d-flex gap-2">
+                                <p:selectOneMenu   
+                                    id="cmbPs" 
+                                    value="#{billReturnController.paymentMethod}">
+                                    <f:selectItem itemLabel="Select paymentMethod"/>
+                                    <f:selectItems value="#{enumController.paymentMethodsForOpdBilling}"/>
+                                </p:selectOneMenu>
+                                <p:commandButton
+                                    value="To Return"
+                                    class="ui-button-warning"
+                                    process="@this" 
+                                    update="dlg" 
+                                    oncomplete="PF('dlg').show()"
+                                    >
+                                </p:commandButton>
 
+                                <p:dialog id="dlg" modal="true" widgetVar="dlg" header="Refund Comment" width="700" height="50">
+                                    <div>
+                                        <div class="d-flex gap-2">
+                                            <p:inputText value="#{billReturnController.refundComment}"  class="w-100"></p:inputText>
+                                            <p:commandButton 
+                                                id="btnSave" 
+                                                value="Refund" 
+                                                ajax="false"
+                                                class="ui-button-warning"
+                                                onclick="if (!confirm('Are You Sure You Want to Refund this Items?'))
+                                                            return false;"
+                                                action="#{billReturnController.settleOpdReturnBill()}"
+                                                oncomplete="PF('dlg').hide();" >
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </p:dialog>
+
+                            </div>
+                        </div>
 
                         <div class="row mt-3">
                             <div class="col-md-3">
@@ -68,169 +103,6 @@
                                 </p:panel>
                             </div>
                             <div class="col-md-6">
-
-                                <p:panel >
-                                    <f:facet name="header" >
-                                        <h:outputText value="Return Details" ></h:outputText>
-                                        <p:commandButton 
-                                        id="btnSave" 
-                                        value="Refund" 
-                                        ajax="false"
-                                        class="ui-button-warning mx-5"
-                                        onclick="if (!confirm('Are You Sure You Want to Refund this Items?'))
-                                                    return false;"
-                                        action="#{billReturnController.settleOpdReturnBill()}">
-                                    </p:commandButton>
-                                    </f:facet>
-
-                                    <p:panelGrid columns="2" >
-                                        <p:outputLabel value="Return Comments" ></p:outputLabel>
-                                        <p:inputText value="#{billReturnController.refundComment}"  class="w-100"></p:inputText>
-                                        <p:outputLabel value="Payment Method" ></p:outputLabel>
-                                        <p:selectOneMenu   
-                                            id="cmbPs" 
-                                            value="#{billReturnController.paymentMethod}">
-                                            <f:selectItem itemLabel="Select paymentMethod"/>
-                                            <f:selectItems value="#{billReturnController.paymentMethods}"/>
-                                            <p:ajax process="cmbPs" update="paymentDetails" ></p:ajax>
-                                        </p:selectOneMenu>
-                                    </p:panelGrid>
-
-
-
-
-                                    
-
-                                    <h:panelGroup id="paymentDetails"  >
-                                        <h:panelGroup
-                                            class="row"
-                                            layout="block"  
-                                            rendered="#{billReturnController.paymentMethod eq 'Credit'}" >
-                                            <pa:creditDetailsAsOnlyPayment paymentMethodData="#{billReturnController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup
-                                            class="row"
-                                            layout="block"  
-                                            rendered="#{billReturnController.paymentMethod eq 'Staff'}" >
-                                            <div class="my-1" id="staffCredit">
-                                                <div class="row mt-1">
-                                                    <div class="col-12">
-                                                        <p:autoComplete  
-                                                            minQueryLength="2"
-                                                            forceSelection="true" 
-                                                            value="#{billReturnController.toStaff}" 
-                                                            id="creditStaff"
-                                                            completeMethod="#{staffController.completeStaff}" 
-                                                            var="mys" 
-                                                            class="w-100"
-                                                            placeholder="Staff (Type at least 4 letters to search)"
-                                                            inputStyleClass="form-control"
-                                                            itemLabel="#{mys.person.name}" 
-                                                            itemValue="#{mys}"
-                                                            size="10">
-                                                            <p:column headerText="Name" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
-                                                            </p:column>
-                                                            <p:column headerText="EPF" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.epfNo}" ></h:outputText>
-                                                            </p:column>
-                                                            <p:column headerText="Credit Entitlement" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.creditLimitQualified}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputText>
-                                                            </p:column>
-                                                            <p:column  headerText="Credit Utilized" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.currentCreditValue}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputText>
-                                                            </p:column>
-                                                            <p:ajax process="@this" 
-                                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                                                                    event="itemSelect"  
-                                                                    listener="#{billReturnController.calTotals()}" />
-                                                        </p:autoComplete>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </h:panelGroup>
-                                        <h:panelGroup
-                                            class="row"
-                                            layout="block"  
-                                            rendered="#{billReturnController.paymentMethod eq 'Staff_Welfare'}" >
-                                            <div class="my-1" id="credit">
-                                                <div class="row mt-1">
-                                                    <div class="col-12">
-                                                        <p:autoComplete  
-                                                            minQueryLength="3"
-                                                            forceSelection="true" 
-                                                            value="#{billReturnController.toStaff}" 
-                                                            id="welfareStaff"
-                                                            completeMethod="#{staffController.completeStaff}" 
-                                                            var="mys" 
-                                                            class="w-100"
-                                                            placeholder="Staff (Type at least 4 letters to search)"
-                                                            inputStyleClass="form-control"
-                                                            itemLabel="#{mys.person.name}" 
-                                                            itemValue="#{mys}"
-                                                            size="10">
-                                                            <p:column headerText="Name" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
-                                                            </p:column>
-                                                            <p:column headerText="EPF" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.epfNo}" ></h:outputText>
-                                                            </p:column>
-                                                            <p:column headerText="Welfare Entitlement" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.annualWelfareQualified}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputText>
-                                                            </p:column>
-                                                            <p:column  headerText="Welfare Utilized" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.annualWelfareUtilized}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputText>
-                                                            </p:column>
-                                                            <p:ajax process="@this" 
-                                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                                                                    event="itemSelect"  
-                                                                    listener="#{billReturnController.calTotals()}" />
-                                                        </p:autoComplete>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </h:panelGroup>
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block"  
-                                            id="creditCard" rendered="#{billReturnController.paymentMethod eq 'Card'}" >
-                                            <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{billReturnController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="eWallet"  rendered="#{billReturnController.paymentMethod eq 'ewallet'}" >
-                                            <pa:ewallet paymentMethodData="#{billReturnController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="cheque"  rendered="#{billReturnController.paymentMethod eq 'Cheque'}" >
-                                            <pa:cheque paymentMethodData="#{billReturnController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="slip"  rendered="#{billReturnController.paymentMethod eq 'Slip'}" >
-                                            <pa:slip paymentMethodData="#{billReturnController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="patientDeposit"  rendered="#{billReturnController.paymentMethod eq 'PatientDeposit'}" >
-                                            <pa:patient_deposit paymentMethodData="#{billReturnController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
-                                </p:panel>
-
                                 <p:panel id="panelItems">
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-list-alt" class="mt-2"></h:outputText>
@@ -244,7 +116,7 @@
                                             update=":#{p:resolveFirstComponentWithId('panelItems',view).clientId} :#{p:resolveFirstComponentWithId('refundingAmound',view).clientId}" 
                                             action="#{billReturnController.selectAllItems()}">
                                         </p:commandButton>
-
+                                        
                                         <p:commandButton
                                             value="Unselect All"
                                             id="unSelectAll"
@@ -254,7 +126,7 @@
                                             update=":#{p:resolveFirstComponentWithId('panelItems',view).clientId} :#{p:resolveFirstComponentWithId('refundingAmound',view).clientId}" 
                                             action="#{billReturnController.unSelectAllItems()}">
                                         </p:commandButton>
-
+                                        
                                     </f:facet>
                                     <p:dataTable 
                                         id="billItems"

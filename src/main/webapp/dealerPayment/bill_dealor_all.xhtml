@@ -47,7 +47,7 @@
                                 <div class="row">
                                     <div class="col-3"><p:outputLabel value="Payment Method" /></div>
                                     <div class="col-9">
-                                        <p:selectOneMenu  style="width: 210px"  id="cmbPs" value="#{supplierPaymentController.current.paymentMethod}">                                                                     
+                                        <p:selectOneMenu   id="cmbPs" value="#{supplierPaymentController.current.paymentMethod}">                                                                     
                                             <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                                             <p:ajax process="cmbPs"
                                                     update="cash creditCard cheque slip eWallet" event="change" />
@@ -85,10 +85,9 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <p:panel>
-
-                                        <h:outputLabel value="Type GRN No or Supplier Name"/>  
-                                        <div class="row my-2">
-                                            <div class="col-8 ">
+                                        <h:panelGrid columns="1">
+                                            <h:outputLabel value="Type GRN No or Supplier Name"/>  
+                                            <div class="row">
                                                 <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" 
                                                                 value="#{supplierPaymentController.institution}"
                                                                 completeMethod="#{institutionController.completeSuppliers}"
@@ -96,8 +95,7 @@
                                                                 itemValue="#{ix}" size="30"
                                                                 maxResults="30"
                                                                 style="width: 400px;"
-                                                                class="col-md-8 w-100"
-                                                                inputStyleClass="w-100"
+                                                                class="col-md-8"
                                                                 >                                  
                                                     <p:column headerText="Name">
                                                         #{ix.name}
@@ -106,36 +104,30 @@
                                                         #{ix.institutionCode}
                                                     </p:column>
 
-                                                </p:autoComplete> 
-                                            </div>
-                                            <div class="col-4">
+                                                </p:autoComplete>  
                                                 <p:commandButton ajax="false" value="LOAD" 
                                                                  class="col-md-4 ui-button-success"
                                                                  style="width: 150px;"
                                                                  action="#{supplierPaymentController.selectInstitutionListener()}" >
                                                 </p:commandButton>
                                             </div>
+                                            <p:panel  id="total" style="min-width: 100%;">
+
+                                                <p:panelGrid  columns="2" >
+                                                    <p:outputLabel value="Net Total" />
+                                                    <p:outputLabel  value="#{supplierPaymentController.current.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </p:outputLabel>
+                                                    <p:outputLabel value="Created At"/>
+                                                    <p:outputLabel value="#{supplierPaymentController.current.createdAt}"/>
 
 
+                                                    <p:outputLabel value="Description"/>
+                                                    <p:inputTextarea value="#{supplierPaymentController.current.comments}"/>                                                         
+                                                </p:panelGrid>
+                                            </p:panel>
 
-                                        </div>
-                                        <p:panel  id="total" style="min-width: 100%;">
-
-                                            <p:panelGrid  columns="2" >
-                                                <p:outputLabel value="Net Total" />
-                                                <p:outputLabel  value="#{supplierPaymentController.current.netTotal}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-                                                <p:outputLabel value="Created At"/>
-                                                <p:outputLabel value="#{supplierPaymentController.current.createdAt}"/>
-
-
-                                                <p:outputLabel value="Description"/>
-                                                <p:inputTextarea value="#{supplierPaymentController.current.comments}"/>                                                         
-                                            </p:panelGrid>
-                                        </p:panel>
-
-
+                                        </h:panelGrid>
                                     </p:panel>
                                 </div>
 
@@ -145,8 +137,6 @@
                                                       selection="#{supplierPaymentController.selectedBillItems}" 
                                                       var="b" id="itms" rowKey="#{b.searialNo}" 
                                                       selectionMode="multiple"
-                                                      selectionRowMode="add"
-                                                      selectionPageOnly="false"
                                                       scrollable="true"
                                                       scrollHeight="300">
                                             <f:facet name="header">
@@ -163,7 +153,7 @@
                                                     update=":#{p:resolveFirstComponentWithId('total',view).clientId}"
                                                     listener="#{supplierPaymentController.calTotalBySelectedBillTems()}" />  
 
-                                            <p:column selectionBox="true"></p:column>
+
                                             <p:column >  
                                                 <f:facet name="header">
                                                     <h:outputLabel value="GRN No"/>                                  
