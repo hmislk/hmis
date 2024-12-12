@@ -617,6 +617,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 prows.add(r);
             }
         }
+        prows.sort(Comparator.comparing(r -> r.getPayment().getId()));
         return prows;
     }
 
