@@ -145,6 +145,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     BillService billService;
     @EJB
     StaffService staffService;
+    @EJB
+    PaymentService paymentService;
     @Inject
     private BillSearch billSearch;
     @Inject
@@ -1887,6 +1889,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
 
         List<Payment> cancelPayments = createPaymentForOpdBatchBillCancellation(cancellationBatchBill, paymentMethod);
+        
+        if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            paymentService.updateBalances(cancelPayments);
+        }
 
         drawerController.updateDrawerForOuts(cancelPayments);
 
