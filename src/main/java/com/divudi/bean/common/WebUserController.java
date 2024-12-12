@@ -29,6 +29,7 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.hr.StaffImageController;
 import com.divudi.data.LoginPage;
 import com.divudi.entity.UserNotification;
 import com.divudi.entity.WebUserRole;
@@ -103,6 +104,9 @@ public class WebUserController implements Serializable {
     WebUserRoleUserController webUserRoleUserController;
     @Inject
     private DrawerController drawerController;
+    @Inject
+    StaffImageController staffImageController;
+    
     /**
      * Class Variables
      */
@@ -879,6 +883,45 @@ public class WebUserController implements Serializable {
         return "/admin/institutions/admin_staff_signature?faces-redirect=true";
     }
 
+    public String toManageSignatureURL() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        getStaffController().setCurrent(selected.getStaff());
+        return "/admin/institutions/admin_staff_signature_url?faces-redirect=true";
+    }
+    
+    public String navigateToManageSignature() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        getStaffController().setCurrent(selected.getStaff());
+        return "/admin/users/manage_user_signature?faces-redirect=true";
+    }
+    
+    public String navigateToSelectedSignatureType() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        String signatureType = staffImageController.getViewImageType();
+        System.out.println("signatureType = " + signatureType);
+        if(signatureType == null || signatureType.isEmpty()){
+            JsfUtil.addErrorMessage("Please select a Type");
+            return "";
+        }else if (signatureType.equalsIgnoreCase("URL")){
+            return toManageSignatureURL();
+        }else if(signatureType.equalsIgnoreCase("UPLOADIMAGE")){
+            return toManageSignature();
+        }else{
+            JsfUtil.addErrorMessage("Please select a Type");
+            return "";
+        }
+       
+    }
+
     public String navigateToManageDepartments() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -984,7 +1027,11 @@ public class WebUserController implements Serializable {
     public String backToViewUsers() {
         return "/admin/users/user_list";
     }
-
+    
+    public String backToManageSignatureType() {
+        return "/admin/users/manage_user_signature?faces-redirect=true";
+    }
+    
     public String changeCurrentUserPassword() {
         if (getCurrent() == null) {
             JsfUtil.addErrorMessage("Select a User");
