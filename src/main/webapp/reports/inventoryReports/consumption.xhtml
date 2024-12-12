@@ -18,13 +18,13 @@
                                 <p:outputLabel value="From Date" for="fromDate" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker 
+                            <p:calendar 
                                 class="w-100"
                                 inputStyleClass="w-100" 
                                 id="fromDate" 
                                 value="#{pharmacyController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                ></p:datePicker>
+                                ></p:calendar>
 
                             <p:spacer width="20"></p:spacer>
 
@@ -33,13 +33,13 @@
                                 <p:outputLabel value="To Date" for="toDate" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker 
+                            <p:calendar 
                                 class="w-100"
                                 inputStyleClass="w-100" 
                                 id="toDate" 
                                 value="#{pharmacyController.toDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                ></p:datePicker>
+                                ></p:calendar>
 
                             <p:spacer width="20"></p:spacer>  
                             <p:spacer width="20"></p:spacer>  
@@ -124,7 +124,7 @@
                                 <p:outputLabel value="Item" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:autoComplete value="#{pharmacyErrorChecking.item}" 
+                            <p:autoComplete value="#{pharmacyController.item}" 
                                             inputStyleClass="w-100"
                                             class="w-100"
                                             completeMethod="#{itemController.completeAmpItemAll}" 
@@ -163,14 +163,19 @@
                                 <p:outputLabel value="Consumption Department" for="phmCde" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="phmCde"
-                                 
-                                filter="true"  
-                                class="w-100" >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInstitutionDepartments(pharmacyController.institution)}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" ></f:selectItems>
-                            </p:selectOneMenu>
+                            <p:autoComplete value="#{pharmacyController.toDepartment}" 
+                                            inputStyleClass="w-100"
+                                            id="phmCde"
+                                            class="w-100"
+                                            completeMethod="#{departmentController.completeDept}" 
+                                            var="i" itemValue="#{i}" itemLabel="#{i.name}" 
+                                            forceSelection="true"  >
+                                <p:column headerText="Department">
+                                    <h:outputLabel value="#{i.name}"/>
+                                </p:column>
+                               
+                            </p:autoComplete>
+                            
 
                         </h:panelGrid>
 
