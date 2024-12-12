@@ -198,7 +198,7 @@
 
 
 
-                        <div class="mt-5">
+                        <h:panelGroup class="mt-5" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
                             <h5>Department Summary</h5>
                             <p:dataTable id="tbl1" value="#{pharmacyController.departmentSummaries}" 
                                          var="s" 
@@ -219,9 +219,9 @@
 
 
                             </p:dataTable>
-                        </div>
+                        </h:panelGroup>
 
-                        <div>
+                        <h:panelGroup rendered="#{pharmacyController.reportType eq 'byBill'}">
                             <h5>Department unit issue by Bill No</h5>
                             <p:dataTable id="tbl2" value="#{pharmacyController.bills}" 
                                          var="b" 
@@ -245,7 +245,7 @@
                                 </p:column>
 
                                 <p:column headerText="Cancel No" width="10em">
-                                    <h:outputText value="#{b.department.site}" />
+                                    <h:outputText value="#{b.institution}" />
                                 </p:column>
 
                                 <p:column headerText="Value" width="4em" >
@@ -280,10 +280,10 @@
 
                             </p:dataTable>
 
-                        </div>
+                        </h:panelGroup>
 
 
-                        <div>
+                        <h:panelGroup rendered="#{pharmacyController.reportType eq 'byBillItem'}">
                             <h5> Department unit issue by bill item report</h5>
                             <p:dataTable id="tbl3" value="#{pharmacyController.billItems}" 
                                          var="i" 
@@ -357,7 +357,7 @@
 
                             </p:dataTable>
 
-                        </div>
+                        </h:panelGroup>
 
                     </p:panel>
 
