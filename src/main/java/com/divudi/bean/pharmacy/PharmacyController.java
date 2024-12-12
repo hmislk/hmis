@@ -915,7 +915,6 @@ public class PharmacyController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
         StringBuilder sql = new StringBuilder();
 
-        // Construct SQL query
         sql.append("SELECT bi FROM BillItem bi WHERE bi.retired = false ");
         sql.append("AND bi.bill.retired = false ");
         sql.append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ");
@@ -941,12 +940,12 @@ public class PharmacyController implements Serializable {
         }
 
         if (category != null) {
-            sql.append("AND bi.item.category = :category "); // Corrected field
+            sql.append("AND bi.item.category = :category ");
             parameters.put("category", category);
         }
 
         if (item != null) {
-            sql.append("AND bi.item = :item "); // Corrected field
+            sql.append("AND bi.item = :item ");
             parameters.put("item", item);
         }
 
@@ -958,10 +957,8 @@ public class PharmacyController implements Serializable {
         sql.append("ORDER BY bi.id DESC");
 
         try {
-            // Execute query
             billItems = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
         } catch (Exception e) {
-            // Log exception details
             e.printStackTrace();
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
