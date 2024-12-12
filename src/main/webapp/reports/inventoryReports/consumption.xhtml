@@ -283,6 +283,7 @@
                             <p:dataTable id="tbl3" value="#{pharmacyController.billItems}" 
                                          var="i" 
                                          rowIndexVar="n" 
+                                         rowKey="#{i.id}"
                                          paginator="true" 
                                          rows="10" 
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -290,7 +291,7 @@
                                          rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                                 <p:column headerText="No" width="10em">
-                                    <h:outputText value="#{i+1}" />
+                                    <h:outputText value="#{n+1}" />
                                 </p:column>
 
                                 <p:column headerText="Bill No" width="10em">
