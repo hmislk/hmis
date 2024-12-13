@@ -2039,58 +2039,75 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processClosingStockItemWiseReport() {
-        Map<String, Object> m = new HashMap<>();
+       List<Long> ids;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
+                + " from StockHistory sh where sh.retired=:ret "
+                + "and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
 
-        stockLedgerHistories = new ArrayList();
+        params.put("depty", DepartmentType.Pharmacy);
+        params.put("ret", false);
 
-        String jpql = "select s from StockHistory s "
-                + "where s.stockAt = (select max(subS.stockAt) "
-                + "                    from StockHistory subS "
-                + "                    where subS.item = s.item "
-                + "                      and subS.stockQty > :z "
-                + "                      and subS.stockAt between :fd and :td) ";
-
-        m.put("z", 0.0);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-
-        // Institution filter
         if (institution != null) {
-            jpql += "and s.institution = :ins ";
-            m.put("ins", institution);
+            jpql.append("and sh.institution = :ins ");
+            params.put("ins", institution);
         }
 
-        // Department filter
         if (department != null) {
-            jpql += "and s.department = :dep ";
-            m.put("dep", department);
+            jpql.append("and sh.department = :dep ");
+            params.put("dep", department);
         }
 
-        // Item filter
-        if (item != null) {
-            jpql += "and s.item = :itm ";
-            m.put("itm", item);
+        if (category != null) {
+            jpql.append("and sh.item.category = :cat ");
+            params.put("cat", category);
         }
 
-        jpql += "order by s.stockAt DSEC";
-
-        stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-
-        Map<String, Object> tempMap = new HashMap<>();
-
-        for (StockHistory r : stockLedgerHistories) {
-            if (tempMap == null) {
-
-            }
+        System.out.println("amp = " + amp);
+        if (amp != null) {
+            item = amp;
+            System.out.println("item = " + item);
+            jpql.append("and sh.item=:itm ");
+            params.put("itm", item);
         }
 
+        jpql.append("and sh.createdAt < :et ");
+        params.put("et", CommonFunctions.getEndOfDay(toDate));
+
+        jpql.append("group by sh.item ");
+        jpql.append("order by sh.item.name");
+
+        System.out.println("jpql.toString() = " + jpql.toString());
+        System.out.println("params = " + params);
+
+        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        // Calculate purchase and sale values
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         stockTotal = 0.0;
-        for (StockHistory r : stockLedgerHistories) {
-            stockPurchaseValue += r.getStockPurchaseValue();
-            stockSaleValue += r.getStockSaleValue();
-            stockTotal += r.getStockQty();
+
+        rows = new ArrayList<>();
+
+        if (ids == null) {
+            return;
+        }
+        if (ids.isEmpty()) {
+            return;
+        }
+        for (Long shid : ids) {
+            System.out.println("shid = " + shid);
+            PharmacyRow pr = new PharmacyRow();
+            pr.setId(shid);
+            pr.setStockHistory(facade.find(shid));
+            if (pr.getStockHistory() != null) {
+                StockHistory stockHx = pr.getStockHistory();
+                stockPurchaseValue += stockHx.getItemBatch().getPurcahseRate() * stockHx.getStockQty();
+                stockSaleValue += stockHx.getItemBatch().getRetailsaleRate() * stockHx.getStockQty();
+                stockTotal += stockHx.getStockQty();
+                rows.add(pr);
+            }
+
         }
     }
 
