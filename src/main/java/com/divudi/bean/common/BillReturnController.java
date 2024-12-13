@@ -31,6 +31,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
+import com.divudi.service.ProfessionalPaymentService;
 import com.divudi.service.StaffService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -59,8 +60,11 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     PaymentService paymentService;
     @EJB
     DrawerService drawerService;
+    @EJB
+    ProfessionalPaymentService professionalPaymentService;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     SessionController sessionController;
@@ -103,6 +107,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     private PaymentMethodData paymentMethodData;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToReturnOpdBill() {
         if (originalBillToReturn == null) {
@@ -234,7 +239,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
         return canReturn;
     }
-
+    
     public String settleOpdReturnBill() {
         if (returningStarted) {
             JsfUtil.addErrorMessage("Already Returning Started");
@@ -274,6 +279,13 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             returningStarted = false;
             return null;
         }
+        
+        if (professionalPaymentService.isProfessionalFeePaid(originalBillToReturn)) {
+            JsfUtil.addErrorMessage("Payments are already made to Staff or Outside Institute. Please cancel them first before cancelling the bill.");
+            return null;
+        }
+
+        
         //TO DO: Check weather selected items is refunded
         if (!checkCanReturnBill(originalBillToReturn)) {
             JsfUtil.addErrorMessage("All Items are Already Refunded");
@@ -551,6 +563,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public Bill getOriginalBillToReturn() {
         return originalBillToReturn;
@@ -656,8 +669,17 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     public void setSelectAll(boolean selectAll) {
         this.selectAll = selectAll;
     }
+    
+    public List<PaymentMethod> getPaymentMethods() {
+        return paymentMethods;
+    }
+
+    public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
+        this.paymentMethods = paymentMethods;
+    }
 
     // </editor-fold>
+    
     @Override
     public double calculatRemainForMultiplePaymentTotal() {
         throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds.");
@@ -671,13 +693,5 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     @Override
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds");
-    }
-
-    public List<PaymentMethod> getPaymentMethods() {
-        return paymentMethods;
-    }
-
-    public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
-        this.paymentMethods = paymentMethods;
     }
 }
