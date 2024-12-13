@@ -203,6 +203,7 @@
                             <p:dataTable id="tbl1" value="#{pharmacyController.departmentSummaries}" 
                                          var="s" 
                                          rowIndexVar="n" 
+                                         rowKey="#{s.id}"
                                          paginator="true" 
                                          rows="10" 
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -213,8 +214,10 @@
                                     <h:outputText value="#{s.departmentName}" />
                                 </p:column>
 
-                                <p:column headerText="Net Total">
-                                    <h:outputText value="#{s.netTotal}" />
+                                <p:column headerText="Net Total" class="ml-4">
+                                    <h:outputText value="#{s.netTotal}" style="float: right; padding-right: 650px;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:column>>
 
 
