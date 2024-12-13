@@ -4159,7 +4159,7 @@ public class BillSearch implements Serializable {
         } else {
             paymentMethod = PaymentMethod.Cash;
         }
-        //paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(bill);
+        paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(bill);
         //System.out.println("Refund"+ paymentMethod);
         createBillItemsAndBillFeesForOpdRefund();
         //THIS IS NOT ALLOWED. If a user needs to reund all values, they will have to enter one by one.
