@@ -4,8 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
@@ -15,15 +14,15 @@
                 <p:panel  >
                     <f:facet name="header" >
                         <h:form >
+                            <p:growl />
                             <i class="fa fa-signature"/>
-                            <p:outputLabel value="Add Staff Signature" class="mx-2 mt-2" ></p:outputLabel>
+                            <p:outputLabel value="Add Staff Signature (By URL)" class="mx-2 mt-2" ></p:outputLabel>
                             <p:commandButton 
                                 ajax="false" 
                                 value="Back" 
                                 action="#{webUserController.backToManageSignatureType()}"
                                 style="float: right;"
-                                icon="fa fa-arrow-left"
-                                >
+                                icon="fa fa-arrow-left">
                             </p:commandButton>
                         </h:form>
                     </f:facet>
@@ -33,28 +32,51 @@
                         <div class="col-6">
                             <p:panel header="Add New Signature" >
                                 <h:form enctype="multipart/form-data" >
-                                    <div class="row my-1">
-                                        <div class="col-6 d-flex align-items-center">
-                                            <h:outputLabel value="Name" ></h:outputLabel>
+
+                                    <div class="d-flex">
+                                        <div class="col-5">
+                                            <h:outputLabel value="User" ></h:outputLabel>
                                         </div>
-                                        <div class="col-6 d-flex justify-content-end">
-                                            <autocomplete:completeStaff value="#{staffController.current}"/>
+                                        <div class="col-7">
+                                            <h:outputLabel class="w-100" value="#{staffController.current.person.nameWithTitle}"/> 
+                                        </div>
+                                    </div>
+
+                                    <h:panelGroup id="url" rendered="#{staffController.current.signatureUrl ne null}">
+                                        <div class="d-flex mt-2">
+                                            <div class="col-5"><h:outputLabel value="Current Signature URL"/></div>
+                                            <div class="col-7">
+                                                <h:outputLabel 
+                                                    class="w-100"
+                                                    value="#{staffController.current.signatureUrl}">
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <div class="d-flex mt-2">
+                                        <div class="col-5"><h:outputLabel value="New Signature URL"/></div>
+                                        <div class="col-7">
+                                            <p:inputTextarea 
+                                                class="w-100"
+                                                value="#{staffController.signatureUrl}">
+                                            </p:inputTextarea>
                                         </div>
                                     </div>
 
                                     <div class="row">
-                                        <div class="col-6">
-                                            <p:fileUpload value="#{staffImageController.file}" class="my-1" mode="simple"/>
-                                        </div>
+                                        <div class="col-6"></div>
                                         <div class="col-6 d-flex justify-content-end">
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                id="btnSave" 
-                                                value="Save" 
-                                                icon="fas fa-save"
-                                                class="my-1 ui-button-warning w-50 float-right"
-                                                action="#{staffImageController.uploadSignature()}"/>
-                                            <p:defaultCommand target="btnSave"/>
+                                            <h:form >
+                                                <p:commandButton 
+                                                    ajax="false" 
+                                                    style="float: right;"
+                                                    value="Upload URL Signature"
+                                                    class="ui-button-success mt-2"
+                                                    icon="fas fa-upload"
+                                                    action="#{staffController.saveSignatureUrl()}">
+                                                </p:commandButton>
+                                            </h:form>
                                         </div>
                                     </div>
                                 </h:form>
@@ -67,22 +89,25 @@
                                     <f:facet name="header" >
                                         <div class="row">
                                             <div class="col-6 d-flex align-items-center">
-                                                <p:outputLabel value="Current Signature" ></p:outputLabel>
+                                                <p:outputLabel value="Current URL Signature" ></p:outputLabel>
                                             </div>
                                             <div class="col-6  d-flex align-items-center justify-content-end">
+                                                <h:form >
+                            <p:growl />
                                                 <p:commandButton 
                                                     ajax="false" id="btnSave2" 
                                                     value="Remove" 
                                                     class="m-1 ui-button-danger w-50" 
                                                     icon="fa-solid fa-trash" 
-                                                    action="#{staffImageController.removeSignature()}"/>
+                                                    action="#{staffController.removeSignatureUrl()}"/>
+                                                </h:form>
                                             </div>
                                         </div>
                                     </f:facet>
                                     <div class="w-100">
                                         <p:graphicImage 
                                             cache="false" 
-                                            value="#{staffImageController.signatureFromStaffController}" 
+                                            value="#{staffController.current.signatureUrl}" 
                                             class="w-100">
                                         </p:graphicImage>
                                     </div>
