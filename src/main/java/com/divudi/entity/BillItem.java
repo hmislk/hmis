@@ -172,7 +172,7 @@ public class BillItem implements Serializable {
 //    @Transient
 //    private double totalProcedureFeeValueTransient;
 
-    @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
     @OrderBy("feeAdjusted")
@@ -262,6 +262,25 @@ public class BillItem implements Serializable {
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
         //  referanceBillItem=billItem.getReferanceBillItem();
+    }
+    
+    public void copyWithoutFinancialData(BillItem billItem) {
+        item = billItem.getItem();
+        sessionDate = billItem.getSessionDate();
+        patientEncounter = billItem.getPatientEncounter();
+        patientInvestigation = billItem.getPatientInvestigation();
+        inwardChargeType = billItem.getInwardChargeType();
+        agentRefNo = billItem.getAgentRefNo();
+        item = billItem.getItem();
+        qty = billItem.getQty();
+        descreption = billItem.getDescreption();
+        billTime = billItem.getBillTime();
+        searialNo = billItem.getSearialNo();
+        tmpQty = billItem.tmpQty;
+        referenceBill = billItem.getReferenceBill();
+        marginValue = billItem.getMarginValue();
+        priceMatrix = billItem.getPriceMatrix();
+        agentRefNo = billItem.getAgentRefNo();
     }
 
     public void resetValue() {

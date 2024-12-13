@@ -168,9 +168,21 @@ public class BillFee implements Serializable {
         feeVatPlusValue = billFee.getFeeVatPlusValue();
         feeMargin = billFee.getFeeMargin();
         paidValue = billFee.getPaidValue();
-
     }
 
+    public void copyWithoutFinancialData(BillFee billFee) {
+        fee = billFee.getFee();
+        patient = billFee.getPatient();
+        patienEncounter = billFee.getPatienEncounter();
+        childEncounter = billFee.getChildEncounter();
+        staff = billFee.getStaff();
+        institution = billFee.getInstitution();
+        department = billFee.getDepartment();
+        speciality = billFee.getSpeciality();
+        FeeAt = billFee.getFeeAt();
+    }
+    
+    
     public double getFeeVatPlusValue() {
         return feeVatPlusValue;
     }
