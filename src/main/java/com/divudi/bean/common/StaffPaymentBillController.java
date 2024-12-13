@@ -573,7 +573,7 @@ public class StaffPaymentBillController implements Serializable {
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getDepartment());
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
         tmp.setDeptId(deptId);
         tmp.setInsId(deptId);
 
