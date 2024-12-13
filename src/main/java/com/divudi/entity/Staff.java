@@ -151,7 +151,7 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     boolean withOutNotice;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date dateWithOutNotice;
-    
+    @Lob
     private String signatureUrl;
     
     @Enumerated
