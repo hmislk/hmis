@@ -292,7 +292,7 @@
                             rendered="#{pharmacyReportController.reportType eq 'itemWise'}">
                             <p:dataTable 
                                 id="itemWise" 
-                                value="#{pharmacyReportController.stockLedgerHistories}" 
+                                value="#{pharmacyReportController.rows}" 
                                 var="p" 
                                 rowIndexVar="n" 
                                 paginator="true" 
@@ -308,22 +308,22 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Item Category">
-                                    <h:outputText value="#{p.item.category.name}" />
+                                    <h:outputText value="#{p.stockHistory.item.category.name}" />
                                 </p:column>
                                 <p:column headerText="Item Code">
-                                    <h:outputText value="#{p.item.code}" />
+                                    <h:outputText value="#{p.stockHistory.item.code}" />
                                 </p:column>
                                 <p:column headerText="Item Name">
-                                    <h:outputText value="#{p.item.name}" />
+                                    <h:outputText value="#{p.stockHistory.item.name}" />
                                 </p:column>
                                 <p:column headerText="UOM">
-                                    <h:outputText value="#{p.item.issueUnit.name}" />
+                                    <h:outputText value="#{p.stockHistory.item.measurementUnit.name}" />
                                 </p:column>
                                 <p:column headerText="Closing Stock">
-                                    <h:outputText value="#{p.itemStock}" />
+                                    <h:outputText value="#{p.stockHistory.itemStock}" />
                                 </p:column>
                                 <p:column headerText="Closing Stock Value">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{pharmacyReportController.stockSaleValue}" />
                                 </p:column>
 
                             </p:dataTable>
