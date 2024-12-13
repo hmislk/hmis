@@ -1134,6 +1134,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     // </editor-fold>
+    
     @Deprecated
     public void createPharmacyCashInOutLedgerOld() {
         bundleList = new ArrayList<>();
