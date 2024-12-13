@@ -26,7 +26,7 @@
                             <f:ajax event="itemSelect" execute="@this" render=":#{p:resolveFirstComponentWithId('panelCompanyDesc',view).clientId}" ></f:ajax>
                         </p:autoComplete>
                         <h:outputLabel value="Credit Limit  " style="min-width: 100px;" />
-                        <p:inputText class="w-100" id="creditLimit" autocomplete="off" value="#{cc.attrs.patientEncounter.creditLimit}" />
+                        <p:inputText class="w-100" id="creditLimit" autocomplete="off" value="#{admissionController.encounterCreditCompany.creditLimit}" />
                         <h:outputLabel value="Description "  rendered="#{cc.attrs.patientEncounter.creditCompany ne null}" />                            
                         <h:outputText class="w-100" id="panelCompanyDesc"  
                                       rendered="#{cc.attrs.patientEncounter.creditCompany ne null}" 
@@ -48,13 +48,19 @@
                 </h:panelGroup>
             </div>
             <div class="col-6">
-                <p:dataTable id="tblCom" value="#{admissionController.encounterCreditCompanies}" var="ecc" >
+                <p:dataTable id="tblCom" value="#{admissionController.encounterCreditCompanies}" var="ecc" rowIndexVar="index" >
                     <f:facet name="header">
                         <h:outputText value="Companies" />
                     </f:facet>
                     <p:column style="font-weight:bolder;" >
+                        <h:outputText value="#{index + 1}" ></h:outputText>
+                    </p:column>
+                    <p:column style="font-weight:bolder;" >
                         <h:outputText value="#{ecc.institution.name}" ></h:outputText>
                     </p:column>
+                    <p:column style="font-weight:bolder;" >
+                        <h:outputText value="#{ecc.creditLimit}" ></h:outputText>
+                    </p:column>                    
                     <p:column style="text-align: right;font-weight: bolder" >
                        
                         <p:commandButton
