@@ -117,7 +117,7 @@ public class PatientDepositService {
                 break;
                 
             case INWARD_DEPOSIT:
-                handleInPayment(p, pd);
+                handleOutPayment(p, pd);
                 break;
 
             default:
