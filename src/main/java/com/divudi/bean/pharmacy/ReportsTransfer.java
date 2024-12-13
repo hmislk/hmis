@@ -457,7 +457,7 @@ public class ReportsTransfer implements Serializable {
             }
             b.setSaleValue(saleValue);
             b.setPaidAmount(purchaseValue);
-            totalsValue +=saleValue;
+            totalsValue += saleValue;
         }
     }
 
