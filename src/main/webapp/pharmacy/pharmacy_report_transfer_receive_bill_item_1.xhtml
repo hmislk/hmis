@@ -145,7 +145,7 @@
                                 </p:column>
 
                                 <p:column headerText="Sale Value" style="text-align: right;">
-                                    <h:outputLabel value="#{-1 * i.pharmaceuticalBillItem.itemBatch.retailsaleRate * i.pharmaceuticalBillItem.qty}" >
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.retailsaleRate * i.pharmaceuticalBillItem.qty}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
