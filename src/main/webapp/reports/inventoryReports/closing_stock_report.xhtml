@@ -228,7 +228,9 @@
                                     <h:outputText value="#{f.stockHistory.itemBatch.item.measurementUnit.name}" />
                                 </p:column>
                                 <p:column headerText="Expiry">
-                                    <h:outputText value="#{f.stockHistory.itemBatch.dateOfExpire}" />
+                                    <h:outputText value="#{f.stockHistory.itemBatch.dateOfExpire}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"></f:convertDateTime>
+                                    </h:outputText>
                                 </p:column>
                                 <p:column headerText="Batch No">
                                     <h:outputText value="#{f.stockHistory.itemBatch.batchNo}" />
