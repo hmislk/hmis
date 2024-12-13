@@ -578,7 +578,7 @@ public class TransferIssueController implements Serializable {
             getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
         }
 
-//        getIssuedBill().setInstitution(getSessionController().getInstitution());
+        getIssuedBill().setInstitution(getSessionController().getInstitution());
         getIssuedBill().setDepartment(getIssuedBill().getFromDepartment());
 //
         getIssuedBill().setToInstitution(getIssuedBill().getToDepartment().getInstitution());
