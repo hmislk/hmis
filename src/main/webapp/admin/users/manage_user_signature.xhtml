@@ -9,48 +9,45 @@
         <ui:composition template="/admin/users/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                <p:panel >
-                    <f:facet name="header">
-                        <i class="fa fa-user" aria-hidden="true"/>
-                        <h:outputText value="Manage User Signature" class="mx-2"/>
-                        <p:commandButton 
-                            ajax="false" 
-                            value="Back" 
-                            action="#{webUserController.backToViewUsers()}"
-                            style="float: right;"
-                            icon="fa fa-arrow-left"
-                            >
-                        </p:commandButton>
-                    </f:facet>
-                    
-                    <div class="d-flex mt-2">
-                        <div class="col-4"/>
-                        <div class="col-1"><h:outputLabel class="w-100 mt-2" value="Type"/></div>
-                        <div class="col-2">
-                            <p:selectOneMenu 
-                                class="w-100"
-                                value="#{staffImageController.viewImageType}">
-                                <f:selectItem itemLabel="Select"/>
-                                <f:selectItem itemValue="UPLOADIMAGE" itemLabel="Upload Image"/>
-                                <f:selectItem itemValue="URL" itemLabel="URL Image"/>
-                            </p:selectOneMenu>
-                        </div>
-                        <div class="col-1">
+                    <p:panel >
+                        <f:facet name="header">
+                            <i class="fa fa-user" aria-hidden="true"/>
+                            <h:outputText value="Manage User Signature" class="mx-2"/>
                             <p:commandButton 
                                 ajax="false" 
-                                value="Select" 
-                                class="ui-button-warning"
-                                action="#{webUserController.navigateToSelectedSignatureType()}"
+                                value="Back" 
+                                action="#{webUserController.backToViewUsers()}"
                                 style="float: right;"
-                                icon="fa fa-check"
+                                icon="fa fa-arrow-left"
                                 >
                             </p:commandButton>
+                        </f:facet>
+
+                        <div class="d-flex justify-content-center mt-2">
+                            <div class="d-flex gap-5">
+                                <h:outputLabel class="mt-2" value="Type"/>
+                                <p:selectOneMenu 
+                                    style="width: 18em;"
+                                    value="#{staffImageController.viewImageType}">
+                                    <f:selectItem itemLabel="Select"/>
+                                    <f:selectItem itemValue="UPLOADIMAGE" itemLabel="Upload Image"/>
+                                    <f:selectItem itemValue="URL" itemLabel="URL Image"/>
+                                </p:selectOneMenu>
+
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Select" 
+                                    class="ui-button-warning"
+                                    action="#{webUserController.navigateToSelectedSignatureType()}"
+                                    style="float: right;"
+                                    icon="fa fa-check"
+                                    >
+                                </p:commandButton>
+                            </div>
                         </div>
-                        <div class="col-4"/>
-                    </div>
-                    
-                </p:panel>
-</h:form>
+
+                    </p:panel>
+                </h:form>
             </ui:define>
         </ui:composition>
     </h:body>
