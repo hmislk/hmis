@@ -10,7 +10,7 @@
                 <div class="row p-1" >
                     <div class="col-md-3" >
                         <h:form>
-                            <p:accordionPanel activeIndex="#{processDefinitionController.index}">
+                            <p:accordionPanel activeIndex="#{processInstanceController.index}">
                                 <p:ajax process="@this"></p:ajax>
                                 <p:tab title="Process Index">
                                     <div class="d-grid gap-2">
@@ -18,7 +18,7 @@
                                             class="w-100"
                                             ajax="false" 
                                             value="Initiate Process"
-                                            action="#{processDefinitionController.navigateToManageProcessDefinitions()}" 
+                                            action="#{processController.navigateToStartNewProcessInstance()}" 
                                             icon="fa fa-money-bill-wave" />
                                         <p:commandButton  
                                             class="w-100"
