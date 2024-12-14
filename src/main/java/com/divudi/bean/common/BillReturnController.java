@@ -64,7 +64,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     ProfessionalPaymentService professionalPaymentService;
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     SessionController sessionController;
@@ -107,7 +106,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     private PaymentMethodData paymentMethodData;
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToReturnOpdBill() {
         if (originalBillToReturn == null) {
@@ -239,7 +237,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
         return canReturn;
     }
-    
+
     public String settleOpdReturnBill() {
         if (returningStarted) {
             JsfUtil.addErrorMessage("Already Returning Started");
@@ -265,7 +263,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
         Drawer loggedUserDraver = drawerController.getUsersDrawer(sessionController.getLoggedUser());
 
-       
         if (!drawerService.hasSufficientDrawerBalance(loggedUserDraver, paymentMethod, refundingTotalAmount)) {
             JsfUtil.addErrorMessage("Your Draver does not have enough Money");
             returningStarted = false;
@@ -273,19 +270,20 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
 
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
-        
+
         if (originalBillToReturn.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
             returningStarted = false;
             return null;
         }
-        
-        if (professionalPaymentService.isProfessionalFeePaid(originalBillToReturn)) {
-            JsfUtil.addErrorMessage("Payments are already made to Staff or Outside Institute. Please cancel them first before cancelling the bill.");
-            return null;
+
+        for (BillItem bi : originalBillItemsToSelectedToReturn) {
+            if (professionalPaymentService.isProfessionalFeePaid(originalBillToReturn,bi)) {
+                JsfUtil.addErrorMessage("Staff or Outside Institute fees have already been paid for the "+bi.getItem().getName()+" procedure.");
+                return null;
+            }
         }
 
-        
         //TO DO: Check weather selected items is refunded
         if (!checkCanReturnBill(originalBillToReturn)) {
             JsfUtil.addErrorMessage("All Items are Already Refunded");
@@ -563,7 +561,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public Bill getOriginalBillToReturn() {
         return originalBillToReturn;
@@ -596,8 +593,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         this.originalBillItemsToSelectedToReturn = originalBillItemsToSelectedToReturn;
     }
 
-    
-    
     public Bill getNewlyReturnedBill() {
         return newlyReturnedBill;
     }
@@ -669,7 +664,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     public void setSelectAll(boolean selectAll) {
         this.selectAll = selectAll;
     }
-    
+
     public List<PaymentMethod> getPaymentMethods() {
         return paymentMethods;
     }
@@ -679,7 +674,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     }
 
     // </editor-fold>
-    
     @Override
     public double calculatRemainForMultiplePaymentTotal() {
         throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds.");
