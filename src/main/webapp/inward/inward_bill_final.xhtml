@@ -17,19 +17,25 @@
             <h:form  >
                 <p:panel rendered="#{!bhtSummeryController.printPreview}" >
                     <f:facet name="header" >
-                        <h:panelGrid columns="15"  >
-                            <h:outputLabel value="Inward Final Bill" />    
-                            <p:commandButton update="dList tot" value="Process" style="float: right;"
-                                             actionListener="#{bhtSummeryController.updateTotal()}" 
-                                             />
-                            <p:commandButton  value="Settle" action="#{bhtSummeryController.settle}" 
-                                              id="settle"
-                                              ajax="false"
-                                              disabled="#{bhtSummeryController.changed}"
-                                              style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h:outputLabel value="Inward Final Bill" /> 
+                            </div>
+                            <div>
+                                <p:commandButton update="dList tot" value="Process"
+                                                 actionListener="#{bhtSummeryController.updateTotal()}"
+                                                 class="ui-button-warning" icon="fas fa-cog"
+                                                 style="width: 150px; padding: 1px; margin: auto;" />
+                                <p:commandButton  value="Settle" action="#{bhtSummeryController.settle}" 
+                                                  id="settle"
+                                                  ajax="false"
+                                                  disabled="#{bhtSummeryController.changed}"
+                                                  class="ui-button-success"
+                                                  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
 
-                            </p:commandButton>
-                        </h:panelGrid>
+                                </p:commandButton>  
+                            </div>
+                        </div>
                     </f:facet>       
 
                     <h:panelGrid columns="3">
@@ -92,8 +98,8 @@
                             <h:outputLabel value="Printing Discharge Time"/>
                             <p:calendar 
                                 value="#{bhtSummeryController.patientEncounter.printingDischargeTime}"
-                                        id="printingDischargeTimeStamp"
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                               
+                                id="printingDischargeTimeStamp"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                               
                             </p:calendar>    
                         </h:panelGrid>
                     </h:panelGrid>
