@@ -1574,7 +1574,7 @@ public class BhtSummeryController implements Serializable {
         createPatientRooms();
         updateTotal();
 
-        return "inward_bill_final";
+        return "inward_bill_final?faces-redirect=true;";
 
     }
 
