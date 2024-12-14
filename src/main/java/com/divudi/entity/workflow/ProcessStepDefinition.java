@@ -42,6 +42,12 @@ public class ProcessStepDefinition implements Serializable {
 
     @Column(nullable = false)
     private boolean active = true;
+    
+    private Double sequenceOrder;
+    
+    private String actionType;
+    
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     private ProcessDefinition parent;
@@ -60,6 +66,8 @@ public class ProcessStepDefinition implements Serializable {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date retiredAt;
+    
+    
     
     
     public Long getId() {
@@ -183,6 +191,22 @@ public class ProcessStepDefinition implements Serializable {
 
     public void setRetiredAt(Date retiredAt) {
         this.retiredAt = retiredAt;
+    }
+
+    public Double getSequenceOrder() {
+        return sequenceOrder;
+    }
+
+    public void setSequenceOrder(Double sequenceOrder) {
+        this.sequenceOrder = sequenceOrder;
+    }
+
+    public String getActionType() {
+        return actionType;
+    }
+
+    public void setActionType(String actionType) {
+        this.actionType = actionType;
     }
     
 }
