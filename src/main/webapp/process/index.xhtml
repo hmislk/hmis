@@ -7,7 +7,7 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <div class="row" >
+                <div class="row p-1" >
                     <div class="col-md-3" >
                         <h:form>
                             <p:accordionPanel activeIndex="#{searchController.managePaymentIndex}">
@@ -18,9 +18,8 @@
                                             class="w-100"
                                             ajax="false" 
                                             value="Process Definition"
-                                            action="#{processDefinitionController.navigate}" 
-                                            icon="fa fa-money-bill-wave"
-                                            rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
+                                            action="#{processDefinitionController.navigateToManageProcessDefinitions()}" 
+                                            icon="fa fa-money-bill-wave" />
                                         
                                     </div>
                                 </p:tab>

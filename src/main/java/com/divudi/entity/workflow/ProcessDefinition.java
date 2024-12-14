@@ -2,7 +2,7 @@ package com.divudi.entity.workflow;
 
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,11 +11,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
- *
- * @author Dr M H B Ariyaratne
- *
+ * Entity class for process definitions.
+ * Dr M H B Ariyaratne
  */
 @Entity
 public class ProcessDefinition implements Serializable {
@@ -39,23 +39,22 @@ public class ProcessDefinition implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private ProcessDefinition parent;
 
-    // Creator Properties
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser creator;
 
-    @Column(nullable = false)
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private LocalDateTime createdAt;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
 
-    // Retiring Properties
     @Column(nullable = false)
     private boolean retired = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser retirer;
 
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private LocalDateTime retiredAt;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date retiredAt;
+
+    // Getters and setters
 
     public Long getId() {
         return id;
@@ -63,36 +62,6 @@ public class ProcessDefinition implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public ProcessDefinition() {
-    }
-    
-    
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof ProcessDefinition)) {
-            return false;
-        }
-        ProcessDefinition other = (ProcessDefinition) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "com.divudi.entity.workflow.ProcessDefinition[ id=" + id + " ]";
     }
 
     public String getName() {
@@ -143,11 +112,11 @@ public class ProcessDefinition implements Serializable {
         this.creator = creator;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
@@ -167,12 +136,45 @@ public class ProcessDefinition implements Serializable {
         this.retirer = retirer;
     }
 
-    public LocalDateTime getRetiredAt() {
+    public Date getRetiredAt() {
         return retiredAt;
     }
 
-    public void setRetiredAt(LocalDateTime retiredAt) {
+    public void setRetiredAt(Date retiredAt) {
         this.retiredAt = retiredAt;
     }
 
+    // Overriding equals, hashCode, and toString methods
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        ProcessDefinition other = (ProcessDefinition) obj;
+        if (id == null) {
+            if (other.id != null) {
+                return false;
+            }
+        } else if (!id.equals(other.id)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "ProcessDefinition[id=" + id + "]";
+    }
 }
