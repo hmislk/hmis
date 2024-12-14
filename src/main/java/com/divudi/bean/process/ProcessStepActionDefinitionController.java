@@ -1,8 +1,8 @@
-package com.divudi.bean.emr;
+package com.divudi.bean.process;
 
-import com.divudi.entity.workflow.ProcessDefinition;
-import com.divudi.entity.workflow.ProcessStepActionDefinition;
-import com.divudi.entity.workflow.ProcessStepDefinition;
+import com.divudi.entity.process.ProcessDefinition;
+import com.divudi.entity.process.ProcessStepActionDefinition;
+import com.divudi.entity.process.ProcessStepDefinition;
 import com.divudi.facade.ProcessStepActionDefinitionFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;

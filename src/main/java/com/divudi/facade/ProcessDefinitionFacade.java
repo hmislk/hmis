@@ -1,6 +1,6 @@
 package com.divudi.facade;
 
-import com.divudi.entity.workflow.ProcessDefinition;
+import com.divudi.entity.process.ProcessDefinition;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
