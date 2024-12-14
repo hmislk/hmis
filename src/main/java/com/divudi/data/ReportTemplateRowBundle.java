@@ -1130,7 +1130,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBill().getCollctingCentreFee());
+                Double amount = safeDouble(row.getBill().getTotalCenterFee());
                 ccTotal += amount;
             }
         }
