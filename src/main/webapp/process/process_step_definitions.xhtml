@@ -92,7 +92,7 @@
                                                          styleClass="form-control" 
                                                          disabled="#{!processStepDefinitionController.editable}">
                                             <f:selectItem itemLabel="Select Process" itemValue="#{null}" />
-                                            <f:selectItems value="#{processStepDefinitionController.processDefinitions}" var="pd"
+                                            <f:selectItems value="#{processDefinitionController.items}" var="pd"
                                                            itemValue="#{pd}" itemLabel="#{pd.name}" />
                                         </p:selectOneMenu>
 
