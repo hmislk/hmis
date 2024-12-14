@@ -808,23 +808,23 @@ public class ItemController implements Serializable {
 
     public String navigateToListAllItems() {
         allItems = null;
-        return "/item/reports/item_list";
+        return "/item/reports/item_list?faces-redirect=true";
     }
 
     public String navigateToEditFeaturesOfMultipleItems() {
-        return "/admin/items/multiple_item_edit";
+        return "/admin/items/multiple_item_edit?faces-redirect=true";
     }
 
     public String navigateToListFilteredItems() {
         filteredItems = null;
-        return "/admin/items/list";
+        return "/admin/items/list?faces-redirect=true";
     }
 
     public String navigateToListAllItemsForAdmin() {
         allItems = null;
         filterDepartment = null;
         filterInstitution = null;
-        return "/admin/items/list";
+        return "/admin/items/list?faces-redirect=true";
     }
 
     public void fillInvestigations() {
