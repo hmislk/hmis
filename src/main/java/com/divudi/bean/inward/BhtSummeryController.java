@@ -1629,7 +1629,7 @@ public class BhtSummeryController implements Serializable {
         getCurrent().setPaidAmount(paid);
         getCurrent().setClaimableTotal(adjustedTotal);
         getCurrent().setInstitution(getSessionController().getInstitution());
-
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL);
         getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL));
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL));
 
