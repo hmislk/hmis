@@ -25,12 +25,14 @@
                 <div class="d-flex gap-3 mt-2">
                     <h:outputText value="Paid Value : " class="mt-2" ></h:outputText>
                     <p:inputText 
+                        id="txtMpPd"
                         autocomplete="off"   
+                        onfocus="this.select();"
                         value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}" 
                         style="width: 7em!important;" 
-                        class="w-100" 
-                        id="txtVal" >
+                        class="w-100"  >
                         <f:convertNumber pattern="#,##0.00" />
+                        <p:ajax event="keyup" process="txtMpPd" ></p:ajax>
                     </p:inputText>
                 </div>
             </div>
