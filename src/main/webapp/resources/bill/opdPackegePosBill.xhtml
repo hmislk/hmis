@@ -176,6 +176,25 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
+                                <h:outputLabel value="Age" ></h:outputLabel>
+                            </td>
+                            <td style="width: 10%;">:</td>
+                            <td style="width: 30%;" >
+                                <h:outputLabel value="#{cc.attrs.bill.patient.age}"  >
+                                </h:outputLabel>
+                            </td>
+                            <td style="width: 10%" >
+                            </td>
+                            <td style="width: 15%" >
+                            </td>
+                            <td style="width: 30%" >
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
+                        <tr>
+                            <td style="width: 15% ;text-align: left;" >
                                 <h:outputLabel value="Tel. No" ></h:outputLabel>
                             </td>
                             <td style="width: 10%;">:</td>
@@ -310,7 +329,7 @@
 
 
             <div class="billline">
-                 <h:outputLabel value="-------------------------------------------------------------"   />                           
+                <h:outputLabel value="-------------------------------------------------------------"   />                           
             </div>
 
 
