@@ -45,7 +45,7 @@
             </div>
 
             <div class="billline">
-                 <h:outputLabel value="-------------------------------------------------------------"   />                           
+                <h:outputLabel value="-------------------------------------------------------------"   />                           
             </div>
             <div class="billDetails" >
                 <table style="width: 100%; margin-left:0.5cm; text-align: left" >
@@ -268,6 +268,45 @@
                             <td style="width: 30%" >
                             </td>
                         </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{cc.attrs.bill.creater.staff ne null}" >
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Code instead of Cashier Name in PosPaper in OPD Package Bills')}">
+                            <tr>
+                                <td style="width: 15% ;text-align: left;" >
+                                    <h:outputLabel value="Billed By" ></h:outputLabel>
+                                </td>
+                                <td style="width: 10%;">:</td>
+                                <td style="width: 30%;" >
+                                    <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}"  >
+                                    </h:outputLabel>
+                                </td>
+                                <td style="width: 10%" >
+                                </td>
+                                <td style="width: 15%" >
+                                </td>
+                                <td style="width: 30%" >
+                                </td>
+                            </tr>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Print Code instead of Cashier Name in PosPaper in OPD Package Bills')}">
+                            <tr>
+                                <td style="width: 15% ;text-align: left;" >
+                                    <h:outputLabel value="Billed By" ></h:outputLabel>
+                                </td>
+                                <td style="width: 10%;">:</td>
+                                <td style="width: 30%;" >
+                                    <h:outputLabel value="#{cc.attrs.bill.creater.staff.person.name}"  >
+                                    </h:outputLabel>
+                                </td>
+                                <td style="width: 10%" >
+                                </td>
+                                <td style="width: 15%" >
+                                </td>
+                                <td style="width: 30%" >
+                                </td>
+                            </tr>
+                        </h:panelGroup>
                     </h:panelGroup>
                 </table>
 
