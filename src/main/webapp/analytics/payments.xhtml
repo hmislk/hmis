@@ -59,9 +59,11 @@
                                 id="btnExcel"
                                 ajax="false"
                                 value="Excel" >
-                                <p:dataExporter fileName="Payments" type="xls" target="tblBills" ></p:dataExporter>
+                                <p:dataExporter fileName="Payments" type="xlsx" target="tblBills" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
+                        
+                        
 
                         <p:dataTable 
                             rowIndexVar="i" 
@@ -84,6 +86,16 @@
                                 filterBy="#{payment.bill.deptId}" 
                                 filterMatchMode="contains">
                                 <p:outputLabel value="#{payment.bill.deptId}" />
+                            </p:column>
+
+                            <p:column 
+                                headerText="Date"
+                                sortBy="#{payment.createdAt}" 
+                                filterBy="#{payment.createdAt}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
                             </p:column>
 
                             <p:column 

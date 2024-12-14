@@ -220,7 +220,7 @@
                                             <h:outputLabel  value="#{patientInvestigation.billItem.bill.deptId}" ></h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Order Date" style="vertical-align: top;  width: 10em; padding: 8px;">
+                                        <p:column headerText="Order Date" style="vertical-align: top;  width: 12em; padding: 8px;">
                                             <h:outputLabel value="#{patientInvestigation.billItem.bill.createdAt}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                                             </h:outputLabel>
@@ -314,106 +314,6 @@
 
                                     </p:dataTable>
                                 </h:panelGroup>
-
-<!--                                PATIENT_REPORTS
-                                <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_REPORTS'}" >
-                                    <div class="d-flex justify-content-center mb-4">
-                                        <h:outputText value="Patient Reports" style="font-size: 44px; font-weight: 800"/>
-                                    </div>
-                                    <p:dataTable  
-                                        class="w-100"
-                                        value="#{patientInvestigationController.patientReports}" 
-                                        var="dpr"
-                                        rowIndexVar="rowIndex"
-                                        paginator="true"
-                                        rowKey="#{dpr.id}"
-                                        paginatorPosition="bottom"
-                                        selectionMode="multiple"
-                                        selection="#{patientInvestigationController.selectedPatientReports}"
-                                        rows="50"
-                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                        rowsPerPageTemplate="50,100,200">
-
-                                        <p:column headerText="S.No" style="vertical-align: top; width: 3em; padding: 8px;">
-                                            <h:outputLabel value="#{rowIndex + 1}" />
-                                        </p:column>
-                                        <p:column headerText="CC Code" style="vertical-align: top; width: 4em; padding: 8px;">
-                                            <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.collectingCentre.code}"/><br/>
-                                        </p:column>
-
-                                        <p:column headerText="Leaf No" style="vertical-align: top; width: 6em; padding: 8px;">
-                                            <h:outputLabel  value="#{dpr.patientInvestigation.billItem.bill.referenceNumber}" ></h:outputLabel>
-                                        </p:column>
-
-                                        <p:column headerText="MRN" style="vertical-align: top;  width: 7em; padding: 8px;">
-                                            <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.patient.phn}" />
-                                        </p:column>
-
-                                        <p:column headerText="Patient" style="vertical-align: top; padding: 8px;">
-                                            <i class="fas fa-user text-primary"></i>
-                                            <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.patient.person.nameWithTitle}" class="mx-3" />
-                                        </p:column>
-
-                                        <p:column headerText="Invoice No." style="vertical-align: top; width: 15em; padding: 8px;">
-                                            <h:outputLabel  value="#{dpr.patientInvestigation.billItem.bill.deptId}" ></h:outputLabel>
-                                        </p:column>
-
-                                        <p:column headerText="Order Date" style="vertical-align: top;  width: 10em; padding: 8px;">
-                                            <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.createdAt}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
-                                            </h:outputLabel>
-                                        </p:column>
-
-                                        <p:column headerText="Investigations" style="vertical-align: top; padding: 8px;">
-                                            <i class="fas fa-vial text-danger"></i>  Investigation Icon 
-                                            <h:outputLabel value="#{dpr.patientInvestigation.investigation.name}" class="mx-2"/>
-                                        </p:column>
-
-                                        <p:column  style="vertical-align: top; width: 10em; padding: 8px;" >
-                                            <f:facet name="header">
-                                                <h:outputText value="Reporting Status" style="text-align: center; display: block;" />
-                                            </f:facet>
-
-                                            <div class="d-flex justify-content-center">
-                                                <p:badge rendered="#{dpr.patientInvestigation.status ne 'SAMPLE_ACCEPTED' and !dpr.approved}" size="large" value="Pending" severity="danger" styleClass="mr-2"></p:badge>
-                                                <p:badge rendered="#{dpr.patientInvestigation.status eq 'SAMPLE_ACCEPTED' and !dpr.approved}" size="large" value="Processing" severity="warning" styleClass="mr-2"></p:badge>
-                                                <p:badge rendered="#{dpr.approved}" value="Aproved" severity="success"  size="large" styleClass="mr-2"></p:badge>
-                                            </div>
-                                        </p:column>
-
-                                        <p:column headerText="Actions" style="vertical-align: top; width:5em; padding: 8px;">
-
-                                            <div class="d-flex gap-3">
-                                                 Print Report CommandLink 1 
-                                                <p:commandLink 
-                                                    id="cmdOldReportPrint1" 
-                                                    ajax="false" 
-                                                    title="To Print Report"
-                                                    action="/collecting_centre/courier/patient_report_print?faces-redirect=true" 
-                                                    disabled="#{!dpr.approved}" 
-                                                    rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
-                                                    <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" />
-                                                    <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
-                                                </p:commandLink>
-
-                                                 Print Report CommandLink 2 
-                                                <p:commandLink 
-                                                    id="cmdOldReportPrint2" 
-                                                    ajax="false" 
-                                                    title="To Print Report"
-                                                    action="/collecting_centre/courier/patient_report_print?faces-redirect=true" 
-                                                    disabled="#{!dpr.approved or dpr.patientInvestigation.billItem.bill.backwardReferenceBill.balance ne 0}" 
-                                                    rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
-                                                    <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" />
-                                                    <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
-                                                </p:commandLink>
-                                            </div>
-
-                                        </p:column>
-
-                                    </p:dataTable>
-                                </h:panelGroup>-->
-
                             </div>
                         </div>
                     </h:form>

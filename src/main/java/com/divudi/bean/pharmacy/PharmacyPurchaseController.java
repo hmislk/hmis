@@ -110,6 +110,8 @@ public class PharmacyPurchaseController implements Serializable {
     private BilledBill bill;
     private BillItem currentBillItem;
     private boolean printPreview;
+    
+    private String warningMessage;
 
     double saleRate;
     double wsRate;
@@ -125,6 +127,9 @@ public class PharmacyPurchaseController implements Serializable {
     private double billItemsTotalQty;
 
     private PaymentMethodData paymentMethodData;
+    private Institution site;
+    private Institution toInstitution;
+    private PaymentMethod paymentMethod;
 
     public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
         Date startTime = new Date();
@@ -244,7 +249,7 @@ public class PharmacyPurchaseController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = new Date();
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -259,6 +264,7 @@ public class PharmacyPurchaseController implements Serializable {
         currentBillItem = null;
         bill = null;
         billItems = null;
+        warningMessage=null;
     }
 
     public String navigateToAddNewPharmacyWholesaleDirectPurchaseBill() {
@@ -337,15 +343,23 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public void setBatch() {
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
-            Date date = getCurrentBillItem().getPharmaceuticalBillItem().getDoe();
-            DateFormat df = new SimpleDateFormat("ddMMyyyy");
-            String reportDate = df.format(date);
-// Print what date is today!
-            //       //System.err.println("Report Date: " + reportDate);
-            getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(reportDate);
-        }
+        if (getCurrentBillItem() != null) {
+            PharmaceuticalBillItem pharmaceuticalBillItem = getCurrentBillItem().getPharmaceuticalBillItem();
 
+            if (pharmaceuticalBillItem != null) {
+                String stringValue = pharmaceuticalBillItem.getStringValue();
+
+                if (stringValue != null && stringValue.trim().equals("")) {
+                    Date date = pharmaceuticalBillItem.getDoe();
+
+                    if (date != null) {
+                        DateFormat df = new SimpleDateFormat("ddMMyyyy");
+                        String reportDate = df.format(date);
+                        pharmaceuticalBillItem.setStringValue(reportDate);
+                    }
+                }
+            }
+        }
     }
 
     public String errorCheck() {
@@ -454,6 +468,10 @@ public class PharmacyPurchaseController implements Serializable {
             JsfUtil.addErrorMessage("Please Fill Invoice Date");
             return;
         }
+        if (getBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            JsfUtil.addErrorMessage("MultiplePayments Not Allowed.");
+            return;
+        }
 
         //Need to Add History
         String msg = errorCheck();
@@ -466,7 +484,7 @@ public class PharmacyPurchaseController implements Serializable {
         //   saveBillComponent();
 
 //        Payment p = createPayment(getBill());
-        List<Payment> ps = paymentService.createPayment(getBill(), getBill().getPaymentMethod(), paymentMethodData, sessionController.getDepartment(), sessionController.getLoggedUser(), null);
+        List<Payment> ps = paymentService.createPayment(getBill(), getPaymentMethodData());
 
         billItemsTotalQty = 0;
         for (BillItem i : getBillItems()) {
@@ -620,10 +638,10 @@ public class PharmacyPurchaseController implements Serializable {
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0) {
-            JsfUtil.addErrorMessage("Please enter a purchase rate");
-            return;
-        }
+//        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0) {
+//            JsfUtil.addErrorMessage("Please enter a purchase rate");
+//            return;
+//        }
         if (getCurrentBillItem().getPharmaceuticalBillItem().getDoe() == null) {
             JsfUtil.addErrorMessage("Please set the date of expiry");
             return;
@@ -934,4 +952,38 @@ public class PharmacyPurchaseController implements Serializable {
         this.paymentMethodData = paymentMethodData;
     }
 
+    public String getWarningMessage() {
+        return warningMessage;
+    }
+
+    public void setWarningMessage(String warningMessage) {
+        this.warningMessage = warningMessage;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Institution getToInstitution() {
+        return toInstitution;
+    }
+
+    public void setToInstitution(Institution toInstitution) {
+        this.toInstitution = toInstitution;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    
+    
 }

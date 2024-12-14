@@ -72,7 +72,7 @@ public class PatientService {
     }
 
     // Method to search by NIC only
-    public  List<Patient>  searchPatientsByNic(String nic) {
+    public List<Patient> searchPatientsByNic(String nic) {
         String j = "select p from Patient p where p.retired = false and p.person.nic = :nic order by p.id desc";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("nic", nic);
@@ -97,9 +97,9 @@ public class PatientService {
         return patientsSavedWithPhoneNo;
     }
 
-        /**
+    /**
      * Method to find the first patient whose name contains the search string.
-     * 
+     *
      * @param patients List of patients to search within.
      * @param searchName Name or part of a name to search for.
      * @return The first matching patient, or null if no match is found.
@@ -121,5 +121,14 @@ public class PatientService {
         return null; // Return null if no match is found
     }
 
-    
+    public Patient reloadPatient(Patient p) {
+        if (p == null) {
+            return null;
+        }
+        if (p.getId() == null) {
+            patientFacade.create(p);
+            return p;
+        }
+        return patientFacade.findWithoutCache(p.getId());
+    }
 }

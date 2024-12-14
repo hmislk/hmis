@@ -58,7 +58,7 @@
                                             id="billNo" 
                                             ajax="false" 
                                             value="#{bill.deptId}" 
-                                            action="#{pettyCashBillController.NavigatePettyAndIouReprint()}"
+                                            action="#{pettyCashBillController.navigatePettyAndIouReprint()}"
                                             actionListener="#{pettyCashBillController.fillBillsReferredByCurrentBill()}"
                                             >
                                             <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillSearch.bill}"/>

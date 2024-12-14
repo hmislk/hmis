@@ -251,7 +251,8 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.creater.staff ne null}" >
-                        <tr>
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Code instead of Cashier Name in OPD Bills')}">
+                            <tr>
                             <td style="width: 15% ;text-align: left;" >
                                 <h:outputLabel value="Billed by" style="text-align: center!important;
                                                font-size: 12px!important;
@@ -259,7 +260,7 @@
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.creater.staff.name}" style="text-align: center!important;
+                                <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>
@@ -269,6 +270,27 @@
                                 </h:outputLabel>-->
                             </td>
                         </tr>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Print Code instead of Cashier Name in OPD Bills')}">
+                            <tr>
+                            <td style="width: 15% ;text-align: left;" >
+                                <h:outputLabel value="Billed by" style="text-align: center!important;
+                                               font-size: 12px!important;
+                                               font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 30%;" >
+                                <h:outputLabel value="#{cc.attrs.bill.creater.staff.person.nameWithTitle}" style="text-align: center!important;
+                                               font-size: 12px!important;
+                                               font-family:Arial, Helvetica, sans-serif!important;">
+                                </h:outputLabel>
+<!--                                <h:outputLabel value="#{cc.attrs.bill.id}" style="text-align: center!important;
+                                               font-size: 12px!important;
+                                               font-family:Arial, Helvetica, sans-serif!important;">
+                                </h:outputLabel>-->
+                            </td>
+                        </tr>
+                        </h:panelGroup>
                     </h:panelGroup>
 
 
@@ -434,7 +456,7 @@
                 </table>
 
             </div>
-            
+
             <div class="billDetails d-flex justify-content-end">
                 <h:outputLabel value="Original Bill : #{cc.attrs.bill.deptId}" class="mx-3" rendered="#{cc.attrs.bill.cancelled and configOptionApplicationController.getBooleanValueByKey('Package Billing - Display the Original Bill Number in Canceled Bill',false)}"/>
             </div>
@@ -453,7 +475,7 @@
                     </h:outputLabel>
                 </div>
             </h:panelGroup>
-            
+
             <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
                 <div class="d-flex gap-2" style="font-size: 12px;">
                     <h:outputLabel value="Remark :"/>
@@ -462,15 +484,8 @@
             </h:panelGroup>
 
             <div class="footer">
-                <br/>
-                The Greatest Wealth is Health!
-                <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
-                    <br/>
-                </h:panelGroup>
-                <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>
+                #{configOptionApplicationController.getLongTextValueByKey("OPD Bill Footer Massage")}
             </div>
-
-
 
         </div>
     </cc:implementation>

@@ -117,7 +117,7 @@ public class BillItem implements Serializable {
     Date fromTime;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date toTime;
-    @OneToOne(mappedBy = "billItem")
+    @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER)
     private PatientInvestigation patientInvestigation;
     @OneToOne
     BillItem referanceBillItem;
@@ -139,6 +139,12 @@ public class BillItem implements Serializable {
     @Enumerated(EnumType.ORDINAL)
     private BillItemStatus billItemStatus;
     private double feeValue;
+    @ManyToOne
+    private Department requestedFromDepartment;
+    @ManyToOne
+    private Department requestedToDepartment;
+    @ManyToOne
+    private Department peformedDepartment;
 
 //    @Transient
     int searialNo;
@@ -166,7 +172,7 @@ public class BillItem implements Serializable {
 //    @Transient
 //    private double totalProcedureFeeValueTransient;
 
-    @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
     @OrderBy("feeAdjusted")
@@ -256,6 +262,25 @@ public class BillItem implements Serializable {
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
         //  referanceBillItem=billItem.getReferanceBillItem();
+    }
+    
+    public void copyWithoutFinancialData(BillItem billItem) {
+        item = billItem.getItem();
+        sessionDate = billItem.getSessionDate();
+        patientEncounter = billItem.getPatientEncounter();
+        patientInvestigation = billItem.getPatientInvestigation();
+        inwardChargeType = billItem.getInwardChargeType();
+        agentRefNo = billItem.getAgentRefNo();
+        item = billItem.getItem();
+        qty = billItem.getQty();
+        descreption = billItem.getDescreption();
+        billTime = billItem.getBillTime();
+        searialNo = billItem.getSearialNo();
+        tmpQty = billItem.tmpQty;
+        referenceBill = billItem.getReferenceBill();
+        marginValue = billItem.getMarginValue();
+        priceMatrix = billItem.getPriceMatrix();
+        agentRefNo = billItem.getAgentRefNo();
     }
 
     public void resetValue() {
@@ -1012,6 +1037,30 @@ public class BillItem implements Serializable {
 
     public void setBillItemRefunded(boolean billItemRefunded) {
         this.billItemRefunded = billItemRefunded;
+    }
+
+    public Department getRequestedFromDepartment() {
+        return requestedFromDepartment;
+    }
+
+    public void setRequestedFromDepartment(Department requestedFromDepartment) {
+        this.requestedFromDepartment = requestedFromDepartment;
+    }
+
+    public Department getRequestedToDepartment() {
+        return requestedToDepartment;
+    }
+
+    public void setRequestedToDepartment(Department requestedToDepartment) {
+        this.requestedToDepartment = requestedToDepartment;
+    }
+
+    public Department getPeformedDepartment() {
+        return peformedDepartment;
+    }
+
+    public void setPeformedDepartment(Department peformedDepartment) {
+        this.peformedDepartment = peformedDepartment;
     }
     
     

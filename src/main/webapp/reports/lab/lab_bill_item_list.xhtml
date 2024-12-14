@@ -7,11 +7,7 @@
       xmlns:p="http://primefaces.org/ui">
     <ui:composition template="/reports/index.xhtml">
         <ui:define name="subcontent">
-            <h:head>
-                <style>
-                    #{configOptionApplicationController.getLongTextValueByKey('CSS for Sample Container Sticker')}
-                </style>
-            </h:head>
+         
 
             <p:panel header="Lab Bill Items" style="overflow-x: scroll;">
                 <h:form>
@@ -65,10 +61,6 @@
 
                         <p:spacer ></p:spacer>
                         <p:spacer ></p:spacer>
-
-
-
-
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -239,16 +231,19 @@
                         <h:outputLabel 
                             value="#{billItem.bill.deptId}" >
                         </h:outputLabel>
-                        <p:commandLink 
-                            ajax="false" 
-                            title="View Bill Details"
-                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                            <h:outputText 
-                                value="&#xf06e;" 
-                                escape="false"  
-                                styleClass="fa"/>
-                            <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
-                        </p:commandLink>
+
+                    </p:column>
+                    
+                    <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill Type"  filterBy="#{billItem.bill.billTypeAtomic}" sortBy="#{billItem.bill.billTypeAtomic}" filterMatchMode="contains">
+                        <h:outputLabel 
+                            value="#{billItem.bill.billTypeAtomic}" >
+                        </h:outputLabel>
+                    </p:column>
+                    
+                    <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="ID"  filterBy="#{billItem.id}" sortBy="#{billItem.id}" filterMatchMode="contains">
+                        <h:outputLabel 
+                            value="#{billItem.id}" >
+                        </h:outputLabel>
                     </p:column>
 
                     <!-- Bill Date Column -->
@@ -291,6 +286,10 @@
                         <h:outputLabel value="#{billItem.bill.toDepartment.name}" />
                     </p:column>
 
+                    <!-- Billed Department Column -->
+                    <p:column headerText="Billed Department" filterBy="#{billItem.bill.department.name}" sortBy="#{billItem.bill.department.name}">
+                        <h:outputLabel value="#{billItem.bill.department.name}" />
+                    </p:column>
 
                     <!-- Hospital Fee Column -->
                     <p:column headerText="Hospital Fee">
@@ -365,18 +364,7 @@
                             rendered="#{billItem.bill.cancelled}" 
                             value="#{billItem.bill.cancelledBill.deptId}">
                         </h:outputLabel>
-                        <p:commandLink 
-                            class="mx-3 ui-message-error"
-                            ajax="false" 
-                            rendered="#{billItem.bill.cancelled}" 
-                            title="View Cancel Bill Details"
-                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                            <h:outputText 
-                                value="&#xf06e;" 
-                                escape="false"  
-                                styleClass="fa"/>
-                            <f:setPropertyActionListener value="#{billItem.bill.cancelledBill}" target="#{billSearch.bill}"/>
-                        </p:commandLink>
+
                     </p:column>
 
                     <p:column headerText="Refunded">
@@ -390,6 +378,50 @@
                             rendered="#{billItem.refunded}" 
                             value="#{billItem.referanceBillItem}">
                         </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Actions" exportable="false" >
+                        <p:commandButton 
+                            value="View" 
+                            icon="fa fa-eye" 
+                            class="m-1 ui-button-info"
+                            style="width: 100px;"
+                            action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                            ajax="false">
+                            <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
+                        </p:commandButton>
+                        <p:commandButton 
+                            value="View Cancel Bill Details" 
+                            icon="fa fa-ban" 
+                            class="m-1 ui-button-danger" 
+                            style="width: 100px;"
+                            action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                            ajax="false" 
+                            rendered="#{billItem.bill.cancelled}">
+                            <f:setPropertyActionListener value="#{billItem.bill.cancelledBill}" target="#{billSearch.bill}"/>
+                        </p:commandButton>
+
+
+                        <p:commandButton 
+                            value="Manage" 
+                            icon="fa fa-tools" 
+                            class="m-1 ui-button-warning" 
+                            style="width: 100px;"
+                            action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
+                            ajax="false">
+                            <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Admin" 
+                            icon="fa fa-shield-alt" 
+                            class="m-1 ui-button-danger" 
+                            style="width: 100px;"
+                            action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                            ajax="false" 
+                            rendered="#{webUserController.hasPrivilege('Developers')}">
+                            <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
+                        </p:commandButton>
                     </p:column>
 
                 </p:dataTable>

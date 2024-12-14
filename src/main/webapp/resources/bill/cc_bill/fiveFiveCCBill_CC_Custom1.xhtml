@@ -42,6 +42,7 @@
                 <h:outputLabel value="Collection Center Invoice"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />  
+                <h:outputLabel value="**Refunded**"  rendered="#{cc.attrs.bill.refunded eq true}" />  
             </div>
 
             <div>
@@ -151,7 +152,7 @@
                             <td>:</td>
                             <td></td>
                             <td>
-                                <h:outputLabel value="#{cc.attrs.bill.institution.name}"  style="font-size: 12px;">
+                                <h:outputLabel value="#{cc.attrs.bill.collectingCentre.name}"  style="font-size: 12px;">
                                 </h:outputLabel>
                             </td>
                         </tr>
@@ -323,17 +324,14 @@
                                 <h:outputLabel value="Current Balance" style="font-size: 13px; font-weight: bold;"/>
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.institution.ballance}" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}" style="font-size: 13px!important; font-weight: bolder!important;" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.institution.ballance}" rendered="#{cc.attrs.bill.cancelledBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                                <h:outputLabel value="#{cc.attrs.bill.refundedBill.institution.ballance}" rendered="#{cc.attrs.bill.refundedBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
+                                <h:outputLabel 
+                                    value="#{collectingCentreBillController.findCCBalanceAfterBilling(cc.attrs.bill)}" 
+                                    style="font-size: 13px!important; font-weight: bolder!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>
+                        
                     </h:panelGroup>
 
                 </table>

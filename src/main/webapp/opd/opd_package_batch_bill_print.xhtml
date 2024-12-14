@@ -1,0 +1,267 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+    <ui:define name="content">
+
+        <h:form id="form">
+            <p:growl id="msg"/>
+            <h:panelGroup  >
+                <p:panel class="w-100" >
+                    <f:facet name="header" >
+                        <h:outputText styleClass="pi pi-slack" />
+                        <h:outputLabel value="OPD Package Bill" class="mx-4"></h:outputLabel>
+                    </f:facet>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-end">
+                                <p:outputLabel value="Paper Type" class="mt-2 mx-2"></p:outputLabel>
+                                <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                                    <f:selectItem itemLabel="Please Select Paper Type" />
+                                    <f:selectItems value="#{enumController.paperTypes}" />
+                                </p:selectOneMenu>
+                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-6">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <div class="d-flex justify-content-between">
+                                                <p:outputLabel value="Bills" class="mt-2"></p:outputLabel>
+                                                <p:commandButton 
+                                                    value="Print" 
+                                                    class="ui-button-info"
+                                                    icon="fa fa-print"
+                                                    ajax="false">
+                                                    <p:printer target="printView" />
+                                                </p:commandButton> 
+                                            </div>
+                                        </f:facet>
+                                        <h:panelGroup id="printView">
+
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                                <ui:repeat value="#{billPackageController.bills}" var="b">
+                                                    <bi:opdPackegePosBill bill="#{b}"/>
+                                                </ui:repeat>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                                <ui:repeat value="#{billPackageController.bills}" var="b">
+                                                    <bi:five_five_paper_with_headings_opd_package bill="#{b}"/>   
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                                <ui:repeat value="#{billPackageController.bills}" var="ffb" >
+                                                    <prints:five_five_paper_coustom_1_package_single bill="#{ffb}" payments="#{billPackageController.payments}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </div>
+                                <div class="col-6">
+                                    <div class="row">
+                                        <p:panel>
+                                            <f:facet name="header">
+                                                <div class="d-flex justify-content-between">
+                                                    <p:outputLabel value="Package Bill" class="mt-2"></p:outputLabel>
+                                                    <p:commandButton 
+                                                        value="Print Package Bill" 
+                                                        class="ui-button-info"
+                                                        icon="fa fa-print"
+                                                        ajax="false">
+                                                        <p:printer target="packageBillView" />
+                                                    </p:commandButton> 
+                                                </div>
+                                            </f:facet>
+
+                                            <h:panelGroup id="packageBillView">
+                                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                                    <prints:bill_template_of_5x5_C1_package_PackageBill bill="#{billPackageController.batchBill}" payments="#{billPackageController.payments}"/>                        
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+
+                                        </p:panel>
+                                    </div>
+                                    <div class="row">
+                                        <p:panel>
+                                            <f:facet name="header">
+                                                <div class="d-flex justify-content-between">
+                                                    <p:outputLabel value="Batch Bill" class="mt-2"></p:outputLabel>
+                                                    <p:commandButton 
+                                                        value="Print Batch Bill" 
+                                                        class="ui-button-info"
+                                                        icon="fa fa-print"
+                                                        ajax="false">
+                                                        <p:printer target="batchBillView" />
+                                                    </p:commandButton> 
+                                                </div>
+                                            </f:facet>
+
+                                            <h:panelGroup id="batchBillView">
+                                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                                    <prints:bill_template_of_5x5_C1_package_BatchBill bill="#{billPackageController.batchBill}" payments="#{billPackageController.payments}"/>                        
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+
+                                        </p:panel>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6" >
+                            <p:panelGrid columns="2" layout="tabular" class="w-100 m-1" columnClasses="text-start ps-5, text-end pe-5">
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <h:outputLabel value="Batch Bill Details" class="" />
+                                        <div class="d-flex">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                icon="fa fa-ban" 
+                                                value="To Cancel Batch Bill"
+                                                disabled="#{billPackageController.batchBill.cancelled or billPackageController.batchBill.refunded}"
+                                                action="#{billPackageController.navigateToCancelOpdPackageBatchBill}" 
+                                                styleClass="m-1 ui-button-danger">
+                                            </p:commandButton>
+
+                                        </div>
+                                    </div>
+                                </f:facet>
+
+                                <!-- Left aligned labels and right aligned values -->
+                                <h:outputText value="Batch Bill Number:" styleClass="text-start fw-bold" />
+                                <h:outputText value="#{billPackageController.batchBill.deptId}" styleClass="text-end #{billPackageController.batchBill.refunded ? 'row-warning' : billPackageController.batchBill.cancelled ? 'row-danger' : ''}" />
+
+                                <h:outputText value="Payment Method:" styleClass="text-start fw-bold" />
+                                <h:outputText value="#{billPackageController.batchBill.paymentMethod.label}" styleClass="text-end #{billPackageController.batchBill.refunded ? 'row-warning' : billPackageController.batchBill.cancelled ? 'row-danger' : ''}" />
+
+                                <h:outputText value="Gross Total:" styleClass="text-start fw-bold" />
+                                <h:outputText value="#{billPackageController.batchBill.total}" styleClass="text-end #{billPackageController.batchBill.refunded ? 'row-warning' : billPackageController.batchBill.cancelled ? 'row-danger' : ''}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <h:outputText value="Discount:" styleClass="text-start fw-bold" />
+                                <h:outputText value="#{billPackageController.batchBill.discount}" styleClass="text-end #{billPackageController.batchBill.refunded ? 'row-warning' : billPackageController.batchBill.cancelled ? 'row-danger' : ''}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <h:outputText value="Net Total:" styleClass="text-start fw-bold" />
+                                <h:outputText value="#{billPackageController.batchBill.netTotal}" styleClass="text-end #{billPackageController.batchBill.refunded ? 'row-warning' : billPackageController.batchBill.cancelled ? 'row-danger' : ''}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:panelGrid>
+
+                            <p:dataTable 
+                                value="#{billPackageController.bills}" 
+                                var="b" 
+                                resizeMode="expand"
+                                reflow="true"
+                                class="w-100 m-1" 
+                                rowStyleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                <f:facet name="header" >
+                                    <h:outputLabel class="mx-5" value="Individual Bills" ></h:outputLabel>
+                                </f:facet>
+                                <p:column headerText="Bill No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                    <h:outputText value="#{b.deptId}"  class="w-100 m-1" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Gross Total" 
+                                          styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
+                                          class="text-end">
+                                    <h:outputText value="#{b.total}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Discount" 
+                                          styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
+                                          class="text-end">
+                                    <h:outputText value="#{b.discount}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Net Total" 
+                                          styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
+                                          class="text-end">
+                                    <h:outputText value="#{b.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column  headerText="Actions" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                    <!-- To Bill Details Button -->
+                                    <p:commandButton 
+                                        ajax="false"
+                                        rendered="false"
+                                        title="View Bill"
+                                        class="ui-button-success m-1"
+                                        icon="fa fa-file-invoice"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                        <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                    </p:commandButton>
+                                  
+                                    <p:commandButton 
+                                        ajax="false"
+                                        title="Manage Bill"
+                                        class="ui-button-warning m-1"
+                                        icon="fa fa-file-invoice"
+                                        action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                        <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        title="To Sample Management" 
+                                        icon="fas fa-flask"
+                                        class="ui-button-raised mx-1"
+                                        action="#{patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(b)}"
+                                        ajax="false">
+                                    </p:commandButton>
+
+                                    <!-- To Cancel Button -->
+                                    <p:commandButton 
+                                        ajax="false"
+                                        title="To Cancel Bill"
+                                        disabled="#{b.cancelled or b.refunded}"
+                                        class="ui-button-danger m-1"
+                                        icon="fa fa-times"
+                                        action="#{billPackageController.navigateToCancelOpdPackageBill()}">
+                                        <f:setPropertyActionListener value="#{b}" target="#{billPackageController.bill}"/>
+                                    </p:commandButton>
+
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:dataTable 
+                                value="#{billPackageController.payments}"
+                                class="m-2"
+                                var="p" >
+                                <f:facet name="header" >
+                                    <h:outputLabel value="Payments" ></h:outputLabel>
+                                </f:facet>
+                                <p:column headerText="Payment Method" >
+                                    <h:outputText value="#{p.paymentMethod.label}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Value">
+                                    <h:outputText value="#{p.paidValue}" ></h:outputText>
+                                </p:column>
+                            </p:dataTable>
+
+                        </div>
+                    </div>
+
+                </p:panel>
+            </h:panelGroup>
+
+        </h:form>
+
+    </ui:define>
+</ui:composition>

@@ -11,6 +11,7 @@ import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.InstitutionFacade;
 import javax.inject.Named;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import javax.ejb.EJB;
 import java.util.concurrent.ConcurrentHashMap;
@@ -96,13 +97,34 @@ public class AgentAndCcApplicationController {
         }
     }
 
+    
+    public Double ccBalanceBefore(Bill b){
+        String jpql;
+        jpql = "select h.balanceBeforeTransaction "
+                + " from AgentHistory h "
+                + " where h.bill=:bill";
+        Map params = new HashMap();
+        params.put("bill", b);
+        return agentHistoryFacade.findDoubleByJpql(jpql, params);
+    }
+    
+    public Double ccBalanceAfter(Bill b){
+        String jpql;
+        jpql = "select h.balanceAfterTransaction "
+                + " from AgentHistory h "
+                + " where h.bill=:bill";
+        Map params = new HashMap();
+        params.put("bill", b);
+        return agentHistoryFacade.findDoubleByJpql(jpql, params);
+    }
+    
     private void handleCcBalanceUpdateBill(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill, String comments) {
 
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-            collectingCentre = institutionFacade.find(collectingCentre.getId());
+            collectingCentre = institutionFacade.findWithoutCache(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -140,7 +162,7 @@ public class AgentAndCcApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-            collectingCentre = institutionFacade.find(collectingCentre.getId());
+            collectingCentre = institutionFacade.findWithoutCache(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -166,7 +188,7 @@ public class AgentAndCcApplicationController {
             agentHistoryFacade.create(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.edit(collectingCentre);
+            institutionFacade.editAndCommit(collectingCentre);
 
         } finally {
             lock.unlock();
@@ -178,7 +200,7 @@ public class AgentAndCcApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-            collectingCentre = institutionFacade.find(collectingCentre.getId());
+            collectingCentre = institutionFacade.findWithoutCache(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -206,7 +228,7 @@ public class AgentAndCcApplicationController {
             agentHistoryFacade.create(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.edit(collectingCentre);
+            institutionFacade.editAndCommit(collectingCentre);
             
             System.out.println("After Balance = " + collectingCentre.getBallance());
 
@@ -220,7 +242,7 @@ public class AgentAndCcApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-            collectingCentre = institutionFacade.find(collectingCentre.getId());
+            collectingCentre = institutionFacade.findWithoutCache(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -246,7 +268,7 @@ public class AgentAndCcApplicationController {
             agentHistoryFacade.create(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.edit(collectingCentre);
+            institutionFacade.editAndCommit(collectingCentre);
 
         } finally {
             lock.unlock();
@@ -258,7 +280,7 @@ public class AgentAndCcApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-            collectingCentre = institutionFacade.find(collectingCentre.getId());
+            collectingCentre = institutionFacade.findWithoutCache(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -283,7 +305,7 @@ public class AgentAndCcApplicationController {
             agentHistoryFacade.create(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.edit(collectingCentre);
+            institutionFacade.editAndCommit(collectingCentre);
 
         } finally {
             lock.unlock();
@@ -296,7 +318,7 @@ public class AgentAndCcApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-            collectingCentre = institutionFacade.find(collectingCentre.getId());
+            collectingCentre = institutionFacade.findWithoutCache(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -322,7 +344,7 @@ public class AgentAndCcApplicationController {
             agentHistoryFacade.create(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.edit(collectingCentre);
+            institutionFacade.editAndCommit(collectingCentre);
 
         } finally {
             lock.unlock();
@@ -334,7 +356,7 @@ public class AgentAndCcApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-            collectingCentre = institutionFacade.find(collectingCentre.getId());
+            collectingCentre = institutionFacade.findWithoutCache(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -361,7 +383,7 @@ public class AgentAndCcApplicationController {
             agentHistoryFacade.create(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.edit(collectingCentre);
+            institutionFacade.editAndCommit(collectingCentre);
 
         } finally {
             lock.unlock();
@@ -373,7 +395,7 @@ public class AgentAndCcApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-            collectingCentre = institutionFacade.find(collectingCentre.getId());
+            collectingCentre = institutionFacade.findWithoutCache(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -399,7 +421,7 @@ public class AgentAndCcApplicationController {
             agentHistoryFacade.create(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.edit(collectingCentre);
+            institutionFacade.editAndCommit(collectingCentre);
 
         } finally {
             lock.unlock();
@@ -411,7 +433,7 @@ public class AgentAndCcApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-            collectingCentre = institutionFacade.find(collectingCentre.getId());
+            collectingCentre = institutionFacade.findWithoutCache(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -437,7 +459,7 @@ public class AgentAndCcApplicationController {
             agentHistoryFacade.create(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.edit(collectingCentre);
+            institutionFacade.editAndCommit(collectingCentre);
 
         } finally {
             lock.unlock();
@@ -450,7 +472,7 @@ public class AgentAndCcApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-            collectingCentre = institutionFacade.find(collectingCentre.getId());
+            collectingCentre = institutionFacade.findWithoutCache(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -477,7 +499,7 @@ public class AgentAndCcApplicationController {
             agentHistoryFacade.create(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.edit(collectingCentre);
+            institutionFacade.editAndCommit(collectingCentre);
 
         } finally {
             lock.unlock();
@@ -494,7 +516,7 @@ public class AgentAndCcApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-            collectingCentre = institutionFacade.find(collectingCentre.getId());
+            collectingCentre = institutionFacade.findWithoutCache(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -520,7 +542,7 @@ public class AgentAndCcApplicationController {
             agentHistoryFacade.create(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.edit(collectingCentre);
+            institutionFacade.editAndCommit(collectingCentre);
 
         } finally {
             lock.unlock();
@@ -583,7 +605,7 @@ public class AgentAndCcApplicationController {
 //                agentHistoryFacade.create(agentHistory);
 //
 //                collectingCentre.setBallance(balanceAfterTx);
-//                institutionFacade.edit(collectingCentre);
+//                institutionFacade.editAndCommit(collectingCentre);
 //            }
 //
 //        } finally {

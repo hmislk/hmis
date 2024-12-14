@@ -108,8 +108,10 @@
                                         var="category"
                                         class="w-100"
                                         inputStyleClass="w-100"
+                                        maxResults="20"
                                         itemLabel="#{category.name}"
                                         itemValue="#{category}">
+                                        <p:column style="padding: 5px;">#{category.name}</p:column>
                                     </p:autoComplete>
 
                                     <p:spacer width="50" ></p:spacer>
@@ -155,7 +157,7 @@
                                     onclick="PrimeFaces.monitorDownload(start, stop);">
                                     <p:fileDownload value="#{searchController.bundleAsPdf}" />
                                 </p:commandButton>
-
+                                
                                 <p:commandButton 
                                     id="btnPrint" 
                                     class="m-1 ui-button-primary"

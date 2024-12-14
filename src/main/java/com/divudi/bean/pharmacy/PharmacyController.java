@@ -52,6 +52,10 @@ import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillClassType;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.PaymentMethod;
+import com.divudi.data.table.String1Value1;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.pharmacy.PharmaceuticalItemLight;
 import java.io.Serializable;
@@ -136,9 +140,6 @@ public class PharmacyController implements Serializable {
     private int pharmacySummaryIndex;
 
     private Item pharmacyItem;
-    private Date fromDate;
-    private Date toDate;
-    Department department;
     boolean hasSale;
     boolean hasWholesale;
     boolean hasInward;
@@ -268,57 +269,54 @@ public class PharmacyController implements Serializable {
 
     // </editor-fold> 
     // <editor-fold defaultstate="collapsed" desc="Methods - Navigation">
-    
-    
     public String navigateToBinCard() {
         return "/pharmacy/bin_card?faces-redirect=true";
     }
-    
+
     public String navigateToItemsList() {
         return "/pharmacy/list_amps?faces-redirect=true";
     }
-    
+
     public String navigateToMedicineList() {
         return "/pharmacy/list_medicines?faces-redirect=true";
     }
-    
+
     public String navigateToItemsWithoutDistributor() {
         return "/pharmacy/pharmacy_report_list_amps_with_out_distributor?faces-redirect=true";
     }
-    
+
     public String navigateToItemsWithSuppliersAndPrices() {
         return "/pharmacy/item_supplier_prices?faces-redirect=true";
     }
-    
+
     public String navigateToItemsWithDistributor() {
         return "/pharmacy/pharmacy_report_list_distributor_with_distributor_items?faces-redirect=true";
     }
-    
+
     public String navigateToItemsWithMultipleDistributorsItemsOnly() {
         return "/pharmacy/pharmacy_report_list_grater_than_one_distributor?faces-redirect=true";
     }
-    
+
     public String navigateToItemWithMultipleDistributors() {
         return "/pharmacy/pharmacy_report_list_item_with_multiple_dealor?faces-redirect=true";
     }
-    
+
     public String navigateToReorderAnalysis() {
         return "/pharmacy/ordering_data?faces-redirect=true";
     }
-    
-    
+
     public String navigateToReorderManagement() {
         return "/pharmacy/reorder_management?faces-redirect=true";
     }
-    
+
     public String navigateToAllItemsTransactionSummary() {
         return "/pharmacy/raport_all_item_transaction_summery?faces-redirect=true";
     }
-    
+
     public String navigateToItemTransactionDetails() {
         return "/pharmacy/pharmacy_item_transactions?faces-redirect=true";
     }
-    
+
     public String navigateToListPharmaceuticals() {
         fillPharmaceuticalLights();
         return "/pharmacy/admin/items?faces-redirect=true";
@@ -376,17 +374,25 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/pharmacy_discard_category?faces-redirect=true";
     }
 
+    public String navigateToVariantCategoryStockByItem() {
+        return "/pharmacy/pharmacy_variant_category_stock_by_item?faces-redirect=true";
+    }
+
+    public String navigateToVariantAdjustmentPreList() {
+        return "/pharmacy/pharmacy_variant_ajustment_pre_list?faces-redirect=true";
+    }
+
     public String navigateToImporters() {
         importerController.getItems();
         importerController.getCurrent();
         return "/pharmacy/pharmacy_importer?faces-redirect=true";
     }
-    
-    public String navigateToSuppliers(){
+
+    public String navigateToSuppliers() {
         return "/pharmacy/pharmacy_dealer?faces-redirect=true";
     }
-    
-    public String navigateToItemSuppliers(){
+
+    public String navigateToItemSuppliers() {
         return "/pharmacy/pharmacy_items_distributors?faces-redirect=true";
     }
 
@@ -439,6 +445,82 @@ public class PharmacyController implements Serializable {
     public String navigateToVmppMultiple() {
         fillVmpps();
         return "/pharmacy/admin/vmpp_multiple?faces-redirect=true";
+    }
+
+    public String navigateToItemMismatchReport() {
+        return "/pharmacy/pharmacy_item_mismatch_report?faces-redirect=true";
+    }
+
+    public String navigateToItemImport() {
+        return "/pharmacy/pharmacy_item_import?faces-redirect=true";
+    }
+
+    public String navigateToItemImportWithStock() {
+        return "/pharmacy/pharmacy_item_import_with_stock?faces-redirect=true";
+    }
+
+    public String navigateToItemImportByBarcode() {
+        return "/pharmacy/pharmacy_item_import_by_barcode?faces-redirect=true";
+    }
+
+    public String navigateToItemImportStocksByName() {
+        return "/pharmacy/pharmacy_item_import_stocks_by_name?faces-redirect=true";
+    }
+
+    public String navigateToPurchaseOpeningStock() {
+        return "/pharmacy/pharmacy_purchase_openning_stock?faces-redirect=true";
+    }
+
+    public String navigateToImporterCategory() {
+        return "/pharmacy/pharmacy_importer_category?faces-redirect=true";
+    }
+
+    public String navigateToItemImportBarcode() {
+        return "/pharmacy/pharmacy_item_import_barcode?faces-redirect=true";
+    }
+
+    public String navigateToErrorCorrection() {
+        return "/pharmacy/pharmacy_error_correction?faces-redirect=true";
+    }
+
+    public String navigateToTransferRequestAll() {
+        return "/pharmacy/pharmacy_transfer_request_all?faces-redirect=true";
+    }
+
+    public String navigateToItemDistributorImport() {
+        return "/pharmacy/pharmacy_item_distributor_import?faces-redirect=true";
+    }
+
+    public String navigateToItemNameFromBarcode() {
+        return "/pharmacy/pharmacy_item_name_from_barcode?faces-redirect=true";
+    }
+
+    public String navigateToItemNamesMissing() {
+        return "/pharmacy/pharmacy_item_names_missing?faces-redirect=true";
+    }
+
+    public String navigateToItemNamesCorrectionBySnapshot() {
+        return "/pharmacy/pharmacy_item_names_correction_by_snapshot?faces-redirect=true";
+    }
+
+    public String navigateToItemByDistributor() {
+        return "/pharmacy/pharmacy_item_by_distributor?faces-redirect=true";
+    }
+
+    public String navigateToErrorChecking() {
+        return "/pharmacy/pharmacy_error_checking?faces-redirect=true";
+    }
+
+    public String navigateToErrorCheckingByDate() {
+        return "/pharmacy/pharmacy_error_checking_date?faces-redirect=true";
+    }
+
+    public String navigateToDepartmentErrorReport() {
+        return "/pharmacy/pharmacy_report_department_error?faces-redirect=true";
+    }
+
+    public String navigateToDepartmentStockByBatchMinus() {
+        return "/pharmacy/pharmacy_report_department_stock_by_batch_minus?faces-redirect=true";
     }
 
     // </editor-fold>
@@ -627,6 +709,23 @@ public class PharmacyController implements Serializable {
     }
 
     // </editor-fold>
+    private Date fromDate;
+    private Date toDate;
+    private Department department;
+    private Department dept;
+    private Institution site;
+    private Institution toInstitution;
+    private Institution fromInstitution;
+    private PaymentMethod paymentMethod;
+    private String reportType;
+    private double totalCreditPurchaseValue;
+    private double totalCashPurchaseValue;
+    private double totalPurchase;
+    private List<String1Value1> data;
+    private double totalSaleValue;
+    private double totalCreditSaleValue;
+    private double totalCashSaleValue;
+
     public void clearItemHistory() {
 
         grantStock = 0.00;
@@ -659,6 +758,109 @@ public class PharmacyController implements Serializable {
         directPurchase = null;
         ampps = null;
 
+    }
+
+    public void generateGRNReportTable() {
+        bills = null;
+        totalCreditPurchaseValue = 0.0;
+        totalCashPurchaseValue = 0.0;
+        totalPurchase = 0.0;
+
+        List<BillType> bt = new ArrayList<>();
+        if ("detailReport".equals(reportType)) {
+            bt.add(BillType.PharmacyGrnBill);
+        } else if ("returnReport".equals(reportType)) {
+            bt.add(BillType.PharmacyGrnReturn);
+        } else if ("summeryReport".equals(reportType)) {
+            bt.add(BillType.PharmacyGrnBill);
+            bt.add(BillType.PharmacyGrnReturn);
+        }
+
+        bills = new ArrayList<>();
+
+        String sql = "SELECT b FROM Bill b WHERE type(b) = :bill"
+                + " and b.retired = false"
+                + " and b.billType In :btp"
+                + " and b.createdAt between :fromDate and :toDate";
+
+        Map<String, Object> tmp = new HashMap<>();
+
+        tmp.put("bill", BilledBill.class); // Use the actual Class object
+        tmp.put("btp", bt);
+        tmp.put("fromDate", getFromDate());
+        tmp.put("toDate", getToDate());
+
+        if (institution != null) {
+            sql += " and b.institution = :fIns";
+            tmp.put("fIns", institution);
+        }
+
+        if (dept != null) {
+            sql += " and b.department = :dept";
+            tmp.put("dept", dept);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod = :pm";
+            tmp.put("pm", paymentMethod);
+        }
+
+        if (fromInstitution != null) {
+            sql += " AND b.fromInstitution = :supplier";
+            tmp.put("supplier", fromInstitution);
+        }
+
+        sql += " order by b.id desc";
+
+        try {
+            bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, " Something Went Worng!");
+        }
+        calculateTotals(bills);
+    }
+
+    public List<String1Value1> calculateTotals(List<Bill> billList) {
+        data = new ArrayList<>();
+
+        totalSaleValue = 0.0;
+       totalCreditSaleValue = 0.0;
+        totalCashSaleValue = 0.0;
+
+        String1Value1 credit = new String1Value1();
+        String1Value1 cash = new String1Value1();
+        String1Value1 cashAndCredit = new String1Value1();
+
+        cash.setString("Final Cash Total");
+        credit.setString("Final Credit Total");
+        cashAndCredit.setString("Final Cash and Credit Total");
+
+        for (Bill bill : billList) {
+            if (bill.getPaymentMethod() == PaymentMethod.Credit) {
+                totalCreditPurchaseValue += bill.getNetTotal();
+                totalCreditSaleValue += bill.getSaleValue();
+            } else if (bill.getPaymentMethod() == PaymentMethod.Cash) {
+                totalCashPurchaseValue += bill.getNetTotal();
+                totalCashSaleValue += bill.getSaleValue();
+            }
+            totalPurchase += bill.getNetTotal();
+            totalSaleValue += bill.getSaleValue();
+        }
+        credit.setValue(totalCreditPurchaseValue);
+        credit.setValue2(totalCreditSaleValue);
+
+        cash.setValue(totalCashPurchaseValue);
+        cash.setValue2(totalCashSaleValue);
+
+        cashAndCredit.setValue(totalPurchase);
+        cashAndCredit.setValue2(totalSaleValue);
+
+        data.add(cash);
+        data.add(credit);
+        data.add(cashAndCredit);
+
+        return data;
     }
 
     public void deleteSelectedPharmaceuticalLight() {
@@ -929,8 +1131,6 @@ public class PharmacyController implements Serializable {
         }
 
         Collections.sort(itemTransactionSummeryRows);
-
-        
 
     }
 
@@ -1678,8 +1878,6 @@ public class PharmacyController implements Serializable {
 
         createStockAverage(dayCount);
 
-        
-
     }
 
     public double getGrantWholeSaleQty() {
@@ -1713,8 +1911,6 @@ public class PharmacyController implements Serializable {
         }
 
         createStockAverage(Math.abs(monthCount));
-
-        
 
     }
 
@@ -2145,7 +2341,6 @@ public class PharmacyController implements Serializable {
         createDirectPurchaseTable();
         createInstitutionIssue();
 
-        
     }
 
     public void createTable() {
@@ -2882,6 +3077,110 @@ public class PharmacyController implements Serializable {
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Institution getToInstitution() {
+        return toInstitution;
+    }
+
+    public void setToInstitution(Institution toInstitution) {
+        this.toInstitution = toInstitution;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Department getDept() {
+        return dept;
+    }
+
+    public void setDept(Department dept) {
+        this.dept = dept;
+    }
+
+    public Institution getFromInstitution() {
+        return fromInstitution;
+    }
+
+    public void setFromInstitution(Institution fromInstitution) {
+        this.fromInstitution = fromInstitution;
+    }
+
+    public String getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(String reportType) {
+        this.reportType = reportType;
+    }
+
+    public double getTotalCreditPurchaseValue() {
+        return totalCreditPurchaseValue;
+    }
+
+    public void setTotalCreditPurchaseValue(double totalCreditPurchaseValue) {
+        this.totalCreditPurchaseValue = totalCreditPurchaseValue;
+    }
+
+    public double getTotalCashPurchaseValue() {
+        return totalCashPurchaseValue;
+    }
+
+    public void setTotalCashPurchaseValue(double totalCashPurchaseValue) {
+        this.totalCashPurchaseValue = totalCashPurchaseValue;
+    }
+
+    public double getTotalPurchase() {
+        return totalPurchase;
+    }
+
+    public void setTotalPurchase(double totalPurchase) {
+        this.totalPurchase = totalPurchase;
+    }
+
+    public List<String1Value1> getData() {
+        return data;
+    }
+
+    public void setData(List<String1Value1> data) {
+        this.data = data;
+    }
+
+    public double getTotalSaleValue() {
+        return totalSaleValue;
+    }
+
+    public void setTotalSaleValue(double totalSaleValue) {
+        this.totalSaleValue = totalSaleValue;
+    }
+
+    public double getTotalCreditSaleValue() {
+        return totalCreditSaleValue;
+    }
+
+    public void setTotalCreditSaleValue(double totalCreditSaleValue) {
+        this.totalCreditSaleValue = totalCreditSaleValue;
+    }
+
+    public double getTotalCashSaleValue() {
+        return totalCashSaleValue;
+    }
+
+    public void setTotalCashSaleValue(double totalCashSaleValue) {
+        this.totalCashSaleValue = totalCashSaleValue;
     }
 
 }

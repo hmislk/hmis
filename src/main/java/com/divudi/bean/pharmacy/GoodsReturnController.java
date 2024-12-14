@@ -209,7 +209,7 @@ public class GoodsReturnController implements Serializable {
     private void saveComponent(Payment p) {
         for (BillItem i : getBillItems()) {
 
-            if (i.getTmpQty() == 0.0) {
+            if ((i.getTmpQty() == 0.0) && (i.getTmpFreeQty() == 0.0)) {
                 continue;
             }
 
@@ -273,6 +273,11 @@ public class GoodsReturnController implements Serializable {
         }
 
         return false;
+    }
+    
+    public void removeItem(BillItem bi) {
+        getBillItems().remove(bi.getSearialNo());
+        calTotal();
     }
 
     public void settle() {

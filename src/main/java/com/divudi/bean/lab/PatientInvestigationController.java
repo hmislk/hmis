@@ -208,6 +208,8 @@ public class PatientInvestigationController implements Serializable {
     private Machine equipment;
     private Staff referringDoctor;
     private Investigation investigation;
+    private String investigationName;
+    private String itemName;
     private Department department;
     private SearchDateType searchDateType;
     private PatientInvestigationStatus patientInvestigationStatus;
@@ -269,17 +271,17 @@ public class PatientInvestigationController implements Serializable {
     private PatientInvestigation currentPI;
 
     private boolean printIndividualBarcodes;
-    
+
     public String sampleComponentNames(PatientSample ps) {
         List<PatientSampleComponant> pscList = getPatientSampleComponentsByPatientSample(ps);
         String sampleComponentName = "";
-        for(PatientSampleComponant psc : pscList){
+        for (PatientSampleComponant psc : pscList) {
             sampleComponentName += psc.getNameTranscient();
             sampleComponentName += "  ";
         }
         return sampleComponentName;
     }
-    
+
     public String navigateToPrintBarcodeFromMenu() {
         return "/lab/sample_barcode_printing?faces-redirect=true";
     }
@@ -1767,9 +1769,10 @@ public class PatientInvestigationController implements Serializable {
         this.performingDepartment = null;
         this.printIndividualBarcodes = false;
         this.listingEntity = null;
+        this.investigationName = null;
         clearReportData();
         clearAlternativeReportData();
-        
+
     }
 
     public void clearReportData() {
@@ -1877,6 +1880,11 @@ public class PatientInvestigationController implements Serializable {
         if (department != null) {
             jpql += " AND pi.billItem.bill.toDepartment = :department";
             params.put("department", getDepartment());
+        }
+        
+        if (bills != null) {
+            jpql += " AND pi.billItem.bill IN :bills";
+            params.put("bills", getBills());
         }
 
         if (patientInvestigationStatus != null) {
@@ -2298,9 +2306,9 @@ public class PatientInvestigationController implements Serializable {
             params.put("referringDoctor", getReferringDoctor());
         }
 
-        if (investigation != null) {
-            jpql += " AND r.patientInvestigation.investigation = :investigation ";
-            params.put("investigation", getInvestigation());
+        if (investigationName != null && !investigationName.trim().isEmpty()) {
+            jpql += " AND r.patientInvestigation.billItem.item.name like :investigation ";
+            params.put("investigation", "%"+ investigationName.trim() + "%");
         }
 
         if (department != null) {
@@ -2456,8 +2464,60 @@ public class PatientInvestigationController implements Serializable {
         }
     }
 
+    public void searchPatientReportsInBillingDepartment() {
+        
+        StringBuilder jpql = new StringBuilder();
+        Map<String, Object> params = new HashMap<>();
+
+        jpql.append("SELECT i ")
+                .append(" FROM PatientInvestigation i ")
+                .append(" WHERE i.retired = :ret ")
+                .append(" AND i.billItem.bill.department = :od ");
+
+        params.put("ret", false);
+        params.put("od", sessionController.getDepartment());
+
+        searchDateType = SearchDateType.ORDERED_DATE;
+
+        switch (searchDateType) {
+            case ORDERED_DATE:
+                jpql.append(" AND i.billItem.bill.createdAt BETWEEN :fd AND :td ");
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+        }
+
+        if (collectionCenter != null) {
+            jpql.append(" AND (i.billItem.bill.collectingCentre = :cc OR i.billItem.bill.fromInstitution = :cc) ");
+            params.put("cc", getCollectionCenter());
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql.append(" AND i.billItem.bill.patient.person.name LIKE :patientName ");
+            params.put("patientName", "%" + patientName.trim() + "%");
+        }
+
+        if (type != null && !type.trim().isEmpty()) {
+            jpql.append(" AND i.billItem.bill.ipOpOrCc=:tp ");
+            params.put("tp", type.trim());
+        }
+
+        if (referringDoctor != null) {
+            jpql.append(" AND i.billItem.bill.referredBy = :rf ");
+            params.put("rf", getReferringDoctor());
+        }
+
+        if (itemName != null && !itemName.trim().isEmpty()) {
+            jpql.append(" AND i.billItem.item.name LIKE :item "); // Ensure correct column name
+            params.put("item", "%" + itemName.trim() + "%");
+        }
+
+        jpql.append("ORDER BY i.id DESC");
+
+        items = getFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
     public void searchPatientInvestigationsForCourier() {
-        listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
@@ -2696,9 +2756,9 @@ public class PatientInvestigationController implements Serializable {
             params.put("referringDoctor", getReferringDoctor());
         }
 
-        if (investigation != null) {
-            jpql += " AND i.investigation = :investigation ";
-            params.put("investigation", getInvestigation());
+        if (investigationName != null && !investigationName.trim().isEmpty()) {
+            jpql += " AND i.billItem.item.name like :investigation ";
+            params.put("investigation", "%"+ investigationName.trim() + "%");
         }
 
         if (department != null) {
@@ -2861,11 +2921,9 @@ public class PatientInvestigationController implements Serializable {
 
         //System.out.println("params = " + params);
         //System.out.println("jpql = " + jpql);
-
         items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         //System.out.println("items = " + items);
-
         // Initialize totals
         hospitalFeeTotal = 0.0;
         ccFeeTotal = 0.0;
@@ -3056,8 +3114,18 @@ public class PatientInvestigationController implements Serializable {
         btas.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        
+        
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        
+        
         // Starting from BillItem and joining to PatientInvestigation if needed
-        jpql = "SELECT b "
+        jpql = "SELECT DISTINCT b "
                 + " FROM BillItem b "
                 + " LEFT JOIN b.patientInvestigation i "
                 + " WHERE b.retired = :ret "
@@ -3170,12 +3238,9 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (department != null) {
-            jpql += " AND b.bill.toDepartment = :department ";
+            jpql += " AND b.bill.department = :department ";
             params.put("department", getDepartment());
         }
-
-        jpql += " and type(b.item) = :invType ";
-        params.put("invType", Investigation.class);
 
         jpql += " AND b.bill.billTypeAtomic in :bts ";
         params.put("bts", btas);
@@ -3191,11 +3256,9 @@ public class PatientInvestigationController implements Serializable {
 
         //System.out.println("jpql = " + jpql);
         //System.out.println("params = " + params);
-
         billItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         //System.out.println("billItems = " + billItems);
-
         // Initialize totals
         hospitalFeeTotal = 0.0;
         ccFeeTotal = 0.0;
@@ -3342,9 +3405,9 @@ public class PatientInvestigationController implements Serializable {
             params.put("referringDoctor", getReferringDoctor());
         }
 
-        if (investigation != null) {
-            jpql += " AND i.investigation = :investigation ";
-            params.put("investigation", getInvestigation());
+        if (investigationName != null && !investigationName.trim().isEmpty()) {
+            jpql += " AND i.billItem.item.name like :investigation ";
+            params.put("investigation", "%"+ investigationName.trim() + "%");
         }
 
         if (department != null) {
@@ -4848,6 +4911,22 @@ public class PatientInvestigationController implements Serializable {
         this.printIndividualBarcodes = printIndividualBarcodes;
     }
 
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public String getInvestigationName() {
+        return investigationName;
+    }
+
+    public void setInvestigationName(String investigationName) {
+        this.investigationName = investigationName;
+    }
+
     /**
      *
      */
@@ -5138,7 +5217,6 @@ public class PatientInvestigationController implements Serializable {
                         m.put("ixc", ixi.getSampleComponent());
 
                         //System.out.println("j = " + j);
-
                         ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
                         if (ptsc == null) {
                             ptsc = new PatientSampleComponant();
@@ -5248,7 +5326,7 @@ public class PatientInvestigationController implements Serializable {
                     m.put("bill", barcodeBill);
                     if (ix.isHasMoreThanOneComponant()) {
                         j += " and ps.investigationComponant=:sc ";
-                        //m.put("sc", ixi.getSampleComponent());
+                        m.put("sc", ixi.getSampleComponent());
                     }
                     PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
                     //System.out.println("pts = " + pts);
@@ -5299,7 +5377,6 @@ public class PatientInvestigationController implements Serializable {
                     m.put("pts", pts);
 
                     //System.out.println("j = " + j);
-
                     ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
                     if (ptsc == null) {
                         ptsc = new PatientSampleComponant();
@@ -5400,7 +5477,6 @@ public class PatientInvestigationController implements Serializable {
                     }
 
                     //System.out.println("ixi.getSample() = " + ixi.getSample());
-
 //                    if (ixi.getSample() == null) {
 //                        continue;
 //                    }
@@ -5472,7 +5548,6 @@ public class PatientInvestigationController implements Serializable {
                     m.put("ixc", ixi.getSampleComponent());
 
                     //System.out.println("j = " + j);
-
                     ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
                     if (ptsc == null) {
                         ptsc = new PatientSampleComponant();

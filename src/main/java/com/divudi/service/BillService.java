@@ -3,9 +3,24 @@ package com.divudi.service;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
+import static com.divudi.data.PaymentMethod.Agent;
+import static com.divudi.data.PaymentMethod.Card;
+import static com.divudi.data.PaymentMethod.Cash;
+import static com.divudi.data.PaymentMethod.Cheque;
+import static com.divudi.data.PaymentMethod.Credit;
+import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
 import static com.divudi.data.PaymentMethod.None;
+import static com.divudi.data.PaymentMethod.OnCall;
+import static com.divudi.data.PaymentMethod.OnlineSettlement;
+import static com.divudi.data.PaymentMethod.PatientDeposit;
+import static com.divudi.data.PaymentMethod.Slip;
+import static com.divudi.data.PaymentMethod.Staff;
+import static com.divudi.data.PaymentMethod.YouOweMe;
+import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.data.dataStructure.ComponentDetail;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -13,7 +28,6 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Payment;
-import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -44,6 +58,138 @@ public class BillService {
     private BillFeeFacade billFeeFacade;
     @EJB
     PaymentFacade paymentFacade;
+    @EJB
+    DrawerService drawerService;
+
+    @Deprecated //Please use payment service > createPaymentMethod
+    public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData) {
+        List<Payment> ps = new ArrayList<>();
+        if (paymentMethodData == null) {
+            if (bill.getPaymentMethod() == null) {
+                return null;
+            }
+            if (bill.getPaymentMethod() == MultiplePaymentMethods) {
+                return null;
+            }
+            Payment p = new Payment();
+            p.setBill(bill);
+            p.setInstitution(bill.getInstitution());
+            p.setDepartment(bill.getDepartment());
+            p.setCreatedAt(bill.getCreatedAt());
+            p.setCreater(bill.getCreater());
+            p.setComments("Created Payments to correct Erros of Not creating a payment");
+            p.setPaymentMethod(bill.getPaymentMethod());
+            p.setPaidValue(bill.getNetTotal());
+            paymentFacade.create(p);
+            ps.add(p);
+            return ps;
+        }
+
+        if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(bill);
+                p.setInstitution(bill.getInstitution());
+                p.setDepartment(bill.getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(bill.getCreater());
+                p.setPaymentMethod(cd.getPaymentMethod());
+
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Cheque:
+                        p.setBank(cd.getPaymentMethodData().getCheque().getInstitution());
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        break;
+                    case ewallet:
+                        break;
+                    case Agent:
+                        break;
+                    case Credit:
+                        break;
+                    case PatientDeposit:
+                        break;
+                    case Slip:
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        p.setReferenceNo(cd.getPaymentMethodData().getSlip().getReferenceNo());
+                        break;
+                    case OnCall:
+                        break;
+                    case OnlineSettlement:
+                        break;
+                    case Staff:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        break;
+                    case YouOweMe:
+                        break;
+                    case MultiplePaymentMethods:
+                        break;
+                }
+
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(bill);
+            p.setInstitution(bill.getInstitution());
+            p.setDepartment(bill.getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(bill.getCreater());
+            p.setPaymentMethod(pm);
+
+            switch (pm) {
+                case Card:
+                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    break;
+                case Cheque:
+                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    break;
+                case Cash:
+                    break;
+                case ewallet:
+                    break;
+                case Agent:
+                    break;
+                case Credit:
+                    break;
+                case PatientDeposit:
+                    break;
+                case Slip:
+                    p.setBank(paymentMethodData.getSlip().getInstitution());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
+                case OnCall:
+                    break;
+                case OnlineSettlement:
+                    break;
+                case Staff:
+                    break;
+                case YouOweMe:
+                    break;
+                case MultiplePaymentMethods:
+                    break;
+            }
+
+            p.setPaidValue(p.getBill().getNetTotal());
+            paymentFacade.create(p);
+            ps.add(p);
+        }
+        drawerService.updateDrawerForIns(ps);
+        return ps;
+    }
 
     public void createBillItemFeeBreakdownAsHospitalFeeItemDiscount(List<BillItem> billItems) {
         for (BillItem bi : billItems) {
@@ -140,6 +286,19 @@ public class BillService {
         return tbs;
     }
 
+    public Bill fetchBatchBillOfIndividualBill(Bill individualBill) {
+        System.out.println("individualBill = " + individualBill);
+        String j = "SELECT b.backwardReferenceBill "
+                + "FROM Bill b "
+                + "WHERE b = :b";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("b", individualBill);
+        System.out.println("parameters = " + parameters);
+        System.out.println("j = " + j);
+        Bill batchBill = (Bill) billFacade.findFirstByJpql(j, parameters);
+        return batchBill;
+    }
+
     public void saveBill(Bill bill) {
         saveBill(bill, null);
     }
@@ -182,6 +341,19 @@ public class BillService {
         return billFeeFacade.findByJpql(jpql, params);
     }
 
+    public List<BillFee> fetchBillFees(Bill bill) {
+        List<BillFee> fetchingBillFees;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select bf "
+                + " from BillFee bf "
+                + "where bf.bill=:bill "
+                + "order by bf.billItem.id";
+        params.put("bill", bill);
+        fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
+        return fetchingBillFees;
+    }
+
     public List<BillItem> fetchBillItems(Bill b) {
         String jpql;
         HashMap params = new HashMap();
@@ -193,12 +365,40 @@ public class BillService {
         return billItemFacade.findByJpql(jpql, params);
     }
 
+    public Long fetchBillItemCount(Bill b) {
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "SELECT count(bi) "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bl "
+                + " order by bi.id";
+        params.put("bl", b);
+        return billItemFacade.findLongByJpql(jpql, params);
+    }
+
     public List<BillItem> fetchBillItems(List<Bill> bills) {
         List<BillItem> allBillItems = new ArrayList<>();
         for (Bill b : bills) {
             allBillItems.addAll(fetchBillItems(b));
         }
         return allBillItems;
+    }
+
+    public void initiateBillItemsAndBillFees(Bill b) {
+        if (b == null) {
+            return;
+        }
+        if (b.getBillItems() == null) {
+            b.setBillItems(fetchBillItems(b));
+        }
+        if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
+            return;
+        }
+        for (BillItem bi : b.getBillItems()) {
+            if (bi.getBillFees() == null || bi.getBillFees().isEmpty()) {
+                bi.setBillFees(fetchBillFees(bi));
+            }
+        }
     }
 
     public List<Payment> fetchBillPayments(Bill bill) {

@@ -22,7 +22,7 @@
                                           class="w-100"
                                           showTime="true"
                                           inputStyleClass="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
 
 
                             <h:panelGroup >
@@ -33,7 +33,7 @@
                                           class="w-100"
                                           showTime="true"
                                           inputStyleClass="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
 
                             <h:panelGroup >
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -80,9 +80,6 @@
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
-
-
-
                         </p:panelGrid>
                         <h:panelGrid columns="6">
                             <p:commandButton 
@@ -94,7 +91,6 @@
                                 action="#{reportController.processLabTestWiseCountReport()}" >
 
                             </p:commandButton>
-
                             <p:commandButton 
                                 icon="fa-solid fa-print"
                                 class="mx-2 ui-button-info"
@@ -113,7 +109,6 @@
                                 >
                                 <p:dataExporter type="xlsx" target="tblExport"  fileName="lab_test_wise_count_report.xlsx" ></p:dataExporter>
                             </p:commandButton>
-
                             <p:commandButton 
                                 class="mx-2 ui-button-danger" 
                                 icon="fa-solid fa-file-pdf"
@@ -121,9 +116,11 @@
                                 ajax="false" 
                                 value="PDF"
                                 >
-                                <p:dataExporter type="pdf" target="tblExport"  fileName="lab_test_wise_count_report.pdf" ></p:dataExporter>
+                                <p:dataExporter
+                                    type="pdf" 
+                                    target="tblExport"  
+                                    fileName="lab_test_wise_count_report" ></p:dataExporter>
                             </p:commandButton>
-
                         </h:panelGrid>
 
                         <h:panelGrid  columns="2" class="my-3">
@@ -155,7 +152,7 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Hos Fee" >
-                                <h:outputText value="#{c.hosFee + c.discount}" >
+                                <h:outputText value="#{c.hosFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -175,7 +172,7 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Net Hos Fee" >
-                                <h:outputText value="#{c.hosFee}" >
+                                <h:outputText value="#{c.hosFee - c.discount}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -194,7 +191,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            
+
                             <p:column headerText="Total Amount" >
                                 <h:outputText value="#{c.total}" >
                                     <f:convertNumber pattern="#,##0.00" />

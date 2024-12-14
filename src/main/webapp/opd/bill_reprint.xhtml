@@ -70,26 +70,27 @@
                                     <h:panelGroup rendered="#{billSearch.opdBillRefundAllowedSameDay}">
                                         <p:commandButton
                                             ajax="false" 
-                                            value="To Refund"
+                                            value="To Refund Fees"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Refund Allow for OPD Bill',true)}"
                                             disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
                                             action="#{billSearch.navigateToRefundOpdBill}" 
-                                            class="ui-button-warning m-1 w-25" 
-                                            icon="fa fa-money-bill-wave">                          
+                                            class="ui-button-help m-1 w-25" 
+                                            icon="fa fa-money-check-alt">                          
                                         </p:commandButton>
                                         <p:commandButton
                                             ajax="false" 
-                                            value="To Return"
+                                            value="To Return Items"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Return Allow for OPD Bill',true)}"
                                             actionListener="#{billReturnController.clear()}"
                                             disabled="#{billSearch.bill.cancelled or not billReturnController.checkCanReturnBill(billSearch.bill)}" 
                                             action="#{billReturnController.navigateToReturnOpdBill()}"
                                             class="ui-button-warning m-1 w-25" 
-                                            icon="fa fa-money-bill-wave"> 
-                                            <f:setPropertyActionListener value="#{billSearch.bill}" target="#{billReturnController.originalBillToReturn}" ></f:setPropertyActionListener>
+                                            icon="fa fa-undo-alt"> 
+                                            <f:setPropertyActionListener value="#{billSearch.bill}" target="#{billReturnController.originalBillToReturn}" />
                                         </p:commandButton>
+
                                     </h:panelGroup>
-                                    
+
                                     <h:panelGroup rendered="#{!billSearch.opdBillRefundAllowedSameDay}">
                                         <p:commandButton
                                             ajax="false" 
@@ -125,13 +126,6 @@
                                         </p:commandButton>
                                     </h:panelGroup>
 
-                                    <p:commandButton 
-                                        value="Print" 
-                                        class="ui-button-info m-1 w-25"
-                                        icon="fa fa-print"
-                                        ajax="false">
-                                        <p:printer target="groupPrint" />
-                                    </p:commandButton>
                                     <!-- Print Lookup Button -->
                                     <p:commandButton 
                                         value="Patient Lookup" 
@@ -158,91 +152,104 @@
                                         icon="fa-solid fa-arrow-left"
                                         action="#{opdBillController.navigateToSearchOpdBills()}"
                                         ajax="false">
-
                                     </p:commandButton>
-
                                 </div>
-
                             </div>
                         </div>
 
                         <div class="row">
-                            <div class="col-8">
-                                <div class="d-flex m-1 justify-content-between">
-                                    <div>
-                                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                        <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
-                                            <f:selectItem itemLabel="Please Select Paper Type" />
-                                            <f:selectItems value="#{enumController.paperTypes}" />
-                                        </p:selectOneMenu>
-                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                            <div class="col-7">
+                                <p:panel >
+                                    <f:facet name="header">
+                                        <div class="d-flex justify-content-between">
+                                            <p:outputLabel value="Bill View" class="mt-2"></p:outputLabel>
+                                            <p:commandButton 
+                                                value="Print" 
+                                                class="ui-button-info "
+                                                icon="fa fa-print"
+                                                ajax="false">
+                                                <p:printer target="groupPrint" />
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                value="Print Refund Bill" 
+                                                class="ui-button-info"
+                                                icon="fa fa-print"
+                                                style="float: right"
+                                                rendered="#{billSearch.bill.refunded}"
+                                                ajax="false">
+                                                <p:printer target="refundPrint" />
+                                            </p:commandButton>
+                                        </div>
+                                    </f:facet>
+
+                                    <div class="d-flex  justify-content-end">
+                                        <div class="d-flex gap-2 ">
+                                            <p:outputLabel value="Paper Type" class="mt-2"></p:outputLabel>
+                                            <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" style="width: 13em;">
+                                                <f:selectItem itemLabel="Please Select Paper Type" />
+                                                <f:selectItems value="#{enumController.paperTypes}" />
+                                            </p:selectOneMenu>
+                                            <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                                        </div>
                                     </div>
 
-                                    <p:commandButton 
-                                        value="Print Refund Bill" 
-                                        class="ui-button-info m-1"
-                                        icon="fa fa-print"
-                                        style="float: right"
-                                        rendered="#{billSearch.bill.refunded}"
-                                        ajax="false">
-                                        <p:printer target="refundPrint" />
-                                    </p:commandButton>
-                                </div>
-
-                                <div class="d-flex gap-2">
-                                    <div class="col-6">
-                                        <h:panelGroup id="groupPrint" >
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                                                <ui:repeat value="#{billSearch.bill}" var="ffb">
-                                                    <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="true"/>                        
-                                                </ui:repeat>
-                                            </h:panelGroup>
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                <ui:repeat value="#{billSearch.bill}" var="ffpp">
-                                                    <prints:five_five_paper_without_headings bill="#{ffpp}"  duplicate="true"/>
-                                                </ui:repeat>
-                                            </h:panelGroup>
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                                <ui:repeat value="#{billSearch.bill}" var="pp">
-                                                    <prints:posOpdBill bill="#{pp}" duplicate="true"/>                        
-                                                </ui:repeat>
-                                            </h:panelGroup>
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
-                                                <ui:repeat value="#{billSearch.bill}" var="ffb" >
-                                                    <prints:five_five_paper_coustom_1 bill="#{ffb}" duplicate="true"/>                        
-                                                </ui:repeat>
-                                            </h:panelGroup>
-                                        </h:panelGroup>
-                                    </div>
-                                    <div class="col-6">
-                                        <h:panelGroup rendered="#{billSearch.bill.refunded}">
-                                            <h:panelGroup id="refundPrint" >
-                                                <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
-                                                    <bi:opdPOSReturnBill bill="#{billSearch.bill.refundedBill}" />
+                                    <div class="d-flex gap-2">
+                                        <div class="col-6">
+                                            <h:panelGroup id="groupPrint" >
+                                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                                    <ui:repeat value="#{billSearch.bill}" var="ffb">
+                                                        <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="true"/>                        
+                                                    </ui:repeat>
                                                 </h:panelGroup>
-
-                                                <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}">
-                                                    <prints:five_five_paper_coustom_1 bill="#{billSearch.bill.refundedBill}" refunded="true"  duplicate="true"/>
-                                                </h:panelGroup>
-
                                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                    <bi:opdReturnfive_five_paper_without_headings 
-                                                        bill="#{billSearch.bill.refundedBill}"/>
+                                                    <ui:repeat value="#{billSearch.bill}" var="ffpp">
+                                                        <prints:five_five_paper_without_headings bill="#{ffpp}"  duplicate="true"/>
+                                                    </ui:repeat>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                                    <ui:repeat value="#{billSearch.bill}" var="pp">
+                                                        <prints:posOpdBill bill="#{pp}" duplicate="true"/>                        
+                                                    </ui:repeat>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                                    <ui:repeat value="#{billSearch.bill}" var="ffb" >
+                                                        <prints:five_five_paper_coustom_1 bill="#{ffb}" duplicate="true" payments="1"/>                        
+                                                    </ui:repeat>
                                                 </h:panelGroup>
                                             </h:panelGroup>
-                                        </h:panelGroup>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-4">
+                                        </div>
+                                        <div class="col-6">
+                                            <h:panelGroup rendered="#{billSearch.bill.refunded}">
+                                                <h:panelGroup id="refundPrint" >
+                                                    <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
+                                                        <bi:opdPOSReturnBill bill="#{billSearch.bill.refundedBill}" />
+                                                    </h:panelGroup>
 
-                                <p:panel header="">
+                                                    <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}">
+                                                        <prints:five_five_paper_coustom_1 bill="#{billSearch.bill.refundedBill}" refunded="true"  duplicate="true" payments="1"/>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                                        <bi:opdReturnfive_five_paper_without_headings 
+                                                            bill="#{billSearch.bill.refundedBill}"/>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </p:panel>
+                            </div>
+
+                            <div class="col-5">
+                                <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                         <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
                                     <common:patient patient="#{billSearch.bill.patient}" class="w-100"/>
                                 </p:panel>
+
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
@@ -332,6 +339,7 @@
                                     </div>
 
                                 </p:panel>
+
                                 <p:panel header="">
                                     <f:facet name="header">
                                         <h:outputText styleClass="fa-solid fa-circle-info"></h:outputText>
@@ -399,86 +407,83 @@
                                         </p:column>  
                                     </p:dataTable>
                                 </p:panel>
-
                             </div>
                         </div>
 
+                        <p:dialog header="Edit Bill" widgetVar="editBill" resizable="false" showEffect="fade" hideEffect="fade" width="800">
+                            <h:panelGroup id="printPnl" class="m-2" >
+                                <h:panelGrid columns="2" class="w-100">
+                                    <h:panelGroup>
+                                        <h:outputLabel style="font-size: 18pt" value="Reffering Doctor"/>
+                                        <p:commandLink 
+                                            id="btnAddNewDoc" 
+                                            type="button"  
+                                            value="&nbsp;(+)" 
+                                            oncomplete="PF('dlg').show();" 
+                                            actionListener="#{doctorController.prepareAdd}" 
+                                            process="btnAddNewDoc" 
+                                            update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
+                                    </h:panelGroup>
+                                    <p:autoComplete 
+                                        forceSelection="true" 
+                                        id="cmbDoc" 
+                                        value="#{billSearch.referredBy}" 
+                                        completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                        itemLabel="#{ix.person.name}" 
+                                        itemValue="#{ix}" 
+                                        inputStyleClass="form-control w-100"
+                                        class="w-100" 
+                                        scrollHeight="500">
+                                        <p:column headerText="Name" style="padding: 2px;">
+                                            <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Code" style="padding: 2px;">
+                                            <h:outputText value="#{ix.code}" ></h:outputText>
+                                        </p:column>
+                                    </p:autoComplete>
+                                </h:panelGrid>
+                            </h:panelGroup>
+                            <f:facet name="footer">
+                                <p:commandButton class="my-2" ajax="false" value="Save" action="#{billSearch.editBillDetails()}" />
+                            </f:facet>
+                        </p:dialog>
+                        <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true" class="p-2" showEffect="fade"  width="450">  
+                            <h:panelGrid columns="2" >  
+                                <p:outputLabel id="lblNameD" value="Name" ></p:outputLabel>
+                                <p:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></p:inputText>
+                                <p:outputLabel id="lblPhoneD" value="Phone" ></p:outputLabel>
+                                <p:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}"  ></p:inputText>
+                                <p:outputLabel id="lblFaxD" value="Fax" ></p:outputLabel>
+                                <p:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}"  ></p:inputText>
+                                <p:outputLabel id="lblMobileD" value="Mobile" ></p:outputLabel>
+                                <p:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  ></p:inputText>
+                                <p:outputLabel id="lblAddressD" value="Address" ></p:outputLabel>
+                                <p:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></p:inputText>
+                                <p:outputLabel value="Code"></p:outputLabel>   
+                                <p:inputText autocomplete="off" id="txtCodeD" value="#{doctorController.current.code}"  ></p:inputText>
+                                <p:outputLabel value="Speciality" ></p:outputLabel>
+                                <p:selectOneMenu id="cmbSpecialityD" value="#{doctorController.current.speciality}" >
+                                    <f:selectItem itemLabel="Please select a speciality"/>
+                                    <f:selectItems value="#{doctorSpecialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                </p:selectOneMenu>
+                                <p:outputLabel id="lblRegD" value="Registration" ></p:outputLabel>
+                                <p:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}"  ></p:inputText>                 
+                                <p:outputLabel id="lblQuaD" value="Qualification" ></p:outputLabel>
+                                <p:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></p:inputText>   
+
+                                <p:commandButton 
+                                    id="btnDocSave" 
+                                    value="Add New" 
+                                    ajax="false"
+                                    process="btnDocSave panDoc" 
+                                    update="msg panDoc cmbDoc " actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                                </p:commandButton>
+                            </h:panelGrid>  
+                        </p:dialog> 
+
                     </p:panel>
-                    <p:dialog header="Edit Bill" widgetVar="editBill" resizable="false" showEffect="fade" hideEffect="fade" width="800">
-                        <h:panelGroup id="printPnl" class="m-2" >
-                            <h:panelGrid columns="2" class="w-100">
-                                <h:panelGroup>
-                                    <h:outputLabel style="font-size: 18pt" value="Reffering Doctor"/>
-                                    <p:commandLink id="btnAddNewDoc" 
-                                                   type="button"  
-                                                   value="&nbsp;(+)" 
-                                                   oncomplete="PF('dlg').show();" 
-                                                   actionListener="#{doctorController.prepareAdd}" 
-                                                   process="btnAddNewDoc" 
-                                                   update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
-                                </h:panelGroup>
-                                <p:autoComplete forceSelection="true" 
-                                                id="cmbDoc" 
-                                                value="#{billSearch.referredBy}" 
-                                                completeMethod="#{doctorController.completeDoctor}" var="ix" 
-                                                itemLabel="#{ix.person.name}" 
-                                                itemValue="#{ix}" 
-                                                inputStyleClass="form-control w-100"
-                                                class="w-100" 
-                                                scrollHeight="500">
-                                    <p:column headerText="Name" style="padding: 2px;">
-                                        <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Code" style="padding: 2px;">
-                                        <h:outputText value="#{ix.code}" ></h:outputText>
-                                    </p:column>
-                                </p:autoComplete>
-                            </h:panelGrid>
-                        </h:panelGroup>
-                        <f:facet name="footer">
-                            <p:commandButton class="my-2" ajax="false" value="Save" action="#{billSearch.editBillDetails()}" />
-                        </f:facet>
-                    </p:dialog>
-                    <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true" class="p-2" showEffect="fade"  width="450">  
-                        <h:panelGrid columns="2" >  
-                            <p:outputLabel id="lblNameD" value="Name" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></p:inputText>
-                            <p:outputLabel id="lblPhoneD" value="Phone" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}"  ></p:inputText>
-                            <p:outputLabel id="lblFaxD" value="Fax" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}"  ></p:inputText>
-                            <p:outputLabel id="lblMobileD" value="Mobile" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  ></p:inputText>
-                            <p:outputLabel id="lblAddressD" value="Address" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></p:inputText>
-                            <p:outputLabel value="Code"></p:outputLabel>   
-                            <p:inputText autocomplete="off" id="txtCodeD" value="#{doctorController.current.code}"  ></p:inputText>
-                            <p:outputLabel value="Speciality" ></p:outputLabel>
-                            <p:selectOneMenu id="cmbSpecialityD" value="#{doctorController.current.speciality}" >
-                                <f:selectItem itemLabel="Please select a speciality"/>
-                                <f:selectItems value="#{doctorSpecialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                            </p:selectOneMenu>
-                            <p:outputLabel id="lblRegD" value="Registration" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}"  ></p:inputText>                 
-                            <p:outputLabel id="lblQuaD" value="Qualification" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></p:inputText>   
-
-                            <p:commandButton 
-                                id="btnDocSave" 
-                                value="Add New" 
-                                ajax="false"
-                                process="btnDocSave panDoc" 
-                                update="msg panDoc cmbDoc " actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
-                            </p:commandButton>
-                        </h:panelGrid>  
-                    </p:dialog> 
-
-
-
                 </h:form>
             </ui:define>
-
-
 
         </ui:composition>
 

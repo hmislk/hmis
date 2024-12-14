@@ -34,15 +34,13 @@ public abstract class AbstractFacade<T> {
 
     private Class<T> entityClass;
 
-    public int executeNativeSql(String jpql) {
+    public void executeNativeSql(String sql) throws Exception {
         try {
-            getEntityManager().getTransaction().begin();
-            Query query = getEntityManager().createNativeQuery(jpql);
-            int result = query.executeUpdate();
-            getEntityManager().getTransaction().commit();
-            return result;
+            // Execute the native SQL query
+            Query query = getEntityManager().createNativeQuery(sql);
+            query.executeUpdate();
         } catch (Exception e) {
-            return 0;
+            throw e; // Rethrow exception to be handled in calling method
         }
     }
 
@@ -170,7 +168,6 @@ public abstract class AbstractFacade<T> {
 //        }
 //        return t;
 //    }
-
     public T findFreshByJpql(String jpql, Map<String, Object> parameters) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         qry.setHint("javax.persistence.cache.storeMode", "REFRESH"); // Bypass cache
@@ -215,7 +212,7 @@ public abstract class AbstractFacade<T> {
             return null;
         }
     }
-    
+
     public T findFirstByJpql(String jpql, Map<String, Object> parameters, boolean withoutCache) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         Set s = parameters.entrySet();
@@ -240,8 +237,7 @@ public abstract class AbstractFacade<T> {
         } catch (NoResultException e) {
             return null;
         }
-        
-        
+
     }
 
     public AbstractFacade(Class<T> entityClass) {
@@ -379,6 +375,38 @@ public abstract class AbstractFacade<T> {
     public List<?> findLightsByJpql(String jpql) {
         Query qry = getEntityManager().createQuery(jpql);
         return qry.getResultList();
+    }
+
+    private List<Long> executeLongJpqlQuery(String jpql, Map<String, Object> parameters, TemporalType tt) {
+        Query qry = getEntityManager().createQuery(jpql);
+
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+
+            if (paramValue instanceof Date) {
+                qry.setParameter(paramName, (Date) paramValue, tt);
+            } else {
+                qry.setParameter(paramName, paramValue);
+            }
+        }
+
+        List<Long> resultList;
+        try {
+            resultList = qry.getResultList();
+        } catch (Exception e) {
+            resultList = new ArrayList<>();
+        }
+
+        return resultList;
+    }
+
+    public List<Long> findLongValuesByJpql(String jpql, Map<String, Object> parameters) {
+        return executeLongJpqlQuery(jpql, parameters, TemporalType.DATE);
+    }
+
+    public List<Long> findLongValuesByJpql(String jpql, Map<String, Object> parameters, TemporalType tt) {
+        return executeLongJpqlQuery(jpql, parameters, tt);
     }
 
     public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters) {

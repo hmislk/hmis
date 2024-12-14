@@ -22,6 +22,12 @@ import javax.inject.Inject;
  */
 public class ComponentDetail {
 
+    /**
+     *
+     * URGENTLY need to remove this
+     *
+     */
+    @Deprecated
     @Inject
     OpdBillController opdBillController;
     private String no;
@@ -38,15 +44,14 @@ public class ComponentDetail {
     private String referralNo;
     private String referenceNo;
     private PatientDeposit patientDepost;
-    
 
     public List<ComponentDetail> getMultiplePaymentMethodComponentDetails() {
         if (multiplePaymentMethodComponentDetails == null) {
             multiplePaymentMethodComponentDetails = new ArrayList<>();
         }
-        if (multiplePaymentMethodComponentDetails.isEmpty()) {
-            multiplePaymentMethodComponentDetails.add(new ComponentDetail());
-        }
+//        if (multiplePaymentMethodComponentDetails.isEmpty()) {
+//            multiplePaymentMethodComponentDetails.add(new ComponentDetail());
+//        }
         return multiplePaymentMethodComponentDetails;
     }
 
@@ -88,6 +93,9 @@ public class ComponentDetail {
     }
 
     public String getComment() {
+        if (comment == null) {
+            comment = "";
+        }
         return comment;
     }
 

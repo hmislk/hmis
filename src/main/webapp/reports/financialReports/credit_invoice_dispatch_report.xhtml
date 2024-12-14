@@ -1,0 +1,260 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+<h:body class="w-100 border">
+    <ui:composition template="/reports/index.xhtml" class="w-100 border">
+        <ui:define name="subcontent">
+            <h:form class="w-100">
+                <p:panel header="Credit Invoice Dispatch" class="w-100">
+
+                    <h:panelGrid columns="8" class="w-100">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Date Type" class="m-3"/>
+                        </h:panelGroup>
+
+                        <p:selectOneRadio>
+                            <f:selectItem itemValue="admission" itemLabel="Admission Date"/>
+                            <f:selectItem itemValue="discharge" itemLabel="Discharge Date"/>
+                            <f:selectItem itemValue="invoice" itemLabel="Invoice Date"/>
+                        </p:selectOneRadio>
+
+                        <p:spacer width="20"/>
+                        <p:spacer width="20"/>
+                        <p:spacer width="20"/>
+                        <p:spacer width="20"/>
+                        <p:spacer width="20"/>
+                        <p:spacer width="20"/>
+                    </h:panelGrid>
+
+                    <h:panelGrid columns="8" class="w-100">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
+                            <p:outputLabel value="From Date" class="m-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:calendar
+                                class="w-100 "
+                                inputStyleClass="w-100"
+                                id="fromDate"
+                                value="#{reportsController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                        </p:calendar>
+
+                        <p:spacer width="20"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
+                            <p:outputLabel value="To Date" class="m-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:calendar
+                                class="w-100 "
+                                inputStyleClass="w-100"
+                                id="toDate"
+                                value="#{reportsController.toDate}"
+                                navigator="false"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                        </p:calendar>
+
+                        <p:spacer width="20"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf1ad;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Sponsor Name" class="m-3"/>
+                        </h:panelGroup>
+                        <p:autoComplete inputStyleClass="w-100" class="w-100" id="companyName" forceSelection="true"
+                                        style="text-align: right;"
+                                        value="#{reportsController.creditCompany}"
+                                        completeMethod="#{creditCompanyController.completeCredit}"
+                                        var="ix" itemLabel="#{ix.name}"
+                                        itemValue="#{ix}">
+                        </p:autoComplete>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf02b;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Settlement Status" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu value="#{reportsController.dealer}" filter="true" class="w-100 ">
+                            <f:selectItem itemLabel="All"/>
+<!--                            <f:selectItems value="#{reportController.voucherStatusOnDebtorSettlement}"-->
+<!--                                           var="i"-->
+<!--                                           itemLabel="#{i}"-->
+<!--                                           itemValue="#{i}"/>-->
+                        </p:selectOneMenu>
+
+                        <p:spacer/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf007;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Visit Type" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu class="w-100" value="#{reportsController.visitType}">
+                            <f:selectItem itemValue="Any" itemLabel="All"/>
+                            <f:selectItem itemValue="OP" itemLabel="OP"/>
+                            <f:selectItem itemValue="IP" itemLabel="IP"/>
+                        </p:selectOneMenu>
+
+                        <p:spacer width="20"/>
+
+                        <!--Need multiple selection-->
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf084;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Admission Types" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu class="w-100" value="#{reportsController.admissionType}">
+                            <f:selectItem itemLabel="All Admission Types"/>
+                            <f:selectItems value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}"
+                                           itemLabel="#{myItem.name}"/>
+                        </p:selectOneMenu>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0d1;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Dispatch Mode" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu value="#{reportsController.discount}" filter="true" class="w-100 ">
+                            <f:selectItem itemLabel="All"/>
+                            <!--                                <f:selectItems value=""-->
+                            <!--                                               var="i"-->
+                            <!--                                               itemLabel=""-->
+                            <!--                                               itemValue=""-->
+                            <!--                                               ></f:selectItems>-->
+                        </p:selectOneMenu>
+                    </h:panelGrid>
+
+                    <p:commandButton
+                            class="ui-button-warning my-4 mx-2"
+                            style="width: 150px"
+                            ajax="false"
+                            value="Process"
+                            action="#{reportsController.generateCreditInvoiceDispatchReport()}"
+                            icon="fas fa-cogs">
+                    </p:commandButton>
+
+                    <p:commandButton
+                            class="ui-button-info my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-print"
+                            ajax="false"
+                            value="Print">
+                        <p:printer target="tblExport"/>
+                    </p:commandButton>
+
+                    <p:commandButton
+                            class="ui-button-success my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-file-excel"
+                            ajax="false"
+                            value="Excel">
+                        <p:dataExporter type="xlsx" target="tblExport" fileName="credit_invoice_dispatch_report.xlsx"/>
+                    </p:commandButton>
+
+                    <p:commandButton
+                            class="ui-button-danger my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-file-pdf"
+                            ajax="false"
+                            value="PDF">
+                        <p:dataExporter type="pdf" target="tblExport" fileName="credit_invoice_dispatch_report.pdf"/>
+                    </p:commandButton>
+
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Credit Invoice Dispatch"/><br/><br/>
+
+                            <h:panelGrid columns="2" class="mb-2">
+                                <h:outputLabel value="From Date :"/>
+                                <h:outputLabel value="#{reportsController.fromDate}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputLabel>
+                                <h:outputLabel value="To Date :"/>
+                                <h:outputLabel value="#{reportsController.toDate}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputLabel>
+                                <h:outputLabel value="Sponsor Name :"/>
+                                <h:outputLabel/>
+                                <h:outputLabel value="Settlement Status :"/>
+                                <h:outputLabel/>
+                            </h:panelGrid>
+                        </f:facet>
+
+                        <p:dataTable
+                                id="tblExport"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                value="#{reportsController.bundle.reportTemplateRows}"
+                                rows="10"
+                                var="bi"
+                                rowIndexVar="n"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="10,25,50">
+                            <p:column headerText="S.No">
+                                <h:outputText value="#{n+1}"/>
+                            </p:column>
+                            <p:column headerText="Sponsor Name">
+                                <h:outputText
+                                        value="#{bi.billItem.referenceBill.patientEncounter != null ?
+                                                    bi.billItem.referenceBill.patientEncounter.finalBill.creditCompany.name :
+                                                    bi.billItem.referenceBill.creditCompany.name}"/>
+                            </p:column>
+                            <p:column headerText="Invoice Date">
+                                <h:outputText value="#{bi.billItem.bill.patientEncounter!=null ?
+                                                        bi.billItem.bill.patientEncounter.dateOfDischarge:
+                                                        bi.billItem.bill.createdAt}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Dispatched Date">
+                                <h:outputText value="#{bi.billItem.referenceBill.paymentScheme.createdAt}"/>
+                            </p:column>
+                            <p:column headerText="BHT">
+                                <h:outputText value="#{bi.billItem.bill.patientEncounter!=null ?
+                                                        bi.billItem.bill.patientEncounter.finalBill.deptId:
+                                                        bi.billItem.bill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="MRN">
+                                <h:outputText value="#{bi.billItem.bill.patientEncounter!=null ?
+                                                        bi.billItem.bill.patientEncounter.bhtNo:
+                                                        bi.billItem.bill.patient.phn}"/>
+                            </p:column>
+                            <p:column headerText="Dispatched Comment">
+                                <h:outputText value="#{bi.billItem.referenceBill.paymentScheme.retireComments}"/>
+                            </p:column>
+                            <p:column headerText="Dispatch Mode">
+                                <h:outputText value="#{bi.billItem.referenceBill.paymentScheme.name}"/>
+                            </p:column>
+                            <p:column headerText="Invoice Value">
+                                <h:outputText value="#{bi.billItem.referenceBill.patientEncounter!=null ?
+                                                        bi.billItem.referenceBill.patientEncounter.finalBill.netTotal:
+                                                        bi.billItem.referenceBill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Due Amount">
+                                <h:outputText value="#{bi.billItem.referenceBill.patientEncounter!=null ?
+                                                        bi.billItem.referenceBill.patientEncounter.finalBill.netTotal + bi.billItem.referenceBill.patientEncounter.finalBill.vat + bi.billItem.referenceBill.patientEncounter.finalBill.paidAmount:
+                                                        bi.billItem.referenceBill.netTotal + bi.billItem.referenceBill.vat + bi.billItem.referenceBill.paidAmount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Approved By">
+                                <h:outputText value="#{bi.billItem.referenceBill.patientEncounter!=null ?
+                                                        bi.billItem.referenceBill.patientEncounter.finalBill.creater.webUserPerson.name:
+                                                        bi.billItem.referenceBill.creater.webUserPerson.name}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

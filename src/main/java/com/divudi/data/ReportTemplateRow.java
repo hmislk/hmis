@@ -1,20 +1,9 @@
 package com.divudi.data;
 
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Payment;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
+import com.divudi.entity.*;
 import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,7 +13,6 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
- *
  * @author buddhika
  */
 public class ReportTemplateRow implements Serializable {
@@ -40,12 +28,12 @@ public class ReportTemplateRow implements Serializable {
     private BillFee billFee;
     private Payment payment;
 
-        
+
     private BillType billType;
     private BillClassType billClassType;
     BillTypeAtomic billTypeAtomic;
-    
-    
+
+
     private boolean selected;
 
     private Item item;
@@ -140,17 +128,25 @@ public class ReportTemplateRow implements Serializable {
     private Double grossTotal;
     private Double discount;
     private Double total;
+    private Double tax;
 
     private Double hospitalTotal;
     private Double staffTotal;
     private Double ccTotal;
+
+    private Route route;
+    private Institution collectingCentre;
+    private Double totalHospitalFee;
+    private Double qty;
+
+    private long duration;
 
     private String rowType;
 
     private UUID id;
 
     private List<DenominationTransaction> denominationTransactions;
-    
+
     private PaymentHandover paymentHandover;
 
     // Constructor to generate a new UUID when an object is created
@@ -162,8 +158,7 @@ public class ReportTemplateRow implements Serializable {
         this.institution = institution;
     }
 
-    
-    
+
     public ReportTemplateRow(Institution institution, Double itemTotal) {
         this.itemTotal = itemTotal;
         this.institution = institution;
@@ -176,6 +171,18 @@ public class ReportTemplateRow implements Serializable {
         this.itemProfessionalFee = itemProfessionalFee;
         this.itemNetTotal = itemNetTotal;
         this.institution = institution;
+    }
+
+    public ReportTemplateRow(Institution collectingCentre, Double totalHospitalFee, Double qty) {
+        this.collectingCentre = collectingCentre;
+        this.totalHospitalFee = totalHospitalFee;
+        this.qty = qty;
+    }
+
+    public ReportTemplateRow(Route route, Double totalHospitalFee, Double qty) {
+        this.route = route;
+        this.totalHospitalFee = totalHospitalFee;
+        this.qty = qty;
     }
 
     // Getter for UUID (optional, depending on use case)
@@ -221,11 +228,11 @@ public class ReportTemplateRow implements Serializable {
     }
 
     public ReportTemplateRow(Department department, Date date,
-            double cashValue, double cardValue, double multiplePaymentMethodsValue,
-            double staffValue, double creditValue, double staffWelfareValue,
-            double voucherValue, double iouValue, double agentValue,
-            double chequeValue, double slipValue, double eWalletValue,
-            double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+                             double cashValue, double cardValue, double multiplePaymentMethodsValue,
+                             double staffValue, double creditValue, double staffWelfareValue,
+                             double voucherValue, double iouValue, double agentValue,
+                             double chequeValue, double slipValue, double eWalletValue,
+                             double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
         this.department = department;
         this.date = date;
         this.cashValue = cashValue;
@@ -244,13 +251,13 @@ public class ReportTemplateRow implements Serializable {
         this.patientPointsValue = patientPointsValue;
         this.onlineSettlementValue = onlineSettlementValue;
     }
-    
-    public ReportTemplateRow(Department department,BillTypeAtomic billTypeAtomic,
-            double cashValue, double cardValue, double multiplePaymentMethodsValue,
-            double staffValue, double creditValue, double staffWelfareValue,
-            double voucherValue, double iouValue, double agentValue,
-            double chequeValue, double slipValue, double eWalletValue,
-            double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+
+    public ReportTemplateRow(Department department, BillTypeAtomic billTypeAtomic,
+                             double cashValue, double cardValue, double multiplePaymentMethodsValue,
+                             double staffValue, double creditValue, double staffWelfareValue,
+                             double voucherValue, double iouValue, double agentValue,
+                             double chequeValue, double slipValue, double eWalletValue,
+                             double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
         this.department = department;
         this.billTypeAtomic = billTypeAtomic;
         this.cashValue = cashValue;
@@ -271,11 +278,11 @@ public class ReportTemplateRow implements Serializable {
     }
 
     public ReportTemplateRow(Bill bill,
-            double cashValue, double cardValue, double multiplePaymentMethodsValue,
-            double staffValue, double creditValue, double staffWelfareValue,
-            double voucherValue, double iouValue, double agentValue,
-            double chequeValue, double slipValue, double eWalletValue,
-            double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+                             double cashValue, double cardValue, double multiplePaymentMethodsValue,
+                             double staffValue, double creditValue, double staffWelfareValue,
+                             double voucherValue, double iouValue, double agentValue,
+                             double chequeValue, double slipValue, double eWalletValue,
+                             double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
         this.bill = bill;
         this.cashValue = cashValue;
         this.cardValue = cardValue;
@@ -303,7 +310,7 @@ public class ReportTemplateRow implements Serializable {
         this.discount = discount;
         this.total = total;
     }
-    
+
     public ReportTemplateRow(BillTypeAtomic billTypeAtomic, Long rowCount, Double grossTotal, Double discount, Double total) {
         this.billTypeAtomic = billTypeAtomic;
         this.rowCount = rowCount;
@@ -316,13 +323,13 @@ public class ReportTemplateRow implements Serializable {
         this.billTypeAtomic = billTypeAtomic;
         this.rowCount = rowCount;
     }
-    
+
     public ReportTemplateRow(Department department, Date date, WebUser user,
-            double cashValue, double cardValue, double multiplePaymentMethodsValue,
-            double staffValue, double creditValue, double staffWelfareValue,
-            double voucherValue, double iouValue, double agentValue,
-            double chequeValue, double slipValue, double eWalletValue,
-            double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+                             double cashValue, double cardValue, double multiplePaymentMethodsValue,
+                             double staffValue, double creditValue, double staffWelfareValue,
+                             double voucherValue, double iouValue, double agentValue,
+                             double chequeValue, double slipValue, double eWalletValue,
+                             double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
         this.department = department;
         this.date = date;
         this.cashValue = cashValue;
@@ -401,6 +408,14 @@ public class ReportTemplateRow implements Serializable {
 
     public void setItemName(String itemName) {
         this.itemName = itemName;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
     }
 
     public String getPaymentName() {
@@ -1147,6 +1162,38 @@ public class ReportTemplateRow implements Serializable {
         return billItem;
     }
 
+    public Route getRoute() {
+        return route;
+    }
+
+    public void setRoute(Route route) {
+        this.route = route;
+    }
+
+    public Institution getCollectingCentre() {
+        return collectingCentre;
+    }
+
+    public void setCollectingCentre(Institution collectingCentre) {
+        this.collectingCentre = collectingCentre;
+    }
+
+    public Double getTotalHospitalFee() {
+        return totalHospitalFee;
+    }
+
+    public void setTotalHospitalFee(Double totalHospitalFee) {
+        this.totalHospitalFee = totalHospitalFee;
+    }
+
+    public Double getQty() {
+        return qty;
+    }
+
+    public void setQty(Double qty) {
+        this.qty = qty;
+    }
+
     public void setBillItem(BillItem billItem) {
         this.billItem = billItem;
     }
@@ -1194,8 +1241,7 @@ public class ReportTemplateRow implements Serializable {
     public ReportTemplateRow(AgentHistory agentHistory) {
         this.agentHistory = agentHistory;
     }
-    
-    
+
 
     public Double getGrossTotal() {
         return grossTotal;
@@ -1292,8 +1338,12 @@ public class ReportTemplateRow implements Serializable {
     public void setBillClassType(BillClassType billClassType) {
         this.billClassType = billClassType;
     }
-    
-    
-    
 
+    public Double getTax() {
+        return tax;
+    }
+
+    public void setTax(Double tax) {
+        this.tax = tax;
+    }
 }

@@ -153,10 +153,12 @@ public class GrnController implements Serializable {
         clear();
         createGrn();
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
+        getGrnBill().setCreditDuration(getApproveBill().getCreditDuration());
         return "/pharmacy/pharmacy_grn?faces-redirect=true";
     }
 
     public void clear() {
+        billExpenses = null;
         grnBill = null;
         total = 0;
         netTotal = 0;

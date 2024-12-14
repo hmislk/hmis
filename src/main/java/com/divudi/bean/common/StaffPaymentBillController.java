@@ -1,6 +1,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -47,6 +48,8 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.entity.cashTransaction.Drawer;
+import com.divudi.service.DrawerService;
 import com.divudi.service.ProfessionalPaymentService;
 import java.text.DecimalFormat;
 
@@ -59,6 +62,8 @@ import java.text.DecimalFormat;
 @SessionScoped
 public class StaffPaymentBillController implements Serializable {
 
+    @EJB
+    DrawerService drawerService;
     @EJB
     private RefundBillFacade refundBillFacade;
     @EJB
@@ -93,6 +98,8 @@ public class StaffPaymentBillController implements Serializable {
     private BillBeanController billBean;
     @Inject
     DrawerController drawerController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
 
     private List<BillComponent> billComponents;
     private List<BillItem> billItems;
@@ -104,6 +111,9 @@ public class StaffPaymentBillController implements Serializable {
     private Bill current;
     private List<Bill> items = null;
     String selectText = "";
+    private String withholdingTaxCalculationStatus;
+    private List<String> withholdingTaxCalculationStatuses;
+
     Staff currentStaff;
     private List<BillFee> dueBillFeeReport;
     List<BillFee> dueBillFees;
@@ -124,6 +134,7 @@ public class StaffPaymentBillController implements Serializable {
     private List<BillFee> billFees;
     private List<BillFee> tblBillFees;
     private LazyDataModel<BillFee> dueBillFee;
+    private boolean allowUserToSelectPayWithholdingTaxDuringProfessionalPayments;
 
     public Title[] getTitle() {
         return Title.values();
@@ -265,10 +276,10 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public void calculateDueFeesForOpdForSelectedPeriod() {
-        if (currentStaff == null || currentStaff.getId() == null) {
-            dueBillFees = new ArrayList<>();
-            return;
-        }
+//        if (currentStaff == null || currentStaff.getId() == null) {
+//            dueBillFees = new ArrayList<>();
+//            return;
+//        }
         List<BillTypeAtomic> btcs = new ArrayList<>();
         btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -283,21 +294,33 @@ public class StaffPaymentBillController implements Serializable {
                 + " and bf.bill.cancelled=:bc "
                 + " and bf.bill.refunded=:brfnd "
                 + " and bf.bill.createdAt between :fd and :td "
-                + " and (bf.feeValue - bf.paidValue) > 0 "
-                + " and bf.staff=:staff ";
+                + " and (bf.feeValue - bf.paidValue) > 0 ";
+
+        if (currentStaff != null) {
+            jpql += " and bf.staff=:staff ";
+            params.put("staff", currentStaff);
+        } else {
+            jpql += " and bf.staff is not null ";
+        }
+
+        if (speciality != null) {
+            jpql += " and bf.staff.speciality=:speciality ";
+            params.put("speciality", speciality);
+        } else {
+            jpql += " and bf.staff is not null ";
+        }
+
         params.put("btcs", btcs);
         params.put("bc", false);
         params.put("brfnd", false);
         params.put("fd", fromDate);
         params.put("td", toDate);
-        params.put("staff", currentStaff);
 
         boolean testing = false;
         if (testing) {
             BillFee bf = new BillFee();
             bf.getBill();
         }
-
         dueBillFees = getBillFeeFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         if (configOptionApplicationController.getBooleanValueByKey("Remove Refunded Bill From OPD Staff Payment")) {
@@ -320,7 +343,7 @@ public class StaffPaymentBillController implements Serializable {
             dueBillFees.removeAll(removeingBillFees);
         }
         calculateTotalPaymentsForTheProfessionalForCurrentMonthForCurrentInstitution();
-        peformeCalculations();
+        performCalculations();
     }
 
     public void calculateDueFees() {
@@ -423,10 +446,23 @@ public class StaffPaymentBillController implements Serializable {
         }
     }
 
-    public void peformeCalculations() {
+    public void performCalculations() {
         calculateTotalDue();
         calculatePaymentsSelected();
-        calculateWithholdingTax();
+
+        switch (withholdingTaxCalculationStatus) {
+            case "Depending On Payments":
+                calculateWithholdingTaxDependingOnPayments();
+                break;
+            case "Include Withholding Tax":
+                calculateWithWithholdingTax();
+                break;
+            case "Exclude Withholding Tax":
+                calculateWithoutWithholdingTax();
+                break;
+            default:
+                calculateWithholdingTaxDependingOnPayments();
+        }
     }
 
     public void calculatePaymentsSelected() {
@@ -436,29 +472,29 @@ public class StaffPaymentBillController implements Serializable {
         }
     }
 
-    public void calculateWithholdingTax() {
-        System.out.println("Calculating Withholding Tax:");
-        System.out.println("totalPaying = " + totalPaying);
-        System.out.println("Total Paid For Current Professional This Month: " + totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute);
+    private void calculateWithholdingTaxDependingOnPayments() {
         if (totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute == 0.0) {
             withholdingTax = 0.0;
             totalPayingWithoutWht = totalPaying;
-            System.out.println("No previous payments found. Withholding Tax set to 0.");
             return;
         }
         Double paidValue = Math.abs(totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute);
-        System.out.println("Paid Value: " + paidValue);
-        System.out.println("Withholding Tax Limit: " + getWithholdingTaxLimit());
         if (getWithholdingTaxLimit() < paidValue) {
             withholdingTax = totalPaying * (getWithholdingTaxPercentage() / 100);
-            System.out.println("Withholding Tax Percentage: " + getWithholdingTaxPercentage());
-            System.out.println("Withholding Tax Calculated: " + withholdingTax);
         } else {
             withholdingTax = 0.0; // Ensure withholdingTax is set to 0.0
-            System.out.println("Paid Value is less than Withholding Tax Limit. No Withholding Tax applied.");
         }
         totalPayingWithoutWht = totalPaying - withholdingTax;
-        System.out.println("Total Paying Without WHT: " + totalPayingWithoutWht);
+    }
+
+    private void calculateWithWithholdingTax() {
+        withholdingTax = totalPaying * (getWithholdingTaxPercentage() / 100);
+        totalPayingWithoutWht = totalPaying - withholdingTax;
+    }
+
+    private void calculateWithoutWithholdingTax() {
+        withholdingTax = 0.0; // Ensure withholdingTax is set to 0.0
+        totalPayingWithoutWht = totalPaying - withholdingTax;
     }
 
     public void calculateTotalPaymentsForTheProfessionalForCurrentMonthForCurrentInstitution() {
@@ -558,18 +594,38 @@ public class StaffPaymentBillController implements Serializable {
     public String navigateToStaffPaymentFromDuePayment(Staff s) {
         currentStaff = s;
         speciality = s.getSpeciality();
-        System.out.println("Staff = " + currentStaff);
-        System.out.println("Speciality = " + speciality);
         calculateDueFeesOpdForSelectedPeriod();
-        System.out.println("Due Bill Fees = " + dueBillFees);
         return "/opd/professional_payments/payment_staff_bill?faces-redirect=true";
     }
-    
-    
 
     public String navigateToViewOpdPayProfessionalPayments() {
         recreateModel();
-        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true;";
+
+        allowUserToSelectPayWithholdingTaxDuringProfessionalPayments
+                = configOptionApplicationController.getBooleanValueByKey(
+                        "Allow User To Select Whether To Pay Withholding Tax During Professional Payments", true);
+
+        // Initialize withholding tax calculation statuses with updated, clear options
+        withholdingTaxCalculationStatuses = new ArrayList<>();
+        withholdingTaxCalculationStatuses.add("Depending On Payments");
+        withholdingTaxCalculationStatuses.add("Include Withholding Tax");
+        withholdingTaxCalculationStatuses.add("Exclude Withholding Tax");
+
+        // Determine the default selection based on configuration values
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Withholding Tax Calculated Depending On This Month's Payments During Professional Payments", false)) {
+            withholdingTaxCalculationStatus = "Depending On Payments";  // Tax calculated based on payments
+        } else if (configOptionApplicationController.getBooleanValueByKey(
+                "Withholding Tax Is Always Calculated During Professional Payments", true)) {
+            withholdingTaxCalculationStatus = "Include Withholding Tax";  // Tax is always included
+        } else if (configOptionApplicationController.getBooleanValueByKey(
+                "Withholding Tax Is Never Calculated During Professional Payments", false)) {
+            withholdingTaxCalculationStatus = "Exclude Withholding Tax";  // Tax is excluded
+        } else {
+            withholdingTaxCalculationStatus = "Depending On Payments";  // Default to "Depending On Payments"
+        }
+
+        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true";
     }
 
     private boolean errorCheck() {
@@ -581,7 +637,7 @@ public class StaffPaymentBillController implements Serializable {
             JsfUtil.addErrorMessage("Please select payments to update");
             return true;
         }
-        peformeCalculations();
+        performCalculations();
         if (totalPaying == 0) {
             JsfUtil.addErrorMessage("Please select payments to update");
             return true;
@@ -610,7 +666,17 @@ public class StaffPaymentBillController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        peformeCalculations();
+        if (paymentMethod == PaymentMethod.Cash) {
+            Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
+            double drawerBalance = userDrawer.getCashInHandValue();
+            double paymentAmount = getTotalPayingWithoutWht();
+
+            if (drawerBalance < paymentAmount) {
+                JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                return;
+            }
+        }
+        performCalculations();
         Bill newlyCreatedPaymentBill = createPaymentBill();
         current = newlyCreatedPaymentBill;
         getBillFacade().create(newlyCreatedPaymentBill);
@@ -1221,6 +1287,30 @@ public class StaffPaymentBillController implements Serializable {
 
     public void setTotalPayingWithoutWht(double totalPayingWithoutWht) {
         this.totalPayingWithoutWht = totalPayingWithoutWht;
+    }
+
+    public String getWithholdingTaxCalculationStatus() {
+        return withholdingTaxCalculationStatus;
+    }
+
+    public void setWithholdingTaxCalculationStatus(String withholdingTaxCalculationStatus) {
+        this.withholdingTaxCalculationStatus = withholdingTaxCalculationStatus;
+    }
+
+    public List<String> getWithholdingTaxCalculationStatuses() {
+        return withholdingTaxCalculationStatuses;
+    }
+
+    public void setWithholdingTaxCalculationStatuses(List<String> withholdingTaxCalculationStatuses) {
+        this.withholdingTaxCalculationStatuses = withholdingTaxCalculationStatuses;
+    }
+
+    public boolean isAllowUserToSelectPayWithholdingTaxDuringProfessionalPayments() {
+        return allowUserToSelectPayWithholdingTaxDuringProfessionalPayments;
+    }
+
+    public void setAllowUserToSelectPayWithholdingTaxDuringProfessionalPayments(boolean allowUserToSelectPayWithholdingTaxDuringProfessionalPayments) {
+        this.allowUserToSelectPayWithholdingTaxDuringProfessionalPayments = allowUserToSelectPayWithholdingTaxDuringProfessionalPayments;
     }
 
 }

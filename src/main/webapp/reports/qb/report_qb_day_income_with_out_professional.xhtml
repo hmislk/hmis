@@ -46,117 +46,119 @@
                 <p:spacer width="50" ></p:spacer>
                 <p:spacer width="50" ></p:spacer>
 
-                
+
                 <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
-                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="cmbIns"
-                                styleClass="w-100 form-control" 
-                                value="#{quickBookReportController.institution}" 
-                                filter="true">
-                                <f:selectItem itemLabel="All Institutions" />
-                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                <p:ajax process="cmbIns" update="cmbDept" />
-                            </p:selectOneMenu>
+                    <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                    <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                </h:panelGroup>
+                <p:selectOneMenu
+                    id="cmbIns"
+                    styleClass="w-100 form-control" 
+                    value="#{quickBookReportController.institution}" 
+                    filter="true">
+                    <f:selectItem itemLabel="All Institutions" />
+                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                    <p:ajax process="cmbIns" update="cmbDept" />
+                </p:selectOneMenu>
 
-                            <p:spacer ></p:spacer>
+                <p:spacer ></p:spacer>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
-                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="siteMenu"
-                                styleClass="w-100 form-control"  
-                                value="#{quickBookReportController.site}" 
-                                filter="true">
-                                <f:selectItem itemLabel="All Sites" />
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                <p:ajax process="siteMenu" update="cmbDept" />
-                            </p:selectOneMenu>
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                    <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                </h:panelGroup>
+                <p:selectOneMenu
+                    id="siteMenu"
+                    styleClass="w-100 form-control"  
+                    value="#{quickBookReportController.site}" 
+                    filter="true">
+                    <f:selectItem itemLabel="All Sites" />
+                    <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                    <p:ajax process="siteMenu" update="cmbDept" />
+                </p:selectOneMenu>
 
-                            <p:spacer ></p:spacer>
+                <p:spacer ></p:spacer>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
-                            </h:panelGroup>
-                            <h:panelGroup id="cmbDept">
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                    <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                </h:panelGroup>
+                <h:panelGroup id="cmbDept">
 
-                                <!-- Component 1: Without Institution and Site -->
-                                <p:selectOneMenu
-                                    rendered="#{quickBookReportController.institution eq null and quickBookReportController.site eq null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{quickBookReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                        var="d"
-                                        itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
+                    <!-- Component 1: Without Institution and Site -->
+                    <p:selectOneMenu
+                        rendered="#{quickBookReportController.institution eq null and quickBookReportController.site eq null}"
+                        styleClass="w-100 form-control"
+                        value="#{quickBookReportController.department}"
+                        filterMatchMode="contains"
+                        filter="true">
+                        <f:selectItem itemLabel="All Departments" />
+                        <f:selectItems 
+                            value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                            var="d"
+                            itemLabel="#{d.name}"
+                            itemValue="#{d}" />
+                    </p:selectOneMenu>
 
-                                <!-- Component 2: With Site Only -->
-                                <p:selectOneMenu
-                                    rendered="#{quickBookReportController.institution eq null and quickBookReportController.site ne null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{quickBookReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(quickBookReportController.site)}"
-                                        var="d"
-                                        itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
+                    <!-- Component 2: With Site Only -->
+                    <p:selectOneMenu
+                        rendered="#{quickBookReportController.institution eq null and quickBookReportController.site ne null}"
+                        styleClass="w-100 form-control"
+                        value="#{quickBookReportController.department}"
+                        filterMatchMode="contains"
+                        filter="true">
+                        <f:selectItem itemLabel="All Departments" />
+                        <f:selectItems 
+                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(quickBookReportController.site)}"
+                            var="d"
+                            itemLabel="#{d.name}"
+                            itemValue="#{d}" />
+                    </p:selectOneMenu>
 
-                                <!-- Component 3: With Institution Only -->
-                                <p:selectOneMenu
-                                    rendered="#{quickBookReportController.institution ne null and quickBookReportController.site eq null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{quickBookReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(quickBookReportController.institution)}"
-                                        var="d"
-                                        itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
+                    <!-- Component 3: With Institution Only -->
+                    <p:selectOneMenu
+                        rendered="#{quickBookReportController.institution ne null and quickBookReportController.site eq null}"
+                        styleClass="w-100 form-control"
+                        value="#{quickBookReportController.department}"
+                        filterMatchMode="contains"
+                        filter="true">
+                        <f:selectItem itemLabel="All Departments" />
+                        <f:selectItems 
+                            value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(quickBookReportController.institution)}"
+                            var="d"
+                            itemLabel="#{d.name}"
+                            itemValue="#{d}" />
+                    </p:selectOneMenu>
 
-                                <!-- Component 4: With Both Institution and Site -->
-                                <p:selectOneMenu
-                                    rendered="#{quickBookReportController.institution ne null and quickBookReportController.site ne null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{quickBookReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(quickBookReportController.institution, quickBookReportController.site)}"
-                                        var="d"
-                                        itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
-                                
-                            </h:panelGroup>
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
+                    <!-- Component 4: With Both Institution and Site -->
+                    <p:selectOneMenu
+                        rendered="#{quickBookReportController.institution ne null and quickBookReportController.site ne null}"
+                        styleClass="w-100 form-control"
+                        value="#{quickBookReportController.department}"
+                        filterMatchMode="contains"
+                        filter="true">
+                        <f:selectItem itemLabel="All Departments" />
+                        <f:selectItems 
+                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(quickBookReportController.institution, quickBookReportController.site)}"
+                            var="d"
+                            itemLabel="#{d.name}"
+                            itemValue="#{d}" />
+                    </p:selectOneMenu>
+
+
+
+                </h:panelGroup>
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -164,7 +166,7 @@
                     <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                     <h:outputLabel value="Report" for="mnuReport" class="mx-3"/>
                 </h:panelGroup>
-                <p:selectOneMenu id="mnuReport" value="#{quickBookReportController.report}" >
+                <p:selectOneMenu id="mnuReport" value="#{quickBookReportController.report}" class="w-100">
                     <f:selectItem itemLabel="Select Report"/>
                     <f:selectItem itemLabel="Daily Return" itemValue="1"/>
                     <f:selectItem itemLabel="Pharmacy GRN and Purchase Bills" itemValue="2"/>
@@ -176,6 +178,18 @@
                     <f:selectItem itemLabel="Daily Return by Date" itemValue="8"/>
                     <f:ajax event="change" execute="@this" render="tbl pan" listener="#{quickBookReportController.listnerReportNameChange}" />
                 </p:selectOneMenu>
+
+                <p:spacer width="50" ></p:spacer>
+                <p:spacer width="50" ></p:spacer>
+                <p:selectBooleanButton
+                    onLabel="With Professional Fee" 
+                    offLabel="without Professional Fee" 
+                    value="#{quickBookReportController.withProfessionalFee}"
+                    onIcon="pi pi-check" 
+                    class="w-100"
+                    offIcon="pi pi-times" 
+                    >
+                </p:selectBooleanButton>
 
             </h:panelGrid>
 
@@ -198,6 +212,8 @@
                     <f:selectItem itemLabel="Green Sheet" itemValue="1" />
                     <f:selectItem itemLabel="Dialysis" itemValue="2" />
                 </p:selectOneRadio>
+
+
 
                 <h:outputLabel value="Dialysis" rendered="#{quickBookReportController.report eq '4'}" />
                 <p:selectBooleanCheckbox value="#{quickBookReportController.reportKeyWord.bool1}" rendered="#{quickBookReportController.report eq '4'}" >
@@ -310,144 +326,40 @@
                         </p:row>
                     </p:columnGroup> 
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editRowType}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.rowType}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.rowType}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.rowType}" />
                     </p:column>
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editTrnsType}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.trnsType}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.trnsType}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.trnsType}" />
                     </p:column>
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editDate}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.date}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.date}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.date}" />
                     </p:column>
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editAccnt}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.accnt}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.accnt}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
-                        <!--<p:outputLabel value="#{qbf.accnt}" />-->
                         <p:outputLabel value="INCOME ACCOUNTS:Cafe R" rendered="#{qbf.accnt eq 'PHARMACY SALES:Pharmacy OPD Sales'}"/>
-                        <!--<h1>#{qbf.accnt}</h1>-->
                         <p:outputLabel value="#{qbf.accnt}" rendered="#{qbf.accnt ne 'PHARMACY SALES:Pharmacy OPD Sales'}"/>
                     </p:column>
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editName}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.name}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.name}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.name}" />
                     </p:column>
                     <p:column rendered="#{quickBookReportController.report ne '2'}">
-<!--                        <p:cellEditor rendered="#{qbf.editInvItemType}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.invItemType}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.invItemType}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.invItemType}" />
                     </p:column>
                     <p:column rendered="#{quickBookReportController.report ne '2'}">
-<!--                        <p:cellEditor rendered="#{qbf.editInvItem}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.invItem}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.invItem}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.invItem}" />
                     </p:column>
                     <p:column styleClass="numberCol" >
-<!--                        <p:cellEditor rendered="#{qbf.editAmount}">  
-                            <f:facet name="output"> 
-                                <p:outputLabel value="#{qbf.amount}" rendered="#{qbf.amount ne 0.0}">
-                                    <f:convertNumber pattern="0.00" />
-                                </p:outputLabel>
-                                <p:outputLabel value="" rendered="#{qbf.amount eq 0.0}"/>
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.amount}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.amount}" rendered="#{qbf.amount ne 0.0}">
                             <f:convertNumber pattern="0.00" />
                         </p:outputLabel>
                         <p:outputLabel value="" rendered="#{qbf.amount eq 0.0}"/>
                     </p:column>
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editDocNum}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.docNum}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.docNum}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.docNum}" />
                     </p:column>
-                    <!--                    <p:column>
-                                            <p:cellEditor rendered="#{qbf.editPoNum}">  
-                                                <f:facet name="output"> 
-                                                    <h:outputLabel value="#{qbf.poNum}" />
-                                                </f:facet>  
-                                                <f:facet name="input">  
-                                                    <p:inputText value="#{qbf.poNum}" />
-                                                </f:facet>  
-                                            </p:cellEditor>  
-                                            <p:outputLabel value="#{qbf.poNum}"/>
-                                        </p:column>-->
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editQbClass}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.qbClass}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.qbClass}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.qbClass}"/>
                     </p:column>
                     <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editMemo}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.memo}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.memo}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.memo}" />
                     </p:column>
                     <p:column>

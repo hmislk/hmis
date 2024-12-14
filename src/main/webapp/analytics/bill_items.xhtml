@@ -11,66 +11,148 @@
                 <h:form >
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="ALL BILL LIST"/>                          
+                            <h:outputLabel value="ALL BILL Item LIST"/>                          
                         </f:facet>
 
-                        <h:panelGrid columns="1" class="w-100">
-                            <h:outputLabel value="From"/>
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
                             <p:calendar 
-                                class="w-100 " 
-                                inputStyleClass="w-100" 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
                                 id="fromDate" 
                                 value="#{searchController.fromDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            </p:calendar>
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
 
-                            <p:spacer width="20" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
 
-                            <h:outputLabel value="To"/>                                
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
                             <p:calendar 
-                                class="w-100 " 
-                                inputStyleClass="w-100" 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
                                 id="toDate" 
                                 value="#{searchController.toDate}" 
                                 navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            </p:calendar>
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
 
-                            <h:outputLabel value="Institution"/>                                
-                            <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
-                                <f:selectItem itemLabel="All Institution" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
-                            </p:selectOneMenu>
-
-
-                            <h:outputLabel value="Department"/>                                
-                            <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
-                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <h:outputLabel value="Site"/>   
-                            <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
-                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <h:outputText value="User" />
-                            <p:autoComplete 
-                                forceSelection="true"
-                                value="#{searchController.webUser}"
-                                placeholder="Select User"
-                                completeMethod="#{webUserController.completeUser}" 
-                                id="user"
-                                var="u" 
-                                itemLabel="#{u.webUserPerson.name}" 
-                                itemValue="#{u}"
-                                class="w-100 mx-4"
-                                inputStyleClass="w-100"
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
+                            <p:selectBooleanButton
+                                onLabel="With Professional Fee" 
+                                offLabel="without Professional Fee" 
+                                value="#{searchController.withProfessionalFee}"
+                                onIcon="pi pi-check" 
+                                class="w-100"
+                                offIcon="pi pi-times" 
                                 >
-                            </p:autoComplete>
+                            </p:selectBooleanButton>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
 
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                            </h:panelGroup>
                         </h:panelGrid>
 
 
@@ -84,27 +166,48 @@
                                 value="Search" 
                                 action="#{searchController.listBillItems}"/>
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="All Bills" type="xls" target="tblBills" ></p:dataExporter>
+                                <p:dataExporter fileName="All Bill Items" type="xlsx" target="tbl" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
 
 
                         <div style="width: 100%; overflow-x: auto;">
-                            <p:dataTable rowIndexVar="i" id="tblBillItems" 
-                                         value="#{searchController.billItems}" 
-                                         scrollable="true"
-                                         var="mbi"
-                                         rows="10"
-                                         paginator="true"
-                                         paginatorPosition="top"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="5,10,15"
-                                         >
-                                <p:column >
-                                    <p:outputLabel value="#{mbi.bill}" ></p:outputLabel>
+                            <p:dataTable 
+                                rowIndexVar="i"
+                                rowKey="#{billItem.id}"
+                                id="tbl" 
+                                value="#{searchController.billItems}" 
+                                scrollable="true"
+                                var="billItem"
+                                rows="10"
+                                paginator="true"
+                                paginatorPosition="top"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15"
+                                >
+                                <p:column headerText="Bill Item ID">
+                                    <p:outputLabel value="#{billItem.id}" ></p:outputLabel>
                                 </p:column>
-                                <p:column >
-                                    <p:outputLabel value="#{mbi}" ></p:outputLabel>
+                                <p:column headerText="Bill ID">
+                                    <p:outputLabel value="#{billItem.bill.id}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Bill No">
+                                    <p:outputLabel value="#{billItem.bill.deptId}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Bill Type">
+                                    <p:outputLabel value="#{billItem.bill.billTypeAtomic.label}" ></p:outputLabel>
+                                </p:column>
+                                <p:column  headerText="Bill Payment Method">
+                                    <p:outputLabel value="#{billItem.bill.paymentMethod}" ></p:outputLabel>
+                                </p:column>
+                                <p:column  headerText="Item">
+                                    <p:outputLabel value="#{billItem.item.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column  headerText="Category">
+                                    <p:outputLabel value="#{billItem.item.category.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column  headerText="Net Total">
+                                    <p:outputLabel value="#{billItem.netValue}" ></p:outputLabel>
                                 </p:column>
 
                             </p:dataTable>

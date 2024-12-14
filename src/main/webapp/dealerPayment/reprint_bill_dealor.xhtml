@@ -18,42 +18,56 @@
                             <hr/>                           
 
                             <p:commandButton ajax="false" value="Approve" style="width: 150px;"
-                                             action="#{supplierPaymentController.approve()}"
-                                             disabled="#{supplierPaymentController.bill.billType eq 'GrnPayment' 
-                                                         or supplierPaymentController.bill.cancelled
-                                                         or supplierPaymentController.bill.referenceBill ne null }">                           
+                                             action="#{dealorPaymentBillSearch.approve()}"
+                                             disabled="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment' 
+                                                         or dealorPaymentBillSearch.bill.cancelled
+                                                         or dealorPaymentBillSearch.bill.referenceBill ne null }"
+                                             rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}">                           
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Return" class="ui-button-warning mx-1"
                                              action="return_bill_dealor?faces-redirect=true" style="width: 150px;"
-                                             disabled="#{supplierPaymentController.bill.refunded 
-                                                         or supplierPaymentController.bill.cancelled}"
-                                             rendered="#{supplierPaymentController.bill.billType eq 'GrnPayment'}">                           
+                                             disabled="#{dealorPaymentBillSearch.bill.refunded 
+                                                         or dealorPaymentBillSearch.bill.cancelled}"
+                                             rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}">                           
                             </p:commandButton>
 
                             <p:commandButton ajax="false" class="ui-button-danger" style="width: 150px;"
                                              value="Cancel" 
                                              action="cancel_bill_dealor?faces-redirect=true" 
-                                             disabled="#{supplierPaymentController.bill.cancelled 
-                                                         or supplierPaymentController.bill.refunded}" 
-                                             rendered="#{supplierPaymentController.bill.billType eq 'GrnPayment'}" >                           
+                                             disabled="#{dealorPaymentBillSearch.bill.cancelled 
+                                                         or dealorPaymentBillSearch.bill.refunded}" 
+                                             rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}" >                           
                             </p:commandButton>
-                            <p:inputText id="com" value="#{supplierPaymentController.comment}" placeholder="Comment" style="float: left; margin-right: 5px;"/>
-                            <p:commandButton ajax="false" value="Back To Approval List" style="width: 150px; float: right;"
-                                             action="search_dealor_payment_pharmacy">                           
+                           
+                            <p:commandButton ajax="false" value="Back To List"
+                                             class="ui-button-warning mx-2" icon="fas fa-arrow-left"
+                                             style="width: 150px; float: right;"
+                                             rendered="#{dealorPaymentBillSearch.bill.billType ne 'GrnPayment'}"
+                                             action="search_dealor_payment?faces-redirect=true">                           
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Back"
+                                             class="ui-button-warning mx-2" icon="fas fa-arrow-left"
+                                             style="width: 150px; float: right;"
+                                             rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}"
+                                             action="dealor_payment_done?faces-redirect=true">                           
                             </p:commandButton>
                         </f:facet>
 
                     </p:panel>
 
                     <p:panel>                                
-                        <p:commandButton value="Print" ajax="false" action="#" disabled="#{supplierPaymentController.bill.billType eq 'GrnPaymentPre'}" >
+                        <p:commandButton value="Print" ajax="false" action="#"  >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>                    
                         <p:panel   id="gpBillPreview">
 
-                            <!--<bi:grn_payment billItems="#{supplierPaymentController.billItems}" bill="#{supplierPaymentController.bill}"/>--> 
-                            <bi:grnCheque billController ="#{supplierPaymentController}"  bill="#{supplierPaymentController.bill}" dup="false"/> 
+                            <!--<bi:grn_payment billItems="#{dealorPaymentBillSearch.billItems}" bill="#{dealorPaymentBillSearch.bill}"/>--> 
+                            <bi:grnCheque 
+                                billController="#{dealorPaymentBillSearch}"  
+                                bill="#{dealorPaymentBillSearch.bill}" 
+                                dup="#{false}" />
+
 
                         </p:panel>
                     </p:panel>

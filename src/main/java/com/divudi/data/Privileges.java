@@ -1,13 +1,13 @@
 /*
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
+ *
  */
 package com.divudi.data;
 
 public enum Privileges {
 
-    // Main Menu Privileges
-    TheaterIssueBHT("Theater Issue BHT"),
+    //<editor-fold defaultstate="collapsed" desc="Main">
     Opd("OPD"),
     Inward("Inward"),
     Lab("Lab"),
@@ -18,13 +18,14 @@ public enum Privileges {
     User("User"),
     Admin("Admin"),
     Channelling("Channelling"),
+    Clinic("Clinics"),
     Clinical("Clinical"),
     Store("Store"),
     Search("Search"),
     CashTransaction("Cash Transaction"),
-    ChangeCreditLimitInCC("Change Credit Limit in Collecting Centre"),
-    PettyCashBillCancellationApprove("Petty Cash Bill Cancellation Approval"),
-    PettyCashBillApprove("Petty Cash Bill Approval"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="OPD">
     // Submenu Privileges
     OpdBilling("OPD Billing"),
     OpdCollectingCentreBillingMenu("OPD Collecting Centre Billing Menu"),
@@ -42,6 +43,10 @@ public enum Privileges {
     OpdReprintOriginalBill("OPD Reprint Original Bill"),
     OpdAddNewRefferalDoctor("OPD Add New Referral Doctor"),
     OpdAddNewCollectingCentre("OPD Add New Collecting Centre"),
+    ChangeProfessionalFee("Change Professional Fee"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Inpatient">
     AddCreditLimitInRegistration("Add Credit Limit in Registration"),
     InwardAdmissions("Inward Admissions"),
     InwardAdmissionsAdmission("Inward Admissions Admission"),
@@ -62,6 +67,7 @@ public enum Privileges {
     InwardBillingInterimBillSearch("Inward Interim Bill Search"),
     InwardSearch("Inward Search"),
     InwardSearchServiceBill("Inward Search Service Bill"),
+    InwardSearchServiceBillUnrestrictedAccess("Inward Search Service Bill Without Restricted"),
     InwardSearchProfessionalBill("Inward Search Professional Bill"),
     InwardSearchFinalBill("Inward Search Final Bill"),
     InwardReport("Inward Report"),
@@ -83,6 +89,22 @@ public enum Privileges {
     InwardPharmacyIssueRequest("Inward Pharmacy Issue Request"),
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
+    TheaterIssueBHT("Theater Issue BHT"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Finance">
+    PettyCashBillCancellationApprove("Petty Cash Bill Cancellation Approval"),
+    PettyCashBillApprove("Petty Cash Bill Approval"),
+    AllCashierSummery("All Cashier Summary"),
+    CashTransactionCashIn("Cash Transaction Cash In"),
+    CashTransactionCashOut("Cash Transaction Cash Out"),
+    CashTransactionListToCashRecieve("Cash Transaction List to Cash Receive"),
+    ShiftHandoverAcceptAsCashier("Shift Handover Accept As Cashier"),
+    ShiftHandoverAcceptAsMainCashier("Shift Handover Accept As Main Cashier"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Lab">
+
     LabBilling("Lab Billing"),
     LabBillCancelSpecial("Lab Bill Cancel Special"),
     LabBillRefundSpecial("Lab Bill Refund Special"),
@@ -142,6 +164,10 @@ public enum Privileges {
     LabReporting("Lab Reporting"),
     // Don't remove
     LabSearchBillLoggedInstitution("Lab Search Bill Logged Institution"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Pharmacy">
+
     PaymentBilling("Payment Billing"),
     PaymentBillSearch("Payment Bill Search"),
     PaymentBillReprint("Payment Bill Reprint"),
@@ -180,6 +206,10 @@ public enum Privileges {
     PharmacyPurchase("Pharmacy Purchase"),
     // Wholesale
     PharmacyPurchaseWh("Pharmacy Purchase Wholesale"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Theatre">
+
     // Theater
     Theatre("Theater"),
     TheatreAddSurgery("Theater Add Surgery"),
@@ -203,35 +233,9 @@ public enum Privileges {
     TheaterIssueOpdSearchPreBillForReturnItemOnly("Theater Issue OPD Search Pre Bill for Return Item Only"),
     TheaterIssueOpdSearchPreBillReturn("Theater Issue OPD Search Pre Bill Return"),
     TheaterIssueOpdSearchPreBillAddToStock("Theater Issue OPD Search Pre Bill Add to Stock"),
-    ClinicalPatientSummery("Clinical Patient Summary"),
-    ClinicalPatientDetails("Clinical Patient Details"),
-    ClinicalPatientPhoto("Clinical Patient Photo"),
-    ClinicalVisitDetail("Clinical Visit Detail"),
-    ClinicalVisitSummery("Clinical Visit Summary"),
-    ClinicalHistory("Clinical History"),
-    ClinicalAdministration("Clinical Administration"),
-    ClinicalPatientDelete("Clinical Patient Delete"),
-    ChannelAdd("Channel Add"),
-    ChannelCancel("Channel Cancel"),
-    ChannelRefund("Channel Refund"),
-    ChannelReturn("Channel Return"),
-    ChannelView("Channel View"),
-    ChannelDoctorPayments("Channel Doctor Payments"),
-    ChannelDoctorPaymentCancel("Channel Doctor Payment Cancel"),
-    ChannelViewHistory("Channel View History"),
-    ChannelCreateSessions("Channel Create Sessions"),
-    ChannelCreateSpecialSessions("Channel Create Special Sessions"),
-    ChannelManageSessions("Channel Manage Sessions"),
-    ChannelAdministration("Channel Administration"),
-    ChannelAgencyReports("Channel Agency Reports"),
-    AdminManagingUsers("Admin Managing Users"),
-    AdminInstitutions("Admin Institutions"),
-    AdminStaff("Admin Staff"),
-    AdminItems("Admin Items"),
-    AdminPrices("Admin Prices"),
-    AdminFilterWithoutDepartment("Admin Filter Without Department"),
-    ChangeProfessionalFee("Change Professional Fee"),
-    ChangeCollectingCentre("Change Collecting Centre"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Stores">
     StoreIssue("Store Issue"),
     StoreIssueInwardBilling("Store Issue Inward Billing"),
     StoreIssueSearchBill("Store Issue Search Bill"),
@@ -264,12 +268,22 @@ public enum Privileges {
     StoreReports("Store Reports"),
     StoreSummery("Store Summary"),
     StoreAdministration("Store Administration"),
-    SearchGrand("Search Grand"),
-    CashTransactionCashIn("Cash Transaction Cash In"),
-    CashTransactionCashOut("Cash Transaction Cash Out"),
-    CashTransactionListToCashRecieve("Cash Transaction List to Cash Receive"),
-    ShiftHandoverAcceptAsCashier("Shift Handover Accept As Cashier"),
-    ShiftHandoverAcceptAsMainCashier("Shift Handover Accept As Main Cashier"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Channel">
+    ChannelAdd("Channel Add"),
+    ChannelCancel("Channel Cancel"),
+    ChannelRefund("Channel Refund"),
+    ChannelReturn("Channel Return"),
+    ChannelView("Channel View"),
+    ChannelDoctorPayments("Channel Doctor Payments"),
+    ChannelDoctorPaymentCancel("Channel Doctor Payment Cancel"),
+    ChannelViewHistory("Channel View History"),
+    ChannelCreateSessions("Channel Create Sessions"),
+    ChannelCreateSpecialSessions("Channel Create Special Sessions"),
+    ChannelManageSessions("Channel Manage Sessions"),
+    ChannelAdministration("Channel Administration"),
+    ChannelAgencyReports("Channel Agency Reports"),
     ChannellingChannelBooking("Channelling Channel Booking"),
     ChannellingFutureChannelBooking("Channelling Future Channel Booking"),
     ChannellingPastBooking("Channelling Past Booking"),
@@ -331,6 +345,18 @@ public enum Privileges {
     ChannelCashierTransactionExpencess("Channel Cashier Transaction Expenses"),
     ChannelCashierTransactionExpencessSearch("Channel Cashier Transaction Expenses Search"),
     ChannelActiveVat("Channel Active VAT"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Clinis">
+    ClinicSession("Clinic Session"),
+    ClinicCalendar("Clinic Calendar"),
+    ClinicQueue("Clinic Queue"),
+    ClinicDisplay("Clinic Display"),
+    ClinicSchedule("Clinic Schedule"),
+    ClinicReports("Clinic Reports"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Memberships">
     MemberShip("Membership"),
     MemberShipAdd("Membership Add"),
     MemberShipEdit("Membership Edit"),
@@ -347,6 +373,9 @@ public enum Privileges {
     MemberShipOpdMemberShipDisOpdMemberShipReport("OPD Membership Report"),
     MemberShipMemberDeActive("Membership Deactivate"),
     MemberShipMemberReActive("Membership Reactivate"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="HR">
     HrAdmin("HR Admin"),
     HrReports("HR Reports"),
     HrReportsLevel1("HR Reports Level 1"),
@@ -368,13 +397,17 @@ public enum Privileges {
     HrAdditionalForms("HR Additional Forms"),
     HrEditRetiedDate("HR Edit Retired Date"),
     HrRemoveResignDate("HR Remove Resign Date"),
-    Developers("Developers"),
-    // Cashier
-    AllCashierSummery("All Cashier Summary"),
-    // Administration
-    SearchAll("Search All"),
-    ChangePreferece("Change Preference"),
-    SendBulkSMS("Send Bulk SMS"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Clinical">
+    ClinicalPatientSummery("Clinical Patient Summary"),
+    ClinicalPatientDetails("Clinical Patient Details"),
+    ClinicalPatientPhoto("Clinical Patient Photo"),
+    ClinicalVisitDetail("Clinical Visit Detail"),
+    ClinicalVisitSummery("Clinical Visit Summary"),
+    ClinicalHistory("Clinical History"),
+    ClinicalAdministration("Clinical Administration"),
+    ClinicalPatientDelete("Clinical Patient Delete"),
     ClinicalAdministrationEditLetter("Clinical Administration Edit Letter"),
     ClinicalPatientAdd("Clinical Patient Add"),
     ClinicalPatientEdit("Clinical Patient Edit"),
@@ -384,6 +417,9 @@ public enum Privileges {
     ClinicalMembershipAdd("Clinical Membership Add"),
     ClinicalMembershipEdit("Clinical Membership Edit"),
     ClinicalPatientPhoneNumberEdit("Clinical Patient Phone Number Edit"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Pharmacy">
     // Pharmacy Disbursement
     PharmacyDisburesementMenu("Pharmacy Disbursement Menu"),
     PharmacyDisbursementRequest("Pharmacy Disbursement Request"),
@@ -483,6 +519,9 @@ public enum Privileges {
     PharmacyItemSearch("Pharmacy Item Search"),
     PharmacyGenarateReports("Pharmacy Generate Reports"),
     PharmacySummaryViews("Pharmacy Summary Views"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Optician">
     // Optician
     Optician("Optician"),
     OpticianPatientManagement("Optician Patient Management"),
@@ -505,7 +544,9 @@ public enum Privileges {
     OphthalmologyProductCatalog("Ophthalmology Product Catalog"),
     @Deprecated
     OphthalmologyRepairManagement("Ophthalmology Repair Management"),
-    // New privileges for couriers
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Collecting Centre">
     Courier("Courier"),
     CourierCollectSamples("Courier Collect Samples"),
     CourierHandoverSamplesToLab("Courier Handover Samples to Lab"),
@@ -514,12 +555,31 @@ public enum Privileges {
     CourierViewStatistics("Courier View Statistics"),
     CourierViewBillReports("Courier View Bill Reports"),
     CourierViewPaymentReports("Courier View Payment Reports"),
-    
+    ChangeCreditLimitInCC("Change Credit Limit in Collecting Centre"),
+    ChangeCollectingCentre("Change Collecting Centre"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Admin">
+    SearchGrand("Search Grand"),
+    AdminManagingUsers("Admin Managing Users"),
+    AdminInstitutions("Admin Institutions"),
+    AdminStaff("Admin Staff"),
+    AdminItems("Admin Items"),
+    AdminPrices("Admin Prices"),
+    AdminFilterWithoutDepartment("Admin Filter Without Department"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Developers">
+    Developers("Developers"),
+    // Administration
+    SearchAll("Search All"),
+    ChangePreferece("Change Preference"),
+    SendBulkSMS("Send Bulk SMS"),
     SuperAdmin("Supper Admin"),
     EditData("Edit Data"),
     DeleteData("Delete Data"),
     BillCancel("Bill Cancel"),
-    BillRefund("Bill Refund"),
+    BillRefund("Bill Refund"), //</editor-fold>
     ;
 
     private final String label;
@@ -745,6 +805,15 @@ public enum Privileges {
             case PharmacySummaryViews:
 
                 return "Pharmacy";
+
+            case Clinic:
+            case ClinicCalendar:
+            case ClinicDisplay:
+            case ClinicQueue:
+            case ClinicReports:
+            case ClinicSchedule:
+            case ClinicSession:
+                return "Clinics";
             default:
                 return this.toString();
         }

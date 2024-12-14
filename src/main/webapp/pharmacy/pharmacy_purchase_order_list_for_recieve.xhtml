@@ -122,7 +122,7 @@
                                     <div class="d-flex gap-2 mb-1">
                                         <p:commandButton 
                                             ajax="false"
-                                            value="Recieve"
+                                            value="Receive"
                                             class="w-100 ui-button-warning"
                                             action="#{grnController.navigateToResive()}" 
                                             disabled="#{p.cancelled or p.billClosed}">
@@ -130,7 +130,7 @@
                                         </p:commandButton>
                                         <p:commandButton 
                                             ajax="false" 
-                                            value="Recieve&nbsp;All" 
+                                            value="Receive&nbsp;All" 
                                             rendered="false"
                                             class="w-50 ui-button-info"
                                             action="#{grnController.navigateToResiveAll()}" 
@@ -142,7 +142,7 @@
                                         <p:commandButton 
                                             ajax="false" 
                                             class="w-100 ui-button-info"
-                                            value="Recieve Wholesale" 
+                                            value="Receive Wholesale" 
                                             action="#{grnController.navigateToReceiveWholesale()}" 
                                             disabled="#{p.cancelled or p.billClosed}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>

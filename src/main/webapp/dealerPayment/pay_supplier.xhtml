@@ -128,7 +128,8 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:panel   id="gpBillPreview">
-                                <bi:grn_payment billItems="#{supplierPaymentController.selectedBillItems}" bill="#{supplierPaymentController.current}"/>
+                                <!--<bi:grn_payment billItems="#{supplierPaymentController.selectedBillItems}" bill="#{supplierPaymentController.current}"/>-->
+                                <bi:grnCheque bill="#{supplierPaymentController.current}" billController="#{supplierPaymentController}" dup="false"/>
                             </p:panel>
                         </p:panel>
                     </h:form>

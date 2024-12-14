@@ -101,6 +101,32 @@ public class ChannelReportTemplateController implements Serializable {
 
     List<DoctorDayChannelCount> doctorDayChannelCounts;
     private List<WeekdayDisplay> weekdayDisplays;
+    List<String> billTypeInOBReport;
+    String selectedBillTypeInOBReport;
+
+    public String getSelectedBillTypeInOBReport() {
+        return selectedBillTypeInOBReport;
+    }
+
+    public void setSelectedBillTypeInOBReport(String selectedBillTypeInOBReport) {
+        this.selectedBillTypeInOBReport = selectedBillTypeInOBReport;
+    }
+
+    public List<String> getBillTypeInOBReport() {
+        if(billTypeInOBReport == null){
+            billTypeInOBReport = new ArrayList<>();
+            billTypeInOBReport.add("All");
+            billTypeInOBReport.add("Completed");
+            billTypeInOBReport.add("Absent");
+            billTypeInOBReport.add("Cancelled");
+            billTypeInOBReport.add("Refunded");
+        }
+        return billTypeInOBReport;
+    }
+
+    public void setBillTypeInOBReport(List<String> billTypeInOBReport) {
+        this.billTypeInOBReport = billTypeInOBReport;
+    }
 
     double netTotal;
     double netTotalDoc;
@@ -133,6 +159,7 @@ public class ChannelReportTemplateController implements Serializable {
     private List<Category> categories;
     WebUser webUser;
     Staff staff;
+    Speciality speciality;
     ChannelBillTotals billTotals;
     Department department;
     boolean paid = false;
@@ -199,6 +226,14 @@ public class ChannelReportTemplateController implements Serializable {
 
     @EJB
     SessionInstanceFacade sessionInstanceFacade;
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
 
     public void clearAll() {
         billedBills = new ArrayList<>();
@@ -809,7 +844,6 @@ public class ChannelReportTemplateController implements Serializable {
             long8 += cancelPaidCount;
         }
 
-
         if (bundle != null) {
             bundle.setReportTemplateRows(rs);
             bundle.setLong1(long1);
@@ -891,13 +925,22 @@ public class ChannelReportTemplateController implements Serializable {
             bs.getSessionInstance().getSessionDate();
             if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE) {
                 bs.getBill().getPatient().getPerson();
+                bs.getBill().getCreditCompany().getName();
+                bs.getBill().getCreatedAt();
+                bs.getSessionInstance().getOriginatingSession().getStaff().getSpeciality();
+                bs.getSessionInstance().getOriginatingSession().getSpeciality().getName();
+                bs.getBill().isCancelled();
+
             }
         }
 
         j = "select new com.divudi.data.ReportTemplateRow(bs) "
                 + " from BillSession bs "
-                + " where bs.retired=false "
-                + " and bs.sessionInstance.sessionDate between :fd and :td ";
+                + " where bs.retired = false "
+                + " and bs.bill.creditCompany is not null "
+                + " and bs.bill.creditCompany.name = 'DOC_990'"
+                + " and bs.bill.billTypeAtomic = :bta"
+                + " and bs.bill.createdAt between :fd and :td ";
 
         if (institution != null) {
             m.put("ins", institution);
@@ -909,10 +952,44 @@ public class ChannelReportTemplateController implements Serializable {
             j += " and bs.originatingSession.category=:cat ";
         }
 
+        if (speciality != null) {
+            j += " and bs.sessionInstance.originatingSession.staff.speciality =:sp";
+            m.put("sp", speciality);
+
+        }
+        System.out.println("here2");
+        if (staff != null) {
+            j += " and bs.sessionInstance.originatingSession.staff =:staff";
+            m.put("staff", staff);
+       
+        }      
+        
+        if(selectedBillTypeInOBReport != null){
+            switch (selectedBillTypeInOBReport) {
+                case "Cancelled":
+                    j += " and bs.bill.cancelled = true ";
+                    break;
+                case "Refunded":
+                    j += " and bs.bill.refunded = true ";
+                    break;
+                case "Completed":
+                    j += " and bs.bill.refunded = false and bs.bill.cancelled = false  ";
+                    break;
+                case "Absent":
+                     j += " and bs.bill.refunded = false and bs.bill.cancelled = false and bs.absent = true ";
+                     break;
+                default:
+                    break;
+            }
+        }
+
+        j += " order by bs.bill.createdAt desc";
+
         m.put("fd", fromDate);
         m.put("td", toDate);
+        m.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.TIMESTAMP);
 
         bundle.setReportTemplateRows(rs);
 
@@ -922,6 +999,7 @@ public class ChannelReportTemplateController implements Serializable {
         bundle.setLong4(0l);
         bundle.setLong5(0l);
         bundle.setLong6(0l);
+        bundle.setLong7(0l);
 
         long idCounter = 1;
 
@@ -929,6 +1007,7 @@ public class ChannelReportTemplateController implements Serializable {
             if (row != null) {
                 row.setCounter(idCounter++);
                 SessionInstance sessionInstance = row.getSessionInstance();
+                Bill bill = row.getBillSession().getBill();
                 if (sessionInstance != null) {
                     //System.out.println("inside");
                     bundle.setLong1(bundle.getLong1() + (sessionInstance.getBookedPatientCount() != null ? sessionInstance.getBookedPatientCount() : 0));
@@ -937,6 +1016,10 @@ public class ChannelReportTemplateController implements Serializable {
                     bundle.setLong4(bundle.getLong4() + (sessionInstance.getCancelPatientCount() != null ? sessionInstance.getCancelPatientCount() : 0));
                     bundle.setLong5(bundle.getLong5() + (sessionInstance.getRefundedPatientCount() != null ? sessionInstance.getRefundedPatientCount() : 0));
                     bundle.setLong6(bundle.getLong6() + (sessionInstance.getRemainingPatientCount() != null ? sessionInstance.getRemainingPatientCount() : 0));
+                }
+                
+                if(!bill.isCancelled()){
+                    bundle.setLong7(bundle.getLong7()+(long)bill.getNetTotal());
                 }
             }
         }

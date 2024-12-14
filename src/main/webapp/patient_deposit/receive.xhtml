@@ -15,7 +15,7 @@
     <ui:define name="subcontent">
 
 
-        <h:panelGroup rendered="#{!patientController.printPreview}" >
+        <h:panelGroup rendered="#{!patientDepositController.printPreview}" >
             <h:form  >
                 <p:panel>
                     <f:facet name="header">
@@ -31,7 +31,6 @@
                                                  action="#{patientDepositController.settlePatientDeposit}"
                                                  ajax="false"
                                                  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
-                                    <f:setPropertyActionListener value="#{patientDepositController.patient}" target="#{patientController.current}" />
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSettle"/>
                                 <p:commandButton icon="fas fa-plus" 
@@ -53,24 +52,24 @@
                                     <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
                                         <!-- Left aligned content -->
                                         <h:panelGroup id="headerFacet">
-                                            <h:outputText value="Select a Patient" rendered="#{patientDepositController.patient eq null}"></h:outputText>
+                                            <h:outputText value="Select a Patient" rendered="#{patientController.patient eq null}"></h:outputText>
                                             <h:outputText styleClass="fas fa-user" />
                                             <h:panelGroup
                                                 rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
                                                 <h:outputText
-                                                    rendered="#{patientDepositController.patient.id eq null}"
+                                                    rendered="#{patientController.patient.id eq null}"
                                                     value="Patient"
                                                     class="mx-4"
                                                     >
                                                 </h:outputText>
                                                 <h:outputText
-                                                    rendered="#{patientDepositController.patient.id ne null}"
+                                                    rendered="#{patientController.patient.id ne null}"
                                                     value="Searched Patient Details"
                                                     class="mx-2"
                                                     ></h:outputText>
                                                 <h:panelGroup rendered="true" id="edit" >
                                                     <p:selectBooleanButton
-                                                        value="#{patientDepositController.patientDetailsEditable}"
+                                                        value="#{patientController.patientDetailsEditable}"
                                                         offIcon="pi pi-pencil"
                                                         onIcon="pi pi-eye"
                                                         class="mx-2"
@@ -79,7 +78,7 @@
                                                             process="@this"
                                                             update="viewPatient editPatient btnDone edit" />
                                                     </p:selectBooleanButton>
-                                                    <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(patientDepositController.patient)}" rendered="#{patientDepositController.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} " />
+                                                    <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(patientController.patient)}" rendered="#{patientController.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} " />
                                                 </h:panelGroup>
 
                                             </h:panelGroup>
@@ -145,7 +144,7 @@
                                                     id="btnSelectPt"
                                                     process="btnSelectPt tblPatients"
                                                     update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('details',view).clientId} :#{p:resolveFirstComponentWithId('lateTr',view).clientId} :#{p:resolveFirstComponentWithId('lateDp',view).clientId}"
-                                                    value="select">
+                                                    value="Select">
                                                     <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                                                 </p:commandButton>
                                             </p:column>
@@ -155,7 +154,7 @@
 
                                 <h:panelGroup id="editPatient" >
 
-                                    <h:panelGroup rendered="#{patientDepositController.patientDetailsEditable}" >
+                                    <h:panelGroup rendered="#{patientController.patientDetailsEditable}" >
                                         <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
                                             <h:panelGroup class="mb-1 w-100" id="panelPatient" >
                                                 <h:panelGroup id="gpPatient" >
@@ -361,9 +360,9 @@
                                 </h:panelGroup>
                                 <h:panelGroup id="viewPatient" >
 
-                                    <h:panelGroup  rendered="#{not patientDepositController.patientDetailsEditable}"  >
+                                    <h:panelGroup  rendered="#{not patientController.patientDetailsEditable}"  >
                                         <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
-                                            <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{patientDepositController.patient ne null}" >
+                                            <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{patientController.patient ne null}" >
                                                 <h:outputLabel value="Name " class="mx-3"/>
                                                 <h:outputLabel value=" : " class="mx-3"/>
                                                 <h:outputText value="#{patientDepositController.patient.person.nameWithTitle}" />
@@ -413,10 +412,10 @@
                                                 </p:badge>
 
                                                 <h:outputLabel value="Account Balance " class="mx-3" rendered="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department) ne null}"/>
-                                                    <h:outputLabel value=" : " class="mx-3" rendered="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department) ne null}"/>
-                                                    <h:outputText value="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department).balance}" rendered="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department) ne null}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
+                                                <h:outputLabel value=" : " class="mx-3" rendered="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department) ne null}"/>
+                                                <h:outputText value="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department).balance}" rendered="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department) ne null}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
 
                                                 <h:outputLabel value="Area " class="mx-3"/>
                                                 <h:outputLabel value=" : " class="mx-3"/>
@@ -450,7 +449,7 @@
                                             <h:outputLabel value="Patient Deposit Balance" />
                                             <h:outputLabel value=":" />
                                             <h:outputLabel value="#{patientDepositController.current.balance}" >
-                                                 <f:convertNumber pattern="#,##0.00" />
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </h:panelGrid>
                                     </h:panelGroup>
@@ -462,33 +461,41 @@
                                     <h:outputLabel value="Add New Patient Deposit" />
                                 </f:facet>
 
-                                <div class="d-flex flex-wrap w-100 gap-2">
-                                    <p:selectOneMenu id="cmbPs" value="#{patientController.bill.paymentMethod}">
+                                <h:panelGrid columns="2" >
+                                    <p:outputLabel value="Payment Method" ></p:outputLabel>
+                                    <p:selectOneMenu id="cmbPs" value="#{patientDepositController.bill.paymentMethod}">
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                        <p:ajax process="cmbPs" update="panelGroup creditCard cheque slip eWallet" event="change" />
+                                        <p:ajax process="cmbPs" update="gpPaymentDetails" event="change" />
                                     </p:selectOneMenu>
 
-                                    <h:panelGroup id="panelGroup" style="display: #{patientController.bill.paymentMethod eq 'Card' or patientController.bill.paymentMethod eq 'Cheque' or patientController.bill.paymentMethod eq 'Slip' or patientController.bill.paymentMethod eq 'ewallet' ? 'none' : 'block' };">
-                                        <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
+                                    <p:outputLabel value="Value" ></p:outputLabel>
+                                    <p:inputText onfocus="this.select()" class="mx-1" value="#{patientDepositController.bill.netTotal}" id="txtNetTotal"/>
 
-                                        <p:inputText value="#{patientController.bill.comments}" placeholder="Enter a Comment" id="comment"/>
+                                    <p:outputLabel value="Comments" ></p:outputLabel>
+                                    <p:inputText value="#{patientDepositController.bill.comments}" placeholder="Enter a Comment" id="comment"/>
+
+
+                                </h:panelGrid>
+
+                                <div class="d-flex flex-wrap w-100 gap-2">
+                                    <h:panelGroup id="gpPaymentDetails" >
+                                        <h:panelGroup id="creditCard" class="m-1" rendered="#{patientDepositController.bill.paymentMethod eq 'Card'}">
+                                            <pa:creditCard paymentMethodData="#{patientDepositController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup id="cheque"  rendered="#{patientDepositController.bill.paymentMethod eq 'Cheque'}" >
+                                            <pa:cheque paymentMethodData="#{patientDepositController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="slip"   rendered="#{patientDepositController.bill.paymentMethod eq 'Slip'}" >
+                                            <pa:slip paymentMethodData="#{patientDepositController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="eWallet"   rendered="#{patientDepositController.bill.paymentMethod eq 'ewallet'}" >
+                                            <pa:ewallet_collect class="m-2" paymentMethodData="#{patientDepositController.paymentMethodData}" />
+                                        </h:panelGroup>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="creditCard" class="m-1" style="display: #{patientController.bill.paymentMethod eq 'Card' ? 'block' : 'none'};">
-                                        <pa:creditCard paymentMethodData="#{patientController.paymentMethodData}"/>
-                                    </h:panelGroup>
 
-                                    <h:panelGroup id="cheque" style="display: #{patientController.bill.paymentMethod eq 'Cheque' ? 'block' : 'none'};">
-                                        <pa:cheque paymentMethodData="#{patientController.paymentMethodData}"/>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup id="slip" style="display: #{patientController.bill.paymentMethod eq 'Slip' ? 'block' : 'none'};">
-                                        <pa:slip paymentMethodData="#{patientController.paymentMethodData}"/>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup id="eWallet" style="display: #{patientController.bill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
-                                        <pa:ewallet_collect class="m-2" paymentMethodData="#{patientController.paymentMethodData}" />
-                                    </h:panelGroup>
                                 </div>
 
                             </p:panel>
@@ -567,7 +574,7 @@
         </h:panelGroup>
 
 
-        <h:panelGroup rendered="#{patientController.printPreview}">
+        <h:panelGroup rendered="#{patientDepositController.printPreview}">
             <h:form >
                 <p:panel>
 
@@ -589,7 +596,7 @@
                                 action="#{patientController.navigateToOpdPatientProfile()}"
                                 >
                                 <f:setPropertyActionListener
-                                    value="#{patientController.bill.patient}"
+                                    value="#{patientDepositController.bill.patient}"
                                     target="#{patientController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
                         </h:panelGrid>
@@ -606,7 +613,7 @@
                                 <div class="align-items-center my-2" style="max-width: 80%" >
                                     <div>
                                         <h:panelGroup id="billPanel" class="bill" layout="block">
-                                            <prints:five_five_paper_patient_deposit bill="#{patientController.bill}" />
+                                            <prints:five_five_paper_patient_deposit bill="#{patientDepositController.bill}" />
                                         </h:panelGroup>
                                     </div>
                                 </div>

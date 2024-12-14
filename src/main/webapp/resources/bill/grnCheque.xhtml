@@ -34,6 +34,7 @@
 
                     <cc:implementation>
                         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+                        
                         <div class="posbill noBorder summeryBorder" >
 
                             <div class="institutionName">
@@ -71,7 +72,7 @@
 
                                 </div>
 
-                                <div>
+<!--                                <div>
 
                                     <p:dataTable value="#{cc.attrs.billItems}" var="bi" sortBy="#{bi.referenceBill.invoiceNumber}">
 
@@ -107,7 +108,7 @@
 
                                     </p:dataTable>
 
-                                </div>
+                                </div>-->
 
                                 <div>
                                     <h:panelGrid columns="5" styleClass="col-12 W-100" cellpadding="5">
@@ -116,8 +117,8 @@
                                         <p:outputLabel value="Cheque Date:" style="font-weight: bold;" />
                                         <p:outputLabel value="Cheque No:" style="font-weight: bold;" />
                                         <p:outputLabel value="Amount:" style="font-weight: bold;" />
-                                        
-                                        
+
+
                                         <p:outputLabel value="#{cc.attrs.bill.toInstitution.name}" />
                                         <p:outputLabel value="#{cc.attrs.bill.bank.name}" />
                                         <p:outputLabel value="#{cc.attrs.bill.chequeDate}">

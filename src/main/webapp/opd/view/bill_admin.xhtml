@@ -39,6 +39,12 @@
                                                 <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                                 <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                             </f:facet>
+                                            <p:commandButton 
+                                                value="Add Payment" 
+                                                ajax="false" 
+                                                action="#{billSearch.addPaymentToViewingBillForAdminToCorrectErrors}" >
+
+                                            </p:commandButton>
                                             <view:out bill="#{billSearch.viewingBill}"/>
                                         </p:panel>
                                     </p:tab>
@@ -91,7 +97,18 @@
                                             <p:outputLabel value="Not Cancelled" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{billSearch.viewingBill.cancelled}" >
-
+                                            <p:commandButton 
+                                                value="Admin" 
+                                                icon="fa fa-shield-alt" 
+                                                class="m-1 ui-button-danger" 
+                                                style="width: 100px;"
+                                                action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                                ajax="false" 
+                                                rendered="#{webUserController.hasPrivilege('Developers')}">
+                                                <f:setPropertyActionListener 
+                                                    value="#{billSearch.viewingBill.cancelledBill}" 
+                                                    target="#{billSearch.bill}" />
+                                            </p:commandButton>
                                             <p:commandButton
                                                 ajax="false"
                                                 class="m-1"
@@ -157,7 +174,7 @@
                         </div>
 
                     </p:panel>
-                 
+
 
 
 

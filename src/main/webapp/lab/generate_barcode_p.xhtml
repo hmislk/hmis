@@ -73,7 +73,8 @@
                                     </h:panelGrid>
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="Investigation"/>
-                                        <p:autoComplete 
+                                        <p:inputText class="w-100" value="#{patientInvestigationController.investigationName}"/>
+<!--                                        <p:autoComplete 
                                             widgetVar="aPt" 
                                             id="acPt" 
                                             forceSelection="true" 
@@ -93,7 +94,7 @@
                                             <p:column headerText="Code" style="padding: 6px;">
                                                 #{apt.code}
                                             </p:column>
-                                        </p:autoComplete> 
+                                        </p:autoComplete> -->
                                     </h:panelGrid>
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="Type"/>
@@ -155,7 +156,7 @@
                                             itemLabel="#{vt.name}" 
                                             itemValue="#{vt}" 
                                             maxResults="15" 
-                                            class="w-100 mb-1"
+                                            class="w-100"
                                             forceSelection="true"
                                             inputStyleClass="form-control">
                                             <p:column style="padding: 6px;">#{vt.code}</p:column>

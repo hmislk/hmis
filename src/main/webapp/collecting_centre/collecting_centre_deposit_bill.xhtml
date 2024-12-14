@@ -69,6 +69,18 @@
                                     </p:autoComplete>
                                 </div>
                             </div>
+                            
+                            <div class="row my-2">
+                                <div class="col-md-2">
+                                    <p:outputLabel value="Value" />
+                                </div>
+                                <div class="col-md-2">
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        onfocus="this.select();"
+                                        value="#{agentAndCcPaymentController.current.netTotal}"/> 
+                                </div>
+                            </div>
 
                             <div class="row my-2">
                                 <div class="col-md-2">
@@ -84,23 +96,25 @@
                                         <p:ajax process="@this" update="paymentDetails" event="change" />
                                     </p:selectOneMenu>
                                 </div>
+                                
                                 <div class="col-md-5">
                                     <h:panelGroup id="paymentDetails">
                                         <h:panelGroup id="creditCard"  rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Card'}">
-                                            <pa:creditCard paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
+                                            <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="cheque"  rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Cheque'}">
-                                            <pa:cheque paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
+                                            <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="slip" rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Slip'}">
-                                            <pa:slip paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
+                                            <pa:slipDetailsAsOnlyPayment paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
                                         </h:panelGroup>
-
-                                        <h:panelGroup id="cash"  rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Cash'}">
-                                            <p:inputText autocomplete="off" value="#{agentAndCcPaymentController.current.netTotal}"/> 
+                                        
+                                        <h:panelGroup id="eWallet"  rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'ewallet'}">
+                                            <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
                                         </h:panelGroup>
+                                       
                                     </h:panelGroup>
                                 </div>
                             </div>

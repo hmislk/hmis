@@ -1,0 +1,192 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:panelGroup rendered="#{empty cc.attrs.bundle.reportTemplateRows}">
+            <table class="table w-100">
+                <thead>
+                    <tr class="text-light bg-dark">
+                        <th class="text-light bg-dark">
+                            <h:outputText value="No Data for #{cc.attrs.bundle.name}"></h:outputText>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
+            <table class="table w-100">
+                <thead>
+                    <tr class="text-light bg-dark">
+                        <th class="text-light bg-dark">
+                            <h:outputText value="#{cc.attrs.bundle.name}"></h:outputText>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+            <p:dataTable id="tbl"
+                         class="w-100 m-2"
+                         value="#{cc.attrs.bundle.reportTemplateRows}"
+                         var="row"
+                         paginator="true"
+                         paginatorAlwaysVisible="false"
+                         rows="10"
+                         rowIndexVar="n"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,20"
+                         rowKey="#{row.id}">
+
+                <f:facet name="header">
+                    <h:outputText value="Report Type - Detail (Bill Items)" 
+                                  style="font-weight: bold; text-align: left; display: block;" />
+                </f:facet>
+
+                <p:column width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="S.No"/>
+                    </f:facet>
+                    <h:outputText value="#{n+1}"/>
+                </p:column>
+                <p:column width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="Staff Name"/>
+                    </f:facet>
+                    <h:outputText value="#{row.billItem.bill.toStaff.person.name}"/>
+                </p:column>
+                <p:column width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="Staff Code"/>
+                    </f:facet>
+                    <h:outputText value="#{row.billItem.bill.toStaff.code}"/>
+                </p:column>
+                <p:column width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="MRNO"/>
+                    </f:facet>
+                    <h:outputText value="#{row.billItem.bill.patient.phn}"/>
+                </p:column>
+                <p:column width="5rem"> 
+                    <f:facet name="header">
+                        <h:outputText value="Invoice No"/>
+                    </f:facet>
+                    <h:outputText/>
+                </p:column>
+                <p:column width="5rem"> 
+                    <f:facet name="header">
+                        <h:outputText value="Bill No"/>
+                    </f:facet>
+                    <h:outputText value="#{row.billItem.bill.deptId}"/>
+                </p:column>
+                <p:column width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="Date"/>
+                    </f:facet>
+                    <p:outputLabel value="#{row.billItem.bill.billDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                    </p:outputLabel>
+                </p:column>
+                <p:column width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="Item"/>
+                    </f:facet>
+                    <p:outputLabel value="#{row.billItem.item.name}">
+                    </p:outputLabel>
+                </p:column>
+                <p:column width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="Qty"/>
+                    </f:facet>
+                    <p:outputLabel value="#{row.billItem.qty}">
+                    </p:outputLabel>
+                </p:column>
+                <p:column width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="Free Qty"/>
+                    </f:facet>
+                    <p:outputLabel value="#{row.billItem.remainingQty}">
+                    </p:outputLabel>
+                </p:column>
+                <p:column width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="Rate"/>
+                    </f:facet>
+                    <p:outputLabel value="#{row.billItem.rate}">
+                    </p:outputLabel>
+                </p:column>
+                <p:column width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="MRP"/>
+                    </f:facet>
+                    <p:outputLabel value="#{row.billItem.netRate}">
+                    </p:outputLabel>
+                </p:column>
+                <p:column width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="Expiry Date"/>
+                    </f:facet>
+                    <p:outputLabel value="#{row.billItem.item.expiryDate}">
+                    </p:outputLabel>
+                </p:column>
+                <p:column width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="Batch Code"/>
+                    </f:facet>
+                    <p:outputLabel value="#{row.billItem.item.code}">
+                    </p:outputLabel>
+                </p:column>
+                <p:column class="text-end" width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="Total Amount"/>
+                    </f:facet>
+                    <h:outputText value="#{row.billItem.bill.billTotal}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
+                </p:column>
+                <p:column class="text-end" width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="Discount Amount"/>
+                    </f:facet>
+                    <h:outputText value="#{row.billItem.bill.discount}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
+                </p:column>
+                <p:column class="text-end" width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="Net Total"/>
+                    </f:facet>
+                    <h:outputText value="#{row.billItem.bill.netTotal}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
+                    <f:facet name="footer">
+                        <h:outputText value="#{cc.attrs.bundle.total}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </f:facet>
+                </p:column>
+                <p:column class="text-end" width="5rem">
+                    <f:facet name="header">
+                        <h:outputText value="Balance Amount"/>
+                    </f:facet>
+                    <h:outputText value="#{row.billItem.bill.toStaff.annualWelfareUtilized}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
+                </p:column>
+            </p:dataTable>
+        </h:panelGroup>
+
+    </cc:implementation>
+</html>

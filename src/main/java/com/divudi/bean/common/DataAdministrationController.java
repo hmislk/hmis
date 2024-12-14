@@ -179,6 +179,8 @@ public class DataAdministrationController {
     private int manageCheckEnteredDataIndex;
     private String errors;
     private String suggestedSql;
+    private String createdSql;
+    private String alterSql;
     private String executionFeedback;
 
     Date fromDate;
@@ -275,6 +277,10 @@ public class DataAdministrationController {
     public String navigateToCheckMissingFields() {
         return "/dataAdmin/missing_database_fields";
     }
+    
+    public String navigateToListOpdBillsAndBillItemsFields() {
+        return "/dataAdmin/opd_bills_and_bill_items";
+    }
 
     public void checkMissingFields1() {
         suggestedSql = "";
@@ -350,22 +356,144 @@ public class DataAdministrationController {
         return lst;
     }
 
-    public void runSqlToCreateFields() {
-        String[] sqlStatements = suggestedSql.split("<br/>");
-        StringBuilder executionResults = new StringBuilder();
-        for (String sql : sqlStatements) {
-            if (sql.trim().isEmpty()) {
-                continue; // Skip empty lines
-            }
-            int result = itemFacade.executeNativeSql(sql);
-            if (result >= 0) {
-                // Assuming a positive result indicates success. Adjust based on your logic.
-                executionResults.append("<br/>Successfully executed: ").append(sql);
-            } else {
-                // Handle failure case here. Adjust based on your logic.
-                executionResults.append("<br/>Failed to execute: ").append(sql);
+    public void generateAlterStatementFromCreateTableStatement() {
+        alterSql = generateAlterStatements(createdSql);
+        suggestedSql = alterSql;
+    }
+
+    public String generateAlterStatements(String createTableSql) {
+        StringBuilder result = new StringBuilder();
+        result.append("SET foreign_key_checks = 0;\n\n");
+
+        // Extract the table name
+        String tableName = extractTableName(createTableSql);
+
+        // Extract column definitions
+        List<String> columnDefinitions = extractColumnDefinitions(createTableSql);
+
+        // Generate ALTER TABLE statements for columns
+        for (String columnDef : columnDefinitions) {
+            String alterStatement = generateAlterColumnStatement(tableName, columnDef);
+            if (alterStatement != null) {
+                result.append(alterStatement).append("\n");
             }
         }
+
+        // Extract constraint definitions
+        List<String> constraintDefinitions = extractConstraintDefinitions(createTableSql);
+
+        // Generate ALTER TABLE statements for constraints
+        for (String constraintDef : constraintDefinitions) {
+            String alterStatement = generateAlterConstraintStatement(tableName, constraintDef);
+            if (alterStatement != null) {
+                result.append(alterStatement).append("\n");
+            }
+        }
+
+        result.append("\nSET foreign_key_checks = 1;\n");
+        return result.toString();
+    }
+
+    private String extractTableName(String sql) {
+        sql = sql.trim();
+        String upperSql = sql.toUpperCase();
+        int createIndex = upperSql.indexOf("CREATE TABLE");
+        int startIndex = createIndex + "CREATE TABLE".length();
+        // Skip any whitespace after 'CREATE TABLE'
+        while (Character.isWhitespace(sql.charAt(startIndex))) {
+            startIndex++;
+        }
+        int endIndex = sql.indexOf("(", startIndex);
+        String tableName = sql.substring(startIndex, endIndex).trim();
+        // Remove backticks or quotes if present
+        tableName = tableName.replaceAll("[`\"']", "");
+        return tableName;
+    }
+
+    private List<String> extractColumnDefinitions(String sql) {
+        List<String> columns = new ArrayList<>();
+        int start = sql.indexOf("(");
+        int end = sql.lastIndexOf(")");
+        String columnsSection = sql.substring(start + 1, end);
+
+        String[] definitions = columnsSection.split(",");
+        for (String def : definitions) {
+            def = def.trim();
+            // Skip constraints
+            if (def.toUpperCase().startsWith("PRIMARY KEY")
+                    || def.toUpperCase().startsWith("FOREIGN KEY")
+                    || def.toUpperCase().startsWith("CONSTRAINT")
+                    || def.toUpperCase().startsWith("UNIQUE")
+                    || def.toUpperCase().startsWith("CHECK")) {
+                continue;
+            }
+            columns.add(def);
+        }
+        return columns;
+    }
+
+    private List<String> extractConstraintDefinitions(String sql) {
+        List<String> constraints = new ArrayList<>();
+        int start = sql.indexOf("(");
+        int end = sql.lastIndexOf(")");
+        String columnsSection = sql.substring(start + 1, end);
+
+        String[] definitions = columnsSection.split(",");
+        for (String def : definitions) {
+            def = def.trim();
+            if (def.toUpperCase().startsWith("PRIMARY KEY")
+                    || def.toUpperCase().startsWith("FOREIGN KEY")
+                    || def.toUpperCase().startsWith("CONSTRAINT")
+                    || def.toUpperCase().startsWith("UNIQUE")
+                    || def.toUpperCase().startsWith("CHECK")) {
+                constraints.add(def);
+            }
+        }
+        return constraints;
+    }
+
+    private String generateAlterColumnStatement(String tableName, String columnDef) {
+        // Extract column name and definition
+        int firstSpace = columnDef.indexOf(" ");
+        if (firstSpace == -1) {
+            return null;
+        }
+        String columnName = columnDef.substring(0, firstSpace).trim();
+        String columnDefinition = columnDef.substring(firstSpace).trim();
+
+        return String.format("ALTER TABLE %s ADD COLUMN %s %s;", tableName, columnName, columnDefinition);
+    }
+
+    private String generateAlterConstraintStatement(String tableName, String constraintDef) {
+        // Handle constraints such as PRIMARY KEY, FOREIGN KEY, UNIQUE, etc.
+        return String.format("ALTER TABLE %s ADD %s;", tableName, constraintDef);
+    }
+
+    public void runSqlToCreateFields() {
+        // Adjust the split pattern based on your actual SQL string format
+        // Assuming statements end with semicolons
+        String[] sqlStatements = suggestedSql.split(";");
+        StringBuilder executionResults = new StringBuilder();
+
+        for (String sql : sqlStatements) {
+            sql = sql.trim();
+            if (sql.isEmpty()) {
+                continue; // Skip empty statements
+            }
+            try {
+                // Execute the SQL statement
+                itemFacade.executeNativeSql(sql);
+
+                // Append success message
+                executionResults.append("<br/>Successfully executed: ").append(sql);
+            } catch (Exception e) {
+                // Append error message with exception details
+                executionResults.append("<br/>Failed to execute: ").append(sql);
+                executionResults.append("<br/>Error: ").append(e.getMessage());
+            }
+        }
+
+        // Update the execution feedback
         executionFeedback = executionResults.toString();
     }
 
@@ -1041,7 +1169,6 @@ public class DataAdministrationController {
 //            itemFacade.edit(i);
 //            j++;
 //        }
-
     }
 
     public void createremoveAllCodes() {
@@ -1222,7 +1349,7 @@ public class DataAdministrationController {
         }
         fillPharmacyCategory();
     }
-    
+
     public void downloadAsExcel() {
         getItems();
         try {
@@ -1243,22 +1370,22 @@ public class DataAdministrationController {
             int rowNum = 1;
             for (Item i : items) {
                 Row row = sheet.createRow(rowNum++);
-                if(i.getCategory().getName() != null ||!i.getCategory().getName().trim().equals("")){
+                if (i.getCategory().getName() != null || !i.getCategory().getName().trim().equals("")) {
                     row.createCell(0).setCellValue(i.getCategory().getName());
                 }
-                if(i.getName() != null ||!i.getName().trim().equals("")){
+                if (i.getName() != null || !i.getName().trim().equals("")) {
                     row.createCell(1).setCellValue(i.getName());
                 }
-                if(!i.getCode().trim().equals("")){
+                if (!i.getCode().trim().equals("")) {
                     row.createCell(2).setCellValue(i.getCode());
                 }
-                if(!i.getBarcode().trim().equals("")){
+                if (!i.getBarcode().trim().equals("")) {
                     row.createCell(3).setCellValue(i.getBarcode());
                 }
-                if(i.getVmp() != null){
+                if (i.getVmp() != null) {
                     row.createCell(4).setCellValue(i.getVmp().getName());
                 }
-                
+
             }
 
             // Set the response headers to initiate the download
@@ -1688,6 +1815,22 @@ public class DataAdministrationController {
 
     public void setExecutionFeedback(String executionFeedback) {
         this.executionFeedback = executionFeedback;
+    }
+
+    public String getCreatedSql() {
+        return createdSql;
+    }
+
+    public void setCreatedSql(String createdSql) {
+        this.createdSql = createdSql;
+    }
+
+    public String getAlterSql() {
+        return alterSql;
+    }
+
+    public void setAlterSql(String alterSql) {
+        this.alterSql = alterSql;
     }
 
     public class EntityFieldError {

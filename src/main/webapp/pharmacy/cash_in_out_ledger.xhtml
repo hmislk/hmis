@@ -1,0 +1,218 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+
+            <ui:define name="subcontent">
+
+                <h:form >
+
+                    <p:panel   header="Cash Bill Search" class="m-1">
+
+                        <h:panelGrid columns="5" class="w-100">
+                            <h:outputLabel value="From"/>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                value="#{pharmacyReportController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="To"/>                                
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{pharmacyReportController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+
+                            <h:outputLabel value="Department"/>                                
+                            <p:selectOneMenu class="w-100 "  value="#{pharmacyReportController.department}" filter="true">
+                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="User"/> 
+                            <p:autoComplete
+                                completeMethod="#{webUserController.completeUser}"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                value="#{pharmacyReportController.webUser}" 
+                                var="user"
+                                scrollHeight="450"
+                                itemLabel="#{user.webUserPerson.name}" 
+                                itemValue="#{user}" >
+                                <p:column headerText="Username" >
+                                    <h:outputText value="#{user.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Name" >
+                                    <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
+                                </p:column>
+                            </p:autoComplete>
+
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="3" class="my-2" >
+
+                            <p:commandButton  
+                                action="#{pharmacyReportController.generatePharmacyCashInOutLedger()}"
+                                value="Process" 
+                                ajax="false"
+                                class="ui-button-warning" icon="fas fa-cogs">
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Download Excel" 
+                                ajax="false" 
+                                class="mx-2 ui-button-success" 
+                                icon="fa fa-file-excel">
+                                <p:dataExporter target="tblCashier" fileName="All_Cashier_Summary" type="xlsx" ></p:dataExporter>
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+
+
+                        <p:dataTable value="#{pharmacyReportController.bills}" var="bill"
+                                     id="tblCashier"
+                                     rows="10"
+                                     paginator="true" 
+                                     paginatorPosition="both"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                     rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                     rowIndexVar="i">
+
+                            <p:column headerText="No" width="2em">
+                                <h:outputText value="#{i+1}" />
+                            </p:column>
+
+                            <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">
+                                <h:outputText value="#{bill.deptId}" />
+                            </p:column>
+
+                            <p:column headerText="Department" sortBy="#{bill.department.name}" filterBy="#{bill.department.name}" filterMatchMode="contains" width="6em">
+                                <h:outputText value="#{bill.department.name}" />
+                            </p:column>
+
+                            <p:column headerText="Comment" sortBy="#{bill.comments}" filterBy="#{bill.comments}" filterMatchMode="contains">
+                                <h:outputText value="#{bill.comments}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type" sortBy="#{bill.billTypeAtomic}" filterBy="#{bill.billTypeAtomic}" filterMatchMode="contains">
+                                <h:outputText value="#{bill.billTypeAtomic}" />
+                            </p:column>
+
+                            <p:column headerText="Cash In Value" width="6em">
+                                <h:panelGroup>
+                                    <h:outputText value="#{bill.netTotal}" 
+                                                  rendered="#{bill.billTypeAtomic.billFinanceType eq 'CASH_IN' or bill.billTypeAtomic.billFinanceType eq 'FLOAT_STARTING_BALANCE'}">
+                                        <f:convertNumber pattern="###.00" />
+                                    </h:outputText>
+                                    <h:outputText value="--" rendered="#{not (bill.billTypeAtomic.billFinanceType eq 'CASH_IN' or bill.billTypeAtomic.billFinanceType eq 'FLOAT_STARTING_BALANCE')}" />
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacyReportController.calAllInTotal}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Cash Out Value" width="6em">
+                                <h:panelGroup>
+                                    <h:outputText value="#{bill.netTotal}" 
+                                                  rendered="#{bill.billTypeAtomic.billFinanceType eq 'CASH_OUT' or bill.billTypeAtomic.billFinanceType eq 'FLOAT_CLOSING_BALANCE'}">
+                                        <f:convertNumber pattern="###.00" />
+                                    </h:outputText>
+                                    <h:outputText value="--" rendered="#{not (bill.billTypeAtomic.billFinanceType eq 'CASH_OUT' or bill.billTypeAtomic.billFinanceType eq 'FLOAT_CLOSING_BALANCE')}" />
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacyReportController.calAllOutTotal}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+
+                        </p:dataTable>
+
+                        <p:dataTable value="#{pharmacyReportController.unifiedBundle}" var="row"
+                                     paginator="true" rows="10" id="tblUnifiedBundle"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate="(Page {currentPage} of {totalPages})"
+                                     paginatorPosition="bottom"
+                                     rowIndexVar="i">
+
+                            <p:column headerText="No" width="2em">
+                                <h:outputText value="#{i+1}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type">
+                                <h:outputText value="#{row.billTypeAtomic}" />
+                            </p:column>
+
+                            <p:column headerText="Comment" >
+                                <h:outputText value="#{row.bill.comments}"></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="IN Total" width="8em">
+                                <h:panelGroup>
+                                    <h:outputText value="#{row.total}" 
+                                                  rendered="#{row.billTypeAtomic.billFinanceType eq 'CASH_IN' or row.billTypeAtomic.billFinanceType eq 'FLOAT_STARTING_BALANCE'}">
+                                        <f:convertNumber pattern="###.00" />
+                                    </h:outputText>
+                                    <h:outputText value="--" 
+                                                  rendered="#{not (row.billTypeAtomic.billFinanceType eq 'CASH_IN' or row.billTypeAtomic.billFinanceType eq 'FLOAT_STARTING_BALANCE')}" />
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacyReportController.calAllInTotal}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="OUT Total" width="8em">
+                                <h:panelGroup>
+                                    <h:outputText value="#{row.total}" 
+                                                  rendered="#{row.billTypeAtomic.billFinanceType eq 'CASH_OUT' or row.billTypeAtomic.billFinanceType eq 'FLOAT_CLOSING_BALANCE'}">
+                                        <f:convertNumber pattern="###.00" />
+                                    </h:outputText>
+                                    <h:outputText value="--" 
+                                                  rendered="#{not (row.billTypeAtomic.billFinanceType eq 'CASH_OUT' or row.billTypeAtomic.billFinanceType eq 'FLOAT_CLOSING_BALANCE')}" />
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacyReportController.calAllOutTotal}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                        </p:dataTable>
+
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

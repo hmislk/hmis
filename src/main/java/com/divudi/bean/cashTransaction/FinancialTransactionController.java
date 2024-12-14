@@ -179,6 +179,8 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle selectedBundle;
     private PaymentMethod selectedPaymentMethod;
 
+    private Boolean patientDepositsAreConsideredInHandingover;
+
     @Deprecated
     private PaymentMethodValues paymentMethodValues;
     private AtomicBillTypeTotals atomicBillTypeTotalsByBills;
@@ -1178,22 +1180,25 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateBackToPaymentHandoverCreate() {
         selectedBundle.markSelectedAtHandover();
-        selectedBundle.calculateTotalsByPaymentsAndDenominations();
-        bundle.aggregateTotalsFromSelectedChildBundles();
+        bundle.calculateTotalsByChildBundlesForHandover();
         return "/cashier/handover_start_all?faces-redirect=true";
     }
 
     public void updateForPaymentHandoverSelectionAtCreate() {
-        if (selectedBundle != null) {
-            selectedBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
-        }
-        bundle.calculateTotalsBySelectedChildBundles();
+        System.out.println("updateForPaymentHandoverSelectionAtCreate");
+//        if (selectedBundle != null) {
+//            selectedBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
+//        }
+        bundle.setPatientDepositsAreConsideredInHandingover(getPatientDepositsAreConsideredInHandingover());
+        bundle.calculateTotalsByChildBundlesForHandover();
     }
 
     public void selectAllForPaymentHandoverSelectionAtCreate() {
         selectedBundle.markAllAtHandover(selectedPaymentMethod);
-        selectedBundle.calculateTotalsByPaymentsAndDenominations();
-        bundle.calculateTotalsBySelectedChildBundles();
+        selectedBundle.calculateTotalsOfSelectedRowsPlusAllCashForHandover(getPatientDepositsAreConsideredInHandingover());
+        boolean selectAllCashToHandover = configOptionApplicationController.getBooleanValueByKey("Select All Cash During Handover", true);
+        bundle.setSelectAllCashToHandover(selectAllCashToHandover);
+        bundle.calculateTotalsByChildBundlesForHandover();
     }
 
     public void unselectAllForPaymentHandoverSelection() {
@@ -2240,6 +2245,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillTime(new Date());
         currentBill.setDeptId(deptId);
         currentBill.setInsId(deptId);
+        currentBill.setBillClassType(BillClassType.BilledBill);
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
@@ -2261,7 +2267,7 @@ public class FinancialTransactionController implements Serializable {
         if (currentBill.getBillType() != BillType.OPERATIONAL_EXPENSES) {
             JsfUtil.addErrorMessage("Error");
             return "";
-        }          
+        }
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
@@ -2270,6 +2276,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillTime(new Date());
         currentBill.setDeptId(deptId);
         currentBill.setInsId(deptId);
+        currentBill.setBillClassType(BillClassType.BilledBill);
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
@@ -2570,9 +2577,12 @@ public class FinancialTransactionController implements Serializable {
         bundle.setUser(sessionController.getLoggedUser());
         bundle.setStartBill(startBill);
         bundle.selectAllChildBundles();
-        bundle.aggregateTotalsFromAllChildBundles();
+//        bundle.aggregateTotalsFromAllChildBundles();
         bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
         bundle.sortByDateInstitutionSiteDepartmentType();
+        
+        bundle.setPatientDepositsAreConsideredInHandingover(getPatientDepositsAreConsideredInHandingover());
+        bundle.calculateTotalsByChildBundlesForHandover();
         return "/cashier/handover_start_all?faces-redirect=true";
     }
 
@@ -2946,7 +2956,7 @@ public class FinancialTransactionController implements Serializable {
 
         m.put("ret", false);
         System.out.println("jpql = " + jpql);
-        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
 
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         currentBillPayments = paymentsFromShiftSratToNow;
@@ -4479,19 +4489,31 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No Payments to Handover");
             return null;
         }
-        if (Math.abs(bundle.getDenominatorValue() - bundle.getCashHandoverValue()) > 1) {
+        Double maximumAllowedCashDifferenceForHandover = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Cash Difference for Handover", 1.0);
+        if (Math.abs(bundle.getDenominatorValue() - bundle.getCashValue()) > maximumAllowedCashDifferenceForHandover) {
             JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
             return null;
         }
-        boolean hasSelectedBundles = false;
+        boolean shouldSelectAllCollectionsForHandover = configOptionApplicationController.getBooleanValueByKey("Should Select All Collections for Handover", false);
+        boolean allBundlesSelected = true;
+        boolean anyBundleSelected = false;
+
         for (ReportTemplateRowBundle b : bundle.getBundles()) {
             if (b.isSelected()) {
-                hasSelectedBundles = true;
+                anyBundleSelected = true; // At least one bundle is selected
+            } else {
+                allBundlesSelected = false; // Found an unselected bundle, not all are selected
             }
         }
-        if (!hasSelectedBundles) {
+
+        if (!anyBundleSelected) {
             JsfUtil.addErrorMessage("No Payments to Handover");
-            return null;
+            return null; // Stop processing since no bundles are selected
+        }
+
+        if (shouldSelectAllCollectionsForHandover && !allBundlesSelected) {
+            JsfUtil.addErrorMessage("All collections must be selected for handover");
+            return null; // Stop processing since not all bundles are selected when they must be
         }
 
         bundle.setFromUser(sessionController.getLoggedUser());
@@ -4529,7 +4551,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
         currentBill.setTotal(bundle.getTotal());
-        currentBill.setNetTotal(bundle.getTotal());
+        currentBill.setNetTotal(bundle.getTotalOut());
 
         currentBill.setCreatedAt(new Date());
         currentBill.setCreater(sessionController.getLoggedUser());
@@ -4606,14 +4628,14 @@ public class FinancialTransactionController implements Serializable {
                         System.out.println("row.getPayment() = " + row.getPayment());
                         continue;
                     }
-                    if (row.getPayment().getPaymentMethod() == PaymentMethod.Cash) {
-
-                    }
                     Payment p = row.getPayment();
                     if (p.getPaymentMethod() == null) {
                         continue;
                     }
                     if (p.getPaymentMethod() != PaymentMethod.Cash && p.isSelectedForHandover() == false) {
+                        continue;
+                    }
+                    if (p.getPaymentMethod() == PaymentMethod.Cash && shiftBundle.getSelectAllCashToHandover() == false) {
                         continue;
                     }
                     p.setHandoverCreatedBill(currentBill);
@@ -5038,7 +5060,7 @@ public class FinancialTransactionController implements Serializable {
         selectedBill.setCompletedBy(sessionController.getLoggedUser());
         billController.save(selectedBill);
 
-        return "/cashier/handover_creation_bill_print?faces-redirect=true";
+        return "/cashier/handover_accept_bill_print?faces-redirect=true";
     }
 
     private CashBookEntry findCashbookEntry(Payment p, List<CashBookEntry> cbEntries) {
@@ -5197,17 +5219,17 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
-        
-        if (currentPayment.getPaymentMethod() == PaymentMethod.Cash) {
-        double drawerBalance = getLoggedUserDrawer().getCashInHandValue();
-        double paymentAmount = currentPayment.getPaidValue();
 
-        if (drawerBalance < paymentAmount) {
-            JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
-            return;
+        if (currentPayment.getPaymentMethod() == PaymentMethod.Cash) {
+            double drawerBalance = getLoggedUserDrawer().getCashInHandValue();
+            double paymentAmount = currentPayment.getPaidValue();
+
+            if (drawerBalance < paymentAmount) {
+                JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                return;
+            }
         }
-    }
-        
+
         getCurrentBillPayments().add(currentPayment);
         calculateExpenseBillTotal();
         currentPayment = null;
@@ -5361,7 +5383,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setTotal(total);
         currentBill.setNetTotal(total);
     }
-    
+
     private void calculateExpenseBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
@@ -5392,7 +5414,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillTime(new Date());
 
         Double netTotal = currentBill.getNetTotal();
-        if (loggedUserDrawer.getCashInHandValue() < netTotal) {
+        if (getLoggedUserDrawer().getCashInHandValue() < netTotal) {
             JsfUtil.addErrorMessage("Not Enough Cash in the Drawer");
             return "";
         }
@@ -6467,6 +6489,13 @@ public class FinancialTransactionController implements Serializable {
 
     public void setRemovingBillItem(BillItem removingBillItem) {
         this.removingBillItem = removingBillItem;
+    }
+
+    public Boolean getPatientDepositsAreConsideredInHandingover() {
+        if (patientDepositsAreConsideredInHandingover == null) {
+            patientDepositsAreConsideredInHandingover = configOptionApplicationController.getBooleanValueByKey("Patient Deposits are considered in handingover", false);
+        }
+        return patientDepositsAreConsideredInHandingover;
     }
 
 }

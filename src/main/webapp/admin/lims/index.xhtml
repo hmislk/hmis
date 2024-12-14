@@ -26,25 +26,10 @@
                                         value="Manage Categories" 
                                         action="#{investigationCategoryController.navigateToManageInvestigationCategoris()}" />
 
-                                    <!--                                    <p:commandButton   class="w-100"  ajax="false" 
-                                                                                           value="Add category" 
-                                                                                           action="#{investigationCategoryController.navigateToAddInvestigationCategory}" />
-                                    
-                                                                        <p:commandButton   class="w-100"  ajax="false" 
-                                                                                           value="List categories" 
-                                                                                           action="#{investigationCategoryController.navigateToListInvestigationCategories}" />-->
-
-                                    <p:commandButton   class="w-100"  ajax="false" 
-                                                       value="Manage Containers" 
-                                                       action="#{investigationTubeController.navigateToManageContainers()}" />   
-
-                                    <!--                                    <p:commandButton   class="w-100"  ajax="false" 
-                                                                                           value="Add Container" 
-                                                                                           action="#{investigationTubeController.navigateToAddTube()}" />
-                                    
-                                                                        <p:commandButton   class="w-100"  ajax="false" 
-                                                                                           value="List Containers" 
-                                                                                           action="#{investigationTubeController.navigateToListTubes()}" />-->
+                                    <p:commandButton   
+                                        class="w-100"  ajax="false" 
+                                        value="Manage Containers" 
+                                        action="#{investigationTubeController.navigateToManageContainers()}" />   
 
                                     <p:commandButton   
                                         class="w-100" 
@@ -52,24 +37,11 @@
                                         value="Manage Specimens" 
                                         action="#{sampleController.navigateToManageSpecimens()}" />   
 
-                                    <!--                                    <p:commandButton   
-                                                                            class="w-100" 
-                                                                            ajax="false" 
-                                                                            value="Add Speciman" 
-                                                                            action="#{sampleController.navigateToAddItem()}" />
-                                    
-                                                                        <p:commandButton   
-                                                                            class="w-100" 
-                                                                            ajax="false" 
-                                                                            value="List Specimans" 
-                                                                            action="#{sampleController.navigateToListItems()}" />-->
-
                                     <p:commandButton 
                                         class="w-100" 
                                         ajax="false" 
                                         value="Manage Antibiotics" 
                                         action="#{antibioticController.navigateToManageAntibiotics()}" />
-
 
                                 </div>
                             </p:tab>
@@ -141,13 +113,13 @@
                                             class="w-100" 
                                             ajax="false" 
                                             value="Report Template Names" 
-                                            action="/admin/lims/report_template_names"
+                                            action="/admin/lims/report_template_names?faces-redirect=true"
                                             rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}"/>
                                         <p:commandButton 
                                             class="w-100" 
                                             ajax="false" 
                                             value="Report Format Templates" 
-                                            action="/admin/lims/report_template" />
+                                            action="/admin/lims/report_template?faces-redirect=true" />
                                         <p:commandButton 
                                             class="w-100" 
                                             ajax="false" 
@@ -157,12 +129,12 @@
                                             class="w-100" 
                                             ajax="false" 
                                             value="Report Template Availability" 
-                                            action="/admin/lims/report_template_availability" />
+                                            action="/admin/lims/report_template_availability?faces-redirect=true" />
                                         <p:commandButton 
                                             class="w-100" 
                                             ajax="false" 
                                             value="Report Template Image Upload" 
-                                            action="/admin/lims/report_template_image_upload"
+                                            action="#{reportFormatController.navigateToReportTemplateImageUpload}"
                                             rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}"/>
 
                                     </div>
@@ -171,7 +143,6 @@
                             </p:tab>
                             <p:tab title="Manage Services">
                                 <div class="d-grid gap-2">
-
 
                                     <p:commandButton   class="w-100"  ajax="false" value="Investigations" action="#{investigationCategoryController.navigateToInvestigations()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Investigation Fees" action="#{investigationCategoryController.navigateToInvestigationFees()}" />

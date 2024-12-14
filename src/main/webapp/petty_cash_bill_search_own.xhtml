@@ -11,7 +11,7 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel>
-                         <f:facet name="header">
+                        <f:facet name="header">
                             <h:outputLabel value="Petty Cash Bill Search"/>
                             <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
                         </f:facet>
@@ -37,7 +37,7 @@
                                     inputStyleClass="form-control"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                 </p:calendar>
-                                
+
                                 <p:commandButton 
                                     id="btnSearch" 
                                     ajax="false" 
@@ -59,10 +59,24 @@
                                     class="w-100" 
                                     value="#{searchController.searchKeyword.number}"/>
                                 <h:outputLabel value="Paid To (Staff)"/>
-                                <p:inputText 
-                                    autocomplete="off" 
-                                    class="w-100" 
-                                    value="#{searchController.searchKeyword.staffName}" />
+                                <p:autoComplete   
+                                    id="cmbDoc1" 
+                                    value="#{searchController.staff}" 
+                                    completeMethod="#{staffController.completeStaffWithoutDoctors}" 
+                                    forceSelection="true"
+                                    var="ix" 
+                                    itemLabel="#{ix.person.name}" 
+                                    itemValue="#{ix}" 
+                                    size="20"
+                                    inputStyleClass="form-control"
+                                    style="width: 400px;">
+                                    <p:column style="width: 150px; padding: 3px;">
+                                        #{ix.code}
+                                    </p:column>
+                                    <p:column style="width: 250px; padding: 3px;">
+                                        #{ix.person.nameWithTitle}
+                                    </p:column>
+                                </p:autoComplete>
                                 <h:outputLabel value="Paid To (Person)"/>
                                 <p:inputText 
                                     autocomplete="off" 
@@ -75,19 +89,22 @@
                                     value="#{searchController.searchKeyword.netTotal}" />
                             </div>
                             <div class="col-md-10">
-                                <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
+                                <p:dataTable 
+                                    id="tblBills" 
+                                    value="#{searchController.bills}" 
+                                    var="bill"  >
+
                                     <p:column headerText="Bill No" >
                                         <p:commandLink 
                                             id="billNo" 
                                             ajax="false" 
                                             value="#{bill.deptId}" 
-                                            action="#{pettyCashBillController.NavigatePettyAndIouReprint()}"
+                                            action="#{pettyCashBillController.navigatePettyAndIouReprint()}"
                                             actionListener="#{pettyCashBillController.fillBillsReferredByCurrentBill()}"
                                             >
                                             <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillSearch.bill}"/>
                                             <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillController.current}"/>
                                         </p:commandLink>
-                                       
 
                                     </p:column>
                                     <p:column headerText="Invoice No" >
@@ -151,7 +168,7 @@
                             </div>
                         </div>
                     </p:panel>
-                    
+
                 </h:form>
             </ui:define>
         </ui:composition>

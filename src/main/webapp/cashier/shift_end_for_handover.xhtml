@@ -15,13 +15,14 @@
                 <h:form>
                     <p:panel  class="m-1 p-1 container-flex">
                         <f:facet name="header">
-                            <div class="row">
-                                <div class="col">
-                                    <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
-                                    <p:outputLabel value="End Shift" />
-                                </div>
 
-                            </div>
+                            <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
+                            <p:outputLabel value="End Shift" />
+
+                            <h:panelGroup style="float: right;" class="mx-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Comment for Shift End', true)}" >
+                                <p:outputLabel value="Comment" class="mx-2"></p:outputLabel>
+                                <p:inputText value="#{financialTransactionController.currentBill.comments}" ></p:inputText>
+                            </h:panelGroup>
                         </f:facet>
 
                         <h:panelGroup id="gpPrint" >
@@ -490,6 +491,53 @@
 
 
                                 </p:dataTable>
+                            </div>
+                        </h:panelGroup>
+                        <h:panelGroup class="m-4" rendered="#{financialTransactionController.bundle.hasCashTransaction}">
+                            <div class="col-md-7">
+                                <p:dataTable   
+                                    value="#{financialTransactionController.denominationTransactions}" 
+                                    var="deno" 
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow to Denomination for shift Ending Process')}" >
+                                    <p:column title="Denomination" style="padding: 4px; width: 8em;">
+                                        <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column  title="Denomination"  style="padding: 4px; width: 6em;">
+                                        <p:inputText 
+                                            class="text-end w-50" 
+                                            id="txtDenoQty"
+                                            value="#{deno.denominationQty}" 
+                                            style="width: 100%; padding: 3px;"
+                                            onfocus="this.select()">
+                                            <f:convertNumber integerOnly="true" />
+                                            <p:ajax 
+                                                event="blur"
+                                                process="txtDenoQty" 
+                                                listener="#{financialTransactionController.calculateTotalCashDenomination()}"
+                                                update="txtDenoVal" ></p:ajax>
+                                        </p:inputText>  
+                                    </p:column>
+                                    <p:column  style="padding: 4px; width: 8em;">
+                                        <p:outputLabel
+                                            class="d-flex justify-content-end mx-2"
+
+                                            id="txtDenoVal" value="#{deno.denominationValue eq null ? 0.00 : deno.denominationValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:dataTable>
+
+                                <p:commandButton 
+                                    value="Update" 
+                                    class="mt-2 ui-button-info" 
+                                    icon="pi pi-refresh" 
+                                    style="float: left;"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow to Denomination for shift Ending Process')}"
+                                    process="@this"
+                                    update="#{p:resolveFirstComponentWithId('txtCashValue',view).clientId}"
+                                    >                                                                    
+                                    <f:setPropertyActionListener target="#{financialTransactionController.currentPayment.paidValue}" value="#{financialTransactionController.totalCashFund}"></f:setPropertyActionListener>
+                                </p:commandButton>
                             </div>
                         </h:panelGroup>
 

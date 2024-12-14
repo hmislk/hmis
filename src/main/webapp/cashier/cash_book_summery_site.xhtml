@@ -4,7 +4,6 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
@@ -51,59 +50,460 @@
                         </p:panelGrid>
 
 
+                        <!--DO NOT REMOVE THIS. WITHOUT THIS, THE dates list is NOT initiated-->
+                        <h:dataTable value="#{cashBookEntryController.dates}" var="mydate" style="display: none;">
+                            <h:column>
+                                <h:outputText value="#{mydate}">
+                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                </h:outputText>
+                            </h:column>
+                        </h:dataTable>
+                        <!--DO NOT REMOVE THIS. WITHOUT THIS, THE dates list is NOT initiated-->
+
 
 
                         <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-                        <table id="myTable" class="ui-widget ui-datatable table table-bordered" style="width: 100%; border-collapse: collapse;">
-                            <thead class="ui-datatable-header ui-widget-header">
-                                <tr>
-                                    <th rowspan="3" class="text-center">Date</th>
-                                    <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="ins">
-                                        <th colspan="9" class="text-center">#{ins.institution.name}</th>
-                                    </ui:repeat>
-                                </tr>
-                                <tr>
-                                    <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sis">
-                                        <ui:repeat value="#{sis.sites}" var="s">
-                                            <th colspan="3" class="text-center">#{s.name}</th>
-                                        </ui:repeat>
-                                    </ui:repeat>
-                                </tr>
-                                <tr>
-                                    <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sit">
-                                        <ui:repeat value="#{sit.sites}" var="s">
-                                            <th class="text-end">Starting Balance</th>
-                                            <th class="text-end">Value</th>
-                                            <th class="text-end">Ending Balance</th>
-                                        </ui:repeat>
-                                    </ui:repeat>
-                                </tr>
-                            </thead>
-                            <tbody class="ui-datatable-data ui-widget-content">
-                                <ui:repeat value="#{cashBookEntryController.dates}" var="date">
+                        <h:panelGroup rendered="true" >
+
+
+
+                            <table id="myTable" class="ui-widget ui-datatable table table-bordered" style="width: 100%; border-collapse: separate; border-spacing: 0;">
+                                <thead >
                                     <tr>
-                                        <td class="text-center">
-                                            <h:outputText value="#{date}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                            </h:outputText>
-                                        </td>
-                                        <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sid">
-                                            <ui:repeat value="#{sid.sites}" var="s">
-                                                <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(date,s)}</td>
-                                                <td class="text-end">
-                                                    
-                                                    <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(date,s)}" >
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </h:outputText> 
-                                                </td>
-                                                <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(date,s)}</td>
+                                        <th rowspan="4"  style="border: 1px solid #ddd;"  class="text-center">Date</th>
+                                        <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="ins">
+                                            <th colspan="#{45 * ins.sites.size()}"  style="border: 1px solid #ddd;"  class="text-center">#{ins.institution.name}</th>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sis">
+                                            <ui:repeat value="#{sis.sites}" var="s">
+                                                <th colspan="45"  style="border: 1px solid #ddd;"  class="text-center">#{s.name}</th>
                                             </ui:repeat>
                                         </ui:repeat>
                                     </tr>
-                                </ui:repeat>
-                            </tbody>
-                        </table>
+
+
+                                    <tr>
+                                        <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sit">
+                                            <ui:repeat value="#{sit.sites}" var="s">
+                                                <!-- Total -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;"  class="text-center">Total</th>
+
+                                                <!-- Cash -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;" class="text-center">Cash</th>
+
+                                                <!-- Card -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;" class="text-center">Card</th>
+
+                                                <!-- Cheque -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;" class="text-center">Cheque</th>
+
+                                                <!-- Slip Payment -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;" class="text-center">Slip Payment</th>
+
+                                                <!-- e-Wallet Payment -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;" class="text-center">e-Wallet Payment</th>
+
+                                                <!-- Credit -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;" class="text-center">Credit</th>
+
+                                                <!-- Staff Credit -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;" class="text-center">Staff Credit</th>
+
+                                                <!-- Staff Welfare -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;" class="text-center">Staff Welfare</th>
+
+                                                <!-- Voucher -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;" class="text-center">Voucher</th>
+
+                                                <!-- IOU -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;" class="text-center">IOU</th>
+
+                                                <!-- Agent Payment -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;" class="text-center">Agent Payment</th>
+
+                                                <!-- Patient Deposit -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;" class="text-center">Patient Deposit</th>
+
+                                                <!-- Patient Points -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;" class="text-center">Patient Points</th>
+
+                                                <!-- Online Settlement -->
+                                                <th colspan="3"  style="border: 1px solid #ddd;" class="text-center">Online Settlement</th>
+
+
+                                            </ui:repeat>
+                                        </ui:repeat>
+                                    </tr>
+
+
+
+
+                                    <tr>
+                                        <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sit">
+                                            <ui:repeat value="#{sit.sites}" var="s">
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending Balance</th>
+
+                                                <!-- Cash -->
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting Cash Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Cash Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending Cash Balance</th>
+
+                                                <!-- Card -->
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting Card Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Card Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending Card Balance</th>
+
+                                                <!-- Cheque -->
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting Cheque Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Cheque Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending Cheque Balance</th>
+
+                                                <!-- Slip Payment -->
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting Slip Payment Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Slip Payment Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending Slip Payment Balance</th>
+
+                                                <!-- e-Wallet Payment -->
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting e-Wallet Payment Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">e-Wallet Payment Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending e-Wallet Payment Balance</th>
+
+                                                <!-- Credit -->
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting Credit Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Credit Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending Credit Balance</th>
+
+                                                <!-- Staff Credit -->
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting Staff Credit Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Staff Credit Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending Staff Credit Balance</th>
+
+                                                <!-- Staff Welfare -->
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting Staff Welfare Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Staff Welfare Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending Staff Welfare Balance</th>
+
+                                                <!-- Voucher -->
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting Voucher Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Voucher Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending Voucher Balance</th>
+
+                                                <!-- IOU -->
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting IOU Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">IOU Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending IOU Balance</th>
+
+                                                <!-- Agent Payment -->
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting Agent Payment Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Agent Payment Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending Agent Payment Balance</th>
+
+                                                <!-- Patient Deposit -->
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting Patient Deposit Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Patient Deposit Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending Patient Deposit Balance</th>
+
+                                                <!-- Patient Points -->
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting Patient Points Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Patient Points Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending Patient Points Balance</th>
+
+                                                <!-- Online Settlement -->
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Starting Online Settlement Balance</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Online Settlement Value</th>
+                                                <th  style="border: 1px solid #ddd;" class="text-end">Ending Online Settlement Balance</th>
+
+
+                                            </ui:repeat>
+                                        </ui:repeat>
+                                    </tr>
+                                </thead>
+                                <tbody >
+                                    <ui:repeat value="#{cashBookEntryController.dates}" var="mydate">
+                                        <tr>
+                                            <td class="text-center">
+                                                <h:outputText value="#{mydate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                </h:outputText>
+                                            </td>
+                                            <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sid">
+                                                <ui:repeat value="#{sid.sites}" var="s">
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate,s)}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate,s)}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate,s)}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <!-- Cash -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate,s,'Cash')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate,s,'Cash')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate,s,'Cash')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <!-- Card -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Card')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Card')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Card')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <!-- Cheque -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Cheque')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Cheque')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Cheque')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <!-- Slip -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Slip')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Slip')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Slip')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+
+                                                    <!-- ewallet -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'ewallet')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'ewallet')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'ewallet')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <!-- Credit -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Credit')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Credit')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Credit')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <!-- Staff -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Staff')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Staff')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Staff')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <!-- Staff_Welfare -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Staff_Welfare')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Staff_Welfare')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Staff_Welfare')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <!-- Voucher -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Voucher')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Voucher')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Voucher')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <!-- IOU -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'IOU')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'IOU')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'IOU')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <!-- Agent -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'Agent')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'Agent')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'Agent')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <!-- PatientDeposit -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'PatientDeposit')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'PatientDeposit')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'PatientDeposit')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <!-- PatientPoints -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'PatientPoints')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'PatientPoints')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'PatientPoints')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <!-- OnlineSettlement -->
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchStartingBalanceForFromSite(mydate, s, 'OnlineSettlement')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(mydate, s, 'OnlineSettlement')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{cashBookEntryController.fetchEndingBalanceForFromSite(mydate, s, 'OnlineSettlement')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+
+
+                                                </ui:repeat>
+                                            </ui:repeat>
+                                        </tr>
+                                    </ui:repeat>
+
+                                    <ui:repeat value="#{cashBookEntryController.dates}" var="dbdate">
+
+                                    </ui:repeat>
+
+
+                                </tbody>
+                            </table>
+
+                        </h:panelGroup>
 
                         <script>
                                     function exportTableToExcel(tableID, filename) {

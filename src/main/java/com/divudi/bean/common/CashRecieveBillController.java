@@ -36,6 +36,7 @@ import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
@@ -45,6 +46,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -66,39 +68,51 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class CashRecieveBillController implements Serializable {
 
-    private Bill current;
-    private boolean printPreview = false;
     @EJB
     private BillNumberGenerator billNumberBean;
-    @Inject
-    private SessionController sessionController;
     @EJB
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
-    StaffService staffBean;
+    private StaffService staffBean;
     @EJB
-    PaymentFacade paymentFacade;
+    private PaymentFacade paymentFacade;
+    @EJB
+    private CreditBean creditBean;
+    @EJB
+    private PatientEncounterFacade patientEncounterFacade;
+    @EJB
+    CashTransactionBean cashTransactionBean;
+    @EJB
+    PaymentService paymentService;
+
+    @Inject
+    private BillBeanController billBean;
+    @Inject
+    private SessionController sessionController;
     @Inject
     private BillController billController;
     @Inject
-    CashBookEntryController cashBookEntryController;
-
-    private BillItem currentBillItem;
-    private BillItem removingItem;
-    private List<BillItem> billItems;
-    private List<BillItem> selectedBillItems;
-    private Bill selectedBill;
-    private PaymentMethodData paymentMethodData;
-    private Institution institution;
+    private CashBookEntryController cashBookEntryController;
     @Inject
     CommonController commonController;
     @Inject
     private DrawerController drawerController;
     @Inject
     WebUserController webUserController;
-    String comment;
+
+    private Bill current;
+    private boolean printPreview = false;
+    private BillItem currentBillItem;
+    private BillItem removingItem;
+    private List<BillItem> billItems;
+    private List<BillItem> selectedBillItems;
+    private Bill selectedBill;
+    private PaymentMethodData paymentMethodData;
+    private PaymentMethod paymentMethod;
+    private Institution institution;
+    private String comment;
 
     public void makeNull() {
         printPreview = false;
@@ -130,8 +144,8 @@ public class CashRecieveBillController implements Serializable {
 //        }
         calTotal();
     }
-    
-    public void selectVoucherListener(){
+
+    public void selectVoucherListener() {
         Institution ins = selectedBill.getCreditCompany();
         current = selectedBill;
         makeNull();
@@ -203,7 +217,7 @@ public class CashRecieveBillController implements Serializable {
 //        }
         calTotal();
     }
-    
+
     public void changeNetValueListenerForVoucher(BillItem billItem) {
 
 //        if (!isPaidAmountOk(billItem)) {
@@ -258,7 +272,7 @@ public class CashRecieveBillController implements Serializable {
         double refBallance = 0;
         double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal() + billItem.getReferenceBill().getVat());
         double refAmount = Math.abs(getCreditBean().getRefundAmount(billItem.getReferenceBill()));
-        double paidAmt = Math.abs(getCreditBean().getPaidAmount(billItem.getReferenceBill(), BillType.CashRecieveBill));
+        double paidAmt = Math.abs(getCreditBean().getTotalCreditSettledAmount(billItem.getReferenceBill()));
         refBallance = neTotal - (paidAmt + refAmount);
         return refBallance;
     }
@@ -410,20 +424,14 @@ public class CashRecieveBillController implements Serializable {
         if (errorCheckForAdding()) {
             return;
         }
-
         getCurrent().setFromInstitution(getCurrentBillItem().getReferenceBill().getCreditCompany());
-        //     getCurrentBillItem().getBill().setNetTotal(getCurrentBillItem().getNetValue());
-        //     getCurrentBillItem().getBill().setTotal(getCurrent().getNetTotal());
-
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getSelectedBillItems().add(getCurrentBillItem());
         getBillItems().add(getCurrentBillItem());
-
         currentBillItem = null;
         calTotal();
-
     }
-    
+
     public void addToBillForVoucher() {
         if (errorCheckForAdding()) {
             return;
@@ -500,7 +508,23 @@ public class CashRecieveBillController implements Serializable {
         getCurrent().setNetTotal(n);
         //////// // System.out.println("AAA : " + n);
     }
+
+    public void calulateTotalForSettlingCreditForOpdPackageBills() {
+        double n = 0.0;
+        for (BillItem b : selectedBillItems) {
+            n += b.getNetValue();
+        }
+        getCurrent().setNetTotal(n);
+    }
     
+    public void calulateTotalForSettlingCreditForOpdBatchBills() {
+        double n = 0.0;
+        for (BillItem b : selectedBillItems) {
+            n += b.getNetValue();
+        }
+        getCurrent().setNetTotal(n);
+    }
+
     public void calTotalForVoucher() {
         double n = 0.0;
 //        //// // System.out.println("getBillItems().size() = " + getBillItems().size());
@@ -629,38 +653,54 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void saveBill(BillType billType, BillTypeAtomic billTypeAtomic) {
-
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, BillNumberSuffix.CRDPAY));
-        getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.BilledBill, BillNumberSuffix.CRDPAY));
-
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), billTypeAtomic);
+        getCurrent().setInsId(deptId);
+        getCurrent().setDeptId(deptId);
         getCurrent().setBillType(billType);
         getCurrent().setBillTypeAtomic(billTypeAtomic);
-
         getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
         getCurrent().setComments(comment);
-
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
-
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
-
         getCurrent().setNetTotal(getCurrent().getNetTotal());
-
         if (getCurrent().getId() == null) {
             getBillFacade().create(getCurrent());
         } else {
             getBillFacade().edit(getCurrent());
         }
-
     }
 
-    @Inject
-    private BillBeanController billBean;
-    @EJB
-    CashTransactionBean cashTransactionBean;
+    private void saveCancelBill(BillType billType, BillTypeAtomic billTypeAtomic, Bill b) {
+
+        b.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
+        b.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
+
+        b.setBillType(billType);
+        b.setBillTypeAtomic(billTypeAtomic);
+
+        b.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        b.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        b.setComments(comment);
+
+        b.setBillDate(new Date());
+        b.setBillTime(new Date());
+
+        b.setCreatedAt(new Date());
+        b.setCreater(getSessionController().getLoggedUser());
+
+        b.setNetTotal(b.getNetTotal());
+
+        if (b.getId() == null) {
+            getBillFacade().create(b);
+        } else {
+            getBillFacade().edit(b);
+        }
+
+    }
 
     public CashTransactionBean getCashTransactionBean() {
         return cashTransactionBean;
@@ -670,15 +710,132 @@ public class CashRecieveBillController implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
-    public void settleBill() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
+    public void settleCreditForOpdPackageBills() {
+        if (getSelectedBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Item ");
+            return;
+        }
+        if (getCurrent().getFromInstitution() == null) {
+            JsfUtil.addErrorMessage("Select Credit Company");
+            return;
+        }
+        for (BillItem item : getBillItems()) {
+            if (!Objects.equals(item.getReferenceBill().getCreditCompany().getId(), getCurrent().getFromInstitution().getId())) {
+                JsfUtil.addErrorMessage("All Bills Settling Should be from a one single company.");
+                return;
+            }
+        }
+        if (getCurrent().getPaymentMethod() == null) {
+            return;
+        }
+        if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
+            return;
+        }
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        calulateTotalForSettlingCreditForOpdPackageBills();
+        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+        getCurrent().setTotal(getCurrent().getNetTotal());
+        getCurrent().setInsId(deptId);
+        getCurrent().setDeptId(deptId);
+        getCurrent().setBillType(BillType.CashRecieveBill);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getCurrent().setComments(comment);
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
+        getCurrent().setCreatedAt(new Date());
+        getCurrent().setCreater(getSessionController().getLoggedUser());
+        getCurrent().setNetTotal(getCurrent().getNetTotal());
+        if (getCurrent().getId() == null) {
+            getBillFacade().create(getCurrent());
+        } else {
+            getBillFacade().edit(getCurrent());
+        }
 
+        for (BillItem savingBillItem : getBillItems()) {
+            savingBillItem.setCreatedAt(new Date());
+            savingBillItem.setCreater(getSessionController().getLoggedUser());
+            savingBillItem.setBill(getCurrent());
+            savingBillItem.setGrossValue(savingBillItem.getNetValue());
+            getCurrent().getBillItems().add(savingBillItem);
+            if (savingBillItem.getId() == null) {
+                getBillItemFacade().create(savingBillItem);
+            } else {
+                getBillItemFacade().edit(savingBillItem);
+            }
+            updateSettlingCreditBillSettledValues(savingBillItem);
+        }
+        paymentService.createPayment(current, paymentMethodData);
+        JsfUtil.addSuccessMessage("Bill Saved");
+        printPreview = true;
+    }
+    
+    public void settleCreditForOpdBatchBills() {
+        if (getSelectedBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Item ");
+            return;
+        }
+        if (getCurrent().getFromInstitution() == null) {
+            JsfUtil.addErrorMessage("Select Credit Company");
+            return;
+        }
+        for (BillItem item : getBillItems()) {
+            if (!Objects.equals(item.getReferenceBill().getCreditCompany().getId(), getCurrent().getFromInstitution().getId())) {
+                JsfUtil.addErrorMessage("All Bills Settling Should be from a one single company.");
+                return;
+            }
+        }
+        if (getCurrent().getPaymentMethod() == null) {
+            return;
+        }
+        if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
+            return;
+        }
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        calulateTotalForSettlingCreditForOpdBatchBills();
+        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+        getCurrent().setTotal(getCurrent().getNetTotal());
+        getCurrent().setInsId(deptId);
+        getCurrent().setDeptId(deptId);
+        getCurrent().setBillType(BillType.CashRecieveBill);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getCurrent().setComments(comment);
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
+        getCurrent().setCreatedAt(new Date());
+        getCurrent().setCreater(getSessionController().getLoggedUser());
+        getCurrent().setNetTotal(getCurrent().getNetTotal());
+        if (getCurrent().getId() == null) {
+            getBillFacade().create(getCurrent());
+        } else {
+            getBillFacade().edit(getCurrent());
+        }
+
+        for (BillItem savingBillItem : getBillItems()) {
+            savingBillItem.setCreatedAt(new Date());
+            savingBillItem.setCreater(getSessionController().getLoggedUser());
+            savingBillItem.setBill(getCurrent());
+            savingBillItem.setGrossValue(savingBillItem.getNetValue());
+            getCurrent().getBillItems().add(savingBillItem);
+            if (savingBillItem.getId() == null) {
+                getBillItemFacade().create(savingBillItem);
+            } else {
+                getBillItemFacade().edit(savingBillItem);
+            }
+            updateSettlingCreditBillSettledValues(savingBillItem);
+        }
+        paymentService.createPayment(current, getPaymentMethodData());
+        JsfUtil.addSuccessMessage("Bill Saved");
+        printPreview = true;
+    }
+
+    public void settleBill() {
         if (errorCheck()) {
             return;
         }
-
         calTotal();
 
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
@@ -691,34 +848,30 @@ public class CashRecieveBillController implements Serializable {
 
         List payments = createPayment(current, current.getPaymentMethod());
         drawerController.updateDrawerForIns(payments);
-
-        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
-        //   savePayments();
+       
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
     }
-    
+
     public void settleBillViaVoucher() {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-        
+
         current = selectedBill;
-        
 
         if (errorCheck()) {
             return;
         }
 
         calTotalForVoucher();
-        
-        if(getCurrent().getTotal() > getCurrent().getBalance()){
+
+        if (getCurrent().getTotal() > getCurrent().getBalance()) {
             JsfUtil.addErrorMessage("Bills Total is More Than Voucher");
             return;
         }
-        
+
         getCurrent().setBalance(getCurrent().getBalance() - getCurrent().getTotal());
         getCurrent().setTotal(getCurrent().getNetTotal());
         saveBillItem();
@@ -764,6 +917,37 @@ public class CashRecieveBillController implements Serializable {
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
+    }
+
+    public String navigateToCancelOpdBill() {
+        return "/credit/views/bill_cancel?faces-redirect=true";
+    }
+
+    public void cancelBillToApprove(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("Error : No Bill");
+            return;
+        }
+        if (b.getBalance() != b.getNetTotal()) {
+            JsfUtil.addErrorMessage("Error : Payments Have Been Made By This Voucher");
+            return;
+        }
+
+        CancelledBill cb = new CancelledBill();
+        cb.copy(b);
+        cb.setPaymentMethod(paymentMethod);
+        saveCancelBill(BillType.CashRecieveBill, BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION, cb);
+        b.setCancelledBill(cb);
+        b.setCancelled(true);
+        cb.setReferenceBill(b);
+        List payments = createPayment(cb, paymentMethod);
+        drawerController.updateDrawerForOuts(payments);
+        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
+        getSessionController().setLoggedUser(wb);
+        //   savePayments();
+        getBillFacade().edit(b);
+        JsfUtil.addSuccessMessage("Bill Canceled");
+        printPreview = true;
     }
 
     public void approveBill(Bill b) {
@@ -1025,16 +1209,34 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void saveBillItem() {
-        for (BillItem tmp : getSelectedBillItems()) {
-            tmp.setCreatedAt(new Date());
-            tmp.setCreater(getSessionController().getLoggedUser());
-            tmp.setBill(getCurrent());
-            tmp.setNetValue(tmp.getNetValue());
-            getCurrent().getBillItems().add(tmp);
-            getBillItemFacade().create(tmp);
+        for (BillItem savingBillItem : getSelectedBillItems()) {
+            savingBillItem.setCreatedAt(new Date());
+            savingBillItem.setCreater(getSessionController().getLoggedUser());
+            savingBillItem.setBill(getCurrent());
+            savingBillItem.setGrossValue(savingBillItem.getNetValue());
+            getCurrent().getBillItems().add(savingBillItem);
+            if (savingBillItem.getId() == null) {
+                getBillItemFacade().create(savingBillItem);
+            } else {
+                getBillItemFacade().edit(savingBillItem);
+            }
+            updateReferenceBill(savingBillItem);
+        }
+    }
 
-            updateReferenceBill(tmp);
-
+    private void saveBillItemForSponser(BillTypeAtomic bta) {
+        for (BillItem savingBillItem : getSelectedBillItems()) {
+            savingBillItem.setCreatedAt(new Date());
+            savingBillItem.setCreater(getSessionController().getLoggedUser());
+            savingBillItem.setBill(getCurrent());
+            savingBillItem.setGrossValue(savingBillItem.getNetValue());
+            getCurrent().getBillItems().add(savingBillItem);
+            if (savingBillItem.getId() == null) {
+                getBillItemFacade().create(savingBillItem);
+            } else {
+                getBillItemFacade().edit(savingBillItem);
+            }
+            updateSettlingCreditBillSettledValues(savingBillItem);
         }
     }
 
@@ -1053,19 +1255,38 @@ public class CashRecieveBillController implements Serializable {
 
     }
 
-    @EJB
-    private CreditBean creditBean;
-
     private void updateReferenceBill(BillItem tmp) {
         double dbl = getCreditBean().getPaidAmount(tmp.getReferenceBill(), BillType.CashRecieveBill);
-
         tmp.getReferenceBill().setPaidAmount(0 - dbl);
         getBillFacade().edit(tmp.getReferenceBill());
-
     }
 
-    @EJB
-    private PatientEncounterFacade patientEncounterFacade;
+    private void updateSettlingCreditBillSettledValues(BillItem billItemWithReferanceToCreditBill) {
+        System.out.println("Starting updateSettlingCreditBillSettledValues");
+        System.out.println("Bill Item Reference: " + billItemWithReferanceToCreditBill);
+
+        double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(billItemWithReferanceToCreditBill.getReferenceBill());
+        System.out.println("Settled Credit Value By Companies: " + settledCreditValueByCompanies);
+
+        double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(billItemWithReferanceToCreditBill.getReferenceBill());
+        System.out.println("Settled Credit Value By Patient: " + settledCreditValueByPatient);
+
+        double settleCreditValueTotal = settledCreditValueByCompanies + settledCreditValueByPatient;
+        System.out.println("Total Settled Credit Value: " + settleCreditValueTotal);
+
+        billItemWithReferanceToCreditBill.getReferenceBill().setPaidAmount(settleCreditValueTotal);
+        System.out.println("Paid Amount Set: " + settleCreditValueTotal);
+
+        billItemWithReferanceToCreditBill.getReferenceBill().setSettledAmountByPatient(settledCreditValueByPatient);
+        System.out.println("Settled Amount By Patient Set: " + settledCreditValueByPatient);
+
+        billItemWithReferanceToCreditBill.getReferenceBill().setSettledAmountBySponsor(settledCreditValueByCompanies);
+        System.out.println("Settled Amount By Sponsor Set: " + settledCreditValueByCompanies);
+
+        getBillFacade().edit(billItemWithReferanceToCreditBill.getReferenceBill());
+        System.out.println("Reference Bill Updated: " + billItemWithReferanceToCreditBill.getReferenceBill());
+        System.out.println("Completed updateSettlingCreditBillSettledValues");
+    }
 
     private void updateReferenceBht(BillItem tmp) {
         double dbl = getCreditBean().getPaidAmount(tmp.getPatientEncounter(), BillType.CashRecieveBill);
@@ -1108,6 +1329,7 @@ public class CashRecieveBillController implements Serializable {
         selectedBillItems = null;
         institution = null;
         comment = null;
+        selectedBill = null;
     }
 
     public String prepareNewBill() {
@@ -1299,6 +1521,14 @@ public class CashRecieveBillController implements Serializable {
 
     public void setSelectedBill(Bill selectedBill) {
         this.selectedBill = selectedBill;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
 }

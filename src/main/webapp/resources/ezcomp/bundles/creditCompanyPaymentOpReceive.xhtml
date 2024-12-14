@@ -28,6 +28,16 @@
         </h:panelGroup>
 
         <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
+            <table class="table w-100">
+                <thead>
+                    <tr class="text-light bg-success">
+                        <th class="text-light bg-success">
+                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+            
             <p:dataTable id="tbl"
                          class="w-100 m-2"
                          value="#{cc.attrs.bundle.reportTemplateRows}"
@@ -39,10 +49,6 @@
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,20"
                          rowKey="#{row.id}">
-
-                <f:facet name="header">
-                    <h:outputText value="#{cc.attrs.bundle.name}" />
-                </f:facet>
 
                 <p:column width="2em">
                     <f:facet name="header">
@@ -63,9 +69,19 @@
 
                 <p:column>
                     <f:facet name="header">
-                        <h:outputText value="Bill No" />
+                        <h:outputText value="Bill No*" />
                     </f:facet>
-                    <h:outputText value="#{row.bill}" />
+                    <h:outputText value="#{row.bill.deptId}" />
+                    <p:commandButton 
+                        value="Admin" 
+                        icon="fa fa-shield-alt" 
+                        class="m-1 ui-button-danger" 
+                        style="width: 100px;"
+                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                        ajax="false" 
+                        rendered="#{webUserController.hasPrivilege('Developers')}">
+                        <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                    </p:commandButton>
                 </p:column>
 
                 <p:column>
@@ -74,16 +90,6 @@
                     </f:facet>
                     <h:outputText value="#{row.bill.billTypeAtomic}" />
                 </p:column>
-
-                <p:column>
-                    <f:facet name="header">
-                        <h:outputText value="Patient" />
-                    </f:facet>
-                    <h:outputText value="#{row.bill.patient.person.nameWithTitle}">
-                    </h:outputText>
-                </p:column>
-
-
 
                 <p:column class="text-end">
                     <f:facet name="header">

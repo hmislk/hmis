@@ -121,6 +121,7 @@
                         <h:panelGrid columns="6" class="my-3">
                             <p:commandButton 
                                 ajax="false"
+                                rendered="false"
                                 action="#{reportController.ccSummaryReportByBill()}"
                                 value="Process by Bill"
                                 icon="fas fa-cogs" class="ui-button-warning mx-2" >
@@ -128,7 +129,7 @@
                             <p:commandButton 
                                 ajax="false"
                                 action="#{reportController.ccSummaryReportByItem()}"
-                                value="Process By Bill Items"
+                                value="Process"
                                 icon="fas fa-cogs" class="ui-button-warning mx-2" >
                             </p:commandButton>
                             <p:commandButton style="width: 150px" ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-2"  >
@@ -169,7 +170,11 @@
                             <p:column headerText="CC Code" filterMatchMode="contains" sortBy="#{c.institution.code}" filterBy="#{c.institution.code}" >
                                 <h:outputText value="#{c.institution.code}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="CC Name" filterMatchMode="contains" sortBy="#{c.institution.name}" filterBy="#{c.institution.name}">
+                            <p:column 
+                                headerText="CC Name" 
+                                filterMatchMode="contains" 
+                                sortBy="#{c.institution.name}" 
+                                filterBy="#{c.institution.name}">
                                 <h:outputText value="#{c.institution.name}" ></h:outputText>
                             </p:column>
                             <p:column headerText="CC Route" filterMatchMode="contains" sortBy="#{c.institution.route.name}" filterBy="#{c.institution.route.name}">

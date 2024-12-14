@@ -1,6 +1,7 @@
 package com.divudi.data;
 
 import com.divudi.bean.common.SessionController;
+
 import static com.divudi.data.PaymentMethod.Agent;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
@@ -17,12 +18,11 @@ import static com.divudi.data.PaymentMethod.Staff_Welfare;
 import static com.divudi.data.PaymentMethod.Voucher;
 import static com.divudi.data.PaymentMethod.YouOweMe;
 import static com.divudi.data.PaymentMethod.ewallet;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.ReportTemplate;
-import com.divudi.entity.WebUser;
+
+import com.divudi.entity.*;
 import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,8 +34,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
+
 /**
- *
  * @author buddhika
  */
 public class ReportTemplateRowBundle implements Serializable {
@@ -45,13 +48,15 @@ public class ReportTemplateRowBundle implements Serializable {
     // UUID field to uniquely identify each object
     private UUID id;
 
-//    private SessionController sessionController;
+    //    private SessionController sessionController;
     private List<com.divudi.entity.cashTransaction.Denomination> denominations;
 
     private List<ReportTemplateRowBundle> bundles;
     List<DenominationTransaction> denominationTransactions;
     private ReportTemplate reportTemplate;
     private List<ReportTemplateRow> reportTemplateRows;
+    private Map<String, List<BillItem>> groupedBillItems;
+    private Map<Institution, List<Bill>> groupedBillItemsByInstitution;
 
     private Double grossTotal;
     private Double discount;
@@ -121,6 +126,10 @@ public class ReportTemplateRowBundle implements Serializable {
     private double patientPointsHandoverValue;
     private double onlineSettlementHandoverValue;
 
+    private double settledAmountByPatientsTotal;
+    private double settledAmountBySponsorsTotal;
+    private double totalBalance;
+
     // Booleans to track transactions
     private boolean hasOnCallTransaction;
     private boolean hasCashTransaction;
@@ -152,11 +161,13 @@ public class ReportTemplateRowBundle implements Serializable {
 
     private boolean selected;
 
+    private boolean patientDepositsAreConsideredInHandingover = true;
+
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();
     }
 
-//    public ReportTemplateRowBundle(SessionController sessionController) {
+    //    public ReportTemplateRowBundle(SessionController sessionController) {
 //        this();
 //        this.sessionController = sessionController;
 //    }
@@ -321,6 +332,106 @@ public class ReportTemplateRowBundle implements Serializable {
                 hasOnlineSettlementTransaction |= childBundle.hasOnlineSettlementTransaction;
             }
         }
+    }
+
+    public ReportTemplateRowBundle createBundleByAggregatingMonthlyTotalsFromBills() {
+        ReportTemplateRowBundle newlyCreatedBundle = new ReportTemplateRowBundle();
+        Map<String, ReportTemplateRow> monthlyTotalsMap = new HashMap<>();
+
+        for (ReportTemplateRow row : this.getReportTemplateRows()) {
+            if (row.getBill() == null) {
+                continue;
+            }
+
+            // Extract date and financial data from the bill
+            Date date = row.getBill().getCreatedAt();
+            Double grossTotal = row.getBill().getTotal();
+            Double tax = row.getBill().getTax();
+            Double netTotal = row.getBill().getNetTotal();
+
+            // Convert Date to LocalDate to extract month and year
+            LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            int month = localDate.getMonthValue();
+            int year = localDate.getYear();
+
+            // Create a unique key for each month-year combination
+            String key = year + "-" + month;
+
+            // Retrieve or create the ReportTemplateRow for the current month
+            ReportTemplateRow monthRow = monthlyTotalsMap.get(key);
+            if (monthRow == null) {
+                monthRow = new ReportTemplateRow();
+                // Set the date to the first day of the month
+                LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
+                Date firstDayDate = Date.from(firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                monthRow.setDate(firstDayDate);
+                monthRow.setTotal(0.0);
+                monthRow.setTax(0.0);
+                monthRow.setGrossTotal(0.0);
+                monthlyTotalsMap.put(key, monthRow);
+            }
+
+            // Aggregate the totals
+            monthRow.setTotal(monthRow.getTotal() + netTotal);
+            monthRow.setTax(monthRow.getTax() + tax);
+            monthRow.setGrossTotal(monthRow.getGrossTotal() + grossTotal);
+        }
+
+        // Collect the aggregated monthly totals into a list
+        List<ReportTemplateRow> monthlyTotalRows = new ArrayList<>(monthlyTotalsMap.values());
+        monthlyTotalRows.sort(Comparator.comparing(ReportTemplateRow::getDate));
+        newlyCreatedBundle.setReportTemplateRows(monthlyTotalRows);
+        return newlyCreatedBundle;
+    }
+
+    public ReportTemplateRowBundle createBundleByAggregatingConsultantTotalsFromBills() {
+        ReportTemplateRowBundle newlyCreatedBundle = new ReportTemplateRowBundle();
+        Map<Long, ReportTemplateRow> staffTotalsMap = new HashMap<>();
+
+        for (ReportTemplateRow row : this.getReportTemplateRows()) {
+            if (row.getBill() == null) {
+                continue;
+            }
+
+            // Extract financial data from the bill
+            Double grossTotal = row.getBill().getTotal();
+            Double tax = row.getBill().getTax();
+            Double netTotal = row.getBill().getNetTotal();
+            Staff staff = row.getBill().getStaff();
+
+            if (staff == null) {
+                continue; // Skip if no staff assigned
+            }
+
+            Long staffId = staff.getId();
+
+            // Retrieve or create the ReportTemplateRow for the current staff
+            ReportTemplateRow staffRow = staffTotalsMap.get(staffId);
+            if (staffRow == null) {
+                staffRow = new ReportTemplateRow();
+                staffRow.setStaff(staff);
+                staffRow.setTotal(0.0);
+                staffRow.setTax(0.0);
+                staffRow.setGrossTotal(0.0);
+                staffTotalsMap.put(staffId, staffRow);
+            }
+
+            // Aggregate the totals
+            staffRow.setTotal(staffRow.getTotal() + netTotal);
+            staffRow.setTax(staffRow.getTax() + tax);
+            staffRow.setGrossTotal(staffRow.getGrossTotal() + grossTotal);
+        }
+
+        // Collect the aggregated staff totals into a list
+        List<ReportTemplateRow> staffTotalRows = new ArrayList<>(staffTotalsMap.values());
+        // Sort the list by staff name
+        Collections.sort(staffTotalRows, new Comparator<ReportTemplateRow>() {
+            public int compare(ReportTemplateRow r1, ReportTemplateRow r2) {
+                return r1.getStaff().getPerson().getName().compareTo(r2.getStaff().getPerson().getName());
+            }
+        });
+        newlyCreatedBundle.setReportTemplateRows(staffTotalRows);
+        return newlyCreatedBundle;
     }
 
     public void aggregateTotalsFromSelectedChildBundles() {
@@ -506,6 +617,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 prows.add(r);
             }
         }
+        prows.sort(Comparator.comparing(r -> r.getPayment().getId()));
         return prows;
     }
 
@@ -696,7 +808,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 + this.cardValue
                 + this.voucherValue
                 + this.iouValue
-//                + this.patientDepositValue
+                //                + this.patientDepositValue
                 + this.chequeValue
                 + this.slipValue
                 + this.creditValue
@@ -760,6 +872,67 @@ public class ReportTemplateRowBundle implements Serializable {
                 }
             }
         }
+    }
+
+    public void calculateTotalsByChildBundlesForHandover() {
+        System.out.println("calculateTotalsByChildBundlesForHandover");
+        resetTotalsAndFlags();
+        System.out.println("total = " + total);
+
+        if (this.bundles != null && !this.bundles.isEmpty()) {
+            for (ReportTemplateRowBundle childBundle : this.bundles) {
+
+                if (childBundle.isSelected()) {
+
+                    childBundle.calculateTotalsOfSelectedRowsPlusAllCashForHandover(patientDepositsAreConsideredInHandingover);
+
+                    System.out.println("selected childBundle = " + childBundle.getName());
+                    System.out.println("childBundle.getSelectAllCashToHandover() = " + childBundle.getSelectAllCashToHandover());
+                    System.out.println("childBundle.getCashValue() = " + childBundle.getCashValue());
+                    System.out.println("childBundle.getCashHandoverValue() = " + childBundle.getCashHandoverValue());
+                    if (childBundle.getSelectAllCashToHandover()) {
+                        addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashHandoverValue()));
+                    } else {
+                        addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashValue()));
+                    }
+                    System.out.println("childBundle.getCashValue = " + childBundle.getCashValue());
+                    System.out.println("childBundle.getCashHandoverValue = " + childBundle.getCashHandoverValue());
+                    addValueAndUpdateFlag("card", safeDouble(childBundle.getCardValue()), safeDouble(childBundle.getCardHandoverValue()));
+                    addValueAndUpdateFlag("multiplePaymentMethods", safeDouble(childBundle.getMultiplePaymentMethodsValue()), safeDouble(childBundle.getMultiplePaymentMethodsHandoverValue()));
+                    addValueAndUpdateFlag("staff", safeDouble(childBundle.getStaffValue()), safeDouble(childBundle.getStaffHandoverValue()));
+                    addValueAndUpdateFlag("credit", safeDouble(childBundle.getCreditValue()), safeDouble(childBundle.getCreditHandoverValue()));
+                    addValueAndUpdateFlag("staffWelfare", safeDouble(childBundle.getStaffWelfareValue()), safeDouble(childBundle.getStaffWelfareHandoverValue()));
+                    addValueAndUpdateFlag("voucher", safeDouble(childBundle.getVoucherValue()), safeDouble(childBundle.getVoucherHandoverValue()));
+                    addValueAndUpdateFlag("iou", safeDouble(childBundle.getIouValue()), safeDouble(childBundle.getIouHandoverValue()));
+                    addValueAndUpdateFlag("agent", safeDouble(childBundle.getAgentValue()), safeDouble(childBundle.getAgentHandoverValue()));
+                    addValueAndUpdateFlag("cheque", safeDouble(childBundle.getChequeValue()), safeDouble(childBundle.getChequeHandoverValue()));
+                    addValueAndUpdateFlag("slip", safeDouble(childBundle.getSlipValue()), safeDouble(childBundle.getSlipHandoverValue()));
+                    addValueAndUpdateFlag("eWallet", safeDouble(childBundle.getEwalletValue()), safeDouble(childBundle.getEwalletHandoverValue()));
+                    System.out.println("patientDepositsAreConsideredInHandingover = " + patientDepositsAreConsideredInHandingover);
+                    if (patientDepositsAreConsideredInHandingover) {
+                        addValueAndUpdateFlag("patientDeposit", safeDouble(childBundle.getPatientDepositValue()), safeDouble(childBundle.getPatientDepositHandoverValue()));
+                    }
+                    addValueAndUpdateFlag("patientPoints", safeDouble(childBundle.getPatientPointsValue()), safeDouble(childBundle.getPatientPointsHandoverValue()));
+                    addValueAndUpdateFlag("onlineSettlement", safeDouble(childBundle.getOnlineSettlementValue()), safeDouble(childBundle.getOnlineSettlementHandoverValue()));
+                    addValueAndUpdateFlag("grossTotal", safeDouble(childBundle.getGrossTotal()));
+                    addValueAndUpdateFlag("discount", safeDouble(childBundle.getDiscount()));
+
+                    System.out.println("childBundle.getTotal() = " + childBundle.getTotal());
+                    System.out.println("total Before= " + total);
+                    addValueAndUpdateFlag("total", safeDouble(childBundle.getTotal()));
+                    System.out.println("total After= " + total);
+
+                    System.out.println("childBundle.totalOut() = " + childBundle.getTotalOut());
+                    System.out.println("totalOut Before= " + totalOut);
+                    addValueAndUpdateFlag("totalOut", safeDouble(childBundle.getTotalOut()));
+                    System.out.println("totalOut After= " + totalOut);
+
+                }
+            }
+        }
+
+        calculateTotalHandoverByDenominationQuantities();
+        cashHandoverValue = denominatorValue;
     }
 
     public void calculateTotalsBySelectedPayments() {
@@ -881,6 +1054,164 @@ public class ReportTemplateRowBundle implements Serializable {
                 }
                 Double amount = safeDouble(row.getBill().getNetTotal());
                 total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalByBills(final boolean isOutpatient) {
+        total = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(isOutpatient ? row.getBill().getNetTotal() : row.getBill().getPatientEncounter().getFinalBill().getNetTotal());
+                total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalSettledAmountByPatients(final boolean isOutpatient) {
+        settledAmountByPatientsTotal = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(isOutpatient ? row.getBill().getSettledAmountByPatient() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient());
+                settledAmountByPatientsTotal += amount;
+            }
+        }
+    }
+
+    public void calculateTotalSettledAmountBySponsors(final boolean isOutpatient) {
+        settledAmountBySponsorsTotal = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(isOutpatient ? row.getBill().getSettledAmountBySponsor() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor());
+                settledAmountBySponsorsTotal += amount;
+            }
+        }
+    }
+
+    public void calculateTotalBalance(final boolean isOutpatient) {
+        totalBalance = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(isOutpatient ? row.getBill().getBalance() : row.getBill().getPatientEncounter().getFinalBill().getBalance());
+                totalBalance += amount;
+            }
+        }
+    }
+
+    public void calculateTotalByHospitalFee() {
+        total = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBill().getTotalHospitalFee());
+                total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalCCFee() {
+        ccTotal = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBill().getCollctingCentreFee());
+                ccTotal += amount;
+            }
+        }
+    }
+
+    public void calculateTotalByBillItems() {
+        total = 0.0;
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBillItem().getBill().getNetTotal());
+                total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalByBillItemsNetTotal() {
+        total = 0.0;
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBillItem().getNetValue());
+                total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalHospitalFeeByBillItems() {
+        hospitalTotal = 0.0;
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBillItem().getBill().getTotalHospitalFee());
+                hospitalTotal += amount;
+            }
+        }
+    }
+
+    public void calculateTotalStaffFeeByBillItems() {
+        staffTotal = 0.0;
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBillItem().getBill().getTotalStaffFee());
+                staffTotal += amount;
+            }
+        }
+    }
+
+    public void calculateTotalByRowTotals() {
+        total = 0.0;        // Ensure all counters are reset before starting calculations
+        grossTotal = 0.0;
+        discount = 0.0;
+        tax = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row != null) {
+                    Double iteratingTotal = safeDouble(row.getGrossTotal());
+                    grossTotal += iteratingTotal;
+
+                    Double iteratingDiscount = safeDouble(row.getDiscount());
+                    discount += iteratingDiscount;
+
+                    Double iteratingTax = safeDouble(row.getTax());
+                    tax += iteratingTax;
+
+                    Double iteratingNetTotal = safeDouble(row.getTotal()); // assuming you meant to use getTotal here as well for the net total calculation
+                    total += iteratingNetTotal;
+                }
             }
         }
     }
@@ -1100,6 +1431,152 @@ public class ReportTemplateRowBundle implements Serializable {
         calculateTotalHandoverByDenominationQuantities();
     }
 
+    public void calculateTotalsOfSelectedRowsPlusAllCashForHandover(boolean patientDepositsAreConsideredInHandingover) {
+        System.out.println("calculateTotalsOfSelectedRowsPlusAllCashForHandover");
+        resetTotalsAndFlags();
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getPayment() == null || row.getPayment().getPaymentMethod() == null) {
+                    continue;
+                }
+
+                Double amount = safeDouble(row.getPayment().getPaidValue());  // Ensure amounts are not null
+                Double amountHandingOver = 0.0;
+
+                PaymentMethod method = row.getPayment().getPaymentMethod();
+
+                if (row.isSelected()) {
+                    amountHandingOver = amount;
+                } else {
+                    if (method == Cash && getSelectAllCashToHandover()) {
+                        amountHandingOver = amount;
+                    }
+                }
+
+                switch (method) {
+                    case Agent:
+                        this.agentValue += amount;
+                        this.agentHandoverValue += amountHandingOver;
+                        this.hasAgentTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    case Card:
+                        this.cardValue += amount;
+                        this.cardHandoverValue += amountHandingOver;
+                        this.hasCardTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    case Cash:
+                        this.cashValue += amount;
+                        this.cashHandoverValue += amountHandingOver;
+                        this.hasCashTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    case Cheque:
+                        this.chequeValue += amount;
+                        this.chequeHandoverValue += amountHandingOver;
+                        this.hasChequeTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    case Credit:
+                        this.creditValue += amount;
+                        this.creditHandoverValue += amountHandingOver;
+                        this.hasCreditTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    case IOU:
+                        this.iouValue += amount;
+                        this.iouHandoverValue += amountHandingOver;
+                        this.hasIouTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    case MultiplePaymentMethods:
+                        this.multiplePaymentMethodsValue += amount;
+                        this.multiplePaymentMethodsHandoverValue += amountHandingOver;
+                        this.hasMultiplePaymentMethodsTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    case OnlineSettlement:
+                        this.onlineSettlementValue += amount;
+                        this.onlineSettlementHandoverValue += amountHandingOver;
+                        this.hasOnlineSettlementTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    case PatientDeposit:
+                        if (patientDepositsAreConsideredInHandingover) {
+                            this.patientDepositValue += amount;
+                            this.patientDepositHandoverValue += amountHandingOver;
+                            this.hasPatientDepositTransaction = true;
+                            total += amount;
+                            totalOut += amountHandingOver;
+                        }
+                        break;
+                    case PatientPoints:
+                        this.patientPointsValue += amount;
+                        this.patientPointsHandoverValue += amountHandingOver;
+                        this.hasPatientPointsTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    case Slip:
+                        this.slipValue += amount;
+                        this.slipHandoverValue += amountHandingOver;
+                        this.hasSlipTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    case Staff:
+                        this.staffValue += amount;
+                        this.staffHandoverValue += amountHandingOver;
+                        this.hasStaffTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    case Staff_Welfare:
+                        this.staffWelfareValue += amount;
+                        this.staffWelfareHandoverValue += amountHandingOver;
+                        this.hasStaffWelfareTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    case Voucher:
+                        this.voucherValue += amount;
+                        this.voucherHandoverValue += amountHandingOver;
+                        this.hasVoucherTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    case YouOweMe:
+                        this.iouValue += amount;  // Assuming YouOweMe is equivalent to IOU
+                        this.iouHandoverValue += amountHandingOver;
+                        this.hasIouTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    case ewallet:
+                        this.eWalletValue += amount;
+                        this.eWalletHandoverValue += amountHandingOver;
+                        this.hasEWalletTransaction = true;
+                        total += amount;
+                        totalOut += amountHandingOver;
+                        break;
+                    default:
+
+                        break;
+                }
+            }
+        }
+    }
+
     public void calculateTotalsByPaymentsAndDenominationsForHandover() {
         resetTotalsAndFlags();
 
@@ -1255,12 +1732,60 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public void createRowValuesFromBillItems() {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                System.out.println("Processing row: " + row);
+                System.out.println("row.getBill() = " + row.getBill());
+
+                if (row.getBillItem() == null) {
+                    System.out.println("Skipping row, as bill is null.");
+                    continue;
+                }
+
+                // Setting values
+                row.setGrossTotal(row.getBillItem().getGrossValue());
+                row.setDiscount(row.getBillItem().getDiscount());
+                row.setTotal(row.getBillItem().getNetValue());
+                row.setHospitalTotal(row.getHospitalTotal());
+                row.setStaffTotal(row.getBillItem().getStaffFee());
+                row.setCcTotal(row.getBillItem().getCollectingCentreFee());
+
+                // Debugging after setting
+                System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
+                System.out.println("row.getDiscount() = " + row.getDiscount());
+                System.out.println("row.getTotal() = " + row.getTotal());
+                System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
+                System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
+                System.out.println("row.getCcTotal() = " + row.getCcTotal());
+            }
+        } else {
+            System.out.println("No reportTemplateRows to process.");
+        }
+    }
+
+    public Map<String, List<BillItem>> getGroupedBillItems() {
+        return groupedBillItems;
+    }
+
+    public void setGroupedBillItems(Map<String, List<BillItem>> groupedBillItems) {
+        this.groupedBillItems = groupedBillItems;
+    }
+
+    public Map<Institution, List<Bill>> getGroupedBillItemsByInstitution() {
+        return groupedBillItemsByInstitution;
+    }
+
+    public void setGroupedBillItemsByInstitution(Map<Institution, List<Bill>> groupedBillItemsByInstitution) {
+        this.groupedBillItemsByInstitution = groupedBillItemsByInstitution;
+    }
+
     private void resetTotalsAndFlags() {
         this.cashValue = this.cardValue = this.multiplePaymentMethodsValue = this.staffValue
                 = this.creditValue = this.staffWelfareValue = this.voucherValue = this.iouValue
                 = this.agentValue = this.chequeValue = this.slipValue = this.eWalletValue
                 = this.patientDepositValue = this.patientPointsValue = this.onlineSettlementValue
-                = this.grossTotal = this.discount = this.total
+                = this.grossTotal = this.discount = this.total = this.totalIn = this.totalOut
                 = this.hospitalTotal = this.staffTotal = this.ccTotal = 0.0;
 
         // Reset handover values
@@ -1347,6 +1872,12 @@ public class ReportTemplateRowBundle implements Serializable {
                     break;
                 case "total":
                     this.total += amount;
+                    break;
+                case "totalOut":
+                    this.totalOut += amount;
+                    break;
+                case "totalIn":
+                    this.totalIn += amount;
                     break;
                 case "hospitalTotal":
                     this.hospitalTotal += amount;
@@ -1620,6 +2151,30 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public Double getTotal() {
         return total;
+    }
+
+    public double getSettledAmountByPatientsTotal() {
+        return settledAmountByPatientsTotal;
+    }
+
+    public void setSettledAmountByPatientsTotal(double settledAmountByPatientsTotal) {
+        this.settledAmountByPatientsTotal = settledAmountByPatientsTotal;
+    }
+
+    public double getSettledAmountBySponsorsTotal() {
+        return settledAmountBySponsorsTotal;
+    }
+
+    public void setSettledAmountBySponsorsTotal(double settledAmountBySponsorsTotal) {
+        this.settledAmountBySponsorsTotal = settledAmountBySponsorsTotal;
+    }
+
+    public double getTotalBalance() {
+        return totalBalance;
+    }
+
+    public void setTotalBalance(double totalBalance) {
+        this.totalBalance = totalBalance;
     }
 
     public void setTotal(Double total) {
@@ -2201,7 +2756,7 @@ public class ReportTemplateRowBundle implements Serializable {
         this.onlineSettlementHandoverValue = onlineSettlementHandoverValue;
     }
 
-//    public SessionController getSessionController() {
+    //    public SessionController getSessionController() {
 //        return sessionController;
 //    }
 //
@@ -2324,6 +2879,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setSelectAllCashToHandover(Boolean selectAllCashToHandover) {
         this.selectAllCashToHandover = selectAllCashToHandover;
+    }
+
+    public boolean isPatientDepositsAreConsideredInHandingover() {
+        return patientDepositsAreConsideredInHandingover;
+    }
+
+    public void setPatientDepositsAreConsideredInHandingover(boolean patientDepositsAreConsideredInHandingover) {
+        this.patientDepositsAreConsideredInHandingover = patientDepositsAreConsideredInHandingover;
     }
 
 }

@@ -39,7 +39,7 @@
                         <p:panelGrid columns="2" >
                             
                             <h:panelGroup>
-                                <p:panelGrid columns="5" class="mb-2">
+                                <p:panelGrid columns="6" class="mb-2">
                                     <h:outputLabel value="From Date"/>
                                     <p:calendar  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  id="fromDate" value="#{patientInvestigationController.fromDate}"  >
                                         <f:ajax event="dateSelect" execute="toDate fromDate"  render="dtF toDate fromDate"/>
@@ -134,7 +134,7 @@
 
                                                     <div class="fiveinchbill" >
 
-                                                        <h:panelGrid columns="5" style="padding-top: 50px; padding-left:  20px;" >
+                                                        <h:panelGrid columns="6" style="padding-top: 50px; padding-left:  20px;" >
 
                                                             <h:outputLabel  value="Name : " />
                                                             <h:outputLabel styleClass="worksheetfont" value="#{pip.patient.person.nameWithTitle}"  style="font-size: 11px!important;" ></h:outputLabel>

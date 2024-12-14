@@ -11,7 +11,7 @@
                 <h:form >
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="ALL BILL LIST"/>                          
+                            <h:outputLabel value="BILL TYPE LIST"/>                          
                         </f:facet>
 
                         <h:panelGrid columns="8" styleClass="w-100" >
@@ -133,7 +133,7 @@
                                 value="List" 
                                 action="#{searchController.listBillTypes}"/>
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="All Bills" type="xls" target="tbl" ></p:dataExporter>
+                                <p:dataExporter fileName="Bill Types" type="xlsx" target="tbl" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
 
@@ -154,22 +154,12 @@
 
                                 <p:column headerText="Bill Type" >                                
                                     <h:outputLabel value="#{row.billType}"/>
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        value="View Bills" 
-                                        action="#{searchController.navigatToBillListByBillType(row.billType)}" >
-                                    </p:commandButton>
                                 </p:column>
                                 <p:column headerText="Bill Class" >                                
                                     <h:outputLabel value="#{row.billClassType}"/>
                                 </p:column>
                                 <p:column headerText="Bill Type (Atomic)" >                                
-                                    <h:outputLabel value="#{row.billTypeAtomic}"/>
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        value="View Bills" 
-                                        action="#{searchController.navigatToBillListByBillTypeAtomic(row.billTypeAtomic)}" >
-                                    </p:commandButton>
+                                    <h:outputLabel value="#{row.billTypeAtomic.label}"/>
                                 </p:column>
 
                                 <p:column headerText="Gross Value" styleClass="averageNumericColumn">
@@ -201,6 +191,21 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </f:facet>
+                                </p:column>
+                                <p:column headerText="Actions" exportable="false">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        class="m-1"
+                                        value="View Bills by Bill Type Atomic" 
+                                        action="#{searchController.navigatToBillListByBillTypeAtomic(row.billTypeAtomic)}" >
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        class="m-1"
+                                        value="View Bills by Bill Type" 
+                                        action="#{searchController.navigatToBillListByBillType(row.billType)}" >
+                                    </p:commandButton>
+                                    
                                 </p:column>
 
 
