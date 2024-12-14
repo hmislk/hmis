@@ -158,6 +158,8 @@ public class BhtSummeryController implements Serializable {
     private double discount;
     private double due;
     private double paid;
+    private double paidByPatient;
+    private double paidByCompany;
     private PatientItem tmpPI;
     private PatientEncounter patientEncounter;
     private Bill current;
@@ -2257,6 +2259,8 @@ public class BhtSummeryController implements Serializable {
         calFinalValue();
 
         paid = getInwardBean().getPaidValue(getPatientEncounter());
+        paidByPatient = getInwardBean().getPaidByPatientValue(getPatientEncounter());
+        paidByCompany = getInwardBean().getPaidByCompanyValue(getPatientEncounter());
 
         due = (grantTotal - discount) - paid;
 
@@ -2591,6 +2595,22 @@ public class BhtSummeryController implements Serializable {
 
     public void setSurgeryBill(Bill surgeryBill) {
         this.surgeryBill = surgeryBill;
+    }
+
+    public double getPaidByPatient() {
+        return paidByPatient;
+    }
+
+    public void setPaidByPatient(double paidByPatient) {
+        this.paidByPatient = paidByPatient;
+    }
+
+    public double getPaidByCompany() {
+        return paidByCompany;
+    }
+
+    public void setPaidByCompany(double paidByCompany) {
+        this.paidByCompany = paidByCompany;
     }
 
 }
