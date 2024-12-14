@@ -1290,11 +1290,9 @@ public class BhtSummeryController implements Serializable {
     public void createCreditBillForCreditCompany(PatientEncounter patientEncounter, Double netTotal){
         updateTotal();
         Double due = netTotal - (paidByCompany + paidByPatient);
-        System.out.println("due = " + due);
         List<EncounterCreditCompany> encounterCreditCompanys = fillCreditCompaniesByPatient(patientEncounter);
         for (EncounterCreditCompany ecc : encounterCreditCompanys) {
                 if(due > 0){
-                    System.out.println("due 2 = " + due);
                     if(due > ecc.getCreditLimit()){
                         saveCreditBillForCreditCompany(patientEncounter, ecc, ecc.getCreditLimit());
                         due = due - ecc.getCreditLimit();
