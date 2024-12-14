@@ -53,6 +53,14 @@
                                 <h:outputLabel  value="#{bhtSummeryController.grantTotal-bhtSummeryController.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
+                                <h:outputLabel value="Paid By Patient" style="font-weight: bold"/>
+                                <h:outputLabel value="#{bhtSummeryController.paidByPatient}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <h:outputLabel value="Paid by Credit Company" style="font-weight: bold"/>
+                                <h:outputLabel value="#{bhtSummeryController.paidByCompany}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
                                 <h:outputLabel value="Paid " style="font-weight: bold"/>
                                 <h:outputLabel value="#{bhtSummeryController.paid}">
                                     <f:convertNumber pattern="#,##0.00" />
