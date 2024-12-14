@@ -7,19 +7,19 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head>
-        <title>Process Definitions Management</title>
+        <title>Process Step Definitions Management</title>
     </h:head>
     <h:body>
         <ui:composition template="./index.xhtml">
             <ui:define name="subcontent">
-                <h:form id="processForm">
+                <h:form id="processStepForm">
                     <p:panel>
                         <f:facet name="header">
-                            <h:outputLabel value="Manage Process Definitions" />
+                            <h:outputLabel value="Manage Process Step Definitions" />
                         </f:facet>
 
                         <div class="row">
-                            <!-- Process Selection and Action Buttons -->
+                            <!-- Process Step Selection and Action Buttons -->
                             <div class="col-md-4">
                                 <p:panel>
                                     <f:facet name="header">
@@ -29,90 +29,116 @@
                                                 value="Add New" 
                                                 icon="fa fa-plus" 
                                                 class="ui-button-success m-1" 
-                                                action="#{processDefinitionController.addNewProcess}" 
+                                                action="#{processStepDefinitionController.addNewProcessStepDefinition}" 
                                                 update="@form"
                                                 process="addNewBtn"
-                                                disabled="#{processDefinitionController.editable}" />
+                                                disabled="#{processStepDefinitionController.editable}" />
 
                                             <p:commandButton 
                                                 id="editBtn" 
                                                 value="Edit" 
                                                 icon="fa fa-edit" 
                                                 styleClass="ui-button-warning m-1" 
-                                                action="#{processDefinitionController.editExistingProcess(processDefinitionController.current)}" 
+                                                action="#{processStepDefinitionController.editExistingProcessStepDefinition(processStepDefinitionController.current)}" 
                                                 update="@form"
                                                 process="editBtn"
-                                                disabled="#{processDefinitionController.editable or processDefinitionController.current == null}" />
+                                                disabled="#{processStepDefinitionController.editable or processStepDefinitionController.current == null}" />
 
                                             <p:commandButton 
                                                 id="deleteBtn" 
                                                 value="Delete" 
                                                 icon="fa fa-trash" 
                                                 class="ui-button-danger m-1" 
-                                                action="#{processDefinitionController.deleteProcess(processDefinitionController.current)}" 
+                                                action="#{processStepDefinitionController.deleteProcessStepDefinition(processStepDefinitionController.current)}" 
                                                 update="@form" 
                                                 process="deleteBtn"
-                                                onclick="return confirm('Are you sure you want to delete this process?');"
-                                                disabled="#{processDefinitionController.editable or processDefinitionController.current == null}" />
+                                                onclick="return confirm('Are you sure you want to delete this process step?');"
+                                                disabled="#{processStepDefinitionController.editable or processStepDefinitionController.current == null}" />
                                         </div>
                                     </f:facet>
 
                                     <p:selectOneListbox 
-                                        id="processSelect" 
+                                        id="processStepSelect" 
                                         filter="true"
                                         filterMatchMode="contains"
                                         class="w-100"
-                                        value="#{processDefinitionController.current}" >
+                                        value="#{processStepDefinitionController.current}" >
                                         <f:selectItems 
-                                            value="#{processDefinitionController.items}" 
-                                            var="process"
-                                            itemValue="#{process}" 
-                                            itemLabel="#{process.name}" />
-                                        <p:ajax update="processDetails" />
+                                            value="#{processStepDefinitionController.items}" 
+                                            var="step"
+                                            itemValue="#{step}" 
+                                            itemLabel="#{step.name}" />
+                                        <p:ajax update="processStepDetails" />
                                     </p:selectOneListbox>
                                 </p:panel>
                             </div>
-                            <!-- Process Details Form -->
+                            <!-- Process Step Details Form -->
                             <div class="col-md-8">
-                                <p:panel id="processDetails">
+                                <p:panel id="processStepDetails">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Process Details" />
+                                        <h:outputLabel value="Process Step Details" />
                                     </f:facet>
 
                                     <p:panelGrid 
                                         columns="2"
                                         id="gridDetails"
                                         styleClass="mt-3" 
-                                        rendered="#{processDefinitionController.current ne null}">
+                                        rendered="#{processStepDefinitionController.current ne null}">
+                                        <p:outputLabel for="processDefinition" value="Process Definition:" styleClass="font-weight-bold" />
+                                        <p:selectOneMenu id="processDefinition" 
+                                                         value="#{processStepDefinitionController.current.processDefinition}" 
+                                                         required="true" 
+                                                         label="Process Definition" 
+                                                         styleClass="form-control" 
+                                                         disabled="#{!processStepDefinitionController.editable}">
+                                            <f:selectItem itemLabel="Select Process" itemValue="#{null}" />
+                                            <f:selectItems value="#{processStepDefinitionController.processDefinitions}" var="pd"
+                                                           itemValue="#{pd}" itemLabel="#{pd.name}" />
+                                        </p:selectOneMenu>
+
                                         <p:outputLabel for="name" value="Name:" styleClass="font-weight-bold" />
                                         <p:inputText id="name" 
-                                                     value="#{processDefinitionController.current.name}" 
+                                                     value="#{processStepDefinitionController.current.name}" 
                                                      required="true" 
                                                      label="Name" 
                                                      styleClass="form-control" 
-                                                     disabled="#{!processDefinitionController.editable}" />
+                                                     disabled="#{!processStepDefinitionController.editable}" />
 
                                         <p:outputLabel for="description" value="Description:" styleClass="font-weight-bold mt-2" />
                                         <p:inputTextarea id="description" 
-                                                         value="#{processDefinitionController.current.description}" 
+                                                         value="#{processStepDefinitionController.current.description}" 
                                                          rows="4" 
                                                          cols="30" 
                                                          styleClass="form-control mt-2" 
-                                                         disabled="#{!processDefinitionController.editable}" />
+                                                         disabled="#{!processStepDefinitionController.editable}" />
 
                                         <p:outputLabel for="version" value="Version:" styleClass="font-weight-bold mt-2" />
                                         <p:inputText id="version" 
-                                                     value="#{processDefinitionController.current.version}" 
+                                                     value="#{processStepDefinitionController.current.version}" 
                                                      required="true" 
                                                      label="Version" 
                                                      styleClass="form-control mt-2" 
-                                                     disabled="#{!processDefinitionController.editable}" />
+                                                     disabled="#{!processStepDefinitionController.editable}" />
 
                                         <p:outputLabel for="active" value="Active:" styleClass="font-weight-bold mt-2" />
                                         <p:selectBooleanCheckbox id="active" 
-                                                                 value="#{processDefinitionController.current.active}" 
+                                                                 value="#{processStepDefinitionController.current.active}" 
                                                                  styleClass="mt-2" 
-                                                                 disabled="#{!processDefinitionController.editable}" />
+                                                                 disabled="#{!processStepDefinitionController.editable}" />
+
+                                        <p:outputLabel for="sequenceOrder" value="Sequence Order:" styleClass="font-weight-bold mt-2" />
+                                        <p:inputText id="sequenceOrder" 
+                                                     value="#{processStepDefinitionController.current.sequenceOrder}" 
+                                                     label="Sequence Order" 
+                                                     styleClass="form-control mt-2" 
+                                                     disabled="#{!processStepDefinitionController.editable}" />
+
+                                        <p:outputLabel for="actionType" value="Action Type:" styleClass="font-weight-bold mt-2" />
+                                        <p:inputText id="actionType" 
+                                                     value="#{processStepDefinitionController.current.actionType}" 
+                                                     label="Action Type" 
+                                                     styleClass="form-control mt-2" 
+                                                     disabled="#{!processStepDefinitionController.editable}" />
                                     </p:panelGrid>
 
                                     <f:facet name="footer">
@@ -122,20 +148,20 @@
                                                 value="Save" 
                                                 icon="fa fa-save" 
                                                 class="ui-button-success m-1" 
-                                                action="#{processDefinitionController.saveOrUpdateProcess}" 
+                                                action="#{processStepDefinitionController.saveOrUpdateProcessStepDefinition}" 
                                                 update="@form" 
                                                 process="saveBtn gridDetails"
-                                                rendered="#{processDefinitionController.editable}" />
+                                                rendered="#{processStepDefinitionController.editable}" />
 
                                             <p:commandButton 
                                                 id="cancelBtn" 
                                                 value="Cancel" 
                                                 icon="fa fa-times" 
                                                 class="ui-button-warning m-1" 
-                                                action="#{processDefinitionController.reset}" 
+                                                action="#{processStepDefinitionController.reset}" 
                                                 update="@form" 
                                                 process="cancelBtn gridDetails"
-                                                rendered="#{processDefinitionController.editable}" />
+                                                rendered="#{processStepDefinitionController.editable}" />
                                         </div>
                                     </f:facet>
                                 </p:panel>
