@@ -1,6 +1,8 @@
 package com.divudi.bean.emr;
 
+import com.divudi.entity.workflow.ProcessDefinition;
 import com.divudi.entity.workflow.ProcessStepActionDefinition;
+import com.divudi.entity.workflow.ProcessStepDefinition;
 import com.divudi.facade.ProcessStepActionDefinitionFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -13,6 +15,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**
@@ -30,6 +33,9 @@ public class ProcessStepActionDefinitionController implements Serializable {
     @EJB
     private ProcessStepActionDefinitionFacade processStepActionDefinitionFacade;
 
+    @Inject
+    ProcessStepDefinitionController processStepDefinitionController;
+    
     // Current ProcessStepActionDefinition being created or edited
     private ProcessStepActionDefinition current;
 
@@ -81,6 +87,18 @@ public class ProcessStepActionDefinitionController implements Serializable {
         fillAllProcessStepActionDefinitions();
         return "/process/process_step_action_definitions?faces-redirect=true";
     }
+    
+     public List<ProcessStepActionDefinition> getItemsOfSelectedProcessStepDefinition(ProcessStepDefinition psd) {
+        String jpql = "SELECT p FROM ProcessStepActionDefinition p "
+                + " WHERE p.retired = :ret "
+                + " and p.processStepDefinition=:psd "
+                + " ORDER BY p.name";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("psd", psd);
+        current=null;
+        return getProcessStepActionDefinitionFacade().findByJpql(jpql, params);
+    }
 
     /**
      * Retrieves all active ProcessStepActionDefinitions.
@@ -99,6 +117,7 @@ public class ProcessStepActionDefinitionController implements Serializable {
      */
     public String addNewProcessStepActionDefinition() {
         current = new ProcessStepActionDefinition();
+        current.setProcessStepDefinition(processStepDefinitionController.getCurrent());
         editable = true;
         return null; // Stay on the same page
     }

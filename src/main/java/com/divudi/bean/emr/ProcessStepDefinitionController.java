@@ -1,5 +1,6 @@
 package com.divudi.bean.emr;
 
+import com.divudi.entity.workflow.ProcessDefinition;
 import com.divudi.entity.workflow.ProcessStepDefinition;
 import com.divudi.facade.ProcessStepDefinitionFacade;
 import javax.inject.Named;
@@ -13,6 +14,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**
@@ -29,6 +31,9 @@ public class ProcessStepDefinitionController implements Serializable {
 
     @EJB
     private ProcessStepDefinitionFacade processStepDefinitionFacade;
+    
+    @Inject
+    ProcessDefinitionController processDefinitionController;
 
     // Current ProcessStepDefinition being created or edited
     private ProcessStepDefinition current;
@@ -61,6 +66,18 @@ public class ProcessStepDefinitionController implements Serializable {
             fillAllProcessStepDefinitions();
         }
         return items;
+    }
+    
+    public List<ProcessStepDefinition> getItemsOfSelectedProcessDefinition(ProcessDefinition pd) {
+        String jpql = "SELECT p FROM ProcessStepDefinition p "
+                + " WHERE p.retired = :ret "
+                + " and p.processDefinition=:pd "
+                + " ORDER BY p.name";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("pd", pd);
+        current=null;
+        return getProcessStepDefinitionFacade().findByJpql(jpql, params);
     }
 
     // Getter and Setter for 'editable'
@@ -99,6 +116,7 @@ public class ProcessStepDefinitionController implements Serializable {
      */
     public String addNewProcessStepDefinition() {
         current = new ProcessStepDefinition();
+        current.setProcessDefinition(processDefinitionController.getCurrent());
         editable = true;
         return null; // Stay on the same page
     }

@@ -57,6 +57,39 @@
                                         </div>
                                     </f:facet>
 
+                                    <p:outputLabel value="Process Definition" for="processSelect" ></p:outputLabel>
+                                    <p:selectOneMenu 
+                                        id="processSelect" 
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        class="w-100"
+                                        value="#{processDefinitionController.current}" >
+                                        <f:selectItems 
+                                            value="#{processDefinitionController.items}" 
+                                            var="process"
+                                            itemValue="#{process}" 
+                                            itemLabel="#{process.name}" />
+                                        <p:ajax update="processStepSelect" />
+                                    </p:selectOneMenu>
+
+                                    <p:separator/>
+                                    <p:outputLabel value="Process Step Definition" for="processStepSelect" ></p:outputLabel>
+                                    <p:selectOneMenu 
+                                        id="processStepSelect" 
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        class="w-100"
+                                        value="#{processStepDefinitionController.current}" >
+                                        <f:selectItems 
+                                            value="#{processStepDefinitionController.getItemsOfSelectedProcessDefinition(processDefinitionController.current)}" 
+                                            var="step"
+                                            itemValue="#{step}" 
+                                            itemLabel="#{step.name}" />
+                                        <p:ajax update="processStepActionSelect" />
+                                    </p:selectOneMenu>
+
+                                    <p:separator/>
+                                    <p:outputLabel for="processStepActionSelect" value="Process Step Action Definition:" styleClass="font-weight-bold" />
                                     <p:selectOneListbox 
                                         id="processStepActionSelect" 
                                         filter="true"
@@ -64,7 +97,7 @@
                                         class="w-100"
                                         value="#{processStepActionDefinitionController.current}" >
                                         <f:selectItems 
-                                            value="#{processStepActionDefinitionController.items}" 
+                                            value="#{processStepActionDefinitionController.getItemsOfSelectedProcessStepDefinition(processStepDefinitionController.current)}" 
                                             var="action"
                                             itemValue="#{action}" 
                                             itemLabel="#{action.name}" />
@@ -84,6 +117,23 @@
                                         id="gridDetails"
                                         styleClass="mt-3" 
                                         rendered="#{processStepActionDefinitionController.current ne null}">
+
+
+                                        <p:outputLabel 
+                                            value="Process Definition:" 
+                                            styleClass="font-weight-bold" />
+                                        <p:outputLabel 
+                                            value="#{processStepActionDefinitionController.current.processStepDefinition.processDefinition.name}" 
+                                            />
+
+                                        <p:outputLabel 
+                                            value="Process Step Definition:" 
+                                            styleClass="font-weight-bold" />
+                                        <p:outputLabel 
+                                            value="#{processStepActionDefinitionController.current.processStepDefinition.name}" 
+                                            />
+
+
                                         <p:outputLabel for="name" value="Name:" styleClass="font-weight-bold" />
                                         <p:inputText id="name" 
                                                      value="#{processStepActionDefinitionController.current.name}" 

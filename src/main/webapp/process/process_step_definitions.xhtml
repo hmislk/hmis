@@ -57,6 +57,24 @@
                                         </div>
                                     </f:facet>
 
+                                    <p:outputLabel value="Process Definition" for="processSelect" ></p:outputLabel>
+                                    <p:selectOneMenu 
+                                        id="processSelect" 
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        class="w-100"
+                                        value="#{processDefinitionController.current}" >
+                                        <f:selectItems 
+                                            value="#{processDefinitionController.items}" 
+                                            var="process"
+                                            itemValue="#{process}" 
+                                            itemLabel="#{process.name}" />
+                                        <p:ajax update="processStepSelect" />
+                                    </p:selectOneMenu>
+                                    
+                                    <p:separator/>
+                                    
+                                    <p:outputLabel value="Process Step Definition" for="processStepSelect" ></p:outputLabel>
                                     <p:selectOneListbox 
                                         id="processStepSelect" 
                                         filter="true"
@@ -64,7 +82,7 @@
                                         class="w-100"
                                         value="#{processStepDefinitionController.current}" >
                                         <f:selectItems 
-                                            value="#{processStepDefinitionController.items}" 
+                                            value="#{processStepDefinitionController.getItemsOfSelectedProcessDefinition(processDefinitionController.current)}" 
                                             var="step"
                                             itemValue="#{step}" 
                                             itemLabel="#{step.name}" />

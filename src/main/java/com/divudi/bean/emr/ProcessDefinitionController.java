@@ -29,6 +29,8 @@ public class ProcessDefinitionController implements Serializable {
 
     @EJB
     private ProcessDefinitionFacade processDefinitionFacade;
+    
+    private int index = 0;
 
     // Current ProcessDefinition being created or edited
     private ProcessDefinition current;
@@ -154,6 +156,8 @@ public class ProcessDefinitionController implements Serializable {
         }
         return null; // Stay on the same page
     }
+    
+    
 
     /**
      * Deletes the specified ProcessDefinition by flagging it as retired.
@@ -198,6 +202,14 @@ public class ProcessDefinitionController implements Serializable {
      */
     public ProcessDefinitionFacade getProcessDefinitionFacade() {
         return processDefinitionFacade;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     /**
