@@ -267,6 +267,8 @@ public class Item implements Serializable, Comparable<Item> {
 
     private boolean alternativeReportAllowed;
 
+    private boolean canUploadPatinrtReport;
+    
     @Lob
     private String forGender;
 
@@ -1485,6 +1487,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setTransDepartment(Department transDepartment) {
         this.transDepartment = transDepartment;
+    }
+
+    public boolean isCanUploadPatinrtReport() {
+        return canUploadPatinrtReport;
+    }
+
+    public void setCanUploadPatinrtReport(boolean canUploadPatinrtReport) {
+        this.canUploadPatinrtReport = canUploadPatinrtReport;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

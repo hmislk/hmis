@@ -91,6 +91,11 @@ public class Upload implements Serializable {
     private boolean image;
     @Transient
     private boolean pdf;
+    
+    @ManyToOne
+    private Bill bill;
+    @ManyToOne
+    private PatientEncounter patientEncounter;
 
     public String getIdStr() {
         if (this.id == null) {
@@ -280,6 +285,22 @@ public class Upload implements Serializable {
 
     public void setFileUrl(String fileUrl) {
         this.fileUrl = fileUrl;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
     }
 
 }
