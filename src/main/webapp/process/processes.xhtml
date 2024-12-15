@@ -1,0 +1,231 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:pr="http://xmlns.jcp.org/jsf/composite/ezcomp/process"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Process Management</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+
+                    <p:panelGrid layout="tabular" columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                            <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:calendar 
+                            styleClass="w-100" 
+                            inputStyleClass="w-100 form-control" 
+                            id="fromDate" 
+                            value="#{processController.fromDate}" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                            />
+
+                        <p:spacer width="50" ></p:spacer>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                            <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:calendar 
+                            styleClass="w-100" 
+                            inputStyleClass="w-100 form-control" 
+                            id="toDate" 
+                            value="#{processController.toDate}" 
+                            navigator="false" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                            />
+
+                        <p:spacer width="50" ></p:spacer>
+                        <p:spacer width="50" ></p:spacer>
+                        <p:spacer width="50" ></p:spacer>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                            <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                            id="cmbIns"
+                            styleClass="w-100 form-control" 
+                            value="#{processController.institution}" 
+                            filter="true">
+                            <f:selectItem itemLabel="All Institutions" />
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                            <p:ajax process="cmbIns" update="cmbDept" />
+                        </p:selectOneMenu>
+
+                        <p:spacer ></p:spacer>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                            <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                            id="siteMenu"
+                            styleClass="w-100 form-control"  
+                            value="#{processController.site}" 
+                            filter="true">
+                            <f:selectItem itemLabel="All Sites" />
+                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                            <p:ajax process="siteMenu" update="cmbDept" />
+                        </p:selectOneMenu>
+
+                        <p:spacer ></p:spacer>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                            <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="cmbDept">
+
+                            <!-- Component 1: Without Institution and Site -->
+                            <p:selectOneMenu
+                                rendered="#{processController.institution eq null and processController.site eq null}"
+                                styleClass="w-100 form-control"
+                                value="#{processController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 2: With Site Only -->
+                            <p:selectOneMenu
+                                rendered="#{processController.institution eq null and processController.site ne null}"
+                                styleClass="w-100 form-control"
+                                value="#{processController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(processController.site)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 3: With Institution Only -->
+                            <p:selectOneMenu
+                                rendered="#{processController.institution ne null and processController.site eq null}"
+                                styleClass="w-100 form-control"
+                                value="#{processController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(processController.institution)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 4: With Both Institution and Site -->
+                            <p:selectOneMenu
+                                rendered="#{processController.institution ne null and processController.site ne null}"
+                                styleClass="w-100 form-control"
+                                value="#{processController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(processController.institution, processController.site)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                        </h:panelGroup>
+                    </p:panelGrid>
+
+                    <p:commandButton value="List Ongoing" 
+                                     action="#{processController.listOngoingProcessInstances()}" 
+                                     ajax="false"
+                                     class="ui-button-warning m-2" 
+                                     icon="fas fa-sync-alt" />
+
+                    <p:commandButton value="List Completed" 
+                                     action="#{processController.listCompletedProcessInstances()}" 
+                                     ajax="false"
+                                     class="ui-button-success m-2" 
+                                     icon="fas fa-check" />
+
+                    <p:commandButton value="List Cancelled" 
+                                     action="#{processController.listCancelledProcessInstances()}" 
+                                     ajax="false"
+                                     class="ui-button-danger m-2" 
+                                     icon="fas fa-times-circle" />
+
+                    <p:commandButton value="List Rejected" 
+                                     action="#{processController.listRejectedProcessInstances()}" 
+                                     ajax="false"
+                                     class="ui-button-dark m-2" 
+                                     icon="fas fa-ban" />
+
+                    <p:commandButton value="List Paused" 
+                                     action="#{processController.listPausedProcessInstances()}" 
+                                     ajax="false"
+                                     class="ui-button-secondary m-2" 
+                                     icon="fas fa-pause-circle" />
+
+
+                    <p:dataTable 
+                        value="#{processController.processInstances}"
+                        var="pi"
+                        rowKey="#{pi.id}"
+                        paginator="true"
+                        paginatorPosition="bottom" 
+                        rows="10" 
+                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        rowsPerPageTemplate="5,10,15" 
+                        class="w-100" 
+                        lazy="false" 
+                        sortMode="multiple">
+
+                        <f:facet name="header">
+                            Process Instance List
+                        </f:facet>
+
+                        <p:column headerText="No" sortBy="#{pi.id}" filterBy="#{pi.id}" filterMatchMode="contains">
+                            <h:outputText value="#{pi.id}" />
+                        </p:column>
+
+                        <p:column headerText="Created At" sortBy="#{pi.createdAt}" filterBy="#{pi.createdAt}" filterMatchMode="contains">
+                            <h:outputText value="#{pi.createdAt}">
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Created By" sortBy="#{pi.creator.webUserPerson.nameWithTitle}" filterBy="#{pi.creator.webUserPerson.nameWithTitle}" filterMatchMode="contains">
+                            <h:outputText value="#{pi.creator.webUserPerson.nameWithTitle}" />
+                        </p:column>
+
+                        <p:column headerText="Status" sortBy="#{pi.status}" filterBy="#{pi.status}" filterMatchMode="exact">
+                            <h:outputText value="#{pi.status}" />
+                        </p:column>
+
+                        <p:column headerText="Actions">
+                            <p:commandButton value="Manage" action="#{processController.navigateToViewProcessInstance()}" ajax="false">
+                                <f:setPropertyActionListener value="#{pi}" target="#{processController.processInstance}" />
+                            </p:commandButton>
+                        </p:column>
+
+                    </p:dataTable>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

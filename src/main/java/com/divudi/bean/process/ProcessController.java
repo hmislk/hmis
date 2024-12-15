@@ -3,15 +3,19 @@ package com.divudi.bean.process;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.process.ProcessStepActionType;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.process.ProcessDefinition;
 import com.divudi.entity.process.ProcessInstance;
 import com.divudi.entity.process.ProcessStepActionDefinition;
 import com.divudi.entity.process.ProcessStepDefinition;
 import com.divudi.entity.process.ProcessStepInstance;
+import com.divudi.java.CommonFunctions;
 import com.divudi.service.ProcessService;
 import javax.inject.Named;
 import javax.faces.view.ViewScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -43,11 +47,17 @@ public class ProcessController implements Serializable {
 
     private List<ProcessDefinition> processDefinitions;
     private List<ProcessStepInstance> processStepInstances;
+    private List<ProcessInstance> processInstances;
     private ProcessInstance processInstance;
     private ProcessDefinition processDefinition;
     private ProcessStepDefinition processStepDefinition;
     private ProcessStepInstance processStepInstance;
     private List<ProcessStepActionDefinition> processStepActionDefinitions;
+    Date fromDate;
+    Date toDate;
+    private Institution institution;
+    private Department department;
+    private Institution site;
 
     public String navigateToProcessIndex() {
         return "/process/index?faces-redirect=true;";
@@ -58,6 +68,36 @@ public class ProcessController implements Serializable {
         stage = "initiate_process";
         return "/process/process?faces-redirect=true;";
     }
+
+    public String navigateToListProcesses() {
+        return "/process/processes?faces-redirect=true;";
+    }
+
+    public String listOngoingProcessInstances() {
+        processInstances = processService.fetchProcessInstances(fromDate, toDate, institution, site, department, false, null, null, null);
+        return null;
+    }
+
+    public String listCompletedProcessInstances() {
+        processInstances = processService.fetchProcessInstances(fromDate, toDate, institution, site, department, true, null, null, null);
+        return null;
+    }
+    
+    public String listCancelledProcessInstances() {
+        processInstances = processService.fetchProcessInstances(fromDate, toDate, institution, site, department, null, true, null, null);
+        return null;
+    }
+    
+    public String listRejectedProcessInstances() {
+        processInstances = processService.fetchProcessInstances(fromDate, toDate, institution, site, department, null, true, true, null);
+        return null;
+    }
+    
+    public String listPausedProcessInstances() {
+        processInstances = processService.fetchProcessInstances(fromDate, toDate, institution, site, department, null, true, null, null);
+        return null;
+    }
+    
 
     public String navigateToViewProcessInstance() {
         if (processInstance == null) {
@@ -92,11 +132,11 @@ public class ProcessController implements Serializable {
         }
         processStepActionDefinitions = processService.fetchProcessStepActionDefinitions(processStepDefinition);
         System.out.println("processStepActionDefinitions = " + processStepActionDefinitions);
-        if(processStepActionDefinitions==null || processStepActionDefinitions.isEmpty()){
+        if (processStepActionDefinitions == null || processStepActionDefinitions.isEmpty()) {
             JsfUtil.addErrorMessage("No Process Step Action Definitions for Selected Process Step Definition");
             return null;
         }
-        
+
         stage = "initiate_step";
         return null;
     }
@@ -317,6 +357,63 @@ public class ProcessController implements Serializable {
 
     public void setProcessStepInstances(List<ProcessStepInstance> processStepInstances) {
         this.processStepInstances = processStepInstances;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay(new Date());
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public List<ProcessInstance> getProcessInstances() {
+        if (processInstances == null) {
+            processInstances = new ArrayList<>();
+        }
+        return processInstances;
+    }
+
+    public void setProcessInstances(List<ProcessInstance> processInstances) {
+        this.processInstances = processInstances;
     }
 
 }
