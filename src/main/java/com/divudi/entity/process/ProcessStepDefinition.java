@@ -46,10 +46,6 @@ public class ProcessStepDefinition implements Serializable {
     
     private Double sequenceOrder;
     
-    private String actionType;
-    
-
-
     @ManyToOne(fetch = FetchType.LAZY)
     private ProcessDefinition parent;
 
@@ -200,14 +196,6 @@ public class ProcessStepDefinition implements Serializable {
 
     public void setSequenceOrder(Double sequenceOrder) {
         this.sequenceOrder = sequenceOrder;
-    }
-
-    public String getActionType() {
-        return actionType;
-    }
-
-    public void setActionType(String actionType) {
-        this.actionType = actionType;
     }
     
 }

@@ -10,7 +10,9 @@
         <title>Process Step Action Definitions Management</title>
     </h:head>
     <h:body>
+
         <ui:composition template="./index.xhtml">
+
             <ui:define name="subcontent">
                 <h:form id="processStepActionForm">
                     <p:panel>
@@ -30,8 +32,8 @@
                                                 icon="fa fa-plus" 
                                                 class="ui-button-success m-1" 
                                                 action="#{processStepActionDefinitionController.addNewProcessStepActionDefinition}" 
-                                                update="@form"
-                                                process="addNewBtn"
+                                                update="processStepActionDetails editBtn deleteBtn"
+                                                process="addNewBtn processSelect processStepSelect processStepActionSelect "
                                                 disabled="#{processStepActionDefinitionController.editable}" />
 
                                             <p:commandButton 
@@ -40,8 +42,8 @@
                                                 icon="fa fa-edit" 
                                                 styleClass="ui-button-warning m-1" 
                                                 action="#{processStepActionDefinitionController.editExistingProcessStepActionDefinition(processStepActionDefinitionController.current)}" 
-                                                update="@form"
-                                                process="editBtn"
+                                                update="processStepActionDetails processSelect processStepSelect processStepActionSelect editBtn deleteBtn"
+                                                process="editBtn  processSelect processStepSelect processStepActionSelect "
                                                 disabled="#{processStepActionDefinitionController.editable or processStepActionDefinitionController.current == null}" />
 
                                             <p:commandButton 
@@ -150,6 +152,44 @@
                                                          styleClass="form-control mt-2" 
                                                          disabled="#{!processStepActionDefinitionController.editable}" />
 
+
+                                        <p:outputLabel for="actionType" value="Action Type:" styleClass="font-weight-bold mt-2" />
+                                        <p:selectOneMenu id="actionType" filter="true" filterMatchMode="contains" class="w-100"
+                                                            value="#{processStepActionDefinitionController.current.actionType}">
+                                            <f:selectItems value="#{processController.processStepActionTypes}"
+                                                           var="action"
+                                                           itemValue="#{action}"
+                                                           itemLabel="#{action.displayLabel}" />
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel value="Directed Process Step Definition" for="referredProcessStepSelect" ></p:outputLabel>
+                                        <p:selectOneMenu 
+                                            id="referredProcessStepSelect" 
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            class="w-100"
+                                            value="#{processStepActionDefinitionController.current.directedProcessStepDefinition}" >
+                                            <f:selectItem itemLabel="No Step" ></f:selectItem>
+                                            <f:selectItems 
+                                                value="#{processStepDefinitionController.getItemsOfSelectedProcessDefinition(processDefinitionController.current)}" 
+                                                var="dstep"
+                                                itemValue="#{dstep}" 
+                                                itemLabel="#{dstep.name}" />
+                                            <p:ajax update="processStepActionSelect" />
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel 
+                                            for="completes" 
+                                            value="Completes the Process:" 
+                                            styleClass="font-weight-bold mt-2" />
+                                        <p:selectBooleanCheckbox 
+                                            id="completes" 
+                                            value="#{processStepActionDefinitionController.current.active}" 
+                                            styleClass="mt-2" 
+                                            disabled="#{!processStepActionDefinitionController.editable}" />
+
+
+
                                         <p:outputLabel for="version" value="Version:" styleClass="font-weight-bold mt-2" />
                                         <p:inputText id="version" 
                                                      value="#{processStepActionDefinitionController.current.version}" 
@@ -157,6 +197,15 @@
                                                      label="Version" 
                                                      styleClass="form-control mt-2" 
                                                      disabled="#{!processStepActionDefinitionController.editable}" />
+
+                                        <p:outputLabel for="orderNp" value="Order No:" styleClass="font-weight-bold mt-2" />
+                                        <p:inputText 
+                                            id="orderNp" 
+                                            value="#{processStepActionDefinitionController.current.sequenceOrder}" 
+                                            required="true" 
+                                            label="Version" 
+                                            styleClass="form-control mt-2" 
+                                            disabled="#{!processStepActionDefinitionController.editable}" />
 
                                         <p:outputLabel for="active" value="Active:" styleClass="font-weight-bold mt-2" />
                                         <p:selectBooleanCheckbox id="active" 
@@ -193,8 +242,9 @@
                             </div>
                         </div>
                     </p:panel>
+                    <p:messages id="messages" showDetail="true" />
                 </h:form>
-                <p:messages id="messages" showDetail="true" />
+
             </ui:define>
         </ui:composition>
     </h:body>

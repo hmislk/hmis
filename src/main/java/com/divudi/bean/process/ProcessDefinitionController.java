@@ -81,7 +81,7 @@ public class ProcessDefinitionController implements Serializable {
      */
     public String navigateToManageProcessDefinitions() {
         fillAllProcesses();
-        return "/process/process_definitions?faces-redirect=true;";
+        return "/process/admin/process_definitions?faces-redirect=true;";
     }
     
     /**
@@ -91,14 +91,14 @@ public class ProcessDefinitionController implements Serializable {
      */
     public String navigateToManageProcessIndex() {
         fillAllProcesses();
-        return "/process/index?faces-redirect=true;";
+        return "/process/admin/index?faces-redirect=true;";
     }
 
     /**
      * Retrieves all active ProcessDefinitions.
      */
     public void fillAllProcesses() {
-        String jpql = "SELECT p FROM ProcessDefinition p WHERE p.retired = :ret ORDER BY p.name";
+        String jpql = "SELECT p FROM ProcessDefinition p WHERE p.retired = :ret ORDER BY p.sequenceOrder";
         HashMap<String, Object> params = new HashMap<>();
         params.put("ret", false);
         items = processDefinitionFacade.findByJpql(jpql, params, TemporalType.TIME);
