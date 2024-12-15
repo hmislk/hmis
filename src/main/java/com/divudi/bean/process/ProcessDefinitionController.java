@@ -98,7 +98,7 @@ public class ProcessDefinitionController implements Serializable {
      * Retrieves all active ProcessDefinitions.
      */
     public void fillAllProcesses() {
-        String jpql = "SELECT p FROM ProcessDefinition p WHERE p.retired = :ret ORDER BY p.name";
+        String jpql = "SELECT p FROM ProcessDefinition p WHERE p.retired = :ret ORDER BY p.sequenceOrder";
         HashMap<String, Object> params = new HashMap<>();
         params.put("ret", false);
         items = processDefinitionFacade.findByJpql(jpql, params, TemporalType.TIME);
