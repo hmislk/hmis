@@ -19,23 +19,23 @@ import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**
- * Controller for managing Process Step Action Definitions.
- * Handles creation, editing, deletion, and listing of ProcessStepActionDefinition entities.
+ * Controller for managing Process Step Action Definitions. Handles creation,
+ * editing, deletion, and listing of ProcessStepActionDefinition entities.
  *
  * Dr M H B Ariyaratne
  */
 @Named
 @SessionScoped
 public class ProcessStepActionDefinitionController implements Serializable {
-
+    
     private static final long serialVersionUID = 1L;
-
+    
     @EJB
     private ProcessStepActionDefinitionFacade processStepActionDefinitionFacade;
-
+    
     @Inject
     ProcessStepDefinitionController processStepDefinitionController;
-    
+
     // Current ProcessStepActionDefinition being created or edited
     private ProcessStepActionDefinition current;
 
@@ -56,7 +56,7 @@ public class ProcessStepActionDefinitionController implements Serializable {
     public ProcessStepActionDefinition getCurrent() {
         return current;
     }
-
+    
     public void setCurrent(ProcessStepActionDefinition current) {
         this.current = current;
     }
@@ -73,7 +73,7 @@ public class ProcessStepActionDefinitionController implements Serializable {
     public boolean isEditable() {
         return editable;
     }
-
+    
     public void setEditable(boolean editable) {
         this.editable = editable;
     }
@@ -88,7 +88,7 @@ public class ProcessStepActionDefinitionController implements Serializable {
         return "/process/admin/process_step_action_definitions?faces-redirect=true";
     }
     
-     public List<ProcessStepActionDefinition> getItemsOfSelectedProcessStepDefinition(ProcessStepDefinition psd) {
+    public List<ProcessStepActionDefinition> getItemsOfSelectedProcessStepDefinition(ProcessStepDefinition psd) {
         String jpql = "SELECT p FROM ProcessStepActionDefinition p "
                 + " WHERE p.retired = :ret "
                 + " and p.processStepDefinition=:psd "
@@ -96,7 +96,7 @@ public class ProcessStepActionDefinitionController implements Serializable {
         HashMap<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("psd", psd);
-        current=null;
+        current = null;
         return getProcessStepActionDefinitionFacade().findByJpql(jpql, params);
     }
 
@@ -118,6 +118,8 @@ public class ProcessStepActionDefinitionController implements Serializable {
     public String addNewProcessStepActionDefinition() {
         current = new ProcessStepActionDefinition();
         current.setProcessStepDefinition(processStepDefinitionController.getCurrent());
+        current.setVersion("1.0");
+        current.setSequenceOrder((double)(getItems().size() + 1));
         editable = true;
         return null; // Stay on the same page
     }
@@ -125,7 +127,8 @@ public class ProcessStepActionDefinitionController implements Serializable {
     /**
      * Initializes the editing of an existing ProcessStepActionDefinition.
      *
-     * @param processStepActionDefinition the ProcessStepActionDefinition to edit
+     * @param processStepActionDefinition the ProcessStepActionDefinition to
+     * edit
      * @return navigation outcome string
      */
     public String editExistingProcessStepActionDefinition(ProcessStepActionDefinition processStepActionDefinition) {
@@ -134,7 +137,7 @@ public class ProcessStepActionDefinitionController implements Serializable {
             this.editable = true;
         } else {
             FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_WARN, "No Action Selected", "Please select an action to edit."));
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "No Action Selected", "Please select an action to edit."));
         }
         return null; // Stay on the same page
     }
@@ -149,25 +152,27 @@ public class ProcessStepActionDefinitionController implements Serializable {
             if (current.getId() == null) {
                 processStepActionDefinitionFacade.create(current);
                 FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Action Created", "Process step action has been successfully created."));
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Action Created", "Process step action has been successfully created."));
             } else {
                 processStepActionDefinitionFacade.edit(current);
                 FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Action Updated", "Process step action has been successfully updated."));
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Action Updated", "Process step action has been successfully updated."));
             }
             items = null; // Invalidate list to trigger re-query
             editable = false;
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "An error occurred while saving the process step action."));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "An error occurred while saving the process step action."));
         }
         return null; // Stay on the same page
     }
 
     /**
-     * Deletes the specified ProcessStepActionDefinition by flagging it as retired.
+     * Deletes the specified ProcessStepActionDefinition by flagging it as
+     * retired.
      *
-     * @param processStepActionDefinition the ProcessStepActionDefinition to delete
+     * @param processStepActionDefinition the ProcessStepActionDefinition to
+     * delete
      * @return navigation outcome string
      */
     public String deleteProcessStepActionDefinition(ProcessStepActionDefinition processStepActionDefinition) {
@@ -176,15 +181,15 @@ public class ProcessStepActionDefinitionController implements Serializable {
                 processStepActionDefinition.setRetired(true);
                 processStepActionDefinitionFacade.edit(processStepActionDefinition);
                 FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Action Retired", "Process step action has been successfully retired."));
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Action Retired", "Process step action has been successfully retired."));
                 items = null; // Invalidate list to trigger re-query
             } catch (Exception e) {
                 FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "An error occurred while retiring the process step action."));
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "An error occurred while retiring the process step action."));
             }
         } else {
             FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_WARN, "No Action Selected", "Please select an action to retire."));
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "No Action Selected", "Please select an action to retire."));
         }
         return null; // Stay on the same page
     }
@@ -197,7 +202,7 @@ public class ProcessStepActionDefinitionController implements Serializable {
         items = null;
         editable = false;
         FacesContext.getCurrentInstance().addMessage(null,
-            new FacesMessage(FacesMessage.SEVERITY_INFO, "Reset", "Process step action form has been reset."));
+                new FacesMessage(FacesMessage.SEVERITY_INFO, "Reset", "Process step action form has been reset."));
     }
 
     /**
@@ -232,7 +237,7 @@ public class ProcessStepActionDefinitionController implements Serializable {
                     getValue(facesContext.getELContext(), null, "processStepActionDefinitionController");
             return controller.getProcessStepActionDefinitionFacade().find(getKey(value));
         }
-
+        
         java.lang.Long getKey(String value) {
             java.lang.Long key = null;
             try {
@@ -242,13 +247,14 @@ public class ProcessStepActionDefinitionController implements Serializable {
             }
             return key;
         }
-
+        
         String getStringKey(java.lang.Long value) {
             return value != null ? value.toString() : "";
         }
 
         /**
-         * Converts a ProcessStepActionDefinition object to its String representation.
+         * Converts a ProcessStepActionDefinition object to its String
+         * representation.
          *
          * @param facesContext the FacesContext
          * @param component the UIComponent
@@ -269,5 +275,5 @@ public class ProcessStepActionDefinitionController implements Serializable {
             }
         }
     }
-
+    
 }

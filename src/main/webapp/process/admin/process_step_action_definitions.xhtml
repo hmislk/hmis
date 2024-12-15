@@ -32,8 +32,8 @@
                                                 icon="fa fa-plus" 
                                                 class="ui-button-success m-1" 
                                                 action="#{processStepActionDefinitionController.addNewProcessStepActionDefinition}" 
-                                                update="@form"
-                                                process="addNewBtn"
+                                                update="processStepActionDetails editBtn deleteBtn"
+                                                process="addNewBtn processSelect processStepSelect processStepActionSelect "
                                                 disabled="#{processStepActionDefinitionController.editable}" />
 
                                             <p:commandButton 
@@ -42,8 +42,8 @@
                                                 icon="fa fa-edit" 
                                                 styleClass="ui-button-warning m-1" 
                                                 action="#{processStepActionDefinitionController.editExistingProcessStepActionDefinition(processStepActionDefinitionController.current)}" 
-                                                update="@form"
-                                                process="editBtn"
+                                                update="processStepActionDetails processSelect processStepSelect processStepActionSelect editBtn deleteBtn"
+                                                process="editBtn  processSelect processStepSelect processStepActionSelect "
                                                 disabled="#{processStepActionDefinitionController.editable or processStepActionDefinitionController.current == null}" />
 
                                             <p:commandButton 
@@ -154,14 +154,13 @@
 
 
                                         <p:outputLabel for="actionType" value="Action Type:" styleClass="font-weight-bold mt-2" />
-                                        <p:selectOneListbox id="actionType" filter="true" filterMatchMode="contains" class="w-100"
+                                        <p:selectOneMenu id="actionType" filter="true" filterMatchMode="contains" class="w-100"
                                                             value="#{processStepActionDefinitionController.current.actionType}">
                                             <f:selectItems value="#{processController.processStepActionTypes}"
                                                            var="action"
                                                            itemValue="#{action}"
                                                            itemLabel="#{action.displayLabel}" />
-                                            <p:ajax update="processStepActionDetails" />
-                                        </p:selectOneListbox>
+                                        </p:selectOneMenu>
 
                                         <p:outputLabel value="Directed Process Step Definition" for="referredProcessStepSelect" ></p:outputLabel>
                                         <p:selectOneMenu 
@@ -170,6 +169,7 @@
                                             filterMatchMode="contains"
                                             class="w-100"
                                             value="#{processStepActionDefinitionController.current.directedProcessStepDefinition}" >
+                                            <f:selectItem itemLabel="No Step" ></f:selectItem>
                                             <f:selectItems 
                                                 value="#{processStepDefinitionController.getItemsOfSelectedProcessDefinition(processDefinitionController.current)}" 
                                                 var="dstep"
