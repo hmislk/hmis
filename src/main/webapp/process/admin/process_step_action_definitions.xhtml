@@ -41,17 +41,17 @@
                                                 value="Edit" 
                                                 icon="fa fa-edit" 
                                                 styleClass="ui-button-warning m-1" 
-                                                action="#{processStepActionDefinitionController.editExistingProcessStepActionDefinition(processStepActionDefinitionController.current)}" 
-                                                update="processStepActionDetails processSelect processStepSelect processStepActionSelect editBtn deleteBtn"
-                                                process="editBtn  processSelect processStepSelect processStepActionSelect "
-                                                disabled="#{processStepActionDefinitionController.editable or processStepActionDefinitionController.current == null}" />
+                                                action="#{processStepActionDefinitionController.editExistingProcessStepActionDefinition}" 
+                                                update="processStepActionDetails editBtn deleteBtn addNewBtn"
+                                                process="editBtn"
+                                                disabled="#{processStepActionDefinitionController.editable or processStepActionDefinitionController.current eq null}" />
 
                                             <p:commandButton 
                                                 id="deleteBtn" 
                                                 value="Delete" 
                                                 icon="fa fa-trash" 
                                                 class="ui-button-danger m-1" 
-                                                action="#{processStepActionDefinitionController.deleteProcessStepActionDefinition(processStepActionDefinitionController.current)}" 
+                                                action="#{processStepActionDefinitionController.deleteProcessStepActionDefinition}" 
                                                 update="@form" 
                                                 process="deleteBtn"
                                                 onclick="return confirm('Are you sure you want to delete this process step action?');"
@@ -65,7 +65,8 @@
                                         filter="true"
                                         filterMatchMode="contains"
                                         class="w-100"
-                                        value="#{processDefinitionController.current}" >
+                                        value="#{processStepActionDefinitionController.processDefinition}" >
+                                        <f:selectItem itemLabel="Select" ></f:selectItem>
                                         <f:selectItems 
                                             value="#{processDefinitionController.items}" 
                                             var="process"
@@ -81,9 +82,10 @@
                                         filter="true"
                                         filterMatchMode="contains"
                                         class="w-100"
-                                        value="#{processStepDefinitionController.current}" >
+                                        value="#{processStepActionDefinitionController.processStepDefinition}" >
+                                        <f:selectItem itemLabel="Select" ></f:selectItem>
                                         <f:selectItems 
-                                            value="#{processStepDefinitionController.getItemsOfSelectedProcessDefinition(processDefinitionController.current)}" 
+                                            value="#{processStepDefinitionController.getItemsOfSelectedProcessDefinition(processStepActionDefinitionController.processDefinition)}" 
                                             var="step"
                                             itemValue="#{step}" 
                                             itemLabel="#{step.name}" />
@@ -98,12 +100,13 @@
                                         filterMatchMode="contains"
                                         class="w-100"
                                         value="#{processStepActionDefinitionController.current}" >
+                                        <f:selectItem itemLabel="Select" ></f:selectItem>
                                         <f:selectItems 
-                                            value="#{processStepActionDefinitionController.getItemsOfSelectedProcessStepDefinition(processStepDefinitionController.current)}" 
+                                            value="#{processStepActionDefinitionController.getItemsOfSelectedProcessStepDefinition(processStepActionDefinitionController.processStepDefinition)}" 
                                             var="action"
                                             itemValue="#{action}" 
                                             itemLabel="#{action.name}" />
-                                        <p:ajax update="processStepActionDetails" />
+                                        <p:ajax process="processStepActionSelect" update="processStepActionDetails editBtn deleteBtn" />
                                     </p:selectOneListbox>
                                 </p:panel>
                             </div>
@@ -154,8 +157,13 @@
 
 
                                         <p:outputLabel for="actionType" value="Action Type:" styleClass="font-weight-bold mt-2" />
-                                        <p:selectOneMenu id="actionType" filter="true" filterMatchMode="contains" class="w-100"
-                                                            value="#{processStepActionDefinitionController.current.actionType}">
+                                        <p:selectOneMenu 
+                                            id="actionType" 
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            class="w-100"
+                                            disabled="#{!processStepActionDefinitionController.editable}"
+                                            value="#{processStepActionDefinitionController.current.actionType}">
                                             <f:selectItems value="#{processController.processStepActionTypes}"
                                                            var="action"
                                                            itemValue="#{action}"
@@ -168,6 +176,7 @@
                                             filter="true"
                                             filterMatchMode="contains"
                                             class="w-100"
+                                            disabled="#{!processStepActionDefinitionController.editable}"
                                             value="#{processStepActionDefinitionController.current.directedProcessStepDefinition}" >
                                             <f:selectItem itemLabel="No Step" ></f:selectItem>
                                             <f:selectItems 
@@ -191,12 +200,13 @@
 
 
                                         <p:outputLabel for="version" value="Version:" styleClass="font-weight-bold mt-2" />
-                                        <p:inputText id="version" 
-                                                     value="#{processStepActionDefinitionController.current.version}" 
-                                                     required="true" 
-                                                     label="Version" 
-                                                     styleClass="form-control mt-2" 
-                                                     disabled="#{!processStepActionDefinitionController.editable}" />
+                                        <p:inputText 
+                                            id="version" 
+                                            value="#{processStepActionDefinitionController.current.version}" 
+                                            required="true" 
+                                            label="Version" 
+                                            styleClass="form-control mt-2" 
+                                            disabled="#{!processStepActionDefinitionController.editable}" />
 
                                         <p:outputLabel for="orderNp" value="Order No:" styleClass="font-weight-bold mt-2" />
                                         <p:inputText 
@@ -208,10 +218,11 @@
                                             disabled="#{!processStepActionDefinitionController.editable}" />
 
                                         <p:outputLabel for="active" value="Active:" styleClass="font-weight-bold mt-2" />
-                                        <p:selectBooleanCheckbox id="active" 
-                                                                 value="#{processStepActionDefinitionController.current.active}" 
-                                                                 styleClass="mt-2" 
-                                                                 disabled="#{!processStepActionDefinitionController.editable}" />
+                                        <p:selectBooleanCheckbox 
+                                            id="active" 
+                                            value="#{processStepActionDefinitionController.current.active}" 
+                                            styleClass="mt-2" 
+                                            disabled="#{!processStepActionDefinitionController.editable}" />
 
                                     </p:panelGrid>
 
