@@ -6,6 +6,7 @@ import com.divudi.entity.Upload;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.UploadFacade;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -14,13 +15,9 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
-import org.primefaces.model.file.UploadedFile;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 
-/**
-- *
-- * @author H.K. Damith Deshan hkddrajapaksha@gmail.com
-- *
-*/
 @Named
 @SessionScoped
 public class PatientReportUploadController implements Serializable {
@@ -29,17 +26,17 @@ public class PatientReportUploadController implements Serializable {
     @EJB
     private UploadFacade facade;
     @EJB
-    PatientReportFacade patientReportFacade;
+    private PatientReportFacade patientReportFacade;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
-    PatientReportController patientReportController;
+    private PatientReportController patientReportController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private PatientInvestigation patientInvestigation;
-    private UploadedFile file;
+    private org.primefaces.model.file.UploadedFile file; // Ensure correct import
     private UploadType uploadType;
 
     private static final long SIZE_LIMIT = 10240000; // 10 MB
@@ -101,16 +98,53 @@ public class PatientReportUploadController implements Serializable {
             facade.create(reportUpload);
 
             JsfUtil.addSuccessMessage("File uploaded successfully.");
-            return "success"; // Navigate or stay on the same page as needed
+            return ""; // Stay on the same page or navigate as needed
         } catch (IOException e) {
             JsfUtil.addErrorMessage("Error uploading file: " + e.getMessage());
             return "";
         }
     }
 
-    // Getter for the uploaded file's ID
-    public Long getUploadedFileId() {
-        return (reportUpload != null) ? reportUpload.getId() : null;
+    // Helper method to check if the uploaded file is a PDF
+    public boolean isPdf() {
+        if (reportUpload == null || reportUpload.getFileType() == null) {
+            return false;
+        }
+        return "application/pdf".equalsIgnoreCase(reportUpload.getFileType());
+    }
+
+    // Helper method to check if the uploaded file is an image
+    public boolean isImage() {
+        if (reportUpload == null || reportUpload.getFileType() == null) {
+            return false;
+        }
+        return reportUpload.getFileType().toLowerCase().startsWith("image/");
+    }
+
+    // StreamedContent getter for PDF
+    public StreamedContent getPdfReportStream() {
+        if (isPdf()) {
+            ByteArrayInputStream input = new ByteArrayInputStream(reportUpload.getBaImage());
+            return DefaultStreamedContent.builder()
+                    .name(reportUpload.getFileName())
+                    .contentType(reportUpload.getFileType())
+                    .stream(() -> input)
+                    .build();
+        }
+        return null;
+    }
+
+    // StreamedContent getter for image
+    public StreamedContent getImageReportStream() {
+        if (isImage()) {
+            ByteArrayInputStream input = new ByteArrayInputStream(reportUpload.getBaImage());
+            return DefaultStreamedContent.builder()
+                    .name(reportUpload.getFileName())
+                    .contentType(reportUpload.getFileType())
+                    .stream(() -> input)
+                    .build();
+        }
+        return null;
     }
 
     // Getters and Setters
@@ -122,11 +156,15 @@ public class PatientReportUploadController implements Serializable {
         return patientInvestigation;
     }
 
-    public UploadedFile getFile() {
+    public void setPatientInvestigation(PatientInvestigation patientInvestigation) {
+        this.patientInvestigation = patientInvestigation;
+    }
+
+    public org.primefaces.model.file.UploadedFile getFile() {
         return file;
     }
 
-    public void setFile(UploadedFile file) {
+    public void setFile(org.primefaces.model.file.UploadedFile file) {
         this.file = file;
     }
 
