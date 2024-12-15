@@ -108,6 +108,17 @@ public class ProcessController implements Serializable {
         stage = "view_process";
         return null;
     }
+    
+    public String navigateToManageProcessInstance(ProcessInstance pi) {
+        if (pi == null) {
+            JsfUtil.addErrorMessage("No Process Selected");
+            return null;
+        }
+        processInstance=pi;
+        processStepInstances = processService.fetchProcessStepInstances(processInstance);
+        stage = "view_process";
+        return "/process/process";
+    }
 
     public String navigateToCompleteProcessStepInstance(ProcessStepInstance psi) {
         if (psi == null) {
