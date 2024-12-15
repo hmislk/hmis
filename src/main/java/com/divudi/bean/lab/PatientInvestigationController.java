@@ -1562,6 +1562,7 @@ public class PatientInvestigationController implements Serializable {
         // Update PatientInvestigations and store associated Bills by unique ID to avoid duplicates
         for (PatientInvestigation tptix : samplePtixs.values()) {
             tptix.setSampleSent(true);
+            tptix.setSampleTransportedToLabByStaff(sampleTransportedToLabByStaff);
             tptix.setSampleSentAt(new Date());
             tptix.setSampleSentBy(sessionController.getLoggedUser());
             tptix.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
