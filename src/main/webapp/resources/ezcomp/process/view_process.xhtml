@@ -16,19 +16,149 @@
             <p:panelGrid columns="2" >
                 <p:outputLabel value="Process" ></p:outputLabel>
                 <p:outputLabel value="#{processController.processInstance.processDefinition.name}" ></p:outputLabel>
+
+                <p:outputLabel value="Status" />
+                <h:panelGroup>
+                    <p:badge 
+                        icon="fa fa-ban" 
+                        iconPos="right" 
+                        value="Cancelled&nbsp;&nbsp;" 
+                        styleClass="ui-badge-danger" 
+                        rendered="#{processController.processInstance.status eq 'Cancelled'}">
+                    </p:badge>
+                    <p:badge 
+                        icon="fa fa-refresh fa-spin" 
+                        iconPos="right" 
+                        value="Ongoing&nbsp;&nbsp;" 
+                        styleClass="ui-badge-warning" 
+                        rendered="#{processController.processInstance.status eq 'Ongoing'}">
+                    </p:badge>
+                    <p:badge 
+                        icon="fa fa-check" 
+                        iconPos="right" 
+                        value="Completed&nbsp;&nbsp;" 
+                        styleClass="ui-badge-success" 
+                        rendered="#{processController.processInstance.status eq 'Completed'}">
+                    </p:badge>
+                    <p:badge 
+                        icon="fa fa-times" 
+                        iconPos="right" 
+                        value="Rejected&nbsp;&nbsp;" 
+                        styleClass="ui-badge-dark" 
+                        rendered="#{processController.processInstance.status eq 'Rejected'}">
+                    </p:badge>
+                    <p:badge 
+                        icon="fa fa-pause" 
+                        iconPos="right" 
+                        value="Paused&nbsp;&nbsp;" 
+                        styleClass="ui-badge-secondary" 
+                        rendered="#{processController.processInstance.status eq 'Paused'}">
+                    </p:badge>
+                </h:panelGroup>
+
+
+
+                <p:outputLabel 
+                    value="Initiated By" ></p:outputLabel>
+                <p:outputLabel 
+                    value="#{processController.processInstance.creator.webUserPerson.nameWithTitle}" ></p:outputLabel>
+
+                <p:outputLabel 
+                    value="Initiated At" ></p:outputLabel>
+                <p:outputLabel 
+                    value="#{processController.processInstance.createdAt}" >
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                </p:outputLabel>
+
+
+                <p:outputLabel 
+                    value="Completed By" 
+                    rendered="#{processController.processInstance.completed}" ></p:outputLabel>
+                <p:outputLabel 
+                    value="#{processController.processInstance.completedBy}"
+                    rendered="#{processController.processInstance.completed}" ></p:outputLabel>
+
+                <p:outputLabel 
+                    value="Completed At" ></p:outputLabel>
+                <p:outputLabel 
+                    value="#{processController.processInstance.completedAt}"
+                    rendered="#{processController.processInstance.completed}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                </p:outputLabel>
+
+                <p:outputLabel value="Initiated By" />
+                <p:outputLabel value="#{processController.processInstance.creator.webUserPerson.nameWithTitle}" />
+
+                <p:outputLabel value="Initiated At" />
+                <p:outputLabel value="#{processController.processInstance.createdAt}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                </p:outputLabel>
+
+                <!-- Completed Details -->
+                <p:outputLabel value="Completed By" rendered="#{processController.processInstance.completed}" />
+                <p:outputLabel value="#{processController.processInstance.completedBy}" rendered="#{processController.processInstance.completed}" />
+
+                <p:outputLabel value="Completed At" rendered="#{processController.processInstance.completed}" />
+                <p:outputLabel value="#{processController.processInstance.completedAt}" rendered="#{processController.processInstance.completed}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                </p:outputLabel>
+
+                <!-- Cancelled Details -->
+                <p:outputLabel value="Cancelled By" rendered="#{processController.processInstance.cancelled}" />
+                <p:outputLabel value="#{processController.processInstance.cancelledBy}" rendered="#{processController.processInstance.cancelled}" />
+
+                <p:outputLabel value="Cancelled At" rendered="#{processController.processInstance.cancelled}" />
+                <p:outputLabel value="#{processController.processInstance.cancelledAt}" rendered="#{processController.processInstance.cancelled}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                </p:outputLabel>
+
+                <!-- Rejected Details -->
+                <p:outputLabel value="Rejected By" rendered="#{processController.processInstance.rejected}" />
+                <p:outputLabel value="#{processController.processInstance.rejectedBy}" rendered="#{processController.processInstance.rejected}" />
+
+                <p:outputLabel value="Rejected At" rendered="#{processController.processInstance.rejected}" />
+                <p:outputLabel value="#{processController.processInstance.rejectedAt}" rendered="#{processController.processInstance.rejected}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                </p:outputLabel>
+
+                <!-- Paused Details -->
+                <p:outputLabel value="Paused By" rendered="#{processController.processInstance.paused}" />
+                <p:outputLabel value="#{processController.processInstance.pausedBy}" rendered="#{processController.processInstance.paused}" />
+
+                <p:outputLabel value="Paused At" rendered="#{processController.processInstance.paused}" />
+                <p:outputLabel value="#{processController.processInstance.pausedAt}" rendered="#{processController.processInstance.paused}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                </p:outputLabel>
+
+
+
             </p:panelGrid>
 
             <p:dataTable value="#{processController.processStepInstances}" var="s" rowKey="#{s.id}" >
                 <p:column headerText="Step" >
                     <h:outputText value="#{s.processStepDefinition.name}" ></h:outputText>
                 </p:column>
+                <p:column headerText="Status" >
+                    <h:outputText value="#{s.status}" ></h:outputText>
+                </p:column>
                 <p:column headerText="Completed" >
                     <h:outputText value="#{s.completedAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                     </h:outputText>
                 </p:column>
-                <p:column headerText="Action" >
+                <p:column headerText="Completed by" >
+                    <h:outputText value="#{s.completedBy.webUserPerson.nameWithTitle}" >
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Outcome" >
                     <h:outputText value="#{s.processStepActionDefinition.name}" ></h:outputText>
+                </p:column>
+                <p:column headerText="Actions" >
+                    <p:commandButton 
+                        rendered="#{not s.completed}"
+                        value="Start" 
+                        ajax="false" 
+                        action="#{processController.navigateToCompleteProcessStepInstance(s)}" ></p:commandButton>
                 </p:column>
 
             </p:dataTable>

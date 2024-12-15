@@ -75,6 +75,7 @@ public class ProcessService {
             }
             return true;
         } catch (Exception e) {
+            System.out.println("e = " + e);
             return false;
         }
     }
@@ -179,6 +180,7 @@ public class ProcessService {
     public void cancelProcessInstance(ProcessStepInstance processStepInstance, WebUser user) {
         if (processStepInstance != null && processStepInstance.getProcessInstance() != null && user != null) {
             ProcessInstance processInstance = processStepInstance.getProcessInstance();
+            processInstance.setStatus("Cancelled");
             processInstance.setCancelled(true);
             processInstance.setCancelledBy(user);
             processInstance.setCancelledAt(new Date());
@@ -190,6 +192,7 @@ public class ProcessService {
     public void completeProcessInstance(ProcessStepInstance processStepInstance, WebUser user) {
         if (processStepInstance != null && processStepInstance.getProcessInstance() != null && user != null) {
             ProcessInstance processInstance = processStepInstance.getProcessInstance();
+            processInstance.setStatus("Completed");
             processInstance.setCompleted(true);
             processInstance.setCompletedBy(user);
             processInstance.setCompletedAt(new Date());
@@ -203,6 +206,7 @@ public class ProcessService {
         if (processStepInstance != null && processStepInstance.getProcessInstance() != null && user != null) {
             ProcessInstance processInstance = processStepInstance.getProcessInstance();
             processInstance.setRejected(true);
+            processInstance.setStatus("Rejected");
             processInstance.setRejectedBy(user);
             processInstance.setRejectedAt(new Date());
             save(processInstance);
@@ -213,6 +217,7 @@ public class ProcessService {
     public void pauseProcessInstance(ProcessStepInstance processStepInstance, WebUser user) {
         if (processStepInstance != null && processStepInstance.getProcessInstance() != null && user != null) {
             ProcessInstance processInstance = processStepInstance.getProcessInstance();
+             processInstance.setStatus("Paused");
             processInstance.setPaused(true);
             processInstance.setPausedBy(user);
             processInstance.setPausedAt(new Date());
@@ -226,6 +231,7 @@ public class ProcessService {
         processStepInstance.setCompleted(true);
         processStepInstance.setCompletedBy(user);
         processStepInstance.setCompletedAt(new Date());
+        processStepInstance.setStatus("Completed");
         save(processStepInstance);
     }
 

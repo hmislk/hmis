@@ -21,6 +21,7 @@
                     filterMatchMode="contains"
                     class="w-100"
                     value="#{processController.processDefinition}" >
+                    <f:selectItem itemLabel="Select" ></f:selectItem>
                     <f:selectItems 
                         value="#{processController.processDefinitions}" 
                         var="process"
@@ -31,7 +32,6 @@
                     value="Start"
                     action="#{processController.startProcessInstance()}"
                     ajax="false">
-                    
                 </p:commandButton>
             </p:panelGrid>
         </h:form>
