@@ -35,7 +35,9 @@ import com.divudi.facade.StaffFacade;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -139,6 +141,7 @@ public class PaymentService {
     }
 
     private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
+        
         CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
         List<Payment> payments = new ArrayList<>();
         Date currentDate = new Date();
@@ -166,10 +169,8 @@ public class PaymentService {
             paymentFacade.create(payment);
             cashbookService.writeCashBookEntryAtPaymentCreation(payment);
             drawerService.updateDrawer(payment);
-
             payments.add(payment);
         }
-
         return payments;
     }
 
@@ -201,9 +202,9 @@ public class PaymentService {
                 payment.setComments(paymentMethodData.getCheque().getComment());
                 break;
             case Cash:
-                payment.getBill().getNetTotal();
-//                payment.setPaidValue(paymentMethodData.getCash().getTotalValue());
-//                payment.setComments(paymentMethodData.getCash().getComment());
+//                payment.getBill().getNetTotal();
+                payment.setPaidValue(paymentMethodData.getCash().getTotalValue());
+                payment.setComments(paymentMethodData.getCash().getComment());
                 break;
             case ewallet:
                 payment.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
@@ -237,6 +238,9 @@ public class PaymentService {
                 payment.setComments(paymentMethodData.getSlip().getComment());
                 payment.setBank(paymentMethodData.getSlip().getInstitution());
                 payment.setReferenceNo(paymentMethodData.getSlip().getReferenceNo());
+                payment.setRealizedAt(paymentMethodData.getSlip().getDate());
+                payment.setPaymentDate(paymentMethodData.getSlip().getDate());
+                payment.setChequeDate(paymentMethodData.getSlip().getDate());
                 payment.setRealizedAt(paymentMethodData.getSlip().getDate());
                 break;
             case OnCall:
@@ -341,6 +345,38 @@ public class PaymentService {
         PatientDeposit pd = patientDepositService.getDepositOfThePatient(pt, p.getDepartment());
         patientDepositService.updateBalance(p, pd);
 
+    }
+
+    public List<PaymentMethod> fetchAvailablePaymentMethodsForRefundsAndCancellations(Bill originalBill) {
+        Set<PaymentMethod> uniqueMethods = new LinkedHashSet<>();
+        uniqueMethods.add(PaymentMethod.Cash);
+
+        if (originalBill == null) {
+            return new ArrayList<>(uniqueMethods);
+        }
+
+        if (originalBill.getPaymentMethod() == null) {
+            return new ArrayList<>(uniqueMethods);
+        }
+
+        if (originalBill.getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
+            uniqueMethods.add(originalBill.getPaymentMethod());
+            return new ArrayList<>(uniqueMethods);
+        }
+
+        List<Payment> originalBillPayments = billService.fetchBillPayments(originalBill);
+        if (originalBillPayments == null) {
+            originalBillPayments = billService.fetchBillPayments(originalBill.getBackwardReferenceBill());
+        }
+        if (originalBillPayments == null) {
+            return new ArrayList<>(uniqueMethods);
+        }
+
+        for (Payment p : originalBillPayments) {
+            uniqueMethods.add(p.getPaymentMethod());
+        }
+
+        return new ArrayList<>(uniqueMethods);
     }
 
     public BillValidation checkForErrorsInPaymentDetailsForInBills(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, Double netTotal, Patient patient) {
@@ -498,11 +534,6 @@ public class PaymentService {
 
                     if (payhingThisTimeValue > availableForPurchase) {
 
-                        System.out.println("payhingThisTimeValue = " + payhingThisTimeValue);
-
-                        System.out.println("availableForPurchase = " + availableForPurchase);
-
-                        System.out.println("no sufficient data = ");
 
                         bv.setErrorMessage("No Sufficient Patient Deposit");
                         bv.setErrorPresent(true);

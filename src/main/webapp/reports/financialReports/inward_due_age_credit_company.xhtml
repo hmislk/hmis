@@ -1,179 +1,176 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <h:body class="w-100 border">
+<h:body class="w-100 border">
 
-        <ui:composition template="/reports/index.xhtml" class="w-100 border">
-            <ui:define name="subcontent">
-                <h:form class="w-100">
-                    <p:panel header="Inward Due Age Credit Company" class="w-100">
-
-                        <h:panelGrid columns="8" class="w-100 ">
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
-                                <h:outputLabel value="Institution" for="cmbIns" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
+    <ui:composition template="/reports/index.xhtml" class="w-100 border">
+        <ui:define name="subcontent">
+            <h:form class="w-100">
+                <p:panel header="Inward Due Age Credit Company" class="w-100">
+                    <h:panelGrid columns="8" class="w-100 ">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
+                            <h:outputLabel value="Institution" for="cmbIns" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
                                 id="cmbIns"
                                 styleClass="w-100 form-control"
-                                value="#{reportsController.institution}"
+                                value="#{creditCompanyDueController.institutionOfDepartment}"
                                 filter="true">
-                                <f:selectItem itemLabel="All Institutions"/>
-                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
-                                               itemValue="#{ins}"/>
-                                <p:ajax process="cmbIns" update="cmbDept"/>
-                            </p:selectOneMenu>
+                            <f:selectItem itemLabel="All Institutions"/>
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                           itemValue="#{ins}"/>
+                            <p:ajax process="cmbIns" update="cmbDept"/>
+                        </p:selectOneMenu>
 
-                            <p:spacer width="20"/>
+                        <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
-                                <h:outputLabel value="Site" for="siteMenu" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
+                            <h:outputLabel value="Site" for="siteMenu" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
                                 id="siteMenu"
                                 styleClass="w-100 form-control"
-                                value="#{reportsController.site}"
+                                value="#{creditCompanyDueController.site}"
                                 filter="true">
-                                <f:selectItem itemLabel="All Sites"/>
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
-                                               itemValue="#{site}"/>
-                                <p:ajax process="siteMenu" update="cmbDept"/>
-                            </p:selectOneMenu>
+                            <f:selectItem itemLabel="All Sites"/>
+                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                           itemValue="#{site}"/>
+                            <p:ajax process="siteMenu" update="cmbDept"/>
+                        </p:selectOneMenu>
 
-                            <p:spacer width="20"/>
+                        <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Department" for="cmbDept" class="m-3"/>
-                            </h:panelGroup>
-                            <h:panelGroup id="cmbDept">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
+                            <h:outputLabel value="Department" for="cmbDept" class="m-3"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="cmbDept">
 
-                                <!-- Component 1: Without Institution and Site -->
-                                <p:selectOneMenu
-                                    rendered="#{reportsController.institution eq null and reportsController.site eq null}"
+                            <!-- Component 1: Without Institution and Site -->
+                            <p:selectOneMenu
+                                    rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{reportsController.department}"
+                                    value="#{creditCompanyDueController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
-                                    <f:selectItem itemLabel="All Departments"/>
-                                    <f:selectItems
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
                                         value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}"/>
-                                </p:selectOneMenu>
+                            </p:selectOneMenu>
 
-                                <!-- Component 2: With Site Only -->
-                                <p:selectOneMenu
-                                    rendered="#{reportsController.institution eq null and reportsController.site ne null}"
+                            <!-- Component 2: With Site Only -->
+                            <p:selectOneMenu
+                                    rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{reportsController.department}"
+                                    value="#{creditCompanyDueController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
-                                    <f:selectItem itemLabel="All Departments"/>
-                                    <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.site)}"
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.site)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}"/>
-                                </p:selectOneMenu>
+                            </p:selectOneMenu>
 
-                                <!-- Component 3: With Institution Only -->
-                                <p:selectOneMenu
-                                    rendered="#{reportsController.institution ne null and reportsController.site eq null}"
+                            <!-- Component 3: With Institution Only -->
+                            <p:selectOneMenu
+                                    rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{reportsController.department}"
+                                    value="#{creditCompanyDueController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
-                                    <f:selectItem itemLabel="All Departments"/>
-                                    <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(reportsController.institution)}"
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(creditCompanyDueController.institutionOfDepartment)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}"/>
-                                </p:selectOneMenu>
+                            </p:selectOneMenu>
 
-                                <!-- Component 4: With Both Institution and Site -->
-                                <p:selectOneMenu
-                                    rendered="#{reportsController.institution ne null and reportsController.site ne null}"
+                            <!-- Component 4: With Both Institution and Site -->
+                            <p:selectOneMenu
+                                    rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{reportsController.department}"
+                                    value="#{creditCompanyDueController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
-                                    <f:selectItem itemLabel="All Departments"/>
-                                    <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.institution, reportsController.site)}"
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.institutionOfDepartment, creditCompanyDueController.site)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}"/>
-                                </p:selectOneMenu>
+                            </p:selectOneMenu>
 
-                                <p:selectOneMenu
+                            <p:selectOneMenu
                                     rendered="false"
                                     styleClass="w-100 form-control"
-                                    value="#{reportsController.department}"
+                                    value="#{creditCompanyDueController.department}"
                                     filter="true">
-                                    <f:selectItem itemLabel="All Departments"/>
-                                    <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.institution, reportsController.site)}"
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.institutionOfDepartment, creditCompanyDueController.site)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}"/>
-                                </p:selectOneMenu>
-                            </h:panelGroup>
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+                    </h:panelGrid>
 
-                        </h:panelGrid>
-
-                        <p:commandButton 
+                    <p:commandButton
                             id="btnSearch"
                             class="ui-button-warning my-4 mx-2"
                             style="width: 200px"
-                            ajax="false" 
-                            value="Process Due Age" 
-                            icon="fas fa-cogs" 
-                            action="#{creditCompanyDueController.createInwardAgeTable()}">
-                        </p:commandButton>
+                            ajax="false"
+                            value="Process Due Age"
+                            icon="fas fa-cogs"
+                            action="#{creditCompanyDueController.createInwardAgeTableWithFilters()}">
+                    </p:commandButton>
 
-                        <p:defaultCommand target="btnSearch"/>
+                    <p:defaultCommand target="btnSearch"/>
 
-                        <p:dataTable id="lst" value="#{creditCompanyDueController.creditCompanyAge}" var="i"
-                                     filteredValue="#{creditCompanyDueController.filteredList}">                       
-                            <p:column headerText="Credit Company" filterBy="#{i.institution.name}" filterMatchMode="contains">       
-                                <h:outputLabel  value="#{i.institution.name}"/>
-                            </p:column>                               
-                            <p:column headerText="0-30" style="text-align: right;">   
-                                <h:outputLabel  value="#{i.value1}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="30-60" style="text-align: right;">    
-                                <h:outputLabel  value="#{i.value2}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="60-90" style="text-align: right;">  
-                                <h:outputLabel  value="#{i.value3}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="90 More" style="text-align: right;">   
-                                <h:outputLabel  value="#{i.value4}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>                      
-                        </p:dataTable>
-
-                    </p:panel>
-                </h:form>
-            </ui:define>
-        </ui:composition>
-
-    </h:body>
+                    <p:dataTable id="lst" value="#{creditCompanyDueController.creditCompanyAge}" var="i"
+                                 filteredValue="#{creditCompanyDueController.filteredList}">
+                        <p:column headerText="Credit Company" filterBy="#{i.institution.name}"
+                                  filterMatchMode="contains">
+                            <h:outputLabel value="#{i.institution.name}"/>
+                        </p:column>
+                        <p:column headerText="0-30" style="text-align: right;">
+                            <h:outputLabel value="#{i.value1}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="30-60" style="text-align: right;">
+                            <h:outputLabel value="#{i.value2}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="60-90" style="text-align: right;">
+                            <h:outputLabel value="#{i.value3}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="90 More" style="text-align: right;">
+                            <h:outputLabel value="#{i.value4}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
 </html>
