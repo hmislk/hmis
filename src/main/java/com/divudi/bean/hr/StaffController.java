@@ -133,6 +133,40 @@ public class StaffController implements Serializable {
         itemsToRemove = null;
         items = null;
     }
+    
+    private String signatureUrl;
+
+    public void saveSignatureUrl() {
+        System.out.println("saveSignatureUrl");
+        if (current.getId() == null || current.getId() == 0) {
+            System.out.println("current Null");
+            JsfUtil.addErrorMessage("Please Select Staff Member");
+        }
+        if (getSignatureUrl() == null || getSignatureUrl().trim() == "") {
+            System.out.println("URL Null");
+            JsfUtil.addErrorMessage("Add Signature Url");
+        }
+        System.out.println("getStaffController().getCurrent = " + getCurrent());
+        System.out.println("Signature Url = " + getSignatureUrl());
+        
+        current.setSignatureUrl(getSignatureUrl());
+        ejbFacade.edit(getCurrent()); 
+        signatureUrl = null;
+        JsfUtil.addSuccessMessage("Added Signature Url");
+    }
+    
+    public void removeSignatureUrl() {
+        System.out.println("RemoveSignatureUrl");
+        if (current.getId() == null || current.getId() == 0) {
+            System.out.println("current Null");
+            JsfUtil.addErrorMessage("Please Select Staff Member");
+        }
+        System.out.println("getStaffController().getCurrent = " + getCurrent());
+        
+        current.setSignatureUrl(null);
+        ejbFacade.edit(getCurrent());
+        JsfUtil.addSuccessMessage("Remove Signature Url");
+    }
 
     public String navigateToListStaff() {
         fillItems();
@@ -159,33 +193,33 @@ public class StaffController implements Serializable {
         current.setPerson(currentPerson);
         return "/admin/staff/staff?faces-redirect=true;";
     }
-    
-    public void saveCurrentStaff(){
-        if(current==null){
+
+    public void saveCurrentStaff() {
+        if (current == null) {
             JsfUtil.addErrorMessage("No Staff");
-            return ;
+            return;
         }
-        if(current.getPerson()==null){
-              JsfUtil.addErrorMessage("No Person");
-            return ;
+        if (current.getPerson() == null) {
+            JsfUtil.addErrorMessage("No Person");
+            return;
         }
-        if(current.getPerson().getId()!=null){
+        if (current.getPerson().getId() != null) {
             personFacade.edit(current.getPerson());
-        }else{
+        } else {
             current.getPerson().setCreatedAt(new Date());
             current.getPerson().setCreater(sessionController.getLoggedUser());
             personFacade.edit(current.getPerson());
         }
-        if(current.getId()!=null){
+        if (current.getId() != null) {
             ejbFacade.edit(current);
             JsfUtil.addSuccessMessage("Updated");
-        }else{
+        } else {
             current.setCreater(sessionController.getLoggedUser());
             current.setCreatedAt(new Date());
             ejbFacade.create(current);
             JsfUtil.addSuccessMessage("Saved");
         }
-        
+
     }
 
     public void deleteStaff() {
@@ -1503,7 +1537,7 @@ public class StaffController implements Serializable {
         }
         return items;
     }
-    
+
     public void fillItems() {
         String temSql;
         temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
@@ -1524,7 +1558,7 @@ public class StaffController implements Serializable {
         m.put("name", name);
         return getFacade().findFirstByJpql(jpql, m);
     }
-    
+
     public Staff findStaffById(Long id) {
         if (id == null) {
             return null;
@@ -1647,6 +1681,14 @@ public class StaffController implements Serializable {
 
     public void setCurrentPerson(Person currentPerson) {
         this.currentPerson = currentPerson;
+    }
+
+    public String getSignatureUrl() {
+        return signatureUrl;
+    }
+
+    public void setSignatureUrl(String signatureUrl) {
+        this.signatureUrl = signatureUrl;
     }
 
     /**
