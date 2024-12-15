@@ -11,6 +11,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.Upload;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -159,6 +160,8 @@ public class PatientReport implements Serializable {
     private PatientInvestigationStatus status;
     
     private String sampleIDs;
+    
+    private Upload uploadedReport;
 
     public PatientReport() {
         if (status == null) {
@@ -802,6 +805,14 @@ public class PatientReport implements Serializable {
 
     public void setSampleIDs(String sampleIDs) {
         this.sampleIDs = sampleIDs;
+    }
+
+    public Upload getUploadedReport() {
+        return uploadedReport;
+    }
+
+    public void setUploadedReport(Upload uploadedReport) {
+        this.uploadedReport = uploadedReport;
     }
 
     static class PatientReportItemValueComparator implements Comparator<PatientReportItemValue> {
