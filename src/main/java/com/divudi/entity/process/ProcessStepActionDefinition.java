@@ -1,10 +1,13 @@
 package com.divudi.entity.process;
 
+import com.divudi.data.process.ProcessStepActionType;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -15,14 +18,13 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
- * Entity class for process step action definitions.
- * Dr M H B Ariyaratne
+ * Entity class for process step action definitions. Dr M H B Ariyaratne
  */
 @Entity
 public class ProcessStepActionDefinition implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -30,7 +32,7 @@ public class ProcessStepActionDefinition implements Serializable {
     @JoinColumn(nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private ProcessStepDefinition processStepDefinition;
-    
+
     @Column(nullable = false, length = 100)
     private String name;
 
@@ -42,10 +44,15 @@ public class ProcessStepActionDefinition implements Serializable {
 
     @Column(nullable = false)
     private boolean active = true;
-    
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ProcessStepActionType actionType;
+
     private Double sequenceOrder;
-    
-    private String actionType;
+
+    @Column(nullable = false)
+    private boolean allowsMultipleActions = false; // Default to false to enforce single action unless explicitly allowed
 
     @ManyToOne(fetch = FetchType.LAZY)
     private ProcessStepActionDefinition parent;
@@ -64,9 +71,8 @@ public class ProcessStepActionDefinition implements Serializable {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date retiredAt;
-    
-    // Getters and Setters
 
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -91,96 +97,97 @@ public class ProcessStepActionDefinition implements Serializable {
         this.name = name;
     }
 
-	public String getDescription() {
-	    return description;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public void setDescription(String description) {
-	    this.description = description;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public String getVersion() {
-	    return version;
-	}
+    public String getVersion() {
+        return version;
+    }
 
-	public void setVersion(String version) {
-	    this.version = version;
-	}
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
-	public boolean isActive() {
-	    return active;
-	}
+    public boolean isActive() {
+        return active;
+    }
 
-	public void setActive(boolean active) {
-	    this.active = active;
-	}
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 
-	public Double getSequenceOrder() {
-	    return sequenceOrder;
-	}
+    public Double getSequenceOrder() {
+        return sequenceOrder;
+    }
 
-	public void setSequenceOrder(Double sequenceOrder) {
-	    this.sequenceOrder = sequenceOrder;
-	}
+    public void setSequenceOrder(Double sequenceOrder) {
+        this.sequenceOrder = sequenceOrder;
+    }
 
-	public String getActionType() {
-	    return actionType;
-	}
+    public ProcessStepActionType getActionType() {
+        return actionType;
+    }
 
-	public void setActionType(String actionType) {
-	    this.actionType = actionType;
-	}
+    public void setActionType(ProcessStepActionType actionType) {
+        this.actionType = actionType;
+    }
 
-	public ProcessStepActionDefinition getParent() {
-	    return parent;
-	}
+    public ProcessStepActionDefinition getParent() {
+        return parent;
+    }
 
-	public void setParent(ProcessStepActionDefinition parent) {
-	    this.parent = parent;
-	}
+    public void setParent(ProcessStepActionDefinition parent) {
+        this.parent = parent;
+    }
 
-	public WebUser getCreator() {
-	    return creator;
-	}
+    public WebUser getCreator() {
+        return creator;
+    }
 
-	public void setCreator(WebUser creator) {
-	    this.creator = creator;
-	}
+    public void setCreator(WebUser creator) {
+        this.creator = creator;
+    }
 
-	public Date getCreatedAt() {
-	    return createdAt;
-	}
+    public Date getCreatedAt() {
+        return createdAt;
+    }
 
-	public void setCreatedAt(Date createdAt) {
-	    this.createdAt = createdAt;
-	}
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
 
-	public boolean isRetired() {
-	    return retired;
-	}
+    public boolean isRetired() {
+        return retired;
+    }
 
-	public void setRetired(boolean retired) {
-	    this.retired = retired;
-	}
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
 
-	public WebUser getRetirer() {
-	    return retirer;
-	}
+    public WebUser getRetirer() {
+        return retirer;
+    }
 
-	public void setRetirer(WebUser retirer) {
-	    this.retirer = retirer;
-	}
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
 
-	public Date getRetiredAt() {
-	    return retiredAt;
-	}
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
 
-	public void setRetiredAt(Date retiredAt) {
-	    this.retiredAt = retiredAt;
-	}
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+    
+    
 
     // hashCode, equals, and toString methods
-
     @Override
     public int hashCode() {
         int hash = 0;
@@ -195,9 +202,9 @@ public class ProcessStepActionDefinition implements Serializable {
             return false;
         }
         ProcessStepActionDefinition other = (ProcessStepActionDefinition) object;
-        if ((this.id == null && other.id != null) || 
-            (this.id != null && !this.id.equals(other.id))) {
-                return false;
+        if ((this.id == null && other.id != null)
+                || (this.id != null && !this.id.equals(other.id))) {
+            return false;
         }
         return true;
     }
@@ -205,5 +212,13 @@ public class ProcessStepActionDefinition implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.workflow.ProcessStepActionDefinition[ id=" + id + " ]";
+    }
+
+    public boolean isAllowsMultipleActions() {
+        return allowsMultipleActions;
+    }
+
+    public void setAllowsMultipleActions(boolean allowsMultipleActions) {
+        this.allowsMultipleActions = allowsMultipleActions;
     }
 }

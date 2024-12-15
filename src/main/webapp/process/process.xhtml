@@ -16,6 +16,15 @@
                 <h:panelGroup rendered="#{processController.stage eq 'initiate_process'}" >
                     <pr:initiate_process/>                    
                 </h:panelGroup>
+                <h:panelGroup rendered="#{processController.stage eq 'initiate_step'}" >
+                    <pr:initiate_step/>                    
+                </h:panelGroup>
+                <h:panelGroup rendered="#{processController.stage eq 'view_step'}" >
+                    <pr:view_step/>                    
+                </h:panelGroup>
+                <h:panelGroup rendered="#{processController.stage eq 'view_process'}" >
+                    <pr:view_process/>                    
+                </h:panelGroup>
             </ui:define>
         </ui:composition>
     </h:body>

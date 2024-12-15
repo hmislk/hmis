@@ -150,6 +150,18 @@
                                                          styleClass="form-control mt-2" 
                                                          disabled="#{!processStepActionDefinitionController.editable}" />
 
+                                        <p:outputLabel 
+                                            for="completes" 
+                                            value="Completes the Process:" 
+                                            styleClass="font-weight-bold mt-2" />
+                                        <p:selectBooleanCheckbox 
+                                            id="completes" 
+                                            value="#{processStepActionDefinitionController.current.active}" 
+                                            styleClass="mt-2" 
+                                            disabled="#{!processStepActionDefinitionController.editable}" />
+
+
+
                                         <p:outputLabel for="version" value="Version:" styleClass="font-weight-bold mt-2" />
                                         <p:inputText id="version" 
                                                      value="#{processStepActionDefinitionController.current.version}" 
