@@ -17,15 +17,15 @@ import org.apache.commons.io.IOUtils;
 import org.primefaces.model.file.UploadedFile;
 
 /**
- *
- * @author H.K. Damith Deshan hkddrajapaksha@gmail.com
- *
- */
+- *
+- * @author H.K. Damith Deshan hkddrajapaksha@gmail.com
+- *
+*/
 @Named
 @SessionScoped
 public class PatientReportUploadController implements Serializable {
 
-    // <editor-fold defaultstate="collapsed" desc="EGBs">
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private UploadFacade facade;
     @EJB
@@ -35,61 +35,85 @@ public class PatientReportUploadController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     PatientReportController patientReportController;
-
-    Upload reportUpload;
-
     // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private PatientInvestigation patientInvestigation;
     private UploadedFile file;
     private UploadType uploadType;
 
-    private static final long SIZE_LIMIT = 10240000; // 1 MB
-    private static final String ALLOWED_FILE_TYPES_REGEX = "(\\.|\\/)(pdf|jpeg|jpg|png)$";
+    private static final long SIZE_LIMIT = 10240000; // 10 MB
+    private static final String ALLOWED_FILE_TYPES_REGEX = "(?i)\\.(pdf|jpeg|jpg|png)$"; // Case-insensitive
 
+    private Upload reportUpload; // To store the uploaded file's information
     // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="Functional Methods">
     public void makeNull() {
         patientInvestigation = null;
         file = null;
         uploadType = null;
+        reportUpload = null;
     }
-
 
     public String uploadReport() {
-        InputStream in;
-        if (file == null || "".equals(file.getFileName())) {
+        if (file == null || file.getSize() == 0) {
+            JsfUtil.addErrorMessage("Please select a file to upload.");
             return "";
         }
-        if (file == null) {
-            JsfUtil.addErrorMessage("Please select an image");
+
+        // Validate file size
+        if (file.getSize() > SIZE_LIMIT) {
+            JsfUtil.addErrorMessage("File size exceeds the maximum limit of 10 MB.");
             return "";
         }
+
+        // Validate file type
+        String fileName = file.getFileName();
+        if (!fileName.matches(".*" + ALLOWED_FILE_TYPES_REGEX)) {
+            JsfUtil.addErrorMessage("Invalid file type. Only PDF, JPEG, JPG, and PNG are allowed.");
+            return "";
+        }
+
         if (patientReportController.getCurrentPatientReport() == null) {
-            JsfUtil.addErrorMessage("Please select an image");
+            JsfUtil.addErrorMessage("Please select a patient report.");
             return "";
         }
-        if (patientReportController.getCurrentPatientReport().getId() == null) {
-            patientReportFacade.create(patientReportController.getCurrentPatientReport());
-        } else {
-            patientReportFacade.edit(patientReportController.getCurrentPatientReport());
-        }
+
         try {
-            in = getFile().getInputStream();
+            // Persist the patient report if it's new
+            if (patientReportController.getCurrentPatientReport().getId() == null) {
+                patientReportFacade.create(patientReportController.getCurrentPatientReport());
+            } else {
+                patientReportFacade.edit(patientReportController.getCurrentPatientReport());
+            }
+
+            // Read the file input stream
+            InputStream in = file.getInputStream();
+            byte[] fileContent = IOUtils.toByteArray(in);
+
+            // Create and persist the Upload entity
             reportUpload = new Upload();
             reportUpload.setPatientReport(patientReportController.getCurrentPatientReport());
-            reportUpload.setBaImage(IOUtils.toByteArray(in));
-            reportUpload.setFileName(getFile().getFileName());
-            reportUpload.setFileType(getFile().getContentType());
+            reportUpload.setBaImage(fileContent);
+            reportUpload.setFileName(fileName);
+            reportUpload.setFileType(file.getContentType());
             facade.create(reportUpload);
-            return "";
+
+            JsfUtil.addSuccessMessage("File uploaded successfully.");
+            return "success"; // Navigate or stay on the same page as needed
         } catch (IOException e) {
-            //////System.out.println("Error " + e.getMessage());
+            JsfUtil.addErrorMessage("Error uploading file: " + e.getMessage());
             return "";
         }
-
     }
 
+    // Getter for the uploaded file's ID
+    public Long getUploadedFileId() {
+        return (reportUpload != null) ? reportUpload.getId() : null;
+    }
+
+    // Getters and Setters
     public UploadFacade getFacade() {
         return facade;
     }
@@ -106,4 +130,20 @@ public class PatientReportUploadController implements Serializable {
         this.file = file;
     }
 
+    public Upload getReportUpload() {
+        return reportUpload;
+    }
+
+    public void setReportUpload(Upload reportUpload) {
+        this.reportUpload = reportUpload;
+    }
+
+    public PatientReportController getPatientReportController() {
+        return patientReportController;
+    }
+
+    public void setPatientReportController(PatientReportController patientReportController) {
+        this.patientReportController = patientReportController;
+    }
+    // </editor-fold>
 }
