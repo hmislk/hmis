@@ -2,6 +2,7 @@ package com.divudi.bean.process;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.process.ProcessStepActionType;
 import com.divudi.entity.process.ProcessDefinition;
 import com.divudi.entity.process.ProcessInstance;
 import com.divudi.entity.process.ProcessStepActionDefinition;
@@ -41,6 +42,7 @@ public class ProcessController implements Serializable {
     }
 
     private List<ProcessDefinition> processDefinitions;
+    private List<ProcessStepInstance> processStepInstances;
     private ProcessInstance processInstance;
     private ProcessDefinition processDefinition;
     private ProcessStepDefinition processStepDefinition;
@@ -55,6 +57,16 @@ public class ProcessController implements Serializable {
         resetVariablesToStartProcessInstance();
         stage = "initiate_process";
         return "/process/process?faces-redirect=true;";
+    }
+
+    public String navigateToViewProcessInstance() {
+        if (processInstance == null) {
+            JsfUtil.addErrorMessage("No Process Selected");
+            return null;
+        }
+        processStepInstances = processService.fetchProcessStepInstances(processInstance);
+        stage = "view_process";
+        return null;
     }
 
     public String startProcessInstance() {
@@ -103,21 +115,27 @@ public class ProcessController implements Serializable {
 
         processInstance = processStepInstance.getProcessInstance();
         ProcessStepActionDefinition actionDef = processStepInstance.getProcessStepActionDefinition();
-
+        ProcessStepInstance previousProcessStepInstance;
         // Handle the specific action taken
         switch (actionDef.getActionType()) {
             case CANCEL_PROCESS:
                 processService.cancelProcessInstance(processStepInstance, sessionController.getLoggedUser());
                 JsfUtil.addSuccessMessage("Process has been cancelled.");
-                break;
+                JsfUtil.addSuccessMessage("Moved to the next step.");
+                return navigateToViewProcessInstance();
+
             case COMPLETE_PROCESS:
                 processService.completeProcessInstance(processStepInstance, sessionController.getLoggedUser());
                 JsfUtil.addSuccessMessage("Process has been completed.");
-                break;
+                JsfUtil.addSuccessMessage("Moved to the next step.");
+                return navigateToViewProcessInstance();
+
             case COMPLETE_STEP:
                 processService.completeProcessStepInstance(processStepInstance, sessionController.getLoggedUser());
                 JsfUtil.addSuccessMessage("Step has been completed.");
-                break;
+                JsfUtil.addSuccessMessage("Moved to the next step.");
+                return navigateToViewProcessInstance();
+
             case CUSTOM_ACTION:
                 // Implement custom action logic here
                 JsfUtil.addSuccessMessage("Custom action processed.");
@@ -127,47 +145,65 @@ public class ProcessController implements Serializable {
                 JsfUtil.addSuccessMessage("Issue has been escalated.");
                 break;
             case MOVE_TO_NEXT_STEP:
-                processStepDefinition = processService.fetchTheFirstProcessStepDefinition(processDefinition);
-
+                processStepDefinition = processService.fetchNextProcessStepDefinition(processStepInstance);
+                previousProcessStepInstance = processStepInstance;
                 processStepInstance = new ProcessStepInstance();
                 processStepInstance.setProcessInstance(processInstance);
+                processStepInstance.setPrecedingStepInstance(previousProcessStepInstance);
                 processStepInstance.setProcessStepDefinition(processStepDefinition);
                 processStepInstance.setCreator(sessionController.getLoggedUser());
                 processStepInstance.setCreatedAt(new Date());
                 processService.save(processStepInstance);
-
-                processStepActionDefinitions = processService.fetchProcessStepActionDefinitions(processStepDefinition);
-
-                if (actionDef.isAllowsMultipleActions()) {
-
-                    stage = "initiate_step";
-                } else {
-                    stage = "view_process";
-                }
                 JsfUtil.addSuccessMessage("Moved to the next step.");
-                break;
+                return navigateToViewProcessInstance();
             case MOVE_TO_SPECIFIED_STEP:
-                // Logic to move to a specified step
+                processStepDefinition = actionDef.getDirectedProcessStepDefinition();
+                previousProcessStepInstance = processStepInstance;
+                processStepInstance = new ProcessStepInstance();
+                processStepInstance.setProcessInstance(processInstance);
+                processStepInstance.setPrecedingStepInstance(previousProcessStepInstance);
+                processStepInstance.setProcessStepDefinition(processStepDefinition);
+                processStepInstance.setCreator(sessionController.getLoggedUser());
+                processStepInstance.setCreatedAt(new Date());
+                processService.save(processStepInstance);
                 JsfUtil.addSuccessMessage("Moved to the specified step.");
-                break;
+                return navigateToViewProcessInstance();
             case PAUSE_PROCESS:
                 processService.pauseProcessInstance(processStepInstance, sessionController.getLoggedUser());
                 JsfUtil.addSuccessMessage("Process has been paused.");
-                break;
+                return navigateToViewProcessInstance();
             case REJECT_PROCESS:
                 processService.rejectProcessInstance(processStepInstance, sessionController.getLoggedUser());
                 JsfUtil.addSuccessMessage("Process has been rejected.");
-                break;
+                return navigateToViewProcessInstance();
             case RETURN_TO_PREVIOUS_STEP:
-                // Logic to return to the previous step
+                processStepDefinition = processService.fetchPreviousProcessStepDefinition(processStepInstance);
+                previousProcessStepInstance = processStepInstance;
+                processStepInstance = new ProcessStepInstance();
+                processStepInstance.setProcessInstance(processInstance);
+                processStepInstance.setPrecedingStepInstance(previousProcessStepInstance);
+                processStepInstance.setProcessStepDefinition(processStepDefinition);
+                processStepInstance.setCreator(sessionController.getLoggedUser());
+                processStepInstance.setCreatedAt(new Date());
+                processService.save(processStepInstance);
                 JsfUtil.addSuccessMessage("Returned to the previous step.");
-                break;
+                return navigateToViewProcessInstance();
             default:
                 JsfUtil.addErrorMessage("Unknown action.");
-                break;
+                return navigateToViewProcessInstance();
         }
 
-        return "some_navigation_case"; // Adjust this as per your JSF navigation rules
+        return null; // Adjust this as per your JSF navigation rules
+    }
+
+    /**
+     * Retrieves all values of the ProcessStepActionType enum.
+     *
+     * @return An array of ProcessStepActionType, which contains all enum
+     * values.
+     */
+    public ProcessStepActionType[] getProcessStepActionTypes() {
+        return ProcessStepActionType.values();
     }
 
     public void resetVariablesToStartProcessInstance() {
@@ -234,6 +270,14 @@ public class ProcessController implements Serializable {
 
     public void setProcessStepActionDefinitions(List<ProcessStepActionDefinition> processStepActionDefinitions) {
         this.processStepActionDefinitions = processStepActionDefinitions;
+    }
+
+    public List<ProcessStepInstance> getProcessStepInstances() {
+        return processStepInstances;
+    }
+
+    public void setProcessStepInstances(List<ProcessStepInstance> processStepInstances) {
+        this.processStepInstances = processStepInstances;
     }
 
 }

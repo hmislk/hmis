@@ -10,7 +10,9 @@
         <title>Process Step Action Definitions Management</title>
     </h:head>
     <h:body>
+
         <ui:composition template="./index.xhtml">
+
             <ui:define name="subcontent">
                 <h:form id="processStepActionForm">
                     <p:panel>
@@ -150,6 +152,32 @@
                                                          styleClass="form-control mt-2" 
                                                          disabled="#{!processStepActionDefinitionController.editable}" />
 
+
+                                        <p:outputLabel for="actionType" value="Action Type:" styleClass="font-weight-bold mt-2" />
+                                        <p:selectOneListbox id="actionType" filter="true" filterMatchMode="contains" class="w-100"
+                                                            value="#{processStepActionDefinitionController.current.actionType}">
+                                            <f:selectItems value="#{processController.processStepActionTypes}"
+                                                           var="action"
+                                                           itemValue="#{action}"
+                                                           itemLabel="#{action.displayLabel}" />
+                                            <p:ajax update="processStepActionDetails" />
+                                        </p:selectOneListbox>
+
+                                        <p:outputLabel value="Directed Process Step Definition" for="referredProcessStepSelect" ></p:outputLabel>
+                                        <p:selectOneMenu 
+                                            id="referredProcessStepSelect" 
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            class="w-100"
+                                            value="#{processStepActionDefinitionController.current.directedProcessStepDefinition}" >
+                                            <f:selectItems 
+                                                value="#{processStepDefinitionController.getItemsOfSelectedProcessDefinition(processDefinitionController.current)}" 
+                                                var="dstep"
+                                                itemValue="#{dstep}" 
+                                                itemLabel="#{dstep.name}" />
+                                            <p:ajax update="processStepActionSelect" />
+                                        </p:selectOneMenu>
+
                                         <p:outputLabel 
                                             for="completes" 
                                             value="Completes the Process:" 
@@ -169,6 +197,15 @@
                                                      label="Version" 
                                                      styleClass="form-control mt-2" 
                                                      disabled="#{!processStepActionDefinitionController.editable}" />
+
+                                        <p:outputLabel for="orderNp" value="Order No:" styleClass="font-weight-bold mt-2" />
+                                        <p:inputText 
+                                            id="orderNp" 
+                                            value="#{processStepActionDefinitionController.current.sequenceOrder}" 
+                                            required="true" 
+                                            label="Version" 
+                                            styleClass="form-control mt-2" 
+                                            disabled="#{!processStepActionDefinitionController.editable}" />
 
                                         <p:outputLabel for="active" value="Active:" styleClass="font-weight-bold mt-2" />
                                         <p:selectBooleanCheckbox id="active" 
@@ -205,8 +242,9 @@
                             </div>
                         </div>
                     </p:panel>
+                    <p:messages id="messages" showDetail="true" />
                 </h:form>
-                <p:messages id="messages" showDetail="true" />
+
             </ui:define>
         </ui:composition>
     </h:body>

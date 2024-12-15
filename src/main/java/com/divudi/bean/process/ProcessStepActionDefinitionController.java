@@ -85,7 +85,7 @@ public class ProcessStepActionDefinitionController implements Serializable {
      */
     public String navigateToManageProcessStepActionDefinitions() {
         fillAllProcessStepActionDefinitions();
-        return "/process/process_step_action_definitions?faces-redirect=true";
+        return "/process/admin/process_step_action_definitions?faces-redirect=true";
     }
     
      public List<ProcessStepActionDefinition> getItemsOfSelectedProcessStepDefinition(ProcessStepDefinition psd) {

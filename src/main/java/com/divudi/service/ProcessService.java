@@ -111,26 +111,25 @@ public class ProcessService {
      */
     public ProcessStepDefinition fetchNextProcessStepDefinition(ProcessStepInstance processStepInstance) {
         if (processStepInstance == null || processStepInstance.getProcessStepDefinition() == null) {
-            return null; // No valid current step to determine the next step from
+            return null; // No valid current step to determine the next step from.
         }
 
-        // Example to fetch the next step, assuming a 'sequenceOrder' or similar linkage exists
         Double currentSequence = processStepInstance.getProcessStepDefinition().getSequenceOrder();
         if (currentSequence == null) {
-            return null; // Current step does not have a sequence order
+            return null; // Current step does not have a sequence order.
         }
 
         String jpql = "SELECT psd FROM ProcessStepDefinition psd WHERE psd.processDefinition = :processDefinition AND psd.sequenceOrder > :currentSequence ORDER BY psd.sequenceOrder ASC";
-        List<ProcessStepDefinition> nextSteps = processStepDefinitionFacade.findByJpql(jpql, Map.of(
-                "processDefinition", processStepInstance.getProcessStepDefinition().getProcessDefinition(),
-                "currentSequence", currentSequence
-        ));
+        Map params = new HashMap(); // Using raw type for the Map
+        params.put("processDefinition", processStepInstance.getProcessStepDefinition().getProcessDefinition());
+        params.put("currentSequence", currentSequence);
+        List<ProcessStepDefinition> nextSteps = processStepDefinitionFacade.findByJpql(jpql, params);
 
         if (nextSteps.isEmpty()) {
-            return null; // No subsequent steps found
+            return null; // No subsequent steps found.
         }
 
-        return nextSteps.get(0); // Return the next step in sequence
+        return nextSteps.get(0); // Return the next step in sequence.
     }
 
     /**
@@ -145,26 +144,25 @@ public class ProcessService {
      */
     public ProcessStepDefinition fetchPreviousProcessStepDefinition(ProcessStepInstance processStepInstance) {
         if (processStepInstance == null || processStepInstance.getProcessStepDefinition() == null) {
-            return null; // No valid current step to determine the previous step from
+            return null; // No valid current step to determine the previous step from.
         }
 
-        // Fetch the previous step, assuming a 'sequenceOrder' or similar linkage exists
         Double currentSequence = processStepInstance.getProcessStepDefinition().getSequenceOrder();
         if (currentSequence == null) {
-            return null; // Current step does not have a sequence order
+            return null; // Current step does not have a sequence order.
         }
 
         String jpql = "SELECT psd FROM ProcessStepDefinition psd WHERE psd.processDefinition = :processDefinition AND psd.sequenceOrder < :currentSequence ORDER BY psd.sequenceOrder DESC";
-        List<ProcessStepDefinition> previousSteps = processStepDefinitionFacade.findByJpql(jpql, Map.of(
-                "processDefinition", processStepInstance.getProcessStepDefinition().getProcessDefinition(),
-                "currentSequence", currentSequence
-        ));
+        Map params = new HashMap(); // Using raw type for the Map
+        params.put("processDefinition", processStepInstance.getProcessStepDefinition().getProcessDefinition());
+        params.put("currentSequence", currentSequence);
+        List<ProcessStepDefinition> previousSteps = processStepDefinitionFacade.findByJpql(jpql, params);
 
         if (previousSteps.isEmpty()) {
-            return null; // No preceding steps found
+            return null; // No preceding steps found.
         }
 
-        return previousSteps.get(0); // Return the closest preceding step in sequence
+        return previousSteps.get(0); // Return the closest preceding step in sequence.
     }
 
     public ProcessStepDefinition fetchTheFirstProcessStepDefinition(ProcessDefinition processDefinition) {
@@ -231,4 +229,23 @@ public class ProcessService {
         save(processStepInstance);
     }
 
+    /**
+     * Fetches all ProcessStepInstance entities associated with a given
+     * ProcessInstance.
+     *
+     * @param processInstance The ProcessInstance for which to find the step
+     * instances.
+     * @return A list of ProcessStepInstance entities or an empty list if no
+     * instances are found.
+     */
+    public List<ProcessStepInstance> fetchProcessStepInstances(ProcessInstance processInstance) {
+        if (processInstance == null || processInstance.getId() == null) {
+            return new ArrayList<>(); // Return an empty list if the instance is null or not saved yet.
+        }
+        String jpql = "SELECT psi FROM ProcessStepInstance psi WHERE psi.processInstance = :processInstance ORDER BY psi.createdAt";
+        Map params = new HashMap(); // Using raw type for the Map
+        params.put("processInstance", processInstance);
+        List<ProcessStepInstance> stepInstances = processStepInstanceFacade.findByJpql(jpql, params);
+        return stepInstances;
+    }
 }

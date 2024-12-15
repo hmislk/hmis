@@ -32,6 +32,10 @@ public class ProcessStepActionDefinition implements Serializable {
     @JoinColumn(nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private ProcessStepDefinition processStepDefinition;
+    
+    @JoinColumn(nullable = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    private ProcessStepDefinition directedProcessStepDefinition;
 
     @Column(nullable = false, length = 100)
     private String name;
@@ -220,5 +224,13 @@ public class ProcessStepActionDefinition implements Serializable {
 
     public void setAllowsMultipleActions(boolean allowsMultipleActions) {
         this.allowsMultipleActions = allowsMultipleActions;
+    }
+
+    public ProcessStepDefinition getDirectedProcessStepDefinition() {
+        return directedProcessStepDefinition;
+    }
+
+    public void setDirectedProcessStepDefinition(ProcessStepDefinition directedProcessStepDefinition) {
+        this.directedProcessStepDefinition = directedProcessStepDefinition;
     }
 }

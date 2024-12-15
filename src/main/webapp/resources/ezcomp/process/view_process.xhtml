@@ -13,27 +13,26 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:form >
-            <p:panelGrid columns="3" >
-                <p:outputLabel value="Select Process" ></p:outputLabel>
-                <p:selectOneMenu 
-                    id="processSelect" 
-                    filter="true"
-                    filterMatchMode="contains"
-                    class="w-100"
-                    value="#{processController.processDefinition}" >
-                    <f:selectItems 
-                        value="#{processController.processDefinitions}" 
-                        var="process"
-                        itemValue="#{process}" 
-                        itemLabel="#{process.name}" />
-                </p:selectOneMenu>
-                <p:commandButton 
-                    value="Start"
-                    action="#{processController.startProcessInstance()}"
-                    ajax="false">
-                    
-                </p:commandButton>
+            <p:panelGrid columns="2" >
+                <p:outputLabel value="Process" ></p:outputLabel>
+                <p:outputLabel value="#{processController.processInstance.processDefinition.name}" ></p:outputLabel>
             </p:panelGrid>
+
+            <p:dataTable value="#{processController.processStepInstances}" var="s" rowKey="#{s.id}" >
+                <p:column headerText="Step" >
+                    <h:outputText value="#{s.processStepDefinition.name}" ></h:outputText>
+                </p:column>
+                <p:column headerText="Completed" >
+                    <h:outputText value="#{s.completedAt}" >
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Action" >
+                    <h:outputText value="#{s.processStepActionDefinition.name}" ></h:outputText>
+                </p:column>
+
+            </p:dataTable>
+
         </h:form>
 
     </cc:implementation>
