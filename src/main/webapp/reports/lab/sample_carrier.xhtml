@@ -247,7 +247,12 @@
                             <h:outputText value="Sample Carrier"
                                           style="font-size: larger; font-weight: bold; text-align: center; display: block;"/>
                         </f:facet>
-
+                        <p:column headerText="Patient Investigation Created At" width="7rem">
+                            <h:outputText value="#{bi.billItem.patientInvestigation.createdAt}">
+                                <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputText>
+                        </p:column>
                         <p:column headerText="Sending Date and Time" width="7rem">
                             <h:outputText value="#{bi.billItem.patientInvestigation.sampleSentAt}">
                                 <f:convertDateTime
@@ -262,7 +267,7 @@
                         </p:column>
                         <p:column headerText="Staff" width="6rem">
                             <h:outputText
-                                    value="#{bi.billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name}"/>
+                                    value="#{bi.billItem.patientInvestigation.sampleTransportedToLabByStaff.person.name}"/>
                         </p:column>
                         <p:column headerText="Duration (Minutes)" width="5rem">
                             <h:outputText value="#{bi.duration}"/>
@@ -274,16 +279,14 @@
                             <h:outputText value="#{bi.billItem.patientInvestigation.patient.person.name}"/>
                         </p:column>
                         <p:column headerText="Sample ID" width="6rem">
-                            <h:outputText value="#{bi.billItem.patientInvestigation.sampleIds}"/>
+                            <h:outputText
+                                    value="#{patientInvestigationController.getPatientSamplesByInvestigationAsString(bi.billItem.patientInvestigation)}"/>
                         </p:column>
                         <p:column headerText="Type" width="5rem">
                             <h:outputText value="#{bi.billItem.bill.ipOpOrCc}"/>
                         </p:column>
-                        <p:column headerText="BHT No" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientInvestigation.patient.phn}"
-                                          rendered="#{reportsController.visitType == 'OP'}"/>
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.bhtNo}"
-                                          rendered="#{reportsController.visitType == 'IP'}"/>
+                        <p:column headerText="BHT No" width="5rem" rendered="#{reportsController.visitType == 'IP'}">
+                            <h:outputText value="#{bi.billItem.bill.patientEncounter.bhtNo}"/>
                         </p:column>
                         <p:column headerText="Invoice No" width="12rem">
                             <h:outputText value="#{bi.billItem.bill.deptId}"

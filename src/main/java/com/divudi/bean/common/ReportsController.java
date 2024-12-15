@@ -1449,8 +1449,7 @@ public class ReportsController implements Serializable {
                 "FROM BillItem billItem " +
                 "JOIN billItem.bill bill " +
                 "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem " +
-                "WHERE bill.billTypeAtomic IN :bts " +
-                "AND bill.createdAt BETWEEN :fd AND :td ";
+                "WHERE billItem.patientInvestigation.investigation IS NOT NULL ";
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
