@@ -108,7 +108,7 @@ public class ProcessStepDefinitionController implements Serializable {
      * Retrieves all active ProcessStepDefinitions.
      */
     public void fillAllProcessStepDefinitions() {
-        String jpql = "SELECT p FROM ProcessStepDefinition p WHERE p.retired = :ret ORDER BY p.name";
+        String jpql = "SELECT p FROM ProcessStepDefinition p WHERE p.retired = :ret ORDER BY p.sequenceOrder";
         HashMap<String, Object> params = new HashMap<>();
         params.put("ret", false);
         items = processStepDefinitionFacade.findByJpql(jpql, params, TemporalType.TIME);
