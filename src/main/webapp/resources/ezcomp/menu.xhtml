@@ -1414,7 +1414,16 @@
                     <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_print" value="Staff Salary Print"   
                                  actionListener="#{staffSalaryController.clear}" rendered="#{webUserController.hasPrivilege('HrPrintSalary')}" />
 
-                    <p:menuitem  ajax="false"  action="/hr/hr_reports" value="HR Analytics" rendered="#{webUserController.hasPrivilege('HrReports')}" />
+                    <p:menuitem  
+                        ajax="false"  
+                        action="#{processController.navigateToProcessIndex}" 
+                        value="Processes"  />
+                    <p:menuitem  
+                        ajax="false"  
+                        action="/hr/hr_reports" 
+                        value="HR Analytics" 
+                        rendered="#{webUserController.hasPrivilege('HrReports')}" />
+
                 </p:submenu>
 
 

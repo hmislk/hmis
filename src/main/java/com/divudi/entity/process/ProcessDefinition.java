@@ -1,4 +1,4 @@
-package com.divudi.entity.workflow;
+package com.divudi.entity.process;
 
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
