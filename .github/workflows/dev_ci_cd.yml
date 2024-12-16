@@ -66,11 +66,13 @@ jobs:
 
           # Variables
           WAR_NAME="hmis.war"
-          WAR_DIR="~/app/latest"
+          WAR_DIR="/home/appuser/app/latest"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            mkdir -p $WAR_DIR
+            sudo mkdir -p $WAR_DIR
+            sudo chown -R appuser:appuser /home/appuser/app
+            sudo su - appuser
             cd $WAR_DIR
 
             # Remove old backup if it exists
@@ -89,15 +91,17 @@ jobs:
 
           # Deploy the WAR using asadmin
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            sudo su - appuser
             echo 'AS_ADMIN_PASSWORD=${{ secrets.PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
-            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy sethmademo || true
+            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy hmis || true
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
           "
 
           # Validate if the application is running
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            STATUS=\$(/opt/payara5/bin/asadmin list-applications | grep 'sethmademo')
+            sudo su - appuser
+            STATUS=\$(/opt/payara5/bin/asadmin list-applications | grep 'hmis')
             if echo \"$STATUS\" | grep -q 'running'; then
               echo 'Application is running.'
             else
@@ -107,7 +111,7 @@ jobs:
           "
 
           # Verify that the application is reachable via HTTP
-          RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$SERVER_IP/sethmademo)
+          RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$SERVER_IP/rh)
           if [ "$RESPONSE_CODE" != "200" ]; then
             echo "Application is not reachable at http://$SERVER_IP/sethmademo (HTTP $RESPONSE_CODE)" >&2
             exit 1
