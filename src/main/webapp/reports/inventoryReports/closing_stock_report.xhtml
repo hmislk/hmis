@@ -234,7 +234,19 @@
                                     <h:outputText value="#{f.stockHistory.itemBatch.batchNo}" />
                                 </p:column>
                                 <p:column headerText="Qty">
+                                    <!--Item Batch Stock for Selected Department-->
                                     <h:outputText value="#{f.stockHistory.stockQty}"><f:convertNumber pattern="#,##0" /></h:outputText>
+                                    
+                                    <!--Item Stock for Selected Department-->
+                                    <h:outputText value="#{f.stockHistory.itemStock}"><f:convertNumber pattern="#,##0" /></h:outputText>
+                                    
+                                    <!--Item Stock for Selected Institution-->
+                                    <h:outputText value="#{f.stockHistory.institutionItemStock}"><f:convertNumber pattern="#,##0" /></h:outputText>
+                                    
+                                    <!--Item Stock for All Institutions-->
+                                    <h:outputText value="#{f.stockHistory.totalItemStock}"><f:convertNumber pattern="#,##0" /></h:outputText>
+                                    
+                                    
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyReportController.stockTotal}">
                                             <f:convertNumber pattern="#,##0" />
