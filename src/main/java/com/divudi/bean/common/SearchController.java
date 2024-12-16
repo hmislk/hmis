@@ -16623,6 +16623,11 @@ public class SearchController implements Serializable {
         jpql += " AND b.paymentMethod = :pm ";
         m.put("pm", PaymentMethod.Agent);
 
+        if (creditCompany != null) {
+            jpql += " AND b.creditCompany = :creditcom ";
+            m.put("creditcom", creditCompany);
+        }
+        
         if (institution != null) {
             jpql += " AND b.institution = :ins ";
             m.put("ins", institution);
