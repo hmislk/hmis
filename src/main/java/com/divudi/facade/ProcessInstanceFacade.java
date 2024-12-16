@@ -1,6 +1,6 @@
 package com.divudi.facade;
 
-import com.divudi.entity.process.ProcessDefinition;
+import com.divudi.entity.process.ProcessInstance;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -11,17 +11,17 @@ import javax.persistence.PersistenceContext;
  *
  */
 @Stateless
-public class ProcessDefinitionFacade extends AbstractFacade<ProcessDefinition> {
+public class ProcessInstanceFacade extends AbstractFacade<ProcessInstance> {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
     @Override
     protected EntityManager getEntityManager() {
-        if(em == null){}return em;
+        return em; // Fixed the method to return 'em' directly without the empty if condition.
     }
 
-    public ProcessDefinitionFacade() {
-        super(ProcessDefinition.class);
+    public ProcessInstanceFacade() {
+        super(ProcessInstance.class);
     }
     
 }
