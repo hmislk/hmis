@@ -61,6 +61,20 @@ public class ProfessionalPaymentService {
         double totalPaid = billFacade.findDoubleByJpql(jpql, parameters, null); // No TemporalType needed here
         return totalPaid > 0;
     }
+    
+    public boolean isProfessionalFeePaid(Bill bill, BillItem billItem) {
+        if (bill == null) {
+            return false;
+        }
+        String jpql = "SELECT SUM(bf.paidValue) FROM BillFee bf "
+                + " WHERE bf.bill = :bill "
+                + " and bf.billItem= :item ";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("bill", bill);
+        parameters.put("item", billItem);
+        double totalPaid = billFacade.findDoubleByJpql(jpql, parameters, null); // No TemporalType needed here
+        return totalPaid > 0;
+    }
 
     public boolean isProfessionalFeePaidForBatchBill(Bill batchBill) {
         if (batchBill == null) {

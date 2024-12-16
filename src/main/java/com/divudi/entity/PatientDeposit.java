@@ -31,13 +31,13 @@ public class PatientDeposit implements Serializable {
     @ManyToOne
     private Institution institution;
     private Double balance;
-    
+
     //Created Properties
     @ManyToOne
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
-    
+
     //Retairing properties 
     private boolean retired;
     @ManyToOne
@@ -45,7 +45,6 @@ public class PatientDeposit implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-    
 
     public Long getId() {
         return id;
@@ -97,6 +96,9 @@ public class PatientDeposit implements Serializable {
     }
 
     public Double getBalance() {
+        if (balance == null) {
+            balance = 0.0;
+        }
         return balance;
     }
 
@@ -159,5 +161,5 @@ public class PatientDeposit implements Serializable {
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
-    
+
 }

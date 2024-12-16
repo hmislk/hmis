@@ -29,6 +29,7 @@ public enum BillType {
     OpdPreBill,
     InwardPaymentBill,
     InwardFinalBill,
+    InwardFinalBillCCPayment,
     InwardAppointmentBill,
     InwardBill,
     InwardProfessional,
