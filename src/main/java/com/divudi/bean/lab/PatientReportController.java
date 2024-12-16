@@ -45,12 +45,15 @@ import com.divudi.bean.common.util.JsfUtil;
 import static com.divudi.data.InvestigationItemValueType.Memo;
 import static com.divudi.data.InvestigationItemValueType.Varchar;
 import com.divudi.data.ReportType;
+import com.divudi.data.UploadType;
 import com.divudi.data.lab.PatientInvestigationStatus;
+import com.divudi.entity.Upload;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.entity.lab.PatientSampleComponant;
 import com.divudi.entity.lab.ReportFormat;
 import com.divudi.facade.ClinicalFindingValueFacade;
+import com.divudi.facade.UploadFacade;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -198,12 +201,47 @@ public class PatientReportController implements Serializable {
                     return "/lab/patient_report?faces-redirect=true";
                 case UPLOAD:
                     System.out.println("UPLOAD");
+
+                    Upload u = loadUpload(patientReport);
+
+                    System.out.println("Report = " + patientReport);
+                    System.out.println("Patient Investigation = " + patientReport.getPatientInvestigation());
+
+                    if (u != null) {
+                        patientReportUploadController.setReportUpload(u);
+                        System.out.println("Upload Report = " + u.getPatientReport());
+                        System.out.println("Upload Investigation = " + u.getPatientInvestigation());
+                    } else {
+                        patientReportUploadController.setReportUpload(null);
+                    }
+
+                    setCurrentPatientReport(patientReport);
                     patientReportUploadController.setPatientInvestigation(patientReport.getPatientInvestigation());
                     return "/lab/upload_patient_report?faces-redirect=true";
                 default:
                     return "";
             }
         }
+    }
+
+    @EJB
+    UploadFacade uploadFacade;
+
+    public Upload loadUpload(PatientReport pr) {
+        String jpql = "select u "
+                + " from Upload u "
+                + " where u.retired=:ret"
+                + " and u.patientReport=:pr"
+                + " and u.patientReport.retired=:prr"
+                + " and u.uploadType=:ut";
+
+        Map params = new HashMap<>();
+        params.put("ret", false);
+        params.put("pr", pr);
+        params.put("ut", UploadType.Lab_Report);
+        params.put("prr", false);
+
+        return uploadFacade.findFirstByJpql(jpql, params);
     }
 
     public String searchRecentReportsOrderedByMyself() {
@@ -2590,7 +2628,7 @@ public class PatientReportController implements Serializable {
 
         System.out.println("currentPtIx = " + currentPtIx);
 
-        patientReportUploadController.setPatientInvestigation(currentPtIx);
+        patientReportUploadController.setPatientInvestigation(pi);
 
         return "/lab/upload_patient_report?faces-redirect=true";
     }
