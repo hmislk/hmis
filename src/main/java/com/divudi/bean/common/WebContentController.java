@@ -50,38 +50,38 @@ public class WebContentController implements Serializable {
     String page;
 
     public String toHome() {
-        page = "/index";
+        page = "/index?faces-redirect=true";
         return page;
     }
 
     public String toChannel() {
-        page = "/channel";
+        page = "/channel?faces-redirect=true";
         return page;
     }
 
     public String toReports() {
-        page = "/report_search";
+        page = "/report_search?faces-redirect=true";
         return page;
     }
 
     public String toServices() {
-        page = "/services";
+        page = "/services?faces-redirect=true";
         return page;
     }
 
     public String toContact() {
-        page = "/contact";
+        page = "/contact?faces-redirect=true";
         return page;
     }
 
     public String toAbout() {
-        page = "/about";
+        page = "/about?faces-redirect=true";
         return page;
     }
 
     public String toAddNewWebContent() {
         selected = new WebContent();
-        return "/webcontent/web_content";
+        return "/webcontent/web_content?faces-redirect=true";
     }
 
     public String toAddNewShortWebContent() {
@@ -117,15 +117,15 @@ public class WebContentController implements Serializable {
         }
         switch (selected.getType()) {
             case Image:
-                return "/webcontent/image";
+                return "/webcontent/image?faces-redirect=true";
             case List:
-                return "/webcontent/list";
+                return "/webcontent/list?faces-redirect=true";
             case LongText:
-                return "/webcontent/long";
+                return "/webcontent/long?faces-redirect=true";
             case ShortText:
-                return "/webcontent/short";
+                return "/webcontent/short?faces-redirect=true";
             default:
-                return "/webcontent/web_content";
+                return "/webcontent/web_content?faces-redirect=true";
         }
     }
 
@@ -134,7 +134,7 @@ public class WebContentController implements Serializable {
             JsfUtil.addErrorMessage("Please select");
             return "";
         }
-        return "/webcontent/web_content_long";
+        return "/webcontent/web_content_long?faces-redirect=true";
     }
 
     public String toDeleteWebContent() {
@@ -151,7 +151,7 @@ public class WebContentController implements Serializable {
 
     public String toListWebContent() {
         listItems();
-        return "/webcontent/web_contents";
+        return "/webcontent/web_contents?faces-redirect=true";
     }
 
     public void makeSelectedLanguageAsDisplayLanguage(){
@@ -351,7 +351,7 @@ public class WebContentController implements Serializable {
     }
     
     public String navigateToManageWeb(){
-        return "/webcontent/index";
+        return "/webcontent/index?faces-redirect=true";
     }
 
     public WebLanguage getSelectedlanguage() {

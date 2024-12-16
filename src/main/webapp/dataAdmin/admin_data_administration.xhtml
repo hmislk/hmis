@@ -14,10 +14,9 @@
                 <div class="row">
                     <div class="col-md-3">
                         <h:form >
-                            <p:panel header="Data Administration" >
+                            <p:panel header="Manage Data, Templates &amp; Workflows" >
                                 <p:accordionPanel>
-
-                                    <p:tab title="Report Templates" disabled="false" >
+                                    <p:tab title="Analysis Report Templates" disabled="false" >
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
                                                 value="Add New Template" 
@@ -38,6 +37,44 @@
 
                                     </p:tab>
 
+                                    <p:tab title="Manage Frontend Website" disabled="false" >
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewShortWebContent()}" value="Add New Short Contents" icon="pi pi-plus"></p:commandButton>
+                                            <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewLongWebContent()}" value="Add New Long Contents" icon="pi pi-plus"></p:commandButton>
+                                            <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewWebContent()}" value="Add New List Contents" icon="pi pi-plus"></p:commandButton>
+                                            <p:commandButton ajax="false" class="w-100" action="#{webContentController.toListWebContent()}" value="List Web Contents" icon="pi pi-list"></p:commandButton>
+                                            <p:commandButton ajax="false" class="w-100" action="#{uploadController.toAddNewUpload()}" value="Add Web Image" icon="pi pi-image"></p:commandButton>
+                                            <p:commandButton ajax="false" class="w-100" action="#{uploadController.toListUploads()}" value="List Images" icon="pi pi-images"></p:commandButton>
+                                            <p:commandButton ajax="false" class="w-100" action="#{webLanguageController.toAddNewWebLanguage()}" value="Add Language" icon="pi pi-plus"></p:commandButton>
+                                            <p:commandButton ajax="false" class="w-100" action="#{webLanguageController.toListWebLanguage()}" value="List Languages" icon="pi pi-list"></p:commandButton>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Manage Form Templates" disabled="false" >
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="w-100" 
+                                                action="#{webTemplateController.navigateToAddNewTemplate()}"
+                                                value="Add New Template" icon="pi pi-plus"></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="w-100" 
+                                                action="#{webTemplateController.navigateToListWebTemplates}" 
+                                                value="List Templates" 
+                                                icon="pi pi-list"></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="w-100" 
+                                                action="#{templateComponentController.navigateToAddNewTemplateComponent()}"
+                                                value="Add New Template Componant" icon="pi pi-plus"></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="w-100" 
+                                                action="#{templateComponentController.navigateToListTemplateComponent()}" 
+                                                value="List Templates Componants" 
+                                                icon="pi pi-list"></p:commandButton>
+                                        </div>
+                                    </p:tab>
 
 
                                     <p:tab title="Lists"  >
@@ -90,7 +127,6 @@
                                         </div>
 
                                     </p:tab>
-
                                     <p:tab title="System Administrator Functions" disabled="false" >
                                         <div class="d-grid gap-2">
                                             <p:commandButton
@@ -271,6 +307,8 @@
                                         
                                                                                 </p:panelGrid>-->
                                     </p:tab>
+
+
                                 </p:accordionPanel>
                             </p:panel>
                         </h:form>
