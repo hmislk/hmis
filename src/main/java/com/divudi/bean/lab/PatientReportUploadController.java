@@ -18,6 +18,11 @@ import org.apache.commons.io.IOUtils;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
+/**
+- *
+- * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
+- *
+*/
 @Named
 @SessionScoped
 public class PatientReportUploadController implements Serializable {

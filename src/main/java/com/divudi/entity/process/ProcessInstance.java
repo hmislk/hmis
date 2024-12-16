@@ -28,6 +28,8 @@ public class ProcessInstance implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    private String status;
+
     @ManyToOne
     private ProcessDefinition processDefinition;
 
@@ -121,8 +123,6 @@ public class ProcessInstance implements Serializable {
         return "com.divudi.entity.process.ProcessInstance[ id=" + id + " ]";
     }
 
-    
-    
     public ProcessDefinition getProcessDefinition() {
         return processDefinition;
     }
@@ -281,6 +281,17 @@ public class ProcessInstance implements Serializable {
 
     public void setPausedAt(Date pausedAt) {
         this.pausedAt = pausedAt;
+    }
+
+    public String getStatus() {
+        if (status == null || status.trim().equals("")) {
+            status = "Ongoing";
+        }
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
 }

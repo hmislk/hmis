@@ -3,18 +3,23 @@ package com.divudi.bean.process;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.process.ProcessStepActionType;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.process.ProcessDefinition;
 import com.divudi.entity.process.ProcessInstance;
 import com.divudi.entity.process.ProcessStepActionDefinition;
 import com.divudi.entity.process.ProcessStepDefinition;
 import com.divudi.entity.process.ProcessStepInstance;
+import com.divudi.java.CommonFunctions;
 import com.divudi.service.ProcessService;
 import javax.inject.Named;
 import javax.faces.view.ViewScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 
 /**
@@ -22,7 +27,7 @@ import javax.inject.Inject;
  * @author ASUS
  */
 @Named
-@ViewScoped
+@SessionScoped
 public class ProcessController implements Serializable {
 
     @EJB
@@ -43,11 +48,17 @@ public class ProcessController implements Serializable {
 
     private List<ProcessDefinition> processDefinitions;
     private List<ProcessStepInstance> processStepInstances;
+    private List<ProcessInstance> processInstances;
     private ProcessInstance processInstance;
     private ProcessDefinition processDefinition;
     private ProcessStepDefinition processStepDefinition;
     private ProcessStepInstance processStepInstance;
     private List<ProcessStepActionDefinition> processStepActionDefinitions;
+    Date fromDate;
+    Date toDate;
+    private Institution institution;
+    private Department department;
+    private Institution site;
 
     public String navigateToProcessIndex() {
         return "/process/index?faces-redirect=true;";
@@ -59,6 +70,36 @@ public class ProcessController implements Serializable {
         return "/process/process?faces-redirect=true;";
     }
 
+    public String navigateToListProcesses() {
+        return "/process/processes?faces-redirect=true;";
+    }
+
+    public String listOngoingProcessInstances() {
+        processInstances = processService.fetchProcessInstances(fromDate, toDate, institution, site, department, false, null, null, null);
+        return null;
+    }
+
+    public String listCompletedProcessInstances() {
+        processInstances = processService.fetchProcessInstances(fromDate, toDate, institution, site, department, true, null, null, null);
+        return null;
+    }
+    
+    public String listCancelledProcessInstances() {
+        processInstances = processService.fetchProcessInstances(fromDate, toDate, institution, site, department, null, true, null, null);
+        return null;
+    }
+    
+    public String listRejectedProcessInstances() {
+        processInstances = processService.fetchProcessInstances(fromDate, toDate, institution, site, department, null, true, true, null);
+        return null;
+    }
+    
+    public String listPausedProcessInstances() {
+        processInstances = processService.fetchProcessInstances(fromDate, toDate, institution, site, department, null, true, null, null);
+        return null;
+    }
+    
+
     public String navigateToViewProcessInstance() {
         if (processInstance == null) {
             JsfUtil.addErrorMessage("No Process Selected");
@@ -68,8 +109,54 @@ public class ProcessController implements Serializable {
         stage = "view_process";
         return null;
     }
+    
+    public String navigateToManageProcessInstance(ProcessInstance pi) {
+        System.out.println("navigateToManageProcessInstance");
+        System.out.println("pi = " + pi);
+        if (pi == null) {
+            JsfUtil.addErrorMessage("No Process Selected");
+            return null;
+        }
+        processInstance=pi;
+        processStepInstances = processService.fetchProcessStepInstances(processInstance);
+        stage = "view_process";
+        return "/process/process";
+    }
+
+    public String navigateToCompleteProcessStepInstance(ProcessStepInstance psi) {
+        if (psi == null) {
+            JsfUtil.addErrorMessage("No Process Step Selected");
+            return null;
+        }
+        processStepInstance = psi;
+        processInstance = processStepInstance.getProcessInstance();
+        if (processInstance == null) {
+            JsfUtil.addErrorMessage("No Process for Selected Process Step");
+            return null;
+        }
+        processDefinition = processInstance.getProcessDefinition();
+        if (processDefinition == null) {
+            JsfUtil.addErrorMessage("No Process Definition for Selected Process");
+            return null;
+        }
+        processStepDefinition = processStepInstance.getProcessStepDefinition();
+        if (processStepDefinition == null) {
+            JsfUtil.addErrorMessage("No Process Step Definition for Selected Process Step");
+            return null;
+        }
+        processStepActionDefinitions = processService.fetchProcessStepActionDefinitions(processStepDefinition);
+        System.out.println("processStepActionDefinitions = " + processStepActionDefinitions);
+        if (processStepActionDefinitions == null || processStepActionDefinitions.isEmpty()) {
+            JsfUtil.addErrorMessage("No Process Step Action Definitions for Selected Process Step Definition");
+            return null;
+        }
+
+        stage = "initiate_step";
+        return null;
+    }
 
     public String startProcessInstance() {
+        System.out.println("startProcessInstance");
         if (processDefinition == null) {
             JsfUtil.addErrorMessage("Select a Process Definition");
             return null;
@@ -81,16 +168,18 @@ public class ProcessController implements Serializable {
         processService.save(processInstance);
 
         processStepDefinition = processService.fetchTheFirstProcessStepDefinition(processDefinition);
+        System.out.println("processStepDefinition = " + processStepDefinition);
 
         processStepInstance = new ProcessStepInstance();
         processStepInstance.setProcessInstance(processInstance);
         processStepInstance.setProcessStepDefinition(processStepDefinition);
         processStepInstance.setCreator(sessionController.getLoggedUser());
         processStepInstance.setCreatedAt(new Date());
+        processStepInstance.setStatus("To Initiate");
         processService.save(processStepInstance);
 
         processStepActionDefinitions = processService.fetchProcessStepActionDefinitions(processStepDefinition);
-
+        System.out.println("processStepActionDefinitions = " + processStepActionDefinitions);
         stage = "initiate_step";
         return null;
     }
@@ -117,6 +206,7 @@ public class ProcessController implements Serializable {
         ProcessStepActionDefinition actionDef = processStepInstance.getProcessStepActionDefinition();
         ProcessStepInstance previousProcessStepInstance;
         // Handle the specific action taken
+        System.out.println("actionDef.getActionType() = " + actionDef.getActionType());
         switch (actionDef.getActionType()) {
             case CANCEL_PROCESS:
                 processService.cancelProcessInstance(processStepInstance, sessionController.getLoggedUser());
@@ -146,6 +236,7 @@ public class ProcessController implements Serializable {
                 break;
             case MOVE_TO_NEXT_STEP:
                 processStepDefinition = processService.fetchNextProcessStepDefinition(processStepInstance);
+                processService.completeProcessStepInstance(processStepInstance, sessionController.getLoggedUser());
                 previousProcessStepInstance = processStepInstance;
                 processStepInstance = new ProcessStepInstance();
                 processStepInstance.setProcessInstance(processInstance);
@@ -157,6 +248,7 @@ public class ProcessController implements Serializable {
                 JsfUtil.addSuccessMessage("Moved to the next step.");
                 return navigateToViewProcessInstance();
             case MOVE_TO_SPECIFIED_STEP:
+                processService.completeProcessStepInstance(processStepInstance, sessionController.getLoggedUser());
                 processStepDefinition = actionDef.getDirectedProcessStepDefinition();
                 previousProcessStepInstance = processStepInstance;
                 processStepInstance = new ProcessStepInstance();
@@ -177,6 +269,7 @@ public class ProcessController implements Serializable {
                 JsfUtil.addSuccessMessage("Process has been rejected.");
                 return navigateToViewProcessInstance();
             case RETURN_TO_PREVIOUS_STEP:
+                processService.completeProcessStepInstance(processStepInstance, sessionController.getLoggedUser());
                 processStepDefinition = processService.fetchPreviousProcessStepDefinition(processStepInstance);
                 previousProcessStepInstance = processStepInstance;
                 processStepInstance = new ProcessStepInstance();
@@ -278,6 +371,63 @@ public class ProcessController implements Serializable {
 
     public void setProcessStepInstances(List<ProcessStepInstance> processStepInstances) {
         this.processStepInstances = processStepInstances;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay(new Date());
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public List<ProcessInstance> getProcessInstances() {
+        if (processInstances == null) {
+            processInstances = new ArrayList<>();
+        }
+        return processInstances;
+    }
+
+    public void setProcessInstances(List<ProcessInstance> processInstances) {
+        this.processInstances = processInstances;
     }
 
 }
