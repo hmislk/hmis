@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Process Definitions Management</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="processForm">
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Manage Process Definitions" />
+                        </f:facet>
+
+                        <div class="row">
+                            <!-- Process Selection and Action Buttons -->
+                            <div class="col-md-4">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <div class="mt-3">
+                                            <p:commandButton 
+                                                id="addNewBtn" 
+                                                value="Add New" 
+                                                icon="fa fa-plus" 
+                                                class="ui-button-success m-1" 
+                                                action="#{processDefinitionController.addNewProcess}" 
+                                                update="@form"
+                                                process="addNewBtn"
+                                                disabled="#{processDefinitionController.editable}" />
+
+                                            <p:commandButton 
+                                                id="editBtn" 
+                                                value="Edit" 
+                                                icon="fa fa-edit" 
+                                                styleClass="ui-button-warning m-1" 
+                                                action="#{processDefinitionController.editExistingProcess(processDefinitionController.current)}" 
+                                                update="@form"
+                                                process="editBtn"
+                                                disabled="#{processDefinitionController.editable or processDefinitionController.current == null}" />
+
+                                            <p:commandButton 
+                                                id="deleteBtn" 
+                                                value="Delete" 
+                                                icon="fa fa-trash" 
+                                                class="ui-button-danger m-1" 
+                                                action="#{processDefinitionController.deleteProcess(processDefinitionController.current)}" 
+                                                update="@form" 
+                                                process="deleteBtn"
+                                                onclick="return confirm('Are you sure you want to delete this process?');"
+                                                disabled="#{processDefinitionController.editable or processDefinitionController.current == null}" />
+                                        </div>
+                                    </f:facet>
+
+                                    <p:selectOneListbox 
+                                        id="processSelect" 
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        class="w-100"
+                                        value="#{processDefinitionController.current}" >
+                                        <f:selectItems 
+                                            value="#{processDefinitionController.items}" 
+                                            var="process"
+                                            itemValue="#{process}" 
+                                            itemLabel="#{process.name}" />
+                                        <p:ajax update="processDetails" />
+                                    </p:selectOneListbox>
+                                </p:panel>
+                            </div>
+                            <!-- Process Details Form -->
+                            <div class="col-md-8">
+                                <p:panel id="processDetails">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Process Details" />
+                                    </f:facet>
+
+                                    <p:panelGrid 
+                                        columns="2"
+                                        id="gridDetails"
+                                        styleClass="mt-3" 
+                                        rendered="#{processDefinitionController.current ne null}">
+                                        <p:outputLabel for="name" value="Name:" styleClass="font-weight-bold" />
+                                        <p:inputText id="name" 
+                                                     value="#{processDefinitionController.current.name}" 
+                                                     required="true" 
+                                                     label="Name" 
+                                                     styleClass="form-control" 
+                                                     disabled="#{!processDefinitionController.editable}" />
+
+                                        <p:outputLabel for="description" value="Description:" styleClass="font-weight-bold mt-2" />
+                                        <p:inputTextarea id="description" 
+                                                         value="#{processDefinitionController.current.description}" 
+                                                         rows="4" 
+                                                         cols="30" 
+                                                         styleClass="form-control mt-2" 
+                                                         disabled="#{!processDefinitionController.editable}" />
+
+                                        <p:outputLabel for="version" value="Version:" styleClass="font-weight-bold mt-2" />
+                                        <p:inputText id="version" 
+                                                     value="#{processDefinitionController.current.version}" 
+                                                     required="true" 
+                                                     label="Version" 
+                                                     styleClass="form-control mt-2" 
+                                                     disabled="#{!processDefinitionController.editable}" />
+
+                                        <p:outputLabel for="active" value="Active:" styleClass="font-weight-bold mt-2" />
+                                        <p:selectBooleanCheckbox id="active" 
+                                                                 value="#{processDefinitionController.current.active}" 
+                                                                 styleClass="mt-2" 
+                                                                 disabled="#{!processDefinitionController.editable}" />
+                                    </p:panelGrid>
+
+                                    <f:facet name="footer">
+                                        <div class="mt-4">
+                                            <p:commandButton 
+                                                id="saveBtn" 
+                                                value="Save" 
+                                                icon="fa fa-save" 
+                                                class="ui-button-success m-1" 
+                                                action="#{processDefinitionController.saveOrUpdateProcess}" 
+                                                update="@form" 
+                                                process="saveBtn gridDetails"
+                                                rendered="#{processDefinitionController.editable}" />
+
+                                            <p:commandButton 
+                                                id="cancelBtn" 
+                                                value="Cancel" 
+                                                icon="fa fa-times" 
+                                                class="ui-button-warning m-1" 
+                                                action="#{processDefinitionController.reset}" 
+                                                update="@form" 
+                                                process="cancelBtn gridDetails"
+                                                rendered="#{processDefinitionController.editable}" />
+                                        </div>
+                                    </f:facet>
+                                </p:panel>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:form>
+                <p:messages id="messages" showDetail="true" />
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
