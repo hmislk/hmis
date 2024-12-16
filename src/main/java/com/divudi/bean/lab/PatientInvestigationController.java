@@ -1882,11 +1882,6 @@ public class PatientInvestigationController implements Serializable {
             params.put("department", getDepartment());
         }
         
-        if (bills != null) {
-            jpql += " AND pi.billItem.bill IN :bills";
-            params.put("bills", getBills());
-        }
-
         if (patientInvestigationStatus != null) {
             jpql += " AND pi.billItem.bill.status = :status";
             params.put("status", patientInvestigationStatus);

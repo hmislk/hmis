@@ -2260,8 +2260,18 @@ public class BillBeanController implements Serializable {
             if (patientEncounter.isPaymentFinalized() && patientEncounter.getFinalBill() != null) {
                 bill.setForwardReferenceBill(patientEncounter.getFinalBill());
                 getBillFacade().edit(bill);
-
                 patientEncounter.getFinalBill().getBackwardReferenceBills().add(bill);
+                if(patientEncounter.getFinalBill().getBalance() <= 0){
+                     patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getNetTotal());
+                }
+                patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getBalance() - bill.getNetTotal());
+                patientEncounter.getFinalBill().setPaidAmount(patientEncounter.getFinalBill().getPaidAmount() + bill.getNetTotal());
+                
+                if(bill.getPaymentMethod() != PaymentMethod.Credit){   
+                    patientEncounter.getFinalBill().setSettledAmountByPatient(patientEncounter.getFinalBill().getSettledAmountByPatient() + bill.getNetTotal());
+                }else if(bill.getPaymentMethod() == PaymentMethod.Credit){
+                    patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor()+ bill.getNetTotal());
+                }
                 getBillFacade().edit(patientEncounter.getFinalBill());
             }
         }

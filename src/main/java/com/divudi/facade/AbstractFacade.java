@@ -1312,19 +1312,20 @@ public abstract class AbstractFacade<T> {
         Query qry = getEntityManager().createQuery(jpql);
         Set s = parameters.entrySet();
         Iterator it = s.iterator();
-
         while (it.hasNext()) {
             Map.Entry m = (Map.Entry) it.next();
-            Date pVal = (Date) m.getValue();
             String pPara = (String) m.getKey();
-            qry.setParameter(pPara, pVal, TemporalType.DATE);
-//            //////// // System.out.println("Parameter " + pPara + "\tVal" + pVal);
+            if (m.getValue() instanceof Date) {
+                Date pVal = (Date) m.getValue();
+                Date pDate = (Date) pVal;
+                qry.setParameter(pPara, pDate, TemporalType.DATE);
+            } else {
+                qry.setParameter(pPara, m.getValue());
+            }
         }
-
         try {
             return (Double) qry.getSingleResult();
         } catch (Exception e) {
-//            //////// // System.out.println(e.getMessage());
             return 0.0;
         }
     }
