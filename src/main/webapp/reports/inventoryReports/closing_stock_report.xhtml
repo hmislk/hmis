@@ -106,14 +106,53 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <h:panelGroup id="phmDept">
-                                
+
                                 <!-- Component 1: Without Institution and Site -->
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     filterMatchMode="contains"
-                                    filter="true">                                </p:selectOneMenu>
+                                    filter="true"> 
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems  
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="dept" 
+                                        itemLabel="#{dept.name}" 
+                                        itemValue="#{dept}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{pharmacyReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true"> 
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems  
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" 
+                                        var="dept" 
+                                        itemLabel="#{dept.name}" 
+                                        itemValue="#{dept}" />
+                                </p:selectOneMenu>
+                                
+                                <!-- Component 3: With Institution Only --> 
+                                <p:selectOneMenu
+                                    rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{pharmacyReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true"> 
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems  
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" 
+                                        var="dept" 
+                                        itemLabel="#{dept.name}" 
+                                        itemValue="#{dept}" />
+                                </p:selectOneMenu>
+                                
+
                             </h:panelGroup>
                             <p:selectOneMenu 
                                 id="phmDept"
@@ -248,17 +287,17 @@
                                 <p:column headerText="Qty">
                                     <!--Item Batch Stock for Selected Department-->
                                     <h:outputText value="#{f.stockHistory.stockQty}"><f:convertNumber pattern="#,##0" /></h:outputText>
-                                    
+
                                     <!--Item Stock for Selected Department-->
                                     <h:outputText value="#{f.stockHistory.itemStock}"><f:convertNumber pattern="#,##0" /></h:outputText>
-                                    
+
                                     <!--Item Stock for Selected Institution-->
                                     <h:outputText value="#{f.stockHistory.institutionItemStock}"><f:convertNumber pattern="#,##0" /></h:outputText>
-                                    
+
                                     <!--Item Stock for All Institutions-->
                                     <h:outputText value="#{f.stockHistory.totalItemStock}"><f:convertNumber pattern="#,##0" /></h:outputText>
-                                    
-                                    
+
+
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyReportController.stockTotal}">
                                             <f:convertNumber pattern="#,##0" />
