@@ -87,7 +87,13 @@ jobs:
           "
 
           # Copy new WAR file to the server
-          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:$WAR_DIR/$WAR_NAME
+          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:/tmp/$WAR_NAME
+
+          # Move the file to /home/appuser/app/latest/ and set permissions
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            sudo mv /tmp/$WAR_NAME $WAR_DIR/
+            sudo chown appuser:appuser $WAR_DIR/$WAR_NAME
+          "
 
           # Deploy the WAR using asadmin
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
