@@ -858,6 +858,7 @@ public class Bill implements Serializable {
 
     public void copy(Bill bill) {
         billType = bill.getBillType();
+        referenceNumber = bill.getReferenceNumber();
         membershipScheme = bill.getMembershipScheme();
         collectingCentre = bill.getCollectingCentre();
         catId = bill.getCatId();
