@@ -6967,7 +6967,7 @@ public class SearchController implements Serializable {
     }
 
     public void createPreBillsNotPaid() {
-        bills = getBillBean().billsForTheDayNotPaid(BillType.PharmacyPre, getSessionController().getDepartment());
+        bills = getBillBean().billsForTheDayNotPaid(BillType.PharmacyPre, getSessionController().getDepartment(), fromDate, toDate);
     }
 
     public void createWholePreBillsNotPaid() {
