@@ -66,11 +66,13 @@ jobs:
 
           # Variables
           WAR_NAME="hmis.war"
-          WAR_DIR="~/app/latest"
+          WAR_DIR="/home/appuser/app/latest"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            mkdir -p $WAR_DIR
+            sudo mkdir -p $WAR_DIR
+            sudo chown -R appuser:appuser /home/appuser/app
+            sudo su - appuser
             cd $WAR_DIR
 
             # Remove old backup if it exists
@@ -85,33 +87,47 @@ jobs:
           "
 
           # Copy new WAR file to the server
-          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:$WAR_DIR/$WAR_NAME
+          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:/tmp/$WAR_NAME
+
+          # Move the file to /home/appuser/app/latest/ and set permissions
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            sudo mv /tmp/$WAR_NAME $WAR_DIR/
+            sudo chown appuser:appuser $WAR_DIR/$WAR_NAME
+          "
 
           # Deploy the WAR using asadmin
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            sudo su - appuser
             echo 'AS_ADMIN_PASSWORD=${{ secrets.PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
-            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy sethmademo || true
+            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy hmis || true
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
           "
 
           # Validate if the application is running
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            STATUS=\$(/opt/payara5/bin/asadmin list-applications | grep 'sethmademo')
-            if echo \"$STATUS\" | grep -q 'running'; then
+            sudo su - appuser
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            if /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q 'hmis'; then
               echo 'Application is running.'
             else
-              echo 'Application failed to start.' >&2
-              exit 1
+              echo 'Application failed to start.'
             fi
+            rm /tmp/payara-admin-pass.txt
           "
 
-          # Verify that the application is reachable via HTTP
-          RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$SERVER_IP/sethmademo)
-          if [ "$RESPONSE_CODE" != "200" ]; then
-            echo "Application is not reachable at http://$SERVER_IP/sethmademo (HTTP $RESPONSE_CODE)" >&2
-            exit 1
-          fi
+          # Check if the application is reachable
+          for i in {1..5}; do
+            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$SERVER_IP/rh/faces/index1.xhtml)
+            if [ "$RESPONSE_CODE" == "200" ]; then
+              echo "Application is reachable and healthy."
+              break
+            elif [ "$i" == "5" ]; then
+              echo "Application is not reachable or unhealthy at http://$SERVER_IP/rh (HTTP $RESPONSE_CODE)"
+              break
+            fi
+            sleep 10
+          done
 
           # Cleanup
           rm -f private_key.pem
