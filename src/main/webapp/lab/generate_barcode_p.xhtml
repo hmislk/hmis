@@ -367,24 +367,40 @@
                                                         <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                                     </p:commandButton>
                                                 </div>
-                                                <div class="row my-2">
+                                                <div class="row">
                                                     <p:commandButton 
                                                         icon="fa fa-file-text"
                                                         value="Create a New Report" 
                                                         id="btnNewReport"
                                                         disabled="#{!patientInvestigation.sampleAccepted}" 
                                                         action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
-                                                        class="ui-button-danger"
+                                                        class="ui-button-danger mt-2"
                                                         onclick="if (!confirm('Are you sure you want to New Patient Report?'))
                                                                     return false;"
                                                         ajax="false">
                                                     </p:commandButton>
                                                 </div>
-                                                <div class="row  my-2">
+                                                
+                                                <div class="row ">
+                                                    <p:commandButton 
+                                                        icon="fa fa-file-text"
+                                                        value="Upload New Report" 
+                                                        id="btnNewUpload"
+                                                        rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport}"
+                                                        disabled="#{patientInvestigation.sampleSentAt eq null}"
+                                                        action="#{patientReportController.navigateToUploadPatientReport(patientInvestigation)}"
+                                                        class="ui-button-warning mt-2"
+                                                        onclick="if (!confirm('Are you sure you want to New Patient Report?'))
+                                                                    return false;"
+                                                        ajax="false">
+                                                    </p:commandButton>
+                                                </div>
+                                                
+                                                <div class="row">
                                                     <p:commandButton 
                                                         icon="fa fa-file-text"
                                                         value="To Reports" 
-                                                        class="ui-button-success"
+                                                        class="ui-button-success mt-2"
                                                         ajax="false" 
                                                         action="#{patientInvestigationController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}" >
                                                     </p:commandButton>
