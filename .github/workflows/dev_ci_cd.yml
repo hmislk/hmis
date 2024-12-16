@@ -107,11 +107,14 @@ jobs:
           # Validate if the application is running
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             sudo su - appuser
-            STATUS=\$(/opt/payara5/bin/asadmin list-applications | grep 'hmis')
-            if echo \"$STATUS\" | grep -q 'running'; then
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            STATUS=\$(/opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep 'hmis')
+            if echo \"$STATUS\" | grep -q 'hmis'; then
               echo 'Application is running.'
+              rm /tmp/payara-admin-pass.txt
             else
               echo 'Application failed to start.' >&2
+              rm /tmp/payara-admin-pass.txt
               exit 1
             fi
           "
