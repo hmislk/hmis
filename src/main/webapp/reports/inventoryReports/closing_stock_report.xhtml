@@ -136,10 +136,10 @@
                                         itemLabel="#{dept.name}" 
                                         itemValue="#{dept}" />
                                 </p:selectOneMenu>
-                                
+
                                 <!-- Component 3: With Institution Only --> 
                                 <p:selectOneMenu
-                                    rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
+                                    rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     filterMatchMode="contains"
@@ -151,17 +151,21 @@
                                         itemLabel="#{dept.name}" 
                                         itemValue="#{dept}" />
                                 </p:selectOneMenu>
-                                
 
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="phmDept"
-                                class="w-100"
-                                value="#{pharmacyReportController.department}"
-                                filter="true">
-                                <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems  value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" />
-                            </p:selectOneMenu>
+                                <!-- Component 4: With Both Institution and Site --> 
+                                <p:selectOneMenu
+                                    rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{pharmacyReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true"> 
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems  
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" 
+                                        var="dept" 
+                                        itemLabel="#{dept.name}" 
+                                        itemValue="#{dept}" />
+                                </p:selectOneMenu>
 
 
 
