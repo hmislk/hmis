@@ -1281,7 +1281,7 @@ public class PatientInvestigationController implements Serializable {
         return "/lab/sent_to_lab?faces-redirect=true";
     }
 
-//  Navigation Lab sampling at lab for barcode generate page
+    //  Navigation Lab sampling at lab for barcode generate page
     public String navigateToGenerateBarcodesForLab() {
         return "/lab/generate_barcodes_for_lab?faces-redirect=true";
     }
@@ -1562,6 +1562,7 @@ public class PatientInvestigationController implements Serializable {
         // Update PatientInvestigations and store associated Bills by unique ID to avoid duplicates
         for (PatientInvestigation tptix : samplePtixs.values()) {
             tptix.setSampleSent(true);
+            tptix.setSampleTransportedToLabByStaff(sampleTransportedToLabByStaff);
             tptix.setSampleSentAt(new Date());
             tptix.setSampleSentBy(sessionController.getLoggedUser());
             tptix.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
@@ -1881,7 +1882,12 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND pi.billItem.bill.toDepartment = :department";
             params.put("department", getDepartment());
         }
-        
+
+        if (bills != null) {
+            jpql += " AND pi.billItem.bill IN :bills";
+            params.put("bills", getBills());
+        }
+
         if (patientInvestigationStatus != null) {
             jpql += " AND pi.billItem.bill.status = :status";
             params.put("status", patientInvestigationStatus);
@@ -2460,7 +2466,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void searchPatientReportsInBillingDepartment() {
-        
+
         StringBuilder jpql = new StringBuilder();
         Map<String, Object> params = new HashMap<>();
 
@@ -3110,15 +3116,15 @@ public class PatientInvestigationController implements Serializable {
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-        
-        
+
+
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
-        
-        
+
+
         // Starting from BillItem and joining to PatientInvestigation if needed
         jpql = "SELECT DISTINCT b "
                 + " FROM BillItem b "
@@ -3578,6 +3584,21 @@ public class PatientInvestigationController implements Serializable {
         params.put("patientInvestigation", patientInvestigation);
         List<PatientSample> patientSamples = patientSampleFacade.findByJpql(jpql, params);
         return patientSamples;
+    }
+
+    public String getPatientSamplesByInvestigationAsString(PatientInvestigation patientInvestigation) {
+        List<PatientSample> patientSamples = getPatientSamplesByInvestigation(patientInvestigation);
+
+        if (patientSamples == null || patientSamples.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (PatientSample ps : patientSamples) {
+            sb.append(ps.getSampleId()).append(" ");
+        }
+
+        return sb.toString();
     }
 
     public List<PatientInvestigation> getPatientInvestigationsBySample(PatientSample patientSample) {
