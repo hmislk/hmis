@@ -12,6 +12,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Packege;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -80,6 +81,8 @@ public class PatientInvestigation implements Serializable {
     private String sampleComments;
     //Sample Sent to Lab
     private Boolean sampleSent = false;
+    @ManyToOne
+    private Staff sampleTransportedToLabByStaff;
     @ManyToOne
     private WebUser sampleSentBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -1321,5 +1324,15 @@ public class PatientInvestigation implements Serializable {
     public void setSampleRevertedAt(Date sampleRevertedAt) {
         this.sampleRevertedAt = sampleRevertedAt;
     }
+
+    public Staff getSampleTransportedToLabByStaff() {
+        return sampleTransportedToLabByStaff;
+    }
+
+    public void setSampleTransportedToLabByStaff(Staff sampleTransportedToLabByStaff) {
+        this.sampleTransportedToLabByStaff = sampleTransportedToLabByStaff;
+    }
+    
+    
 
 }
