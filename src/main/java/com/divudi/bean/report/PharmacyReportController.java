@@ -1944,8 +1944,10 @@ public class PharmacyReportController implements Serializable {
             }
             jpql += ")";
         }
-        if (item != null) {
-            jpql += " and s.item=:itm ";
+        if (amp != null) {
+            item = amp;
+            System.out.println("item = " + item);
+            jpql += "and s.item=:itm ";
             m.put("itm", item);
         }
 
