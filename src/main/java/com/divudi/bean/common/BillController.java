@@ -275,6 +275,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     private PaymentMethodData paymentMethodData;
     @EJB
     private CashTransactionBean cashTransactionBean;
+    @EJB
+    private StaffService staffBean;
 
     @Inject
     SearchController searchController;
@@ -1884,6 +1886,13 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             if (cancellationBatchBill.getToStaff() != null) {
                 staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
+                cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
+                getBillFacade().edit(cancellationBatchBill);
+            }
+        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff_Welfare){
+            if (cancellationBatchBill.getToStaff() != null) {
+                staffService.updateStaffWelfare(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                JsfUtil.addSuccessMessage("Staff Welfare Updated");
                 cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
                 getBillFacade().edit(cancellationBatchBill);
             }
