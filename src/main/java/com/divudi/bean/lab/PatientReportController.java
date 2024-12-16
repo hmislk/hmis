@@ -326,7 +326,7 @@ public class PatientReportController implements Serializable {
         m.put("pi", pi);
         return getFacade().findByJpql(j, m);
     }
-    
+
     public List<PatientReport> approvedPatientReports(PatientInvestigation pi) {
         String j = "select r from PatientReport r "
                 + " where r.patientInvestigation=:pi"
@@ -336,8 +336,8 @@ public class PatientReportController implements Serializable {
         m.put("ret", false);
         return getFacade().findByJpql(j, m);
     }
-    
-    public int approvedPatientReportCount(PatientInvestigation pi){
+
+    public int approvedPatientReportCount(PatientInvestigation pi) {
         int reportCount = 0;
         reportCount = approvedPatientReports(pi).size();
         return reportCount;
@@ -2293,6 +2293,17 @@ public class PatientReportController implements Serializable {
         }
         return createNewPatientReport(pi, ix, sampleIDs);
     }
+    
+    public PatientReport createNewPatientReportForUpload(PatientInvestigation pi, Investigation ix) {
+        String sampleIDs = "";
+        List<PatientSampleComponant> pscs = patientInvestigationController.getPatientSampleComponentsByInvestigation(pi);
+        if (pscs != null) {
+            for (PatientSampleComponant psc : pscs) {
+                sampleIDs += psc.getPatientSample().getIdStr() + " ";
+            }
+        }
+        return createNewPatientReportForUpload(pi, ix, sampleIDs);
+    }
 
     public PatientReport createNewPatientReport(PatientInvestigation pi, Investigation ix, String sampleIds) {
         System.out.println("createNewPatientReport");
@@ -2319,6 +2330,55 @@ public class PatientReportController implements Serializable {
             getFacade().create(r);
             r.setPatientInvestigation(pi);
             getPrBean().addPatientReportItemValuesForReport(r);
+//            getEjbFacade().edit(r);
+            setCurrentPatientReport(r);
+            pi.getPatientReports().add(r);
+            pi.setStatus(PatientInvestigationStatus.SAMPLE_INTERFACED);
+            pi.setPerformed(true);
+            pi.setPerformDepartment(sessionController.getDepartment());
+            pi.setPerformInstitution(sessionController.getInstitution());
+            pi.setPerformedAt(new Date());
+            pi.setPerformedUser(sessionController.getLoggedUser());
+
+            pi.setPrinted(false);
+            pi.setPrintingAt(null);
+            pi.setPrintingDepartment(null);
+            pi.setPrintingInstitution(null);
+            pi.setPrintingUser(null);
+
+            piFacade.edit(pi);
+            getCommonReportItemController().setCategory(ix.getReportFormat());
+        } else {
+            JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
+        }
+        return r;
+    }
+    
+    public PatientReport createNewPatientReportForUpload(PatientInvestigation pi, Investigation ix, String sampleIds) {
+        System.out.println("createNewPatientReport");
+        System.out.println("pi = " + pi);
+        System.out.println("ix = " + ix);
+        //System.err.println("creating a new patient report");
+        PatientReport r = null;
+        if (pi != null && pi.getId() != null && ix != null) {
+            r = new PatientReport();
+            r.setSampleIDs(sampleIds);
+            r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            r.setCreater(getSessionController().getLoggedUser());
+            r.setItem(ix);
+            r.setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
+            r.setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
+            if (r.getTransInvestigation() != null) {
+                if (r.getTransInvestigation().getReportFormat() != null) {
+                    r.setReportFormat(r.getTransInvestigation().getReportFormat());
+                } else {
+                    ReportFormat nrf = reportFormatController.getValidReportFormat();
+                    r.setReportFormat(nrf);
+                }
+            }
+            getFacade().create(r);
+            r.setPatientInvestigation(pi);
+//            getPrBean().addPatientReportItemValuesForReport(r);
 //            getEjbFacade().edit(r);
             setCurrentPatientReport(r);
             pi.getPatientReports().add(r);
@@ -2463,11 +2523,42 @@ public class PatientReportController implements Serializable {
         }
 
         if (pi.getInvestigation().isAlternativeReportAllowed()) {
-            link =  patientInvestigationController.navigateToAlternativeReportSelector(pi);
+            link = patientInvestigationController.navigateToAlternativeReportSelector(pi);
         } else {
             link = navigateToNewlyCreatedPatientReport(pi);
         }
         return link;
+    }
+
+    public String navigateToUploadPatientReport(PatientInvestigation pi) {
+        String link;
+        if (pi == null) {
+            JsfUtil.addErrorMessage("No Patient Investigation");
+            return null;
+        }
+        Investigation ix = null;
+        if (pi.getInvestigation() == null) {
+            JsfUtil.addErrorMessage("No Investigation for Patient Report");
+            return null;
+        } else {
+            ix = (Investigation) pi.getInvestigation();
+        }
+        if (ix.getReportedAs() != null) {
+            ix = (Investigation) pi.getInvestigation().getReportedAs();
+        }
+        currentReportInvestigation = ix;
+        currentPtIx = pi;
+        PatientReport newlyCreatedReport = null;
+
+        newlyCreatedReport = createNewPatientReportForUpload(pi, ix);
+
+        if (newlyCreatedReport == null) {
+            JsfUtil.addErrorMessage("Error");
+            return null;
+        }
+        currentPatientReport = newlyCreatedReport;
+        getCommonReportItemController().setCategory(ix.getReportFormat());
+        return "/lab/upload_patient_report?faces-redirect=true";
     }
 
     public String navigateToNewlyCreatedPatientReport(PatientInvestigation pi) {
