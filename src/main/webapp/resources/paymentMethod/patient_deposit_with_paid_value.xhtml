@@ -24,7 +24,14 @@
                 </div>
                 <div class="d-flex gap-3 mt-2">
                     <h:outputText value="Paid Value : " class="mt-2" ></h:outputText>
-                    <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}" style="width: 7em!important;" class="w-100" id="txtVal" />
+                    <p:inputText 
+                        autocomplete="off"   
+                        value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}" 
+                        style="width: 7em!important;" 
+                        class="w-100" 
+                        id="txtVal" >
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:inputText>
                 </div>
             </div>
         </h:panelGroup>
