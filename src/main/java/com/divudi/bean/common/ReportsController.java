@@ -301,6 +301,8 @@ public class ReportsController implements Serializable {
     double totalVat;
     double totalVatCalculatedValue;
 
+    private String settlementStatus;
+
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
     }
@@ -1465,6 +1467,14 @@ public class ReportsController implements Serializable {
 
     public void setCreditPaid(double creditPaid) {
         this.creditPaid = creditPaid;
+    }
+
+    public String getSettlementStatus() {
+        return settlementStatus;
+    }
+
+    public void setSettlementStatus(String settlementStatus) {
+        this.settlementStatus = settlementStatus;
     }
 
     public void generateSampleCarrierReport() {
@@ -2678,6 +2688,12 @@ public class ReportsController implements Serializable {
         if (creditCompany != null) {
             jpql += "AND bill.creditCompany = :cc ";
             parameters.put("cc", creditCompany);
+        }
+
+        if ("notSettled".equalsIgnoreCase(settlementStatus)) {
+            jpql += "AND (billItem.referenceBill.netTotal + billItem.referenceBill.vat + billItem.referenceBill.paidAmount) <> 0 ";
+        } else if ("settled".equalsIgnoreCase(settlementStatus)) {
+            jpql += "AND (billItem.referenceBill.netTotal + billItem.referenceBill.vat + billItem.referenceBill.paidAmount) = 0 ";
         }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
