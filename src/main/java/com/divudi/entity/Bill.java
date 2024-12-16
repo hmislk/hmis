@@ -92,11 +92,11 @@ public class Bill implements Serializable {
 
     private String ipOpOrCc;
 
-    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Payment> payments = new ArrayList<>();
-    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<BillFee> billFees = new ArrayList<>();
-    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @OrderBy("inwardChargeType, searialNo")
     private List<BillItem> billItems;
 
@@ -858,6 +858,7 @@ public class Bill implements Serializable {
 
     public void copy(Bill bill) {
         billType = bill.getBillType();
+        referenceNumber = bill.getReferenceNumber();
         membershipScheme = bill.getMembershipScheme();
         collectingCentre = bill.getCollectingCentre();
         catId = bill.getCatId();

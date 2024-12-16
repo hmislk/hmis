@@ -70,24 +70,25 @@
                                     <h:panelGroup rendered="#{billSearch.opdBillRefundAllowedSameDay}">
                                         <p:commandButton
                                             ajax="false" 
-                                            value="To Refund"
+                                            value="To Refund Fees"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Refund Allow for OPD Bill',true)}"
                                             disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
                                             action="#{billSearch.navigateToRefundOpdBill}" 
-                                            class="ui-button-warning m-1 w-25" 
-                                            icon="fa fa-money-bill-wave">                          
+                                            class="ui-button-help m-1 w-25" 
+                                            icon="fa fa-money-check-alt">                          
                                         </p:commandButton>
                                         <p:commandButton
                                             ajax="false" 
-                                            value="To Return"
+                                            value="To Return Items"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Return Allow for OPD Bill',true)}"
                                             actionListener="#{billReturnController.clear()}"
                                             disabled="#{billSearch.bill.cancelled or not billReturnController.checkCanReturnBill(billSearch.bill)}" 
                                             action="#{billReturnController.navigateToReturnOpdBill()}"
                                             class="ui-button-warning m-1 w-25" 
-                                            icon="fa fa-money-bill-wave"> 
-                                            <f:setPropertyActionListener value="#{billSearch.bill}" target="#{billReturnController.originalBillToReturn}" ></f:setPropertyActionListener>
+                                            icon="fa fa-undo-alt"> 
+                                            <f:setPropertyActionListener value="#{billSearch.bill}" target="#{billReturnController.originalBillToReturn}" />
                                         </p:commandButton>
+
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{!billSearch.opdBillRefundAllowedSameDay}">
@@ -169,16 +170,16 @@
                                                 ajax="false">
                                                 <p:printer target="groupPrint" />
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
-                                            value="Print Refund Bill" 
-                                            class="ui-button-info"
-                                            icon="fa fa-print"
-                                            style="float: right"
-                                            rendered="#{billSearch.bill.refunded}"
-                                            ajax="false">
-                                            <p:printer target="refundPrint" />
-                                        </p:commandButton>
+                                                value="Print Refund Bill" 
+                                                class="ui-button-info"
+                                                icon="fa fa-print"
+                                                style="float: right"
+                                                rendered="#{billSearch.bill.refunded}"
+                                                ajax="false">
+                                                <p:printer target="refundPrint" />
+                                            </p:commandButton>
                                         </div>
                                     </f:facet>
 
@@ -416,23 +417,23 @@
                                         <h:outputLabel style="font-size: 18pt" value="Reffering Doctor"/>
                                         <p:commandLink 
                                             id="btnAddNewDoc" 
-                                                       type="button"  
-                                                       value="&nbsp;(+)" 
-                                                       oncomplete="PF('dlg').show();" 
-                                                       actionListener="#{doctorController.prepareAdd}" 
-                                                       process="btnAddNewDoc" 
-                                                       update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
+                                            type="button"  
+                                            value="&nbsp;(+)" 
+                                            oncomplete="PF('dlg').show();" 
+                                            actionListener="#{doctorController.prepareAdd}" 
+                                            process="btnAddNewDoc" 
+                                            update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
                                     </h:panelGroup>
                                     <p:autoComplete 
                                         forceSelection="true" 
-                                                    id="cmbDoc" 
-                                                    value="#{billSearch.referredBy}" 
-                                                    completeMethod="#{doctorController.completeDoctor}" var="ix" 
-                                                    itemLabel="#{ix.person.name}" 
-                                                    itemValue="#{ix}" 
-                                                    inputStyleClass="form-control w-100"
-                                                    class="w-100" 
-                                                    scrollHeight="500">
+                                        id="cmbDoc" 
+                                        value="#{billSearch.referredBy}" 
+                                        completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                        itemLabel="#{ix.person.name}" 
+                                        itemValue="#{ix}" 
+                                        inputStyleClass="form-control w-100"
+                                        class="w-100" 
+                                        scrollHeight="500">
                                         <p:column headerText="Name" style="padding: 2px;">
                                             <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
                                         </p:column>
