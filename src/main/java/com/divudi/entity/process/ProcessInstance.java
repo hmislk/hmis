@@ -18,7 +18,7 @@ import javax.persistence.TemporalType;
 /**
  *
  * @author Dr M H B Ariyaratne
- * 
+ *
  */
 @Entity
 public class ProcessInstance implements Serializable {
@@ -28,26 +28,55 @@ public class ProcessInstance implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    private String status;
+
     @ManyToOne
     private ProcessDefinition processDefinition;
-    
+
     @ManyToOne
     private Institution institution;
-    
+
     @ManyToOne
     private Department department;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser creator;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
-    
+
     @Column(nullable = false)
     private boolean completed = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser completedBy;
+
+    @Column(nullable = false)
+    private boolean cancelled = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser cancelledBy;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date cancelledAt;
+
+    @Column(nullable = false)
+    private boolean rejected = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser rejectedBy;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date rejectedAt;
+
+    @Column(nullable = false)
+    private boolean paused = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser pausedBy;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date pausedAt;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date completedAt;
@@ -60,8 +89,7 @@ public class ProcessInstance implements Serializable {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date retiredAt;
-    
-    
+
     public Long getId() {
         return id;
     }
@@ -70,8 +98,6 @@ public class ProcessInstance implements Serializable {
         this.id = id;
     }
 
-    
-    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -184,5 +210,88 @@ public class ProcessInstance implements Serializable {
     public void setRetiredAt(Date retiredAt) {
         this.retiredAt = retiredAt;
     }
-    
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+
+    public WebUser getCancelledBy() {
+        return cancelledBy;
+    }
+
+    public void setCancelledBy(WebUser cancelledBy) {
+        this.cancelledBy = cancelledBy;
+    }
+
+    public Date getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(Date cancelledAt) {
+        this.cancelledAt = cancelledAt;
+    }
+
+    public boolean isRejected() {
+        return rejected;
+    }
+
+    public void setRejected(boolean rejected) {
+        this.rejected = rejected;
+    }
+
+    public WebUser getRejectedBy() {
+        return rejectedBy;
+    }
+
+    public void setRejectedBy(WebUser rejectedBy) {
+        this.rejectedBy = rejectedBy;
+    }
+
+    public Date getRejectedAt() {
+        return rejectedAt;
+    }
+
+    public void setRejectedAt(Date rejectedAt) {
+        this.rejectedAt = rejectedAt;
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void setPaused(boolean paused) {
+        this.paused = paused;
+    }
+
+    public WebUser getPausedBy() {
+        return pausedBy;
+    }
+
+    public void setPausedBy(WebUser pausedBy) {
+        this.pausedBy = pausedBy;
+    }
+
+    public Date getPausedAt() {
+        return pausedAt;
+    }
+
+    public void setPausedAt(Date pausedAt) {
+        this.pausedAt = pausedAt;
+    }
+
+    public String getStatus() {
+        if (status == null || status.trim().equals("")) {
+            status = "Ongoing";
+        }
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
 }

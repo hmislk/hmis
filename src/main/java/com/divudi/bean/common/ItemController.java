@@ -1747,18 +1747,14 @@ public class ItemController implements Serializable {
 
     public List<Item> getDealorItem() {
         List<Item> suggestions;
-        String sql;
-        HashMap hm = new HashMap();
-
-        sql = "select c.item from ItemsDistributors c where c.retired=false "
+        String jpql;
+        Map params = new HashMap();
+        jpql = "select c.item from ItemsDistributors c where c.retired=false "
                 + " and c.institution=:ins "
                 + " order by c.item.name";
-        hm.put("ins", getInstitution());
-
-        suggestions = getFacade().findByJpql(sql, hm);
-
+        params.put("ins", getInstitution());
+        suggestions = getFacade().findByJpql(jpql, params);
         return suggestions;
-
     }
 
     public List<Item> completeItem(String query, Class[] itemClasses, DepartmentType[] departmentTypes, int count) {
