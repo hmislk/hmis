@@ -118,7 +118,7 @@ jobs:
 
           # Check if the application is reachable
           for i in {1..5}; do
-            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$SERVER_IP/rh)
+            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$SERVER_IP/rh/faces/index1.xhtml)
             if [ "$RESPONSE_CODE" == "200" ]; then
               echo "Application is reachable and healthy."
               break
