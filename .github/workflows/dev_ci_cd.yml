@@ -84,7 +84,7 @@ jobs:
           "
 
           # Copy new WAR file to the server
-          scp -i private_key.pem -o StrictHostKeyChecking=no ./*.war $SERVER_USER@$SERVER_IP:$WAR_DIR/$WAR_NAME
+          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:$WAR_DIR/$WAR_NAME
 
           # Deploy the WAR using asadmin
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
