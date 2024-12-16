@@ -200,12 +200,10 @@
                                 <h:outputText value="&#xf0ae;" styleClass="fa mr-2"/>
                                 <h:outputLabel value="Status" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{reportsController.reportKeyWord.string}" filter="true" class="w-100 ">
-                                <f:selectItem itemLabel="All" itemValue="0" />
-                                <f:selectItem itemLabel="Not Discharged" itemValue="1" />
-                                <f:selectItem itemLabel="Discharged &amp; Payment Not Finalized" itemValue="2" />
-                                <f:selectItem itemLabel="Discharged and Payment Finalized" itemValue="3" />
-                                <f:ajax execute="@this" render="@this" />
+                            <p:selectOneMenu value="#{reportsController.dischargedStatus}" filter="true" class="w-100 ">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                <f:selectItem itemLabel="Not Discharged" itemValue="notDischarged" />
+                                <f:selectItem itemLabel="Discharged" itemValue="discharged" />
                             </p:selectOneMenu>
                         </h:panelGrid>
 
@@ -361,11 +359,21 @@
                                     </p:column>
                                     <p:column headerText="Patient Name" width="5rem">
                                         <h:outputText value="#{bill.patient.person.name}"/>
+
                                     </p:column>
+                                    <!--                                    <f:facet name="footer">
+                                                                            <h:outputText value="#{reportsController.calculateNetTotalByBills(entry.value)}"/>
+                                                                        </f:facet>-->
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{reportsController.calculateSubTotal()}"/>
+                                    </f:facet>
                                     <p:column headerText="Gross Amt" width="5rem">
                                         <h:outputText value="#{bill.billTotal}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="Sub Total" style="font-weight: bold;" />
+                                        </f:facet>
                                     </p:column>
                                     <p:column headerText="Disc Amt" width="5rem">
                                         <h:outputText value="#{bill.discount}">
@@ -467,6 +475,9 @@
                                     </p:column>
                                     <p:column headerText="Patient Name" width="5rem">
                                         <h:outputText value="#{bill.patient.person.name}"/>
+                                        <f:facet name="footer">
+                                            <h:outputText value="Sub Total" style="font-weight: bold;" />
+                                        </f:facet>
                                     </p:column>
                                     <p:column headerText="Gross Amt" width="5rem">
                                         <h:outputText value="#{bill.patientEncounter.finalBill.billTotal}">

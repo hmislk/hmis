@@ -292,6 +292,49 @@ public class ReportsController implements Serializable {
     double totalVat;
     double totalVatCalculatedValue;
 
+    private String dischargedStatus;
+
+    public String getDischargedStatus() {
+        return dischargedStatus;
+    }
+
+    public void setDischargedStatus(String dischargedStatus) {
+        this.dischargedStatus = dischargedStatus;
+    }
+
+    public Double calculateNetTotalByBills(List<Bill> bills) {
+        Double netTotal = 0.0;
+
+        for (Bill bill : bills) {
+            netTotal += bill.getNetTotal();
+        }
+
+        return netTotal;
+    }
+
+    public Double calculateDiscountByBills(List<Bill> bills) {
+        Double discount = 0.0;
+
+        for (Bill bill : bills) {
+            discount += bill.getDiscount();
+        }
+
+        return discount;
+    }
+
+    public Double calculateSubTotal() {
+        double subTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            subTotal += calculateNetTotalByBills(bills);
+        }
+
+        return subTotal;
+    }
+
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
     }
@@ -2751,48 +2794,60 @@ public class ReportsController implements Serializable {
             parameters.put("category", roomCategory);
         }
 
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && dischargedStatus != null && !dischargedStatus.trim().isEmpty())) {
+            if (dischargedStatus.equalsIgnoreCase("notDischarged")) {
+                jpql += "AND bill.patientEncounter.discharged = :status ";
+                parameters.put("status", false);
+            } else if (dischargedStatus.equalsIgnoreCase("discharged")) {
+                jpql += "AND bill.patientEncounter.discharged = :status ";
+                parameters.put("status", true);
+            }
+        }
+
         if (institution != null) {
-            jpql += "AND bill.department.institution = :ins ";
-            parameters.put("ins", institution);
+                jpql += "AND bill.department.institution = :ins ";
+                parameters.put("ins", institution);
+            }
+
+            if (department != null) {
+                jpql += "AND bill.department = :dep ";
+                parameters.put("dep", department);
+            }
+            if (site != null) {
+                jpql += "AND bill.department.site = :site ";
+                parameters.put("site", site);
+            }
+            if (webUser != null) {
+                jpql += "AND bill.creater = :wu ";
+                parameters.put("wu", webUser);
+            }
+
+            if (collectingCentre != null) {
+                jpql += "AND bill.collectingCentre = :cc ";
+                parameters.put("cc", collectingCentre);
+            }
+
+            if (creditCompany != null) {
+                jpql += "AND bill.creditCompany = :cc ";
+                parameters.put("cc", creditCompany);
+            }
+
+            jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+            parameters.put("fd", fromDate);
+            parameters.put("td", toDate);
+
+            jpql += "GROUP BY bill, bill.creditCompany";
+
+            List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+            ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+            b.setReportTemplateRows(rs);
+            b.createRowValuesFromBill();
+            b.calculateTotalsWithCredit();
+            return b;
         }
 
-        if (department != null) {
-            jpql += "AND bill.department = :dep ";
-            parameters.put("dep", department);
-        }
-        if (site != null) {
-            jpql += "AND bill.department.site = :site ";
-            parameters.put("site", site);
-        }
-        if (webUser != null) {
-            jpql += "AND bill.creater = :wu ";
-            parameters.put("wu", webUser);
-        }
-
-        if (collectingCentre != null) {
-            jpql += "AND bill.collectingCentre = :cc ";
-            parameters.put("cc", collectingCentre);
-        }
-
-        if (creditCompany != null) {
-            jpql += "AND bill.creditCompany = :cc ";
-            parameters.put("cc", creditCompany);
-        }
-
-        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
-        parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
-
-        jpql += "GROUP BY bill, bill.creditCompany";
-
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-
-        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
-        b.setReportTemplateRows(rs);
-        b.createRowValuesFromBill();
-        b.calculateTotalsWithCredit();
-        return b;
-    }
+    
 
     private void groupBills() {
         Map<Institution, List<Bill>> billMap = new HashMap<>();
@@ -2849,4 +2904,5 @@ public class ReportsController implements Serializable {
 
         bundle.setGroupedBillItemsByInstitution(billMap);
     }
+
 }
