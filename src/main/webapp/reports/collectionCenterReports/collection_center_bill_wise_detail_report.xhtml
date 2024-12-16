@@ -207,7 +207,8 @@
                                 style="width: 150px"
                                 ajax="false"
                                 value="Print">
-                            <p:printer target="tblExport"/>
+                            <p:printer target="#{reportsController.reportType eq 'Report' ? 'tblExport1' :
+                                            (reportsController.reportType eq 'SummaryWithLetter' ? 'tblExport2' : 'tblExport3')}"/>
                         </p:commandButton>
                         <p:commandButton
                                 class="m-2 ui-button-success"
@@ -215,8 +216,10 @@
                                 icon="fas fa-file-excel"
                                 ajax="false"
                                 value="Excel">
-                            <p:dataExporter type="xlsx" target="tblExport"
-                                            fileName="collection_center_bill_wise_detail_report.pdf.xlsx"/>
+                            <p:dataExporter type="xlsx"
+                                            target="#{reportsController.reportType eq 'Report' ? 'tblExport1' :
+                                            (reportsController.reportType eq 'SummaryWithLetter' ? 'tblExport2' : 'tblExport3')}"
+                                            fileName="collection_center_bill_wise_detail_report.xlsx"/>
                         </p:commandButton>
 
                         <p:commandButton
@@ -225,7 +228,9 @@
                                 style="width: 150px"
                                 ajax="false"
                                 value="PDF">
-                            <p:dataExporter type="pdf" target="tblExport"
+                            <p:dataExporter type="pdf"
+                                            target="#{reportsController.reportType eq 'Report' ? 'tblExport1' :
+                                            (reportsController.reportType eq 'SummaryWithLetter' ? 'tblExport2' : 'tblExport3')}"
                                             fileName="collection_center_bill_wise_detail_report.pdf"/>
                         </p:commandButton>
 
@@ -244,7 +249,7 @@
                     </h:panelGrid>
 
                     <p:dataTable
-                            id="tblExport"
+                            id="tblExport1"
                             value="#{reportsController.bundle.groupedBillItems.entrySet()}"
                             rows="10"
                             var="entry"
@@ -254,6 +259,10 @@
                             rendered="#{reportsController.reportType eq 'Report'}"
                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="10,25,50">
+                        <f:facet name="header">
+                            <h:outputText value="Collection Center Bill Wise Detail Report"
+                                          style="font-size: 18px; font-weight: bold; text-align: center; display: block;"/>
+                        </f:facet>
 
                         <p:column headerText="CC Code" width="5rem">
                             <h:outputText value="#{entry.value[0].bill.collectingCentre.code}"
