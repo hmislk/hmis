@@ -77,7 +77,7 @@ public class ProcessStepDefinitionController implements Serializable {
         String jpql = "SELECT p FROM ProcessStepDefinition p "
                 + " WHERE p.retired = :ret "
                 + " and p.processDefinition=:pd "
-                + " ORDER BY p.name";
+                + " ORDER BY p.sequenceOrder";
         HashMap<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("pd", pd);

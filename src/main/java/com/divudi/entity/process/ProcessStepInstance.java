@@ -33,6 +33,8 @@ public class ProcessStepInstance implements Serializable {
     @ManyToOne
     @JoinColumn(nullable = false)
     private ProcessStepDefinition processStepDefinition; // The step definition this instance is based on
+    
+    private String status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser creator; // The user who initiated this step
@@ -66,6 +68,8 @@ public class ProcessStepInstance implements Serializable {
 
     @ManyToOne
     private ProcessStepActionDefinition processStepActionDefinition;
+    
+    
 
     public Long getId() {
         return id;
@@ -204,6 +208,17 @@ public class ProcessStepInstance implements Serializable {
 
     public void setProcessStepActionDefinition(ProcessStepActionDefinition processStepActionDefinition) {
         this.processStepActionDefinition = processStepActionDefinition;
+    }
+
+    public String getStatus() {
+        if(status==null||status.trim().equals("")){
+            status="Pending";
+        }
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
     
     
