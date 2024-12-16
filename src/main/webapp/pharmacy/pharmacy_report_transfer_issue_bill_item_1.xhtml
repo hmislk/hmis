@@ -139,20 +139,39 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Cost Rate" style="text-align: right;">
+                                <p:column headerText="Purchase Rate" style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Cost Rate"/>
+                                        <h:outputLabel value="Purchase Rate"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
 
-                                <p:column headerText="Cost Value" style="text-align: right;">
+                                <p:column headerText="Purchase Value" style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Cost Value"/>
+                                        <h:outputLabel value="Purchase Value"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>                                  
+                                </p:column>
+                                
+                                
+                                <p:column headerText="Sale Rate" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Sale Rate"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.retailsaleRate}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>                                  
+                                </p:column>
+
+                                <p:column headerText="Sale Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Sale Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{-1 * i.pharmaceuticalBillItem.itemBatch.retailsaleRate * i.pharmaceuticalBillItem.qty}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
@@ -166,7 +185,17 @@
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </f:facet>
-                                        </p:column>                                        
+                                        </p:column>    
+                                        
+                                        <p:column colspan="1"/>
+                                        
+                                        <p:column style="text-align: right;" >
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{0 - reportsTransfer.saleValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column> 
                                     </p:row>
                                 </p:columnGroup>
 
