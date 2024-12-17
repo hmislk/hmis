@@ -2594,7 +2594,7 @@ public class PatientReportController implements Serializable {
         return link;
     }
 
-    public String navigateToUploadPatientReport(PatientInvestigation pi) {
+    public String navigateToUploadNewPatientReport(PatientInvestigation pi) {
         String link;
         if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Investigation");
@@ -2628,6 +2628,7 @@ public class PatientReportController implements Serializable {
 
         System.out.println("currentPtIx = " + currentPtIx);
 
+        patientReportUploadController.setReportUpload(null);
         patientReportUploadController.setPatientInvestigation(pi);
 
         return "/lab/upload_patient_report?faces-redirect=true";
