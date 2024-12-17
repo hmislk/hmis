@@ -6156,6 +6156,36 @@ public class SearchController implements Serializable {
 
     }
 
+    
+    public void listMissingBillNumberinBills() {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT bill "
+                + " FROM Bill bill "
+                + " WHERE bill.deptId =:dep or bill.deptId =:dept ";
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        
+        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+        parameters.put("dept", "");
+        parameters.put("dep", null);
+
+        bills = billFacade.findByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        
+    }
+    
     public StreamedContent getFileForDownload() {
         prepareDataForExcelExport();  // Prepare data and create the Excel file
         return fileForDownload;       // This should now contain the generated Excel file

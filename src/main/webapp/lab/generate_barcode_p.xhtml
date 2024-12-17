@@ -388,7 +388,7 @@
                                                         id="btnNewUpload"
                                                         rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport}"
                                                         disabled="#{patientInvestigation.sampleSentAt eq null}"
-                                                        action="#{patientReportController.navigateToUploadPatientReport(patientInvestigation)}"
+                                                        action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
                                                         class="ui-button-warning mt-2"
                                                         onclick="if (!confirm('Are you sure you want to New Patient Report?'))
                                                                     return false;"
@@ -1067,9 +1067,11 @@
                                                            ajax="false" action="/lab/patient_report?faces-redirect=true">
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
                                             </p:commandLink>
-<h:outputLabel value="Report : #{dpr.id}" /><br/>
+                                            
+                                            <h:outputLabel value="Report : #{dpr.id}" /><br/>
                                             <h:outputLabel value="Type : #{dpr.reportType}" /><br/>
                                             <h:outputLabel value="Patient Investigation : #{dpr.patientInvestigation.id}" /><br/><br/>
+                                            
                                             <div class="d-flex gap-2">
                                                 <!-- Old Report CommandLink -->
 
