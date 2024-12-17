@@ -332,10 +332,8 @@
                                                     row.billItem.patientEncounter.finalBill.deptId :
                                                     row.billItem.bill.deptId}"/>
                         </p:column>
-                        <p:column headerText="MRN" width="8rem">
-                            <h:outputText value="#{row.billItem.patientEncounter != null ?
-                                                    row.billItem.patientEncounter.bhtNo :
-                                                    row.billItem.bill.patient.phn}"/>
+                        <p:column headerText="MRN" width="8rem" rendered="#{reportsController.visitType eq 'IP'}">
+                            <h:outputText value="#{row.billItem.patientEncounter.bhtNo}"/>
                         </p:column>
                         <p:column headerText="Name" width="8rem">
                             <h:outputText value="#{row.billItem.bill.patient.person.name}"/>
@@ -367,7 +365,7 @@
                         <p:column headerText="Invoiced By" width="5rem">
                             <h:outputText value="#{row.billItem.bill.creater.webUserPerson.name}"/>
                         </p:column>
-                        <p:column headerText="Recieved Date" width="5rem">
+                        <p:column headerText="Received Date" width="5rem">
                             <h:outputText value="#{row.billItem.patientInvestigation.createdAt}">
                                 <f:convertDateTime
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
