@@ -1662,10 +1662,12 @@ public class ReportsTransfer implements Serializable {
         discountsValue = 0.0;
         netTotalValues = 0.0;
         for (Bill b : transferBills) {
-            totalsValue = totalsValue + (b.getTotal());
+//            totalsValue = totalsValue + (b.getTotal());
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
+        
+        calculatePurachaseValuesOfBillItemsInBill(transferBills);
 
     }
 
