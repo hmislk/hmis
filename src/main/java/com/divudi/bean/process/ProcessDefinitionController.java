@@ -89,6 +89,7 @@ public class ProcessDefinitionController implements Serializable {
      *
      * @return navigation outcome string
      */
+    @Deprecated // Use Data Administration
     public String navigateToManageProcessIndex() {
         fillAllProcesses();
         return "/process/admin/index?faces-redirect=true;";

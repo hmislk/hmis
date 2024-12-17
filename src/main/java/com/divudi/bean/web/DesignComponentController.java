@@ -4,6 +4,7 @@ import com.divudi.data.web.ComponentDataType;
 import com.divudi.data.web.ComponentPresentationType;
 import com.divudi.entity.web.DesignComponent;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.web.ComponentMappingType;
 import com.divudi.facade.web.DesignComponentFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -39,6 +40,10 @@ public class DesignComponentController implements Serializable {
 
     public List<ComponentPresentationType> getComponentPresentationTypes() {
         return Arrays.asList(ComponentPresentationType.values());
+    }
+    
+    public List<ComponentMappingType> getComponentMappingTypes() {
+        return Arrays.asList(ComponentMappingType.values());
     }
 
     public List<ComponentDataType> getComponentDataTypes() {
