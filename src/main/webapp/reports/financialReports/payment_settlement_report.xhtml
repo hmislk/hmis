@@ -449,7 +449,7 @@
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Settlement Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.paidAt}">
+                            <h:outputText value="#{bi.billItem.referenceBill.paidAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
