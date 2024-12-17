@@ -27,6 +27,7 @@
                     filterMatchMode="contains"
                     class="w-100"
                     value="#{processController.processStepInstance.processStepActionDefinition}" >
+                    <f:selectItem itemLabel="Select" ></f:selectItem>
                     <f:selectItems 
                         value="#{processController.processStepActionDefinitions}" 
                         var="processStepActionDefinition"
@@ -34,7 +35,7 @@
                         itemLabel="#{processStepActionDefinition.name}" />
                 </p:selectOneMenu>
                 <p:commandButton 
-                    value="Start"
+                    value="Complete"
                     action="#{processController.completeProcessStepInstance()}"
                     ajax="false">
                     
