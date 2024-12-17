@@ -45,9 +45,11 @@
                                 <p:outputLabel value="Description" class="form-label"></p:outputLabel>
                             </div>
                             <div class="col-md-10">
-                                <p:inputText value="#{webTemplateController.current.description}" 
-                                     class="form-control">
-                                </p:inputText>
+                                <p:inputTextarea
+                                    class="w-100"
+                                    value="#{webTemplateController.current.description}" 
+                                    rows="10">
+                                </p:inputTextarea>
                             </div>
                         </div>
                     </p:panel>

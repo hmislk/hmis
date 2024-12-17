@@ -350,6 +350,7 @@ public class WebContentController implements Serializable {
         this.language = language;
     }
     
+    @Deprecated // Now use Data Administration
     public String navigateToManageWeb(){
         return "/webcontent/index?faces-redirect=true";
     }
