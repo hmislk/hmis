@@ -304,7 +304,7 @@ public class DataAdministrationController implements Serializable{
             return;
         }
         
-        String genarateeddeptID =  billNumberGenerator.departmentBillNumberGeneratorTemporarilyYearly(originalBill.getDepartment(),originalBill.getBillTypeAtomic() );
+        String genarateeddeptID =  bill.getInsId();
  
         System.out.println("New ID = " + genarateeddeptID);
         
