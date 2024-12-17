@@ -294,10 +294,7 @@ public class DataAdministrationController implements Serializable{
     }
 
     public void addMissingDeptBillNumber(Bill bill) {
-        System.out.println("BeforeBill = " + bill.getId());
         Bill originalBill = billFacade.find(bill.getId());
-        System.out.println("Bill = " + originalBill.getId());
-        System.out.println("Bill Length = " + originalBill.getDeptId().trim().length());
         
         if (originalBill.getDeptId().trim().length() != 0){
             JsfUtil.addErrorMessage("Already Add Dept Bill Number");
@@ -306,14 +303,9 @@ public class DataAdministrationController implements Serializable{
         
         String genarateeddeptID =  bill.getInsId();
  
-        System.out.println("New ID = " + genarateeddeptID);
-        
         originalBill.setDeptId(genarateeddeptID);
         billFacade.edit(originalBill);
         
-        System.out.println("Dept ID = " + originalBill.getDeptId());
-        
-        System.out.println("Added Dept Bill Number");
         JsfUtil.addSuccessMessage("Added Dept Bill Number");
     }
 
