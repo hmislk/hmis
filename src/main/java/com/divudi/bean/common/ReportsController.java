@@ -306,6 +306,8 @@ public class ReportsController implements Serializable {
     private Map<Route, Map<YearMonth, Bill>> groupedRouteWiseBillsMonthly;
     private List<YearMonth> yearMonths;
 
+    private String settlementStatus;
+
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
     }
@@ -1472,6 +1474,14 @@ public class ReportsController implements Serializable {
         this.creditPaid = creditPaid;
     }
 
+    public String getSettlementStatus() {
+        return settlementStatus;
+    }
+
+    public void setSettlementStatus(String settlementStatus) {
+        this.settlementStatus = settlementStatus;
+    }
+
     public Map<Institution, Map<YearMonth, Bill>> getGroupedCollectingCenterWiseBillsMonthly() {
         return groupedCollectingCenterWiseBillsMonthly;
     }
@@ -1514,6 +1524,10 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
         }
 
         System.out.println("bill items");
@@ -1527,12 +1541,13 @@ public class ReportsController implements Serializable {
     private ReportTemplateRowBundle generateSampleCarrierBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) " +
-                "FROM BillItem billItem " +
-                "JOIN billItem.bill bill " +
-                "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem " +
-                "WHERE bill.billTypeAtomic IN :bts " +
-                "AND bill.createdAt BETWEEN :fd AND :td ";
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(pi) "
+                + "FROM PatientInvestigation pi "
+                + "JOIN pi.billItem billItem "
+                + "JOIN billItem.bill bill "
+                + "WHERE pi.retired=false "
+                + " and billItem.retired=false "
+                + " and bill.retired=false ";
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
@@ -1576,7 +1591,7 @@ public class ReportsController implements Serializable {
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
 
-        jpql += "GROUP BY billItem";
+        jpql += "GROUP BY pi";
 
         System.out.println("jpql = " + jpql);
         System.out.println("parameters = " + parameters);
@@ -1585,7 +1600,7 @@ public class ReportsController implements Serializable {
 
         for (ReportTemplateRow row : rs) {
             BillItem billItem = row.getBillItem();
-            PatientInvestigation investigation = billItem.getPatientInvestigation();
+            PatientInvestigation investigation = row.getPatientInvestigation();
 
             if (investigation != null && investigation.getSampleSentAt() != null && investigation.getReceivedAt() != null) {
                 long duration = investigation.getReceivedAt().getTime() - investigation.getSampleSentAt().getTime();
@@ -2785,6 +2800,12 @@ public class ReportsController implements Serializable {
             parameters.put("cc", creditCompany);
         }
 
+        if ("notSettled".equalsIgnoreCase(settlementStatus)) {
+            jpql += "AND (billItem.referenceBill.netTotal + billItem.referenceBill.vat + billItem.referenceBill.paidAmount) <> 0 ";
+        } else if ("settled".equalsIgnoreCase(settlementStatus)) {
+            jpql += "AND (billItem.referenceBill.netTotal + billItem.referenceBill.vat + billItem.referenceBill.paidAmount) = 0 ";
+        }
+
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
@@ -2847,12 +2868,12 @@ public class ReportsController implements Serializable {
     private ReportTemplateRowBundle generateExternalLaboratoryWorkloadBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) " +
-                "FROM BillItem billItem " +
-                "JOIN billItem.bill bill " +
-                "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem " +
-                "WHERE bill.billTypeAtomic IN :bts " +
-                "AND bill.createdAt BETWEEN :fd AND :td ";
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+                + "FROM BillItem billItem "
+                + "JOIN billItem.bill bill "
+                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
+                + "WHERE bill.billTypeAtomic IN :bts "
+                + "AND bill.createdAt BETWEEN :fd AND :td ";
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
@@ -2945,12 +2966,12 @@ public class ReportsController implements Serializable {
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem.item.name, SUM(billItem.qty)) " +
-                "FROM BillItem billItem " +
-                "JOIN billItem.bill bill " +
-                "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem " +
-                "WHERE bill.billTypeAtomic IN :bts " +
-                "AND bill.createdAt BETWEEN :fd AND :td ";
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem.item.name, SUM(billItem.qty)) "
+                + "FROM BillItem billItem "
+                + "JOIN billItem.bill bill "
+                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
+                + "WHERE bill.billTypeAtomic IN :bts "
+                + "AND bill.createdAt BETWEEN :fd AND :td ";
 
         if (visitType != null) {
             if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP") || visitType.equalsIgnoreCase("CC")) {
