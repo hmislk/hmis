@@ -14,24 +14,30 @@
     <cc:implementation>
         <h:form >
             <p:panelGrid columns="3" >
-                <p:outputLabel value="Select Process" ></p:outputLabel>
+                <p:outputLabel value="Process" ></p:outputLabel>
+                <p:outputLabel value="#{processController.processDefinition.name}" ></p:outputLabel>
+                
+                <p:outputLabel value="Step" ></p:outputLabel>
+                <p:outputLabel value="#{processController.processStepDefinition.name}" ></p:outputLabel>
+                
+                <p:outputLabel value="Action" ></p:outputLabel>
                 <p:selectOneMenu 
                     id="processSelect" 
                     filter="true"
                     filterMatchMode="contains"
                     class="w-100"
-                    value="#{processController.processDefinition}" >
-                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                    value="#{processController.processStepInstance.processStepActionDefinition}" >
                     <f:selectItems 
-                        value="#{processController.processDefinitions}" 
-                        var="process"
-                        itemValue="#{process}" 
-                        itemLabel="#{process.name}" />
+                        value="#{processController.processStepActionDefinitions}" 
+                        var="processStepActionDefinition"
+                        itemValue="#{processStepActionDefinition}" 
+                        itemLabel="#{processStepActionDefinition.name}" />
                 </p:selectOneMenu>
                 <p:commandButton 
                     value="Start"
-                    action="#{processController.startProcessInstance()}"
+                    action="#{processController.completeProcessStepInstance()}"
                     ajax="false">
+                    
                 </p:commandButton>
             </p:panelGrid>
         </h:form>
