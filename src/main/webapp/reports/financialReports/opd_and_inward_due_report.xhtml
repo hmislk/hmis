@@ -192,7 +192,7 @@
                                 id="cmbPs"
                                 value="#{reportsController.paymentMethod}"
                                 class="w-100">
-                                <f:selectItem itemLabel="Select paymentMethod"/>
+                                <f:selectItem itemLabel="Select Payment Method"/>
                                 <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
                             </p:selectOneMenu>
 
@@ -364,9 +364,13 @@
                                     <!--                                    <f:facet name="footer">
                                                                             <h:outputText value="#{reportsController.calculateNetTotalByBills(entry.value)}"/>
                                                                         </f:facet>-->
-                                    <f:facet name="footer">
-                                        <h:outputText value="#{reportsController.calculateSubTotal()}"/>
-                                    </f:facet>
+                                    <!--                                    <f:facet name="footer">
+                                                                            <h:outputText value="#{reportsController.calculateSubTotal()}"/>
+                                                                        </f:facet>-->
+<!--                                    <f:facet name="footer">
+                                        <h:outputText value="#{reportsController.calculateDiscountByBills(entry.value)}"/>
+                                    </f:facet>-->
+
                                     <p:column headerText="Gross Amt" width="5rem">
                                         <h:outputText value="#{bill.billTotal}">
                                             <f:convertNumber pattern="#,##0.00"/>
