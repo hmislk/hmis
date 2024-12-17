@@ -29,15 +29,6 @@
     </h:panelGroup>
 
     <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
-        <table class="table w-100">
-            <thead>
-            <tr class="text-light bg-dark">
-                <th class="text-light bg-dark">
-                    <h:outputText value="#{cc.attrs.bundle.name}"></h:outputText>
-                </th>
-            </tr>
-            </thead>
-        </table>
         <p:dataTable id="tbl"
                      class="w-100 m-2"
                      value="#{cc.attrs.bundle.reportTemplateRows}"
@@ -45,6 +36,7 @@
                      paginator="true"
                      paginatorAlwaysVisible="false"
                      rows="10"
+                     paginatorPosition="bottom"
                      rowIndexVar="n"
                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                      rowsPerPageTemplate="5,10,20"
@@ -71,7 +63,7 @@
                 <f:facet name="header">
                     <h:outputText value="Invoice Date"/>
                 </f:facet>
-                <p:outputLabel value="#{row.billItem.bill.billDate}">
+                <p:outputLabel value="#{row.billItem.bill.createdAt}">
                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                 </p:outputLabel>
             </p:column>
