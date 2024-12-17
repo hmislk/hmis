@@ -274,7 +274,7 @@
                                     value="#{bi.billItem.referenceBill.patientEncounter.finalBill.creditCompany.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.dateOfDischarge}">
+                            <h:outputText value="#{bi.billItem.referenceBill.patientEncounter.finalBill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
@@ -294,6 +294,11 @@
                             <h:outputText value="#{bi.billItem.referenceBill.patientEncounter.finalBill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{reportsController.bundle.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="Receipt Value" width="5rem">
                             <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.netTotal}">
@@ -355,7 +360,7 @@
                                     value="#{bi.billItem.referenceBill.patientEncounter.finalBill.creditCompany.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.dateOfDischarge}">
+                            <h:outputText value="#{bi.billItem.referenceBill.patientEncounter.finalBill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
@@ -375,6 +380,11 @@
                             <h:outputText value="#{bi.billItem.referenceBill.patientEncounter.finalBill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{reportsController.bundle.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="Bank" width="5rem">
                             <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.bank.name}"/>
@@ -434,7 +444,7 @@
                             <h:outputText value="#{bi.billItem.referenceBill.creditCompany.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.billDate}">
+                            <h:outputText value="#{bi.billItem.referenceBill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
@@ -453,6 +463,11 @@
                             <h:outputText value="#{bi.billItem.referenceBill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{reportsController.bundle.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="Receipt Value" width="5rem">
                             <h:outputText value="#{bi.billItem.netValue}">
@@ -512,7 +527,7 @@
                             <h:outputText value="#{bi.billItem.referenceBill.creditCompany.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.billDate}">
+                            <h:outputText value="#{bi.billItem.referenceBill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
@@ -528,9 +543,14 @@
                             <h:outputText value="#{bi.billItem.bill.paymentMethod}"/>
                         </p:column>
                         <p:column headerText="Total Value" width="5rem">
-                            <h:outputText value="#{bi.billItem.netValue}">
+                            <h:outputText value="#{bi.billItem.referenceBill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{reportsController.bundle.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="Bank" width="5rem">
                             <h:outputText value="#{bi.billItem.bill.bank.name}"/>
