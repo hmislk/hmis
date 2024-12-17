@@ -3,6 +3,7 @@ package com.divudi.data;
 import com.divudi.entity.*;
 import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
+import com.divudi.entity.lab.PatientInvestigation;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -138,6 +139,8 @@ public class ReportTemplateRow implements Serializable {
     private Institution collectingCentre;
     private Double totalHospitalFee;
     private Double qty;
+    
+    private PatientInvestigation patientInvestigation;
 
     private long duration;
 
@@ -218,6 +221,12 @@ public class ReportTemplateRow implements Serializable {
         return "ReportTemplateRow{id=" + getId() + '}';
     }
 
+    public ReportTemplateRow(PatientInvestigation patientInvestigation) {
+        this.patientInvestigation = patientInvestigation;
+    }
+
+    
+    
     public ReportTemplateRow(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
     }
@@ -1346,4 +1355,14 @@ public class ReportTemplateRow implements Serializable {
     public void setTax(Double tax) {
         this.tax = tax;
     }
+
+    public PatientInvestigation getPatientInvestigation() {
+        return patientInvestigation;
+    }
+
+    public void setPatientInvestigation(PatientInvestigation patientInvestigation) {
+        this.patientInvestigation = patientInvestigation;
+    }
+    
+    
 }

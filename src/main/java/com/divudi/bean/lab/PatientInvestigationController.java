@@ -1281,7 +1281,7 @@ public class PatientInvestigationController implements Serializable {
         return "/lab/sent_to_lab?faces-redirect=true";
     }
 
-//  Navigation Lab sampling at lab for barcode generate page
+    //  Navigation Lab sampling at lab for barcode generate page
     public String navigateToGenerateBarcodesForLab() {
         return "/lab/generate_barcodes_for_lab?faces-redirect=true";
     }
@@ -1562,6 +1562,7 @@ public class PatientInvestigationController implements Serializable {
         // Update PatientInvestigations and store associated Bills by unique ID to avoid duplicates
         for (PatientInvestigation tptix : samplePtixs.values()) {
             tptix.setSampleSent(true);
+            tptix.setSampleTransportedToLabByStaff(sampleTransportedToLabByStaff);
             tptix.setSampleSentAt(new Date());
             tptix.setSampleSentBy(sessionController.getLoggedUser());
             tptix.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
@@ -1882,6 +1883,11 @@ public class PatientInvestigationController implements Serializable {
             params.put("department", getDepartment());
         }
         
+        if (bills != null) {
+            jpql += " AND pi.billItem.bill IN :bills";
+            params.put("bills", getBills());
+        }
+
         if (patientInvestigationStatus != null) {
             jpql += " AND pi.billItem.bill.status = :status";
             params.put("status", patientInvestigationStatus);
@@ -3578,6 +3584,21 @@ public class PatientInvestigationController implements Serializable {
         params.put("patientInvestigation", patientInvestigation);
         List<PatientSample> patientSamples = patientSampleFacade.findByJpql(jpql, params);
         return patientSamples;
+    }
+
+    public String getPatientSamplesByInvestigationAsString(PatientInvestigation patientInvestigation) {
+        List<PatientSample> patientSamples = getPatientSamplesByInvestigation(patientInvestigation);
+
+        if (patientSamples == null || patientSamples.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (PatientSample ps : patientSamples) {
+            sb.append(ps.getSampleId()).append(" ");
+        }
+
+        return sb.toString();
     }
 
     public List<PatientInvestigation> getPatientInvestigationsBySample(PatientSample patientSample) {
