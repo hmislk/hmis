@@ -197,10 +197,6 @@
                             Process Instance List
                         </f:facet>
 
-                        <p:column headerText="No" sortBy="#{pi.id}" filterBy="#{pi.id}" filterMatchMode="contains">
-                            <h:outputText value="#{pi.id}" />
-                        </p:column>
-
                         <p:column headerText="Created At" sortBy="#{pi.createdAt}" filterBy="#{pi.createdAt}" filterMatchMode="contains">
                             <h:outputText value="#{pi.createdAt}">
                                 <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
@@ -212,12 +208,27 @@
                         </p:column>
 
                         <p:column headerText="Status" sortBy="#{pi.status}" filterBy="#{pi.status}" filterMatchMode="exact">
-                            <h:outputText value="#{pi.status}" />
+                            <p:badge value="#{pi.status}&nbsp;&nbsp;&nbsp;&nbsp;"
+                                     iconPos="right"
+                                     styleClass="#{pi.status eq 'Ongoing' ? 'ui-badge-warning' : 
+                                                   pi.status eq 'Completed' ? 'ui-badge-success' :
+                                                   pi.status eq 'Cancelled' ? 'ui-badge-danger' :
+                                                   pi.status eq 'Rejected' ? 'ui-badge-dark' :
+                                                   pi.status eq 'Paused' ? 'ui-badge-secondary' : 'ui-badge-default'}"
+                                     icon="#{pi.status eq 'Ongoing' ? 'fa fa-refresh fa-spin' : 
+                                             pi.status eq 'Completed' ? 'fa fa-check' :
+                                             pi.status eq 'Cancelled' ? 'fa fa-times-circle' :
+                                             pi.status eq 'Rejected' ? 'fa fa-ban' :
+                                             pi.status eq 'Paused' ? 'fa fa-pause-circle' : ''}">
+                            </p:badge>
                         </p:column>
 
+
                         <p:column headerText="Actions">
-                            <p:commandButton value="Manage" action="#{processController.navigateToViewProcessInstance()}" ajax="false">
-                                <f:setPropertyActionListener value="#{pi}" target="#{processController.processInstance}" />
+                            <p:commandButton
+                                value="Manage" 
+                                action="#{processController.navigateToManageProcessInstance(pi)}" 
+                                ajax="false">
                             </p:commandButton>
                         </p:column>
 

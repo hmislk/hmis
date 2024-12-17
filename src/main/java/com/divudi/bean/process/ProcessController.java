@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 
 /**
@@ -26,7 +27,7 @@ import javax.inject.Inject;
  * @author ASUS
  */
 @Named
-@ViewScoped
+@SessionScoped
 public class ProcessController implements Serializable {
 
     @EJB
@@ -107,6 +108,19 @@ public class ProcessController implements Serializable {
         processStepInstances = processService.fetchProcessStepInstances(processInstance);
         stage = "view_process";
         return null;
+    }
+    
+    public String navigateToManageProcessInstance(ProcessInstance pi) {
+        System.out.println("navigateToManageProcessInstance");
+        System.out.println("pi = " + pi);
+        if (pi == null) {
+            JsfUtil.addErrorMessage("No Process Selected");
+            return null;
+        }
+        processInstance=pi;
+        processStepInstances = processService.fetchProcessStepInstances(processInstance);
+        stage = "view_process";
+        return "/process/process";
     }
 
     public String navigateToCompleteProcessStepInstance(ProcessStepInstance psi) {
