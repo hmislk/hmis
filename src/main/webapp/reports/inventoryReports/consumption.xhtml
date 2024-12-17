@@ -189,25 +189,45 @@
                                              value="Process" 
                                              action="#{pharmacyController.createConsumptionReportTable()}">
                             </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
-                                <p:printer target="tbl1"  rendered="#{pharmacyController.reportType eq 'summeryReport'}"/> 
-                                <p:printer target="tbl2"  rendered="#{pharmacyController.reportType eq 'byBill'}"/>
-                                <p:printer target="tbl3"  rendered="#{pharmacyController.reportType eq 'byBillItem'}"/> 
-                                <p:printer target="tbl4"  rendered="#{pharmacyController.reportType eq 'categoryWise'}"/>                                 
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}">
+                                <p:printer target="tbl1" />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                                <p:dataExporter type="xlsx" target="tbl1" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'summeryReport'}" />
-                                <p:dataExporter type="xlsx" target="tbl2" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'byBill'}" />
-                                <p:dataExporter type="xlsx" target="tbl3" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'byBillItem'}" />
-                                <p:dataExporter type="xlsx" target="tbl4" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'categoryWise'}" />
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'byBill'}">
+                                <p:printer target="tbl2" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'byBillItem'}">
+                                <p:printer target="tbl3" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'categoryWise'}">
+                                <p:printer target="tbl4" />
                             </p:commandButton>
 
-                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
-                                <p:dataExporter type="pdf" target="tbl1" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'summeryReport'}" />
-                                <p:dataExporter type="pdf" target="tbl2" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'byBill'}" />
-                                <p:dataExporter type="pdf" target="tbl3" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'byBillItem'}" />
-                                <p:dataExporter type="pdf" target="tbl4" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'categoryWise'}" />
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}">
+                                <p:dataExporter type="xlsx" target="tbl1" fileName="#{pharmacyController.reportType}" />
                             </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'byBill'}">
+                                <p:dataExporter type="xlsx" target="tbl2" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'byBillItem'}">
+                                <p:dataExporter type="xlsx" target="tbl3" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'categoryWise'}">
+                                <p:dataExporter type="xlsx" target="tbl4" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}">
+                                <p:dataExporter type="pdf" target="tbl1" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'byBill'}">
+                                <p:dataExporter type="pdf" target="tbl2" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'byBillItem'}">
+                                <p:dataExporter type="pdf" target="tbl3" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'categoryWise'}">
+                                <p:dataExporter type="pdf" target="tbl4" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+
                         </div>
 
 
