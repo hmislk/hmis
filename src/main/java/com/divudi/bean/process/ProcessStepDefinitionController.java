@@ -1,7 +1,8 @@
-package com.divudi.bean.emr;
+package com.divudi.bean.process;
 
-import com.divudi.entity.workflow.ProcessDefinition;
-import com.divudi.entity.workflow.ProcessStepDefinition;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.process.ProcessDefinition;
+import com.divudi.entity.process.ProcessStepDefinition;
 import com.divudi.facade.ProcessStepDefinitionFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -18,9 +19,9 @@ import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**
- * Controller for managing Process Step Definitions.
- * Handles creation, editing, deletion, and listing of ProcessStepDefinition entities.
- * 
+ * Controller for managing Process Step Definitions. Handles creation, editing,
+ * deletion, and listing of ProcessStepDefinition entities.
+ *
  * Dr M H B Ariyaratne
  */
 @Named
@@ -31,7 +32,7 @@ public class ProcessStepDefinitionController implements Serializable {
 
     @EJB
     private ProcessStepDefinitionFacade processStepDefinitionFacade;
-    
+
     @Inject
     ProcessDefinitionController processDefinitionController;
 
@@ -53,10 +54,14 @@ public class ProcessStepDefinitionController implements Serializable {
 
     // Getter and Setter for 'current'
     public ProcessStepDefinition getCurrent() {
+        System.out.println("getCurrent");
+        System.out.println("current = " + current);
         return current;
     }
 
     public void setCurrent(ProcessStepDefinition current) {
+        System.out.println("setCurrent");
+        System.out.println("current = " + current);
         this.current = current;
     }
 
@@ -67,16 +72,16 @@ public class ProcessStepDefinitionController implements Serializable {
         }
         return items;
     }
-    
+
     public List<ProcessStepDefinition> getItemsOfSelectedProcessDefinition(ProcessDefinition pd) {
         String jpql = "SELECT p FROM ProcessStepDefinition p "
                 + " WHERE p.retired = :ret "
                 + " and p.processDefinition=:pd "
-                + " ORDER BY p.name";
+                + " ORDER BY p.sequenceOrder";
         HashMap<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("pd", pd);
-        current=null;
+        current = null;
         return getProcessStepDefinitionFacade().findByJpql(jpql, params);
     }
 
@@ -96,14 +101,14 @@ public class ProcessStepDefinitionController implements Serializable {
      */
     public String navigateToManageProcessStepDefinitions() {
         fillAllProcessStepDefinitions();
-        return "/process/process_step_definitions?faces-redirect=true";
+        return "/process/admin/process_step_definitions?faces-redirect=true";
     }
-    
+
     /**
      * Retrieves all active ProcessStepDefinitions.
      */
     public void fillAllProcessStepDefinitions() {
-        String jpql = "SELECT p FROM ProcessStepDefinition p WHERE p.retired = :ret ORDER BY p.name";
+        String jpql = "SELECT p FROM ProcessStepDefinition p WHERE p.retired = :ret ORDER BY p.sequenceOrder";
         HashMap<String, Object> params = new HashMap<>();
         params.put("ret", false);
         items = processStepDefinitionFacade.findByJpql(jpql, params, TemporalType.TIME);
@@ -115,8 +120,13 @@ public class ProcessStepDefinitionController implements Serializable {
      * @return navigation outcome string
      */
     public String addNewProcessStepDefinition() {
+        System.out.println("addNewProcessStepDefinition");
         current = new ProcessStepDefinition();
+        current.setVersion("1.0");
+        current.setSequenceOrder((double)(getItems().size()+1));
+        System.out.println("current = " + current);
         current.setProcessDefinition(processDefinitionController.getCurrent());
+        System.out.println("current = " + current);
         editable = true;
         return null; // Stay on the same page
     }
@@ -127,14 +137,12 @@ public class ProcessStepDefinitionController implements Serializable {
      * @param processStepDefinition the ProcessStepDefinition to edit
      * @return navigation outcome string
      */
-    public String editExistingProcessStepDefinition(ProcessStepDefinition processStepDefinition) {
-        if (processStepDefinition != null) {
-            this.current = processStepDefinition;
-            this.editable = true;
-        } else {
-            FacesContext.getCurrentInstance().addMessage(null, 
-                new FacesMessage(FacesMessage.SEVERITY_WARN, "No Step Selected", "Please select a step to edit."));
+    public String editExistingProcessStepDefinition() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to Edit");
+            return null;
         }
+        editable = true;
         return null; // Stay on the same page
     }
 
@@ -144,48 +152,50 @@ public class ProcessStepDefinitionController implements Serializable {
      * @return navigation outcome string
      */
     public String saveOrUpdateProcessStepDefinition() {
+        if(current==null){
+            JsfUtil.addErrorMessage("Nothing to save");
+            return null;
+        }
+        if(current.getVersion()==null){
+            current.setVersion("1.0");
+        }
+        if(current.getSequenceOrder()==null){
+            Double sn = (double) getItems().size() + 1;
+            current.setSequenceOrder(sn);
+        }
         try {
             if (current.getId() == null) {
                 processStepDefinitionFacade.create(current);
-                FacesContext.getCurrentInstance().addMessage(null, 
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Step Created", "Process step has been successfully created."));
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Step Created", "Process step has been successfully created."));
             } else {
                 processStepDefinitionFacade.edit(current);
-                FacesContext.getCurrentInstance().addMessage(null, 
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Step Updated", "Process step has been successfully updated."));
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Step Updated", "Process step has been successfully updated."));
             }
             items = null; // Invalidate list to trigger re-query
             editable = false;
         } catch (Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null, 
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "An error occurred while saving the process step."));
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "An error occurred while saving the process step."));
         }
         return null; // Stay on the same page
     }
 
     /**
      * Deletes the specified ProcessStepDefinition by flagging it as retired.
-     *
-     * @param processStepDefinition the ProcessStepDefinition to delete
      * @return navigation outcome string
      */
-    public String deleteProcessStepDefinition(ProcessStepDefinition processStepDefinition) {
-        if (processStepDefinition != null) {
-            try {
-                processStepDefinition.setRetired(true);
-                processStepDefinitionFacade.edit(processStepDefinition);
-                FacesContext.getCurrentInstance().addMessage(null, 
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Step Retired", "Process step has been successfully retired."));
-                items = null; // Invalidate list to trigger re-query
-            } catch (Exception e) {
-                FacesContext.getCurrentInstance().addMessage(null, 
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "An error occurred while retiring the process step."));
-            }
-        } else {
-            FacesContext.getCurrentInstance().addMessage(null, 
-                new FacesMessage(FacesMessage.SEVERITY_WARN, "No Step Selected", "Please select a step to retire."));
+    public String deleteProcessStepDefinition() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing to Delete");
+            return null;
         }
-        return null; // Stay on the same page
+        current.setRetired(true);
+        processStepDefinitionFacade.edit(current);
+        JsfUtil.addSuccessMessage("Deleted");
+        items = null;
+        return null; 
     }
 
     /**
@@ -195,8 +205,8 @@ public class ProcessStepDefinitionController implements Serializable {
         current = null;
         items = null;
         editable = false;
-        FacesContext.getCurrentInstance().addMessage(null, 
-            new FacesMessage(FacesMessage.SEVERITY_INFO, "Reset", "Process step form has been reset."));
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO, "Reset", "Process step form has been reset."));
     }
 
     /**

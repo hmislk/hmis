@@ -15,35 +15,61 @@
                         <p:poll interval="30"   
                                 listener="#{searchController.createPreBillsNotPaid()}" update="@all" />
                         <f:facet name="header" >
+                            <h:outputLabel value="From"/>
+                            <p:calendar
+                                class="w-25 mx-5" 
+                                inputStyleClass="w-25" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
 
-                            <div class="d-flex justify-content-between" >
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="Process" 
-                                    icon="fas fa-arrows-rotate"
-                                    actionListener="#{searchController.createPreBillsNotPaid()}">
-                                </p:commandButton>
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="To Bill List" 
-                                    icon="fa fa-arrow-left"
-                                    class="ui-button-warning"
-                                    actionListener="#{searchController.makeNull()}"
-                                    action="#{searchController.navigateToAddToStockBillList()}">
-                                </p:commandButton>
-                            </div>
+                            <h:outputLabel value="To"/>                                
+                            <p:calendar 
+                                class="w-25 mx-5" 
+                                inputStyleClass="w-25" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
 
-                        </f:facet>
-
-                        <div class="d-flex justify-content-end">
                             <p:commandButton 
+                                ajax="false" 
+                                style="width: 150px"
+                                value="Process" 
+                                icon="fas fa-arrows-rotate"
+                                actionListener="#{searchController.createPreBillsNotPaid()}">
+                            </p:commandButton>
+                            
+                             <p:commandButton 
                                 ajax="false" 
                                 value="Add To Stock" 
                                 action="#{searchController.addToStock}" 
                                 icon="fas fa-plus" 
-                                class="ui-button-success mb-3"
+                                style="width: 150px"
+                                class="ui-button-success mx-5"
                                 disabled="#{!webUserController.hasPrivilege('PharmacyAddToStock')}">
                             </p:commandButton>
+
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="To Bill List" 
+                                style="float: right"
+                                icon="fa fa-arrow-left"
+                                class="ui-button-warning mx-auto"
+                                actionListener="#{searchController.makeNull()}"
+                                action="#{searchController.navigateToAddToStockBillList()}">
+                            </p:commandButton>
+
+
+                        </f:facet>
+
+                       
+
+                        <div class="d-flex justify-content-end">
+                           
                         </div>
 
 

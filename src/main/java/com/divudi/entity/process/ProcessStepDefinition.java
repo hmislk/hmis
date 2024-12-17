@@ -1,4 +1,4 @@
-package com.divudi.entity.workflow;
+package com.divudi.entity.process;
 
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
@@ -9,21 +9,29 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
- * Entity class for process definitions.
+ * 
+ * Entity class for process step definitions.
  * Dr M H B Ariyaratne
+ * 
  */
 @Entity
-public class ProcessDefinition implements Serializable {
+public class ProcessStepDefinition implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @JoinColumn(nullable = false)
+    @ManyToOne
+    private ProcessDefinition processDefinition;
+    
     @Column(nullable = false, length = 100)
     private String name;
 
@@ -35,7 +43,9 @@ public class ProcessDefinition implements Serializable {
 
     @Column(nullable = false)
     private boolean active = true;
-
+    
+    private Double sequenceOrder;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     private ProcessDefinition parent;
 
@@ -53,15 +63,51 @@ public class ProcessDefinition implements Serializable {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date retiredAt;
-
-    // Getters and setters
-
+    
+    
+    
+    
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+    
+    
+
+    @Override
+    public int hashCode() {
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof ProcessStepDefinition)) {
+            return false;
+        }
+        ProcessStepDefinition other = (ProcessStepDefinition) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "com.divudi.entity.workflow.ProcessStepDefinition[ id=" + id + " ]";
+    }
+
+    public ProcessDefinition getProcessDefinition() {
+        return processDefinition;
+    }
+
+    public void setProcessDefinition(ProcessDefinition processDefinition) {
+        this.processDefinition = processDefinition;
     }
 
     public String getName() {
@@ -144,37 +190,12 @@ public class ProcessDefinition implements Serializable {
         this.retiredAt = retiredAt;
     }
 
-    // Overriding equals, hashCode, and toString methods
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        return result;
+    public Double getSequenceOrder() {
+        return sequenceOrder;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        ProcessDefinition other = (ProcessDefinition) obj;
-        if (id == null) {
-            if (other.id != null) {
-                return false;
-            }
-        } else if (!id.equals(other.id)) {
-            return false;
-        }
-        return true;
+    public void setSequenceOrder(Double sequenceOrder) {
+        this.sequenceOrder = sequenceOrder;
     }
-
-    @Override
-    public String toString() {
-        return "ProcessDefinition[id=" + id + "]";
-    }
+    
 }

@@ -4,7 +4,7 @@
  */
 package com.divudi.facade;
 
-import com.divudi.entity.workflow.ProcessStepActionDefinition;
+import com.divudi.entity.process.ProcessStepActionDefinition;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
