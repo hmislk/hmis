@@ -1882,11 +1882,6 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND pi.billItem.bill.toDepartment = :department";
             params.put("department", getDepartment());
         }
-        
-        if (bills != null) {
-            jpql += " AND pi.billItem.bill IN :bills";
-            params.put("bills", getBills());
-        }
 
         if (patientInvestigationStatus != null) {
             jpql += " AND pi.billItem.bill.status = :status";
@@ -2466,7 +2461,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void searchPatientReportsInBillingDepartment() {
-        
+
         StringBuilder jpql = new StringBuilder();
         Map<String, Object> params = new HashMap<>();
 
@@ -3116,15 +3111,15 @@ public class PatientInvestigationController implements Serializable {
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-        
-        
+
+
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
-        
-        
+
+
         // Starting from BillItem and joining to PatientInvestigation if needed
         jpql = "SELECT DISTINCT b "
                 + " FROM BillItem b "
