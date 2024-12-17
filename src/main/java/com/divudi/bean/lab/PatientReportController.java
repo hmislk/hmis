@@ -44,12 +44,16 @@ import com.divudi.facade.TestFlagFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import static com.divudi.data.InvestigationItemValueType.Memo;
 import static com.divudi.data.InvestigationItemValueType.Varchar;
+import com.divudi.data.ReportType;
+import com.divudi.data.UploadType;
 import com.divudi.data.lab.PatientInvestigationStatus;
+import com.divudi.entity.Upload;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.entity.lab.PatientSampleComponant;
 import com.divudi.entity.lab.ReportFormat;
 import com.divudi.facade.ClinicalFindingValueFacade;
+import com.divudi.facade.UploadFacade;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -180,6 +184,64 @@ public class PatientReportController implements Serializable {
             System.err.println("e = " + e);
         }
         return pdfSc;
+    }
+
+    public String navigateToViewPatientReport(PatientReport patientReport) {
+        System.out.println("Navigate To View Patient Report");
+        System.out.println("Report Type = " + patientReport.getReportType());
+        if (null == patientReport.getReportType()) {
+            System.out.println("Null");
+            setCurrentPatientReport(patientReport);
+            return "/lab/patient_report?faces-redirect=true";
+        } else {
+            switch (patientReport.getReportType()) {
+                case GENARATE:
+                    System.out.println("GENARATE");
+                    setCurrentPatientReport(patientReport);
+                    return "/lab/patient_report?faces-redirect=true";
+                case UPLOAD:
+                    System.out.println("UPLOAD");
+
+                    Upload u = loadUpload(patientReport);
+
+                    System.out.println("Report = " + patientReport);
+                    System.out.println("Patient Investigation = " + patientReport.getPatientInvestigation());
+
+                    if (u != null) {
+                        patientReportUploadController.setReportUpload(u);
+                        System.out.println("Upload Report = " + u.getPatientReport());
+                        System.out.println("Upload Investigation = " + u.getPatientInvestigation());
+                    } else {
+                        patientReportUploadController.setReportUpload(null);
+                    }
+
+                    setCurrentPatientReport(patientReport);
+                    patientReportUploadController.setPatientInvestigation(patientReport.getPatientInvestigation());
+                    return "/lab/upload_patient_report?faces-redirect=true";
+                default:
+                    return "";
+            }
+        }
+    }
+
+    @EJB
+    UploadFacade uploadFacade;
+
+    public Upload loadUpload(PatientReport pr) {
+        String jpql = "select u "
+                + " from Upload u "
+                + " where u.retired=:ret"
+                + " and u.patientReport=:pr"
+                + " and u.patientReport.retired=:prr"
+                + " and u.uploadType=:ut";
+
+        Map params = new HashMap<>();
+        params.put("ret", false);
+        params.put("pr", pr);
+        params.put("ut", UploadType.Lab_Report);
+        params.put("prr", false);
+
+        return uploadFacade.findFirstByJpql(jpql, params);
     }
 
     public String searchRecentReportsOrderedByMyself() {
@@ -2293,7 +2355,7 @@ public class PatientReportController implements Serializable {
         }
         return createNewPatientReport(pi, ix, sampleIDs);
     }
-    
+
     public PatientReport createNewPatientReportForUpload(PatientInvestigation pi, Investigation ix) {
         String sampleIDs = "";
         List<PatientSampleComponant> pscs = patientInvestigationController.getPatientSampleComponentsByInvestigation(pi);
@@ -2313,6 +2375,7 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
+            r.setReportType(ReportType.GENARATE);
             r.setSampleIDs(sampleIds);
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setCreater(getSessionController().getLoggedUser());
@@ -2330,7 +2393,7 @@ public class PatientReportController implements Serializable {
             getFacade().create(r);
             r.setPatientInvestigation(pi);
             getPrBean().addPatientReportItemValuesForReport(r);
-//            getEjbFacade().edit(r);
+            getFacade().edit(r);
             setCurrentPatientReport(r);
             pi.getPatientReports().add(r);
             pi.setStatus(PatientInvestigationStatus.SAMPLE_INTERFACED);
@@ -2353,7 +2416,7 @@ public class PatientReportController implements Serializable {
         }
         return r;
     }
-    
+
     public PatientReport createNewPatientReportForUpload(PatientInvestigation pi, Investigation ix, String sampleIds) {
         System.out.println("createNewPatientReport");
         System.out.println("pi = " + pi);
@@ -2363,6 +2426,7 @@ public class PatientReportController implements Serializable {
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
             r.setSampleIDs(sampleIds);
+            r.setReportType(ReportType.UPLOAD);
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setCreater(getSessionController().getLoggedUser());
             r.setItem(ix);
@@ -2377,9 +2441,9 @@ public class PatientReportController implements Serializable {
                 }
             }
             getFacade().create(r);
+            System.out.println("r = " + r);
             r.setPatientInvestigation(pi);
-//            getPrBean().addPatientReportItemValuesForReport(r);
-//            getEjbFacade().edit(r);
+            getFacade().edit(r);
             setCurrentPatientReport(r);
             pi.getPatientReports().add(r);
             pi.setStatus(PatientInvestigationStatus.SAMPLE_INTERFACED);
@@ -2557,9 +2621,20 @@ public class PatientReportController implements Serializable {
             return null;
         }
         currentPatientReport = newlyCreatedReport;
+
+        System.out.println("New Report = " + currentPatientReport);
+
         getCommonReportItemController().setCategory(ix.getReportFormat());
+
+        System.out.println("currentPtIx = " + currentPtIx);
+
+        patientReportUploadController.setPatientInvestigation(pi);
+
         return "/lab/upload_patient_report?faces-redirect=true";
     }
+
+    @Inject
+    PatientReportUploadController patientReportUploadController;
 
     public String navigateToNewlyCreatedPatientReport(PatientInvestigation pi) {
         if (pi == null) {

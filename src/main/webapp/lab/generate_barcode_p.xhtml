@@ -1067,14 +1067,14 @@
                                                            ajax="false" action="/lab/patient_report?faces-redirect=true">
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
                                             </p:commandLink>
-
+<h:outputLabel value="Report : #{dpr.id}" /><br/>
+                                            <h:outputLabel value="Type : #{dpr.reportType}" /><br/>
+                                            <h:outputLabel value="Patient Investigation : #{dpr.patientInvestigation.id}" /><br/><br/>
                                             <div class="d-flex gap-2">
                                                 <!-- Old Report CommandLink -->
 
-
                                                 <!-- Edit Report CommandLink -->
-                                                <p:commandLink id="cmdOldReportEdit" ajax="false" action="/lab/patient_report?faces-redirect=true">
-                                                    <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
+                                                <p:commandLink id="cmdOldReportEdit" ajax="false" action="#{patientReportController.navigateToViewPatientReport(dpr)}">
                                                     <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" />
                                                 </p:commandLink>
 

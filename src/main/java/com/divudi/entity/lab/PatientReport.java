@@ -6,6 +6,7 @@ package com.divudi.entity.lab;
 
 //import ch.lambdaj.Lambda;
 import com.divudi.data.InvestigationItemType;
+import com.divudi.data.ReportType;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
@@ -161,8 +162,12 @@ public class PatientReport implements Serializable {
     
     private String sampleIDs;
     
+    @ManyToOne
     private Upload uploadedReport;
-
+    
+    @Enumerated(EnumType.STRING)
+    private ReportType reportType;
+    
     public PatientReport() {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
@@ -813,6 +818,14 @@ public class PatientReport implements Serializable {
 
     public void setUploadedReport(Upload uploadedReport) {
         this.uploadedReport = uploadedReport;
+    }
+
+    public ReportType getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(ReportType reportType) {
+        this.reportType = reportType;
     }
 
     static class PatientReportItemValueComparator implements Comparator<PatientReportItemValue> {
