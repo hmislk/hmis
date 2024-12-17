@@ -3171,6 +3171,42 @@ public class BillBeanController implements Serializable {
         }
         return lstBills;
     }
+    
+    public List<Bill> billsForTheDayNotPaid(BillType type, Department department, Date fromDate, Date toDate) {
+        List<Bill> lstBills;
+        String sql;
+        PreBill p = new PreBill();
+        p.getCreatedAt();
+        Map temMap = new HashMap();
+        sql = "select b from PreBill b "
+                + " where b.billType = :billType "
+                + " and b.department=:dep "
+                + " and b.referenceBill is null "
+                + " and b.backwardReferenceBill is null "
+                + " and b.forwardReferenceBill is null "
+                + " and b.billedBill is null "
+                + " and b.retired=false "
+                + " and b.netTotal!=0 ";
+
+        
+        if(fromDate != null && toDate !=null){
+            sql += " and b.createdAt between :fromDate and :toDate ";
+            temMap.put("fromDate", fromDate);
+            temMap.put("toDate", toDate);
+        }
+        
+        sql += " order by b.id desc";
+
+        temMap.put("billType", type);
+        temMap.put("dep", department);
+
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+        if (lstBills == null) {
+            lstBills = new ArrayList<>();
+        }
+        return lstBills;
+    }
 
     public List<Bill> billsRefundForTheDay(Date fromDate, Date toDate, BillType type) {
         List<Bill> lstBills;
