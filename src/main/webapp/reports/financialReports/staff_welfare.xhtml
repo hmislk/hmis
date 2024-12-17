@@ -312,7 +312,7 @@
                             </p:column>
                             <p:column class="text-end" width="5rem">
                                 <f:facet name="header">
-                                    <h:outputText value="Balance Amount"/>
+                                    <h:outputText value="Current Balance Amount"/>
                                 </f:facet>
                                 <h:outputText
                                         value="#{row.bill.toStaff.annualWelfareQualified - row.bill.toStaff.annualWelfareUtilized}">
@@ -446,14 +446,14 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{cc.attrs.bundle.total}">
+                                    <h:outputText value="#{searchController.bundle.total}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
                             <p:column class="text-end" width="5rem">
                                 <f:facet name="header">
-                                    <h:outputText value="Balance Amount"/>
+                                    <h:outputText value="Current Balance Amount"/>
                                 </f:facet>
                                 <h:outputText
                                         value="#{row.billItem.bill.toStaff.annualWelfareQualified - row.billItem.bill.toStaff.annualWelfareUtilized}">
