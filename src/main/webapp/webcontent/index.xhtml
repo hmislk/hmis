@@ -12,9 +12,9 @@
     </h:head>
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <div class="row container container-fluid" >
                     <div class="col-3" >
                         <p:accordionPanel>
@@ -22,32 +22,15 @@
                         <h:form >
 
                             <div class="d-grid gap-2">
-                            
                                 <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewShortWebContent()}" value="Add New Short Contents" icon="pi pi-plus"></p:commandButton>
-                            
-                            
                                 <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewLongWebContent()}" value="Add New Long Contents" icon="pi pi-plus"></p:commandButton>
-                            
-                            
                                 <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewWebContent()}" value="Add New List Contents" icon="pi pi-plus"></p:commandButton>
-                           
-                            
                                 <p:commandButton ajax="false" class="w-100" action="#{webContentController.toListWebContent()}" value="List Web Contents" icon="pi pi-list"></p:commandButton>
-                          
-                             
-                            
                                 <p:commandButton ajax="false" class="w-100" action="#{uploadController.toAddNewUpload()}" value="Add Web Image" icon="pi pi-image"></p:commandButton>
-                            
-                            
                                 <p:commandButton ajax="false" class="w-100" action="#{uploadController.toListUploads()}" value="List Images" icon="pi pi-images"></p:commandButton>
-                           
-                            
                                 <p:commandButton ajax="false" class="w-100" action="#{webLanguageController.toAddNewWebLanguage()}" value="Add Language" icon="pi pi-plus"></p:commandButton>
-                            
-                            
                                 <p:commandButton ajax="false" class="w-100" action="#{webLanguageController.toListWebLanguage()}" value="List Languages" icon="pi pi-list"></p:commandButton>
-                           
-                            
+
                                 <p:commandButton ajax="false" 
                                                  class="w-100" 
                                                  action="#{webTemplateController.navigateToAddNewTemplate()}"
