@@ -2451,10 +2451,7 @@ public class ReportsController implements Serializable {
 
         bundle = generateReportBillItems(opdBts, null);
 
-        bundle.calculateTotalByBills(visitType.equalsIgnoreCase("OP"));
-        bundle.calculateTotalBalance(visitType.equalsIgnoreCase("OP"));
-        bundle.calculateTotalSettledAmountByPatients(visitType.equalsIgnoreCase("OP"));
-        bundle.calculateTotalSettledAmountBySponsors(visitType.equalsIgnoreCase("OP"));
+        bundle.calculateTotalByReferenceBills(visitType.equalsIgnoreCase("OP"));
     }
 
     public ReportTemplateRowBundle generateReportBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
@@ -2510,8 +2507,13 @@ public class ReportsController implements Serializable {
         }
 
         if (creditCompany != null) {
-            jpql += "AND bill.creditCompany = :cc ";
-            parameters.put("cc", creditCompany);
+            if (visitType != null && visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND billItem.referenceBill.creditCompany = :creditC ";
+            } else if (visitType != null && visitType.equalsIgnoreCase("IP")) {
+                jpql += "AND billItem.referenceBill.patientEncounter.finalBill.creditCompany = :creditC ";
+            }
+
+            parameters.put("creditC", creditCompany);
         }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
