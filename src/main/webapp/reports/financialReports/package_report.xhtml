@@ -411,28 +411,17 @@
                             </p:column>
                             <p:column style="width: 8em;">
                                 <f:facet name="header">
-                                    <h:outputText value="Rendering Dept"/>
-                                </f:facet>
-                                <h:outputText value="#{row.billItem.bill.toDepartment.name}"/>
-                            </p:column>
-                            <p:column style="width: 8em;">
-                                <f:facet name="header">
-                                    <h:outputText value="Rendering Dr"/>
-                                </f:facet>
-                                <h:outputText value="#{row.billItem.bill.staff.person.nameWithTitle}"/>
-                            </p:column>
-                            <p:column style="width: 8em;">
-                                <f:facet name="header">
                                     <h:outputText value="Invoice Status"/>
                                 </f:facet>
-                                <h:outputText value="#{row.billItem.bill.paid? 'Paid':''}"/>
+<!--                                <h:outputText value="#{row.billItem.bill.paid? 'Paid':''}"/>-->
+                                <h:outputText value="#{row.billItem.bill.balance le 0 ? 'Paid':''}"/>
                             </p:column>
                             <p:column style="width: 8em;">
                                 <f:facet name="header">
                                     <h:outputText value="Charge Class"/>
                                 </f:facet>
                                 <h:outputText
-                                        value="#{row.billItem.bill.toDepartment.name}"/>
+                                        value="#{row.billItem.bill.department.name}"/>
                             </p:column>
                             <p:column style="width: 10em;">
                                 <f:facet name="header">
