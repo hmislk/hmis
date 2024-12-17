@@ -80,12 +80,10 @@
                             <h:outputText value="&#xf02b;" styleClass="fa mr-2"/>
                             <h:outputLabel value="Settlement Status" class="m-3"/>
                         </h:panelGroup>
-                        <p:selectOneMenu value="#{reportsController.dealer}" filter="true" class="w-100 ">
-                            <f:selectItem itemLabel="All"/>
-<!--                            <f:selectItems value="#{reportController.voucherStatusOnDebtorSettlement}"-->
-<!--                                           var="i"-->
-<!--                                           itemLabel="#{i}"-->
-<!--                                           itemValue="#{i}"/>-->
+                        <p:selectOneMenu value="#{reportsController.settlementStatus}" filter="true" class="w-100 ">
+                            <f:selectItem itemValue="#{null}" itemLabel="All"/>
+                            <f:selectItem itemValue="settled" itemLabel="Settled"/>
+                            <f:selectItem itemValue="notSettled" itemLabel="Not Settled"/>
                         </p:selectOneMenu>
 
                         <p:spacer/>
@@ -119,11 +117,6 @@
                         </h:panelGroup>
                         <p:selectOneMenu value="#{reportsController.discount}" filter="true" class="w-100 ">
                             <f:selectItem itemLabel="All"/>
-                            <!--                                <f:selectItems value=""-->
-                            <!--                                               var="i"-->
-                            <!--                                               itemLabel=""-->
-                            <!--                                               itemValue=""-->
-                            <!--                                               ></f:selectItems>-->
                         </p:selectOneMenu>
                     </h:panelGrid>
 
@@ -215,15 +208,17 @@
                             <p:column headerText="Dispatched Date">
                                 <h:outputText value="#{bi.billItem.referenceBill.paymentScheme.createdAt}"/>
                             </p:column>
-                            <p:column headerText="BHT">
-                                <h:outputText value="#{bi.billItem.bill.patientEncounter!=null ?
-                                                        bi.billItem.bill.patientEncounter.finalBill.deptId:
-                                                        bi.billItem.bill.deptId}"/>
+                            <p:column headerText="Invoice Number">
+                                <h:outputText value="#{bi.billItem.bill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="BHT" rendered="#{bi.billItem.bill.patientEncounter!=null}">
+                                <h:outputText value="#{bi.billItem.bill.patientEncounter.bhtNo}"/>
                             </p:column>
                             <p:column headerText="MRN">
-                                <h:outputText value="#{bi.billItem.bill.patientEncounter!=null ?
-                                                        bi.billItem.bill.patientEncounter.bhtNo:
-                                                        bi.billItem.bill.patient.phn}"/>
+                                <h:outputText value="#{bi.billItem.referenceBill.patient.phn}"/>
+                            </p:column>
+                            <p:column headerText="Type">
+                                <h:outputText value="#{bi.billItem.bill.ipOpOrCc}"/>
                             </p:column>
                             <p:column headerText="Dispatched Comment">
                                 <h:outputText value="#{bi.billItem.referenceBill.paymentScheme.retireComments}"/>
@@ -240,7 +235,8 @@
                             </p:column>
                             <p:column headerText="Due Amount">
                                 <h:outputText value="#{bi.billItem.referenceBill.patientEncounter!=null ?
-                                                        bi.billItem.referenceBill.patientEncounter.finalBill.netTotal + bi.billItem.referenceBill.patientEncounter.finalBill.vat + bi.billItem.referenceBill.patientEncounter.finalBill.paidAmount:
+                                                        bi.billItem.referenceBill.patientEncounter.finalBill.netTotal +
+                                                        bi.billItem.referenceBill.patientEncounter.finalBill.vat + bi.billItem.referenceBill.patientEncounter.finalBill.paidAmount:
                                                         bi.billItem.referenceBill.netTotal + bi.billItem.referenceBill.vat + bi.billItem.referenceBill.paidAmount}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
