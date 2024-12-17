@@ -1,5 +1,7 @@
 package com.divudi.service;
 
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.process.ProcessDefinition;
 import com.divudi.entity.process.ProcessInstance;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -217,7 +220,7 @@ public class ProcessService {
     public void pauseProcessInstance(ProcessStepInstance processStepInstance, WebUser user) {
         if (processStepInstance != null && processStepInstance.getProcessInstance() != null && user != null) {
             ProcessInstance processInstance = processStepInstance.getProcessInstance();
-             processInstance.setStatus("Paused");
+            processInstance.setStatus("Paused");
             processInstance.setPaused(true);
             processInstance.setPausedBy(user);
             processInstance.setPausedAt(new Date());
@@ -254,4 +257,57 @@ public class ProcessService {
         List<ProcessStepInstance> stepInstances = processStepInstanceFacade.findByJpql(jpql, params);
         return stepInstances;
     }
+
+    public List<ProcessInstance> fetchProcessInstances(Date fromDate, Date toDate, Institution institution, Institution site, Department department, Boolean completed, Boolean cancelled, Boolean rejected, Boolean paused) {
+        String jpql = "SELECT pi FROM ProcessInstance pi WHERE pi.retired = :ret";
+        Map params = new HashMap(); // Using raw type for the Map
+        params.put("ret", false);
+
+        if (fromDate != null) {
+            jpql += " AND pi.createdAt >= :fromDate";
+            params.put("fromDate", fromDate);
+        }
+        if (toDate != null) {
+            jpql += " AND pi.createdAt <= :toDate";
+            params.put("toDate", toDate);
+        }
+        if (institution != null) {
+            jpql += " AND pi.institution = :institution";
+            params.put("institution", institution);
+        }
+        if (site != null) {
+            jpql += " AND pi.department.site = :site";
+            params.put("site", site);
+        }
+        if (department != null) {
+            jpql += " AND pi.department = :department";
+            params.put("department", department);
+        }
+        if (completed != null) {
+            jpql += " AND pi.completed = :completed";
+            params.put("completed", completed);
+        }
+        if (cancelled != null) {
+            jpql += " AND pi.cancelled = :cancelled";
+            params.put("cancelled", cancelled);
+        }
+        if (rejected != null) {
+            jpql += " AND pi.rejected = :rejected";
+            params.put("rejected", rejected);
+        }
+        if (paused != null) {
+            jpql += " AND pi.paused = :paused";
+            params.put("paused", paused);
+        }
+
+        jpql += " ORDER BY pi.createdAt DESC"; // Ordering by createdAt date in descending order
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        
+        List<ProcessInstance> processInstances = processInstanceFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("processInstances = " + processInstances);
+        return processInstances;
+    }
+
 }

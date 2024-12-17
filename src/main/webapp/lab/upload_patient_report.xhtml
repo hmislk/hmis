@@ -1,0 +1,192 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:ezcommon="http://java.sun.com/jsf/composite/ezcomp/common" >
+    <h:head>
+        <title>Upload Patient Report</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml" >
+            <ui:define name="content" 
+                       rendered="#{webUserController.hasPrivilege('LabAutherizing') 
+                                 or webUserController.hasPrivilege('LabDataentry') 
+                                 or webUserController.hasPrivilege('LabPrinting')}">
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('LabAutherizing')}">
+                    <na:not_authorize />
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('LabAutherizing')}">
+                    <p:growl id="messages" showDetail="true" />
+
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <p:outputLabel value="Upload Patient Report" class="mt-2" />
+                                <p:commandButton  
+                                    ajax="false" 
+                                    value="Back"
+                                    action="/lab/generate_barcode_p?faces-redirect=true"
+                                    icon="fa-solid fa-arrow-left"
+                                    styleClass="ui-button-warning"  />
+                            </div>
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="col-4">
+                                <!-- Patient Details Panel -->
+                                <p:panel class="mt-2" header="Patient Details" >
+                                    <ezcommon:patient patient="#{patientReportUploadController.patientInvestigation.patient}" />
+                                </p:panel>
+
+                                <!-- Report Details Panel -->
+                                <p:panel header="Report Details" class="mt-2" >
+                                    <p:panelGrid columns="2" >
+                                        <!-- Referring Institution -->
+                                        <p:outputLabel for="refIns" value="Referring Institution" />
+                                        <p:autoComplete 
+                                            id="refIns" 
+                                            forceSelection="true" 
+                                            value="#{patientReportUploadController.patientInvestigation.billItem.bill.referenceInstitution}"
+                                            completeMethod="#{institutionController.completeIns}"
+                                            var="ri" 
+                                            itemLabel="#{ri.name}" 
+                                            itemValue="#{ri}"
+                                            scrollHeight="500"
+                                            maxResults="15"
+                                            styleClass="form-control w-100">
+                                            <p:column headerText="Referring Institution Name" style="padding: 2px; width: 400px;">
+                                                #{ri.name}
+                                            </p:column>
+                                            <p:column headerText="Code" style="padding: 2px;">
+                                                #{ri.institutionCode}
+                                            </p:column>
+                                        </p:autoComplete>
+
+                                        <!-- Referring Doctor -->
+                                        <p:outputLabel for="cmbDoc" value="Referring Doctor" /> 
+                                        <p:autoComplete 
+                                            forceSelection="true" 
+                                            id="cmbDoc" 
+                                            value="#{patientReportUploadController.patientInvestigation.billItem.bill.referredBy}" 
+                                            completeMethod="#{doctorController.completeDoctor}" 
+                                            var="ix" 
+                                            itemLabel="#{ix.person.name}" 
+                                            itemValue="#{ix}" 
+                                            styleClass="form-control w-100"
+                                            maxResults="15"
+                                            scrollHeight="500">
+                                            <p:column headerText="Name" style="padding: 2px; width: 400px;">
+                                                <h:outputText value="#{ix.person.nameWithTitle}" />
+                                            </p:column>
+                                            <p:column headerText="Code" style="padding: 2px;">
+                                                <h:outputText value="#{ix.code}" />
+                                            </p:column>
+                                        </p:autoComplete>
+
+                                        <!-- Other Report Details -->
+                                        <p:outputLabel value="Billed Time" />
+                                        <p:calendar value="#{patientReportUploadController.patientInvestigation.billItem.bill.createdAt}" 
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                                        <p:outputLabel value="Sampled Time" />
+                                        <p:calendar value="#{patientReportUploadController.patientInvestigation.sampledAt}" 
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                                        <p:outputLabel value="Sent to Lab Time" />
+                                        <p:calendar value="#{patientReportUploadController.patientInvestigation.sampleSentAt}" 
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                                        <p:outputLabel value="File Uploaded Time" />
+                                        <p:calendar value="#{patientReportUploadController.patientInvestigation.dataEntryAt}"  
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                                        <p:outputLabel value="Approved Time" />
+                                        <p:calendar value="#{patientReportUploadController.patientInvestigation.approveAt}"  
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                                        <p:outputLabel value="Approved By" />
+                                        <p:outputLabel value="#{patientReportUploadController.patientInvestigation.approveUser.webUserPerson.nameWithTitle}" />
+                                    </p:panelGrid>
+                                </p:panel>
+                            </div>
+
+                            <div class="col-8">
+                                <!-- Upload File Panel -->
+                                <p:panel class="mt-2" header="Upload File" >
+                                    <h:form id="uploadForm" enctype="multipart/form-data">
+                                        <p:growl id="uploadMessages" showDetail="true" />
+
+                                        <p:fileUpload 
+                                            value="#{patientReportUploadController.file}"
+                                            mode="simple" 
+                                            skinSimple="true"
+                                            label="Choose File"
+                                            sizeLimit="10485760" 
+                                            allowTypes="/(\.|\/)(pdf|jpe?g|png)$/"
+                                            required="true"
+                                            requiredMessage="Please select a file to upload."
+                                            styleClass="w-100" />
+
+                                        <div class="d-flex gap-3 mt-3">
+                                            <p:commandButton  
+                                                id="uploadBtn"
+                                                value="Upload and Save"
+                                                action="#{patientReportUploadController.uploadReport}"
+                                                update="uploadMessages preview"
+                                                icon="pi pi-upload"
+                                                styleClass="ui-button-warning" />
+
+                                            <p:commandButton  
+                                                value="Approval"
+                                                action="#{patientReportUploadController.approvalAction}" 
+                                                icon="pi pi-check"
+                                                styleClass="ui-button-success" />
+
+                                            <p:commandButton  
+                                                value="Cancel Approval"
+                                                action="#{patientReportUploadController.cancelApprovalAction}" 
+                                                icon="pi pi-times"
+                                                styleClass="ui-button-secondary" />
+                                        </div>
+                                    </h:form>
+                                </p:panel>
+
+                                <!-- View Report Panel -->
+                                <p:panel class="mt-2" header="View Report" id="preview">
+                                    <h:panelGroup rendered="#{not empty patientReportUploadController.reportUpload}">
+                                        <!-- Render PDF Files -->
+                                        <h:panelGroup rendered="#{patientReportUploadController.pdf}">
+                                            <p:media 
+                                                value="#{patientReportUploadController.pdfReportStream}" 
+                                                player="pdf" 
+                                                width="100%" 
+                                                height="600px" />
+                                        </h:panelGroup>
+                                        
+                                        <!-- Render Image Files -->
+                                        <h:panelGroup rendered="#{patientReportUploadController.image}">
+                                            <p:graphicImage 
+                                                value="#{patientReportUploadController.imageReportStream}" 
+                                                stream="true"
+                                                cache="false"
+                                                style="max-width:100%; height:auto;" />
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{empty patientReportUploadController.reportUpload}">
+                                        <h:outputText value="No report uploaded yet." />
+                                    </h:panelGroup>
+                                </p:panel>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
