@@ -53,6 +53,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
+import java.io.Serializable;
 import java.sql.SQLSyntaxErrorException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -68,6 +69,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -85,9 +87,10 @@ import org.reflections.Reflections;
  *
  * @author Administrator
  */
-@Named(value = "dataAdministrationController")
-@ApplicationScoped
-public class DataAdministrationController {
+@Named
+@SessionScoped
+public class DataAdministrationController implements Serializable{
+     private static final long serialVersionUID = 1L;
 
     /**
      * EJBs
@@ -178,7 +181,6 @@ public class DataAdministrationController {
     private Double vatPrecentage = 0.0;
     private DepartmentType departmentType;
     private SearchKeyword searchKeyword;
-    CommonController commonController;
     private int manageCheckEnteredDataIndex;
     private String errors;
     private String suggestedSql;
@@ -188,6 +190,8 @@ public class DataAdministrationController {
 
     Date fromDate;
     Date toDate;
+    
+    private int tabIndex;
 
     public void addWholesalePrices() {
         List<ItemBatch> ibs = itemBatchFacade.findAll();
@@ -1741,6 +1745,8 @@ public class DataAdministrationController {
         this.departmentType = departmentType;
     }
 
+    
+    
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = commonFunctionsController.getStartOfMonth(new Date());
@@ -1862,6 +1868,14 @@ public class DataAdministrationController {
 
     public void setAlterSql(String alterSql) {
         this.alterSql = alterSql;
+    }
+
+    public int getTabIndex() {
+        return tabIndex;
+    }
+
+    public void setTabIndex(int tabIndex) {
+        this.tabIndex = tabIndex;
     }
 
     public class EntityFieldError {
