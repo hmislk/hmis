@@ -103,6 +103,7 @@ public class Upload implements Serializable {
     @ManyToOne
     private PatientReport patientReport;
 
+
     public String getIdStr() {
         if (this.id == null) {
             return null;
