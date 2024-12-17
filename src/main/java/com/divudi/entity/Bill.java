@@ -403,6 +403,11 @@ public class Bill implements Serializable {
     @Enumerated(EnumType.ORDINAL)
     private PatientInvestigationStatus status;
 
+    // One-to-one relationship with PharmacyBill
+    // Optional one-to-one relationship with PharmacyBill
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private PharmacyBill pharmacyBill;
+
     public Bill() {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
@@ -820,6 +825,10 @@ public class Bill implements Serializable {
         totalHospitalFee = 0 - bill.getTotalHospitalFee();
         totalCenterFee = 0 - bill.getTotalCenterFee();
         totalStaffFee = 0 - bill.getTotalStaffFee();
+        // Check if the PharmacyBill exists and then call the method from PharmacyBill
+        if (this.getPharmacyBill() != null && bill.getPharmacyBill() != null) {
+            this.getPharmacyBill().invertAndAssignValues(bill.getPharmacyBill());
+        }
     }
 
     public void invertValueOfThisBill() {
@@ -854,10 +863,15 @@ public class Bill implements Serializable {
         totalStaffFee = 0 - getTotalStaffFee();
         settledAmountByPatient = 0 - getSettledAmountByPatient();
         settledAmountBySponsor = 0 - getSettledAmountBySponsor();
+        // Invert values for the associated PharmacyBill, if present
+        if (this.getPharmacyBill() != null) {
+            this.getPharmacyBill().invertValues();
+        }
     }
 
     public void copy(Bill bill) {
         billType = bill.getBillType();
+        referenceNumber = bill.getReferenceNumber();
         membershipScheme = bill.getMembershipScheme();
         collectingCentre = bill.getCollectingCentre();
         catId = bill.getCatId();
@@ -894,6 +908,10 @@ public class Bill implements Serializable {
         settledAmountByPatient = bill.getSettledAmountByPatient();
         settledAmountBySponsor = bill.getSettledAmountBySponsor();
         //      referenceBill=bill.getReferenceBill();
+        if (bill.getPharmacyBill() != null) {
+            pharmacyBill = bill.getPharmacyBill().cloneWithoutIdAndBill();
+            pharmacyBill.setBill(this);
+        }
     }
 
     public void copyValue(Bill bill) {
@@ -910,6 +928,9 @@ public class Bill implements Serializable {
         this.vatPlusNetTotal = bill.getVatPlusNetTotal();
         this.settledAmountByPatient = bill.getSettledAmountByPatient();
         this.settledAmountBySponsor = bill.getSettledAmountBySponsor();
+        if (this.getPharmacyBill() != null && bill.getPharmacyBill() != null) {
+            this.getPharmacyBill().copyValue(bill.getPharmacyBill());
+        }
     }
 
     public List<BillComponent> getBillComponents() {
@@ -2314,7 +2335,6 @@ public class Bill implements Serializable {
         return localNumber;
     }
 
-
     public void setLocalNumber(String localNumber) {
         this.localNumber = localNumber;
     }
@@ -2478,5 +2498,13 @@ public class Bill implements Serializable {
 
     public void setReleasedAt(Date releasedAt) {
         this.releasedAt = releasedAt;
+    }
+
+    public PharmacyBill getPharmacyBill() {
+        return pharmacyBill;
+    }
+
+    public void setPharmacyBill(PharmacyBill pharmacyBill) {
+        this.pharmacyBill = pharmacyBill;
     }
 }
