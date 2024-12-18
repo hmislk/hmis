@@ -569,6 +569,7 @@ public class AppointmentController implements Serializable {
         reservation = null;
         getCurrentBill();
         getCurrentAppointment();
+        getReservation();
     }
     
     public String navigateToInwardAppointmentFromMenu() {
