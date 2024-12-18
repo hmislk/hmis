@@ -31,6 +31,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.inward.Reservation;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
@@ -96,7 +97,8 @@ public class AppointmentController implements Serializable {
     private Appointment currentAppointment;
     private YearMonthDay yearMonthDay;
     private PaymentMethodData paymentMethodData;
-    
+    private Reservation reservation;
+   
     public Title[] getTitle() {
         return Title.values();
     }
@@ -509,6 +511,17 @@ public class AppointmentController implements Serializable {
     
     public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
         this.paymentSchemeController = paymentSchemeController;
+    }
+    
+    public Reservation getReservation() {
+        if(reservation == null){
+            reservation = new Reservation();
+        }
+        return reservation;
+    }
+
+    public void setReservation(Reservation reservation) {
+        this.reservation = reservation;
     }
     
     public void prepereForInwardAppointPatient() {
