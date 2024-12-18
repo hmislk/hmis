@@ -171,12 +171,12 @@
                                 <h:outputLabel value="Reservation Details" />
                             </f:facet>
                             <h:panelGroup class="my-2 w-100" >
-                                <h:panelGrid columns="3">
+                                <h:panelGrid columns="3" class="w-50 my-2">
                                     <h:outputLabel value="Room No"/>
                                     <h:outputLabel value=":"/>
                                      <p:autoComplete  forceSelection="true"  
-                                                     id="cmbDoc" 
-                                                     class="mx-4"
+                                                     id="cmbRspRoom" 
+                                                     class="mx-4 my-2"
                                                      value="#{appointmentController.reservation.room}" 
                                                      completeMethod="#{roomFacilityChargeController.completeRoom}"
                                                      var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" size="30"   
@@ -186,24 +186,22 @@
                                     <h:outputLabel value=":"/>
                                     <p:datePicker value="#{appointmentController.reservation.reservedFrom}" 
                                                       id="reserveFromTimeStamp"
-                                                      pattern="dd/MMM/yyyy - hh:mm:ss a" 
+                                                      pattern="dd/MMM/yyyy" 
                                                       styleClass="form-control w-100"
-                                                      showTime="true"
                                                       showButtonBar="true"
                                                       timeInput="true"
-                                                      class="w-100" 
+                                                      class="w-50 mx-4 my-2" 
                                                       inputStyleClass="w-100" >                               
                                         </p:datePicker>     
                                     <h:outputLabel value="Reserve To"/>
                                     <h:outputLabel value=":"/>
                                     <p:datePicker value="#{appointmentController.reservation.reservedTo}" 
                                                       id="reserveToTimeStamp"
-                                                      pattern="dd/MMM/yyyy - hh:mm:ss a" 
+                                                      pattern="dd/MMM/yyyy" 
                                                       styleClass="form-control w-100"
-                                                      showTime="true"
                                                       showButtonBar="true"
                                                       timeInput="true"
-                                                      class="w-100" 
+                                                      class="w-50 mx-4 my-2" 
                                                       inputStyleClass="w-100" >                               
                                         </p:datePicker>     
                                 </h:panelGrid>
