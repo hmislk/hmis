@@ -1370,6 +1370,9 @@ public class PharmacyBean {
     }
 
     public Vmp getVmp(Vtm vtm, double strength, MeasurementUnit strengthUnit, PharmaceuticalItemCategory cat) {
+        System.out.println("getVmp");
+        System.out.println("strength = " + strength);
+        
         String sql;
         String vmpName = "";
 
@@ -1377,7 +1380,7 @@ public class PharmacyBean {
             vmpName += vtm.getName();
         }
 
-        if (strength < 0.00000001) {
+        if (strength > 0.00000001) {
             vmpName += " " + strength;
         }
 
