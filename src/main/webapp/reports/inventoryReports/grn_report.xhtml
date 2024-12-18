@@ -19,10 +19,10 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:calendar id="rfd"
-                                          class="w-100"
-                                          inputStyleClass="w-100"
-                                          value="#{pharmacyController.fromDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:calendar>
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        value="#{pharmacyController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:calendar>
 
                             <p:spacer width="20"></p:spacer> 
 
@@ -32,10 +32,10 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:calendar id="rtd"
-                                          class="w-100"
-                                          inputStyleClass="w-100"
-                                          value="#{pharmacyController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        value="#{pharmacyController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
 
                             <p:spacer width="20"></p:spacer>  
                             <p:spacer width="20"></p:spacer>  
@@ -150,11 +150,22 @@
                                              action="#{pharmacyController.generateGRNReportTable()}">
                             </p:commandButton>
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                                <p:printer target="tbl1"  rendered="#{pharmacyController.reportType eq 'detailReport'}"/> 
+                                <p:printer target="tbl2"  rendered="#{pharmacyController.reportType eq 'returnReport'}"/>
+                                <p:printer target="tbl3"  rendered="#{pharmacyController.reportType eq 'summeryReport'}"/>                                 
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                                <p:dataExporter type="xlsx" target="tbl1" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'detailReport'}" />
+                                <p:dataExporter type="xlsx" target="tbl2" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'returnReport'}" />
+                                <p:dataExporter type="xlsx" target="tbl3" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'summeryReport'}" />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
+                                <p:dataExporter type="pdf" target="tbl1" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'detailReport'}" />
+                                <p:dataExporter type="pdf" target="tbl2" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'returnReport'}" />
+                                <p:dataExporter type="pdf" target="tbl3" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'summeryReport'}" />
                             </p:commandButton>
+
                         </div>
 
 
