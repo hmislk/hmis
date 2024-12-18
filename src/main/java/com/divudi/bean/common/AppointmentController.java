@@ -32,6 +32,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.inward.Reservation;
+import com.divudi.facade.ReservationFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
@@ -66,6 +67,8 @@ public class AppointmentController implements Serializable {
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    private ReservationFacade reservationFacade;
     
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
@@ -98,7 +101,7 @@ public class AppointmentController implements Serializable {
     private YearMonthDay yearMonthDay;
     private PaymentMethodData paymentMethodData;
     private Reservation reservation;
-   
+    
     public Title[] getTitle() {
         return Title.values();
     }
@@ -131,7 +134,7 @@ public class AppointmentController implements Serializable {
     }
     
     private Patient savePatient(Patient p) {
-
+        
         if (p == null) {
             return null;
         }
@@ -167,6 +170,42 @@ public class AppointmentController implements Serializable {
         //      currentAppointment=null;
     }
     
+    private void saveReservation(Patient p, Appointment a) {
+        if (p == null) {
+            JsfUtil.addErrorMessage("No patient Selected");
+            return;
+        }
+        if (a == null) {
+            JsfUtil.addErrorMessage("No Appointment Selected");
+            return;
+        }
+        if (reservation.getRoom() == null) {
+            JsfUtil.addErrorMessage("No Room Selected");
+            return;
+        }
+        if (reservation.getReservedFrom() == null) {
+            JsfUtil.addErrorMessage("No Reserved From Date Selected");
+            return;
+        }
+        
+        if (reservation.getReservedTo() == null) {
+            JsfUtil.addErrorMessage("No Reserved To Date Selected");
+            return;
+        }
+        
+        reservation.setAppointment(a);
+        reservation.setPatient(p);
+        reservation.setCreatedAt(new Date());
+        reservation.setCreater(sessionController.getLoggedUser());
+        
+        if (reservation.getId() == null) {
+            getReservationFacade().create(reservation);
+        } else {
+            getReservationFacade().edit(reservation);
+        }
+        
+    }
+    
     public void settleBill() {
         Date startTime = new Date();
         Date fromDate = new Date();
@@ -179,13 +218,13 @@ public class AppointmentController implements Serializable {
         
         saveBill(p);
         saveAppointment(p);
+        saveReservation(p, currentAppointment);
         //  getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser());
         // getBillBean().calculateBillItems(b, getLstBillEntries());
         //     getBills().add(b);
 
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
-        
         
     }
     
@@ -223,26 +262,24 @@ public class AppointmentController implements Serializable {
     }
     
     private boolean checkPatientAgeSex() {
-        
+
 //        if (getPatientTabId().toString().equals("tabNewPt")) {
-            
-            if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getAgeText() == null) {
-                JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
-                return true;
-            }
-            
-            if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
-                JsfUtil.addErrorMessage("Check Title,Age,Sex");
-                return true;
-            }
-            
-            if (getNewPatient().getPerson().getPhone().length() < 1) {
-                JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
-                return true;
-            }
-            
-        //}
+        if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getAgeText() == null) {
+            JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
+            return true;
+        }
         
+        if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
+            JsfUtil.addErrorMessage("Check Title,Age,Sex");
+            return true;
+        }
+        
+        if (getNewPatient().getPerson().getPhone().length() < 1) {
+            JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
+            return true;
+        }
+
+        //}
         return false;
         
     }
@@ -290,7 +327,7 @@ public class AppointmentController implements Serializable {
     }
     
     public String prepareNewBill() {
-      
+        
         currentBill = null;
         
         setPrintPreview(true);
@@ -514,12 +551,12 @@ public class AppointmentController implements Serializable {
     }
     
     public Reservation getReservation() {
-        if(reservation == null){
+        if (reservation == null) {
             reservation = new Reservation();
         }
         return reservation;
     }
-
+    
     public void setReservation(Reservation reservation) {
         this.reservation = reservation;
     }
@@ -529,6 +566,7 @@ public class AppointmentController implements Serializable {
         searchedPatient = null;
         currentBill = null;
         currentAppointment = null;
+        reservation = null;
         getCurrentBill();
         getCurrentAppointment();
     }
@@ -539,6 +577,14 @@ public class AppointmentController implements Serializable {
         getCurrentBill().setPatient(getSearchedPatient());
         getCurrentAppointment().setPatient(getSearchedPatient());
         return "/inward/inward_appointment";
+    }
+    
+    public ReservationFacade getReservationFacade() {
+        return reservationFacade;
+    }
+    
+    public void setReservationFacade(ReservationFacade reservationFacade) {
+        this.reservationFacade = reservationFacade;
     }
 
     /**
