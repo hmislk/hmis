@@ -11,7 +11,7 @@ import javax.persistence.PersistenceContext;
 
 /**
  *
- * @author Buddhika
+ * @author L C J Samarasekara
  */
 @Stateless
 public class ReservationFacade extends AbstractFacade<Reservation> {
