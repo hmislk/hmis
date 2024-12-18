@@ -120,7 +120,10 @@ public class PatientReportController implements Serializable {
     SmsFacade smsFacade;
     @EJB
     ClinicalFindingValueFacade clinicalFindingValueFacade;
-    //Controllers
+    @EJB
+    private UploadFacade uploadFacade;
+
+//Controllers
     @Inject
     PdfController pdfController;
     @Inject
@@ -149,6 +152,9 @@ public class PatientReportController implements Serializable {
     PatientInvestigationController patientInvestigationController;
     @Inject
     WebUserController webUserController;
+    @Inject
+    PatientReportUploadController patientReportUploadController;
+
     //Class Variables
     String selectText = "";
     private PatientInvestigation currentPtIx;
@@ -223,9 +229,6 @@ public class PatientReportController implements Serializable {
             }
         }
     }
-
-    @EJB
-    UploadFacade uploadFacade;
 
     public Upload loadUpload(PatientReport pr) {
         String jpql = "select u "
@@ -1196,6 +1199,19 @@ public class PatientReportController implements Serializable {
         currentPatientReport.setRetired(Boolean.TRUE);
         currentPatientReport.setRetiredAt(Calendar.getInstance().getTime());
         currentPatientReport.setRetirer(getSessionController().getLoggedUser());
+
+        if (currentPatientReport.getReportType() == ReportType.UPLOAD) {
+            Upload currentReportUpload = patientReportUploadController.loadUploads(currentPatientReport);
+
+            if (currentReportUpload != null) {
+                currentReportUpload.setRetireComments(comment);
+                currentReportUpload.setRetired(true);
+                currentReportUpload.setRetiredAt(new Date());
+                currentReportUpload.setRetirer(sessionController.getLoggedUser());
+                uploadFacade.create(currentReportUpload);
+            }
+            System.out.println("Upload Report Removed");
+        }
 
         getFacade().edit(currentPatientReport);
         JsfUtil.addSuccessMessage("Successfully Removed");
@@ -2595,7 +2611,6 @@ public class PatientReportController implements Serializable {
     }
 
     public String navigateToUploadNewPatientReport(PatientInvestigation pi) {
-        String link;
         if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Investigation");
             return null;
@@ -2610,6 +2625,11 @@ public class PatientReportController implements Serializable {
         if (ix.getReportedAs() != null) {
             ix = (Investigation) pi.getInvestigation().getReportedAs();
         }
+        if (!checkAlreadyGeneratedPatientReportsExists(pi)) {
+            JsfUtil.addErrorMessage("Already Created Report for this Investigation");
+            return null;
+        }
+
         currentReportInvestigation = ix;
         currentPtIx = pi;
         PatientReport newlyCreatedReport = null;
@@ -2632,10 +2652,8 @@ public class PatientReportController implements Serializable {
         patientReportUploadController.setPatientInvestigation(pi);
 
         return "/lab/upload_patient_report?faces-redirect=true";
-    }
 
-    @Inject
-    PatientReportUploadController patientReportUploadController;
+    }
 
     public String navigateToNewlyCreatedPatientReport(PatientInvestigation pi) {
         if (pi == null) {

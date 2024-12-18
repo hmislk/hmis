@@ -19,7 +19,7 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('LabAutherizing')}">
-                    <p:growl id="messages" showDetail="true" />
+                    <p:growl id="messages" />
 
                     <p:panel>
                         <f:facet name="header">
@@ -45,10 +45,10 @@
                                 </p:panel>
 
                                 <!-- Report Details Panel -->
-                                <p:panel header="Report Details" class="mt-2" >
+                                <p:panel header="Report Details" id="reportData" class="mt-2" >
                                     <p:panelGrid columns="2" >
                                         <!-- Referring Institution -->
-                                        <p:outputLabel for="refIns" value="Referring Institution" />
+                                        <h:outputLabel for="refIns" value="Referring Institution" />
                                         <p:autoComplete 
                                             id="refIns" 
                                             forceSelection="true" 
@@ -59,7 +59,7 @@
                                             itemValue="#{ri}"
                                             scrollHeight="500"
                                             maxResults="15"
-                                            styleClass="form-control w-100">
+                                            styleClass=" w-100">
                                             <p:column headerText="Referring Institution Name" style="padding: 2px; width: 400px;">
                                                 #{ri.name}
                                             </p:column>
@@ -69,7 +69,7 @@
                                         </p:autoComplete>
 
                                         <!-- Referring Doctor -->
-                                        <p:outputLabel for="cmbDoc" value="Referring Doctor" /> 
+                                        <h:outputLabel for="cmbDoc" value="Referring Doctor" /> 
                                         <p:autoComplete 
                                             forceSelection="true" 
                                             id="cmbDoc" 
@@ -78,7 +78,7 @@
                                             var="ix" 
                                             itemLabel="#{ix.person.name}" 
                                             itemValue="#{ix}" 
-                                            styleClass="form-control w-100"
+                                            styleClass="w-100"
                                             maxResults="15"
                                             scrollHeight="500">
                                             <p:column headerText="Name" style="padding: 2px; width: 400px;">
@@ -90,77 +90,95 @@
                                         </p:autoComplete>
 
                                         <!-- Other Report Details -->
-                                        <p:outputLabel value="Billed Time" />
+                                        <h:outputLabel value="Billed Time" />
                                         <p:calendar value="#{patientReportUploadController.patientInvestigation.billItem.bill.createdAt}" 
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                                        <p:outputLabel value="Sampled Time" />
+                                        <h:outputLabel value="Sampled Time" />
                                         <p:calendar value="#{patientReportUploadController.patientInvestigation.sampledAt}" 
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                                        <p:outputLabel value="Sent to Lab Time" />
+                                        <h:outputLabel value="Sent to Lab Time" />
                                         <p:calendar value="#{patientReportUploadController.patientInvestigation.sampleSentAt}" 
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                                        <p:outputLabel value="File Uploaded Time" />
+                                        <h:outputLabel value="File Uploaded Time" />
                                         <p:calendar value="#{patientReportUploadController.patientInvestigation.dataEntryAt}"  
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                                        <p:outputLabel value="Approved Time" />
+                                        <h:outputLabel value="Approved Time" />
                                         <p:calendar value="#{patientReportUploadController.patientInvestigation.approveAt}"  
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                                        <p:outputLabel value="Approved By" />
-                                        <p:outputLabel value="#{patientReportUploadController.patientInvestigation.approveUser.webUserPerson.nameWithTitle}" />
+                                        <h:outputLabel value="Approved By" />
+                                        <h:outputLabel value="#{patientReportUploadController.patientInvestigation.approveUser.webUserPerson.nameWithTitle}" />
                                     </p:panelGrid>
                                 </p:panel>
                             </div>
-                            
-                            
+
+
 
                             <div class="col-8">
                                 <!-- Upload File Panel -->
-                                #{patientReportUploadController.reportUpload}
-                                
                                 <p:panel class="mt-2" header="Upload File" >
+                                    <f:facet name="header">
+                                        <h:form>
+                                            <p:growl/>
+                                            <div class="d-flex justify-content-between">
+                                                <p:outputLabel value="Upload File" class="mt-2"/>
+                                                <div class="d-flex justify-content-end mt-2 gap-2">
+                                                    <p:commandButton
+                                                        value="Approval"
+                                                        action="#{patientReportUploadController.reportApproval()}" 
+                                                        icon="pi pi-check"
+                                                        ajax="false" 
+                                                        disabled="#{patientReportController.currentPatientReport.approved}"
+                                                        style="width: 170px;"
+                                                        class="ui-button-success" >
+                                                    </p:commandButton>
+
+                                                    <p:commandButton  
+                                                        value="Cancel Approval"
+                                                        action="#{patientReportUploadController.reportApprovalCancel()}" 
+                                                        icon="pi pi-times"
+                                                        ajax="false" 
+                                                        rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"
+                                                        disabled="#{!patientReportController.currentPatientReport.approved}"
+                                                        style="width: 170px;"
+                                                        class="ui-button-danger">
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
+                                        </h:form>
+                                    </f:facet>
                                     <h:form id="uploadForm" enctype="multipart/form-data">
                                         <p:growl id="uploadMessages"/>
 
-                                        <p:fileUpload 
-                                            value="#{patientReportUploadController.file}"
-                                            mode="simple" 
-                                            skinSimple="true"
-                                            label="Choose File"
-                                            sizeLimit="10485760" 
-                                            allowTypes="/(\.|\/)(pdf|jpe?g|png)$/"
-                                            required="true"
-                                            requiredMessage="Please select a file to upload."
-                                            styleClass="w-100" />
+                                        <div class="d-flex justify-content-between">
+                                            <p:fileUpload 
+                                                value="#{patientReportUploadController.file}"
+                                                id="uploadFile"
+                                                mode="simple" 
+                                                skinSimple="true"
+                                                label="Choose File"
+                                                sizeLimit="10485760" 
+                                                allowTypes="/(\.|\/)(pdf|jpe?g|png)$/"
+                                                required="true"
+                                                disabled="#{patientReportController.currentPatientReport.approved}"
+                                                requiredMessage="Please select a file to upload." >
+                                            </p:fileUpload>
 
-                                        <p:commandButton  
-                                            id="uploadBtn"
-                                            value="Upload and Save"
-                                            action="#{patientReportUploadController.uploadReport}"
-                                            update="uploadMessages preview"
-                                            style="width: 180px;"
-                                            icon="pi pi-upload"
-                                            class="ui-button-warning" />
-                                    </h:form>
-
-                                    <h:form>
-                                        <p:commandButton  
-                                            value="Approval"
-                                            action="#{patientReportUploadController.reportApproval()}" 
-                                            icon="pi pi-check"
-                                            style="width: 180px;"
-                                            class="ui-button-success" />
-
-                                        <p:commandButton  
-                                            value="Cancel Approval"
-                                            action="#{patientReportUploadController.reportApprovalCancel()}" 
-                                            icon="pi pi-times"
-                                            style="width: 180px;"
-                                            class="ui-button-secondary" />
+                                            <p:commandButton  
+                                                id="uploadBtn"
+                                                value="Upload and Save"
+                                                action="#{patientReportUploadController.uploadReport()}"
+                                                update="uploadMessages preview uploadFile reportData"
+                                                style="width: 170px;"
+                                                disabled="#{patientReportController.currentPatientReport.approved}"
+                                                icon="pi pi-upload"
+                                                class="ui-button-warning" >
+                                            </p:commandButton>
+                                        </div>
 
                                     </h:form>
 
@@ -172,37 +190,51 @@
                                         <div class="d-flex justify-content-between">
                                             <p:outputLabel value="View Report" class="mt-2" />
                                             <h:form>
-                                                <p:commandButton  
-                                                    ajax="false" 
-                                                    class="ui-button-danger" 
-                                                    action="#{patientReportUploadController.removeUploadedFile()}" 
-                                                    icon="fa-solid fa-trash"
-                                                    value="Remove Uploaded File">
-                                                </p:commandButton>
+                                                <div class="d-flex gap-2 justify-content-end">
+                                                    <p:commandButton 
+                                                        value="Print" 
+                                                        ajax="false" 
+                                                        icon="fa fa-print"
+                                                        class="ui-button-info"
+                                                        rendered="#{patientReportController.currentPatientReport.approved and patientReportUploadController.image}">
+                                                        <p:printer target="image" />
+                                                    </p:commandButton>
+                                                    <p:commandButton  
+                                                        ajax="false" 
+                                                        class="ui-button-danger" 
+                                                        action="#{patientReportUploadController.removeUploadedFile()}" 
+                                                        disabled="#{patientReportController.currentPatientReport.approved}"
+                                                        icon="fa-solid fa-trash"
+                                                        value="Remove Uploaded File">
+                                                    </p:commandButton>
+                                                </div>
+
                                             </h:form>
                                         </div>
                                     </f:facet>
 
-                                    <h:panelGroup rendered="#{not empty patientReportUploadController.reportUpload}">
+
+
+                                    <h:panelGroup rendered="#{not empty labReportViewController.reportUpload}">
                                         <!-- Render PDF Files -->
-                                        <h:panelGroup rendered="#{patientReportUploadController.pdf}">
+                                        <h:panelGroup rendered="#{labReportViewController.pdf}">
                                             <p:media 
-                                                value="#{patientReportUploadController.pdfReportStream}" 
+                                                value="#{labReportViewController.pdfReportStream}" 
                                                 player="pdf" 
                                                 width="100%" 
                                                 height="1000px" />
                                         </h:panelGroup>
 
                                         <!-- Render Image Files -->
-                                        <h:panelGroup rendered="#{patientReportUploadController.image}">
+                                        <h:panelGroup id="image" rendered="#{labReportViewController.image}">
                                             <p:graphicImage 
-                                                value="#{patientReportUploadController.imageReportStream}" 
+                                                value="#{labReportViewController.imageReportStream}" 
                                                 stream="true"
                                                 cache="false"
                                                 style="max-width:100%; height:auto;" />
                                         </h:panelGroup>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{empty patientReportUploadController.reportUpload}">
+                                    <h:panelGroup rendered="#{empty labReportViewController.reportUpload}">
                                         <h:outputText value="No report uploaded yet." />
                                     </h:panelGroup>
                                 </p:panel>
