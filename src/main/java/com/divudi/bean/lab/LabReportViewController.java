@@ -20,7 +20,7 @@ import org.primefaces.model.StreamedContent;
 @RequestScoped
 public class LabReportViewController {
     
-    @Inject
+    @Inject 
     PatientReportUploadController patientReportUploadController ;
 
     private Upload reportUpload;
