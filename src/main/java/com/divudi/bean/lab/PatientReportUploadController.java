@@ -1,21 +1,15 @@
 package com.divudi.bean.lab;
 
-import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.UploadType;
 import com.divudi.entity.Upload;
 import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientReport;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.UploadFacade;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
@@ -25,9 +19,11 @@ import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
 /**
- * - *
- * - * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com - *
- */
+- *
+- * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
+- *
+*/
+
 @Named
 @SessionScoped
 public class PatientReportUploadController implements Serializable {
@@ -42,8 +38,6 @@ public class PatientReportUploadController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private PatientReportController patientReportController;
-    @Inject
-    SessionController sessionController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -103,7 +97,6 @@ public class PatientReportUploadController implements Serializable {
 
             // Create and persist the Upload entity
             reportUpload = new Upload();
-            reportUpload.setUploadType(UploadType.Lab_Report);
             reportUpload.setPatientReport(patientReportController.getCurrentPatientReport());
             reportUpload.setBaImage(fileContent);
             reportUpload.setFileName(fileName);
