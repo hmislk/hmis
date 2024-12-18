@@ -736,6 +736,10 @@ public class PharmacyController implements Serializable {
     private List<PharmacySummery> departmentSummaries;
     private List<CategoryWithItem> issueDepartmentCategoryWiseItems;
 
+    private String transferType;
+    private Institution FromSite;
+    private Institution toSite;
+
     public void clearItemHistory() {
 
         grantStock = 0.00;
@@ -850,14 +854,14 @@ public class PharmacyController implements Serializable {
             billItems = null;
             departmentSummaries = null;
             issueDepartmentCategoryWiseItems = null;
-            generateConsumptionReportTableByBill();
+            generateConsumptionReportTableByBill(BillType.PharmacyIssue);
 
         } else if ("summeryReport".equals(reportType)) {
 
             bills = null;
             billItems = null;
             issueDepartmentCategoryWiseItems = null;
-            generateConsumptionReportTableAsSummary();
+            generateConsumptionReportTableAsSummary(BillType.PharmacyIssue);
 
         } else if ("categoryWise".equals(reportType)) {
 
@@ -870,18 +874,18 @@ public class PharmacyController implements Serializable {
 
     }
 
-    public void generateConsumptionReportTableByBill() {
+    public void generateConsumptionReportTableByBill(BillType billType) {
         List<BillType> bt = new ArrayList<>();
         bt.add(BillType.PharmacyIssue);
         bills = new ArrayList<>();
 
         String sql = "SELECT b FROM Bill b WHERE b.retired = false"
-                + " and b.billType In :btp"
+                + " and b.billType = :btp"
                 + " and b.createdAt between :fromDate and :toDate";
 
         Map<String, Object> tmp = new HashMap<>();
 
-        tmp.put("btp", bt);
+        tmp.put("btp", billType);
         tmp.put("fromDate", getFromDate());
         tmp.put("toDate", getToDate());
 
@@ -979,7 +983,7 @@ public class PharmacyController implements Serializable {
         }
     }
 
-    public void generateConsumptionReportTableAsSummary() {
+    public void generateConsumptionReportTableAsSummary(BillType billType) {
         // Initialize bill types
         List<BillType> bt = new ArrayList<>();
         bt.add(BillType.PharmacyIssue);
@@ -987,11 +991,11 @@ public class PharmacyController implements Serializable {
         // Prepare the SQL query
         String sql = "SELECT b.department.name, SUM(b.netTotal) FROM Bill b "
                 + "WHERE b.retired = false "
-                + "AND b.billType IN :btp "
+                + "AND b.billType = :btp "
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("btp", bt);
+        parameters.put("btp", billType);
         parameters.put("fromDate", getFromDate());
         parameters.put("toDate", getToDate());
 
@@ -1190,6 +1194,42 @@ public class PharmacyController implements Serializable {
 
         return data;
     }
+
+    public void createStockTransferReport() {
+        BillType bt;
+
+        if ("issue".equals(transferType)) {
+            bt = BillType.PharmacyTransferIssue;
+        } else {
+            bt = BillType.PharmacyTransferReceive;
+        }
+
+        if ("summeryReport".equals(reportType)) {
+
+            bills = null;
+            departmentSummaries = null;
+            issueDepartmentCategoryWiseItems = null;
+            generateConsumptionReportTableAsSummary(bt);
+
+        } else if ("detailReport".equals(reportType)) {
+
+            billItems = null;
+            departmentSummaries = null;
+            issueDepartmentCategoryWiseItems = null;
+            generateConsumptionReportTableByBillItems(bt);
+
+        } else if ("byBill".equals(reportType)) {
+
+            bills = null;
+            billItems = null;
+            issueDepartmentCategoryWiseItems = null;
+            generateConsumptionReportTableByBill(bt);
+
+        }
+
+    }
+
+    
 
     public void deleteSelectedPharmaceuticalLight() {
         if (selectedLights == null || selectedLights.isEmpty()) {
@@ -3557,6 +3597,30 @@ public class PharmacyController implements Serializable {
 
     public void setIssueDepartmentCategoryWiseItems(List<CategoryWithItem> issueDepartmentCategoryWiseItems) {
         this.issueDepartmentCategoryWiseItems = issueDepartmentCategoryWiseItems;
+    }
+
+    public String getTransferType() {
+        return transferType;
+    }
+
+    public void setTransferType(String transferType) {
+        this.transferType = transferType;
+    }
+
+    public Institution getFromSite() {
+        return FromSite;
+    }
+
+    public void setFromSite(Institution FromSite) {
+        this.FromSite = FromSite;
+    }
+
+    public Institution getToSite() {
+        return toSite;
+    }
+
+    public void setToSite(Institution toSite) {
+        this.toSite = toSite;
     }
 
 }

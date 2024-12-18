@@ -1925,10 +1925,10 @@ public class PharmacyReportController implements Serializable {
             jpql += " and s.department=:dep ";
             m.put("dep", department);
         }
-//        if (site != null) {
-//            jpql += " and s.site=:sit ";
-//            m.put("sit", site);
-//        }
+        if (site != null) {
+            jpql += " and s.department.site=:sit ";
+            m.put("sit", site);
+        }
         if (!billTypeAtomics.isEmpty() || !billTypes.isEmpty()) {
             jpql += " and (";
             if (!billTypeAtomics.isEmpty()) {
