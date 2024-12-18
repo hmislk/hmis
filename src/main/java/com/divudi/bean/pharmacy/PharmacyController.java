@@ -842,31 +842,29 @@ public class PharmacyController implements Serializable {
 
             bills = null;
             departmentSummaries = null;
-            generateConsumptionReportTableByBillItems(BillType.PharmacyTransferIssue);
+            issueDepartmentCategoryWiseItems = null;
+            generateConsumptionReportTableByBillItems(BillType.PharmacyIssue);
 
         } else if ("byBill".equals(reportType)) {
 
             billItems = null;
             departmentSummaries = null;
+            issueDepartmentCategoryWiseItems = null;
             generateConsumptionReportTableByBill();
 
         } else if ("summeryReport".equals(reportType)) {
 
             bills = null;
             billItems = null;
+            issueDepartmentCategoryWiseItems = null;
             generateConsumptionReportTableAsSummary();
 
         } else if ("categoryWise".equals(reportType)) {
 
             bills = null;
             billItems = null;
+            departmentSummaries = null;
             generateConsumptionReportTableByDepartmentAndCategoryWise();
-
-        } else {
-
-            generateConsumptionReportTableByBill();
-            generateConsumptionReportTableByBillItems(BillType.PharmacyTransferIssue);
-            generateConsumptionReportTableAsSummary();
 
         }
 
@@ -874,7 +872,7 @@ public class PharmacyController implements Serializable {
 
     public void generateConsumptionReportTableByBill() {
         List<BillType> bt = new ArrayList<>();
-        bt.add(BillType.PharmacyTransferIssue);
+        bt.add(BillType.PharmacyIssue);
         bills = new ArrayList<>();
 
         String sql = "SELECT b FROM Bill b WHERE b.retired = false"
@@ -984,7 +982,7 @@ public class PharmacyController implements Serializable {
     public void generateConsumptionReportTableAsSummary() {
         // Initialize bill types
         List<BillType> bt = new ArrayList<>();
-        bt.add(BillType.PharmacyTransferIssue);
+        bt.add(BillType.PharmacyIssue);
 
         // Prepare the SQL query
         String sql = "SELECT b.department.name, SUM(b.netTotal) FROM Bill b "
@@ -1066,7 +1064,7 @@ public class PharmacyController implements Serializable {
         // Mandatory parameters
         parameters.put("fromDate", fromDate);
         parameters.put("toDate", toDate);
-        parameters.put("billType", BillType.PharmacyTransferIssue);
+        parameters.put("billType", BillType.PharmacyIssue);
 
         // Dynamic filters
         if (institution != null) {

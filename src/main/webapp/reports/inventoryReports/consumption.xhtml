@@ -277,7 +277,7 @@
                                 </p:column>
 
                                 <p:column headerText="Request No" width="6em" >
-                                    <h:outputText value="#{b.backwardReferenceBill.deptId}" />
+                                    <h:outputText value="#{b.invoiceNumber}" />
                                 </p:column>
 
                                 <p:column headerText="Cancel No" width="10em">
@@ -294,23 +294,23 @@
                                 </p:column>
 
                                 <p:column headerText="Created Date and Time" width="6em">
-                                    <h:outputText value="#{b.backwardReferenceBill.createdAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputText>
-                                </p:column>
-
-                                <p:column headerText="Documnet Created By" width="10em">
-                                    <h:outputText value="#{b.backwardReferenceBill.creater.webUserPerson.name}" />
-                                </p:column>
-
-                                <p:column headerText="Approved Date and Time" width="6em">
                                     <h:outputText value="#{b.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
                                 </p:column>
 
-                                <p:column headerText="Document Approved By" width="10em">
+                                <p:column headerText="Documnet Created By" width="10em">
                                     <h:outputText value="#{b.creater.webUserPerson.name}" />
+                                </p:column>
+
+                                <p:column headerText="Approved Date and Time" width="6em">
+                                    <h:outputText value="#{b.approveAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Document Approved By" width="10em">
+                                    <h:outputText value="#{b.approveUser.webUserPerson.name}" />
                                 </p:column>
 
                                 <p:column headerText="Remarks" width="10em">
