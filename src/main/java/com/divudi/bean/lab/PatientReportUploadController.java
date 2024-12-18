@@ -18,6 +18,12 @@ import org.apache.commons.io.IOUtils;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
+/**
+- *
+- * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
+- *
+*/
+
 @Named
 @SessionScoped
 public class PatientReportUploadController implements Serializable {
@@ -95,14 +101,102 @@ public class PatientReportUploadController implements Serializable {
             reportUpload.setBaImage(fileContent);
             reportUpload.setFileName(fileName);
             reportUpload.setFileType(file.getContentType());
+            reportUpload.setPatientInvestigation(patientReportController.getCurrentPatientReport().getPatientInvestigation());
             facade.create(reportUpload);
 
-            JsfUtil.addSuccessMessage("File uploaded successfully.");
+            // Update current Report entity
+            patientReportController.getCurrentPatientReport().setDataEntryAt(new Date());
+            patientReportController.getCurrentPatientReport().setDataEntryUser(sessionController.getLoggedUser());
+            patientReportController.getCurrentPatientReport().setDataEntered(Boolean.TRUE);
+            patientReportController.getCurrentPatientReport().setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
+            patientReportController.getCurrentPatientReport().setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
+            patientReportFacade.edit(patientReportController.getCurrentPatientReport());
+            System.out.println("Report Updated.");
+
+            JsfUtil.addSuccessMessage("File Uploaded Successfully.");
+            file = null;
             return ""; // Stay on the same page or navigate as needed
         } catch (IOException e) {
             JsfUtil.addErrorMessage("Error uploading file: " + e.getMessage());
             return "";
         }
+    }
+
+    public void reportApproval() {
+        System.out.println("reportApproval");
+        if (patientReportController.getCurrentPatientReport() == null) {
+            System.out.println("Approval-1");
+            JsfUtil.addErrorMessage("Please select a patient report.");
+            return;
+        }
+        if (reportUpload.getBaImage() == null) {
+            System.out.println("Approval-2");
+            JsfUtil.addErrorMessage("Please select a patient report.");
+            return;
+        }
+        patientReportController.getCurrentPatientReport().setApproveAt(new Date());
+        patientReportController.getCurrentPatientReport().setApproveUser(sessionController.getLoggedUser());
+        patientReportController.getCurrentPatientReport().setApproved(Boolean.TRUE);
+        patientReportFacade.edit(patientReportController.getCurrentPatientReport());
+        System.out.println("Report Approved.");
+        JsfUtil.addSuccessMessage("Report Approved.");
+    }
+
+    public void reportApprovalCancel() {
+        System.out.println("reportApprovalCancel");
+        if (patientReportController.getCurrentPatientReport() == null) {
+            System.out.println("Cancel-1");
+            JsfUtil.addErrorMessage("Please select a patient report.");
+            return;
+        }
+        patientReportController.getCurrentPatientReport().setApproveAt(null);
+        patientReportController.getCurrentPatientReport().setApproveUser(null);
+        patientReportController.getCurrentPatientReport().setApproved(null);
+        patientReportFacade.edit(patientReportController.getCurrentPatientReport());
+        System.out.println("Cancel Approved.");
+        JsfUtil.addSuccessMessage("Cancel Approved.");
+    }
+
+    public void removeUploadedFile() {
+        System.out.println("removeUploadedFile");
+        if (reportUpload.getBaImage() == null) {
+            System.out.println("Remove-1");
+            JsfUtil.addErrorMessage("Please select a patient report.");
+            return;
+        }
+        reportUpload.setBaImage(null);
+        reportUpload.setFileName(null);
+        reportUpload.setFileType(null);
+        facade.edit(reportUpload);
+
+        // Update current Report entity
+        patientReportController.getCurrentPatientReport().setDataEntryAt(null);
+        patientReportController.getCurrentPatientReport().setDataEntryUser(null);
+        patientReportController.getCurrentPatientReport().setDataEntered(null);
+        patientReportController.getCurrentPatientReport().setDataEntryDepartment(null);
+        patientReportController.getCurrentPatientReport().setDataEntryInstitution(null);
+        patientReportFacade.edit(patientReportController.getCurrentPatientReport());
+        System.out.println("Report Updated.");
+
+        System.out.println("Remove Successfully.");
+        JsfUtil.addSuccessMessage("Remove Successfully.");
+    }
+
+    public List<Upload> loadUploads(PatientReport pr) {
+        String jpql = "select u "
+                + " from Upload u "
+                + " where u.retired=:ret"
+                + " and u.patientReport=:pr"
+                + " and u.patientReport.retired=:prr"
+                + " and u.uploadType=:ut";
+
+        Map params = new HashMap<>();
+        params.put("ret", false);
+        params.put("pr", pr);
+        params.put("ut", UploadType.Lab_Report);
+        params.put("prr", false);
+
+        return facade.findByJpql(jpql, params);
     }
 
     // Helper method to check if the uploaded file is a PDF

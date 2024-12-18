@@ -76,6 +76,12 @@
                             class="w-100 m-1"
                             value="Add Missing CC Fees Bills" 
                             />
+                        <p:commandButton
+                            ajax="false" 
+                            action="#{dataAdministrationController.navigateToListMissingBillDeptNumber()}" 
+                            value="Missing Bill Number (Dept Bill Number)"  
+                            class="w-100 m-1"
+                            />
 
                         <p:separator />
                         Retired Functions
@@ -139,19 +145,18 @@
                         <p:commandLink ajax="false" action="#{itemController.toggleItemIctiveInactiveState()}" 
                                        value="Toggle Active Inactive Status of Items"  rendered="false"
                                        onclick="if (!confirm('Really want to do that?'))
-                                                                                                               return false"/>
+                                                   return false"/>
 
                         <p:commandLink ajax="false" action="#{itemController.makeItemsAsActiveOrInactiveByRetiredStatus() }" 
                                        value="Make Items as Active or Inactive by Retired Status"  
                                        onclick="if (!confirm('Really want to do that?'))
-                                                                                                               return false"/>
+                                                   return false"/>
 
                         <p:commandLink ajax="false" action="#{agencyController.randomlySetAgencyBalances}" 
                                        value="Randomly Reset Agent Balances to Rs. 50,000.00 and Rs. 30,000.00"  
                                        onclick="if (!confirm('Really want to do that?'))
-                                                                                                               return false"/>
-
-
+                                                   return false"/>
+                        
                     </p:panelGrid>
                 </h:form>
 
