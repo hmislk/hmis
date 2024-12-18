@@ -54,13 +54,13 @@ import org.primefaces.event.TabChangeEvent;
 @Named
 @SessionScoped
 public class AppointmentController implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
     @Inject
     BhtEditController bhtEditController;
-    
+
     @Inject
     CommonController commonController;
     @EJB
@@ -69,7 +69,7 @@ public class AppointmentController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private ReservationFacade reservationFacade;
-    
+
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
@@ -87,9 +87,9 @@ public class AppointmentController implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     private AppointmentFacade appointmentFacade;
-    
+
     private boolean printPreview;
-    
+
     private Patient newPatient;
     private Patient searchedPatient;
     //private String creditCardRefNo;
@@ -101,11 +101,11 @@ public class AppointmentController implements Serializable {
     private YearMonthDay yearMonthDay;
     private PaymentMethodData paymentMethodData;
     private Reservation reservation;
-    
+
     public Title[] getTitle() {
         return Title.values();
     }
-    
+
     public Sex[] getSex() {
         return Sex.values();
     }
@@ -128,20 +128,20 @@ public class AppointmentController implements Serializable {
     public CommonFunctions getCommonFunctions() {
         return commonFunctions;
     }
-    
+
     public void setCommonFunctions(CommonFunctions commonFunctions) {
         this.commonFunctions = commonFunctions;
     }
-    
+
     private Patient savePatient(Patient p) {
-        
+
         if (p == null) {
             return null;
         }
         if (p.getPerson() == null) {
             return null;
         }
-        
+
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreater(sessionController.getLoggedUser());
             p.getPerson().setCreatedAt(new Date());
@@ -149,7 +149,7 @@ public class AppointmentController implements Serializable {
         } else {
             personFacade.edit(p.getPerson());
         }
-        
+
         if (p.getId() == null) {
             p.setCreater(sessionController.getLoggedUser());
             p.setCreatedAt(new Date());
@@ -157,10 +157,10 @@ public class AppointmentController implements Serializable {
         } else {
             patientFacade.edit(p);
         }
-        
+
         return p;
     }
-    
+
     private void saveAppointment(Patient p) {
         getCurrentAppointment().setCreatedAt(new Date());
         getCurrentAppointment().setCreater(getSessionController().getLoggedUser());
@@ -169,7 +169,7 @@ public class AppointmentController implements Serializable {
         getAppointmentFacade().create(getCurrentAppointment());
         //      currentAppointment=null;
     }
-    
+
     private void saveReservation(Patient p, Appointment a) {
         if (p == null) {
             JsfUtil.addErrorMessage("No patient Selected");
@@ -187,25 +187,25 @@ public class AppointmentController implements Serializable {
             JsfUtil.addErrorMessage("No Reserved From Date Selected");
             return;
         }
-        
+
         if (reservation.getReservedTo() == null) {
             JsfUtil.addErrorMessage("No Reserved To Date Selected");
             return;
         }
-        
+
         reservation.setAppointment(a);
         reservation.setPatient(p);
         reservation.setCreatedAt(new Date());
         reservation.setCreater(sessionController.getLoggedUser());
-        
+
         if (reservation.getId() == null) {
             getReservationFacade().create(reservation);
         } else {
             getReservationFacade().edit(reservation);
         }
-        
+
     }
-    
+
     public void settleBill() {
         Date startTime = new Date();
         Date fromDate = new Date();
@@ -213,9 +213,9 @@ public class AppointmentController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        
+
         Patient p = savePatient(getSearchedPatient());
-        
+
         saveBill(p);
         saveAppointment(p);
         saveReservation(p, currentAppointment);
@@ -225,14 +225,14 @@ public class AppointmentController implements Serializable {
 
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
-        
+
     }
-    
+
     public void dateChangeListen() {
         getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
-        
+
     }
-    
+
     private void saveBill(Patient p) {
 
         //getCurrentBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(),getCurrentAppointment(), BillNumberSuffix.INWSERBillNumberSuffix.INWSER);
@@ -240,14 +240,14 @@ public class AppointmentController implements Serializable {
         //  getCurrentBill().setBillType(BillType.OpdBill);
         getCurrentBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrentBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        
+
         getCurrentBill().setPatient(p);
         // getCurrentBill().setAppointment(getCurrentAppointment());
         //     getCurrentBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         //    getCurrentBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
         getBillBean().setPaymentMethodData(getCurrentBill(), getCurrentBill().getPaymentMethod(), getPaymentMethodData());
-        
+
         getCurrentBill().setBillDate(new Date());
         getCurrentBill().setBillTime(new Date());
         //   getCurrentBill().setPatient(tmpPatient);
@@ -260,7 +260,7 @@ public class AppointmentController implements Serializable {
         //return getCurrentBill();
 
     }
-    
+
     private boolean checkPatientAgeSex() {
 
 //        if (getPatientTabId().toString().equals("tabNewPt")) {
@@ -268,12 +268,12 @@ public class AppointmentController implements Serializable {
             JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
             return true;
         }
-        
+
         if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
             JsfUtil.addErrorMessage("Check Title,Age,Sex");
             return true;
         }
-        
+
         if (getNewPatient().getPerson().getPhone().length() < 1) {
             JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
             return true;
@@ -281,12 +281,12 @@ public class AppointmentController implements Serializable {
 
         //}
         return false;
-        
+
     }
-    
+
     @Inject
     private PaymentSchemeController paymentSchemeController;
-    
+
     private boolean errorCheck() {
 
 //        if (checkPatientAgeSex()) {
@@ -303,12 +303,12 @@ public class AppointmentController implements Serializable {
             JsfUtil.addErrorMessage("No patient Selected");
             return false;
         }
-        
+
         if (getSearchedPatient().getPerson() == null) {
             JsfUtil.addErrorMessage("No patient Selected");
             return false;
         }
-        
+
         if (getSearchedPatient().getPerson().getName() == null || getSearchedPatient().getPerson().getName().trim().equals("")) {
             JsfUtil.addErrorMessage("Can not bill without Patient Name");
             return true;
@@ -318,97 +318,97 @@ public class AppointmentController implements Serializable {
         if (getCurrentBill().getPaymentMethod() == null) {
             return true;
         }
-        
+
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrentBill().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
 //       
         return false;
     }
-    
+
     public String prepareNewBill() {
-        
+
         currentBill = null;
-        
+
         setPrintPreview(true);
         printPreview = false;
         return "";
     }
-    
+
     public void onTabChange(TabChangeEvent event) {
         setPatientTabId(event.getTab().getId());
-        
+
     }
-    
+
     public BillFacade getEjbFacade() {
         return billFacade;
     }
-    
+
     public void setEjbFacade(BillFacade ejbFacade) {
         this.billFacade = ejbFacade;
     }
-    
+
     public SessionController getSessionController() {
         return sessionController;
     }
-    
+
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
+
     public AppointmentController() {
     }
-    
+
     private BillFacade getFacade() {
         return billFacade;
     }
-    
+
     public boolean isPrintPreview() {
         return printPreview;
     }
-    
+
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
     }
-    
+
     public BillFacade getBillFacade() {
         return billFacade;
     }
-    
+
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
     }
-    
+
     public String getPatientTabId() {
         return patientTabId;
     }
-    
+
     public void setPatientTabId(String patientTabId) {
         this.patientTabId = patientTabId;
     }
-    
+
     public Patient getNewPatient() {
         if (newPatient == null) {
             newPatient = new Patient();
             Person p = new Person();
-            
+
             newPatient.setPerson(p);
         }
         return newPatient;
     }
-    
+
     public void setNewPatient(Patient newPatient) {
         this.newPatient = newPatient;
     }
-    
+
     public Patient getSearchedPatient() {
         return searchedPatient;
     }
-    
+
     public void setSearchedPatient(Patient searchedPatient) {
         this.searchedPatient = searchedPatient;
     }
-    
+
     public String getAgeText() {
         ageText = getNewPatient().getAge();
         if (ageText.startsWith("0 days")) {
@@ -416,79 +416,79 @@ public class AppointmentController implements Serializable {
         }
         return ageText;
     }
-    
+
     public void setAgeText(String ageText) {
         this.ageText = ageText;
         getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(ageText));
     }
-    
+
     public BillBeanController getBillBean() {
         return billBean;
     }
-    
+
     public void setBillBean(BillBeanController billBean) {
         this.billBean = billBean;
-        
+
     }
-    
+
     public PersonFacade getPersonFacade() {
         return personFacade;
     }
-    
+
     public void setPersonFacade(PersonFacade personFacade) {
         this.personFacade = personFacade;
     }
-    
+
     public PatientFacade getPatientFacade() {
         return patientFacade;
     }
-    
+
     public void setPatientFacade(PatientFacade patientFacade) {
         this.patientFacade = patientFacade;
     }
-    
+
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
-    
+
     public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
-        
+
     }
-    
+
     public BillComponentFacade getBillComponentFacade() {
         return billComponentFacade;
     }
-    
+
     public void setBillComponentFacade(BillComponentFacade billComponentFacade) {
         this.billComponentFacade = billComponentFacade;
     }
-    
+
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
     }
-    
+
     public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
         this.billFeeFacade = billFeeFacade;
     }
-    
+
     public PatientInvestigationFacade getPatientInvestigationFacade() {
         return patientInvestigationFacade;
     }
-    
+
     public void setPatientInvestigationFacade(PatientInvestigationFacade patientInvestigationFacade) {
         this.patientInvestigationFacade = patientInvestigationFacade;
     }
-    
+
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }
-    
+
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
-        
+
     }
-    
+
     public Bill getCurrentBill() {
         if (currentBill == null) {
             currentBill = new BilledBill();
@@ -496,71 +496,71 @@ public class AppointmentController implements Serializable {
         }
         return currentBill;
     }
-    
+
     public void setCurrentBill(Bill currentBill) {
         this.currentBill = currentBill;
     }
-    
+
     public Appointment getCurrentAppointment() {
         if (currentAppointment == null) {
             currentAppointment = new Appointment();
         }
         return currentAppointment;
     }
-    
+
     public void setCurrentAppointment(Appointment currentAppointment) {
         this.currentAppointment = currentAppointment;
     }
-    
+
     public AppointmentFacade getAppointmentFacade() {
         return appointmentFacade;
     }
-    
+
     public void setAppointmentFacade(AppointmentFacade appointmentFacade) {
         this.appointmentFacade = appointmentFacade;
     }
-    
+
     public YearMonthDay getYearMonthDay() {
         if (yearMonthDay == null) {
             yearMonthDay = new YearMonthDay();
         }
         return yearMonthDay;
     }
-    
+
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
     }
-    
+
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
             paymentMethodData = new PaymentMethodData();
         }
         return paymentMethodData;
     }
-    
+
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
     }
-    
+
     public PaymentSchemeController getPaymentSchemeController() {
         return paymentSchemeController;
     }
-    
+
     public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
         this.paymentSchemeController = paymentSchemeController;
     }
-    
+
     public Reservation getReservation() {
         if (reservation == null) {
             reservation = new Reservation();
         }
         return reservation;
     }
-    
+
     public void setReservation(Reservation reservation) {
         this.reservation = reservation;
     }
-    
+
     public void prepereForInwardAppointPatient() {
         printPreview = false;
         searchedPatient = null;
@@ -571,7 +571,7 @@ public class AppointmentController implements Serializable {
         getCurrentAppointment();
         getReservation();
     }
-    
+
     public String navigateToInwardAppointmentFromMenu() {
         prepereForInwardAppointPatient();
         setSearchedPatient(getNewPatient());
@@ -579,11 +579,11 @@ public class AppointmentController implements Serializable {
         getCurrentAppointment().setPatient(getSearchedPatient());
         return "/inward/inward_appointment";
     }
-    
+
     public ReservationFacade getReservationFacade() {
         return reservationFacade;
     }
-    
+
     public void setReservationFacade(ReservationFacade reservationFacade) {
         this.reservationFacade = reservationFacade;
     }
@@ -593,7 +593,7 @@ public class AppointmentController implements Serializable {
      */
     @FacesConverter(forClass = Appointment.class)
     public static class AppointmentControllerConverter implements Converter {
-        
+
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             if (value == null || value.length() == 0) {
@@ -603,19 +603,19 @@ public class AppointmentController implements Serializable {
                     getValue(facesContext.getELContext(), null, "appointmentController");
             return controller.getFacade().find(getKey(value));
         }
-        
+
         java.lang.Long getKey(String value) {
             java.lang.Long key;
             key = Long.valueOf(value);
             return key;
         }
-        
+
         String getStringKey(java.lang.Long value) {
             StringBuilder sb = new StringBuilder();
             sb.append(value);
             return sb.toString();
         }
-        
+
         @Override
         public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
             if (object == null) {
@@ -630,9 +630,9 @@ public class AppointmentController implements Serializable {
             }
         }
     }
-    
+
     public CommonController getCommonController() {
         return commonController;
     }
-    
+
 }
