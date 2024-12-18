@@ -264,34 +264,34 @@
                                           style="font-weight: bold; text-align: left; display: block;"/>
                         </f:facet>
                         <p:column headerText="Receipt No" width="8rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.deptId}"/>
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.deptId}"/>
                         </p:column>
                         <p:column headerText="BHT No" width="8rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.patient.phn}"/>
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.patient.phn}"/>
                         </p:column>
                         <p:column headerText="Credit Company" width="5rem">
                             <h:outputText
-                                    value="#{bi.billItem.referenceBill.patientEncounter.finalBill.creditCompany.name}"/>
+                                    value="#{bi.billItem.patientEncounter.finalBill.creditCompany.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.patientEncounter.finalBill.createdAt}">
+                            <h:outputText value="#{bi.billItem.patientEncounter.dateOfDischarge}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Settlement Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.createdAt}">
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.paidAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Settlement By" width="5rem">
                             <h:outputText
-                                    value="#{bi.billItem.bill.patientEncounter.finalBill.creater.webUserPerson.name}"/>
+                                    value="#{bi.billItem.patientEncounter.finalBill.creater.webUserPerson.name}"/>
                         </p:column>
                         <p:column headerText="Payment Method" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.paymentMethod.name()}"/>
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.paymentMethod.name()}"/>
                         </p:column>
                         <p:column headerText="Invoice Value" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.patientEncounter.finalBill.netTotal}">
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
@@ -301,34 +301,34 @@
                             </f:facet>
                         </p:column>
                         <p:column headerText="Receipt Value" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.netTotal}">
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Bank" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.bank.name}"/>
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.bank.name}"/>
                         </p:column>
                         <p:column headerText="Cheque No" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.chequeRefNo}"/>
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.chequeRefNo}"/>
                         </p:column>
                         <p:column headerText="Cheque Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.chequeDate}">
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.chequeDate}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Comments" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.patientEncounter.finalBill.comments}"/>
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.comments}"/>
                         </p:column>
                         <p:column headerText="Cancelled Receipt No" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.cancelledBill.deptId}"/>
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.cancelledBill.deptId}"/>
                         </p:column>
                         <p:column headerText="Receipt Cancelled By" width="5rem">
                             <h:outputText
-                                    value="#{bi.billItem.bill.patientEncounter.finalBill.cancelledBill.creater.webUserPerson.name}"/>
+                                    value="#{bi.billItem.patientEncounter.finalBill.cancelledBill.creater.webUserPerson.name}"/>
                         </p:column>
                         <p:column headerText="Receipt Cancelled Date" width="5rem">
                             <h:outputText
-                                    value="#{bi.billItem.bill.patientEncounter.finalBill.cancelledBill.createdAt}">
+                                    value="#{bi.billItem.patientEncounter.finalBill.cancelledBill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
@@ -353,31 +353,31 @@
                                           style="font-weight: bold; text-align: left; display: block;"/>
                         </f:facet>
                         <p:column headerText="Receipt No" width="8rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.deptId}"/>
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.deptId}"/>
                         </p:column>
                         <p:column headerText="Credit Company" width="5rem">
                             <h:outputText
-                                    value="#{bi.billItem.referenceBill.patientEncounter.finalBill.creditCompany.name}"/>
+                                    value="#{bi.billItem.patientEncounter.finalBill.creditCompany.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.patientEncounter.finalBill.createdAt}">
+                            <h:outputText value="#{bi.billItem.patientEncounter.dateOfDischarge}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Settlement Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.createdAt}">
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.paidAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Settlement By" width="5rem">
                             <h:outputText
-                                    value="#{bi.billItem.bill.patientEncounter.finalBill.creater.webUserPerson.name}"/>
+                                    value="#{bi.billItem.patientEncounter.finalBill.creater.webUserPerson.name}"/>
                         </p:column>
                         <p:column headerText="Payment Method" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.paymentMethod.name()}"/>
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.paymentMethod.name()}"/>
                         </p:column>
                         <p:column headerText="Total Value" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.patientEncounter.finalBill.netTotal}">
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
@@ -387,29 +387,29 @@
                             </f:facet>
                         </p:column>
                         <p:column headerText="Bank" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.bank.name}"/>
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.bank.name}"/>
                         </p:column>
                         <p:column headerText="Cheque No" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.chequeRefNo}"/>
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.chequeRefNo}"/>
                         </p:column>
                         <p:column headerText="Cheque Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.chequeDate}">
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.chequeDate}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Comments" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.patientEncounter.finalBill.comments}"/>
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.comments}"/>
                         </p:column>
                         <p:column headerText="Cancelled Receipt No" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.patientEncounter.finalBill.cancelledBill.deptId}"/>
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.cancelledBill.deptId}"/>
                         </p:column>
                         <p:column headerText="Receipt Cancelled By" width="5rem">
                             <h:outputText
-                                    value="#{bi.billItem.bill.patientEncounter.finalBill.cancelledBill.creater.webUserPerson.name}"/>
+                                    value="#{bi.billItem.patientEncounter.finalBill.cancelledBill.creater.webUserPerson.name}"/>
                         </p:column>
                         <p:column headerText="Receipt Cancelled Date" width="5rem">
                             <h:outputText
-                                    value="#{bi.billItem.bill.patientEncounter.finalBill.cancelledBill.createdAt}">
+                                    value="#{bi.billItem.patientEncounter.finalBill.cancelledBill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
@@ -427,34 +427,33 @@
                             rowIndexVar="n"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="10,25,50">
-
                         <f:facet name="header">
                             <h:outputText value="Visit Type - OP"
                                           style="font-weight: bold; text-align: left; display: block;"/>
                             <h:outputText value="Report Type - Details"
                                           style="font-weight: bold; text-align: left; display: block;"/>
                         </f:facet>
-                        <p:column headerText="Receipt No" width="6rem">
-                            <h:outputText value="#{bi.billItem.bill.insId}"/>
-                        </p:column>
-                        <p:column headerText="OPD Bill No" width="6rem">
+                        <p:column headerText="Receipt No" width="10rem">
                             <h:outputText value="#{bi.billItem.bill.deptId}"/>
+                        </p:column>
+                        <p:column headerText="OPD Bill No" width="10rem">
+                            <h:outputText value="#{bi.billItem.referenceBill.deptId}"/>
                         </p:column>
                         <p:column headerText="Credit Company" width="5rem">
                             <h:outputText value="#{bi.billItem.referenceBill.creditCompany.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Settlement Date" width="5rem">
                             <h:outputText value="#{bi.billItem.bill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
+                        <p:column headerText="Settlement Date" width="5rem">
+                            <h:outputText value="#{bi.billItem.referenceBill.paidAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                            </h:outputText>
+                        </p:column>
                         <p:column headerText="Settlement By" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.creater.webUserPerson.name}"/>
+                            <h:outputText value="#{bi.billItem.referenceBill.creater.webUserPerson.name}"/>
                         </p:column>
                         <p:column headerText="Payment Method" width="5rem">
                             <h:outputText value="#{bi.billItem.bill.paymentMethod}"/>
@@ -521,23 +520,23 @@
                                           style="font-weight: bold; text-align: left; display: block;"/>
                         </f:facet>
                         <p:column headerText="Receipt No" width="6rem">
-                            <h:outputText value="#{bi.billItem.bill.insId}"/>
+                            <h:outputText value="#{bi.billItem.bill.deptId}"/>
                         </p:column>
                         <p:column headerText="Credit Company" width="5rem">
                             <h:outputText value="#{bi.billItem.referenceBill.creditCompany.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Settlement Date" width="5rem">
                             <h:outputText value="#{bi.billItem.bill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
+                        <p:column headerText="Settlement Date" width="5rem">
+                            <h:outputText value="#{bi.billItem.referenceBill.paidAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                            </h:outputText>
+                        </p:column>
                         <p:column headerText="Settlement By" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.creater.webUserPerson.name}"/>
+                            <h:outputText value="#{bi.billItem.referenceBill.creater.webUserPerson.name}"/>
                         </p:column>
                         <p:column headerText="Payment Method" width="5rem">
                             <h:outputText value="#{bi.billItem.bill.paymentMethod}"/>
