@@ -213,7 +213,7 @@
 
                 <h:panelGroup rendered="#{appointmentController.printPreview}" >
                     <p:commandButton value="Patient Lookup" action="#{opdBillController.navigateToSearchPatients()}" ></p:commandButton>&nbsp;
-                    <p:commandButton value="New Inward Appointment" action="#{appointmentController.navigateToInwardAppointmentFromMenu()}" class="my-1"></p:commandButton>
+                    <p:commandButton value="New Inward Appointment" action="#{appointmentController.navigateToInwardAppointmentFromMenu()}" class="my-1" ajax="false"></p:commandButton>
                     <ez:inward_appointment_print controller="#{appointmentController}"/>
                 </h:panelGroup>
 
