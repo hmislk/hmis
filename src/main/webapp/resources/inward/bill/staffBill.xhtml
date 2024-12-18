@@ -142,18 +142,18 @@
                             <h:outputLabel value="&emsp;" 
                                            style="font-size:10px!important;" />
                         </p:column>
-                        <p:column style="text-align: center;" >
+<!--                        <p:column style="text-align: center;" >
                             <f:facet name="header" >
                                 <h:outputLabel value="Bill No"  ></h:outputLabel>
                             </f:facet>
                             <h:outputLabel value="#{bip.referanceBillItem.bill.deptId}" 
                                            style="font-size:10pt!important;" />
-                        </p:column>
+                        </p:column>-->
                         <p:column style="text-align: center;" >
                             <f:facet name="header" >
-                                <h:outputLabel value="Investigation/Service"  ></h:outputLabel>
+                                <h:outputLabel value="BHT No."  ></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="#{bip.referanceBillItem.item.name}" 
+                            <h:outputLabel value="#{bip.referanceBillItem.bill.patientEncounter.bhtNo}" 
                                            style="font-size:10pt!important;" />
                         </p:column>
                         <h:column   >
@@ -162,13 +162,14 @@
                             </f:facet>
                             <h:outputLabel value="#{bip.referanceBillItem.bill.patient.person.name}" rendered="#{bf.bill.patientEncounter eq null}" style="margin: 4px;font-size:  10pt!important;"  />                                    
                             <h:outputLabel value="#{bip.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}" 
+                                           rendered="#{bf.bill.patientEncounter ne null}"
                                            style="margin: 4px; font-size:  10pt!important;"   />                                                                                
                         </h:column>
                         <h:column>
                             <f:facet name="header" >
                                 <h:outputLabel value="Value" ></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="#{bip.netValue}" class="d-flex justify-content-end" 
+                            <h:outputLabel value="#{bip.netValue}"  
                                            style="font-size:  10pt!important; text-align: right!important;" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>

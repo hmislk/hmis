@@ -53,7 +53,7 @@
                                             icon="fa fa-money-bill-wave"
                                             value="Initiate Professional Payments" 
                                             action="/inward/inward_bill_staff_payment?faces-redirect=true" 
-                                            rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
+                                            rendered="#{webUserController.hasPrivilege('PaymentBilling') and false}" />
                                         
                                         <p:commandButton  
                                             class="w-100"

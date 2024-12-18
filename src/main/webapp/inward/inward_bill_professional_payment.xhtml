@@ -16,7 +16,7 @@
 
                 <h:panelGroup rendered="#{!inwardStaffPaymentBillController.printPreview}" styleClass="alignTop" >
 
-                    <p:panel header="Inward Professional Payment Developing Page" >
+                    <p:panel header="Inward Professional Payment" >
                         <h:form>
                             <h:panelGrid columns="5" class="w-100">
                                 <p:outputLabel 
@@ -46,6 +46,7 @@
                                     value="Speciality" ></h:outputLabel>
                                 <p:autoComplete 
                                     forceSelection="true" 
+                                    onfocus="this.select()"
                                     value="#{inwardStaffPaymentBillController.speciality}"
                                     inputStyleClass="w-100" 
                                     class="m-1 w-100"
@@ -64,6 +65,7 @@
                                     value="Professional" ></h:outputLabel>
                                 <p:autoComplete 
                                     forceSelection="true" 
+                                    onfocus="this.select()"
                                     value="#{inwardStaffPaymentBillController.currentStaff}"
                                     inputStyleClass="w-100" class="m-1 w-100"
                                     id="scStaff"
@@ -230,7 +232,7 @@
                                             <h:outputLabel id="lblPay"  value="#{inwardStaffPaymentBillController.totalPaying}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel> 
-                                            <h:outputLabel value="Witholging Tax" ></h:outputLabel>
+                                            <h:outputLabel value="Withholding Tax" ></h:outputLabel>
                                             <h:outputLabel id="lblTax" value="#{inwardStaffPaymentBillController.withholdingTax}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>

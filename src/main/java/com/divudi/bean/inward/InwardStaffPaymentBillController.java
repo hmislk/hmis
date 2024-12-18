@@ -285,16 +285,20 @@ public class InwardStaffPaymentBillController implements Serializable {
             withholdingTaxCalculationStatus = "Depending On Payments";  // Default to "Depending On Payments"
         }
 
-        return "/inward/inward_bill_staff_payment_1?faces-redirect=true";
+        return "/inward/inward_bill_professional_payment?faces-redirect=true";
     }
 
     public void calculateDueFeesForInwardForSelectedPeriod() {
+        List<BillTypeAtomic> btcs = new ArrayList<>();
+        btcs.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
+        btcs.add(BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
+        btcs.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        btcs.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
         String sql;
         HashMap h = new HashMap();
         sql = "select bf from BillFee bf where "
                 + " bf.retired=false "
-                + " and (bf.bill.billType=:btp"
-                + " or bf.bill.billType=:btp2 )"
+                + " and bf.bill.billTypeAtomic in :btcs "
                 + " and bf.bill.cancelled=false "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and (bf.feeValue - bf.paidValue) > 0 "
@@ -303,8 +307,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         h.put("fd", fromDate);
         h.put("td", toDate);
         h.put("stf", currentStaff);
-        h.put("btp", BillType.InwardBill);
-        h.put("btp2", BillType.InwardProfessional);
+        h.put("btcs", btcs);
         dueBillFees = getBillFeeFacade().findByJpql(sql, h, TemporalType.TIMESTAMP);
         List<BillFee> removeingBillFees = new ArrayList<>();
         for (BillFee bf : dueBillFees) {
