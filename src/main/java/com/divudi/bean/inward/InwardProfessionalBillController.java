@@ -15,6 +15,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.inward.PatientEncounterComponentType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -577,6 +578,16 @@ public class InwardProfessionalBillController implements Serializable {
 
         billTotal = 0.0;
     }
+    
+    public void addToProBill(){
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
+        addToBill();
+    }
+    
+    public void addToEstProBill(){
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_ESTIMATED_PROFESSIONAL_FEE_BILL);
+        addToBill();
+    }
 
     public void addToBill() {
         if (getCurrent().getPatientEncounter() == null) {
@@ -863,6 +874,7 @@ public class InwardProfessionalBillController implements Serializable {
         if (current == null) {
             current = new BilledBill();
             current.setBillType(BillType.InwardProfessional);
+            
             current.setDepartment(getSessionController().getLoggedUser().getDepartment());
             current.setInstitution(getSessionController().getLoggedUser().getInstitution());
         }
