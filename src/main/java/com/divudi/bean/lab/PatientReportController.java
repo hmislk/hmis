@@ -247,6 +247,33 @@ public class PatientReportController implements Serializable {
         return uploadFacade.findFirstByJpql(jpql, params);
     }
 
+    public String navigateToPrintPatientReport(PatientReport pr) {
+        if (pr == null) {
+            JsfUtil.addErrorMessage("No Select Patient Report");
+            return "";
+        }
+
+        System.out.println("pr = " + pr.getReportType());
+
+        if (pr.getReportType() == null) {
+            setCurrentPatientReport(pr);
+            return "/lab/patient_report_print?faces-redirect=true";
+        } else {
+            switch (pr.getReportType()) {
+                case GENARATE:
+                    setCurrentPatientReport(pr);
+                    return "/lab/patient_report_print?faces-redirect=true";
+                case UPLOAD:
+                    Upload currentReportUpload = loadUpload(pr);
+                    patientReportUploadController.setReportUpload(currentReportUpload);
+                    return "/lab/upload_patient_report_print?faces-redirect=true";
+                default:
+                    return "";
+            }
+        }
+
+    }
+
     public String searchRecentReportsOrderedByMyself() {
         Doctor doctor;
         String j = "Select r from PatientReport r "
