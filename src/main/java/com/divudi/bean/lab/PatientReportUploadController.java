@@ -108,7 +108,17 @@ public class PatientReportUploadController implements Serializable {
             reportUpload.setBaImage(fileContent);
             reportUpload.setFileName(fileName);
             reportUpload.setFileType(file.getContentType());
+            reportUpload.setPatientInvestigation(patientReportController.getCurrentPatientReport().getPatientInvestigation());
             facade.create(reportUpload);
+
+            // Update current Report entity
+            patientReportController.getCurrentPatientReport().setDataEntryAt(new Date());
+            patientReportController.getCurrentPatientReport().setDataEntryUser(sessionController.getLoggedUser());
+            patientReportController.getCurrentPatientReport().setDataEntered(Boolean.TRUE);
+            patientReportController.getCurrentPatientReport().setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
+            patientReportController.getCurrentPatientReport().setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
+            patientReportFacade.edit(patientReportController.getCurrentPatientReport());
+            System.out.println("Report Updated.");
 
             JsfUtil.addSuccessMessage("File Uploaded Successfully.");
             file = null;
@@ -120,7 +130,7 @@ public class PatientReportUploadController implements Serializable {
     }
 
     public void reportApproval() {
-        System.out.println("reportApproval");  
+        System.out.println("reportApproval");
         if (patientReportController.getCurrentPatientReport() == null) {
             System.out.println("Approval-1");
             JsfUtil.addErrorMessage("Please select a patient report.");
@@ -135,12 +145,12 @@ public class PatientReportUploadController implements Serializable {
         patientReportController.getCurrentPatientReport().setApproveUser(sessionController.getLoggedUser());
         patientReportController.getCurrentPatientReport().setApproved(Boolean.TRUE);
         patientReportFacade.edit(patientReportController.getCurrentPatientReport());
-        System.out.println("Report Approved.");  
+        System.out.println("Report Approved.");
         JsfUtil.addSuccessMessage("Report Approved.");
     }
 
     public void reportApprovalCancel() {
-        System.out.println("reportApprovalCancel");  
+        System.out.println("reportApprovalCancel");
         if (patientReportController.getCurrentPatientReport() == null) {
             System.out.println("Cancel-1");
             JsfUtil.addErrorMessage("Please select a patient report.");
@@ -150,12 +160,12 @@ public class PatientReportUploadController implements Serializable {
         patientReportController.getCurrentPatientReport().setApproveUser(null);
         patientReportController.getCurrentPatientReport().setApproved(null);
         patientReportFacade.edit(patientReportController.getCurrentPatientReport());
-        System.out.println("Cancel Approved.");  
+        System.out.println("Cancel Approved.");
         JsfUtil.addSuccessMessage("Cancel Approved.");
     }
-    
+
     public void removeUploadedFile() {
-        System.out.println("removeUploadedFile");  
+        System.out.println("removeUploadedFile");
         if (reportUpload.getBaImage() == null) {
             System.out.println("Remove-1");
             JsfUtil.addErrorMessage("Please select a patient report.");
@@ -165,7 +175,17 @@ public class PatientReportUploadController implements Serializable {
         reportUpload.setFileName(null);
         reportUpload.setFileType(null);
         facade.edit(reportUpload);
-        System.out.println("Remove Successfully.");  
+
+        // Update current Report entity
+        patientReportController.getCurrentPatientReport().setDataEntryAt(null);
+        patientReportController.getCurrentPatientReport().setDataEntryUser(null);
+        patientReportController.getCurrentPatientReport().setDataEntered(null);
+        patientReportController.getCurrentPatientReport().setDataEntryDepartment(null);
+        patientReportController.getCurrentPatientReport().setDataEntryInstitution(null);
+        patientReportFacade.edit(patientReportController.getCurrentPatientReport());
+        System.out.println("Report Updated.");
+
+        System.out.println("Remove Successfully.");
         JsfUtil.addSuccessMessage("Remove Successfully.");
     }
 

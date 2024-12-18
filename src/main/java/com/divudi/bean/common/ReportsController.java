@@ -2597,8 +2597,8 @@ public class ReportsController implements Serializable {
         }
 
         if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
-            jpql += "AND bill.referenceNumber = :cbn ";
-            parameters.put("cbn", cashBookNumber);
+            jpql += "AND bill.referenceNumber LIKE :cbn ";
+            parameters.put("cbn", "%" + cashBookNumber + "%");
         }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";

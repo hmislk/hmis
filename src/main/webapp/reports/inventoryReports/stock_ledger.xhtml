@@ -173,7 +173,7 @@
                                 </p:selectOneMenu>
                             </h:panelGroup>
 
-                            
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-box mr-2" />
                                 <p:outputLabel value="Item Name" for="phmItem" class="m-3">
@@ -207,13 +207,37 @@
                                 value="Process" 
                                 action="#{pharmacyReportController.processStockLedgerReport()}" >
                             </p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button- mx-1" 
+                                icon="fas fa-print" 
+                                ajax="false" 
+                                value="Print All">
+                                <p:printer target="tbl" />
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button-success mx-1" 
+                                icon="fas fa-file-excel" 
+                                ajax="false" 
+                                value="Download">
+                                <p:dataExporter 
+                                    type="xlsx" 
+                                    fileName="Stock Ledger Report" 
+                                    target="tbl"  />
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button-danger mx-1" 
+                                icon= "fas fa-file-pdf" 
+                                ajax="false" 
+                                value="PDF">
+                                <p:dataExporter 
+                                    type="pdf" 
+                                    target="tbl" 
+                                    fileName="Stock Ledger Report" />
+                            </p:commandButton>
                             
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"><p:printer target="tbl" />
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download"><p:dataExporter type="xlsx" fileName="Stock Ledger Report" target="tbl"  />
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF"><p:dataExporter type="pdf" target="tbl" fileName="Stock Ledger Report" />
-                            </p:commandButton>
                         </div>
 
 
