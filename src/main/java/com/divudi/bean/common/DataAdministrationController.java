@@ -52,6 +52,7 @@ import com.divudi.facade.PharmaceuticalItemCategoryFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.ejb.BillNumberGenerator;
 import java.io.Serializable;
 import java.sql.SQLSyntaxErrorException;
 import java.text.DecimalFormat;
@@ -144,6 +145,8 @@ public class DataAdministrationController implements Serializable{
     ServiceSessionFacade serviceSessionFacade;
     @EJB
     private DepartmentFacade departmentFacade;
+    @EJB
+    BillNumberGenerator billNumberGenerator;
 
     @EJB
     BillEjb billEjb;
@@ -279,11 +282,31 @@ public class DataAdministrationController implements Serializable{
     }
 
     public String navigateToCheckMissingFields() {
-        return "/dataAdmin/missing_database_fields";
+        return "/dataAdmin/missing_database_fields?faces-redirect=true";
     }
-    
+
     public String navigateToListOpdBillsAndBillItemsFields() {
-        return "/dataAdmin/opd_bills_and_bill_items";
+        return "/dataAdmin/opd_bills_and_bill_items?faces-redirect=true";
+    }
+
+    public String navigateToListMissingBillDeptNumber() {
+        return "/dataAdmin/fill_missing_dept_bill_number?faces-redirect=true";
+    }
+
+    public void addMissingDeptBillNumber(Bill bill) {
+        Bill originalBill = billFacade.find(bill.getId());
+        
+        if (originalBill.getDeptId().trim().length() != 0){
+            JsfUtil.addErrorMessage("Already Add Dept Bill Number");
+            return;
+        }
+        
+        String genarateeddeptID =  bill.getInsId();
+ 
+        originalBill.setDeptId(genarateeddeptID);
+        billFacade.edit(originalBill);
+        
+        JsfUtil.addSuccessMessage("Added Dept Bill Number");
     }
 
     public void checkMissingFields1() {

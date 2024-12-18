@@ -161,13 +161,13 @@ public class PatientReport implements Serializable {
     private PatientInvestigationStatus status;
     
     private String sampleIDs;
-    
+
     @ManyToOne
     private Upload uploadedReport;
     
     @Enumerated(EnumType.STRING)
     private ReportType reportType;
-    
+
     public PatientReport() {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
