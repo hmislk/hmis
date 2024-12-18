@@ -26,13 +26,15 @@
                             <f:selectItem itemLabel="All Institutions"/>
                             <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
                                            itemValue="#{ins}"/>
-                            <p:ajax process="cmbIns" update="cmbDept"/>
+<!--                            <p:ajax process="cmbIns" update="cmbDept"/>-->
                         </p:selectOneMenu>
 
                         <p:spacer width="20"/>
+                        
+                        <h:outputLabel value="**Site and Department Filtering Functions Not Available Yet**" class="m-3"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
+<!--                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/>  FontAwesome map marker icon 
                             <h:outputLabel value="Site" for="siteMenu" class="m-3"/>
                         </h:panelGroup>
                         <p:selectOneMenu
@@ -49,12 +51,12 @@
                         <p:spacer width="20"/>
 
                         <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
+                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/>  FontAwesome sitemap icon 
                             <h:outputLabel value="Department" for="cmbDept" class="m-3"/>
                         </h:panelGroup>
                         <h:panelGroup id="cmbDept">
 
-                            <!-- Component 1: Without Institution and Site -->
+                             Component 1: Without Institution and Site 
                             <p:selectOneMenu
                                     rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site eq null}"
                                     styleClass="w-100 form-control"
@@ -69,7 +71,7 @@
                                         itemValue="#{d}"/>
                             </p:selectOneMenu>
 
-                            <!-- Component 2: With Site Only -->
+                             Component 2: With Site Only 
                             <p:selectOneMenu
                                     rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site ne null}"
                                     styleClass="w-100 form-control"
@@ -84,7 +86,7 @@
                                         itemValue="#{d}"/>
                             </p:selectOneMenu>
 
-                            <!-- Component 3: With Institution Only -->
+                             Component 3: With Institution Only 
                             <p:selectOneMenu
                                     rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site eq null}"
                                     styleClass="w-100 form-control"
@@ -99,7 +101,7 @@
                                         itemValue="#{d}"/>
                             </p:selectOneMenu>
 
-                            <!-- Component 4: With Both Institution and Site -->
+                             Component 4: With Both Institution and Site 
                             <p:selectOneMenu
                                     rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site ne null}"
                                     styleClass="w-100 form-control"
@@ -126,7 +128,7 @@
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}"/>
                             </p:selectOneMenu>
-                        </h:panelGroup>
+                        </h:panelGroup>-->
                     </h:panelGrid>
 
                     <p:commandButton
