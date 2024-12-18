@@ -10,9 +10,7 @@
         <title>Process Step Definitions Management</title>
     </h:head>
     <h:body>
-
-        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
-
+        <ui:composition template="./index.xhtml">
             <ui:define name="subcontent">
                 <h:form id="processStepForm">
                     <p:panel>
@@ -32,8 +30,8 @@
                                                 icon="fa fa-plus" 
                                                 class="ui-button-success m-1" 
                                                 action="#{processStepDefinitionController.addNewProcessStepDefinition}" 
-                                                process="addNewBtn processSelect"
-                                                update="processStepDetails"
+                                                update="@form"
+                                                process="addNewBtn"
                                                 disabled="#{processStepDefinitionController.editable}" />
 
                                             <p:commandButton 
@@ -41,21 +39,21 @@
                                                 value="Edit" 
                                                 icon="fa fa-edit" 
                                                 styleClass="ui-button-warning m-1" 
-                                                action="#{processStepDefinitionController.editExistingProcessStepDefinition}" 
+                                                action="#{processStepDefinitionController.editExistingProcessStepDefinition(processStepDefinitionController.current)}" 
                                                 update="@form"
                                                 process="editBtn"
-                                                disabled="#{processStepDefinitionController.editable or processStepDefinitionController.current.id eq null}" />
+                                                disabled="#{processStepDefinitionController.editable or processStepDefinitionController.current == null}" />
 
                                             <p:commandButton 
                                                 id="deleteBtn" 
                                                 value="Delete" 
                                                 icon="fa fa-trash" 
                                                 class="ui-button-danger m-1" 
-                                                action="#{processStepDefinitionController.deleteProcessStepDefinition}" 
+                                                action="#{processStepDefinitionController.deleteProcessStepDefinition(processStepDefinitionController.current)}" 
                                                 update="@form" 
                                                 process="deleteBtn"
                                                 onclick="return confirm('Are you sure you want to delete this process step?');"
-                                                disabled="#{processStepDefinitionController.editable or processStepDefinitionController.current.id ne null}" />
+                                                disabled="#{processStepDefinitionController.editable or processStepDefinitionController.current == null}" />
                                         </div>
                                     </f:facet>
 
@@ -71,11 +69,11 @@
                                             var="process"
                                             itemValue="#{process}" 
                                             itemLabel="#{process.name}" />
-                                        <p:ajax update="processStepSelect processStepDetails" />
+                                        <p:ajax update="processStepSelect" />
                                     </p:selectOneMenu>
-
+                                    
                                     <p:separator/>
-
+                                    
                                     <p:outputLabel value="Process Step Definition" for="processStepSelect" ></p:outputLabel>
                                     <p:selectOneListbox 
                                         id="processStepSelect" 
@@ -88,7 +86,7 @@
                                             var="step"
                                             itemValue="#{step}" 
                                             itemLabel="#{step.name}" />
-                                        <p:ajax update="processStepDetails  deleteBtn editBtn" />
+                                        <p:ajax update="processStepDetails" />
                                     </p:selectOneListbox>
                                 </p:panel>
                             </div>
@@ -104,8 +102,17 @@
                                         id="gridDetails"
                                         styleClass="mt-3" 
                                         rendered="#{processStepDefinitionController.current ne null}">
-                                        <p:outputLabel  value="Process Definition:" styleClass="font-weight-bold" />
-                                        <p:outputLabel  value="#{processStepDefinitionController.current.processDefinition.name}" styleClass="font-weight-bold" />
+                                        <p:outputLabel for="processDefinition" value="Process Definition:" styleClass="font-weight-bold" />
+                                        <p:selectOneMenu id="processDefinition" 
+                                                         value="#{processStepDefinitionController.current.processDefinition}" 
+                                                         required="true" 
+                                                         label="Process Definition" 
+                                                         styleClass="form-control" 
+                                                         disabled="#{!processStepDefinitionController.editable}">
+                                            <f:selectItem itemLabel="Select Process" itemValue="#{null}" />
+                                            <f:selectItems value="#{processDefinitionController.items}" var="pd"
+                                                           itemValue="#{pd}" itemLabel="#{pd.name}" />
+                                        </p:selectOneMenu>
 
                                         <p:outputLabel for="name" value="Name:" styleClass="font-weight-bold" />
                                         <p:inputText id="name" 
@@ -143,7 +150,13 @@
                                                      label="Sequence Order" 
                                                      styleClass="form-control mt-2" 
                                                      disabled="#{!processStepDefinitionController.editable}" />
-                                       
+
+                                        <p:outputLabel for="actionType" value="Action Type:" styleClass="font-weight-bold mt-2" />
+                                        <p:inputText id="actionType" 
+                                                     value="#{processStepDefinitionController.current.actionType}" 
+                                                     label="Action Type" 
+                                                     styleClass="form-control mt-2" 
+                                                     disabled="#{!processStepDefinitionController.editable}" />
                                     </p:panelGrid>
 
                                     <f:facet name="footer">
@@ -173,9 +186,8 @@
                             </div>
                         </div>
                     </p:panel>
-                    <p:messages id="messages" showDetail="true" />
                 </h:form>
-
+                <p:messages id="messages" showDetail="true" />
             </ui:define>
         </ui:composition>
     </h:body>

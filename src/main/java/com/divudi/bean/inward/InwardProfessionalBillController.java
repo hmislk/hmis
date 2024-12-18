@@ -15,6 +15,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.inward.PatientEncounterComponentType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -53,8 +54,7 @@ import org.primefaces.event.TabChangeEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * formatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) formatics)
  */
 @Named
 @SessionScoped
@@ -65,7 +65,7 @@ public class InwardProfessionalBillController implements Serializable {
     SessionController sessionController;
     @Inject
     AdmissionController admissionController;
-    @Inject 
+    @Inject
     CommonController commonController;
     ////////////////////
     @EJB
@@ -513,8 +513,6 @@ public class InwardProfessionalBillController implements Serializable {
     public BillEntryFacade getBillEntryFacade() {
         return billEntryFacade;
     }
-    
-  
 
     public void setBillEntryFacade(BillEntryFacade billEntryFacade) {
         this.billEntryFacade = billEntryFacade;
@@ -578,6 +576,16 @@ public class InwardProfessionalBillController implements Serializable {
         billTotal = 0.0;
     }
 
+    public void addToProBill() {
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
+        addToBill();
+    }
+
+    public void addToEstProBill() {
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_ESTIMATED_PROFESSIONAL_FEE_BILL);
+        addToBill();
+    }
+
     public void addToBill() {
         if (getCurrent().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Please Select Patient Encounter");
@@ -588,19 +596,19 @@ public class InwardProfessionalBillController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to add");
             return;
         }
-        
-        if(currentBillFee.getSpeciality()==null){
-             JsfUtil.addErrorMessage("Please select a Speciality");
-                return;
-        }else if (currentBillFee.getStaff()==null){
-             JsfUtil.addErrorMessage("Please select a Staff");
-                return;
-        }else if (currentBillFee.getFeeValue()== 0.0) {
-             JsfUtil.addErrorMessage("Please add fee");
-                return;
-        }else if (currentBillFee.getFeeAt()== null) {
-             JsfUtil.addErrorMessage("Please select Date");
-                return;
+
+        if (currentBillFee.getSpeciality() == null) {
+            JsfUtil.addErrorMessage("Please select a Speciality");
+            return;
+        } else if (currentBillFee.getStaff() == null) {
+            JsfUtil.addErrorMessage("Please select a Staff");
+            return;
+        } else if (currentBillFee.getFeeValue() == 0.0) {
+            JsfUtil.addErrorMessage("Please add fee");
+            return;
+        } else if (currentBillFee.getFeeAt() == null) {
+            JsfUtil.addErrorMessage("Please select Date");
+            return;
         }
         if (getCurrent().getId() == null) {
             getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -741,15 +749,14 @@ public class InwardProfessionalBillController implements Serializable {
         current = null;
         batchBill = null;
         makeNullList();
-        
-        
+
     }
 
     public String navigateToAddProfessionalFeesFromMenu() {
         makeNull();
         return "/inward/inward_bill_professional?faces-redirect=true";
     }
-    
+
     public String navigateToAddProfessionalFeesFromInpatientProfile() {
         return "/inward/inward_bill_professional?faces-redirect=true";
     }
@@ -763,7 +770,6 @@ public class InwardProfessionalBillController implements Serializable {
         return "/inward/inward_bill_professional_estimate?faces-redirect=true";
     }
 
-    
     public void makeNullList() {
         currentBillFee = null;
         billItem = null;
@@ -863,6 +869,7 @@ public class InwardProfessionalBillController implements Serializable {
         if (current == null) {
             current = new BilledBill();
             current.setBillType(BillType.InwardProfessional);
+
             current.setDepartment(getSessionController().getLoggedUser().getDepartment());
             current.setInstitution(getSessionController().getLoggedUser().getInstitution());
         }
@@ -1037,5 +1044,4 @@ public class InwardProfessionalBillController implements Serializable {
         this.commonController = commonController;
     }
 
-    
 }

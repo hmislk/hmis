@@ -46,6 +46,10 @@
                             <p:column headerText="Issue No" width="100px">                        
                                 <h:outputLabel value="#{p.deptId}"/>                          
                             </p:column>
+                            <p:column headerText="Status" width="100px">                        
+                                <h:outputLabel style="font-weight: bold;" rendered="#{p.billTypeAtomic eq 'PHARMACY_DIRECT_ISSUE'}" value="Direct Issue"/>  
+                                <h:outputLabel style="font-weight: bold" rendered="#{p.billTypeAtomic ne 'PHARMACY_DIRECT_ISSUE'}" value="Request Issue"/>  
+                            </p:column>
                             <p:column headerText="From Department" width="150px">                       
                                 <h:outputLabel value="#{p.department.name}"/>                          
                             </p:column>  

@@ -13,10 +13,7 @@
     </h:head>
     <h:body>
         <ui:composition template="/resources/template/template.xhtml" >
-            <ui:define name="content" 
-                       rendered="#{webUserController.hasPrivilege('LabAutherizing') 
-                                 or webUserController.hasPrivilege('LabDataentry') 
-                                 or webUserController.hasPrivilege('LabPrinting')}">
+            <ui:define name="content" rendered="#{webUserController.hasPrivilege('LabAutherizing') or webUserController.hasPrivilege('LabDataentry')  or webUserController.hasPrivilege('LabPrinting')}">
                 <h:panelGroup rendered="#{not webUserController.hasPrivilege('LabAutherizing')}">
                     <na:not_authorize />
                 </h:panelGroup>
@@ -28,12 +25,15 @@
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
                                 <p:outputLabel value="Upload Patient Report" class="mt-2" />
-                                <p:commandButton  
-                                    ajax="false" 
-                                    value="Back"
-                                    action="/lab/generate_barcode_p?faces-redirect=true"
-                                    icon="fa-solid fa-arrow-left"
-                                    styleClass="ui-button-warning"  />
+                                <h:form>
+                                    <p:commandButton  
+                                        ajax="false" 
+                                        value="Back"
+                                        action="/lab/generate_barcode_p?faces-redirect=true"
+                                        icon="fa-solid fa-arrow-left"
+                                        styleClass="ui-button-warning">
+                                    </p:commandButton>
+                                </h:form>
                             </div>
                         </f:facet>
 
@@ -116,49 +116,103 @@
                                 </p:panel>
                             </div>
 
+
+
                             <div class="col-8">
                                 <!-- Upload File Panel -->
+                                #{patientReportUploadController.reportUpload}
+
                                 <p:panel class="mt-2" header="Upload File" >
+                                    <f:facet name="header">
+                                        <h:form>
+                                            <p:growl/>
+                                            <div class="d-flex justify-content-between">
+                                                <p:outputLabel value="Upload File" class="mt-2"/>
+                                                <div class="d-flex justify-content-end mt-2 gap-2">
+                                                    <p:commandButton  
+                                                        value="Approval"
+                                                        action="#{patientReportUploadController.reportApproval()}" 
+                                                        icon="pi pi-check"
+                                                        disabled="#{patientReportController.currentPatientReport.approved}"
+                                                        style="width: 170px;"
+                                                        class="ui-button-success" >
+                                                    </p:commandButton>
+
+                                                    <p:commandButton  
+                                                        value="Cancel Approval"
+                                                        action="#{patientReportUploadController.reportApprovalCancel()}" 
+                                                        icon="pi pi-times"
+                                                        rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"
+                                                        disabled="#{!patientReportController.currentPatientReport.approved}"
+                                                        style="width: 170px;"
+                                                        class="ui-button-danger">
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
+                                        </h:form>
+                                    </f:facet>
                                     <h:form id="uploadForm" enctype="multipart/form-data">
-                                        <p:growl id="uploadMessages" showDetail="true" />
+                                        <p:growl id="uploadMessages"/>
 
-                                        <p:fileUpload 
-                                            value="#{patientReportUploadController.file}"
-                                            mode="simple" 
-                                            skinSimple="true"
-                                            label="Choose File"
-                                            sizeLimit="10485760" 
-                                            allowTypes="/(\.|\/)(pdf|jpe?g|png)$/"
-                                            required="true"
-                                            requiredMessage="Please select a file to upload."
-                                            styleClass="w-100" />
+                                        <div class="d-flex justify-content-between">
+                                            <p:fileUpload 
+                                                value="#{patientReportUploadController.file}"
+                                                mode="simple" 
+                                                skinSimple="true"
+                                                label="Choose File"
+                                                sizeLimit="10485760" 
+                                                allowTypes="/(\.|\/)(pdf|jpe?g|png)$/"
+                                                required="true"
+                                                disabled="#{patientReportController.currentPatientReport.approved}"
+                                                requiredMessage="Please select a file to upload." >
+                                            </p:fileUpload>
 
-                                        <div class="d-flex gap-3 mt-3">
                                             <p:commandButton  
                                                 id="uploadBtn"
                                                 value="Upload and Save"
                                                 action="#{patientReportUploadController.uploadReport}"
                                                 update="uploadMessages preview"
+                                                style="width: 170px;"
+                                                disabled="#{patientReportController.currentPatientReport.approved}"
                                                 icon="pi pi-upload"
-                                                styleClass="ui-button-warning" />
-
-                                            <p:commandButton  
-                                                value="Approval"
-                                                action="#{patientReportUploadController.approvalAction}" 
-                                                icon="pi pi-check"
-                                                styleClass="ui-button-success" />
-
-                                            <p:commandButton  
-                                                value="Cancel Approval"
-                                                action="#{patientReportUploadController.cancelApprovalAction}" 
-                                                icon="pi pi-times"
-                                                styleClass="ui-button-secondary" />
+                                                class="ui-button-warning" >
+                                            </p:commandButton>
                                         </div>
+
                                     </h:form>
+
                                 </p:panel>
 
                                 <!-- View Report Panel -->
-                                <p:panel class="mt-2" header="View Report" id="preview">
+                                <p:panel class="mt-2" id="preview">
+                                    <f:facet name="header">
+                                        <div class="d-flex justify-content-between">
+                                            <p:outputLabel value="View Report" class="mt-2" />
+                                            <h:form>
+                                                <div class="d-flex gap-2 justify-content-end">
+                                                    <p:commandButton 
+                                                        value="Print" 
+                                                        icon="fa fa-print"
+                                                        class="ui-button-info"
+                                                        rendered="#{patientReportController.currentPatientReport.approved and patientReportUploadController.image}">
+                                                        <p:printer target="image" />
+                                                    </p:commandButton>
+                                                    <p:commandButton  
+                                                        ajax="false" 
+                                                        class="ui-button-danger" 
+                                                        action="#{patientReportUploadController.removeUploadedFile()}" 
+                                                        disabled="#{patientReportController.currentPatientReport.approved}"
+                                                        icon="fa-solid fa-trash"
+                                                        value="Remove Uploaded File">
+                                                    </p:commandButton>
+                                                </div>
+
+                                            </h:form>
+                                        </div>
+                                    </f:facet>
+
+
+
                                     <h:panelGroup rendered="#{not empty patientReportUploadController.reportUpload}">
                                         <!-- Render PDF Files -->
                                         <h:panelGroup rendered="#{patientReportUploadController.pdf}">
@@ -166,11 +220,11 @@
                                                 value="#{patientReportUploadController.pdfReportStream}" 
                                                 player="pdf" 
                                                 width="100%" 
-                                                height="600px" />
+                                                height="1000px" />
                                         </h:panelGroup>
-                                        
+
                                         <!-- Render Image Files -->
-                                        <h:panelGroup rendered="#{patientReportUploadController.image}">
+                                        <h:panelGroup id="image" rendered="#{patientReportUploadController.image}">
                                             <p:graphicImage 
                                                 value="#{patientReportUploadController.imageReportStream}" 
                                                 stream="true"
