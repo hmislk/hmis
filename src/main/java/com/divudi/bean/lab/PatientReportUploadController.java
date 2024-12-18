@@ -1,21 +1,15 @@
 package com.divudi.bean.lab;
 
-import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.UploadType;
 import com.divudi.entity.Upload;
 import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientReport;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.UploadFacade;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
@@ -25,9 +19,11 @@ import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
 /**
- * - *
- * - * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com - *
- */
+- *
+- * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
+- *
+*/
+
 @Named
 @SessionScoped
 public class PatientReportUploadController implements Serializable {
@@ -42,8 +38,6 @@ public class PatientReportUploadController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private PatientReportController patientReportController;
-    @Inject
-    SessionController sessionController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -103,12 +97,21 @@ public class PatientReportUploadController implements Serializable {
 
             // Create and persist the Upload entity
             reportUpload = new Upload();
-            reportUpload.setUploadType(UploadType.Lab_Report);
             reportUpload.setPatientReport(patientReportController.getCurrentPatientReport());
             reportUpload.setBaImage(fileContent);
             reportUpload.setFileName(fileName);
             reportUpload.setFileType(file.getContentType());
+            reportUpload.setPatientInvestigation(patientReportController.getCurrentPatientReport().getPatientInvestigation());
             facade.create(reportUpload);
+
+            // Update current Report entity
+            patientReportController.getCurrentPatientReport().setDataEntryAt(new Date());
+            patientReportController.getCurrentPatientReport().setDataEntryUser(sessionController.getLoggedUser());
+            patientReportController.getCurrentPatientReport().setDataEntered(Boolean.TRUE);
+            patientReportController.getCurrentPatientReport().setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
+            patientReportController.getCurrentPatientReport().setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
+            patientReportFacade.edit(patientReportController.getCurrentPatientReport());
+            System.out.println("Report Updated.");
 
             JsfUtil.addSuccessMessage("File Uploaded Successfully.");
             file = null;
@@ -120,7 +123,7 @@ public class PatientReportUploadController implements Serializable {
     }
 
     public void reportApproval() {
-        System.out.println("reportApproval");  
+        System.out.println("reportApproval");
         if (patientReportController.getCurrentPatientReport() == null) {
             System.out.println("Approval-1");
             JsfUtil.addErrorMessage("Please select a patient report.");
@@ -135,12 +138,12 @@ public class PatientReportUploadController implements Serializable {
         patientReportController.getCurrentPatientReport().setApproveUser(sessionController.getLoggedUser());
         patientReportController.getCurrentPatientReport().setApproved(Boolean.TRUE);
         patientReportFacade.edit(patientReportController.getCurrentPatientReport());
-        System.out.println("Report Approved.");  
+        System.out.println("Report Approved.");
         JsfUtil.addSuccessMessage("Report Approved.");
     }
 
     public void reportApprovalCancel() {
-        System.out.println("reportApprovalCancel");  
+        System.out.println("reportApprovalCancel");
         if (patientReportController.getCurrentPatientReport() == null) {
             System.out.println("Cancel-1");
             JsfUtil.addErrorMessage("Please select a patient report.");
@@ -150,12 +153,12 @@ public class PatientReportUploadController implements Serializable {
         patientReportController.getCurrentPatientReport().setApproveUser(null);
         patientReportController.getCurrentPatientReport().setApproved(null);
         patientReportFacade.edit(patientReportController.getCurrentPatientReport());
-        System.out.println("Cancel Approved.");  
+        System.out.println("Cancel Approved.");
         JsfUtil.addSuccessMessage("Cancel Approved.");
     }
-    
+
     public void removeUploadedFile() {
-        System.out.println("removeUploadedFile");  
+        System.out.println("removeUploadedFile");
         if (reportUpload.getBaImage() == null) {
             System.out.println("Remove-1");
             JsfUtil.addErrorMessage("Please select a patient report.");
@@ -165,7 +168,17 @@ public class PatientReportUploadController implements Serializable {
         reportUpload.setFileName(null);
         reportUpload.setFileType(null);
         facade.edit(reportUpload);
-        System.out.println("Remove Successfully.");  
+
+        // Update current Report entity
+        patientReportController.getCurrentPatientReport().setDataEntryAt(null);
+        patientReportController.getCurrentPatientReport().setDataEntryUser(null);
+        patientReportController.getCurrentPatientReport().setDataEntered(null);
+        patientReportController.getCurrentPatientReport().setDataEntryDepartment(null);
+        patientReportController.getCurrentPatientReport().setDataEntryInstitution(null);
+        patientReportFacade.edit(patientReportController.getCurrentPatientReport());
+        System.out.println("Report Updated.");
+
+        System.out.println("Remove Successfully.");
         JsfUtil.addSuccessMessage("Remove Successfully.");
     }
 
