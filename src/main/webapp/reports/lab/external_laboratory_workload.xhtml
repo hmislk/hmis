@@ -250,9 +250,36 @@
                             <h:outputText value="&#xf492;" styleClass="fa mr-2"/>
                             <h:outputLabel value="Investigation" class="m-3"/>
                         </h:panelGroup>
-                        <p:selectOneMenu class="w-100">
-                            <f:selectItem itemLabel="Any"/>
-                        </p:selectOneMenu>
+                        <p:autoComplete
+                                id="acIx"
+                                value="#{reportsController.investigationCode}"
+                                completeMethod="#{opdBillController.completeOpdItemsByWord}"
+                                var="ix"
+                                onfocus="this.select();"
+                                inputStyleClass="w-100"
+                                itemLabel="#{ix.name}"
+                                itemValue="#{ix}"
+                                converter="itemLightConverter"
+                                forceSelection="true"
+                                scrollHeight="250"
+                                multiple="false"
+                                class="w-100">
+                            <p:column headerText="Name" style="padding: 8px;">
+                                <f:facet name="header">Name</f:facet>
+                                <h:outputText value="#{ix.name}" />
+                                <h:panelGroup rendered="#{ix.name ne ix.fullName}">
+                                    <h:outputText value=" (#{ix.fullName})" />
+                                </h:panelGroup>
+                            </p:column>
+                            <p:column headerText="Dept" style="padding: 8px;">
+                                <f:facet name="header">Dept</f:facet>
+                                <h:outputText value="#{ix.departmentName}" />
+                            </p:column>
+                            <p:column headerText="Code" style="padding: 8px;">
+                                <f:facet name="header">Code</f:facet>
+                                <h:outputText value="#{ix.code}" />
+                            </p:column>
+                        </p:autoComplete>
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
@@ -332,8 +359,8 @@
                                                     row.billItem.patientEncounter.finalBill.deptId :
                                                     row.billItem.bill.deptId}"/>
                         </p:column>
-                        <p:column headerText="MRN" width="8rem" rendered="#{reportsController.visitType eq 'IP'}">
-                            <h:outputText value="#{row.billItem.patientEncounter.bhtNo}"/>
+                        <p:column headerText="MRN" width="8rem">
+                            <h:outputText value="#{row.billItem.bill.patient.phn}"/>
                         </p:column>
                         <p:column headerText="Name" width="8rem">
                             <h:outputText value="#{row.billItem.bill.patient.person.name}"/>
@@ -357,16 +384,20 @@
                             <h:outputText value="#{row.billItem.bill.collectingCentre.route.name}"/>
                         </p:column>
                         <p:column headerText="Invoiced Date" width="5rem">
-                            <h:outputText value="#{row.billItem.bill.createdAt}">
+                            <h:outputText value="#{row.billItem.patientEncounter != null ?
+                                                    row.billItem.patientEncounter.finalBill.createdAt :
+                                                    row.billItem.bill.createdAt}">
                                 <f:convertDateTime
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Invoiced By" width="5rem">
-                            <h:outputText value="#{row.billItem.bill.creater.webUserPerson.name}"/>
+                            <h:outputText value="#{row.billItem.patientEncounter != null ?
+                                                    row.billItem.patientEncounter.finalBill.creater.webUserPerson.name :
+                                                    row.billItem.bill.creater.webUserPerson.name}"/>
                         </p:column>
                         <p:column headerText="Received Date" width="5rem">
-                            <h:outputText value="#{row.billItem.patientInvestigation.createdAt}">
+                            <h:outputText value="#{row.billItem.patientInvestigation.receivedAt}">
                                 <f:convertDateTime
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </h:outputText>
@@ -384,7 +415,7 @@
                             <h:outputText value="#{row.billItem.bill.paymentMethod.name()}"/>
                         </p:column>
                         <p:column headerText="Referring Doctor" width="5rem">
-                            <h:outputText value="#{row.billItem.bill.referredInstituteOrDoctor.name}"/>
+                            <h:outputText value="#{row.billItem.bill.referredBy.person.nameWithTitle}"/>
                         </p:column>
                         <p:column headerText="Item Value" width="5rem">
                             <h:outputText value="#{row.billItem.netValue}">

@@ -198,6 +198,8 @@ public class ReportsController implements Serializable {
     List<PatientInvestigation> userPatientInvestigations;
     double netTotalValue;
 
+    private ItemLight investigationCode;
+
     String menuBarSearchText;
     String smsText;
     String uniqueSmsText;
@@ -1460,6 +1462,14 @@ public class ReportsController implements Serializable {
 
     public void setPatientEncounters(List<PatientEncounter> patientEncounters) {
         this.patientEncounters = patientEncounters;
+    }
+
+    public ItemLight getInvestigationCode() {
+        return investigationCode;
+    }
+
+    public void setInvestigationCode(ItemLight investigationCode) {
+        this.investigationCode = investigationCode;
     }
 
     public double getPaid() {
@@ -2857,9 +2867,14 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
         }
         if (visitType != null && visitType.equalsIgnoreCase("OP")) {
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         }
@@ -2890,6 +2905,14 @@ public class ReportsController implements Serializable {
                 + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
                 + "WHERE bill.billTypeAtomic IN :bts "
                 + "AND bill.createdAt BETWEEN :fd AND :td ";
+
+//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+//                + "FROM PatientInvestigation pi "
+//                + "JOIN pi.billItem billItem "
+//                + "JOIN billItem.bill bill "
+//                + "WHERE pi.retired=false "
+//                + " and billItem.retired=false "
+//                + " and bill.retired=false ";
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
@@ -2940,22 +2963,23 @@ public class ReportsController implements Serializable {
         }
 
         if (referingDoctor != null) {
-            jpql += "AND billItem.bill.referredInstituteOrDoctor = :rd ";
+            jpql += "AND billItem.bill.referredBy = :rd ";
             parameters.put("rd", referingDoctor);
         }
 
         if (mrnNo != null && !mrnNo.trim().isEmpty()) {
-            if (visitType != null && visitType.equalsIgnoreCase("IP")) {
-                jpql += "AND bill.patientEncounter.bhtNo = :phn ";
-            } else {
-                jpql += "AND bill.patient.phn = :phn ";
-            }
-            parameters.put("phn", mrnNo);
+            jpql += "AND billItem.bill.patient.phn LIKE :phn ";
+            parameters.put("phn", mrnNo + "%");
         }
 
         if (category != null) {
             jpql += "AND billItem.patientInvestigation.investigation.category.id = :cat ";
             parameters.put("cat", category.getId());
+        }
+
+        if (investigationCode != null) {
+            jpql += "AND billItem.patientInvestigation.investigation.code = :code ";
+            parameters.put("code", investigationCode.getCode());
         }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
@@ -3035,22 +3059,23 @@ public class ReportsController implements Serializable {
         }
 
         if (referingDoctor != null) {
-            jpql += "AND billItem.bill.referredInstituteOrDoctor = :rd ";
+            jpql += "AND billItem.bill.referredBy = :rd ";
             parameters.put("rd", referingDoctor);
         }
 
         if (mrnNo != null && !mrnNo.trim().isEmpty()) {
-            if (visitType != null && visitType.equalsIgnoreCase("IP")) {
-                jpql += "AND bill.patientEncounter.bhtNo = :phn ";
-            } else {
-                jpql += "AND bill.patient.phn = :phn ";
-            }
-            parameters.put("phn", mrnNo);
+            jpql += "AND billItem.bill.patient.phn LIKE :phn ";
+            parameters.put("phn", mrnNo + "%");
         }
 
         if (category != null) {
             jpql += "AND billItem.patientInvestigation.investigation.category.id = :cat ";
             parameters.put("cat", category.getId());
+        }
+
+        if (investigationCode != null) {
+            jpql += "AND billItem.patientInvestigation.investigation.code = :code ";
+            parameters.put("code", investigationCode.getCode());
         }
 
         jpql += "GROUP BY billItem.item.name";
