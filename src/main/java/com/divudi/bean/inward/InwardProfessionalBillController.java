@@ -346,6 +346,7 @@ public class InwardProfessionalBillController implements Serializable {
         }
 
         updateBillItem(bItem);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
         updateBill(getCurrent());
 
         return false;
@@ -869,7 +870,6 @@ public class InwardProfessionalBillController implements Serializable {
         if (current == null) {
             current = new BilledBill();
             current.setBillType(BillType.InwardProfessional);
-
             current.setDepartment(getSessionController().getLoggedUser().getDepartment());
             current.setInstitution(getSessionController().getLoggedUser().getInstitution());
         }
