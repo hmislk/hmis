@@ -215,26 +215,26 @@
 
 
 
-                                    <h:panelGroup rendered="#{not empty patientReportUploadController.reportUpload}">
+                                    <h:panelGroup rendered="#{not empty labReportViewController.reportUpload}">
                                         <!-- Render PDF Files -->
-                                        <h:panelGroup rendered="#{patientReportUploadController.pdf}">
+                                        <h:panelGroup rendered="#{labReportViewController.pdf}">
                                             <p:media 
-                                                value="#{patientReportUploadController.pdfReportStream}" 
+                                                value="#{labReportViewController.pdfReportStream}" 
                                                 player="pdf" 
                                                 width="100%" 
                                                 height="1000px" />
                                         </h:panelGroup>
 
                                         <!-- Render Image Files -->
-                                        <h:panelGroup id="image" rendered="#{patientReportUploadController.image}">
+                                        <h:panelGroup id="image" rendered="#{labReportViewController.image}">
                                             <p:graphicImage 
-                                                value="#{patientReportUploadController.imageReportStream}" 
+                                                value="#{labReportViewController.imageReportStream}" 
                                                 stream="true"
                                                 cache="false"
                                                 style="max-width:100%; height:auto;" />
                                         </h:panelGroup>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{empty patientReportUploadController.reportUpload}">
+                                    <h:panelGroup rendered="#{empty labReportViewController.reportUpload}">
                                         <h:outputText value="No report uploaded yet." />
                                     </h:panelGroup>
                                 </p:panel>
