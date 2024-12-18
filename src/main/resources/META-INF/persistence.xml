@@ -3,7 +3,7 @@
   <persistence-unit name="hmisPU" transaction-type="JTA">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 
-    <jta-data-source>jdbc/ruhunu</jta-data-source>
+    <jta-data-source>jdbc/southernlanka</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.level" value="WARNING"/>
@@ -13,7 +13,7 @@
     </properties>
   </persistence-unit>
   <persistence-unit name="hmisAuditPU" transaction-type="JTA">
-    <jta-data-source>jdbc/ruhunuAudit</jta-data-source>
+    <jta-data-source>jdbc/southernlankaAudit</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.level" value="WARNING"/>
