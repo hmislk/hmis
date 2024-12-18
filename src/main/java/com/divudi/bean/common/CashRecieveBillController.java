@@ -1283,6 +1283,12 @@ public class CashRecieveBillController implements Serializable {
         billItemWithReferanceToCreditBill.getReferenceBill().setSettledAmountBySponsor(settledCreditValueByCompanies);
         System.out.println("Settled Amount By Sponsor Set: " + settledCreditValueByCompanies);
 
+        double absBillAmount = Math.abs( billItemWithReferanceToCreditBill.getReferenceBill().getNetTotal());
+        double absSettledAmount = Math.abs( billItemWithReferanceToCreditBill.getReferenceBill().getPaidAmount());
+        double difference = absBillAmount - absSettledAmount;
+        double absDifference = Math.abs(difference);
+        if(absDifference<1.0)  billItemWithReferanceToCreditBill.getReferenceBill().setPaidAt(new Date());
+        
         getBillFacade().edit(billItemWithReferanceToCreditBill.getReferenceBill());
         System.out.println("Reference Bill Updated: " + billItemWithReferanceToCreditBill.getReferenceBill());
         System.out.println("Completed updateSettlingCreditBillSettledValues");
