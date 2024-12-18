@@ -215,7 +215,7 @@
                                 value="Print All">
                                 <p:printer target="tbl" />
                             </p:commandButton>
-                            
+
                             <p:commandButton 
                                 class="ui-button-success mx-1" 
                                 icon="fas fa-file-excel" 
@@ -226,8 +226,18 @@
                                     fileName="Stock Ledger Report" 
                                     target="tbl"  />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF"><p:dataExporter type="pdf" target="tbl" fileName="Stock Ledger Report" />
+
+                            <p:commandButton 
+                                class="ui-button-danger mx-1" 
+                                icon= "fas fa-file-pdf" 
+                                ajax="false" 
+                                value="PDF">
+                                <p:dataExporter 
+                                    type="pdf" 
+                                    target="tbl" 
+                                    fileName="Stock Ledger Report" />
                             </p:commandButton>
+                            
                         </div>
 
 
