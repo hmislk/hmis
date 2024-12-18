@@ -818,7 +818,7 @@ public class PharmacyBean {
         sh.setItem(phItem.getBillItem().getItem());
         sh.setItemBatch(fetchedStock.getItemBatch());
         sh.setCreatedAt(new Date());
-        sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), phItem.getBillItem().getBill().getDepartment().getInstitution()));
+        sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), phItem.getBillItem().getBill().getFromDepartment().getInstitution()));
         sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
         if (sh.getId() == null) {
             getStockHistoryFacade().create(sh);
