@@ -1,5 +1,6 @@
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.UploadType;
 import com.divudi.entity.Upload;
@@ -45,6 +46,8 @@ public class PatientReportUploadController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private PatientReportController patientReportController;
+    @Inject
+    SessionController sessionController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Variables">
