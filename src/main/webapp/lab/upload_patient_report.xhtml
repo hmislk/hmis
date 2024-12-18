@@ -213,12 +213,15 @@
                                         </div>
                                     </f:facet>
 
+                                    <h1>
+                                        #{patientReportUploadController.reportUpload.id}
+                                    </h1>
 
-
-                                    <h:panelGroup rendered="#{not empty labReportViewController.reportUpload}">
+                                    <h:panelGroup rendered="#{not empty patientReportUploadController.reportUpload}">
                                         <!-- Render PDF Files -->
                                         <h:panelGroup rendered="#{labReportViewController.pdf}">
                                             <p:media 
+                                                cache="false"
                                                 value="#{labReportViewController.pdfReportStream}" 
                                                 player="pdf" 
                                                 width="100%" 
@@ -234,7 +237,7 @@
                                                 style="max-width:100%; height:auto;" />
                                         </h:panelGroup>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{empty labReportViewController.reportUpload}">
+                                    <h:panelGroup rendered="#{empty patientReportUploadController.reportUpload}">
                                         <h:outputText value="No report uploaded yet." />
                                     </h:panelGroup>
                                 </p:panel>
