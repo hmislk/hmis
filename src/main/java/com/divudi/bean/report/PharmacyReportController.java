@@ -1925,10 +1925,10 @@ public class PharmacyReportController implements Serializable {
             jpql += " and s.department=:dep ";
             m.put("dep", department);
         }
-//        if (site != null) {
-//            jpql += " and s.site=:sit ";
-//            m.put("sit", site);
-//        }
+        if (site != null) {
+            jpql += " and s.department.site=:sit ";
+            m.put("sit", site);
+        }
         if (!billTypeAtomics.isEmpty() || !billTypes.isEmpty()) {
             jpql += " and (";
             if (!billTypeAtomics.isEmpty()) {
@@ -1979,6 +1979,11 @@ public class PharmacyReportController implements Serializable {
         if (institution != null) {
             jpql.append("and sh.institution = :ins ");
             params.put("ins", institution);
+        }
+        
+        if (site != null) {
+            jpql.append("and sh.department.site = :sit ");
+            params.put("sit", site);
         }
 
         if (department != null) {
@@ -2053,6 +2058,11 @@ public class PharmacyReportController implements Serializable {
         if (institution != null) {
             jpql.append("and sh.institution = :ins ");
             params.put("ins", institution);
+        }
+        
+        if (site != null) {
+            jpql.append("and sh.department.site = :sit ");
+            params.put("sit", site);
         }
 
         if (department != null) {

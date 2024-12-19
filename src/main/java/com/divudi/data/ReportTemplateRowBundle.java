@@ -1079,7 +1079,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     continue;
                 }
                 Double amount = safeDouble(isOutpatient ? row.getBillItem().getReferenceBill().getNetTotal() :
-                        row.getBillItem().getReferenceBill().getPatientEncounter().getFinalBill().getNetTotal());
+                        row.getBillItem().getPatientEncounter().getFinalBill().getNetTotal());
                 total += amount;
             }
         }

@@ -11710,6 +11710,10 @@ public class SearchController implements Serializable {
         createPatientDepositTable(BillType.PatientPaymentReceiveBill);
 
     }
+    
+    public void createPatientDepositReturnTable() {
+        createPatientDepositTable(BillType.PatientPaymentRefundBill);
+    }
 
     public void createAgentPaymentTable(BillType billType) {
         bills = new ArrayList<>();

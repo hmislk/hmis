@@ -30,6 +30,7 @@ import com.divudi.light.common.BillSummaryRow;
 import com.divudi.service.BillService;
 import com.divudi.service.PatientInvestigationService;
 import org.primefaces.model.StreamedContent;
+import org.primefaces.model.charts.line.LineChartModel;
 import org.primefaces.model.file.UploadedFile;
 
 import javax.ejb.EJB;
@@ -198,6 +199,8 @@ public class ReportsController implements Serializable {
     List<PatientInvestigation> userPatientInvestigations;
     double netTotalValue;
 
+    private ItemLight investigationCode;
+
     String menuBarSearchText;
     String smsText;
     String uniqueSmsText;
@@ -309,6 +312,8 @@ public class ReportsController implements Serializable {
     private String settlementStatus;
     private String dischargedStatus;
 
+    private boolean showChart;
+
     public String getDischargedStatus() {
         return dischargedStatus;
     }
@@ -322,11 +327,11 @@ public class ReportsController implements Serializable {
         return paymentMethod;
     }
 
-    
+
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
-    
+
 
     public CommonController getCommonController() {
         return commonController;
@@ -1462,6 +1467,14 @@ public class ReportsController implements Serializable {
         this.patientEncounters = patientEncounters;
     }
 
+    public ItemLight getInvestigationCode() {
+        return investigationCode;
+    }
+
+    public void setInvestigationCode(ItemLight investigationCode) {
+        this.investigationCode = investigationCode;
+    }
+
     public double getPaid() {
         return paid;
     }
@@ -1516,6 +1529,14 @@ public class ReportsController implements Serializable {
 
     public void setGroupedRouteWiseBillsMonthly(Map<Route, Map<YearMonth, Bill>> groupedRouteWiseBillsMonthly) {
         this.groupedRouteWiseBillsMonthly = groupedRouteWiseBillsMonthly;
+    }
+
+    public boolean isShowChart() {
+        return showChart;
+    }
+
+    public void setShowChart(boolean showChart) {
+        this.showChart = showChart;
     }
 
     public void generateSampleCarrierReport() {
@@ -2197,6 +2218,38 @@ public class ReportsController implements Serializable {
         return total;
     }
 
+    public Map<YearMonth, Double> getSampleCountChartData() {
+        Map<YearMonth, Double> data = new HashMap<>();
+
+        if (reportType.equalsIgnoreCase("detail")) {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, getCollectionCenterWiseTotalSampleCount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
+            }
+        } else {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, calculateRouteWiseTotalSampleCount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
+            }
+        }
+
+        return data;
+    }
+
+    public Map<YearMonth, Double> getServiceAmountChartData() {
+        Map<YearMonth, Double> data = new HashMap<>();
+
+        if (reportType.equalsIgnoreCase("detail")) {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, getCollectionCenterWiseTotalServiceAmount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
+            }
+        } else {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, calculateRouteWiseTotalServiceAmount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
+            }
+        }
+
+        return data;
+    }
+
     public ReportTemplateRowBundle generateCollectingCenterWiseBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
@@ -2373,7 +2426,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-            boolean onlyDueBills) {
+                                                                    boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -2857,9 +2910,14 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
         }
         if (visitType != null && visitType.equalsIgnoreCase("OP")) {
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         }
@@ -2890,6 +2948,14 @@ public class ReportsController implements Serializable {
                 + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
                 + "WHERE bill.billTypeAtomic IN :bts "
                 + "AND bill.createdAt BETWEEN :fd AND :td ";
+
+//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+//                + "FROM PatientInvestigation pi "
+//                + "JOIN pi.billItem billItem "
+//                + "JOIN billItem.bill bill "
+//                + "WHERE pi.retired=false "
+//                + " and billItem.retired=false "
+//                + " and bill.retired=false ";
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
@@ -2940,22 +3006,23 @@ public class ReportsController implements Serializable {
         }
 
         if (referingDoctor != null) {
-            jpql += "AND billItem.bill.referredInstituteOrDoctor = :rd ";
+            jpql += "AND billItem.bill.referredBy = :rd ";
             parameters.put("rd", referingDoctor);
         }
 
         if (mrnNo != null && !mrnNo.trim().isEmpty()) {
-            if (visitType != null && visitType.equalsIgnoreCase("IP")) {
-                jpql += "AND bill.patientEncounter.bhtNo = :phn ";
-            } else {
-                jpql += "AND bill.patient.phn = :phn ";
-            }
-            parameters.put("phn", mrnNo);
+            jpql += "AND billItem.bill.patient.phn LIKE :phn ";
+            parameters.put("phn", mrnNo + "%");
         }
 
         if (category != null) {
             jpql += "AND billItem.patientInvestigation.investigation.category.id = :cat ";
             parameters.put("cat", category.getId());
+        }
+
+        if (investigationCode != null) {
+            jpql += "AND billItem.patientInvestigation.investigation.code = :code ";
+            parameters.put("code", investigationCode.getCode());
         }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
@@ -3035,22 +3102,23 @@ public class ReportsController implements Serializable {
         }
 
         if (referingDoctor != null) {
-            jpql += "AND billItem.bill.referredInstituteOrDoctor = :rd ";
+            jpql += "AND billItem.bill.referredBy = :rd ";
             parameters.put("rd", referingDoctor);
         }
 
         if (mrnNo != null && !mrnNo.trim().isEmpty()) {
-            if (visitType != null && visitType.equalsIgnoreCase("IP")) {
-                jpql += "AND bill.patientEncounter.bhtNo = :phn ";
-            } else {
-                jpql += "AND bill.patient.phn = :phn ";
-            }
-            parameters.put("phn", mrnNo);
+            jpql += "AND billItem.bill.patient.phn LIKE :phn ";
+            parameters.put("phn", mrnNo + "%");
         }
 
         if (category != null) {
             jpql += "AND billItem.patientInvestigation.investigation.category.id = :cat ";
             parameters.put("cat", category.getId());
+        }
+
+        if (investigationCode != null) {
+            jpql += "AND billItem.patientInvestigation.investigation.code = :code ";
+            parameters.put("code", investigationCode.getCode());
         }
 
         jpql += "GROUP BY billItem.item.name";
@@ -3245,7 +3313,7 @@ public class ReportsController implements Serializable {
 
         bundle.setGroupedBillItemsByInstitution(billMap);
     }
-    
+
     public Double calculateNetTotalByBills(List<Bill> bills) {
         Double netTotal = 0.0;
 
@@ -3266,7 +3334,7 @@ public class ReportsController implements Serializable {
         return discount;
     }
 
-    
+
     public Double calculateSubTotal() {
         double subTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
