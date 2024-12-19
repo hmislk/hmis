@@ -145,6 +145,7 @@ public class PatientReportUploadController implements Serializable {
 
             JsfUtil.addSuccessMessage("File Uploaded Successfully.");
             file = null;
+
             return ""; // Stay on the same page or navigate as needed
         } catch (IOException e) {
             JsfUtil.addErrorMessage("Error uploading file: " + e.getMessage());
