@@ -311,8 +311,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         String deptID = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
 
         batchBill.setDeptId(deptID);
-
-        batchBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(batchBill.getInstitution(), batchBill.getBillType(), BillClassType.BilledBill, BillNumberSuffix.PACK));
+        batchBill.setInsId(deptID);
 
         getBillFacade().create(batchBill);
 
@@ -1009,8 +1008,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
 
-        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp.getInstitution(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.PACK));
+        String billNumber = billNumberBean.departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        
+        temp.setDeptId(billNumber);
+        temp.setInsId(billNumber);
 
         if (temp.getId() == null) {
             getFacade().create(temp);
