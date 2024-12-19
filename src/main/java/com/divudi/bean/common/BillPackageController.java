@@ -311,8 +311,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         String deptID = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
 
         batchBill.setDeptId(deptID);
-
-        batchBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(batchBill.getInstitution(), batchBill.getBillType(), BillClassType.BilledBill, BillNumberSuffix.PACK));
+        batchBill.setInsId(deptID);
 
         getBillFacade().create(batchBill);
 
@@ -485,8 +484,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
 
-        
-
         if (getPaymentMethod() == PaymentMethod.Card
                 && getPaymentMethodData().getCreditCard().getComment().trim().isEmpty()
                 && configOptionApplicationController.getBooleanValueByKey("Package Billing - CreditCard Comment is Mandatory", false)) {
@@ -514,7 +511,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("Please enter a Slip comment.");
             return true;
         }
-        
+
         if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
         }
@@ -669,7 +666,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
         payments = paymentService.createPaymentsForCancelling(cancellationBatchBill);
-        
+
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             paymentService.updateBalances(payments);
         }
@@ -907,13 +904,13 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (checkPatientDetails()) {
             return true;
         }
-        BillValidation bv = paymentService.checkForErrorsInPaymentDetailsForInBills(getPaymentMethod(), getPaymentMethodData(), netTotal, getPatient());
-        
+        BillValidation bv = paymentService.checkForErrorsInPaymentDetailsForInBills(getPaymentMethod(), getPaymentMethodData(), netTotal, getPatient(), sessionController.getDepartment());
+
         if (bv.isErrorPresent()) {
             JsfUtil.addErrorMessage(bv.getErrorMessage());
             return true;
-        }else{
-            if(bv.getCompany()!=null && getCreditCompany()==null){
+        } else {
+            if (bv.getCompany() != null && getCreditCompany() == null) {
                 setCreditCompany(bv.getCompany());
             }
         }
@@ -1011,8 +1008,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
 
-        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp.getInstitution(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.PACK));
+        String billNumber = billNumberBean.departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        
+        temp.setDeptId(billNumber);
+        temp.setInsId(billNumber);
 
         if (temp.getId() == null) {
             getFacade().create(temp);
@@ -1173,7 +1172,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     @Override
     public void recieveRemainAmountAutomatically() {
-        //double remainAmount = calculatRemainForMultiplePaymentTotal();
+        System.out.println("recieveRemainAmountAutomatically");
+        System.out.println("paymentMethod = " + paymentMethod);
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
@@ -1194,13 +1194,22 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
                     break;
                 case PatientDeposit:
-                    if (patient != null) {
-                        pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
-                    }
-                    if (remainAmount >= patient.getRunningBalance()) {
-                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(patient.getRunningBalance());
-                    } else {
-                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                    System.out.println("patient deposit");
+                    pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                    PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
+                    System.out.println("pd = " + pd);
+                    pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+
+                    System.out.println("pm.getPaymentMethodData().getPatient_deposit().getTotalValue() = " + pm.getPaymentMethodData().getPatient_deposit().getTotalValue());
+
+                    if (pm.getPaymentMethodData().getPatient_deposit().getTotalValue() < 0.01) {
+                        if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
+                            pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
+                        } else {
+                            pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                        }
+                    } else if (pm.getPaymentMethodData().getPatient_deposit().getTotalValue() > pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
                     }
 
                     break;
@@ -1891,6 +1900,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     @Override
     public void listnerForPaymentMethodChange() {
+        System.out.println("listnerForPaymentMethodChange for BillPackageController ");
+        System.out.println("paymentMethod = " + paymentMethod);
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
@@ -1904,7 +1915,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             System.out.println("this = " + this);
         } else if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
-            getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
+            if (getPaymentMethodData().getPatient_deposit().getTotalValue() < 0.01) {
+                getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
+            }
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
 
             if (pd != null && pd.getId() != null) {

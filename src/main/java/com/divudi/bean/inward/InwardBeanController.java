@@ -8,7 +8,9 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.DepartmentBillItems;
 import com.divudi.data.inward.InwardChargeType;
 
@@ -24,6 +26,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.PatientItem;
+import com.divudi.entity.Payment;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
@@ -1426,6 +1429,40 @@ public class InwardBeanController implements Serializable {
                 + "  and b.billType=:btp "
                 + " and b.patientEncounter=:pe ";
         hm.put("btp", BillType.InwardPaymentBill);
+        hm.put("pe", patientEncounter);
+        double dbl = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        return dbl;
+
+    }
+    
+    public double getPaidByPatientValue(PatientEncounter patientEncounter) {
+
+        HashMap hm = new HashMap();
+        String sql = "SELECT  sum(b.netTotal) FROM Bill b "
+                + " WHERE b.retired=false "
+                + "  and b.billType=:btp "
+                + " and b.paymentMethod !=:pm "
+                + " and b.patientEncounter=:pe ";
+        hm.put("btp", BillType.InwardPaymentBill);
+        hm.put("pm", PaymentMethod.Credit);
+        hm.put("pe", patientEncounter);
+        double dbl = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        return dbl;
+
+    }
+    
+    public double getPaidByCompanyValue(PatientEncounter patientEncounter) {
+
+        HashMap hm = new HashMap();
+        String sql = "SELECT  sum(b.netTotal) FROM Bill b "
+                + " WHERE b.retired=false "
+                + "  and b.billTypeAtomic in :bts "
+                + " and b.patientEncounter=:pe ";
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        hm.put("bts", bts);
         hm.put("pe", patientEncounter);
         double dbl = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 

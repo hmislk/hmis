@@ -152,6 +152,7 @@
                                 <f:selectItem itemLabel="Summery" itemValue="summeryReport"/>
                                 <f:selectItem itemLabel="Department unit issue by Bill No" itemValue="byBill"/>
                                 <f:selectItem itemLabel="Department unit issue by Bill Item" itemValue="byBillItem"/>
+                                <f:selectItem itemLabel="Category wise issue details by department" itemValue="categoryWise"/>
                             </p:selectOneMenu>
 
 
@@ -188,12 +189,45 @@
                                              value="Process" 
                                              action="#{pharmacyController.createConsumptionReportTable()}">
                             </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}">
+                                <p:printer target="tbl1" />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'byBill'}">
+                                <p:printer target="tbl2" />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'byBillItem'}">
+                                <p:printer target="tbl3" />
                             </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'categoryWise'}">
+                                <p:printer target="tbl4" />
+                            </p:commandButton>
+
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}">
+                                <p:dataExporter type="xlsx" target="tbl1" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'byBill'}">
+                                <p:dataExporter type="xlsx" target="tbl2" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'byBillItem'}">
+                                <p:dataExporter type="xlsx" target="tbl3" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'categoryWise'}">
+                                <p:dataExporter type="xlsx" target="tbl4" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}">
+                                <p:dataExporter type="pdf" target="tbl1" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'byBill'}">
+                                <p:dataExporter type="pdf" target="tbl2" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'byBillItem'}">
+                                <p:dataExporter type="pdf" target="tbl3" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'categoryWise'}">
+                                <p:dataExporter type="pdf" target="tbl4" fileName="#{pharmacyController.reportType}" />
+                            </p:commandButton>
+
                         </div>
 
 
@@ -203,6 +237,7 @@
                             <p:dataTable id="tbl1" value="#{pharmacyController.departmentSummaries}" 
                                          var="s" 
                                          rowIndexVar="n" 
+                                         rowKey="#{s.id}"
                                          paginator="true" 
                                          rows="10" 
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -213,10 +248,11 @@
                                     <h:outputText value="#{s.departmentName}" />
                                 </p:column>
 
-                                <p:column headerText="Net Total">
-                                    <h:outputText value="#{s.netTotal}" />
+                                <p:column headerText="Net Total" class="ml-4" style="text-align: right;">
+                                    <h:outputText value="#{s.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:column>>
-
 
                             </p:dataTable>
                         </h:panelGroup>
@@ -241,37 +277,40 @@
                                 </p:column>
 
                                 <p:column headerText="Request No" width="6em" >
-                                    <h:outputText value="#{b.backwardReferenceBill.deptId}" />
+                                    <h:outputText value="#{b.invoiceNumber}" />
                                 </p:column>
 
                                 <p:column headerText="Cancel No" width="10em">
-                                    <h:outputText value="#{b.institution}" />
+                                    <h:outputText value="#{b.cancelledBill.deptId}" />
                                 </p:column>
 
-                                <p:column headerText="Value" width="4em" >
-                                    <h:outputText value="#{b.netTotal}" style="float: right; padding-right: 15px">
+                                <p:column headerText="Value" width="4em" style="text-align: right;">
+                                    <h:outputText value="#{b.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" ></h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Created Date and Time" width="6em">
-                                    <h:outputText value="#{b.backwardReferenceBill.createdAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputText>
-                                </p:column>
-
-                                <p:column headerText="Documnet Created By" width="10em">
-                                    <h:outputText value="#{b.backwardReferenceBill.creater.webUserPerson.name}" />
-                                </p:column>
-
-                                <p:column headerText="Approved Date and Time" width="6em">
                                     <h:outputText value="#{b.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
                                 </p:column>
 
-                                <p:column headerText="Document Approved By" width="10em">
+                                <p:column headerText="Documnet Created By" width="10em">
                                     <h:outputText value="#{b.creater.webUserPerson.name}" />
+                                </p:column>
+
+                                <p:column headerText="Approved Date and Time" width="6em">
+                                    <h:outputText value="#{b.approveAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Document Approved By" width="10em">
+                                    <h:outputText value="#{b.approveUser.webUserPerson.name}" />
                                 </p:column>
 
                                 <p:column headerText="Remarks" width="10em">
@@ -284,7 +323,7 @@
 
 
                         <h:panelGroup rendered="#{pharmacyController.reportType eq 'byBillItem'}">
-                            <h5 class="mt-3"> Department unit issue by bill item report</h5>
+                            <h5 class="mt-3"> Department unit issue by Bill Item</h5>
                             <p:dataTable id="tbl3" value="#{pharmacyController.billItems}" 
                                          var="i" 
                                          rowIndexVar="n" 
@@ -319,24 +358,27 @@
                                     <p:outputLabel value="#{i.item.category.name}" />
                                 </p:column>
 
-                                <p:column headerText="Quantity" width="6em" >
-                                    <p:outputLabel value="#{i.qty}" style="float: right; padding-right: 40px;"/>
+                                <p:column headerText="Quantity" width="6em" style="text-align: right;">
+                                    <p:outputLabel value="#{i.qty}" />
                                 </p:column>                                                  
 
                                 <p:column headerText="Cancel No" width="10em">
                                     <p:outputLabel value="#{i.bill.cancelledBill.deptId}" />
                                 </p:column>
 
-                                <p:column headerText="Rate" width="6em">
-                                    <p:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate}" style="float: right; padding-right: 55px;">
+                                <p:column headerText="Rate" width="6em" style="text-align: right;">
+                                    <p:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Value" width="6em">
-                                    <p:outputLabel value="#{i.qty * i.pharmaceuticalBillItem.purchaseRate}" style="float: right; padding-right: 50px;">
+                                <p:column headerText="Value" width="6em" style="text-align: right;">
+                                    <p:outputLabel value="#{i.qty * i.pharmaceuticalBillItem.purchaseRate}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" ></h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Created Date and Time" width="8em">
@@ -367,6 +409,54 @@
 
                             </p:dataTable>
 
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{pharmacyController.reportType eq 'categoryWise'}">
+                            <h5 class="mt-3">Department Summary</h5>
+                            <p:dataTable id="tbl4" value="#{pharmacyController.issueDepartmentCategoryWiseItems}" 
+                                         var="s" 
+                                         rowIndexVar="n" 
+                                         rowKey="#{s.id}"
+                                         paginator="true" 
+                                         rows="10" 
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+                                <p:column headerText="Consumption Department">
+                                    <h:outputText value="#{s.department.name}" />
+                                </p:column>
+                                <p:column headerText="Category">
+                                    <h:outputText value="#{s.category.name}" />
+                                </p:column>
+                                <p:column headerText="Item">
+                                    <h:outputText value="#{s.itm.name}" />
+                                </p:column>
+                                <p:column headerText="Rate" style="text-align: right;">
+                                    <h:outputText value="#{s.purchaseRate}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Qty" class="ml-4" style="text-align: right;" >
+                                    <h:outputText value="#{s.qty}">
+                                        <f:convertNumber pattern="#,##0"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyController.grantIssueQty}" ></h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Total"  class="ml-4" style="text-align: right;" >
+                                    <h:outputText value="#{s.total}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" ></h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+
+                            </p:dataTable>
                         </h:panelGroup>
 
                     </p:panel>

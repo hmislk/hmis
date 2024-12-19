@@ -25,6 +25,8 @@ package com.divudi.entity;
 
 
 import com.divudi.data.UploadType;
+import com.divudi.entity.lab.PatientInvestigation;
+import com.divudi.entity.lab.PatientReport;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
@@ -91,6 +93,16 @@ public class Upload implements Serializable {
     private boolean image;
     @Transient
     private boolean pdf;
+    
+    @ManyToOne
+    private Bill bill;
+    @ManyToOne
+    private PatientEncounter patientEncounter;
+    @ManyToOne
+    private PatientInvestigation patientInvestigation;
+    @ManyToOne
+    private PatientReport patientReport;
+
 
     public String getIdStr() {
         if (this.id == null) {
@@ -118,6 +130,9 @@ public class Upload implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+    
+    
+    
 
     @Override
     public int hashCode() {
@@ -280,6 +295,38 @@ public class Upload implements Serializable {
 
     public void setFileUrl(String fileUrl) {
         this.fileUrl = fileUrl;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
+    }
+
+    public PatientInvestigation getPatientInvestigation() {
+        return patientInvestigation;
+    }
+
+    public void setPatientInvestigation(PatientInvestigation patientInvestigation) {
+        this.patientInvestigation = patientInvestigation;
+    }
+
+    public PatientReport getPatientReport() {
+        return patientReport;
+    }
+
+    public void setPatientReport(PatientReport patientReport) {
+        this.patientReport = patientReport;
     }
 
 }

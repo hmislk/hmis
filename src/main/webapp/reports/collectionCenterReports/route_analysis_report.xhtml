@@ -6,7 +6,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles">
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles" xmlns:c="http://java.sun.com/jsp/jstl/core">
 
 <h:body>
     <ui:composition template="/reports/index.xhtml">
@@ -249,10 +249,176 @@
                     </h:panelGrid>
 
                     <h:panelGroup id="printPanel">
-                        <ez:routeAnalysisDetailBills rendered="#{reportsController.reportType eq 'detail'}"
-                                                     bundle="#{reportsController.bundle}"/>
-                        <ez:routeAnalysisSummeryBills rendered="#{reportsController.reportType eq 'summery'}"
-                                                      bundle="#{reportsController.bundle}"/>
+                        <p:dataTable id="tbl"
+                                     class="w-100 m-2"
+                                     value="#{reportsController.groupedCollectingCenterWiseBillsMonthly.entrySet()}"
+                                     var="entryset"
+                                     paginator="true"
+                                     rendered="#{reportsController.reportType eq 'detail'}"
+                                     paginatorAlwaysVisible="false"
+                                     rows="10"
+                                     rowIndexVar="n"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,20"
+                                     rowKey="#{row.id}"
+                                     autoLayout="true"
+                                     paginatorPosition="bottom">
+                            <p:column width="2em">
+                                <f:facet name="header">
+                                    <h:outputText value="S. No"/>
+                                </f:facet>
+                                <h:outputText value="#{n+1}"/>
+                                <f:facet name="footer">
+                                    <br/>
+                                    <br/>
+                                    <h:outputText value="Total"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column width="5em">
+                                <f:facet name="header">
+                                    <h:outputText value="Collecting Center Code"/>
+                                </f:facet>
+                                <h:outputText value="#{entryset.key.code}"/>
+                            </p:column>
+                            <p:column width="5em">
+                                <f:facet name="header">
+                                    <h:outputText value="Collecting Center"/>
+                                </f:facet>
+                                <h:outputText value="#{entryset.key.name}"/>
+                            </p:column>
+                            <c:forEach items="#{reportsController.yearMonths}" var="yearmonth">
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{yearmonth}"/>
+                                        <br/>
+                                        <h:outputText value="Sample Count"/>
+                                    </f:facet>
+                                    <h:outputText value="#{reportsController.groupedCollectingCenterWiseBillsMonthly.get(entryset.key).get(yearmonth) ne null ?
+                                    reportsController.groupedCollectingCenterWiseBillsMonthly.get(entryset.key).get(yearmonth).qty : 0}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                                value="#{reportsController.calculateCollectionCenterWiseBillCount(yearmonth)}"/>
+                                        <br/>
+                                        <h:outputText
+                                                value="#{reportsController.getCollectionCenterWiseTotalSampleCount(yearmonth)}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <br/>
+                                        <h:outputText value="#{reportsController.getCollectionCenterWiseTotalSampleCount(yearmonth) /
+                                        reportsController.calculateCollectionCenterWiseBillCount(yearmonth)}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{yearmonth}"/>
+                                        <br/>
+                                        <h:outputText value="Service Amount"/>
+                                    </f:facet>
+                                    <h:outputText value="#{reportsController.groupedCollectingCenterWiseBillsMonthly.get(entryset.key).get(yearmonth) ne null ?
+                                    reportsController.groupedCollectingCenterWiseBillsMonthly.get(entryset.key).get(yearmonth).totalHospitalFee : 0}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                                value="#{reportsController.getCollectionCenterWiseTotalServiceAmount(yearmonth)}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <br/>
+                                        <h:outputText value="#{reportsController.getCollectionCenterWiseTotalServiceAmount(yearmonth) /
+                                        reportsController.calculateCollectionCenterWiseBillCount(yearmonth)}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                            </c:forEach>
+                        </p:dataTable>
+
+                        <p:dataTable id="tbl1"
+                                     class="w-100 m-2"
+                                     value="#{reportsController.groupedRouteWiseBillsMonthly.entrySet()}"
+                                     var="entryset"
+                                     paginator="true"
+                                     rendered="#{reportsController.reportType eq 'summery'}"
+                                     paginatorAlwaysVisible="false"
+                                     rows="10"
+                                     rowIndexVar="n"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,20"
+                                     rowKey="#{row.id}"
+                                     autoLayout="true"
+                                     paginatorPosition="bottom">
+                            <p:column width="2em">
+                                <f:facet name="header">
+                                    <h:outputText value="S. No"/>
+                                </f:facet>
+                                <h:outputText value="#{n+1}"/>
+                                <f:facet name="footer">
+                                    <br/>
+                                    <br/>
+                                    <h:outputText value="Total"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column width="5em">
+                                <f:facet name="header">
+                                    <h:outputText value="Route"/>
+                                </f:facet>
+                                <h:outputText value="#{entryset.key.name}"/>
+                            </p:column>
+                            <c:forEach items="#{reportsController.yearMonths}" var="yearmonth">
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{yearmonth}"/>
+                                        <br/>
+                                        <h:outputText value="Sample Count"/>
+                                    </f:facet>
+                                    <h:outputText value="#{reportsController.groupedRouteWiseBillsMonthly.get(entryset.key).get(yearmonth) ne null ?
+                                    reportsController.groupedRouteWiseBillsMonthly.get(entryset.key).get(yearmonth).qty : 0}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                                value="#{reportsController.calculateRouteWiseBillCount(yearmonth)}"/>
+                                        <br/>
+                                        <h:outputText
+                                                value="#{reportsController.calculateRouteWiseTotalSampleCount(yearmonth)}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <br/>
+                                        <h:outputText value="#{reportsController.calculateRouteWiseTotalSampleCount(yearmonth) /
+                                        reportsController.calculateRouteWiseBillCount(yearmonth)}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column width="5em">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{yearmonth}"/>
+                                        <br/>
+                                        <h:outputText value="Service Amount"/>
+                                    </f:facet>
+                                    <h:outputText value="#{reportsController.groupedRouteWiseBillsMonthly.get(entryset.key).get(yearmonth) ne null ?
+                                    reportsController.groupedRouteWiseBillsMonthly.get(entryset.key).get(yearmonth).totalHospitalFee : 0}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <br/>
+                                        <h:outputText
+                                                value="#{reportsController.calculateRouteWiseTotalServiceAmount(yearmonth)}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <br/>
+                                        <h:outputText value="#{reportsController.calculateRouteWiseTotalServiceAmount(yearmonth) /
+                                        reportsController.calculateRouteWiseBillCount(yearmonth)}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                            </c:forEach>
+                        </p:dataTable>
                     </h:panelGroup>
                 </p:panel>
             </h:form>

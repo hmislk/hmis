@@ -6,11 +6,13 @@ package com.divudi.entity.lab;
 
 //import ch.lambdaj.Lambda;
 import com.divudi.data.InvestigationItemType;
+import com.divudi.data.ReportType;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.Upload;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -159,6 +161,12 @@ public class PatientReport implements Serializable {
     private PatientInvestigationStatus status;
     
     private String sampleIDs;
+
+    @ManyToOne
+    private Upload uploadedReport;
+    
+    @Enumerated(EnumType.STRING)
+    private ReportType reportType;
 
     public PatientReport() {
         if (status == null) {
@@ -802,6 +810,22 @@ public class PatientReport implements Serializable {
 
     public void setSampleIDs(String sampleIDs) {
         this.sampleIDs = sampleIDs;
+    }
+
+    public Upload getUploadedReport() {
+        return uploadedReport;
+    }
+
+    public void setUploadedReport(Upload uploadedReport) {
+        this.uploadedReport = uploadedReport;
+    }
+
+    public ReportType getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(ReportType reportType) {
+        this.reportType = reportType;
     }
 
     static class PatientReportItemValueComparator implements Comparator<PatientReportItemValue> {

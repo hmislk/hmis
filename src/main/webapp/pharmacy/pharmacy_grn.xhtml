@@ -24,7 +24,7 @@
                 </f:facet>
                 <h:panelGroup >
 
-                    <h:panelGrid columns="7" style="min-width: 100%;" class="my-2" id="grn">
+                    <h:panelGrid columns="9" style="min-width: 100%;" class="my-2" id="grn">
                         <h:outputLabel value="Supplier"/>
 
                         <p:autoComplete converter="deal" value="#{grnController.fromInstitution}"
@@ -37,6 +37,7 @@
                                          forceSelection="true"
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
 
+                        <h:outputLabel value="Payment Method"/>
                         <p:selectOneMenu   id="cmbPs" value="#{grnController.grnBill.paymentMethod}">    
                             <f:selectItem itemLabel="SelectPayment method"/>
                             <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
@@ -54,7 +55,12 @@
                                 </div>
                             </div>
                         </h:panelGroup>
-                        
+                        <h:outputLabel value="Comment"/>
+                        <p:inputText autocomplete="off" 
+                                         onfocus="this.select()"
+                                         styleClass="numericTxt" 
+                                         value="#{grnController.grnBill.comments}" style="width:75%" />  
+
                     </h:panelGrid>
                     <p:dataTable 
                         var="bi" 
@@ -212,7 +218,7 @@
 
                         </p:panelGrid>
                     </p:panel>
-                    
+
                     <p:panel header="Bill Expenses" >
                         <h:panelGrid id="billExpenseGrid" columns="4" style="min-width: 100%;">
                             <h:outputLabel value="Select Expense"/>

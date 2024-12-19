@@ -114,14 +114,13 @@ public class ReportsTransfer implements Serializable {
     PharmacyBean pharmacyBean;
     @EJB
     ItemFacade itemFacade;
-    
-    
+
     CommonFunctions commonFunctions;
 
     ////////////
     @Inject
     CommonController commonController;
-    
+
     @Inject
     AuditEventApplicationController auditEventApplicationController;
     @Inject
@@ -136,7 +135,6 @@ public class ReportsTransfer implements Serializable {
         fillMoving(true);
         fillMovingQty(true);
 
-        
     }
 
     public void fillSlowMoving() {
@@ -145,7 +143,6 @@ public class ReportsTransfer implements Serializable {
         fillMoving(false);
         fillMovingQty(false);
 
-        
     }
 
     public BillBeanController getBillBeanController() {
@@ -335,7 +332,6 @@ public class ReportsTransfer implements Serializable {
             saleValue += (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
 
-        
     }
 
     public void fillDepartmentTransfersIssueByBillItem() {
@@ -349,13 +345,12 @@ public class ReportsTransfer implements Serializable {
             saleValue += (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
 
-        
     }
-    
+
     public void fillDepartmentAdjustmentByBillItem() {
         Date startTime = new Date();
         transferItems = fetchBillItems(BillType.PharmacyAdjustment);
-        
+
     }
 
     public List<BillItem> fetchBillItems(BillType bt) {
@@ -378,7 +373,7 @@ public class ReportsTransfer implements Serializable {
                 m.put("tdept", toDepartment);
             }
         }
-        
+
         if (bt == BillType.PharmacyTransferReceive) {
             if (fromDepartment != null) {
                 sql += " and bi.bill.fromDepartment=:fdept ";
@@ -398,7 +393,6 @@ public class ReportsTransfer implements Serializable {
         m.put("bt", bt);
 
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-
 
         return billItems;
     }
@@ -450,7 +444,21 @@ public class ReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        
+        calculatePurachaseValuesOfBillItemsInBill(transferBills);
+    }
+
+    public void calculatePurachaseValuesOfBillItemsInBill(List<Bill> billList) {
+        for (Bill b : billList) {
+            double saleValue = 0.0;
+            double purchaseValue = 0.0;
+            for (BillItem bi : b.getBillItems()) {
+                saleValue += bi.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * bi.getPharmaceuticalBillItem().getQty();
+                purchaseValue += bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * bi.getPharmaceuticalBillItem().getQty();
+            }
+            b.setSaleValue(saleValue);
+            b.setPaidAmount(purchaseValue);
+            totalsValue += saleValue;
+        }
     }
 
     public void fillDepartmentBHTIssueByBill() {
@@ -503,15 +511,13 @@ public class ReportsTransfer implements Serializable {
             marginValue += b.getMargin();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-       
 
-        
     }
 
     Item item;
@@ -581,13 +587,13 @@ public class ReportsTransfer implements Serializable {
             marginValue += b.getMarginValue();
             netTotalValues = netTotalValues + b.getNetValue();
         }
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
+
     }
 
     List<String1Value3> listz;
@@ -657,8 +663,6 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-      
-        
 
     }
 
@@ -667,7 +671,6 @@ public class ReportsTransfer implements Serializable {
 
         fetchBillTotalByToDepartment(fromDate, toDate, fromDepartment, BillType.PharmacyTransferIssue);
 
-        
     }
 
     public void createTransferReciveBillSummery() {
@@ -678,7 +681,7 @@ public class ReportsTransfer implements Serializable {
         listz = new ArrayList<>();
         netTotalValues = 0.0;
 
-        List<Object[]> objects = getBillBeanController().fetchBilledDepartmentItem(fd, td, dep, bt,true);
+        List<Object[]> objects = getBillBeanController().fetchBilledDepartmentItem(fd, td, dep, bt, true);
 
         for (Object[] ob : objects) {
             Department d = (Department) ob[0];
@@ -694,12 +697,12 @@ public class ReportsTransfer implements Serializable {
         }
 
     }
-    
+
     public void fetchBillTotalByFromDepartment(Date fd, Date td, Department dep, BillType bt) {
         listz = new ArrayList<>();
         netTotalValues = 0.0;
 
-        List<Object[]> objects = getBillBeanController().fetchBilledDepartmentItem(fd, td, dep, bt,false);
+        List<Object[]> objects = getBillBeanController().fetchBilledDepartmentItem(fd, td, dep, bt, false);
 
         for (Object[] ob : objects) {
             Department d = (Department) ob[0];
@@ -770,8 +773,6 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventTrigger("fillDepartmentUnitIssueByBill()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
-       
         Map m = new HashMap();
         String sql;
 
@@ -804,14 +805,12 @@ public class ReportsTransfer implements Serializable {
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
-         Date endTime = new Date();
+        Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-    
-    
-        
+
     }
 
     public void fillDepartmentUnitIssueByBillStore() {
@@ -1088,8 +1087,6 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventTrigger("fillItemCounts()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
-        
         List<Object[]> list = fetchBillItem(BillType.PharmacyIssue);
 
         if (list == null) {
@@ -1132,8 +1129,7 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
-        
+
     }
 
     public void fillItemCountsWithOutMarginPharmacy() {
@@ -1165,7 +1161,6 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventTrigger("fillItemCountsWithOutMarginPharmacy()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
         fillItemCountsWithOutMargin(BillType.PharmacyIssue);
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
@@ -1173,14 +1168,12 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
     }
 
     public void fillItemCountsWithOutMarginStore() {
         Date startTime = new Date();
         fillItemCountsWithOutMargin(BillType.StoreIssue);
 
-        
     }
 
     public void fillItemCountsWithOutMargin(BillType bt) {
@@ -1254,7 +1247,6 @@ public class ReportsTransfer implements Serializable {
         billDiscount = fetchBillDiscount(BillType.StoreIssue);
         billNetTotal = fetchBillNetTotal(BillType.StoreIssue);
 
-        
     }
 
     public void fillItemCountsBht() {
@@ -1320,15 +1312,12 @@ public class ReportsTransfer implements Serializable {
         billMargin = fetchBillMargin(BillType.PharmacyBhtPre);
         billDiscount = fetchBillDiscount(BillType.PharmacyBhtPre);
         billNetTotal = fetchBillNetTotal(BillType.PharmacyBhtPre);
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
-
-        
 
     }
 
@@ -1374,8 +1363,6 @@ public class ReportsTransfer implements Serializable {
         billMargin = fetchBillMargin(BillType.PharmacyBhtPre);
         billDiscount = fetchBillDiscount(BillType.PharmacyBhtPre);
         billNetTotal = fetchBillNetTotal(BillType.PharmacyBhtPre);
-
-        
 
     }
 
@@ -1675,12 +1662,13 @@ public class ReportsTransfer implements Serializable {
         discountsValue = 0.0;
         netTotalValues = 0.0;
         for (Bill b : transferBills) {
-            totalsValue = totalsValue + (b.getTotal());
+//            totalsValue = totalsValue + (b.getTotal());
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
-
         
+        calculatePurachaseValuesOfBillItemsInBill(transferBills);
+
     }
 
     public void fillTheaterTransfersReceiveWithBHTIssue() {
@@ -1712,7 +1700,6 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventTrigger("fillTheaterTransfersReceiveWithBHTIssue()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
         if (fromDepartment == null || toDepartment == null) {
             JsfUtil.addErrorMessage("Please Check From To Departments");
             return;
@@ -1768,7 +1755,6 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
 
     }
 

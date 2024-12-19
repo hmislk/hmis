@@ -1071,6 +1071,20 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public void calculateTotalByReferenceBills(final boolean isOutpatient) {
+        total = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(isOutpatient ? row.getBillItem().getReferenceBill().getNetTotal() :
+                        row.getBillItem().getPatientEncounter().getFinalBill().getNetTotal());
+                total += amount;
+            }
+        }
+    }
+
     public void calculateTotalSettledAmountByPatients(final boolean isOutpatient) {
         settledAmountByPatientsTotal = 0.0;
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
@@ -1130,7 +1144,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBill().getCollctingCentreFee());
+                Double amount = safeDouble(row.getBill().getTotalCenterFee());
                 ccTotal += amount;
             }
         }
