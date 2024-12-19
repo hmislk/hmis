@@ -1,11 +1,10 @@
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.inward.InwardReservationEvent;
 
 import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.ServiceSession;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.entity.inward.Reservation;
 import com.divudi.facade.PatientEncounterFacade;
@@ -15,7 +14,6 @@ import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -53,6 +51,8 @@ public class InwardReservationController implements Serializable {
     ////////////////////////////
     @Inject
     private SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     ////////////////////////    
     private PatientEncounter patientEncounter;
@@ -66,6 +66,13 @@ public class InwardReservationController implements Serializable {
     private InwardReservationEvent event = new InwardReservationEvent();
 
     public String navigateToReservationCalendarFromMenu() {
+        fromDate = new Date();
+        Long noOfMonths = configOptionApplicationController.getLongValueByKey("Number of Months to Load During Reservation Calendar", 6L);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(fromDate);
+        calendar.add(Calendar.MONTH, noOfMonths.intValue());
+        toDate = calendar.getTime();
+        findReservations();
         return "/inward/inward_reservations_schedule_calendar?faces-redirect=true";
     }
 
