@@ -148,7 +148,6 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu class="w-100" id="grnReportType"  value="#{pharmacyController.reportType}">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItem itemLabel="Summery" itemValue="summeryReport"/>
                                 <f:selectItem itemLabel="Department unit issue by Bill No" itemValue="byBill"/>
                                 <f:selectItem itemLabel="Department unit issue by Bill Item" itemValue="byBillItem"/>
@@ -203,29 +202,29 @@
                             </p:commandButton>
 
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}">
-                                <p:dataExporter type="xlsx" target="tbl1" fileName="#{pharmacyController.reportType}" />
+                                <p:dataExporter type="xlsx" target="tbl1" fileName="#{pharmacyController.generateFileNameForReport('Consumption')}" />
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'byBill'}">
-                                <p:dataExporter type="xlsx" target="tbl2" fileName="#{pharmacyController.reportType}" />
+                                <p:dataExporter type="xlsx" target="tbl2" fileName="#{pharmacyController.generateFileNameForReport('Consumption')}" />
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'byBillItem'}">
-                                <p:dataExporter type="xlsx" target="tbl3" fileName="#{pharmacyController.reportType}" />
+                                <p:dataExporter type="xlsx" target="tbl3" fileName="#{pharmacyController.generateFileNameForReport('Consumption')}" />
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'categoryWise'}">
-                                <p:dataExporter type="xlsx" target="tbl4" fileName="#{pharmacyController.reportType}" />
+                                <p:dataExporter type="xlsx" target="tbl4" fileName="#{pharmacyController.generateFileNameForReport('Consumption')}" />
                             </p:commandButton>
 
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}">
-                                <p:dataExporter type="pdf" target="tbl1" fileName="#{pharmacyController.reportType}" />
+                                <p:dataExporter type="pdf" target="tbl1" fileName="#{pharmacyController.generateFileNameForReport('Consumption')}" />
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'byBill'}">
-                                <p:dataExporter type="pdf" target="tbl2" fileName="#{pharmacyController.reportType}" />
+                                <p:dataExporter type="pdf" target="tbl2" fileName="#{pharmacyController.generateFileNameForReport('Consumption')}" />
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'byBillItem'}">
-                                <p:dataExporter type="pdf" target="tbl3" fileName="#{pharmacyController.reportType}" />
+                                <p:dataExporter type="pdf" target="tbl3" fileName="#{pharmacyController.generateFileNameForReport('Consumption')}" />
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'categoryWise'}">
-                                <p:dataExporter type="pdf" target="tbl4" fileName="#{pharmacyController.reportType}" />
+                                <p:dataExporter type="pdf" target="tbl4" fileName="#{pharmacyController.generateFileNameForReport('Consumption')}" />
                             </p:commandButton>
 
                         </div>
