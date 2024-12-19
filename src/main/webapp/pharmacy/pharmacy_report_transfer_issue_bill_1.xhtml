@@ -47,7 +47,7 @@
                                 value="Excel" 
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-2">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Transfer_Issue_by_Bill"  />
                             </p:commandButton>
                             <p:commandButton 
                                 value="Print" 
@@ -87,17 +87,14 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.deptId}" ></h:outputLabel>     
-                                    
-                                    <p:commandButton 
-                                            ajax="false" 
-                                            icon="far fa-eye"
-                                            title="View Bill"
-                                            style="float: right;"
-                                            class="ui-button-info"
-                                            action="pharmacy_reprint_transfer_isssue" >
+    
+                                     <p:commandLink 
+                                        ajax="false" 
+                                        value="#{i.deptId}" 
+                                        action="pharmacy_reprint_transfer_isssue" >
                                             <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{i}"/>
-                                        </p:commandButton>
+                                    </p:commandLink>
+
                                 </p:column>
 
                                 <p:column headerText="Cancelled No" sortBy="#{i.cancelledBill.deptId}">
