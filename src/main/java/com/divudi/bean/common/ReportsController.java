@@ -1584,7 +1584,7 @@ public class ReportsController implements Serializable {
         }
 
         if (staff != null) {
-            jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
+            jpql += "AND pi.sampleTransportedToLabByStaff.person.name = :staff ";
             parameters.put("staff", staff.getPerson().getName());
         }
 
