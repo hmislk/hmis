@@ -774,6 +774,16 @@ public class PharmacyController implements Serializable {
 
     }
 
+    public String generateFileNameForReport(String reportName) {
+        if (reportName == null || reportName.trim().isEmpty()) {
+            return ""; // Handle null or empty reportName
+        }
+        if (reportType != null && !reportType.trim().isEmpty()) {
+            return reportName.trim() + " " + reportType.trim();
+        }
+        return reportName.trim();
+    }
+
     public void generateGRNReportTable() {
         bills = null;
         totalCreditPurchaseValue = 0.0;
@@ -1233,8 +1243,6 @@ public class PharmacyController implements Serializable {
         }
 
     }
-
-    
 
     public void deleteSelectedPharmaceuticalLight() {
         if (selectedLights == null || selectedLights.isEmpty()) {
