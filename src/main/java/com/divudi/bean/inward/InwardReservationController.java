@@ -2,13 +2,14 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.channel.InwardReservationEvent;
+import com.divudi.data.inward.InwardReservationEvent;
 
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.entity.inward.Reservation;
 import com.divudi.facade.PatientEncounterFacade;
+import com.divudi.facade.ReservationFacade;
 import com.divudi.java.CommonFunctions;
 
 import java.io.Serializable;
@@ -37,7 +38,7 @@ import org.primefaces.model.ScheduleModel;
 /**
  *
  * @author L C J Samarasekara
- * 
+ *
  */
 @Named
 @SessionScoped
@@ -47,15 +48,15 @@ public class InwardReservationController implements Serializable {
 
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
-    
+    @EJB
+    ReservationFacade ReservationFacade;
     ////////////////////////////
     @Inject
     private SessionController sessionController;
-    
+
     ////////////////////////    
-    
     private PatientEncounter patientEncounter;
-  
+
     Date fromDate;
     Date toDate;
     private ScheduleModel reservationModel;
@@ -67,7 +68,7 @@ public class InwardReservationController implements Serializable {
     public String navigateToReservationCalendarFromMenu() {
         return "/inward/inward_reservations_schedule_calendar?faces-redirect=true";
     }
-    
+
     /**
      *
      * @param selectEvent
@@ -101,49 +102,61 @@ public class InwardReservationController implements Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
     }
 
-    public void findSessions() {
-        
-        generateChaneelSessionEvents(selectedReservations);
+    public void findReservations() {
+        String jpql;
+        Map m = new HashMap();
+
+        jpql = "Select r from Reservation r "
+                + " where r.retired=:ret";
+        m.put("ret", false);
+
+        if (fromDate != null) {
+            jpql += " and r.reservedFrom between :fd and :td ";
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+        }
+
+        selectedReservations = ReservationFacade.findByJpql(jpql, m);
+        System.out.println("selectedReservations = " + selectedReservations);
+        generateReservationsEvents(selectedReservations);
     }
 
-    public void generateChaneelSessionEvents(List<Reservation> lsi) {
+    public void generateReservationsEvents(List<Reservation> lsi) {
         reservationModel = new DefaultScheduleModel();
         for (Reservation si : lsi) {
             System.out.println("Name = " + si.getRoom().getName());
 
-            Calendar sdt = Calendar.getInstance();
-            sdt.setTime(si.getReservedFrom());
+            // Dates
+            Date startDate = si.getReservedFrom();
+            Date endDate = si.getReservedTo();
 
-            Calendar st = Calendar.getInstance();
-            st.setTime(si.getReservedFrom());
-
-            sdt.set(Calendar.HOUR, st.get(Calendar.HOUR));
-            sdt.set(Calendar.MINUTE, st.get(Calendar.MINUTE));
-
-            Calendar edt = Calendar.getInstance();
-            sdt.setTime(si.getReservedTo());
-
-            Calendar et = Calendar.getInstance();
-            st.setTime(si.getReservedTo());
-
-            edt.set(Calendar.HOUR, et.get(Calendar.HOUR));
-            edt.set(Calendar.MINUTE, et.get(Calendar.MINUTE));
+            // Generate unique colors for each event
+            String uniqueBorderColor = generateColor(si.getRoom().getName());
+            String uniqueBackgroundColor = generateColor(si.getPatient().getPerson().getName());
 
             DefaultScheduleEvent event;
             event = new DefaultScheduleEvent<SessionInstance>().builder()
-                    .title(si.getRoom().getName()+ " - " + si.getPatient().getPerson().getName())
-                    .borderColor("#27AE60")
-                    .backgroundColor("#BDE8CA")
-                    .startDate(CommonFunctions.convertDateToLocalDateTime(sdt.getTime()))
-                    .endDate(CommonFunctions.convertDateToLocalDateTime(edt.getTime()))
+                    .title(si.getRoom().getName() + " - " + si.getPatient().getPerson().getName())
+                    .borderColor(uniqueBorderColor)
+                    .backgroundColor(uniqueBackgroundColor)
+                    .startDate(CommonFunctions.convertDateToLocalDateTime(startDate))
+                    .endDate(CommonFunctions.convertDateToLocalDateTime(endDate))
                     .data(si)
                     .build();
 
             reservationModel.addEvent(event);
         }
     }
-    
-    
+
+    private String generateColor(String seed) {
+        int hash = seed.hashCode(); // Create a hash from the seed (e.g., room name)
+        int hue = Math.abs(hash) % 360; // Map hash to a hue value (0-359)
+        int saturation = 70 + (Math.abs(hash) % 30); // Ensure high saturation (70-100)
+        int lightness = 50; // Set a fixed lightness for vibrancy
+
+        // Return HSL color in CSS format
+        return "hsl(" + hue + ", " + saturation + "%, " + lightness + "%)";
+    }
 
     public Date getFromDate() {
         if (fromDate == null) {
@@ -168,7 +181,7 @@ public class InwardReservationController implements Serializable {
     }
 
     public ScheduleModel getReservationModel() {
-        if(reservationModel == null){
+        if (reservationModel == null) {
             reservationModel = new DefaultScheduleModel();
         }
         return reservationModel;
