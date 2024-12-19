@@ -309,6 +309,11 @@ public class ReportsController implements Serializable {
     private String settlementStatus;
     private String dischargedStatus;
 
+    // Map<Week, Map<ItemName, Map<dayOfMonth, Count>>>
+    Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to7;
+    Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to1;
+    Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap1to7;
+
     public String getDischargedStatus() {
         return dischargedStatus;
     }
@@ -322,11 +327,9 @@ public class ReportsController implements Serializable {
         return paymentMethod;
     }
 
-    
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
-    
 
     public CommonController getCommonController() {
         return commonController;
@@ -390,6 +393,30 @@ public class ReportsController implements Serializable {
 
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
+    }
+
+    public Map<Integer, Map<String, Map<Integer, Double>>> getWeeklyDailyBillItemMap7to7() {
+        return weeklyDailyBillItemMap7to7;
+    }
+
+    public void setWeeklyDailyBillItemMap7to7(Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to7) {
+        this.weeklyDailyBillItemMap7to7 = weeklyDailyBillItemMap7to7;
+    }
+
+    public Map<Integer, Map<String, Map<Integer, Double>>> getWeeklyDailyBillItemMap7to1() {
+        return weeklyDailyBillItemMap7to1;
+    }
+
+    public void setWeeklyDailyBillItemMap7to1(Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to1) {
+        this.weeklyDailyBillItemMap7to1 = weeklyDailyBillItemMap7to1;
+    }
+
+    public Map<Integer, Map<String, Map<Integer, Double>>> getWeeklyDailyBillItemMap1to7() {
+        return weeklyDailyBillItemMap1to7;
+    }
+
+    public void setWeeklyDailyBillItemMap1to7(Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap1to7) {
+        this.weeklyDailyBillItemMap1to7 = weeklyDailyBillItemMap1to7;
     }
 
     public PatientFacade getPatientFacade() {
@@ -1747,7 +1774,120 @@ public class ReportsController implements Serializable {
 
         bundle = generateWeeklyBillItems(opdBts);
 
-        groupBillItemsWeekly();
+        if (reportType.equalsIgnoreCase("summary")) {
+            groupBillItemsWeekly();
+        } else if (reportType.equalsIgnoreCase("detail")) {
+            groupBillItemsDaily();
+        }
+    }
+
+    private void groupBillItemsDaily() {
+        // Map<Week, Map<ItemName, Map<dayOfMonth, Count>>>
+        Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap7to7 = new HashMap<>();
+        Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap7to1 = new HashMap<>();
+        Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap1to7 = new HashMap<>();
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            final BillItem billItem = row.getBillItem();
+
+            final Date billItemDate = billItem.getBill().getCreatedAt();
+
+            if (billItemDate == null) {
+                continue;
+            }
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(billItemDate);
+
+            final int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
+            final int weekOfMonth = getWeekOfMonth(billItemDate);
+            final int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+
+            if (hourOfDay >= 19 || hourOfDay < 7) {
+                // Between 7 PM to 7 AM
+                Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap7to7.containsKey(weekOfMonth) ? weeklyBillItemMap7to7.get(weekOfMonth) : new HashMap<>();
+
+                billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0);
+
+                weeklyBillItemMap7to7.put(weekOfMonth, billItemMap);
+            } else if (hourOfDay < 13) {
+                // Between 7 AM to 1 PM
+                Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap7to1.containsKey(weekOfMonth) ? weeklyBillItemMap7to1.get(weekOfMonth) : new HashMap<>();
+
+                billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0);
+
+                weeklyBillItemMap7to1.put(weekOfMonth, billItemMap);
+            } else {
+                // Between 1 PM to 7 PM
+                Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap1to7.containsKey(weekOfMonth) ? weeklyBillItemMap1to7.get(weekOfMonth) : new HashMap<>();
+
+                billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0);
+
+                weeklyBillItemMap1to7.put(weekOfMonth, billItemMap);
+            }
+        }
+
+        setWeeklyDailyBillItemMap7to7(weeklyBillItemMap7to7);
+        setWeeklyDailyBillItemMap7to1(weeklyBillItemMap7to1);
+        setWeeklyDailyBillItemMap1to7(weeklyBillItemMap1to7);
+    }
+
+    public List<String> getItemListByWeek(final int week, final Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap) {
+        if (weeklyBillItemMap == null) {
+            return new ArrayList<>();
+        }
+
+        List<String> itemList = new ArrayList<>();
+
+        if (weeklyBillItemMap.containsKey(week)) {
+            itemList.addAll(weeklyBillItemMap.get(week).keySet());
+        }
+
+        return itemList;
+    }
+
+    public double getCountByWeekAndDay(final int week, final int day, final String itemName, final Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap) {
+        return Optional.ofNullable(weeklyBillItemMap)
+                .map(map -> map.get(week))
+                .map(weekMap -> weekMap.get(itemName))
+                .map(itemMap -> itemMap.get(day))
+                .orElse(0.0);
+    }
+
+    public double getSumByWeek(final int week, final String itemName, final Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap) {
+        return Optional.ofNullable(weeklyBillItemMap)
+                .map(map -> map.get(week))
+                .map(weekMap -> weekMap.get(itemName))
+                .map(itemMap -> itemMap.values().stream().mapToDouble(Double::doubleValue).sum())
+                .orElse(0.0);
+    }
+
+    public List<Integer> getDaysOfWeek(final int weekOfMonth) {
+        if (month == null) {
+            return new ArrayList<>();
+        }
+
+        final YearMonth yearMonth = YearMonth.of(LocalDate.now().getYear(), month);
+
+        List<Integer> daysOfWeek = new ArrayList<>();
+
+        LocalDate firstDayOfMonth = yearMonth.atDay(1);
+        int firstDayOfTargetWeek = (weekOfMonth - 1) * 7 + 1;
+
+        for (int i = 0; i < 7; i++) {
+            LocalDate day = firstDayOfMonth.plusDays(firstDayOfTargetWeek - 1 + i);
+
+            if (day.getMonth() != yearMonth.getMonth()) {
+                break;
+            }
+
+            daysOfWeek.add(day.getDayOfMonth());
+        }
+
+        return daysOfWeek;
     }
 
     private void groupBillItemsWeekly() {
@@ -2373,7 +2513,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-            boolean onlyDueBills) {
+                                                                    boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -3245,7 +3385,7 @@ public class ReportsController implements Serializable {
 
         bundle.setGroupedBillItemsByInstitution(billMap);
     }
-    
+
     public Double calculateNetTotalByBills(List<Bill> bills) {
         Double netTotal = 0.0;
 
@@ -3266,7 +3406,7 @@ public class ReportsController implements Serializable {
         return discount;
     }
 
-    
+
     public Double calculateSubTotal() {
         double subTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
