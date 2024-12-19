@@ -45,6 +45,8 @@ import com.divudi.bean.common.util.JsfUtil;
 import static com.divudi.data.InvestigationItemValueType.Memo;
 import static com.divudi.data.InvestigationItemValueType.Varchar;
 import com.divudi.data.ReportType;
+import static com.divudi.data.ReportType.GENARATE;
+import static com.divudi.data.ReportType.UPLOAD;
 import com.divudi.data.UploadType;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.Upload;
@@ -120,7 +122,10 @@ public class PatientReportController implements Serializable {
     SmsFacade smsFacade;
     @EJB
     ClinicalFindingValueFacade clinicalFindingValueFacade;
-    //Controllers
+    @EJB
+    private UploadFacade uploadFacade;
+
+//Controllers
     @Inject
     PdfController pdfController;
     @Inject
@@ -149,6 +154,9 @@ public class PatientReportController implements Serializable {
     PatientInvestigationController patientInvestigationController;
     @Inject
     WebUserController webUserController;
+    @Inject
+    PatientReportUploadController patientReportUploadController;
+
     //Class Variables
     String selectText = "";
     private PatientInvestigation currentPtIx;
@@ -224,9 +232,8 @@ public class PatientReportController implements Serializable {
         }
     }
 
-    @EJB
-    UploadFacade uploadFacade;
-
+    
+    
     public Upload loadUpload(PatientReport pr) {
         String jpql = "select u "
                 + " from Upload u "
@@ -242,6 +249,60 @@ public class PatientReportController implements Serializable {
         params.put("prr", false);
 
         return uploadFacade.findFirstByJpql(jpql, params);
+    }
+
+    public String navigateToPrintPatientReport(PatientReport pr) {
+        if (pr == null) {
+            JsfUtil.addErrorMessage("No Select Patient Report");
+            return "";
+        }
+
+        System.out.println("pr = " + pr.getReportType());
+
+        if (pr.getReportType() == null) {
+            setCurrentPatientReport(pr);
+            return "/lab/patient_report_print?faces-redirect=true";
+        } else {
+            switch (pr.getReportType()) {
+                case GENARATE:
+                    setCurrentPatientReport(pr);
+                    return "/lab/patient_report_print?faces-redirect=true";
+                case UPLOAD:
+                    Upload currentReportUpload = loadUpload(pr);
+                    patientReportUploadController.setReportUpload(currentReportUpload);
+                    return "/lab/upload_patient_report_print?faces-redirect=true";
+                default:
+                    return "";
+            }
+        }
+
+    }
+    
+    public String navigateToPrintPatientReportForCourier(PatientReport pr) {
+        if (pr == null) {
+            JsfUtil.addErrorMessage("No Select Patient Report");
+            return "";
+        }
+
+        System.out.println("pr = " + pr.getReportType());
+
+        if (pr.getReportType() == null) {
+            setCurrentPatientReport(pr);
+            return "/collecting_centre/courier/patient_report_print?faces-redirect=true";
+        } else {
+            switch (pr.getReportType()) {
+                case GENARATE:
+                    setCurrentPatientReport(pr);
+                    return "/collecting_centre/courier/patient_report_print?faces-redirect=true";
+                case UPLOAD:
+                    Upload currentReportUpload = loadUpload(pr);
+                    patientReportUploadController.setReportUpload(currentReportUpload);
+                    return "/collecting_centre/courier/upload_patient_report_print?faces-redirect=true";
+                default:
+                    return "";
+            }
+        }
+
     }
 
     public String searchRecentReportsOrderedByMyself() {
@@ -1196,6 +1257,19 @@ public class PatientReportController implements Serializable {
         currentPatientReport.setRetired(Boolean.TRUE);
         currentPatientReport.setRetiredAt(Calendar.getInstance().getTime());
         currentPatientReport.setRetirer(getSessionController().getLoggedUser());
+
+        if (currentPatientReport.getReportType() == ReportType.UPLOAD) {
+            Upload currentReportUpload = patientReportUploadController.loadUploads(currentPatientReport);
+
+            if (currentReportUpload != null) {
+                currentReportUpload.setRetireComments(comment);
+                currentReportUpload.setRetired(true);
+                currentReportUpload.setRetiredAt(new Date());
+                currentReportUpload.setRetirer(sessionController.getLoggedUser());
+                uploadFacade.create(currentReportUpload);
+            }
+            System.out.println("Upload Report Removed");
+        }
 
         getFacade().edit(currentPatientReport);
         JsfUtil.addSuccessMessage("Successfully Removed");
@@ -2595,7 +2669,6 @@ public class PatientReportController implements Serializable {
     }
 
     public String navigateToUploadNewPatientReport(PatientInvestigation pi) {
-        String link;
         if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Investigation");
             return null;
@@ -2610,6 +2683,11 @@ public class PatientReportController implements Serializable {
         if (ix.getReportedAs() != null) {
             ix = (Investigation) pi.getInvestigation().getReportedAs();
         }
+        if (!checkAlreadyGeneratedPatientReportsExists(pi)) {
+            JsfUtil.addErrorMessage("Already Created Report for this Investigation");
+            return null;
+        }
+
         currentReportInvestigation = ix;
         currentPtIx = pi;
         PatientReport newlyCreatedReport = null;
@@ -2632,10 +2710,8 @@ public class PatientReportController implements Serializable {
         patientReportUploadController.setPatientInvestigation(pi);
 
         return "/lab/upload_patient_report?faces-redirect=true";
-    }
 
-    @Inject
-    PatientReportUploadController patientReportUploadController;
+    }
 
     public String navigateToNewlyCreatedPatientReport(PatientInvestigation pi) {
         if (pi == null) {

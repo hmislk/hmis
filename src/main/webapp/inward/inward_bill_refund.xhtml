@@ -97,10 +97,14 @@
                                         <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
                                     <h:panelGrid columns="3" class="w-100" rendered="#{inwardRefundController.current.patientEncounter.paymentFinalized}">
-                                        <h:outputLabel value="Due Amount" rendered="#{inwardRefundController.paidAmount gt 0}" style="color: red"/>
-                                        <h:outputLabel value="Refundable Amount" rendered="#{inwardRefundController.paidAmount lt 0 or inwardRefundController.paidAmount eq 0}" style="color: green"/>
+                                        <h:outputLabel value="Due Amount" style="color: red"/>
                                         <h:outputLabel value=":" ></h:outputLabel>
                                         <h:outputLabel value="#{inwardRefundController.paidAmount}">                              
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel> 
+                                        <h:outputLabel value="Refundable Amount"  style="color: green"/>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardRefundController.netTotal - inwardRefundController.paidAmount}" >                              
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                           
 
@@ -143,7 +147,10 @@
                                         </h:panelGroup>
                                         <p:outputLabel class="mt-1" value="Amount"/>
                                         <h:outputLabel class="mt-1" value=":" ></h:outputLabel>
-                                        <p:inputText class="w-45 mt-1" autocomplete="off" value="#{inwardRefundController.current.total}" disabled="#{inwardRefundController.paidAmount gt 0 or inwardRefundController.paidAmount eq 0}"/>
+                                        <p:inputText class="w-45 mt-1" autocomplete="off" value="#{inwardRefundController.current.total}" />
+                                        
+<!--                                    disabled="#{inwardRefundController.paidAmount gt 0 }"    -->
+                                        
                                     </h:panelGrid>
                                     <h:panelGrid columns="6" class="my-2">
                                         <p:commandButton class="ui-button-warning" icon="fas fa-arrow-rotate-left" id="btnRefund" ajax="false" value="Refund" 
