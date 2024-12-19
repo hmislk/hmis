@@ -59,6 +59,16 @@
                                 <p:inputText autocomplete="off"  value="#{dealerController.current.fax}" class="w-100" ></p:inputText>
                             </h:panelGrid>
 
+
+                            <p:commandButton id="generateCode" value="Generate Code" 
+                                             action="#{dealerController.generateCodeForDealor()}" 
+                                             process="generateCode gpDetail" 
+                                             update="gpDetail" 
+                                             class=" m-1 ui-button-success w-25"
+                                             icon="fas fa-save">
+
+                            </p:commandButton>
+
                             <p:commandButton id="btnSave" value="Save" 
                                              action="#{dealerController.saveSelected()}" 
                                              process="btnSave gpDetail" 
