@@ -213,22 +213,25 @@
                                         </div>
                                     </f:facet>
 
-
+                                    <h1>
+                                        #{patientReportUploadController.reportUpload.id}
+                                    </h1>
 
                                     <h:panelGroup rendered="#{not empty patientReportUploadController.reportUpload}">
                                         <!-- Render PDF Files -->
-                                        <h:panelGroup rendered="#{patientReportUploadController.pdf}">
+                                        <h:panelGroup rendered="#{labReportViewController.pdf}">
                                             <p:media 
-                                                value="#{patientReportUploadController.pdfReportStream}" 
+                                                cache="false"
+                                                value="#{labReportViewController.pdfReportStream}" 
                                                 player="pdf" 
                                                 width="100%" 
                                                 height="1000px" />
                                         </h:panelGroup>
 
                                         <!-- Render Image Files -->
-                                        <h:panelGroup id="image" rendered="#{patientReportUploadController.image}">
+                                        <h:panelGroup id="image" rendered="#{labReportViewController.image}">
                                             <p:graphicImage 
-                                                value="#{patientReportUploadController.imageReportStream}" 
+                                                value="#{labReportViewController.imageReportStream}" 
                                                 stream="true"
                                                 cache="false"
                                                 style="max-width:100%; height:auto;" />
