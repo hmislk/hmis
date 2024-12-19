@@ -149,23 +149,39 @@
                                              value="Process" 
                                              action="#{pharmacyController.generateGRNReportTable()}">
                             </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
-                                <p:printer target="tbl1"  rendered="#{pharmacyController.reportType eq 'detailReport'}"/> 
-                                <p:printer target="tbl2"  rendered="#{pharmacyController.reportType eq 'returnReport'}"/>
-                                <p:printer target="tbl3"  rendered="#{pharmacyController.reportType eq 'summeryReport'}"/>                                 
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'detailReport'}">
+                                <p:printer target="tbl1" />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                                <p:dataExporter type="xlsx" target="tbl1" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'detailReport'}" />
-                                <p:dataExporter type="xlsx" target="tbl2" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'returnReport'}" />
-                                <p:dataExporter type="xlsx" target="tbl3" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'summeryReport'}" />
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'returnReport'}">
+                                <p:printer target="tbl2" />
                             </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
+                                <p:printer target="tbl3" />
+                            </p:commandButton>
+                            
 
-                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
-                                <p:dataExporter type="pdf" target="tbl1" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'detailReport'}" />
-                                <p:dataExporter type="pdf" target="tbl2" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'returnReport'}" />
-                                <p:dataExporter type="pdf" target="tbl3" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'summeryReport'}" />
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'detailReport'}">
+                                <p:dataExporter type="xlsx" target="tbl1" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
                             </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'returnReport'}">
+                                <p:dataExporter type="xlsx" target="tbl2" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
+                                <p:dataExporter type="xlsx" target="tbl3" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
+                            </p:commandButton>
+                            
 
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'detailReport'}">
+                                <p:dataExporter type="pdf" target="tbl1" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'returnReport'}">
+                                <p:dataExporter type="pdf" target="tbl2" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
+                                <p:dataExporter type="pdf" target="tbl3" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
+                            </p:commandButton>
+                            
+                            
                         </div>
 
 
@@ -192,9 +208,9 @@
                                     </p:commandLink>
                                     
                                     <f:facet name="footer" >
-                                        <h:outputText value="Net Purchase Value" />
+                                        <h:outputLabel value="Net Purchase Value" />
                                         <br />
-                                        <h:outputText value="Net Sale Value" />
+                                        <h:outputLabel value="Net Sale Value" />
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Invoice No" width="6em">
