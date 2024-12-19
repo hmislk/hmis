@@ -1,15 +1,21 @@
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.UploadType;
 import com.divudi.entity.Upload;
 import com.divudi.entity.lab.PatientInvestigation;
+import com.divudi.entity.lab.PatientReport;
+import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.UploadFacade;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
@@ -33,11 +39,15 @@ public class PatientReportUploadController implements Serializable {
     private UploadFacade facade;
     @EJB
     private PatientReportFacade patientReportFacade;
+    @EJB
+    private PatientInvestigationFacade patientInvestigationFacade;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private PatientReportController patientReportController;
+    @Inject
+    SessionController sessionController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -95,14 +105,26 @@ public class PatientReportUploadController implements Serializable {
             InputStream in = file.getInputStream();
             byte[] fileContent = IOUtils.toByteArray(in);
 
-            // Create and persist the Upload entity
-            reportUpload = new Upload();
+            Upload loadUploadInReport = loadUploads(patientReportController.getCurrentPatientReport());
+
+            if (loadUploadInReport == null) {
+                reportUpload = new Upload(); // Create and persist the Upload entity
+            } else {
+                setReportUpload(loadUploadInReport);
+            }
+            // Create or Update and persist the Upload entity
+            reportUpload.setUploadType(UploadType.Lab_Report);
             reportUpload.setPatientReport(patientReportController.getCurrentPatientReport());
             reportUpload.setBaImage(fileContent);
             reportUpload.setFileName(fileName);
             reportUpload.setFileType(file.getContentType());
             reportUpload.setPatientInvestigation(patientReportController.getCurrentPatientReport().getPatientInvestigation());
-            facade.create(reportUpload);
+
+            if (loadUploadInReport == null) {
+                facade.create(reportUpload);// Create and persist the Upload entity
+            } else {
+                facade.edit(reportUpload);// Edit the current Upload entity
+            }
 
             // Update current Report entity
             patientReportController.getCurrentPatientReport().setDataEntryAt(new Date());
@@ -113,8 +135,17 @@ public class PatientReportUploadController implements Serializable {
             patientReportFacade.edit(patientReportController.getCurrentPatientReport());
             System.out.println("Report Updated.");
 
+            patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntryAt(new Date());
+            patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntryUser(sessionController.getLoggedUser());
+            patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntered(Boolean.TRUE);
+            patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
+            patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
+            patientInvestigationFacade.edit(patientReportController.getCurrentPatientReport().getPatientInvestigation());
+            System.out.println("Investigation Updated.");
+
             JsfUtil.addSuccessMessage("File Uploaded Successfully.");
             file = null;
+
             return ""; // Stay on the same page or navigate as needed
         } catch (IOException e) {
             JsfUtil.addErrorMessage("Error uploading file: " + e.getMessage());
@@ -139,6 +170,13 @@ public class PatientReportUploadController implements Serializable {
         patientReportController.getCurrentPatientReport().setApproved(Boolean.TRUE);
         patientReportFacade.edit(patientReportController.getCurrentPatientReport());
         System.out.println("Report Approved.");
+
+        patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproveAt(new Date());
+        patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproveUser(sessionController.getLoggedUser());
+        patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproved(Boolean.TRUE);
+        patientInvestigationFacade.edit(patientReportController.getCurrentPatientReport().getPatientInvestigation());
+        System.out.println("Investigation Approved.");
+
         JsfUtil.addSuccessMessage("Report Approved.");
     }
 
@@ -154,6 +192,13 @@ public class PatientReportUploadController implements Serializable {
         patientReportController.getCurrentPatientReport().setApproved(null);
         patientReportFacade.edit(patientReportController.getCurrentPatientReport());
         System.out.println("Cancel Approved.");
+
+        patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproveAt(null);
+        patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproveUser(null);
+        patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproved(null);
+        patientInvestigationFacade.edit(patientReportController.getCurrentPatientReport().getPatientInvestigation());
+        System.out.println("Investigation Cancel Approved.");
+
         JsfUtil.addSuccessMessage("Cancel Approved.");
     }
 
@@ -176,13 +221,21 @@ public class PatientReportUploadController implements Serializable {
         patientReportController.getCurrentPatientReport().setDataEntryDepartment(null);
         patientReportController.getCurrentPatientReport().setDataEntryInstitution(null);
         patientReportFacade.edit(patientReportController.getCurrentPatientReport());
-        System.out.println("Report Updated.");
+        System.out.println("Report Data Removed.");
+
+        patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntryAt(null);
+        patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntryUser(null);
+        patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntered(null);
+        patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntryDepartment(null);
+        patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntryInstitution(null);
+        patientInvestigationFacade.edit(patientReportController.getCurrentPatientReport().getPatientInvestigation());
+        System.out.println("Investigation Data Removed.");
 
         System.out.println("Remove Successfully.");
         JsfUtil.addSuccessMessage("Remove Successfully.");
     }
 
-    public List<Upload> loadUploads(PatientReport pr) {
+    public Upload loadUploads(PatientReport pr) {
         String jpql = "select u "
                 + " from Upload u "
                 + " where u.retired=:ret"
@@ -196,7 +249,24 @@ public class PatientReportUploadController implements Serializable {
         params.put("ut", UploadType.Lab_Report);
         params.put("prr", false);
 
-        return facade.findByJpql(jpql, params);
+        return facade.findFirstByJpql(jpql, params);
+    }
+
+    public Upload loadUploads(PatientInvestigation pi) {
+        String jpql = "select u "
+                + " from Upload u "
+                + " where u.retired=:ret"
+                + " and u.patientInvestigation=:pi"
+                + " and u.patientReport.retired=:prr"
+                + " and u.uploadType=:ut";
+
+        Map params = new HashMap<>();
+        params.put("ret", false);
+        params.put("pi", pi);
+        params.put("ut", UploadType.Lab_Report);
+        params.put("prr", false);
+
+        return facade.findFirstByJpql(jpql, params);
     }
 
     // Helper method to check if the uploaded file is a PDF
