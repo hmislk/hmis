@@ -436,6 +436,7 @@ public class SaleReturnController implements Serializable {
 
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Returned");
+        returnBillcomment = null;
         if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
             //   ////// // System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
             //   ////// // System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
