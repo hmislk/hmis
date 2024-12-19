@@ -3175,8 +3175,6 @@ public class BillBeanController implements Serializable {
     public List<Bill> billsForTheDayNotPaid(BillType type, Department department, Date fromDate, Date toDate) {
         List<Bill> lstBills;
         String sql;
-        PreBill p = new PreBill();
-        p.getCreatedAt();
         Map temMap = new HashMap();
         sql = "select b from PreBill b "
                 + " where b.billType = :billType "

@@ -41,13 +41,11 @@
                                 icon="fas fa-arrows-rotate"
                                 actionListener="#{searchController.createPreBillsNotPaid()}">
                             </p:commandButton>
-                            
-                             <p:commandButton 
+                            <p:commandButton 
                                 ajax="false" 
                                 value="Add To Stock" 
                                 action="#{searchController.addToStock}" 
                                 icon="fas fa-plus" 
-                                style="width: 150px"
                                 class="ui-button-success mx-5"
                                 disabled="#{!webUserController.hasPrivilege('PharmacyAddToStock')}">
                             </p:commandButton>
@@ -63,15 +61,7 @@
                                 action="#{searchController.navigateToAddToStockBillList()}">
                             </p:commandButton>
 
-
                         </f:facet>
-
-                       
-
-                        <div class="d-flex justify-content-end">
-                           
-                        </div>
-
 
                         <p:dataTable 
                             id="tblBills" value="#{searchController.bills}"                             
@@ -85,6 +75,8 @@
                             rowsPerPageTemplate="5,10,15"
                             selectionPageOnly="false"
                             selectionRowMode="add"
+
+
                             selectionMode="multiple"
                             >
                             <p:column selectionBox="true" width="3em" class="mx-3"></p:column>
