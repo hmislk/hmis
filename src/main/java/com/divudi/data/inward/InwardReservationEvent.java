@@ -3,7 +3,7 @@
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
-package com.divudi.data.channel;
+package com.divudi.data.inward;
 
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.channel.SessionInstance;
