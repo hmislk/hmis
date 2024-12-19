@@ -74,27 +74,27 @@
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="Investigation"/>
                                         <p:inputText class="w-100" value="#{patientInvestigationController.investigationName}"/>
-<!--                                        <p:autoComplete 
-                                            widgetVar="aPt" 
-                                            id="acPt" 
-                                            forceSelection="true" 
-                                            converter="ixcon"
-                                            value="#{patientInvestigationController.investigation}" 
-                                            completeMethod="#{investigationController.completeInvestigationsWIthoutReportFormats}" 
-                                            var="apt" 
-                                            itemLabel="#{apt.name}" 
-                                            inputStyleClass="w-100" 
-                                            itemValue="#{apt}" 
-                                            maxResults="30"
-                                            class="w-100" 
-                                            minQueryLength="3">
-                                            <p:column headerText="Name" style="padding: 6px;">
-                                                #{apt.name}
-                                            </p:column>
-                                            <p:column headerText="Code" style="padding: 6px;">
-                                                #{apt.code}
-                                            </p:column>
-                                        </p:autoComplete> -->
+                                        <!--                                        <p:autoComplete 
+                                                                                    widgetVar="aPt" 
+                                                                                    id="acPt" 
+                                                                                    forceSelection="true" 
+                                                                                    converter="ixcon"
+                                                                                    value="#{patientInvestigationController.investigation}" 
+                                                                                    completeMethod="#{investigationController.completeInvestigationsWIthoutReportFormats}" 
+                                                                                    var="apt" 
+                                                                                    itemLabel="#{apt.name}" 
+                                                                                    inputStyleClass="w-100" 
+                                                                                    itemValue="#{apt}" 
+                                                                                    maxResults="30"
+                                                                                    class="w-100" 
+                                                                                    minQueryLength="3">
+                                                                                    <p:column headerText="Name" style="padding: 6px;">
+                                        #{apt.name}
+                                    </p:column>
+                                    <p:column headerText="Code" style="padding: 6px;">
+                                        #{apt.code}
+                                    </p:column>
+                                </p:autoComplete> -->
                                     </h:panelGrid>
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="Type"/>
@@ -380,7 +380,7 @@
                                                         ajax="false">
                                                     </p:commandButton>
                                                 </div>
-                                                
+
                                                 <div class="row ">
                                                     <p:commandButton 
                                                         icon="fa fa-file-text"
@@ -395,7 +395,7 @@
                                                         ajax="false">
                                                     </p:commandButton>
                                                 </div>
-                                                
+
                                                 <div class="row">
                                                     <p:commandButton 
                                                         icon="fa fa-file-text"
@@ -1060,18 +1060,20 @@
                                         </p:column>
 
                                         <!-- Actions Column -->
-                                        <p:column headerText="Actions" width="18em" style="vertical-align: top;" >
+                                        <p:column headerText="Actions" style="vertical-align: top; width: 180px;" >
                                             <p:commandLink id="cmdOldReport" 
                                                            value="#{dpr.item.name}" 
-                                                           rendered="#{dpr.item ne dpr.patientInvestigation.billItem.item}"
+                                                           rendered="#{dpr.item ne dpr.patientInvestigation.billItem.item and false}"
                                                            ajax="false" action="/lab/patient_report?faces-redirect=true">
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
                                             </p:commandLink>
-                                            
-                                            <h:outputLabel value="Report : #{dpr.id}" /><br/>
-                                            <h:outputLabel value="Type : #{dpr.reportType}" /><br/>
-                                            <h:outputLabel value="Patient Investigation : #{dpr.patientInvestigation.id}" /><br/><br/>
-                                            
+                                            <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}" >
+                                                <h:outputLabel value="Investigation ID : #{dpr.patientInvestigation.id}" /><br/>
+                                                <h:outputLabel value="Report ID : #{dpr.id}" /><br/>
+                                                <h:outputLabel value="Report Type : #{dpr.reportType}" /><br/><br/>
+                                            </h:panelGroup>                                            
+
+
                                             <div class="d-flex gap-2">
                                                 <!-- Old Report CommandLink -->
 
