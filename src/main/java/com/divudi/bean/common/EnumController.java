@@ -75,6 +75,7 @@ public class EnumController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     List<PaymentMethod> paymentMethodsForOpdBilling;
+    private List<PaymentMethod> paymentMethodsForPharmacyPurchase;
     List<PaymentMethod> paymentMethodsForChanneling;
     List<PaymentMethod> paymentMethodsForChannelSettling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
@@ -105,6 +106,8 @@ public class EnumController implements Serializable {
         }
         return paymentMethodsForOpdBilling;
     }
+    
+    
 
     public List<PaymentMethod> getPaymentMethodsForPackageBilling() {
         if (paymentMethodsForOpdBilling == null) {
@@ -146,6 +149,16 @@ public class EnumController implements Serializable {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
             if (include) {
                 paymentMethodsForOpdBilling.add(pm);
+            }
+        }
+    }
+    
+    public void fillPaymentMethodsFoPharmacyPurchase() {
+        paymentMethodsForPharmacyPurchase = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Pharmacy Purchase", true);
+            if (include) {
+                paymentMethodsForPharmacyPurchase.add(pm);
             }
         }
     }
@@ -1029,6 +1042,13 @@ public class EnumController implements Serializable {
 
     public void setAvailableStatusforCancel(List<PatientInvestigationStatus> availableStatusforCancel) {
         this.availableStatusforCancel = availableStatusforCancel;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPharmacyPurchase() {
+        if (paymentMethodsForPharmacyPurchase == null) {
+            fillPaymentMethodsFoPharmacyPurchase();
+        }
+        return paymentMethodsForPharmacyPurchase;
     }
 
 }
