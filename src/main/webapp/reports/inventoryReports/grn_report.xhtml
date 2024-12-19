@@ -182,12 +182,15 @@
                                          rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
 
-                                <p:column headerText="GRN No" width="10em">
-                                    <h:outputText value="#{b.deptId}" />
-                                    <p:commandButton ajax="false" class="mx-2" title="View" icon="fa fa-eye" action="/pharmacy/pharmacy_grn" style="float: right;">
-                                        <f:setPropertyActionListener value="#{b}" target="#{grnController.grnBill}" ></f:setPropertyActionListener>
-                                        <f:setPropertyActionListener value="true" target="#{grnController.printPreview}" ></f:setPropertyActionListener>
-                                    </p:commandButton>
+                                <p:column headerText="GRN No" width="6em">
+                                    <p:commandLink 
+                                        ajax="false" 
+                                        value="#{b.deptId}" 
+                                        action="/pharmacy/pharmacy_grn">
+                                        <f:setPropertyActionListener value="#{b}" target="#{grnController.grnBill}" />
+                                        <f:setPropertyActionListener value="true" target="#{grnController.printPreview}" />
+                                    </p:commandLink>
+                                    
                                     <f:facet name="footer" >
                                         <h:outputText value="Net Purchase Value" />
                                         <br />
