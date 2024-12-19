@@ -347,14 +347,14 @@
                                 <p:column headerText="Supplier" width="5em">
                                     <h:outputLabel value="#{r.toInstitution.name}"/>
                                 </p:column>
-                                <p:column headerText="Purchase Value" width="5em">
+                                <p:column headerText="Purchase Value" width="5em" style="text-align: right;">
                                     <h:outputText value="#{r.netTotal}" />
 
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyController.totalPurchase}" />
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Sale Value" width="5em">
+                                <p:column headerText="Sale Value" width="5em" style="text-align: right;">
                                     <h:outputText value="#{r.saleValue}" />
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyController.totalSaleValue}" />
