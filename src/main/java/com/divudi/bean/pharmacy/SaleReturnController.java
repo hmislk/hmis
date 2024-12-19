@@ -53,7 +53,8 @@ public class SaleReturnController implements Serializable {
     private Bill bill;
     private Bill returnBill;
     private boolean printPreview;
-    String comment;
+    private String returnBillcomment;
+    private PaymentMethod returnPaymentMethod;
     ////////
 
     private List<BillItem> billItems;
@@ -153,12 +154,12 @@ public class SaleReturnController implements Serializable {
 
     }
 
-    public String getComment() {
-        return comment;
+    public String getReturnBillcomment() {
+        return returnBillcomment;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setReturnBillcomment(String returnBillcomment) {
+        this.returnBillcomment = returnBillcomment;
     }
 
     private void savePreReturnBill() {
@@ -202,7 +203,7 @@ public class SaleReturnController implements Serializable {
 
         refundBill.setInstitution(getSessionController().getInstitution());
         refundBill.setDepartment(getSessionController().getDepartment());
-        refundBill.setComments(comment);
+        refundBill.setComments(returnBillcomment);
         refundBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
 
 //        refundBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(
@@ -409,7 +410,7 @@ public class SaleReturnController implements Serializable {
             return;
         }
         
-        if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().equals("")) {
+        if (getReturnBillcomment() == null || getReturnBillcomment() .trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
@@ -423,7 +424,7 @@ public class SaleReturnController implements Serializable {
         Bill b = saveSaleReturnBill();
 //        saveSaleComponent(b);
         //saveSaleComponent and billfees and billFeePayment
-        Payment p = createPayment(b, b.getPaymentMethod());
+        Payment p = createPayment(b, getReturnPaymentMethod());
         drawerController.updateDrawerForOuts(p);
         saveSaleComponent(b, p);
 
@@ -616,6 +617,14 @@ public class SaleReturnController implements Serializable {
 
     public void setStaffBean(StaffService staffBean) {
         this.staffBean = staffBean;
+    }
+
+    public PaymentMethod getReturnPaymentMethod() {
+        return returnPaymentMethod;
+    }
+
+    public void setReturnPaymentMethod(PaymentMethod returnPaymentMethod) {
+        this.returnPaymentMethod = returnPaymentMethod;
     }
 
 }

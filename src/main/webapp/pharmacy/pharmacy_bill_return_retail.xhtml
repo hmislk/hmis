@@ -18,7 +18,7 @@
                                 <p:selectOneMenu  
                                     id="cmbPs"   
                                     style="width: 15em"
-                                    value="#{saleReturnController.returnBill.paymentMethod}">     
+                                    value="#{saleReturnController.returnPaymentMethod}">     
                                     <f:selectItems 
                                         value="#{enumController.paymentMethods}"  />
                                     <p:ajax 
@@ -27,7 +27,7 @@
                                         event="change" />
                                 </p:selectOneMenu>
 
-                                <p:inputText value="#{saleReturnController.returnBill.comments}" class="mx-2" id="comment"/>
+                                <p:inputText value="#{saleReturnController.returnBillcomment}" class="mx-2" id="comment"/>
                                 
                                 <p:commandButton
                                     value="Return"
