@@ -15,13 +15,19 @@
                                 <p:accordionPanel activeIndex="#{pharmacyController.managePharamcyReportIndex}">
                                     <p:ajax process="@this"></p:ajax>
 
-                                    <p:tab title="Financial Reports">
+                                    <p:tab title="Summary Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
                                                 style="text-align: left" 
-                                                value="Cash In/Out Report"
+                                                value="Pharmacy Income Report"
+                                                action="/pharmacy/cash_in_out_ledger?faces-redirect=true"/>
+                                             <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                style="text-align: left" 
+                                                value="Daily Stock Balance"
                                                 action="/pharmacy/cash_in_out_ledger?faces-redirect=true"/>
                                         </div>
                                     </p:tab>
