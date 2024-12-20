@@ -2213,6 +2213,38 @@ public class ReportsController implements Serializable {
         }
     }
 
+    public Map<YearMonth, Double> getSampleCountChartData() {
+        Map<YearMonth, Double> data = new HashMap<>();
+
+        if (reportType.equalsIgnoreCase("detail")) {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, getCollectionCenterWiseTotalSampleCount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
+            }
+        } else {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, calculateRouteWiseTotalSampleCount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
+            }
+        }
+
+        return data;
+    }
+
+    public Map<YearMonth, Double> getServiceAmountChartData() {
+        Map<YearMonth, Double> data = new HashMap<>();
+
+        if (reportType.equalsIgnoreCase("detail")) {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, getCollectionCenterWiseTotalServiceAmount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
+            }
+        } else {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, calculateRouteWiseTotalServiceAmount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
+            }
+        }
+
+        return data;
+    }
+
     private void groupRouteWiseBillsMonthly() {
         Map<Route, Map<YearMonth, Bill>> map = new HashMap<>();
         List<YearMonth> yearMonths = new ArrayList<>();
@@ -3456,13 +3488,4 @@ public class ReportsController implements Serializable {
 
         return subTotal;
     }
-
-    Map<YearMonth, Double> getSampleCountChartData() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    Map<YearMonth, Double> getServiceAmountChartData() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
 }
