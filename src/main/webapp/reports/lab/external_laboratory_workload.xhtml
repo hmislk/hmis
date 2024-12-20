@@ -252,32 +252,31 @@
                         </h:panelGroup>
                         <p:autoComplete
                                 id="acIx"
-                                value="#{reportsController.investigationCode}"
-                                completeMethod="#{opdBillController.completeOpdItemsByWord}"
+                                value="#{reportsController.investigation}"
+                                completeMethod="#{investigationController.completeInvest}"
                                 var="ix"
                                 onfocus="this.select();"
                                 inputStyleClass="w-100"
                                 itemLabel="#{ix.name}"
                                 itemValue="#{ix}"
-                                converter="itemLightConverter"
                                 forceSelection="true"
                                 scrollHeight="250"
                                 multiple="false"
                                 class="w-100">
                             <p:column headerText="Name" style="padding: 8px;">
                                 <f:facet name="header">Name</f:facet>
-                                <h:outputText value="#{ix.name}" />
+                                <h:outputText value="#{ix.name}"/>
                                 <h:panelGroup rendered="#{ix.name ne ix.fullName}">
-                                    <h:outputText value=" (#{ix.fullName})" />
+                                    <h:outputText value=" (#{ix.fullName})"/>
                                 </h:panelGroup>
                             </p:column>
                             <p:column headerText="Dept" style="padding: 8px;">
                                 <f:facet name="header">Dept</f:facet>
-                                <h:outputText value="#{ix.departmentName}" />
+                                <h:outputText value="#{ix.department.name}"/>
                             </p:column>
                             <p:column headerText="Code" style="padding: 8px;">
                                 <f:facet name="header">Code</f:facet>
-                                <h:outputText value="#{ix.code}" />
+                                <h:outputText value="#{ix.code}"/>
                             </p:column>
                         </p:autoComplete>
 
@@ -352,7 +351,8 @@
                         </f:facet>
 
                         <p:column headerText="Sample ID" width="8rem">
-                            <h:outputText value="#{row.billItem.item.code}"/>
+                            <h:outputText
+                                    value="#{patientInvestigationController.getPatientSamplesByInvestigationAsString(row.billItem.patientInvestigation)}"/>
                         </p:column>
                         <p:column headerText="Invoice No" width="14rem">
                             <h:outputText value="#{row.billItem.patientEncounter != null ?
@@ -372,10 +372,10 @@
                             <h:outputText value="#{row.billItem.bill.patient.person.sex}"/>
                         </p:column>
                         <p:column headerText="Investigation" width="6rem">
-                            <h:outputText value="#{row.billItem.patientInvestigation.investigation.name}"/>
+                            <h:outputText value="#{row.billItem.item.name}"/>
                         </p:column>
                         <p:column headerText="Lab Department" width="5rem">
-                            <h:outputText value="#{row.billItem.patientInvestigation.investigation.category.name}"/>
+                            <h:outputText value="#{row.billItem.item.department.name}"/>
                         </p:column>
                         <p:column headerText="CC" width="5rem" rendered="#{reportsController.visitType eq 'CC'}">
                             <h:outputText value="#{row.billItem.bill.collectingCentre.name}"/>
@@ -406,7 +406,7 @@
                             <h:outputText value="#{row.billItem.patientInvestigation.creater.webUserPerson.name}"/>
                         </p:column>
                         <p:column headerText="Remarks" width="5rem">
-                            <h:outputText value="#{row.billItem.patientInvestigation.investigation.comments}"/>
+                            <h:outputText value="#{row.billItem.bill.comments}"/>
                         </p:column>
                         <p:column headerText="Patient Source" width="5rem">
                             <h:outputText value="#{row.billItem.bill.ipOpOrCc}"/>

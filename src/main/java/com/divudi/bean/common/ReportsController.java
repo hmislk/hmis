@@ -21,6 +21,7 @@ import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.RoomCategory;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.facade.*;
@@ -318,6 +319,8 @@ public class ReportsController implements Serializable {
 
     private boolean showChart;
 
+    private Investigation investigation;
+
     public String getDischargedStatus() {
         return dischargedStatus;
     }
@@ -381,6 +384,15 @@ public class ReportsController implements Serializable {
 
     public void setSelectedDateType(String selectedDateType) {
         this.selectedDateType = selectedDateType;
+    }
+    
+    public Investigation getInvestigation() {
+        return investigation;
+    }
+
+    public void setInvestigation(Investigation investigation) {
+        this.investigation = investigation;
+
     }
 
     public Institution getCreditCompany() {
@@ -2942,6 +2954,7 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
@@ -2968,20 +2981,20 @@ public class ReportsController implements Serializable {
     private ReportTemplateRowBundle generateExternalLaboratoryWorkloadBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
-                + "FROM BillItem billItem "
-                + "JOIN billItem.bill bill "
-                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
-                + "WHERE bill.billTypeAtomic IN :bts "
-                + "AND bill.createdAt BETWEEN :fd AND :td ";
-
 //        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
-//                + "FROM PatientInvestigation pi "
-//                + "JOIN pi.billItem billItem "
+//                + "FROM BillItem billItem "
 //                + "JOIN billItem.bill bill "
-//                + "WHERE pi.retired=false "
-//                + " and billItem.retired=false "
-//                + " and bill.retired=false ";
+//                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
+//                + "WHERE bill.billTypeAtomic IN :bts "
+//                + "AND bill.createdAt BETWEEN :fd AND :td ";
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+                + "FROM PatientInvestigation pi "
+                + "JOIN pi.billItem billItem "
+                + "JOIN billItem.bill bill "
+                + "WHERE pi.retired=false "
+                + " and billItem.retired=false "
+                + " and bill.retired=false ";
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
@@ -2999,8 +3012,8 @@ public class ReportsController implements Serializable {
         }
 
         if (item != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.name = :item ";
-            parameters.put("item", item.getName());
+            jpql += "AND billItem.item = :item ";
+            parameters.put("item", item);
         }
 
         if (institution != null) {
@@ -3042,13 +3055,13 @@ public class ReportsController implements Serializable {
         }
 
         if (category != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.category.id = :cat ";
+            jpql += "AND billItem.item.department.id = :cat ";
             parameters.put("cat", category.getId());
         }
 
-        if (investigationCode != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.code = :code ";
-            parameters.put("code", investigationCode.getCode());
+        if (investigation != null) {
+            jpql += "AND billItem.item = :code ";
+            parameters.put("code", investigation);
         }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
