@@ -315,15 +315,14 @@ public class ReportsController implements Serializable {
     private String dischargedStatus;
 
     private String selectedDateType = "invoice";
-
     private boolean showChart;
+    private Investigation investigation;
+
 
     // Map<Week, Map<ItemName, Map<dayOfMonth, Count>>>
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to7;
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to1;
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap1to7;
-
-    private Investigation investigation;
 
     public String getDischargedStatus() {
         return dischargedStatus;
