@@ -13,7 +13,7 @@
     </properties>
   </persistence-unit>
   <persistence-unit name="hmisAuditPU" transaction-type="JTA">
-    <jta-data-source>jdbc/southernlankaAudit</jta-data-source>
+    <jta-data-source>jdbc/ruhunu</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.level.sql" value="SEVERE"/>

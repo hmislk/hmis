@@ -317,7 +317,7 @@
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Comments" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.comments}"/>
+                            <h:outputText value="#{bi.billItem.bill.comments}"/>
                         </p:column>
                         <p:column headerText="Cancelled Receipt No" width="5rem">
                             <h:outputText value="#{bi.billItem.patientEncounter.finalBill.cancelledBill.deptId}"/>
@@ -398,7 +398,7 @@
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Comments" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.comments}"/>
+                            <h:outputText value="#{bi.billItem.bill.comments}"/>
                         </p:column>
                         <p:column headerText="Cancelled Receipt No" width="5rem">
                             <h:outputText value="#{bi.billItem.patientEncounter.finalBill.cancelledBill.deptId}"/>
@@ -443,7 +443,7 @@
                             <h:outputText value="#{bi.billItem.referenceBill.creditCompany.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.createdAt}">
+                            <h:outputText value="#{bi.billItem.referenceBill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
@@ -485,7 +485,7 @@
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Comments" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.comments}"/>
+                            <h:outputText value="#{bi.billItem.bill.comments}"/>
                         </p:column>
                         <p:column headerText="Cancelled Receipt No" width="5rem">
                             <h:outputText value="#{bi.billItem.bill.cancelledBill.deptId}"/>
@@ -526,7 +526,7 @@
                             <h:outputText value="#{bi.billItem.referenceBill.creditCompany.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.createdAt}">
+                            <h:outputText value="#{bi.billItem.referenceBill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
@@ -563,7 +563,7 @@
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Comments" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.comments}"/>
+                            <h:outputText value="#{bi.billItem.bill.comments}"/>
                         </p:column>
                         <p:column headerText="Cancelled Receipt No" width="5rem">
                             <h:outputText value="#{bi.billItem.bill.cancelledBill.deptId}"/>

@@ -3334,7 +3334,6 @@ public class ReportsController implements Serializable {
         return discount;
     }
 
-
     public Double calculateSubTotal() {
         double subTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
@@ -3347,5 +3346,4 @@ public class ReportsController implements Serializable {
 
         return subTotal;
     }
-
 }

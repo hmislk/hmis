@@ -47,7 +47,7 @@
                                 value="Excel" 
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-2">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Transfer_Issue_by_Bill_Item"  />
                             </p:commandButton>
                             <p:commandButton 
                                 value="Print" 
@@ -134,7 +134,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Quantity"/>
                                     </f:facet> 
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}" >
+                                    <h:outputLabel value="#{0 - i.pharmaceuticalBillItem.qty}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
@@ -152,7 +152,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}">
+                                    <h:outputLabel value="#{0 - i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
@@ -181,7 +181,7 @@
                                         <p:column colspan="6"/>
                                         <p:column style="text-align: right;" >
                                             <f:facet name="footer">
-                                                <h:outputLabel value="#{reportsTransfer.purchaseValue}" >
+                                                <h:outputLabel value="#{0 - reportsTransfer.purchaseValue}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </f:facet>
