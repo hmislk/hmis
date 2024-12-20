@@ -11,12 +11,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 /**
  * @author buddhika
  */
-public class TransactionTypeAndPaymentMethodRow implements Serializable {
+public class IncomeRow implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -29,11 +28,9 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
     private BillFee billFee;
     private Payment payment;
 
-
     private BillType billType;
     private BillClassType billClassType;
     BillTypeAtomic billTypeAtomic;
-
 
     private boolean selected;
 
@@ -125,6 +122,7 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
     private double patientDepositValue;
     private double patientPointsValue;
     private double onlineSettlementValue;
+    private double noneValue;
 
     private Double grossTotal;
     private Double discount;
@@ -139,7 +137,7 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
     private Institution collectingCentre;
     private Double totalHospitalFee;
     private Double qty;
-    
+
     private PatientInvestigation patientInvestigation;
 
     private long duration;
@@ -153,21 +151,20 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
     private PaymentHandover paymentHandover;
 
     // Constructor to generate a new UUID when an object is created
-    public TransactionTypeAndPaymentMethodRow() {
+    public IncomeRow() {
         this.id = UUID.randomUUID();
     }
 
-    public TransactionTypeAndPaymentMethodRow(Institution institution) {
+    public IncomeRow(Institution institution) {
         this.institution = institution;
     }
 
-
-    public TransactionTypeAndPaymentMethodRow(Institution institution, Double itemTotal) {
+    public IncomeRow(Institution institution, Double itemTotal) {
         this.itemTotal = itemTotal;
         this.institution = institution;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Institution institution, Long itemCount, Double itemHospitalFee, Double itemCollectingCentreFee, Double itemProfessionalFee, Double itemNetTotal) {
+    public IncomeRow(Institution institution, Long itemCount, Double itemHospitalFee, Double itemCollectingCentreFee, Double itemProfessionalFee, Double itemNetTotal) {
         this.itemCount = itemCount;
         this.itemHospitalFee = itemHospitalFee;
         this.itemCollectingCentreFee = itemCollectingCentreFee;
@@ -176,13 +173,13 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.institution = institution;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Institution collectingCentre, Double totalHospitalFee, Double qty) {
+    public IncomeRow(Institution collectingCentre, Double totalHospitalFee, Double qty) {
         this.collectingCentre = collectingCentre;
         this.totalHospitalFee = totalHospitalFee;
         this.qty = qty;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Route route, Double totalHospitalFee, Double qty) {
+    public IncomeRow(Route route, Double totalHospitalFee, Double qty) {
         this.route = route;
         this.totalHospitalFee = totalHospitalFee;
         this.qty = qty;
@@ -205,7 +202,7 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        TransactionTypeAndPaymentMethodRow that = (TransactionTypeAndPaymentMethodRow) o;
+        IncomeRow that = (IncomeRow) o;
         return Objects.equals(getId(), that.id);
     }
 
@@ -221,27 +218,27 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         return "ReportTemplateRow{id=" + getId() + '}';
     }
 
-    public TransactionTypeAndPaymentMethodRow(PatientInvestigation patientInvestigation) {
+    public IncomeRow(PatientInvestigation patientInvestigation) {
         this.patientInvestigation = patientInvestigation;
     }
 
-    
-    
-    public TransactionTypeAndPaymentMethodRow(SessionInstance sessionInstance) {
+    public IncomeRow(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Department department, Double rowValue) {
+    public IncomeRow(Department department, Double rowValue) {
         this.rowValue = rowValue;
         this.department = department;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Department department, Date date,
-                             double cashValue, double cardValue, double multiplePaymentMethodsValue,
-                             double staffValue, double creditValue, double staffWelfareValue,
-                             double voucherValue, double iouValue, double agentValue,
-                             double chequeValue, double slipValue, double eWalletValue,
-                             double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+    public IncomeRow(Department department, Date date,
+            double cashValue, double cardValue, double multiplePaymentMethodsValue,
+            double staffValue, double creditValue, double staffWelfareValue,
+            double voucherValue, double iouValue, double agentValue,
+            double chequeValue, double slipValue, double eWalletValue,
+            double patientDepositValue, double patientPointsValue, double onlineSettlementValue,
+            double noneValue
+    ) {
         this.department = department;
         this.date = date;
         this.cashValue = cashValue;
@@ -259,14 +256,15 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.patientDepositValue = patientDepositValue;
         this.patientPointsValue = patientPointsValue;
         this.onlineSettlementValue = onlineSettlementValue;
+        this.noneValue = noneValue;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Department department, BillTypeAtomic billTypeAtomic,
-                             double cashValue, double cardValue, double multiplePaymentMethodsValue,
-                             double staffValue, double creditValue, double staffWelfareValue,
-                             double voucherValue, double iouValue, double agentValue,
-                             double chequeValue, double slipValue, double eWalletValue,
-                             double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+    public IncomeRow(Department department, BillTypeAtomic billTypeAtomic,
+            double cashValue, double cardValue, double multiplePaymentMethodsValue,
+            double staffValue, double creditValue, double staffWelfareValue,
+            double voucherValue, double iouValue, double agentValue,
+            double chequeValue, double slipValue, double eWalletValue,
+            double patientDepositValue, double patientPointsValue, double onlineSettlementValue, double noneValue) {
         this.department = department;
         this.billTypeAtomic = billTypeAtomic;
         this.cashValue = cashValue;
@@ -284,14 +282,15 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.patientDepositValue = patientDepositValue;
         this.patientPointsValue = patientPointsValue;
         this.onlineSettlementValue = onlineSettlementValue;
+        this.noneValue = noneValue;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Bill bill,
-                             double cashValue, double cardValue, double multiplePaymentMethodsValue,
-                             double staffValue, double creditValue, double staffWelfareValue,
-                             double voucherValue, double iouValue, double agentValue,
-                             double chequeValue, double slipValue, double eWalletValue,
-                             double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+    public IncomeRow(Bill bill,
+            double cashValue, double cardValue, double multiplePaymentMethodsValue,
+            double staffValue, double creditValue, double staffWelfareValue,
+            double voucherValue, double iouValue, double agentValue,
+            double chequeValue, double slipValue, double eWalletValue,
+            double patientDepositValue, double patientPointsValue, double onlineSettlementValue, double noneValue) {
         this.bill = bill;
         this.cashValue = cashValue;
         this.cardValue = cardValue;
@@ -308,9 +307,10 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.patientDepositValue = patientDepositValue;
         this.patientPointsValue = patientPointsValue;
         this.onlineSettlementValue = onlineSettlementValue;
+        this.noneValue = noneValue;
     }
 
-    public TransactionTypeAndPaymentMethodRow(BillType billType, BillClassType billClassType, BillTypeAtomic billTypeAtomic, Long rowCount, Double grossTotal, Double discount, Double total) {
+    public IncomeRow(BillType billType, BillClassType billClassType, BillTypeAtomic billTypeAtomic, Long rowCount, Double grossTotal, Double discount, Double total) {
         this.billType = billType;
         this.billClassType = billClassType;
         this.billTypeAtomic = billTypeAtomic;
@@ -320,7 +320,7 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.total = total;
     }
 
-    public TransactionTypeAndPaymentMethodRow(BillTypeAtomic billTypeAtomic, Long rowCount, Double grossTotal, Double discount, Double total) {
+    public IncomeRow(BillTypeAtomic billTypeAtomic, Long rowCount, Double grossTotal, Double discount, Double total) {
         this.billTypeAtomic = billTypeAtomic;
         this.rowCount = rowCount;
         this.grossTotal = grossTotal;
@@ -328,17 +328,17 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.total = total;
     }
 
-    public TransactionTypeAndPaymentMethodRow(BillTypeAtomic billTypeAtomic, Long rowCount) {
+    public IncomeRow(BillTypeAtomic billTypeAtomic, Long rowCount) {
         this.billTypeAtomic = billTypeAtomic;
         this.rowCount = rowCount;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Department department, Date date, WebUser user,
-                             double cashValue, double cardValue, double multiplePaymentMethodsValue,
-                             double staffValue, double creditValue, double staffWelfareValue,
-                             double voucherValue, double iouValue, double agentValue,
-                             double chequeValue, double slipValue, double eWalletValue,
-                             double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+    public IncomeRow(Department department, Date date, WebUser user,
+            double cashValue, double cardValue, double multiplePaymentMethodsValue,
+            double staffValue, double creditValue, double staffWelfareValue,
+            double voucherValue, double iouValue, double agentValue,
+            double chequeValue, double slipValue, double eWalletValue,
+            double patientDepositValue, double patientPointsValue, double onlineSettlementValue, double noneValue) {
         this.department = department;
         this.date = date;
         this.cashValue = cashValue;
@@ -357,37 +357,38 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.patientDepositValue = patientDepositValue;
         this.patientPointsValue = patientPointsValue;
         this.onlineSettlementValue = onlineSettlementValue;
+        this.noneValue = noneValue;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Staff referringStaff, Institution referringInstitution, Long long1, Double rowValue) {
+    public IncomeRow(Staff referringStaff, Institution referringInstitution, Long long1, Double rowValue) {
         this.rowValue = rowValue;
         this.long1 = long1;
         this.referringInstitution = referringInstitution;
         this.referringStaff = referringStaff;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Staff referringStaff, Long long1, Double rowValue) {
+    public IncomeRow(Staff referringStaff, Long long1, Double rowValue) {
         this.rowValue = rowValue;
         this.long1 = long1;
         this.referringStaff = referringStaff;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Institution referringInstitution, Long long1, Double rowValue) {
+    public IncomeRow(Institution referringInstitution, Long long1, Double rowValue) {
         this.rowValue = rowValue;
         this.long1 = long1;
         this.referringInstitution = referringInstitution;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Category c) {
+    public IncomeRow(Category c) {
         this.category = c;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Item item) {
+    public IncomeRow(Item item) {
         this.item = item;
 
     }
 
-    public TransactionTypeAndPaymentMethodRow(Department d) {
+    public IncomeRow(Department d) {
         this.department = d;
     }
 
@@ -455,7 +456,7 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         return billSession;
     }
 
-    public TransactionTypeAndPaymentMethodRow(BillSession billSession) {
+    public IncomeRow(BillSession billSession) {
         this.billSession = billSession;
     }
 
@@ -463,7 +464,7 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.billSession = billSession;
     }
 
-    public TransactionTypeAndPaymentMethodRow(String feeName, String categoryName, String toDepartmentName, String itemName, String paymentName, Double rowValue, Long rowCount) {
+    public IncomeRow(String feeName, String categoryName, String toDepartmentName, String itemName, String paymentName, Double rowValue, Long rowCount) {
         this.feeName = feeName;
         this.categoryName = categoryName;
         this.toDepartmentName = toDepartmentName;
@@ -473,58 +474,58 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.rowCount = rowCount;
     }
 
-    public TransactionTypeAndPaymentMethodRow(String categoryName, Long rowCount, Double rowValue) {
+    public IncomeRow(String categoryName, Long rowCount, Double rowValue) {
         this.categoryName = categoryName;
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Category category, Long rowCount, Double rowValue) {
+    public IncomeRow(Category category, Long rowCount, Double rowValue) {
         this.category = category;
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Department itemDept, Long rowCount, Double rowValue) {
+    public IncomeRow(Department itemDept, Long rowCount, Double rowValue) {
         this.itemDepartment = itemDept;
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Item item, Long rowCount, Double rowValue) {
+    public IncomeRow(Item item, Long rowCount, Double rowValue) {
         this.item = item;
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
 
-    public TransactionTypeAndPaymentMethodRow(String categoryName, Double rowValue) {
+    public IncomeRow(String categoryName, Double rowValue) {
         this.categoryName = categoryName;
         this.rowValue = rowValue;
     }
 
-    public TransactionTypeAndPaymentMethodRow(BillTypeAtomic billTypeAtomic, String categoryName, String toDepartmentName, Double rowValue) {
+    public IncomeRow(BillTypeAtomic billTypeAtomic, String categoryName, String toDepartmentName, Double rowValue) {
         this.billTypeAtomic = billTypeAtomic;
         this.categoryName = categoryName;
         this.toDepartmentName = toDepartmentName;
         this.rowValue = rowValue;
     }
 
-    public TransactionTypeAndPaymentMethodRow(BillTypeAtomic billTypeAtomic, Double rowValue) {
+    public IncomeRow(BillTypeAtomic billTypeAtomic, Double rowValue) {
         this.billTypeAtomic = billTypeAtomic;
         this.rowValue = rowValue;
     }
 
-    public TransactionTypeAndPaymentMethodRow(BillTypeAtomic billTypeAtomic, Long rowCount, Double rowValue) {
+    public IncomeRow(BillTypeAtomic billTypeAtomic, Long rowCount, Double rowValue) {
         this.rowValue = rowValue;
         this.rowCount = rowCount;
         this.billTypeAtomic = billTypeAtomic;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Double rowValue) {
+    public IncomeRow(Double rowValue) {
         this.rowValue = rowValue;
     }
 
-    public TransactionTypeAndPaymentMethodRow(BillTypeAtomic billTypeAtomic) {
+    public IncomeRow(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
     }
 
@@ -821,7 +822,7 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.staff = staff;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Staff staff, Long long1, Long long2, Long long3, Long long4, Long long5, Long long6, Long long7) {
+    public IncomeRow(Staff staff, Long long1, Long long2, Long long3, Long long4, Long long5, Long long6, Long long7) {
         this.staff = staff;
         this.long1 = long1;
         this.long2 = long2;
@@ -876,6 +877,8 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.cashValue = cashValue;
     }
 
+    
+    
     public double getCardValue() {
         return cardValue;
     }
@@ -1151,7 +1154,7 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.bill = bill;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Bill bill) {
+    public IncomeRow(Bill bill) {
         this.bill = bill;
     }
 
@@ -1163,7 +1166,7 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.payment = payment;
     }
 
-    public TransactionTypeAndPaymentMethodRow(Payment payment) {
+    public IncomeRow(Payment payment) {
         this.payment = payment;
     }
 
@@ -1207,7 +1210,7 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.billItem = billItem;
     }
 
-    public TransactionTypeAndPaymentMethodRow(BillItem billItem) {
+    public IncomeRow(BillItem billItem) {
         this.billItem = billItem;
     }
 
@@ -1235,7 +1238,7 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.billFee = billFee;
     }
 
-    public TransactionTypeAndPaymentMethodRow(BillFee billFee) {
+    public IncomeRow(BillFee billFee) {
         this.billFee = billFee;
     }
 
@@ -1247,10 +1250,9 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
         this.speciality = speciality;
     }
 
-    public TransactionTypeAndPaymentMethodRow(AgentHistory agentHistory) {
+    public IncomeRow(AgentHistory agentHistory) {
         this.agentHistory = agentHistory;
     }
-
 
     public Double getGrossTotal() {
         return grossTotal;
@@ -1363,6 +1365,13 @@ public class TransactionTypeAndPaymentMethodRow implements Serializable {
     public void setPatientInvestigation(PatientInvestigation patientInvestigation) {
         this.patientInvestigation = patientInvestigation;
     }
-    
-    
+
+    public double getNoneValue() {
+        return noneValue;
+    }
+
+    public void setNoneValue(double noneValue) {
+        this.noneValue = noneValue;
+    }
+
 }
