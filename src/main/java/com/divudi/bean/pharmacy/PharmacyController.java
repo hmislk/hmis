@@ -867,6 +867,11 @@ public class PharmacyController implements Serializable {
 
             bills = null;
             billItems = null;
+            generateConsumptionReportTableByDepartmentAndCategoryWise();
+
+        } else {
+            bills = null;
+            billItems = null;
             departmentSummaries = null;
             generateConsumptionReportTableByDepartmentAndCategoryWise();
 
@@ -1068,7 +1073,7 @@ public class PharmacyController implements Serializable {
         // Mandatory parameters
         parameters.put("fromDate", fromDate);
         parameters.put("toDate", toDate);
-        parameters.put("billType", BillType.PharmacyIssue);
+        parameters.put("billType", BillType.PharmacyTransferIssue);
 
         // Dynamic filters
         if (institution != null) {
