@@ -30,6 +30,7 @@ import com.divudi.light.common.BillSummaryRow;
 import com.divudi.service.BillService;
 import com.divudi.service.PatientInvestigationService;
 import org.primefaces.model.StreamedContent;
+import org.primefaces.model.charts.line.LineChartModel;
 import org.primefaces.model.file.UploadedFile;
 
 import javax.ejb.EJB;
@@ -247,8 +248,6 @@ public class ReportsController implements Serializable {
     private Date maxDate;
     private Doctor referingDoctor;
     private Month month;
-    private PaymentScheme paymentScheme;
-    private String remarks;
 
     private double cashTotal;
     private double cardTotal;
@@ -313,7 +312,7 @@ public class ReportsController implements Serializable {
     private String settlementStatus;
     private String dischargedStatus;
 
-    private String selectedDateType = "invoice";
+    private boolean showChart;
 
     public String getDischargedStatus() {
         return dischargedStatus;
@@ -328,9 +327,11 @@ public class ReportsController implements Serializable {
         return paymentMethod;
     }
 
+
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
+
 
     public CommonController getCommonController() {
         return commonController;
@@ -354,30 +355,6 @@ public class ReportsController implements Serializable {
 
     public void setPatientReportFacade(PatientReportFacade patientReportFacade) {
         this.patientReportFacade = patientReportFacade;
-    }
-
-    public PaymentScheme getPaymentScheme() {
-        return paymentScheme;
-    }
-
-    public void setPaymentScheme(PaymentScheme paymentScheme) {
-        this.paymentScheme = paymentScheme;
-    }
-
-    public String getRemarks() {
-        return remarks;
-    }
-
-    public void setRemarks(String remarks) {
-        this.remarks = remarks;
-    }
-
-    public String getSelectedDateType() {
-        return selectedDateType;
-    }
-
-    public void setSelectedDateType(String selectedDateType) {
-        this.selectedDateType = selectedDateType;
     }
 
     public Institution getCreditCompany() {
@@ -1554,6 +1531,14 @@ public class ReportsController implements Serializable {
         this.groupedRouteWiseBillsMonthly = groupedRouteWiseBillsMonthly;
     }
 
+    public boolean isShowChart() {
+        return showChart;
+    }
+
+    public void setShowChart(boolean showChart) {
+        this.showChart = showChart;
+    }
+
     public void generateSampleCarrierReport() {
         System.out.println("generateSampleCarrierReport = " + this);
         bundle = new ReportTemplateRowBundle();
@@ -2231,6 +2216,38 @@ public class ReportsController implements Serializable {
             }
         }
         return total;
+    }
+
+    public Map<YearMonth, Double> getSampleCountChartData() {
+        Map<YearMonth, Double> data = new HashMap<>();
+
+        if (reportType.equalsIgnoreCase("detail")) {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, getCollectionCenterWiseTotalSampleCount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
+            }
+        } else {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, calculateRouteWiseTotalSampleCount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
+            }
+        }
+
+        return data;
+    }
+
+    public Map<YearMonth, Double> getServiceAmountChartData() {
+        Map<YearMonth, Double> data = new HashMap<>();
+
+        if (reportType.equalsIgnoreCase("detail")) {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, getCollectionCenterWiseTotalServiceAmount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
+            }
+        } else {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, calculateRouteWiseTotalServiceAmount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
+            }
+        }
+
+        return data;
     }
 
     public ReportTemplateRowBundle generateCollectingCenterWiseBillItems(List<BillTypeAtomic> bts) {
@@ -3317,7 +3334,6 @@ public class ReportsController implements Serializable {
         return discount;
     }
 
-
     public Double calculateSubTotal() {
         double subTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
@@ -3329,251 +3345,5 @@ public class ReportsController implements Serializable {
         }
 
         return subTotal;
-    }
-
-    public void generateDiscountReport() {
-        if (visitType == null || visitType.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please select a visit type");
-            return;
-        }
-
-        System.out.println("generateDiscountReport = " + this);
-        bundle = new ReportTemplateRowBundle();
-
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
-        bundle = new ReportTemplateRowBundle();
-
-        if (visitType.equalsIgnoreCase("IP")) {
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
-        } else if (visitType.equalsIgnoreCase("OP")) {
-            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-        }
-
-        if (reportType.equalsIgnoreCase("detail")) {
-            bundle.setName("BillItems");
-            bundle.setBundleType("billItemList");
-
-            bundle = generateDiscountBillItems(opdBts);
-            bundle.calculateTotalDiscountByBillItems();
-        } else if (reportType.equalsIgnoreCase("summary")) {
-            bundle.setName("Bills");
-            bundle.setBundleType("billList");
-
-            bundle = generateDiscountBills(opdBts);
-            bundle.calculateTotalDiscountByBills();
-        }
-    }
-
-    public ReportTemplateRowBundle generateDiscountBills(List<BillTypeAtomic> bts) {
-        Map<String, Object> parameters = new HashMap<>();
-
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
-                + "FROM Bill bill "
-                + "WHERE bill.retired <> :br "
-                + "AND bill.paymentScheme is not null ";
-
-        parameters.put("br", true);
-
-        jpql += "AND bill.billTypeAtomic in :bts ";
-        parameters.put("bts", bts);
-
-        if (paymentMethod != null) {
-            List<PaymentMethod> billPaymentMethods = new ArrayList<>();
-            billPaymentMethods.add(paymentMethod);
-
-            jpql += "AND bill.paymentMethod in :bpms ";
-            parameters.put("bpms", billPaymentMethods);
-        }
-
-        if (visitType != null && (visitType.equalsIgnoreCase("IP") && admissionType != null)) {
-            jpql += "AND bill.patientEncounter.admissionType = :type ";
-            parameters.put("type", admissionType);
-        }
-
-        if (visitType != null && (visitType.equalsIgnoreCase("IP") && roomCategory != null)) {
-            jpql += "AND bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory = :category ";
-            parameters.put("category", roomCategory);
-        }
-
-        if (discount > 0) {
-            jpql += "AND bill.discount = :dis ";
-            parameters.put("dis", discount);
-        }
-
-        if (remarks != null && !remarks.trim().isEmpty()) {
-            jpql += "AND bill.comments LIKE :rem ";
-            parameters.put("rem", remarks + "%");
-        }
-
-        if (institution != null) {
-            jpql += "AND bill.department.institution = :ins ";
-            parameters.put("ins", institution);
-        }
-
-        if (department != null) {
-            jpql += "AND bill.department = :dep ";
-            parameters.put("dep", department);
-        }
-        if (site != null) {
-            jpql += "AND bill.department.site = :site ";
-            parameters.put("site", site);
-        }
-        if (webUser != null) {
-            jpql += "AND bill.creater = :wu ";
-            parameters.put("wu", webUser);
-        }
-
-        if (collectingCentre != null) {
-            jpql += "AND bill.collectingCentre = :cc ";
-            parameters.put("cc", collectingCentre);
-        }
-
-        if (creditCompany != null) {
-            jpql += "AND bill.creditCompany = :cc ";
-            parameters.put("cc", creditCompany);
-        }
-
-        if (paymentScheme != null) {
-            jpql += "AND bill.paymentScheme = :ps ";
-            parameters.put("ps", paymentScheme);
-        }
-
-        if (selectedDateType != null && !selectedDateType.trim().isEmpty() && selectedDateType.equalsIgnoreCase("admission")) {
-            jpql += "AND bill.patientEncounter.dateOfAdmission BETWEEN :fd AND :td ";
-        } else if (selectedDateType != null && !selectedDateType.trim().isEmpty() && selectedDateType.equalsIgnoreCase("discharge")) {
-            jpql += "AND bill.patientEncounter.dateOfDischarge BETWEEN :fd AND :td ";
-        } else {
-            jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
-        }
-
-        parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
-
-        jpql += "GROUP BY bill";
-
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-
-        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
-        b.setReportTemplateRows(rs);
-        b.createRowValuesFromBill();
-        b.calculateTotalsWithCredit();
-        return b;
-    }
-
-    public ReportTemplateRowBundle generateDiscountBillItems(List<BillTypeAtomic> bts) {
-        Map<String, Object> parameters = new HashMap<>();
-
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
-                + "FROM BillItem billItem "
-                + "JOIN billItem.bill bill "
-                + "WHERE billItem.retired <> :bfr AND bill.retired <> :br "
-                + "AND billItem.bill.paymentScheme is not null ";
-
-        parameters.put("bfr", true);
-        parameters.put("br", true);
-
-        jpql += "AND bill.billTypeAtomic in :bts ";
-        parameters.put("bts", bts);
-
-        if (paymentMethod != null) {
-            List<PaymentMethod> billPaymentMethods = new ArrayList<>();
-            billPaymentMethods.add(paymentMethod);
-
-            jpql += "AND bill.paymentMethod in :bpms ";
-            parameters.put("bpms", billPaymentMethods);
-        }
-
-        if (discount > 0) {
-            jpql += "AND billItem.bill.discount = :dis ";
-            parameters.put("dis", discount);
-        }
-
-        if (remarks != null && !remarks.trim().isEmpty()) {
-            jpql += "AND billItem.bill.comments LIKE :rem ";
-            parameters.put("rem", remarks + "%");
-        }
-
-        if (visitType != null && (visitType.equalsIgnoreCase("IP") && admissionType != null)) {
-            jpql += "AND bill.patientEncounter.admissionType = :type ";
-            parameters.put("type", admissionType);
-        }
-
-        if (visitType != null && (visitType.equalsIgnoreCase("IP") && roomCategory != null)) {
-            jpql += "AND bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory = :category ";
-            parameters.put("category", roomCategory);
-        }
-
-        if (institution != null) {
-            jpql += "AND bill.department.institution = :ins ";
-            parameters.put("ins", institution);
-        }
-
-        if (department != null) {
-            jpql += "AND bill.department = :dep ";
-            parameters.put("dep", department);
-        }
-        if (site != null) {
-            jpql += "AND bill.department.site = :site ";
-            parameters.put("site", site);
-        }
-        if (webUser != null) {
-            jpql += "AND bill.creater = :wu ";
-            parameters.put("wu", webUser);
-        }
-
-        if (collectingCentre != null) {
-            jpql += "AND bill.collectingCentre = :cc ";
-            parameters.put("cc", collectingCentre);
-        }
-
-        if (creditCompany != null) {
-            jpql += "AND bill.creditCompany = :cc ";
-            parameters.put("cc", creditCompany);
-        }
-
-        if (paymentScheme != null) {
-            jpql += "AND bill.paymentScheme = :ps ";
-            parameters.put("ps", paymentScheme);
-        }
-
-        if ("notSettled".equalsIgnoreCase(settlementStatus)) {
-            jpql += "AND (billItem.referenceBill.netTotal + billItem.referenceBill.vat + billItem.referenceBill.paidAmount) <> 0 ";
-        } else if ("settled".equalsIgnoreCase(settlementStatus)) {
-            jpql += "AND (billItem.referenceBill.netTotal + billItem.referenceBill.vat + billItem.referenceBill.paidAmount) = 0 ";
-        }
-
-        if (selectedDateType != null && !selectedDateType.trim().isEmpty() && selectedDateType.equalsIgnoreCase("admission")) {
-            jpql += "AND bill.patientEncounter.dateOfAdmission BETWEEN :fd AND :td ";
-        } else if (selectedDateType != null && !selectedDateType.trim().isEmpty() && selectedDateType.equalsIgnoreCase("discharge")) {
-            jpql += "AND bill.patientEncounter.dateOfDischarge BETWEEN :fd AND :td ";
-        } else {
-            jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
-        }
-
-        parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
-
-        jpql += "GROUP BY billItem";
-
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-
-        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
-        b.setReportTemplateRows(rs);
-        b.createRowValuesFromBillItems();
-        b.calculateTotalsWithCredit();
-        return b;
     }
 }
