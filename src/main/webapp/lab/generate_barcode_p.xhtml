@@ -74,27 +74,6 @@
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="Investigation"/>
                                         <p:inputText class="w-100" value="#{patientInvestigationController.investigationName}"/>
-                                        <!--                                        <p:autoComplete 
-                                                                                    widgetVar="aPt" 
-                                                                                    id="acPt" 
-                                                                                    forceSelection="true" 
-                                                                                    converter="ixcon"
-                                                                                    value="#{patientInvestigationController.investigation}" 
-                                                                                    completeMethod="#{investigationController.completeInvestigationsWIthoutReportFormats}" 
-                                                                                    var="apt" 
-                                                                                    itemLabel="#{apt.name}" 
-                                                                                    inputStyleClass="w-100" 
-                                                                                    itemValue="#{apt}" 
-                                                                                    maxResults="30"
-                                                                                    class="w-100" 
-                                                                                    minQueryLength="3">
-                                                                                    <p:column headerText="Name" style="padding: 6px;">
-                                        #{apt.name}
-                                    </p:column>
-                                    <p:column headerText="Code" style="padding: 6px;">
-                                        #{apt.code}
-                                    </p:column>
-                                </p:autoComplete> -->
                                     </h:panelGrid>
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="Type"/>
@@ -1078,30 +1057,53 @@
                                                 <!-- Old Report CommandLink -->
 
                                                 <!-- Edit Report CommandLink -->
-                                                <p:commandLink id="cmdOldReportEdit" ajax="false" action="#{patientReportController.navigateToViewPatientReport(dpr)}">
+                                                <p:commandLink 
+                                                    id="cmdOldReportEdit" 
+                                                    ajax="false" 
+                                                    action="#{patientReportController.navigateToViewPatientReport(dpr)}">
                                                     <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" />
                                                 </p:commandLink>
 
                                                 <!-- Print Report CommandLink 1 -->
-                                                <p:commandLink id="cmdOldReportPrint1" ajax="false" action="/lab/patient_report_print?faces-redirect=true" disabled="#{!dpr.approved}" rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
+                                                <p:commandLink 
+                                                    id="cmdOldReportPrint1" 
+                                                    ajax="false" 
+                                                    action="#{patientReportController.navigateToPrintPatientReport(dpr)}" 
+                                                    disabled="#{!dpr.approved}" 
+                                                    rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
                                                     <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" />
-                                                    <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
                                                 </p:commandLink>
 
                                                 <!-- Print Report CommandLink 2 -->
-                                                <p:commandLink id="cmdOldReportPrint2" ajax="false" action="/lab/patient_report_print?faces-redirect=true" disabled="#{!dpr.approved or dpr.patientInvestigation.billItem.bill.backwardReferenceBill.balance ne 0}" rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
+                                                <p:commandLink 
+                                                    id="cmdOldReportPrint2" 
+                                                    ajax="false" 
+                                                    action="#{patientReportController.navigateToPrintPatientReport(dpr)}" 
+                                                    disabled="#{!dpr.approved or dpr.patientInvestigation.billItem.bill.backwardReferenceBill.balance ne 0}" 
+                                                    rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
                                                     <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" />
-                                                    <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
                                                 </p:commandLink>
 
                                                 <!-- Approved and Printed Icons -->
-                                                <p:graphicImage id="imgApproved" library="image" name="approved_icon.png" 
-                                                                style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" />
-                                                <p:graphicImage id="imgPrinted" library="image" name="print_ok.png" 
-                                                                style="height: 30px; width: 30px; #{dpr.printed ? '':'opacity: 0.1;'}" />
+                                                <p:graphicImage 
+                                                    id="imgApproved" 
+                                                    library="image" 
+                                                    name="approved_icon.png" 
+                                                    style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" />
+                                                
+                                                <p:graphicImage 
+                                                    id="imgPrinted" 
+                                                    library="image" 
+                                                    name="print_ok.png" 
+                                                    style="height: 30px; width: 30px; #{dpr.printed ? '':'opacity: 0.1;'}" />
 
                                                 <!-- Email CommandLink -->
-                                                <p:commandLink ajax="false" rendered="fslse" id="btnEmail" disabled="#{dpr.patientInvestigation.billItem.bill.cancelled or dpr.patientInvestigation.billItem.transRefund}" action="#{patientReportController.sendEmail()}">
+                                                <p:commandLink 
+                                                    ajax="false" 
+                                                    rendered="fslse" 
+                                                    id="btnEmail" 
+                                                    disabled="#{dpr.patientInvestigation.billItem.bill.cancelled or dpr.patientInvestigation.billItem.transRefund}" 
+                                                    action="#{patientReportController.sendEmail()}">
                                                     <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
                                                     <p:graphicImage library="image" styleClass="standedicon" name="email.jpg" />
                                                 </p:commandLink>

@@ -203,10 +203,26 @@
                     </h:panelGrid>
 
                     <p:commandButton ajax="false" value="Process"
-                                     action="#{reportsController.generateRouteAnalysisReport()}"
+                                     action="#{reportsController.generateRouteAnalysisReport}"
                                      style="width: 150px"
                                      icon="fas fa-cogs"
                                      class="ui-button-warning m-2">
+                    </p:commandButton>
+
+                    <p:commandButton ajax="false" value="Show Chart"
+                                     style="width: 150px"
+                                     icon="fas fa-cogs"
+                                     action="#{reportsController.setShowChart(true)}"
+                                     class="ui-button-warning m-2"
+                                     rendered="#{reportsController.bundle ne null and reportsController.showChart eq false}">
+                    </p:commandButton>
+
+                    <p:commandButton ajax="false" value="Hide Chart"
+                                     style="width: 150px"
+                                     icon="fas fa-cogs"
+                                     action="#{reportsController.setShowChart(false)}"
+                                     class="ui-button-warning m-2"
+                                     rendered="#{reportsController.bundle ne null and reportsController.showChart eq true}">
                     </p:commandButton>
 
                     <p:commandButton
@@ -249,6 +265,23 @@
                     </h:panelGrid>
 
                     <h:panelGroup id="printPanel">
+                        <div class="card">
+                            <h:form rendered="#{reportsController.showChart}">
+                                <p:growl id="growl" showDetail="true"/>
+                                <p:lineChart model="#{chartJsView.countChartModel}"
+                                             style="width: 100%; height: 500px;"
+                                             rendered="#{reportsController.reportType ne null}">
+                                    <p:ajax event="itemSelect" listener="#{chartJsView.itemSelect}" update="growl"/>
+                                </p:lineChart>
+
+                                <p:lineChart model="#{chartJsView.serviceChartModel}"
+                                             style="width: 100%; height: 500px;"
+                                             rendered="#{reportsController.reportType ne null}">
+                                    <p:ajax event="itemSelect" listener="#{chartJsView.itemSelect}" update="growl"/>
+                                </p:lineChart>
+                            </h:form>
+                        </div>
+
                         <p:dataTable id="tbl"
                                      class="w-100 m-2"
                                      value="#{reportsController.groupedCollectingCenterWiseBillsMonthly.entrySet()}"
