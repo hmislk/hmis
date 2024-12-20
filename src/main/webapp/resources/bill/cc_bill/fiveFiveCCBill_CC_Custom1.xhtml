@@ -142,8 +142,7 @@
                             </td>
                         </tr>
                     </h:panelGroup>-->
-                    
-                    <h:panelGroup rendered="#{cc.attrs.bill.externalDoctor  ne null}" >
+                    <h:panelGroup rendered="#{not empty cc.attrs.bill.externalDoctor}" >
                         <tr>
                             <td style="text-align: left; font-size: 12px;" >
                                 <h:outputLabel  

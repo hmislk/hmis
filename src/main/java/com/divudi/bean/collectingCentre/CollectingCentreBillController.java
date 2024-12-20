@@ -1606,6 +1606,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         paymentMethod = PaymentMethod.Agent;
         collectingCentre = null;
         opdItems = null;
+        externalDoctor = null;
     }
 
     public void prepareNewBillKeepingCollectingCenter() {
