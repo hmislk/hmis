@@ -142,6 +142,28 @@
                             </td>
                         </tr>
                     </h:panelGroup>-->
+                    
+                    <h:panelGroup rendered="#{cc.attrs.bill.externalDoctor  ne null}" >
+                        <tr>
+                            <td style="text-align: left; font-size: 12px;" >
+                                <h:outputLabel 
+                                    class="billDetailsFiveFive" 
+                                    value="Ext. Doctor" 
+                                    style="font-size: 12px;">
+                                </h:outputLabel>
+                            </td>
+                            <td></td>
+                            <td>:</td>
+                            <td></td>
+                            <td colspan="5">
+                                <h:outputLabel 
+                                    class="billDetailsFiveFive" 
+                                    value="#{cc.attrs.bill.externalDoctor}" 
+                                    style="font-size: 12px;">
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.institution ne null}" >
                         <tr>
@@ -257,7 +279,7 @@
                                 <h:outputLabel value="Total" style="font-size: 13px; font-weight: bold;"/>
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.transTotalWithOutCCFee+cc.attrs.bill.transTotalCCFee}" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}" style="font-size: 13px!important; font-weight: bolder!important;" >
+                                <h:outputLabel value="#{cc.attrs.bill.transTotalWithOutCCFee+cc.attrs.bill.netTotal}" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}" style="font-size: 13px!important; font-weight: bolder!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.transTotalWithOutCCFee+cc.attrs.bill.cancelledBill.transTotalCCFee}" rendered="#{cc.attrs.bill.cancelledBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
