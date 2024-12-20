@@ -149,23 +149,39 @@
                                              value="Process" 
                                              action="#{pharmacyController.generateGRNReportTable()}">
                             </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
-                                <p:printer target="tbl1"  rendered="#{pharmacyController.reportType eq 'detailReport'}"/> 
-                                <p:printer target="tbl2"  rendered="#{pharmacyController.reportType eq 'returnReport'}"/>
-                                <p:printer target="tbl3"  rendered="#{pharmacyController.reportType eq 'summeryReport'}"/>                                 
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'detailReport'}">
+                                <p:printer target="tbl1" />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                                <p:dataExporter type="xlsx" target="tbl1" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'detailReport'}" />
-                                <p:dataExporter type="xlsx" target="tbl2" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'returnReport'}" />
-                                <p:dataExporter type="xlsx" target="tbl3" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'summeryReport'}" />
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'returnReport'}">
+                                <p:printer target="tbl2" />
                             </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
+                                <p:printer target="tbl3" />
+                            </p:commandButton>
+                            
 
-                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
-                                <p:dataExporter type="pdf" target="tbl1" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'detailReport'}" />
-                                <p:dataExporter type="pdf" target="tbl2" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'returnReport'}" />
-                                <p:dataExporter type="pdf" target="tbl3" fileName="#{pharmacyController.reportType}" rendered="#{pharmacyController.reportType eq 'summeryReport'}" />
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'detailReport'}">
+                                <p:dataExporter type="xlsx" target="tbl1" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
                             </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'returnReport'}">
+                                <p:dataExporter type="xlsx" target="tbl2" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
+                                <p:dataExporter type="xlsx" target="tbl3" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
+                            </p:commandButton>
+                            
 
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'detailReport'}">
+                                <p:dataExporter type="pdf" target="tbl1" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'returnReport'}">
+                                <p:dataExporter type="pdf" target="tbl2" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
+                                <p:dataExporter type="pdf" target="tbl3" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
+                            </p:commandButton>
+                            
+                            
                         </div>
 
 
@@ -182,26 +198,29 @@
                                          rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
 
-                                <p:column headerText="GRN No" width="10em">
-                                    <h:outputText value="#{b.deptId}" />
-                                    <p:commandButton ajax="false" class="mx-2" title="View" icon="fa fa-eye" action="/pharmacy/pharmacy_grn" style="float: right;">
-                                        <f:setPropertyActionListener value="#{b}" target="#{grnController.grnBill}" ></f:setPropertyActionListener>
-                                        <f:setPropertyActionListener value="true" target="#{grnController.printPreview}" ></f:setPropertyActionListener>
-                                    </p:commandButton>
+                                <p:column headerText="GRN No" width="8em" style="text-align: left;">
+                                    <p:commandLink 
+                                        ajax="false" 
+                                        value="#{b.deptId}" 
+                                        action="/pharmacy/pharmacy_grn">
+                                        <f:setPropertyActionListener value="#{b}" target="#{grnController.grnBill}" />
+                                        <f:setPropertyActionListener value="true" target="#{grnController.printPreview}" />
+                                    </p:commandLink>
+                                    
                                     <f:facet name="footer" >
-                                        <h:outputText value="Net Purchase Value" />
+                                        <h:outputLabel value="Net Purchase Value" />
                                         <br />
-                                        <h:outputText value="Net Sale Value" />
+                                        <h:outputLabel value="Net Sale Value" />
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Invoice No" width="6em">
-                                    <h:outputText value="#{b.invoiceNumber}" style="float: right; padding-right: 15px"/>
+                                <p:column headerText="Invoice No" width="4em" style="text-align: right;">
+                                    <h:outputText value="#{b.invoiceNumber}" />
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" style="float: right;">
+                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                         <br />
-                                        <h:outputLabel value="#{pharmacyController.totalSaleValue}" style="float: right;">
+                                        <h:outputLabel value="#{pharmacyController.totalSaleValue}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
@@ -231,46 +250,46 @@
                                 <p:column headerText="Po No" width="6em">
                                     <h:outputText value="#{b.referenceBill.deptId}" />
                                 </p:column>
-                                <p:column headerText="Purchase Value Cash" width="6em">
-                                    <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" style="float: right; padding-right: 15px">
+                                <p:column headerText="Purchase Value Cash" width="6em" style="text-align: right;">
+                                    <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" style="float: right; padding-right: 15px"/>
+                                    <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.totalCashPurchaseValue}" style="float: right; padding-right: 15px">
+                                        <h:outputLabel value="#{pharmacyController.totalCashPurchaseValue}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Purchase Value Credit" width="6em">
-                                    <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}" style="float: right; padding-right: 15px" >
+                                <p:column headerText="Purchase Value Credit" width="6em" style="text-align: right;">
+                                    <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00" style="float: right; padding-right: 15px"/>
+                                    <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00" />
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.totalCreditPurchaseValue}" style="float: right; padding-right: 15px">
+                                        <h:outputLabel value="#{pharmacyController.totalCreditPurchaseValue}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Sale Value Cash" width="6em">
-                                    <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.saleValue}" style="float: right; padding-right: 15px">
+                                <p:column headerText="Sale Value Cash" width="6em" style="text-align: right;">
+                                    <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.saleValue}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" style="float: right; padding-right: 15px"/>
+                                    <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.totalCashSaleValue}" style="float: right; padding-right: 15px">
+                                        <h:outputLabel value="#{pharmacyController.totalCashSaleValue}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Sale Value Credit" width="6em">
-                                    <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.saleValue}" style="float: right; padding-right: 20px" >
+                                <p:column headerText="Sale Value Credit" width="6em" style="text-align: right;">
+                                    <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.saleValue}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00" style="float: right; padding-right: 20px"/>
+                                    <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00" />
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.totalCreditSaleValue}" style="float: right; padding-right: 20px" >
+                                        <h:outputLabel value="#{pharmacyController.totalCreditSaleValue}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
@@ -328,14 +347,14 @@
                                 <p:column headerText="Supplier" width="5em">
                                     <h:outputLabel value="#{r.toInstitution.name}"/>
                                 </p:column>
-                                <p:column headerText="Purchase Value" width="5em">
+                                <p:column headerText="Purchase Value" width="5em" style="text-align: right;">
                                     <h:outputText value="#{r.netTotal}" />
 
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyController.totalPurchase}" />
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Sale Value" width="5em">
+                                <p:column headerText="Sale Value" width="5em" style="text-align: right;">
                                     <h:outputText value="#{r.saleValue}" />
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyController.totalSaleValue}" />
