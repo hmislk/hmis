@@ -37,22 +37,22 @@ public class IncomeRow implements Serializable {
     private Item item;
 
     private Long categoryCount;
-    private Double categoryTotal;
-    private Double categoryHospitalFee;
-    private Double categoryDiscountAmount;
-    private Double categoryCollectingCentreFee;
-    private Double categoryDiscount;
-    private Double categoryProfessionalFee;
-    private Double categoryNetTotal;
+    private double categoryTotal;
+    private double categoryHospitalFee;
+    private double categoryDiscountAmount;
+    private double categoryCollectingCentreFee;
+    private double categoryDiscount;
+    private double categoryProfessionalFee;
+    private double categoryNetTotal;
 
     private Long itemCount;
-    private Double itemTotal;
-    private Double itemHospitalFee;
-    private Double itemDiscountAmount;
-    private Double itemCollectingCentreFee;
-    private Double itemDiscount;
-    private Double itemProfessionalFee;
-    private Double itemNetTotal;
+    private double itemTotal;
+    private double itemHospitalFee;
+    private double itemDiscountAmount;
+    private double itemCollectingCentreFee;
+    private double itemDiscount;
+    private double itemProfessionalFee;
+    private double itemNetTotal;
 
     private List<Bill> cashHnadovers;
 
@@ -61,9 +61,9 @@ public class IncomeRow implements Serializable {
     private String toDepartmentName;
     private String itemName;
     private String paymentName;
-    private Double rowValue;
-    private Double rowValueIn;
-    private Double rowValueOut;
+    private double rowValue;
+    private double rowValueIn;
+    private double rowValueOut;
     private Long rowCountIn;
     private Long rowCountOut;
     private Long rowCount;
@@ -123,20 +123,24 @@ public class IncomeRow implements Serializable {
     private double patientPointsValue;
     private double onlineSettlementValue;
     private double noneValue;
+    private double opdCreditValue;
+    private double inpatientCreditValue;
 
-    private Double grossTotal;
-    private Double discount;
-    private Double total;
-    private Double tax;
+    private double grossTotal;
+    private double discount;
+    private double serviceCharge;
+    private double tax;
+    private double actualTotal;
+    private double netTotal;
 
-    private Double hospitalTotal;
-    private Double staffTotal;
-    private Double ccTotal;
+    private double hospitalTotal;
+    private double staffTotal;
+    private double ccTotal;
 
     private Route route;
     private Institution collectingCentre;
-    private Double totalHospitalFee;
-    private Double qty;
+    private double totalHospitalFee;
+    private double qty;
 
     private PatientInvestigation patientInvestigation;
 
@@ -159,12 +163,12 @@ public class IncomeRow implements Serializable {
         this.institution = institution;
     }
 
-    public IncomeRow(Institution institution, Double itemTotal) {
+    public IncomeRow(Institution institution, double itemTotal) {
         this.itemTotal = itemTotal;
         this.institution = institution;
     }
 
-    public IncomeRow(Institution institution, Long itemCount, Double itemHospitalFee, Double itemCollectingCentreFee, Double itemProfessionalFee, Double itemNetTotal) {
+    public IncomeRow(Institution institution, Long itemCount, double itemHospitalFee, double itemCollectingCentreFee, double itemProfessionalFee, double itemNetTotal) {
         this.itemCount = itemCount;
         this.itemHospitalFee = itemHospitalFee;
         this.itemCollectingCentreFee = itemCollectingCentreFee;
@@ -173,13 +177,13 @@ public class IncomeRow implements Serializable {
         this.institution = institution;
     }
 
-    public IncomeRow(Institution collectingCentre, Double totalHospitalFee, Double qty) {
+    public IncomeRow(Institution collectingCentre, double totalHospitalFee, double qty) {
         this.collectingCentre = collectingCentre;
         this.totalHospitalFee = totalHospitalFee;
         this.qty = qty;
     }
 
-    public IncomeRow(Route route, Double totalHospitalFee, Double qty) {
+    public IncomeRow(Route route, double totalHospitalFee, double qty) {
         this.route = route;
         this.totalHospitalFee = totalHospitalFee;
         this.qty = qty;
@@ -226,7 +230,7 @@ public class IncomeRow implements Serializable {
         this.sessionInstance = sessionInstance;
     }
 
-    public IncomeRow(Department department, Double rowValue) {
+    public IncomeRow(Department department, double rowValue) {
         this.rowValue = rowValue;
         this.department = department;
     }
@@ -310,22 +314,22 @@ public class IncomeRow implements Serializable {
         this.noneValue = noneValue;
     }
 
-    public IncomeRow(BillType billType, BillClassType billClassType, BillTypeAtomic billTypeAtomic, Long rowCount, Double grossTotal, Double discount, Double total) {
+    public IncomeRow(BillType billType, BillClassType billClassType, BillTypeAtomic billTypeAtomic, Long rowCount, double grossTotal, double discount, double total) {
         this.billType = billType;
         this.billClassType = billClassType;
         this.billTypeAtomic = billTypeAtomic;
         this.rowCount = rowCount;
         this.grossTotal = grossTotal;
         this.discount = discount;
-        this.total = total;
+        this.netTotal = total;
     }
 
-    public IncomeRow(BillTypeAtomic billTypeAtomic, Long rowCount, Double grossTotal, Double discount, Double total) {
+    public IncomeRow(BillTypeAtomic billTypeAtomic, Long rowCount, double grossTotal, double discount, double total) {
         this.billTypeAtomic = billTypeAtomic;
         this.rowCount = rowCount;
         this.grossTotal = grossTotal;
         this.discount = discount;
-        this.total = total;
+        this.netTotal = total;
     }
 
     public IncomeRow(BillTypeAtomic billTypeAtomic, Long rowCount) {
@@ -360,20 +364,20 @@ public class IncomeRow implements Serializable {
         this.noneValue = noneValue;
     }
 
-    public IncomeRow(Staff referringStaff, Institution referringInstitution, Long long1, Double rowValue) {
+    public IncomeRow(Staff referringStaff, Institution referringInstitution, Long long1, double rowValue) {
         this.rowValue = rowValue;
         this.long1 = long1;
         this.referringInstitution = referringInstitution;
         this.referringStaff = referringStaff;
     }
 
-    public IncomeRow(Staff referringStaff, Long long1, Double rowValue) {
+    public IncomeRow(Staff referringStaff, Long long1, double rowValue) {
         this.rowValue = rowValue;
         this.long1 = long1;
         this.referringStaff = referringStaff;
     }
 
-    public IncomeRow(Institution referringInstitution, Long long1, Double rowValue) {
+    public IncomeRow(Institution referringInstitution, Long long1, double rowValue) {
         this.rowValue = rowValue;
         this.long1 = long1;
         this.referringInstitution = referringInstitution;
@@ -436,11 +440,11 @@ public class IncomeRow implements Serializable {
         this.paymentName = paymentName;
     }
 
-    public Double getRowValue() {
+    public double getRowValue() {
         return rowValue;
     }
 
-    public void setRowValue(Double rowValue) {
+    public void setRowValue(double rowValue) {
         this.rowValue = rowValue;
     }
 
@@ -464,7 +468,7 @@ public class IncomeRow implements Serializable {
         this.billSession = billSession;
     }
 
-    public IncomeRow(String feeName, String categoryName, String toDepartmentName, String itemName, String paymentName, Double rowValue, Long rowCount) {
+    public IncomeRow(String feeName, String categoryName, String toDepartmentName, String itemName, String paymentName, double rowValue, Long rowCount) {
         this.feeName = feeName;
         this.categoryName = categoryName;
         this.toDepartmentName = toDepartmentName;
@@ -474,54 +478,54 @@ public class IncomeRow implements Serializable {
         this.rowCount = rowCount;
     }
 
-    public IncomeRow(String categoryName, Long rowCount, Double rowValue) {
+    public IncomeRow(String categoryName, Long rowCount, double rowValue) {
         this.categoryName = categoryName;
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
 
-    public IncomeRow(Category category, Long rowCount, Double rowValue) {
+    public IncomeRow(Category category, Long rowCount, double rowValue) {
         this.category = category;
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
 
-    public IncomeRow(Department itemDept, Long rowCount, Double rowValue) {
+    public IncomeRow(Department itemDept, Long rowCount, double rowValue) {
         this.itemDepartment = itemDept;
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
 
-    public IncomeRow(Item item, Long rowCount, Double rowValue) {
+    public IncomeRow(Item item, Long rowCount, double rowValue) {
         this.item = item;
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
 
-    public IncomeRow(String categoryName, Double rowValue) {
+    public IncomeRow(String categoryName, double rowValue) {
         this.categoryName = categoryName;
         this.rowValue = rowValue;
     }
 
-    public IncomeRow(BillTypeAtomic billTypeAtomic, String categoryName, String toDepartmentName, Double rowValue) {
+    public IncomeRow(BillTypeAtomic billTypeAtomic, String categoryName, String toDepartmentName, double rowValue) {
         this.billTypeAtomic = billTypeAtomic;
         this.categoryName = categoryName;
         this.toDepartmentName = toDepartmentName;
         this.rowValue = rowValue;
     }
 
-    public IncomeRow(BillTypeAtomic billTypeAtomic, Double rowValue) {
+    public IncomeRow(BillTypeAtomic billTypeAtomic, double rowValue) {
         this.billTypeAtomic = billTypeAtomic;
         this.rowValue = rowValue;
     }
 
-    public IncomeRow(BillTypeAtomic billTypeAtomic, Long rowCount, Double rowValue) {
+    public IncomeRow(BillTypeAtomic billTypeAtomic, Long rowCount, double rowValue) {
         this.rowValue = rowValue;
         this.rowCount = rowCount;
         this.billTypeAtomic = billTypeAtomic;
     }
 
-    public IncomeRow(Double rowValue) {
+    public IncomeRow(double rowValue) {
         this.rowValue = rowValue;
     }
 
@@ -582,19 +586,19 @@ public class IncomeRow implements Serializable {
         return feeName;
     }
 
-    public Double getRowValueIn() {
+    public double getRowValueIn() {
         return rowValueIn;
     }
 
-    public void setRowValueIn(Double rowValueIn) {
+    public void setRowValueIn(double rowValueIn) {
         this.rowValueIn = rowValueIn;
     }
 
-    public Double getRowValueOut() {
+    public double getRowValueOut() {
         return rowValueOut;
     }
 
-    public void setRowValueOut(Double rowValueOut) {
+    public void setRowValueOut(double rowValueOut) {
         this.rowValueOut = rowValueOut;
     }
 
@@ -877,8 +881,6 @@ public class IncomeRow implements Serializable {
         this.cashValue = cashValue;
     }
 
-    
-    
     public double getCardValue() {
         return cardValue;
     }
@@ -1018,59 +1020,59 @@ public class IncomeRow implements Serializable {
         this.categoryCount = categoryCount;
     }
 
-    public Double getCategoryTotal() {
+    public double getCategoryTotal() {
         return categoryTotal;
     }
 
-    public void setCategoryTotal(Double categoryTotal) {
+    public void setCategoryTotal(double categoryTotal) {
         this.categoryTotal = categoryTotal;
     }
 
-    public Double getCategoryHospitalFee() {
+    public double getCategoryHospitalFee() {
         return categoryHospitalFee;
     }
 
-    public void setCategoryHospitalFee(Double categoryHospitalFee) {
+    public void setCategoryHospitalFee(double categoryHospitalFee) {
         this.categoryHospitalFee = categoryHospitalFee;
     }
 
-    public Double getCategoryDiscountAmount() {
+    public double getCategoryDiscountAmount() {
         return categoryDiscountAmount;
     }
 
-    public void setCategoryDiscountAmount(Double categoryDiscountAmount) {
+    public void setCategoryDiscountAmount(double categoryDiscountAmount) {
         this.categoryDiscountAmount = categoryDiscountAmount;
     }
 
-    public Double getCategoryCollectingCentreFee() {
+    public double getCategoryCollectingCentreFee() {
         return categoryCollectingCentreFee;
     }
 
-    public void setCategoryCollectingCentreFee(Double categoryCollectingCentreFee) {
+    public void setCategoryCollectingCentreFee(double categoryCollectingCentreFee) {
         this.categoryCollectingCentreFee = categoryCollectingCentreFee;
     }
 
-    public Double getCategoryDiscount() {
+    public double getCategoryDiscount() {
         return categoryDiscount;
     }
 
-    public void setCategoryDiscount(Double categoryDiscount) {
+    public void setCategoryDiscount(double categoryDiscount) {
         this.categoryDiscount = categoryDiscount;
     }
 
-    public Double getCategoryProfessionalFee() {
+    public double getCategoryProfessionalFee() {
         return categoryProfessionalFee;
     }
 
-    public void setCategoryProfessionalFee(Double categoryProfessionalFee) {
+    public void setCategoryProfessionalFee(double categoryProfessionalFee) {
         this.categoryProfessionalFee = categoryProfessionalFee;
     }
 
-    public Double getCategoryNetTotal() {
+    public double getCategoryNetTotal() {
         return categoryNetTotal;
     }
 
-    public void setCategoryNetTotal(Double categoryNetTotal) {
+    public void setCategoryNetTotal(double categoryNetTotal) {
         this.categoryNetTotal = categoryNetTotal;
     }
 
@@ -1082,59 +1084,59 @@ public class IncomeRow implements Serializable {
         this.itemCount = itemCount;
     }
 
-    public Double getItemTotal() {
+    public double getItemTotal() {
         return itemTotal;
     }
 
-    public void setItemTotal(Double itemTotal) {
+    public void setItemTotal(double itemTotal) {
         this.itemTotal = itemTotal;
     }
 
-    public Double getItemHospitalFee() {
+    public double getItemHospitalFee() {
         return itemHospitalFee;
     }
 
-    public void setItemHospitalFee(Double itemHospitalFee) {
+    public void setItemHospitalFee(double itemHospitalFee) {
         this.itemHospitalFee = itemHospitalFee;
     }
 
-    public Double getItemDiscountAmount() {
+    public double getItemDiscountAmount() {
         return itemDiscountAmount;
     }
 
-    public void setItemDiscountAmount(Double itemDiscountAmount) {
+    public void setItemDiscountAmount(double itemDiscountAmount) {
         this.itemDiscountAmount = itemDiscountAmount;
     }
 
-    public Double getItemCollectingCentreFee() {
+    public double getItemCollectingCentreFee() {
         return itemCollectingCentreFee;
     }
 
-    public void setItemCollectingCentreFee(Double itemCollectingCentreFee) {
+    public void setItemCollectingCentreFee(double itemCollectingCentreFee) {
         this.itemCollectingCentreFee = itemCollectingCentreFee;
     }
 
-    public Double getItemDiscount() {
+    public double getItemDiscount() {
         return itemDiscount;
     }
 
-    public void setItemDiscount(Double itemDiscount) {
+    public void setItemDiscount(double itemDiscount) {
         this.itemDiscount = itemDiscount;
     }
 
-    public Double getItemProfessionalFee() {
+    public double getItemProfessionalFee() {
         return itemProfessionalFee;
     }
 
-    public void setItemProfessionalFee(Double itemProfessionalFee) {
+    public void setItemProfessionalFee(double itemProfessionalFee) {
         this.itemProfessionalFee = itemProfessionalFee;
     }
 
-    public Double getItemNetTotal() {
+    public double getItemNetTotal() {
         return itemNetTotal;
     }
 
-    public void setItemNetTotal(Double itemNetTotal) {
+    public void setItemNetTotal(double itemNetTotal) {
         this.itemNetTotal = itemNetTotal;
     }
 
@@ -1190,19 +1192,19 @@ public class IncomeRow implements Serializable {
         this.collectingCentre = collectingCentre;
     }
 
-    public Double getTotalHospitalFee() {
+    public double getTotalHospitalFee() {
         return totalHospitalFee;
     }
 
-    public void setTotalHospitalFee(Double totalHospitalFee) {
+    public void setTotalHospitalFee(double totalHospitalFee) {
         this.totalHospitalFee = totalHospitalFee;
     }
 
-    public Double getQty() {
+    public double getQty() {
         return qty;
     }
 
-    public void setQty(Double qty) {
+    public void setQty(double qty) {
         this.qty = qty;
     }
 
@@ -1254,51 +1256,51 @@ public class IncomeRow implements Serializable {
         this.agentHistory = agentHistory;
     }
 
-    public Double getGrossTotal() {
+    public double getGrossTotal() {
         return grossTotal;
     }
 
-    public void setGrossTotal(Double grossTotal) {
+    public void setGrossTotal(double grossTotal) {
         this.grossTotal = grossTotal;
     }
 
-    public Double getDiscount() {
+    public double getDiscount() {
         return discount;
     }
 
-    public void setDiscount(Double discount) {
+    public void setDiscount(double discount) {
         this.discount = discount;
     }
 
-    public Double getTotal() {
-        return total;
+    public double getNetTotal() {
+        return netTotal;
     }
 
-    public void setTotal(Double total) {
-        this.total = total;
+    public void setNetTotal(double netTotal) {
+        this.netTotal = netTotal;
     }
 
-    public Double getHospitalTotal() {
+    public double getHospitalTotal() {
         return hospitalTotal;
     }
 
-    public void setHospitalTotal(Double hospitalTotal) {
+    public void setHospitalTotal(double hospitalTotal) {
         this.hospitalTotal = hospitalTotal;
     }
 
-    public Double getStaffTotal() {
+    public double getStaffTotal() {
         return staffTotal;
     }
 
-    public void setStaffTotal(Double staffTotal) {
+    public void setStaffTotal(double staffTotal) {
         this.staffTotal = staffTotal;
     }
 
-    public Double getCcTotal() {
+    public double getCcTotal() {
         return ccTotal;
     }
 
-    public void setCcTotal(Double ccTotal) {
+    public void setCcTotal(double ccTotal) {
         this.ccTotal = ccTotal;
     }
 
@@ -1350,11 +1352,11 @@ public class IncomeRow implements Serializable {
         this.billClassType = billClassType;
     }
 
-    public Double getTax() {
+    public double getTax() {
         return tax;
     }
 
-    public void setTax(Double tax) {
+    public void setTax(double tax) {
         this.tax = tax;
     }
 
@@ -1372,6 +1374,38 @@ public class IncomeRow implements Serializable {
 
     public void setNoneValue(double noneValue) {
         this.noneValue = noneValue;
+    }
+
+    public double getOpdCreditValue() {
+        return opdCreditValue;
+    }
+
+    public void setOpdCreditValue(double opdCreditValue) {
+        this.opdCreditValue = opdCreditValue;
+    }
+
+    public double getInpatientCreditValue() {
+        return inpatientCreditValue;
+    }
+
+    public void setInpatientCreditValue(double inpatientCreditValue) {
+        this.inpatientCreditValue = inpatientCreditValue;
+    }
+
+    public double getServiceCharge() {
+        return serviceCharge;
+    }
+
+    public void setServiceCharge(double serviceCharge) {
+        this.serviceCharge = serviceCharge;
+    }
+
+    public double getActualTotal() {
+        return actualTotal;
+    }
+
+    public void setActualTotal(double actualTotal) {
+        this.actualTotal = actualTotal;
     }
 
 }

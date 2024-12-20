@@ -19,6 +19,8 @@ import static com.divudi.data.PaymentMethod.ewallet;
 
 import com.divudi.entity.*;
 import com.divudi.entity.channel.SessionInstance;
+import com.divudi.service.BillService;
+import com.divudi.service.PaymentService;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -34,6 +36,7 @@ import java.util.UUID;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import javax.ejb.EJB;
 
 /**
  * @author buddhika
@@ -41,6 +44,9 @@ import java.util.*;
 public class IncomeBundle implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    @EJB
+    BillService billService;
 
     // UUID field to uniquely identify each object
     private UUID id;
@@ -197,8 +203,6 @@ public class IncomeBundle implements Serializable {
             }
             if (b.getPaymentMethod() == null) {
                 r.setNoneValue(b.getNetTotal());
-            } else if (b.getPaymentMethod() == MultiplePaymentMethods) {
-
             } else {
                 switch (b.getPaymentMethod()) {
                     case Agent:
@@ -222,7 +226,17 @@ public class IncomeBundle implements Serializable {
                         r.setOnCallValue(b.getNetTotal());
                         break;
                     case Credit:
-                    case MultiplePaymentMethods: // Ignoring multiple modes and credit
+                        r.setCreditValue(b.getNetTotal());
+                        if (r.getBill().getPatientEncounter() == null) {
+                            r.setOpdCreditValue(0);
+                            r.setInpatientCreditValue(b.getNetTotal());
+                        } else {
+                            r.setOpdCreditValue(b.getNetTotal());
+                            r.setInpatientCreditValue(0);
+                        }
+                        break;
+                    case MultiplePaymentMethods:
+                        calculateBillPaymentValuesFromPayments(r);
                         break;
                     case OnlineSettlement:
                         r.setOnlineSettlementValue(b.getNetTotal());
@@ -253,6 +267,7 @@ public class IncomeBundle implements Serializable {
                 }
 
             }
+            r.setActualTotal(r.getNetTotal() - r.getServiceCharge());
         }
     }
 
@@ -450,14 +465,14 @@ public class IncomeBundle implements Serializable {
                 LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
                 Date firstDayDate = Date.from(firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
                 monthRow.setDate(firstDayDate);
-                monthRow.setTotal(0.0);
+                monthRow.setNetTotal(0.0);
                 monthRow.setTax(0.0);
                 monthRow.setGrossTotal(0.0);
                 monthlyTotalsMap.put(key, monthRow);
             }
 
             // Aggregate the totals
-            monthRow.setTotal(monthRow.getTotal() + netTotal);
+            monthRow.setNetTotal(monthRow.getNetTotal() + netTotal);
             monthRow.setTax(monthRow.getTax() + tax);
             monthRow.setGrossTotal(monthRow.getGrossTotal() + grossTotal);
         }
@@ -495,14 +510,14 @@ public class IncomeBundle implements Serializable {
             if (staffRow == null) {
                 staffRow = new IncomeRow();
                 staffRow.setStaff(staff);
-                staffRow.setTotal(0.0);
+                staffRow.setNetTotal(0.0);
                 staffRow.setTax(0.0);
                 staffRow.setGrossTotal(0.0);
                 staffTotalsMap.put(staffId, staffRow);
             }
 
             // Aggregate the totals
-            staffRow.setTotal(staffRow.getTotal() + netTotal);
+            staffRow.setNetTotal(staffRow.getNetTotal() + netTotal);
             staffRow.setTax(staffRow.getTax() + tax);
             staffRow.setGrossTotal(staffRow.getGrossTotal() + grossTotal);
         }
@@ -768,7 +783,7 @@ public class IncomeBundle implements Serializable {
         for (IncomeRow r : getRows()) {
             grossTotal += r.getGrossTotal();
             discount += r.getDiscount();
-            total += r.getTotal();
+            total += r.getNetTotal();
             count += r.getRowCount();
         }
     }
@@ -798,7 +813,7 @@ public class IncomeBundle implements Serializable {
                 addValueAndUpdateFlag("onlineSettlement", safeDouble(row.getOnlineSettlementValue()));
                 addValueAndUpdateFlag("grossTotal", safeDouble(row.getGrossTotal()));
                 addValueAndUpdateFlag("discount", safeDouble(row.getDiscount()));
-                addValueAndUpdateFlag("total", safeDouble(row.getTotal()));
+                addValueAndUpdateFlag("total", safeDouble(row.getNetTotal()));
                 addValueAndUpdateFlag("hospitalTotal", safeDouble(row.getHospitalTotal()));
                 addValueAndUpdateFlag("staffTotal", safeDouble(row.getStaffTotal()));
                 addValueAndUpdateFlag("ccTotal", safeDouble(row.getCcTotal()));
@@ -837,7 +852,7 @@ public class IncomeBundle implements Serializable {
                 addValueAndUpdateFlag("onlineSettlement", safeDouble(row.getOnlineSettlementValue()));
                 addValueAndUpdateFlag("grossTotal", safeDouble(row.getGrossTotal()));
                 addValueAndUpdateFlag("discount", safeDouble(row.getDiscount()));
-                addValueAndUpdateFlag("total", safeDouble(row.getTotal()));
+                addValueAndUpdateFlag("total", safeDouble(row.getNetTotal()));
                 addValueAndUpdateFlag("hospitalTotal", safeDouble(row.getHospitalTotal()));
                 addValueAndUpdateFlag("staffTotal", safeDouble(row.getStaffTotal()));
                 addValueAndUpdateFlag("ccTotal", safeDouble(row.getCcTotal()));
@@ -874,7 +889,7 @@ public class IncomeBundle implements Serializable {
                 addValueAndUpdateFlag("onlineSettlement", safeDouble(row.getOnlineSettlementValue()));
                 addValueAndUpdateFlag("grossTotal", safeDouble(row.getGrossTotal()));
                 addValueAndUpdateFlag("discount", safeDouble(row.getDiscount()));
-                addValueAndUpdateFlag("total", safeDouble(row.getTotal()));
+                addValueAndUpdateFlag("total", safeDouble(row.getNetTotal()));
                 addValueAndUpdateFlag("hospitalTotal", safeDouble(row.getHospitalTotal()));
                 addValueAndUpdateFlag("staffTotal", safeDouble(row.getStaffTotal()));
                 addValueAndUpdateFlag("ccTotal", safeDouble(row.getCcTotal()));
@@ -1232,7 +1247,7 @@ public class IncomeBundle implements Serializable {
                     Double iteratingTax = safeDouble(row.getTax());
                     tax += iteratingTax;
 
-                    Double iteratingNetTotal = safeDouble(row.getTotal()); // assuming you meant to use getTotal here as well for the net total calculation
+                    Double iteratingNetTotal = safeDouble(row.getNetTotal()); // assuming you meant to use getTotal here as well for the net total calculation
                     total += iteratingNetTotal;
                 }
             }
@@ -1508,7 +1523,7 @@ public class IncomeBundle implements Serializable {
                 // Setting values
                 row.setGrossTotal(row.getBill().getGrantTotal());
                 row.setDiscount(row.getBill().getDiscount());
-                row.setTotal(row.getBill().getNetTotal());
+                row.setNetTotal(row.getBill().getNetTotal());
                 row.setHospitalTotal(row.getHospitalTotal());
                 row.setStaffTotal(row.getBill().getTotalStaffFee());
                 row.setCcTotal(row.getBill().getTotalCenterFee());
@@ -1516,7 +1531,7 @@ public class IncomeBundle implements Serializable {
                 // Debugging after setting
                 System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
                 System.out.println("row.getDiscount() = " + row.getDiscount());
-                System.out.println("row.getTotal() = " + row.getTotal());
+                System.out.println("row.getTotal() = " + row.getNetTotal());
                 System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
                 System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
                 System.out.println("row.getCcTotal() = " + row.getCcTotal());
@@ -1540,7 +1555,7 @@ public class IncomeBundle implements Serializable {
                 // Setting values
                 row.setGrossTotal(row.getBillItem().getGrossValue());
                 row.setDiscount(row.getBillItem().getDiscount());
-                row.setTotal(row.getBillItem().getNetValue());
+                row.setNetTotal(row.getBillItem().getNetValue());
                 row.setHospitalTotal(row.getHospitalTotal());
                 row.setStaffTotal(row.getBillItem().getStaffFee());
                 row.setCcTotal(row.getBillItem().getCollectingCentreFee());
@@ -1548,7 +1563,7 @@ public class IncomeBundle implements Serializable {
                 // Debugging after setting
                 System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
                 System.out.println("row.getDiscount() = " + row.getDiscount());
-                System.out.println("row.getTotal() = " + row.getTotal());
+                System.out.println("row.getTotal() = " + row.getNetTotal());
                 System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
                 System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
                 System.out.println("row.getCcTotal() = " + row.getCcTotal());
@@ -2631,6 +2646,84 @@ public class IncomeBundle implements Serializable {
 
     public void setPatientDepositsAreConsideredInHandingover(boolean patientDepositsAreConsideredInHandingover) {
         this.patientDepositsAreConsideredInHandingover = patientDepositsAreConsideredInHandingover;
+    }
+
+    private void calculateBillPaymentValuesFromPayments(IncomeRow r) {
+        if (r == null || r.getBill() == null || r.getBill().getPaymentMethod() == null
+                || r.getBill().getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
+            return;
+        }
+
+        List<Payment> payments = billService.fetchBillPayments(r.getBill());
+        if (payments == null || payments.isEmpty()) {
+            return;
+        }
+
+        for (Payment p : payments) {
+            if (p.getPaymentMethod() == null) {
+                r.setNoneValue(r.getNoneValue() + p.getPaidValue());
+            } else {
+                switch (p.getPaymentMethod()) {
+                    case Agent:
+                        r.setAgentValue(r.getAgentValue() + p.getPaidValue());
+                        break;
+                    case Card:
+                        r.setCardValue(r.getCardValue() + p.getPaidValue());
+                        break;
+                    case Cash:
+                        r.setCashValue(r.getCashValue() + p.getPaidValue());
+                        break;
+                    case Cheque:
+                        r.setChequeValue(r.getChequeValue() + p.getPaidValue());
+                        break;
+                    case Credit:
+                        r.setCreditValue(r.getCreditValue() + p.getPaidValue());
+                        if (r.getBill().getPatientEncounter() == null) {
+                            r.setOpdCreditValue(r.getOpdCreditValue() + p.getPaidValue());
+                        } else {
+                            r.setInpatientCreditValue(r.getInpatientCreditValue() + p.getPaidValue());
+                        }
+                        break;
+                    case IOU:
+                        r.setIouValue(r.getIouValue() + p.getPaidValue());
+                        break;
+                    case OnCall:
+                        r.setOnCallValue(r.getOnCallValue() + p.getPaidValue());
+                        break;
+                    case OnlineSettlement:
+                        r.setOnlineSettlementValue(r.getOnlineSettlementValue() + p.getPaidValue());
+                        break;
+                    case PatientDeposit:
+                        r.setPatientDepositValue(r.getPatientDepositValue() + p.getPaidValue());
+                        break;
+                    case PatientPoints:
+                        r.setPatientPointsValue(r.getPatientPointsValue() + p.getPaidValue());
+                        break;
+                    case Slip:
+                        r.setSlipValue(r.getSlipValue() + p.getPaidValue());
+                        break;
+                    case Staff:
+                        r.setStaffValue(r.getStaffValue() + p.getPaidValue());
+                        break;
+                    case Staff_Welfare:
+                        r.setStaffWelfareValue(r.getStaffWelfareValue() + p.getPaidValue());
+                        break;
+                    case Voucher:
+                        r.setVoucherValue(r.getVoucherValue() + p.getPaidValue());
+                        break;
+                    case ewallet:
+                        r.setEwalletValue(r.getEwalletValue() + p.getPaidValue());
+                        break;
+                    case YouOweMe:
+                        break;
+                    case None:
+                    case MultiplePaymentMethods:
+                        break;
+                    default:
+                        r.setNoneValue(r.getNoneValue() + p.getPaidValue());
+                }
+            }
+        }
     }
 
 }
