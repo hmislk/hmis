@@ -180,7 +180,7 @@
 
                                                 <h:panelGroup   rendered="#{pvcal.investigationItem.ixItemType eq 'Calculation'}">
                                                     <tr>
-                                                        <td>
+                                                        <td style="min-width: 200px!important;">
                                                             <h:outputLabel value="#{pvcal.investigationItem.name}" ></h:outputLabel>
                                                         </td>
                                                         <td >
@@ -190,7 +190,6 @@
                                                             </p:inputText>
                                                             <p:inputText autocomplete="off" value="#{pvcal.doubleValue}" disabled="#{patientReportController.currentPatientReport.approved}"
                                                                          rendered="#{pvcal.investigationItem.ixItemValueType eq 'Double'}" >
-                                                                <f:convertNumber pattern="0.0" ></f:convertNumber>
                                                                 <f:ajax execute="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></f:ajax>
                                                             </p:inputText>
                                                         </td>
@@ -215,7 +214,7 @@
                                                 >
                                                 <h:panelGroup rendered="#{pvf.investigationItem.ixItemType eq 'Flag'}" >
                                                     <tr>
-                                                        <td >
+                                                        <td  style="min-width: 200px!important;">
                                                             <h:outputLabel value="#{pvf.investigationItem.name}" ></h:outputLabel>
                                                         </td>
                                                         <td>
@@ -273,7 +272,7 @@
                                                        >
                                                 <h:panelGroup rendered="#{pvm.investigationItem.ixItemType eq 'Value' or pvm.investigationItem.ixItemType eq 'Antibiotic' }" >
                                                     <tr>
-                                                        <td >
+                                                        <td  style="min-width: 200px!important;">
                                                             <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
                                                         </td>
                                                         <td >
