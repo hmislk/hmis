@@ -5,7 +5,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:c="http://java.sun.com/jsp/jstl/core">
 
 <h:body class="w-100 border">
 
@@ -267,114 +267,92 @@
                         </p:dataTable>
                     </ui:repeat>
 
-                    <p:dataTable id="detail1" rendered="#{reportsController.reportType eq 'detail'}">
+                    <c:forEach var="i" begin="1" end="6">
+                        <p:dataTable
+                                id="detail7to7"
+                                value="#{reportsController.getItemListByWeek(i, reportsController.weeklyDailyBillItemMap7to7)}"
+                                var="item"
+                                rowIndexVar="b"
+                                rendered="#{reportsController.reportType eq 'detail' and reportsController.getDaysOfWeek(i).size() ne 0}">
 
-                        <f:facet name="header">
-                            <h:outputText
-                                    value="Report Type - Detail"
-                                    style="font-weight: bold; text-align: left; display: block;"/>
-                            <br/>
-                            <h:outputLabel value="Month &emsp;&emsp; :  &emsp;"
-                                           style="font-weight: bold; text-align: left;"/>
-                            <h:outputLabel value="" style="font-weight: bold; text-align: left;"/>
-                            <br/>
-                            <h:outputLabel value="Week &emsp;&emsp; :  &emsp;"
-                                           style="font-weight: bold; text-align: left;"/>
-                            <h:outputLabel value="" style="font-weight: bold; text-align: left;"/>
-                        </f:facet>
+                            <f:facet name="header">
+                                <h:outputText
+                                        value="Report Type : Detail"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
+                                <br/>
+                                <h:outputLabel value="Week &emsp;&emsp; :  &emsp;"
+                                               style="font-weight: bold; text-align: left;"/>
+                                <h:outputLabel value="#{i}"
+                                               style="font-weight: bold; text-align: left;"/>
+                                <br/>
+                                <h:outputText
+                                        value="Weekly Report OPD (7.00pm - 7.00am) Night"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
+                            </f:facet>
+                            <p:column headerText="Item" width="5rem">
+                                <h:outputText value="#{item}"/>
+                            </p:column>
+                            <p:columns value="#{reportsController.getDaysOfWeek(i)}" var="day" headerText="#{day}"
+                                       width="5rem">
+                                <h:outputText
+                                        value="#{reportsController.getCountByWeekAndDay(i, day, item, reportsController.weeklyDailyBillItemMap7to7)}"/>
+                            </p:columns>
+                            <p:column headerText="Total" width="5rem">
+                                <h:outputText
+                                        value="#{reportsController.getSumByWeek(i, item, reportsController.weeklyDailyBillItemMap7to7)}"/>
+                            </p:column>
+                        </p:dataTable>
+                        <p:dataTable
+                                id="detail7to1"
+                                value="#{reportsController.getItemListByWeek(i, reportsController.weeklyDailyBillItemMap7to1)}"
+                                var="item"
+                                rowIndexVar="b"
+                                rendered="#{reportsController.reportType eq 'detail' and reportsController.getDaysOfWeek(i).size() ne 0}">
 
-                        <p:column headerText="Weekly Report OPD (7.00pm - 7.00am) Night" width="5rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 1" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 2" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 3" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 4" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 5" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 6" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 7" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Total" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
+                            <f:facet name="header">
+                                <h:outputText
+                                        value="Weekly Report OPD (7.00pm - 1.00pm) Night"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
+                            </f:facet>
+                            <p:column headerText="Item" width="5rem">
+                                <h:outputText value="#{item}"/>
+                            </p:column>
+                            <p:columns value="#{reportsController.getDaysOfWeek(i)}" var="day" headerText="#{day}"
+                                       width="5rem">
+                                <h:outputText
+                                        value="#{reportsController.getCountByWeekAndDay(i, day, item, reportsController.weeklyDailyBillItemMap7to1)}"/>
+                            </p:columns>
+                            <p:column headerText="Total" width="5rem">
+                                <h:outputText
+                                        value="#{reportsController.getSumByWeek(i, item, reportsController.weeklyDailyBillItemMap7to1)}"/>
+                            </p:column>
+                        </p:dataTable>
+                        <p:dataTable
+                                id="detail1to7"
+                                value="#{reportsController.getItemListByWeek(i, reportsController.weeklyDailyBillItemMap1to7)}"
+                                var="item"
+                                rowIndexVar="b"
+                                rendered="#{reportsController.reportType eq 'detail' and reportsController.getDaysOfWeek(i).size() ne 0}">
 
-                    </p:dataTable>
-
-                    <p:dataTable id="detail2" rendered="#{reportsController.reportType eq 'detail'}">
-
-                        <p:column headerText="Weekly Report OPD (7.00am - 1.00pm)" width="5rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 1" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 2" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 3" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 4" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 5" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 6" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 7" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Total" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-
-                    </p:dataTable>
-
-                    <p:dataTable id="detail3" rendered="#{reportsController.reportType eq 'detail'}">
-
-                        <p:column headerText="Weekly Report OPD (1.00pm - 7.00pm)" width="5rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 1" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 2" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 3" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 4" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 5" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 6" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Day 7" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                        <p:column headerText="Total" width="4rem">
-                            <h:outputText value=""></h:outputText>
-                        </p:column>
-                    </p:dataTable>
+                            <f:facet name="header">
+                                <h:outputText
+                                        value="Weekly Report OPD (1.00pm - 7.00am) Night"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
+                            </f:facet>
+                            <p:column headerText="Item" width="5rem">
+                                <h:outputText value="#{item}"/>
+                            </p:column>
+                            <p:columns value="#{reportsController.getDaysOfWeek(i)}" var="day" headerText="#{day}"
+                                       width="5rem">
+                                <h:outputText
+                                        value="#{reportsController.getCountByWeekAndDay(i, day, item, reportsController.weeklyDailyBillItemMap1to7)}"/>
+                            </p:columns>
+                            <p:column headerText="Total" width="5rem">
+                                <h:outputText
+                                        value="#{reportsController.getSumByWeek(i, item, reportsController.weeklyDailyBillItemMap1to7)}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </c:forEach>
                 </p:panel>
             </h:form>
         </ui:define>

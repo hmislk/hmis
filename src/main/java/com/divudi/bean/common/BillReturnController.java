@@ -2,8 +2,10 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.PaymentController;
+import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Card;
@@ -19,11 +21,19 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillEntry;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.Category;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.Payment;
+import com.divudi.entity.PaymentScheme;
+import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.Staff;
 
 import com.divudi.entity.cashTransaction.Drawer;
 
@@ -36,6 +46,7 @@ import com.divudi.service.StaffService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -83,6 +94,12 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     AgentAndCcApplicationController agentAndCcApplicationController;
     @Inject
     PatientDepositController patientDepositController;
+    @Inject
+    PriceMatrixController priceMatrixController;
+    @Inject
+    private BillBeanController billBean;
+    @Inject
+    CollectingCentreBillController collectingCentreBillController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variable">
@@ -237,6 +254,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
         return canReturn;
     }
+    
+    private Staff toStaff;
 
     public String settleOpdReturnBill() {
         if (returningStarted) {
@@ -687,5 +706,13 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     @Override
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds");
+    }
+
+    public Staff getToStaff() {
+        return toStaff;
+    }
+
+    public void setToStaff(Staff toStaff) {
+        this.toStaff = toStaff;
     }
 }
