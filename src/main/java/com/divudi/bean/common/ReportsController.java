@@ -390,6 +390,7 @@ public class ReportsController implements Serializable {
 
     public void setSelectedDateType(String selectedDateType) {
         this.selectedDateType = selectedDateType;
+    }
 
     public Investigation getInvestigation() {
         return investigation;
@@ -397,7 +398,6 @@ public class ReportsController implements Serializable {
 
     public void setInvestigation(Investigation investigation) {
         this.investigation = investigation;
-
     }
 
     public Institution getCreditCompany() {
