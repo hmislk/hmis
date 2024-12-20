@@ -792,8 +792,6 @@ public class PharmacyController implements Serializable {
         totalCashPurchaseValue = 0.0;
         totalPurchase = 0.0;
 
-        
-
         billItems = new ArrayList<>();
 
         String sql = "SELECT b FROM BillItem b WHERE b.bill.retired = false"
@@ -842,6 +840,7 @@ public class PharmacyController implements Serializable {
 //        calculateTotals(bills);
 //        calculateTotalsForBillItems(billItems);
     }
+
     public void generateGRNReportTable() {
         bills = null;
         totalCreditPurchaseValue = 0.0;
@@ -1297,13 +1296,13 @@ public class PharmacyController implements Serializable {
 
                 if (bill.getPaymentMethod() == PaymentMethod.Credit) {
                     totalCreditPurchaseValue += bill.getNetTotal();
-                    totalCreditSaleValue += bill.getSaleValue();    
+                    totalCreditSaleValue += bill.getSaleValue();
                 } else if (bill.getPaymentMethod() == PaymentMethod.Cash) {
-                    totalCashPurchaseValue += bill.getNetTotal();   
-                    totalCashSaleValue += bill.getSaleValue();      
+                    totalCashPurchaseValue += bill.getNetTotal();
+                    totalCashSaleValue += bill.getSaleValue();
                 }
-                totalPurchase += bill.getNetTotal();               
-                totalSaleValue += bill.getSaleValue();            
+                totalPurchase += bill.getNetTotal();
+                totalSaleValue += bill.getSaleValue();
             }
         }
 

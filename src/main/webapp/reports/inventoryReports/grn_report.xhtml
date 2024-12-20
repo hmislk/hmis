@@ -375,7 +375,7 @@
                                         ajax="false" 
                                         value="#{r.deptId}" 
                                         action="/pharmacy/pharmacy_reprint_grn_return">
-                                       <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{r}"/>
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{r}"/>
                                     </p:commandLink>
                                     <f:facet name="footer">
                                         <h:outputText value="Total" />
@@ -394,7 +394,9 @@
                                     <h:outputText value="#{r.referenceBill.invoiceNumber}" />
                                 </p:column>
                                 <p:column headerText="GRN Date" width="6em">
-                                    <h:outputText value="#{r.referenceBill.createdAt}" />
+                                    <h:outputLabel value="#{r.referenceBill.createdAt}"  >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Reference Institution" width="6em">
                                     <h:outputText value="#{r.referenceBill.referenceInstitution.name}" />
