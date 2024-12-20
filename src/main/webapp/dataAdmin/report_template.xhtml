@@ -27,6 +27,18 @@
                         <!-- Code -->
                         <p:outputLabel value="Code:" for="code" />
                         <p:inputText id="code" value="#{reportTemplateController.current.code}"  class="w-100"/>
+                        
+                         <!-- Parent -->
+                        <p:outputLabel value="Parent:" for="parent" />
+                        <p:autoComplete
+                            id="parent" 
+                            completeMethod="#{reportTemplateController.completeReportTemplate}"
+                            value="#{reportTemplateController.current.parent}"  class="w-100" 
+                            var =" rt"
+                            itemLabel="#{rt.name}"
+                            itemValue="#{rt}"
+                            >
+                        </p:autoComplete>
 
                         <!-- Description -->
                         <p:outputLabel value="Description:" for="description" />
@@ -90,13 +102,25 @@
 
 
                         <!-- Columns -->
-                        <p:outputLabel value="Columns:" for="columns" />
+                        <p:outputLabel value="Columns Codes:" for="columns" />
                         <p:inputTextarea id="columns" 
                                          queryDelay="0" 
                                          placeholder="Enter Columns"
                                          class="w-100 my-2" 
                                          autoResize="true"
                                          value="#{reportTemplateController.current.columns}" 
+                                         completeMethod="#{enumController.completeReportTemplateColumns}" 
+                                         minQueryLength="1">
+                        </p:inputTextarea>
+                        
+                         <!-- Columns -->
+                        <p:outputLabel value="Row Codes:" for="columns" />
+                        <p:inputTextarea id="rows" 
+                                         queryDelay="0" 
+                                         placeholder="Enter Columns"
+                                         class="w-100 my-2" 
+                                         autoResize="true"
+                                         value="#{reportTemplateController.current.rows}" 
                                          completeMethod="#{enumController.completeReportTemplateColumns}" 
                                          minQueryLength="1">
                         </p:inputTextarea>
