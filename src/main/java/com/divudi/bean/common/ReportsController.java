@@ -3335,17 +3335,17 @@ public class ReportsController implements Serializable {
     }
 
 
-    public Double calculateNetAmountSubTotal() {
-        double netAmountSubTotal = 0.0;
+    public Double calculateNetAmountNetTotal() {
+        double netAmountNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            netAmountSubTotal += calculateNetAmountSubTotalByBills(bills);
+            netAmountNetTotal += calculateNetAmountSubTotalByBills(bills);
         }
 
-        return netAmountSubTotal;
+        return netAmountNetTotal;
     }
     
     public Double calculateGrossAmountSubTotalByBills(List<Bill> bills) {
@@ -3388,69 +3388,69 @@ public class ReportsController implements Serializable {
         return balance;
     }
     
-    public Double calculateGrossAmountSubTotal() {
-        double grossAmountSubTotal = 0.0;
+    public Double calculateGrossAmountNetTotal() {
+        double grossAmountNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            grossAmountSubTotal += calculateGrossAmountSubTotalByBills(bills);
+            grossAmountNetTotal += calculateGrossAmountSubTotalByBills(bills);
         }
 
-        return grossAmountSubTotal;
+        return grossAmountNetTotal;
     }
     
-    public Double calculateDiscountSubTotal() {
-        double discountSubTotal = 0.0;
+    public Double calculateDiscountNetTotal() {
+        double discountNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            discountSubTotal += calculateDiscountSubTotalByBills(bills);
+            discountNetTotal += calculateDiscountSubTotalByBills(bills);
         }
 
-        return discountSubTotal;
+        return discountNetTotal;
     }
     
-    public Double calculatePatientShareSubTotal() {
-        double patientShareSubTotal = 0.0;
+    public Double calculatePatientShareNetTotal() {
+        double patientShareNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            patientShareSubTotal += calculatePatientShareSubTotalByBills(bills);
+            patientShareNetTotal += calculatePatientShareSubTotalByBills(bills);
         }
 
-        return patientShareSubTotal;
+        return patientShareNetTotal;
     }
     
-    public Double calculateDueAmountSubTotal() {
-        double dueAmountSubTotal = 0.0;
+    public Double calculateDueAmountNetTotal() {
+        double dueAmountNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            dueAmountSubTotal += calculateDueAmountSubTotalByBills(bills);
+            dueAmountNetTotal += calculateDueAmountSubTotalByBills(bills);
         }
 
-        return dueAmountSubTotal;
+        return dueAmountNetTotal;
     }
     
-    public Double calculateSponsorShareSubTotal() {
-        double sponsorShareSubTotal = 0.0;
+    public Double calculateSponsorShareNetTotal() {
+        double sponsorShareNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            sponsorShareSubTotal += calculateSponsorShareSubTotalByBills(bills);
+            sponsorShareNetTotal += calculateSponsorShareSubTotalByBills(bills);
         }
 
-        return sponsorShareSubTotal;
+        return sponsorShareNetTotal;
     }
 
 }
