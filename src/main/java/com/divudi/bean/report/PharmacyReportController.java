@@ -1980,6 +1980,11 @@ public class PharmacyReportController implements Serializable {
             jpql.append("and sh.institution = :ins ");
             params.put("ins", institution);
         }
+        
+        if (site != null) {
+            jpql.append("and sh.department.site = :sit ");
+            params.put("sit", site);
+        }
 
         if (department != null) {
             jpql.append("and sh.department = :dep ");
@@ -2053,6 +2058,11 @@ public class PharmacyReportController implements Serializable {
         if (institution != null) {
             jpql.append("and sh.institution = :ins ");
             params.put("ins", institution);
+        }
+        
+        if (site != null) {
+            jpql.append("and sh.department.site = :sit ");
+            params.put("sit", site);
         }
 
         if (department != null) {
