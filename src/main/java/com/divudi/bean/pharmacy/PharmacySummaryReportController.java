@@ -186,11 +186,11 @@ public class PharmacySummaryReportController implements Serializable {
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToPharmacyIncomeReport() {
-        return "/pharmacy/reports/pharmacy_income_report?faces-redirect=true";
+        return "/pharmacy/reports/summary_reports/pharmacy_income_report?faces-redirect=true";
     }
 
     public String navigateToDailyStockBalanceReport() {
-        return "/pharmacy/reports/daily_stock_balance_report?faces-redirect=true";
+        return "/pharmacy/reports/summary_reports/daily_stock_balance_report?faces-redirect=true";
     }
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="Functions">
@@ -234,6 +234,16 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeReport(){
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+        billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+        billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+        billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE);
+        billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
+        billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_PRE);
+        billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
+        
         List<Bill> bills = billService.fetchBills(fromDate,toDate,institution,site,department,webUser, billTypeAtomics);
         bundle = new IncomeBundle(bills);
         bundle.generatePaymentDetailsForBills();
