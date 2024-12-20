@@ -258,6 +258,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private YearMonthDay yearMonthDay;
     private PaymentMethodData paymentMethodData;
 
+    private String externalDoctor;
+
     public List<AgentReferenceBook> getAgentReferenceBooks() {
         return agentReferenceBooks;
     }
@@ -269,7 +271,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 + " where ah.bill =:b "
                 + " and ah.bill.retired=false ";
         params.put("b", bill);
-        
+
         AgentHistory history = agentHistoryFacade.findFirstByJpql(jpql, params);
         System.out.println("history = " + history);
         double billingAfterCCBalance = history.getBalanceAfterTransaction();
@@ -1170,6 +1172,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         ccBill.setFromInstitution(collectingCentre);
 
         ccBill.setReferredBy(referredBy);
+        ccBill.setExternalDoctor(externalDoctor);
         ccBill.setReferenceNumber(referralId);
         ccBill.setReferredByInstitution(referredByInstitution);
         ccBill.setComments(comment);
@@ -2548,6 +2551,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     @Override
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
+    }
+
+    public String getExternalDoctor() {
+        return externalDoctor;
+    }
+
+    public void setExternalDoctor(String externalDoctor) {
+        this.externalDoctor = externalDoctor;
     }
 
     public class CollectingCenterBookSummeryRow {
