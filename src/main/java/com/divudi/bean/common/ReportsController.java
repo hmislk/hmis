@@ -31,6 +31,7 @@ import com.divudi.light.common.BillSummaryRow;
 import com.divudi.service.BillService;
 import com.divudi.service.PatientInvestigationService;
 import org.primefaces.model.StreamedContent;
+import org.primefaces.model.charts.line.LineChartModel;
 import org.primefaces.model.file.UploadedFile;
 
 import javax.ejb.EJB;
@@ -313,6 +314,8 @@ public class ReportsController implements Serializable {
     private String dischargedStatus;
 
     private Investigation investigation;
+
+    private boolean showChart;
 
     public String getDischargedStatus() {
         return dischargedStatus;
@@ -1539,6 +1542,14 @@ public class ReportsController implements Serializable {
         this.groupedRouteWiseBillsMonthly = groupedRouteWiseBillsMonthly;
     }
 
+    public boolean isShowChart() {
+        return showChart;
+    }
+
+    public void setShowChart(boolean showChart) {
+        this.showChart = showChart;
+    }
+
     public void generateSampleCarrierReport() {
         System.out.println("generateSampleCarrierReport = " + this);
         bundle = new ReportTemplateRowBundle();
@@ -2216,6 +2227,38 @@ public class ReportsController implements Serializable {
             }
         }
         return total;
+    }
+
+    public Map<YearMonth, Double> getSampleCountChartData() {
+        Map<YearMonth, Double> data = new HashMap<>();
+
+        if (reportType.equalsIgnoreCase("detail")) {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, getCollectionCenterWiseTotalSampleCount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
+            }
+        } else {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, calculateRouteWiseTotalSampleCount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
+            }
+        }
+
+        return data;
+    }
+
+    public Map<YearMonth, Double> getServiceAmountChartData() {
+        Map<YearMonth, Double> data = new HashMap<>();
+
+        if (reportType.equalsIgnoreCase("detail")) {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, getCollectionCenterWiseTotalServiceAmount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
+            }
+        } else {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, calculateRouteWiseTotalServiceAmount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
+            }
+        }
+
+        return data;
     }
 
     public ReportTemplateRowBundle generateCollectingCenterWiseBillItems(List<BillTypeAtomic> bts) {
