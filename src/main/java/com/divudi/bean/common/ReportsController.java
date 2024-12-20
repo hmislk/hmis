@@ -21,6 +21,7 @@ import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.RoomCategory;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.facade.*;
@@ -316,6 +317,14 @@ public class ReportsController implements Serializable {
 
     private String selectedDateType = "invoice";
 
+    private Investigation investigation;
+
+    // Map<Week, Map<ItemName, Map<dayOfMonth, Count>>>
+    Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to7;
+    Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to1;
+    Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap1to7;
+
+
     private boolean showChart;
 
     public String getDischargedStatus() {
@@ -381,6 +390,14 @@ public class ReportsController implements Serializable {
 
     public void setSelectedDateType(String selectedDateType) {
         this.selectedDateType = selectedDateType;
+
+    public Investigation getInvestigation() {
+        return investigation;
+    }
+
+    public void setInvestigation(Investigation investigation) {
+        this.investigation = investigation;
+
     }
 
     public Institution getCreditCompany() {
@@ -421,6 +438,30 @@ public class ReportsController implements Serializable {
 
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
+    }
+
+    public Map<Integer, Map<String, Map<Integer, Double>>> getWeeklyDailyBillItemMap7to7() {
+        return weeklyDailyBillItemMap7to7;
+    }
+
+    public void setWeeklyDailyBillItemMap7to7(Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to7) {
+        this.weeklyDailyBillItemMap7to7 = weeklyDailyBillItemMap7to7;
+    }
+
+    public Map<Integer, Map<String, Map<Integer, Double>>> getWeeklyDailyBillItemMap7to1() {
+        return weeklyDailyBillItemMap7to1;
+    }
+
+    public void setWeeklyDailyBillItemMap7to1(Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to1) {
+        this.weeklyDailyBillItemMap7to1 = weeklyDailyBillItemMap7to1;
+    }
+
+    public Map<Integer, Map<String, Map<Integer, Double>>> getWeeklyDailyBillItemMap1to7() {
+        return weeklyDailyBillItemMap1to7;
+    }
+
+    public void setWeeklyDailyBillItemMap1to7(Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap1to7) {
+        this.weeklyDailyBillItemMap1to7 = weeklyDailyBillItemMap1to7;
     }
 
     public PatientFacade getPatientFacade() {
@@ -1621,7 +1662,7 @@ public class ReportsController implements Serializable {
         }
 
         if (staff != null) {
-            jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
+            jpql += "AND pi.sampleTransportedToLabByStaff.person.name = :staff ";
             parameters.put("staff", staff.getPerson().getName());
         }
 
@@ -1794,7 +1835,120 @@ public class ReportsController implements Serializable {
 
         bundle = generateWeeklyBillItems(opdBts);
 
-        groupBillItemsWeekly();
+        if (reportType.equalsIgnoreCase("summary")) {
+            groupBillItemsWeekly();
+        } else if (reportType.equalsIgnoreCase("detail")) {
+            groupBillItemsDaily();
+        }
+    }
+
+    private void groupBillItemsDaily() {
+        // Map<Week, Map<ItemName, Map<dayOfMonth, Count>>>
+        Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap7to7 = new HashMap<>();
+        Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap7to1 = new HashMap<>();
+        Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap1to7 = new HashMap<>();
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            final BillItem billItem = row.getBillItem();
+
+            final Date billItemDate = billItem.getBill().getCreatedAt();
+
+            if (billItemDate == null) {
+                continue;
+            }
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(billItemDate);
+
+            final int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
+            final int weekOfMonth = getWeekOfMonth(billItemDate);
+            final int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+
+            if (hourOfDay >= 19 || hourOfDay < 7) {
+                // Between 7 PM to 7 AM
+                Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap7to7.containsKey(weekOfMonth) ? weeklyBillItemMap7to7.get(weekOfMonth) : new HashMap<>();
+
+                billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0);
+
+                weeklyBillItemMap7to7.put(weekOfMonth, billItemMap);
+            } else if (hourOfDay < 13) {
+                // Between 7 AM to 1 PM
+                Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap7to1.containsKey(weekOfMonth) ? weeklyBillItemMap7to1.get(weekOfMonth) : new HashMap<>();
+
+                billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0);
+
+                weeklyBillItemMap7to1.put(weekOfMonth, billItemMap);
+            } else {
+                // Between 1 PM to 7 PM
+                Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap1to7.containsKey(weekOfMonth) ? weeklyBillItemMap1to7.get(weekOfMonth) : new HashMap<>();
+
+                billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0);
+
+                weeklyBillItemMap1to7.put(weekOfMonth, billItemMap);
+            }
+        }
+
+        setWeeklyDailyBillItemMap7to7(weeklyBillItemMap7to7);
+        setWeeklyDailyBillItemMap7to1(weeklyBillItemMap7to1);
+        setWeeklyDailyBillItemMap1to7(weeklyBillItemMap1to7);
+    }
+
+    public List<String> getItemListByWeek(final int week, final Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap) {
+        if (weeklyBillItemMap == null) {
+            return new ArrayList<>();
+        }
+
+        List<String> itemList = new ArrayList<>();
+
+        if (weeklyBillItemMap.containsKey(week)) {
+            itemList.addAll(weeklyBillItemMap.get(week).keySet());
+        }
+
+        return itemList;
+    }
+
+    public double getCountByWeekAndDay(final int week, final int day, final String itemName, final Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap) {
+        return Optional.ofNullable(weeklyBillItemMap)
+                .map(map -> map.get(week))
+                .map(weekMap -> weekMap.get(itemName))
+                .map(itemMap -> itemMap.get(day))
+                .orElse(0.0);
+    }
+
+    public double getSumByWeek(final int week, final String itemName, final Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap) {
+        return Optional.ofNullable(weeklyBillItemMap)
+                .map(map -> map.get(week))
+                .map(weekMap -> weekMap.get(itemName))
+                .map(itemMap -> itemMap.values().stream().mapToDouble(Double::doubleValue).sum())
+                .orElse(0.0);
+    }
+
+    public List<Integer> getDaysOfWeek(final int weekOfMonth) {
+        if (month == null) {
+            return new ArrayList<>();
+        }
+
+        final YearMonth yearMonth = YearMonth.of(LocalDate.now().getYear(), month);
+
+        List<Integer> daysOfWeek = new ArrayList<>();
+
+        LocalDate firstDayOfMonth = yearMonth.atDay(1);
+        int firstDayOfTargetWeek = (weekOfMonth - 1) * 7 + 1;
+
+        for (int i = 0; i < 7; i++) {
+            LocalDate day = firstDayOfMonth.plusDays(firstDayOfTargetWeek - 1 + i);
+
+            if (day.getMonth() != yearMonth.getMonth()) {
+                break;
+            }
+
+            daysOfWeek.add(day.getDayOfMonth());
+        }
+
+        return daysOfWeek;
     }
 
     private void groupBillItemsWeekly() {
@@ -2942,6 +3096,7 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
@@ -2968,20 +3123,20 @@ public class ReportsController implements Serializable {
     private ReportTemplateRowBundle generateExternalLaboratoryWorkloadBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
-                + "FROM BillItem billItem "
-                + "JOIN billItem.bill bill "
-                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
-                + "WHERE bill.billTypeAtomic IN :bts "
-                + "AND bill.createdAt BETWEEN :fd AND :td ";
-
 //        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
-//                + "FROM PatientInvestigation pi "
-//                + "JOIN pi.billItem billItem "
+//                + "FROM BillItem billItem "
 //                + "JOIN billItem.bill bill "
-//                + "WHERE pi.retired=false "
-//                + " and billItem.retired=false "
-//                + " and bill.retired=false ";
+//                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
+//                + "WHERE bill.billTypeAtomic IN :bts "
+//                + "AND bill.createdAt BETWEEN :fd AND :td ";
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+                + "FROM PatientInvestigation pi "
+                + "JOIN pi.billItem billItem "
+                + "JOIN billItem.bill bill "
+                + "WHERE pi.retired=false "
+                + " and billItem.retired=false "
+                + " and bill.retired=false ";
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
@@ -2999,8 +3154,8 @@ public class ReportsController implements Serializable {
         }
 
         if (item != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.name = :item ";
-            parameters.put("item", item.getName());
+            jpql += "AND billItem.item = :item ";
+            parameters.put("item", item);
         }
 
         if (institution != null) {
@@ -3042,13 +3197,13 @@ public class ReportsController implements Serializable {
         }
 
         if (category != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.category.id = :cat ";
+            jpql += "AND billItem.item.department.id = :cat ";
             parameters.put("cat", category.getId());
         }
 
-        if (investigationCode != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.code = :code ";
-            parameters.put("code", investigationCode.getCode());
+        if (investigation != null) {
+            jpql += "AND billItem.item = :code ";
+            parameters.put("code", investigation);
         }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";

@@ -14,7 +14,7 @@
 
         <h:panelGroup rendered="true" >
             <h:form>
-                <p:panel  styleClass="noBorder summeryBorder" header="Transfer Issue Summary">
+                <p:panel  styleClass="noBorder summeryBorder" header="Transfer Report Summary">
                     <h:panelGrid columns="4" class="w-100">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
@@ -54,14 +54,14 @@
                         <p:commandButton 
                             id="btnRefresh" 
                             ajax="false" 
-                            value="Fill To Be Transfer" 
+                            value="Requests to be issued" 
                             icon="fa-solid fa-fill"
                             class="ui-button-warning"
                             actionListener="#{commonReport.fillToBeTranserDeatilReport()}"
                             style="float: right;" />  
                         <p:commandButton 
                             ajax="false" 
-                            value="Fill Transfered" 
+                            value="Completed Transfers" 
                             icon="fa-solid fa-fill"
                             class="mx-1 ui-button-warning"
                             actionListener="#{commonReport.fillTranserDeatilReport()}"
