@@ -361,32 +361,32 @@
                                         <h:outputText value="#{bill.patient.person.name}"/>
                                     </p:column>
                                     <!--                                    <f:facet name="footer">
-                                                                            <h:outputText value="#{reportsController.calculateGrossAmountNetTotalByBills(entry.value)}">
+                                                                            <h:outputText value="#{reportsController.calculateGrossAmountSubTotalByBills(entry.value)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                                                         </f:facet>-->
                                     <!--                                    <f:facet name="footer">
-                                                    <h:outputText value="#{reportsController.calculateDiscountNetTotalByBills(entry.value)}">
+                                                    <h:outputText value="#{reportsController.calculateDiscountSubTotalByBills(entry.value)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                                 </f:facet>-->
                                     <!--                                    <f:facet name="footer">
-                                                                            <h:outputText value="#{reportsController.calculateNetAmountNetTotalByBills(entry.value)}">
+                                                                            <h:outputText value="#{reportsController.calculateNetAmountSubTotalByBills(entry.value)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                                                         </f:facet>-->
                                     <!--                                    <f:facet name="footer">
-                                                                            <h:outputText value="#{reportsController.calculatePatientShareNetTotalByBills(entry.value)}">
+                                                                            <h:outputText value="#{reportsController.calculatePatientShareSubTotalByBills(entry.value)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                                                         </f:facet>-->
                                     <!--                                    <f:facet name="footer">
-                                                                            <h:outputText value="#{reportsController.calculateSponsorShareNetTotalByBills(entry.value)}">
+                                                                            <h:outputText value="#{reportsController.calculateSponsorShareSubTotalByBills(entry.value)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                                                         </f:facet>-->
                                     <!--                                    <f:facet name="footer">
-                                                                            <h:outputText value="#{reportsController.calculateDueAmountNetTotalByBills(entry.value)}">
+                                                                            <h:outputText value="#{reportsController.calculateDueAmountSubTotalByBills(entry.value)}">
                                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                                             </h:outputText>
                                                                         </f:facet>-->
@@ -415,20 +415,23 @@
                                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                                             </h:outputText>
                                                                         </f:facet>-->
-                                    <f:facet name="footer">
-                                        <h:outputText value="#{reportsController.calculateDueAmountSubTotal()}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </f:facet>
+                                    <!--                                    <f:facet name="footer">
+                                                                            <h:outputText value="#{reportsController.calculateDueAmountSubTotal()}">
+                                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                                            </h:outputText>
+                                                                        </f:facet>-->
 
                                     <p:column headerText="Gross Amt" width="5rem">
                                         <h:outputText value="#{bill.billTotal}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                         <f:facet name="footer">
-                                            <h:outputText value="Sub Total" style="font-weight: bold;" />
+                                            <h:outputText value="#{reportsController.calculateGrossAmountNetTotalByBills(entry.value)}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
                                         </f:facet>
                                     </p:column>
+
                                     <p:column headerText="Disc Amt" width="5rem">
                                         <h:outputText value="#{bill.discount}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -455,6 +458,22 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column footerText="" class="font-bold"/>
+                                            <p:column footerText="" class="font-bold"/>
+                                            <p:column footerText="" class="font-bold"/>
+                                            <p:column footerText="" class="font-bold"/>
+                                            <p:column footerText="" class="font-bold"/>
+                                            <p:column footerText="" class="font-bold"/>
+                                            <p:column footerText="#{reportsController.calculateGrossAmountNetTotalByBills(entry.value)}" class="font-bold"/>
+                                            <p:column footerText="" class="font-bold"/>
+                                            <p:column footerText="" class="font-bold"/>
+                                            <p:column footerText="" class="font-bold"/>
+                                            <p:column footerText="" class="font-bold"/>
+                                            <p:column footerText="" class="font-bold"/>
+                                        </p:row>
+                                    </p:columnGroup>
                                 </p:subTable>
                             </p:dataTable>
 

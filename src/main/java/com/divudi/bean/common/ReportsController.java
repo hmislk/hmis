@@ -3314,7 +3314,7 @@ public class ReportsController implements Serializable {
         bundle.setGroupedBillItemsByInstitution(billMap);
     }
 
-    public Double calculateNetAmountNetTotalByBills(List<Bill> bills) {
+    public Double calculateNetAmountSubTotalByBills(List<Bill> bills) {
         Double netTotal = 0.0;
 
         for (Bill bill : bills) {
@@ -3324,7 +3324,7 @@ public class ReportsController implements Serializable {
         return netTotal;
     }
 
-    public Double calculateDiscountNetTotalByBills(List<Bill> bills) {
+    public Double calculateDiscountSubTotalByBills(List<Bill> bills) {
         Double discount = 0.0;
 
         for (Bill bill : bills) {
@@ -3342,13 +3342,13 @@ public class ReportsController implements Serializable {
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            netAmountSubTotal += calculateNetAmountNetTotalByBills(bills);
+            netAmountSubTotal += calculateNetAmountSubTotalByBills(bills);
         }
 
         return netAmountSubTotal;
     }
     
-    public Double calculateGrossAmountNetTotalByBills(List<Bill> bills) {
+    public Double calculateGrossAmountSubTotalByBills(List<Bill> bills) {
         Double billTotal = 0.0;
 
         for (Bill bill : bills) {
@@ -3358,7 +3358,7 @@ public class ReportsController implements Serializable {
         return billTotal;
     }
     
-    public Double calculatePatientShareNetTotalByBills(List<Bill> bills) {
+    public Double calculatePatientShareSubTotalByBills(List<Bill> bills) {
         Double settledAmountByPatient = 0.0;
 
         for (Bill bill : bills) {
@@ -3368,7 +3368,7 @@ public class ReportsController implements Serializable {
         return settledAmountByPatient;
     }
     
-    public Double calculateSponsorShareNetTotalByBills(List<Bill> bills) {
+    public Double calculateSponsorShareSubTotalByBills(List<Bill> bills) {
         Double settledAmountBySponsor = 0.0;
 
         for (Bill bill : bills) {
@@ -3378,7 +3378,7 @@ public class ReportsController implements Serializable {
         return settledAmountBySponsor;
     }
     
-    public Double calculateDueAmountNetTotalByBills(List<Bill> bills) {
+    public Double calculateDueAmountSubTotalByBills(List<Bill> bills) {
         Double balance = 0.0;
 
         for (Bill bill : bills) {
@@ -3395,7 +3395,7 @@ public class ReportsController implements Serializable {
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            grossAmountSubTotal += calculateGrossAmountNetTotalByBills(bills);
+            grossAmountSubTotal += calculateGrossAmountSubTotalByBills(bills);
         }
 
         return grossAmountSubTotal;
@@ -3408,7 +3408,7 @@ public class ReportsController implements Serializable {
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            discountSubTotal += calculateDiscountNetTotalByBills(bills);
+            discountSubTotal += calculateDiscountSubTotalByBills(bills);
         }
 
         return discountSubTotal;
@@ -3421,7 +3421,7 @@ public class ReportsController implements Serializable {
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            patientShareSubTotal += calculatePatientShareNetTotalByBills(bills);
+            patientShareSubTotal += calculatePatientShareSubTotalByBills(bills);
         }
 
         return patientShareSubTotal;
@@ -3434,7 +3434,7 @@ public class ReportsController implements Serializable {
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            dueAmountSubTotal += calculateDueAmountNetTotalByBills(bills);
+            dueAmountSubTotal += calculateDueAmountSubTotalByBills(bills);
         }
 
         return dueAmountSubTotal;
@@ -3447,7 +3447,7 @@ public class ReportsController implements Serializable {
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            sponsorShareSubTotal += calculateSponsorShareNetTotalByBills(bills);
+            sponsorShareSubTotal += calculateSponsorShareSubTotalByBills(bills);
         }
 
         return sponsorShareSubTotal;
