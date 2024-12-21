@@ -118,12 +118,12 @@ jobs:
 
           # Check if the application is reachable
           for i in {1..5}; do
-            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$SERVER_IP/rh/faces/index1.xhtml)
+            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://dev.carecode.org/rh/faces/index1.xhtml)
             if [ "$RESPONSE_CODE" == "200" ]; then
               echo "Application is reachable and healthy."
               break
             elif [ "$i" == "5" ]; then
-              echo "Application is not reachable or unhealthy at http://$SERVER_IP/rh (HTTP $RESPONSE_CODE)"
+              echo "Application is not reachable or unhealthy at https://dev.carecode.org/rh (HTTP $RESPONSE_CODE)"
               break
             fi
             sleep 10
