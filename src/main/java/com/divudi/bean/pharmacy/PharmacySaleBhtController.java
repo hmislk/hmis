@@ -19,6 +19,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
@@ -558,10 +559,12 @@ public class PharmacySaleBhtController implements Serializable {
         this.billItem = billItem;
     }
 
-    private void savePreBillFinally(Patient pt, Department matrixDepartment, BillType billType, BillNumberSuffix billNumberSuffix) {
+    private void savePreBillFinally(Patient pt, Department matrixDepartment, BillType billType, BillTypeAtomic billTypeAtomic) {
         getPreBill().setBillType(billType);
-        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.PreBill, billNumberSuffix));
-        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.PreBill, billNumberSuffix));
+        getPreBill().setBillTypeAtomic(billTypeAtomic);
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getLoggedUser().getDepartment(), billTypeAtomic);
+        getPreBill().setInsId(deptId);
+        getPreBill().setDeptId(deptId);
 
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
@@ -749,7 +752,8 @@ public class PharmacySaleBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        settleBhtIssue(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
+        BillTypeAtomic bta = BillTypeAtomic.INWARD_SERVICE_BILL;
+        settleBhtIssue(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment());
 
     }
 
@@ -841,7 +845,7 @@ public class PharmacySaleBhtController implements Serializable {
         return false;
     }
 
-    private void settleBhtIssue(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
+    private void settleBhtIssue(BillType btp, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
@@ -854,7 +858,7 @@ public class PharmacySaleBhtController implements Serializable {
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
 
-        savePreBillFinally(pt, matrixDepartment, btp, billNumberSuffix);
+        savePreBillFinally(pt, matrixDepartment, btp, bta, billNumberSuffix);
         savePreBillItemsFinally(tmpBillItems);
 
         // Calculation Margin
