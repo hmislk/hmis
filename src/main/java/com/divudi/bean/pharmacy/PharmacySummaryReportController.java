@@ -29,6 +29,7 @@ import com.divudi.data.BillClassType;
 
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.IncomeBundle;
+import com.divudi.data.IncomeRow;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Category;
 import com.divudi.entity.WebUser;
@@ -244,6 +245,17 @@ public class PharmacySummaryReportController implements Serializable {
 
         List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics);
         bundle = new IncomeBundle(bills);
+        for (IncomeRow r : bundle.getRows()) {
+            if (r.getBill() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod() == null) {
+                continue;
+            }
+            if(r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)){
+                r.setPayments(billService.fetchBillPayments(r.getBill()));
+            }
+        }
         bundle.generatePaymentDetailsForBills();
     }
 

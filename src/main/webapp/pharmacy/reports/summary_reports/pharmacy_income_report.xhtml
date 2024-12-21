@@ -152,71 +152,161 @@
                         ajax="false"
                         action="#{pharmacySummaryReportController.processPharmacyIncomeReport()}" 
                         class="ui-button-success m-1" 
-                        icon="fas fa-cogs" 
-                        style="background-color: #28a745; border-color: #28a745;"> 
+                        icon="fas fa-cogs" > 
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        value="Download" 
+                        ajax="false"
+                        class="ui-button-success m-1" 
+                        icon="fas fa-cogs" > 
+                        <p:dataExporter fileName="pharmacy_income_report.xlsx" target="tbl" type="xlsx" ></p:dataExporter>
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        value="Print" 
+                        ajax="false"
+                        class="ui-button-success m-1" 
+                        icon="fas fa-cogs" > 
+                        <p:printer target="tbl" ></p:printer>
                     </p:commandButton>
 
 
-                    <!--Do not remove this part-->
-                    <h:panelGroup style="display: none;" >
-                        <ui:repeat value="#{pharmacySummaryReportController.bundle.bundles}" var="myBundle1" >
-                            #{myBundle1.name} - #{myBundle1.bundleType} <br/>
-                        </ui:repeat>
-                    </h:panelGroup>
-
-                    <p:dataTable value="#{pharmacySummaryReportController.bundle.rows}" var="row"
-                                 paginator="true" rows="10" rowsPerPageTemplate="5,10,15,50,100,500,1000,2000,5000,10000"
-                                 paginatorPosition="bottom">
-                        <p:column headerText="Bill No" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}" filterMatchMode="contains">
+                    <p:dataTable
+                        id="tbl"
+                        value="#{pharmacySummaryReportController.bundle.rows}" var="row"
+                        paginator="true" rows="10" rowsPerPageTemplate="5,10,15,50,100,500,1000,2000,5000,10000"
+                        paginatorPosition="bottom">
+                        <p:column headerText="Bill No" >
                             <h:outputText value="#{row.bill.deptId}" />
                         </p:column>
-                        <p:column headerText="Patient" sortBy="#{row.bill.patient.person.name}" filterBy="#{row.bill.patient.person.name}" filterMatchMode="contains">
+                        <p:column headerText="Patient" >
                             <h:outputText value="#{row.bill.patient.person.nameWithTitle}" />
                         </p:column>
-                        <p:column headerText="Date" sortBy="#{row.bill.billDate}" filterBy="#{row.bill.billDate}" filterMatchMode="contains">
-                            <h:outputText value="#{row.bill.billDate}">
+                        <p:column headerText="Date" >
+                            <h:outputText value="#{row.bill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                             </h:outputText>
                         </p:column>
-                        <p:column headerText="Net Total" sortBy="#{row.bill.netTotal}" filterBy="#{row.bill.netTotal}" filterMatchMode="contains">
+                        <p:column headerText="Net Total"  class="text-end">
                             <h:outputText value="#{row.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
-                        <p:column headerText="Cash" sortBy="#{row.cashValue}" filterBy="#{row.cashValue}" filterMatchMode="contains">
+                        <p:column headerText="Cash"  class="text-end">
                             <h:outputText value="#{row.cashValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cashValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
                         </p:column>
-                        <p:column headerText="Inpatient Credit" sortBy="#{row.inpatientCreditValue}" filterBy="#{row.inpatientCreditValue}" filterMatchMode="contains" styleClass="credit-background">
+                        <p:column headerText="Card" class="text-end">
+                            <h:outputText value="#{row.cardValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cardValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Cheque"  class="text-end">
+                            <h:outputText value="#{row.chequeValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.chequeValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Inpatient Credit" class="text-end bg-secondary text-white">
                             <h:outputText value="#{row.inpatientCreditValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.inpatientCreditValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
                         </p:column>
-                        <p:column headerText="Outpatient Credit" sortBy="#{row.opdCreditValue}" filterBy="#{row.opdCreditValue}" filterMatchMode="contains" styleClass="credit-background">
+                        <p:column headerText="Outpatient Credit" class="text-end bg-secondary text-white">
                             <h:outputText value="#{row.opdCreditValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.opdCreditValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
                         </p:column>
-                        <p:column headerText="Staff Credit" sortBy="#{row.staffValue}" filterBy="#{row.staffValue}" filterMatchMode="contains" styleClass="credit-background">
+                        <p:column headerText="Staff Credit"   class="text-end bg-secondary text-white" >
                             <h:outputText value="#{row.staffValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.staff}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
                         </p:column>
-                        <p:column headerText="Discountt" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}" filterMatchMode="contains">
+                        <p:column headerText="Agent Credit" class="text-end bg-secondary text-white" >
+                            <h:outputText value="#{row.agentValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.agentValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Discount"  class="text-end">
                             <h:outputText value="#{row.discount}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
                         </p:column>
-                        <p:column headerText="Service Charge" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}" filterMatchMode="contains">
+                        <p:column headerText="Service Charge"  class="text-end" >
                             <h:outputText value="#{row.serviceCharge}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.serviceCharge}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
                         </p:column>
-                        <p:column headerText="Actual Total" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}" filterMatchMode="contains">
+                        <p:column headerText="Actual Total"  class="text-end">
                             <h:outputText value="#{row.actualTotal}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.actualTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
                         </p:column>
 
 

@@ -54,7 +54,7 @@ public class IncomeRow implements Serializable {
     private double itemProfessionalFee;
     private double itemNetTotal;
 
-    private List<Bill> cashHnadovers;
+    private List<Payment> payments;
 
     private String feeName;
     private String categoryName;
@@ -104,6 +104,10 @@ public class IncomeRow implements Serializable {
     private Institution referringInstitution;
     private Staff referringStaff;
 
+    private PatientInvestigation patientInvestigation;
+    private Route route;
+    private Institution collectingCentre;
+
     private List<BillTypeAtomic> btas;
 
     private double onCallValue;
@@ -137,12 +141,7 @@ public class IncomeRow implements Serializable {
     private double staffTotal;
     private double ccTotal;
 
-    private Route route;
-    private Institution collectingCentre;
-    private double totalHospitalFee;
     private double qty;
-
-    private PatientInvestigation patientInvestigation;
 
     private long duration;
 
@@ -150,44 +149,11 @@ public class IncomeRow implements Serializable {
 
     private UUID id;
 
-    private List<DenominationTransaction> denominationTransactions;
-
-    private PaymentHandover paymentHandover;
-
     // Constructor to generate a new UUID when an object is created
     public IncomeRow() {
         this.id = UUID.randomUUID();
     }
 
-    public IncomeRow(Institution institution) {
-        this.institution = institution;
-    }
-
-    public IncomeRow(Institution institution, double itemTotal) {
-        this.itemTotal = itemTotal;
-        this.institution = institution;
-    }
-
-    public IncomeRow(Institution institution, Long itemCount, double itemHospitalFee, double itemCollectingCentreFee, double itemProfessionalFee, double itemNetTotal) {
-        this.itemCount = itemCount;
-        this.itemHospitalFee = itemHospitalFee;
-        this.itemCollectingCentreFee = itemCollectingCentreFee;
-        this.itemProfessionalFee = itemProfessionalFee;
-        this.itemNetTotal = itemNetTotal;
-        this.institution = institution;
-    }
-
-    public IncomeRow(Institution collectingCentre, double totalHospitalFee, double qty) {
-        this.collectingCentre = collectingCentre;
-        this.totalHospitalFee = totalHospitalFee;
-        this.qty = qty;
-    }
-
-    public IncomeRow(Route route, double totalHospitalFee, double qty) {
-        this.route = route;
-        this.totalHospitalFee = totalHospitalFee;
-        this.qty = qty;
-    }
 
     // Getter for UUID (optional, depending on use case)
     public UUID getId() {
@@ -222,179 +188,12 @@ public class IncomeRow implements Serializable {
         return "ReportTemplateRow{id=" + getId() + '}';
     }
 
-    public IncomeRow(PatientInvestigation patientInvestigation) {
-        this.patientInvestigation = patientInvestigation;
-    }
-
+    
     public IncomeRow(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
     }
 
-    public IncomeRow(Department department, double rowValue) {
-        this.rowValue = rowValue;
-        this.department = department;
-    }
-
-    public IncomeRow(Department department, Date date,
-            double cashValue, double cardValue, double multiplePaymentMethodsValue,
-            double staffValue, double creditValue, double staffWelfareValue,
-            double voucherValue, double iouValue, double agentValue,
-            double chequeValue, double slipValue, double eWalletValue,
-            double patientDepositValue, double patientPointsValue, double onlineSettlementValue,
-            double noneValue
-    ) {
-        this.department = department;
-        this.date = date;
-        this.cashValue = cashValue;
-        this.cardValue = cardValue;
-        this.multiplePaymentMethodsValue = multiplePaymentMethodsValue;
-        this.staffValue = staffValue;
-        this.creditValue = creditValue;
-        this.staffWelfareValue = staffWelfareValue;
-        this.voucherValue = voucherValue;
-        this.iouValue = iouValue;
-        this.agentValue = agentValue;
-        this.chequeValue = chequeValue;
-        this.slipValue = slipValue;
-        this.eWalletValue = eWalletValue;
-        this.patientDepositValue = patientDepositValue;
-        this.patientPointsValue = patientPointsValue;
-        this.onlineSettlementValue = onlineSettlementValue;
-        this.noneValue = noneValue;
-    }
-
-    public IncomeRow(Department department, BillTypeAtomic billTypeAtomic,
-            double cashValue, double cardValue, double multiplePaymentMethodsValue,
-            double staffValue, double creditValue, double staffWelfareValue,
-            double voucherValue, double iouValue, double agentValue,
-            double chequeValue, double slipValue, double eWalletValue,
-            double patientDepositValue, double patientPointsValue, double onlineSettlementValue, double noneValue) {
-        this.department = department;
-        this.billTypeAtomic = billTypeAtomic;
-        this.cashValue = cashValue;
-        this.cardValue = cardValue;
-        this.multiplePaymentMethodsValue = multiplePaymentMethodsValue;
-        this.staffValue = staffValue;
-        this.creditValue = creditValue;
-        this.staffWelfareValue = staffWelfareValue;
-        this.voucherValue = voucherValue;
-        this.iouValue = iouValue;
-        this.agentValue = agentValue;
-        this.chequeValue = chequeValue;
-        this.slipValue = slipValue;
-        this.eWalletValue = eWalletValue;
-        this.patientDepositValue = patientDepositValue;
-        this.patientPointsValue = patientPointsValue;
-        this.onlineSettlementValue = onlineSettlementValue;
-        this.noneValue = noneValue;
-    }
-
-    public IncomeRow(Bill bill,
-            double cashValue, double cardValue, double multiplePaymentMethodsValue,
-            double staffValue, double creditValue, double staffWelfareValue,
-            double voucherValue, double iouValue, double agentValue,
-            double chequeValue, double slipValue, double eWalletValue,
-            double patientDepositValue, double patientPointsValue, double onlineSettlementValue, double noneValue) {
-        this.bill = bill;
-        this.cashValue = cashValue;
-        this.cardValue = cardValue;
-        this.multiplePaymentMethodsValue = multiplePaymentMethodsValue;
-        this.staffValue = staffValue;
-        this.creditValue = creditValue;
-        this.staffWelfareValue = staffWelfareValue;
-        this.voucherValue = voucherValue;
-        this.iouValue = iouValue;
-        this.agentValue = agentValue;
-        this.chequeValue = chequeValue;
-        this.slipValue = slipValue;
-        this.eWalletValue = eWalletValue;
-        this.patientDepositValue = patientDepositValue;
-        this.patientPointsValue = patientPointsValue;
-        this.onlineSettlementValue = onlineSettlementValue;
-        this.noneValue = noneValue;
-    }
-
-    public IncomeRow(BillType billType, BillClassType billClassType, BillTypeAtomic billTypeAtomic, Long rowCount, double grossTotal, double discount, double total) {
-        this.billType = billType;
-        this.billClassType = billClassType;
-        this.billTypeAtomic = billTypeAtomic;
-        this.rowCount = rowCount;
-        this.grossTotal = grossTotal;
-        this.discount = discount;
-        this.netTotal = total;
-    }
-
-    public IncomeRow(BillTypeAtomic billTypeAtomic, Long rowCount, double grossTotal, double discount, double total) {
-        this.billTypeAtomic = billTypeAtomic;
-        this.rowCount = rowCount;
-        this.grossTotal = grossTotal;
-        this.discount = discount;
-        this.netTotal = total;
-    }
-
-    public IncomeRow(BillTypeAtomic billTypeAtomic, Long rowCount) {
-        this.billTypeAtomic = billTypeAtomic;
-        this.rowCount = rowCount;
-    }
-
-    public IncomeRow(Department department, Date date, WebUser user,
-            double cashValue, double cardValue, double multiplePaymentMethodsValue,
-            double staffValue, double creditValue, double staffWelfareValue,
-            double voucherValue, double iouValue, double agentValue,
-            double chequeValue, double slipValue, double eWalletValue,
-            double patientDepositValue, double patientPointsValue, double onlineSettlementValue, double noneValue) {
-        this.department = department;
-        this.date = date;
-        this.cashValue = cashValue;
-        this.user = user;
-        this.cardValue = cardValue;
-        this.multiplePaymentMethodsValue = multiplePaymentMethodsValue;
-        this.staffValue = staffValue;
-        this.creditValue = creditValue;
-        this.staffWelfareValue = staffWelfareValue;
-        this.voucherValue = voucherValue;
-        this.iouValue = iouValue;
-        this.agentValue = agentValue;
-        this.chequeValue = chequeValue;
-        this.slipValue = slipValue;
-        this.eWalletValue = eWalletValue;
-        this.patientDepositValue = patientDepositValue;
-        this.patientPointsValue = patientPointsValue;
-        this.onlineSettlementValue = onlineSettlementValue;
-        this.noneValue = noneValue;
-    }
-
-    public IncomeRow(Staff referringStaff, Institution referringInstitution, Long long1, double rowValue) {
-        this.rowValue = rowValue;
-        this.long1 = long1;
-        this.referringInstitution = referringInstitution;
-        this.referringStaff = referringStaff;
-    }
-
-    public IncomeRow(Staff referringStaff, Long long1, double rowValue) {
-        this.rowValue = rowValue;
-        this.long1 = long1;
-        this.referringStaff = referringStaff;
-    }
-
-    public IncomeRow(Institution referringInstitution, Long long1, double rowValue) {
-        this.rowValue = rowValue;
-        this.long1 = long1;
-        this.referringInstitution = referringInstitution;
-    }
-
-    public IncomeRow(Category c) {
-        this.category = c;
-    }
-
-    public IncomeRow(Item item) {
-        this.item = item;
-
-    }
-
-    public IncomeRow(Department d) {
-        this.department = d;
-    }
+    
 
     public void setFeeName(String feeName) {
         this.feeName = feeName;
@@ -993,17 +792,6 @@ public class IncomeRow implements Serializable {
         this.onlineSettlementValue = onlineSettlementValue;
     }
 
-    public List<Bill> getCashHnadovers() {
-        if (cashHnadovers == null) {
-            cashHnadovers = new ArrayList<>();
-        }
-        return cashHnadovers;
-    }
-
-    public void setCashHnadovers(List<Bill> cashHnadovers) {
-        this.cashHnadovers = cashHnadovers;
-    }
-
     public double geteWalletValue() {
         return eWalletValue;
     }
@@ -1192,14 +980,6 @@ public class IncomeRow implements Serializable {
         this.collectingCentre = collectingCentre;
     }
 
-    public double getTotalHospitalFee() {
-        return totalHospitalFee;
-    }
-
-    public void setTotalHospitalFee(double totalHospitalFee) {
-        this.totalHospitalFee = totalHospitalFee;
-    }
-
     public double getQty() {
         return qty;
     }
@@ -1312,13 +1092,7 @@ public class IncomeRow implements Serializable {
         this.selected = selected;
     }
 
-    public List<DenominationTransaction> getDenominationTransactions() {
-        return denominationTransactions;
-    }
-
-    public void setDenominationTransactions(List<DenominationTransaction> denominationTransactions) {
-        this.denominationTransactions = denominationTransactions;
-    }
+    
 
     public AgentHistory getAgentHistory() {
         return agentHistory;
@@ -1328,13 +1102,6 @@ public class IncomeRow implements Serializable {
         this.agentHistory = agentHistory;
     }
 
-    public PaymentHandover getPaymentHandover() {
-        return paymentHandover;
-    }
-
-    public void setPaymentHandover(PaymentHandover paymentHandover) {
-        this.paymentHandover = paymentHandover;
-    }
 
     public BillType getBillType() {
         return billType;
@@ -1406,6 +1173,17 @@ public class IncomeRow implements Serializable {
 
     public void setActualTotal(double actualTotal) {
         this.actualTotal = actualTotal;
+    }
+
+    public List<Payment> getPayments() {
+        if (payments == null) {
+            payments = new ArrayList<>();
+        }
+        return payments;
+    }
+
+    public void setPayments(List<Payment> payments) {
+        this.payments = payments;
     }
 
 }
