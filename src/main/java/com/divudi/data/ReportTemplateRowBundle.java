@@ -1137,6 +1137,32 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public void calculateTotalDiscountByBillItems() {
+        discount = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem().getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBillItem().getBill().getDiscount());
+                discount += amount;
+            }
+        }
+    }
+
+    public void calculateTotalDiscountByBills() {
+        discount = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBill().getDiscount());
+                discount += amount;
+            }
+        }
+    }
+
     public void calculateTotalCCFee() {
         ccTotal = 0.0;
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
