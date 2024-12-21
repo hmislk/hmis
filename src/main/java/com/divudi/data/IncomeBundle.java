@@ -231,6 +231,10 @@ public class IncomeBundle implements Serializable {
             if (b == null) {
                 continue;
             }
+            r.setNetTotal(b.getNetTotal());
+            r.setDiscount(b.getDiscount());
+            r.setActualTotal(b.getNetTotal() - b.getServiceCharge());
+            
             if (b.getPaymentMethod() == null) {
                 r.setNoneValue(b.getNetTotal());
             } else {
@@ -297,7 +301,7 @@ public class IncomeBundle implements Serializable {
                 }
 
             }
-            r.setActualTotal(b.getNetTotal() - b.getServiceCharge());
+            
         }
         populateSummaryRow();
     }
