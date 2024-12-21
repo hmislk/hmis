@@ -1,0 +1,246 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/pharmacy_analytics.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+                >
+
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <p:panel styleClass="noBorder summeryBorder" header="GRN Summary by Supplier">
+                    <h:panelGrid columns="4" class="w-100">
+
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+
+
+                        <h:outputLabel  value="Department"  ></h:outputLabel>
+                        <p:autoComplete  value="#{commonReport.department}"  
+                                         completeMethod="#{departmentController.completeDept}" var="dept"
+                                         itemValue="#{dept}" itemLabel="#{dept.name}" 
+                                         forceSelection="true" rendered="true"
+                                         requiredMessage="You must select a department" >
+                        </p:autoComplete>
+
+                        <h:outputLabel  value="Supplier"  ></h:outputLabel>
+                        <p:autoComplete converter="deal" 
+                                        value="#{commonReport.institution}"
+                                        completeMethod="#{dealerController.completeDealor}"
+                                        forceSelection="true" rendered="true"
+                                        var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+
+                        
+
+                        <p:defaultCommand target="btnRefresh"/>
+                    </h:panelGrid>
+
+
+                    <h:panelGrid columns="3" class="my-2">
+                        <p:commandButton 
+                            id="btnRefresh" 
+                            ajax="false" 
+                            value="Fill" 
+                            icon="fa-solid fa-fill"
+                            class="ui-button-warning"                  
+                            actionListener="#{commonReport.createPharmacyGrnDetailTable()}"
+                            style="float: right;" /> 
+
+                        <p:commandButton 
+                            actionListener="#{commonReport.createPharmacyGrnDetailTable()}" 
+                            ajax="false" 
+                            value="Excel" 
+                            icon="fa-solid fa-file-excel"
+                            class="ui-button-success mx-2" 
+                            style="float: right;" >
+                            <p:dataExporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum," fileName="report_grn_detail_by_supplier"  />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Print"
+                            icon="fa-solid fa-print"
+                            class="ui-button-info"
+                            style="float: right;" >
+                            <p:printer target="reportPrint"/>
+                        </p:commandButton>
+                    </h:panelGrid>
+
+                    <p:panel id="reportPrint" >
+                        <p:dataTable id="billed"  value="#{commonReport.billItems}" var="b" resizeMode="expand"
+                                     reflow="true"
+                                     rowStyleClass="#{b.bill.billType eq 'PharmacyGrnReturn' ? 'row-warning' : ''}"
+                                     sortBy="#{b.billType}"  >
+
+                            <f:facet name="header"> 
+                                <h:outputLabel value="From :" />&nbsp;&nbsp;
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm "/>
+                                </h:outputLabel>    
+                                &nbsp;&nbsp;
+                                <h:outputLabel value="To :"/>&nbsp;&nbsp;
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm "/>
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="GRN by - #{commonReport.department.name}"/> 
+                                &#13;&nbsp;
+                                <h:outputLabel value="GRN"/>
+                            </f:facet>
+
+                            <p:column headerText="GRN No" styleClass="#{b.bill.billType eq 'PharmacyGrnReturn' ? 'row-warning' : ''}">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="GRN No"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.bill.deptId}"/>
+                            </p:column>
+
+                            <p:column headerText="Invoice No" styleClass="#{b.bill.billType eq 'PharmacyGrnReturn' ? 'row-warning' : ''}">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Invoice No"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.bill.invoiceNumber}"/>
+                            </p:column>
+
+
+
+                            <p:column headerText="Created At" styleClass="#{b.bill.billType eq 'PharmacyGrnReturn' ? 'row-warning' : ''}" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Created At"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.bill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Suplier Name" styleClass="#{b.bill.billType eq 'PharmacyGrnReturn' ? 'row-warning' : ''}" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Suplier Name"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.bill.fromInstitution.name}"/>
+
+                            </p:column>
+                            <p:column headerText="Item Name" styleClass="#{b.bill.billType eq 'PharmacyGrnReturn' ? 'row-warning' : ''}" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Item Name"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.item.name}"/>
+
+                            </p:column>
+                            <p:column headerText="Item Qty" style=" text-align: right"  styleClass="#{b.bill.billType eq 'PharmacyGrnReturn' ? 'row-warning' : ''}" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Item Qty"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.pharmaceuticalBillItem.qty}"/>
+
+                            </p:column>
+                            <p:column headerText="Free Qty" style=" text-align: right"  styleClass="#{b.bill.billType eq 'PharmacyGrnReturn' ? 'row-warning' : ''}" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Free Qty"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.pharmaceuticalBillItem.freeQty}"/>
+
+                            </p:column>
+
+                            <p:column headerText="Payment Method" style=" text-align: center"  styleClass="#{b.bill.billType eq 'PharmacyGrnReturn' ? 'row-warning' : ''}">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Payment Method"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.bill.paymentMethod}"/>
+                            </p:column>
+
+                            <p:column headerText="Purchase Value Cash" style=" text-align: right" styleClass="#{b.bill.billType eq 'PharmacyGrnReturn' ? 'row-warning' : ''}" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Purchase Value"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+
+
+                            <p:column headerText="Sale Value Credit" style=" text-align: right" styleClass="#{b.bill.billType eq 'PharmacyGrnReturn' ? 'row-warning' : ''}" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Sale Value"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.bill.saleValue}"  >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Remark" styleClass="#{b.bill.billType eq 'PharmacyGrnReturn' ? 'row-warning' : ''}">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Remark"/>
+                                </f:facet> 
+                                <p:badge value="Return Bill" severity="warning" rendered="#{b.bill.billType eq 'PharmacyGrnReturn'}" />
+                                <p:badge value="Cancelled" severity="danger" rendered="#{b.bill.cancelled eq true}" />
+                                
+                                
+                            </p:column>
+
+                            <p:columnGroup type="footer" >  
+                                <p:row >  
+                                    <p:column colspan="7" style="text-align:left" footerText=""/>
+
+                                    <p:column style="text-align: right;" footerText="">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column style="text-align: right;" footerText="">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column style="text-align: right;" footerText="">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column style="text-align: right;" footerText="">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>  
+                            </p:columnGroup>  
+
+                        </p:dataTable>
+
+                        <p:spacer height="30"/>
+
+                    </p:panel>
+
+
+
+
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>
