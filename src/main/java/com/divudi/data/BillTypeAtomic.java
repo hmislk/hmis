@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public enum BillTypeAtomic {
+    @Deprecated //Use REQUEST_MEDICINE_INWARD
     INWARD_PHARMACY_REQUEST("Inward Request Medicines From Pharmacy", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     INWARD_SERVICE_BATCH_BILL("Inward Service Batch Bill", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     INWARD_SERVICE_BATCH_BILL_CANCELLATION("Inward Service Batch Bill Cancellation", BillCategory.CANCELLATION, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
@@ -33,6 +34,32 @@ public enum BillTypeAtomic {
     CANCELLED_INWARD_FINAL_BILL("Cancelled Inward Final Bill", BillCategory.CANCELLATION, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     CANCELLED_INWARD_INTERIM_BILL("Cancelled Inward Interim Bill", BillCategory.CANCELLATION, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     CANCELLED_INWARD_ESTIMATE_BILL("Cancelled Inward Estimate Bill", BillCategory.CANCELLATION, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    // Direct Issue of medicines to inward patients
+    DIRECT_ISSUE_INWARD_MEDICINE("Direct Issue of Medicines to Inward Patients", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION("Direct Issue of Medicines to Inward Patients Cancellation", BillCategory.CANCELLATION, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    DIRECT_ISSUE_INWARD_MEDICINE_RETURN("Direct Issue of Medicines to Inward Patients Return", BillCategory.REFUND, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    // Direct issue of medicines to theatre
+    DIRECT_ISSUE_THEATRE_MEDICINE("Direct Issue of Medicines to Theatre", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION("Direct Issue of Medicines to Theatre Cancellation", BillCategory.CANCELLATION, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    DIRECT_ISSUE_THEATRE_MEDICINE_RETURN("Direct Issue of Medicines to Theatre Return", BillCategory.REFUND, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    // Requests for inward and theatre patients
+    REQUEST_MEDICINE_INWARD("Request Medicines for Inward Patients", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    REQUEST_MEDICINE_INWARD_CANCELLATION("Cancel Request Medicines for Inward Patients", BillCategory.CANCELLATION, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    REQUEST_MEDICINE_THEATRE("Request Medicines for Theatre", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    REQUEST_MEDICINE_THEATRE_CANCELLATION("Cancel Request Medicines for Theatre", BillCategory.CANCELLATION, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    // Issuing based on requests
+    ISSUE_MEDICINE_ON_REQUEST_INWARD("Issue Medicines on Request to Inward", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION("Cancel Issue of Medicines on Request to Inward", BillCategory.CANCELLATION, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    ISSUE_MEDICINE_ON_REQUEST_THEATRE("Issue Medicines on Request to Theatre", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION("Cancel Issue of Medicines on Request to Theatre", BillCategory.CANCELLATION, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    // Acceptance of issued medicines
+    ACCEPT_ISSUED_MEDICINE_INWARD("Accept Issued Medicines Inward", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    ACCEPT_ISSUED_MEDICINE_THEATRE("Accept Issued Medicines Theatre", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    // Returns and handling at pharmacy
+    RETURN_MEDICINE_INWARD("Return Medicines Inward", BillCategory.REFUND, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    ACCEPT_RETURN_MEDICINE_INWARD("Accept Returned Medicines Inward", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    RETURN_MEDICINE_THEATRE("Return Medicines Theatre", BillCategory.REFUND, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    ACCEPT_RETURN_MEDICINE_THEATRE("Accept Returned Medicines Theatre", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     // STORE
     STORE_ORDER("Store Order", BillCategory.BILL, ServiceType.STORE, BillFinanceType.CASH_IN, CountedServiceType.STORE, PaymentCategory.NON_CREDIT_SPEND),
     STORE_ORDER_PRE("Store Order Pre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND),
@@ -46,6 +73,32 @@ public enum BillTypeAtomic {
     STORE_GRN_CANCELLED("Store GRN Cancelled", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.CASH_OUT, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND),
     STORE_GRN_REFUND("Store GRN Refund", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.CASH_OUT, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND),
     STORE_GRN_RETURN("Store GRN Return", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.CASH_IN, CountedServiceType.STORE, PaymentCategory.NON_CREDIT_SPEND),
+    // Direct Issue of store items to inward patients
+    DIRECT_ISSUE_STORE_INWARD("Direct Issue of Store Items to Inward Patients", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    DIRECT_ISSUE_STORE_INWARD_CANCELLATION("Direct Issue of Store Items to Inward Patients Cancellation", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    DIRECT_ISSUE_STORE_INWARD_RETURN("Direct Issue of Store Items to Inward Patients Return", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    // Direct issue of store items to theatre
+    DIRECT_ISSUE_STORE_THEATRE("Direct Issue of Store Items to Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    DIRECT_ISSUE_STORE_THEATRE_CANCELLATION("Direct Issue of Store Items to Theatre Cancellation", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    DIRECT_ISSUE_STORE_THEATRE_RETURN("Direct Issue of Store Items to Theatre Return", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    // Requests for store items for inward and theatre
+    STORE_REQUEST_INWARD("Store Request for Inward", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    STORE_REQUEST_INWARD_CANCELLATION("Cancel Store Request for Inward", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    STORE_REQUEST_THEATRE("Store Request for Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    STORE_REQUEST_THEATRE_CANCELLATION("Cancel Store Request for Theatre", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    // Issuing store items based on requests
+    STORE_ISSUE_ON_REQUEST_INWARD("Issue Store Items on Request to Inward", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    STORE_ISSUE_ON_REQUEST_INWARD_CANCELLATION("Cancel Issue of Store Items on Request to Inward", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    STORE_ISSUE_ON_REQUEST_THEATRE("Issue Store Items on Request to Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    STORE_ISSUE_ON_REQUEST_THEATRE_CANCELLATION("Cancel Issue of Store Items on Request to Theatre", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    // Acceptance of issued store items
+    ACCEPT_ISSUED_STORE_INWARD("Accept Issued Store Items Inward", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    ACCEPT_ISSUED_STORE_THEATRE("Accept Issued Store Items Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    // Returns and handling at store
+    RETURN_STORE_INWARD("Return Store Items Inward", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    ACCEPT_RETURN_STORE_INWARD("Accept Returned Store Items Inward", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    RETURN_STORE_THEATRE("Return Store Items Theatre", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    ACCEPT_RETURN_STORE_THEATRE("Accept Returned Store Items Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     // PHARMACY
     PHARMACY_RETAIL_SALE("Pharmacy Retail Sale", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY,
             PaymentCategory.NON_CREDIT_COLLECTION),
