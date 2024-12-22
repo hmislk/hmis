@@ -151,14 +151,9 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void settleSurgeryBhtIssue() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (getBatchBill() == null) {
             return;
         }
-
         if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("There are No Medicines/Devices to Bill!!!");
             return;
@@ -172,15 +167,11 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
         }
-
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE;
         BillType bt = BillType.PharmacyBhtPre;
-
         settleBhtIssue(bt, bta, getBatchBill().getFromDepartment());
-
         getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
-
     }
 
 //    public void settleSurgeryBhtIssueStore() {
