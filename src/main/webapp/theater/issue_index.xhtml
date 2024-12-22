@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bil="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
+      xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <div class="row" >
+                    <div class="col-3 p-1" >
+                        <h:form >
+                            <p:panelGrid columns="1">
+                                <p:commandButton value="Pharmacy BHT Issue" 
+                                                 action="/theater/inward_bill_surgery_issue?faces-redirect=true"
+                                                 actionListener="#{pharmacySaleBhtController.makeNull()}"
+                                                 rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
+                                                 icon="pi pi-medical" 
+                                                 ajax="false"/>
+                                <p:commandButton value="Search Issue Bills"
+                                                 action="/inward/pharmacy_search_sale_bill_bht?faces-redirect=true"
+                                                 actionListener="#{searchController.makeListNull}"
+                                                 rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
+                                                 icon="pi pi-search"
+                                                 ajax="false"/>
+                                <p:commandButton value="Search Issue Bill Items"
+                                                 action="/inward/pharmacy_search_sale_bill_item_bht?faces-redirect=true"
+                                                 actionListener="#{searchController.makeListNull}"
+                                                 rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
+                                                 icon="pi pi-search-plus"
+                                                 ajax="false"/>
+                                <p:commandButton value="Search Issue Return Bill"
+                                                 action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true"
+                                                 actionListener="#{searchController.makeListNull}"
+                                                 rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
+                                                 icon="pi pi-search-minus"
+                                                 ajax="false"/>
+                                <p:commandButton value="Search Issue Return Bill Items"
+                                                 action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true"
+                                                 actionListener="#{searchController.makeListNull}"
+                                                 rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
+                                                 icon="pi pi-search-minus"
+                                                 ajax="false"/>
+
+                                <p:separator></p:separator>
+                                <p:commandButton value="Inward Billing"
+                                                 action="/store/store_retail_sale_bht?faces-redirect=true"
+                                                 actionListener="#{pharmacySaleBhtController.resetAll()}"
+                                                 rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtBilling')}"
+                                                 icon="pi pi-shopping-cart"
+                                                 ajax="false"/>
+                                <p:commandButton value="Search Issue Bill"
+                                                 action="/store/store_search_sale_bill_bht?faces-redirect=true"
+                                                 actionListener="#{searchController.makeListNull}"
+                                                 rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtSearchBill')}"
+                                                 icon="pi pi-search"
+                                                 ajax="false"/>
+                                <p:commandButton value="Search Issue Bill Items"
+                                                 action="/store/store_search_sale_bill_item_bht?faces-redirect=true"
+                                                 actionListener="#{searchController.makeListNull}"
+                                                 rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtSearchBillItem')}"
+                                                 icon="pi pi-search-plus"
+                                                 ajax="false"/>
+                            </p:panelGrid>
+                        </h:form>
+                    </div>
+                    <div class="col-9 p-1" >
+                        <ui:insert name="subcontent" >
+
+                        </ui:insert>
+                    </div>
+                </div>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
