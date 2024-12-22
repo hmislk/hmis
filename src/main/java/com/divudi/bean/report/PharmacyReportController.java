@@ -1907,6 +1907,12 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
+        } else if ("transferIssueDoc".equals(documentType)) {
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+        } else if ("transferIssueDoc".equals(documentType)) {
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
         }
 
         stockLedgerHistories = new ArrayList();
