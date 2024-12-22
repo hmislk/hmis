@@ -13,63 +13,88 @@
             <ui:define name="content">
 
                 <div class="row" >
-                    <div class="col-3 p-1" >
+                    <div class="col-2 p-1" >
                         <h:form >
-                            <p:panelGrid columns="1">
-                                <p:commandButton value="Pharmacy BHT Issue" 
-                                                 action="/theater/inward_bill_surgery_issue?faces-redirect=true"
-                                                 actionListener="#{pharmacySaleBhtController.makeNull()}"
-                                                 rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
-                                                 icon="pi pi-medical" 
-                                                 ajax="false"/>
-                                <p:commandButton value="Search Issue Bills"
-                                                 action="/inward/pharmacy_search_sale_bill_bht?faces-redirect=true"
-                                                 actionListener="#{searchController.makeListNull}"
-                                                 rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
-                                                 icon="pi pi-search"
-                                                 ajax="false"/>
-                                <p:commandButton value="Search Issue Bill Items"
-                                                 action="/inward/pharmacy_search_sale_bill_item_bht?faces-redirect=true"
-                                                 actionListener="#{searchController.makeListNull}"
-                                                 rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
-                                                 icon="pi pi-search-plus"
-                                                 ajax="false"/>
-                                <p:commandButton value="Search Issue Return Bill"
-                                                 action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true"
-                                                 actionListener="#{searchController.makeListNull}"
-                                                 rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
-                                                 icon="pi pi-search-minus"
-                                                 ajax="false"/>
-                                <p:commandButton value="Search Issue Return Bill Items"
-                                                 action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true"
-                                                 actionListener="#{searchController.makeListNull}"
-                                                 rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
-                                                 icon="pi pi-search-minus"
-                                                 ajax="false"/>
+                            <p:panelGrid columns="1" layout="tabular" class="m-1 w-100">
+                                <f:facet name="header" >
+                                    <h:outputLabel value="Pharmacy Issues for Theatre" ></h:outputLabel>
+                                </f:facet>
+                                <p:commandButton 
+                                    value="Direct Issue" 
+                                    styleClass="w-100"
+                                    action="/theater/inward_bill_surgery_issue?faces-redirect=true"
+                                    actionListener="#{pharmacySaleBhtController.makeNull()}"
+                                    rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
+                                    icon="pi pi-check"
+                                    ajax="false"/>
 
-                                <p:separator></p:separator>
-                                <p:commandButton value="Inward Billing"
-                                                 action="/store/store_retail_sale_bht?faces-redirect=true"
-                                                 actionListener="#{pharmacySaleBhtController.resetAll()}"
-                                                 rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtBilling')}"
-                                                 icon="pi pi-shopping-cart"
-                                                 ajax="false"/>
-                                <p:commandButton value="Search Issue Bill"
-                                                 action="/store/store_search_sale_bill_bht?faces-redirect=true"
-                                                 actionListener="#{searchController.makeListNull}"
-                                                 rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtSearchBill')}"
-                                                 icon="pi pi-search"
-                                                 ajax="false"/>
-                                <p:commandButton value="Search Issue Bill Items"
-                                                 action="/store/store_search_sale_bill_item_bht?faces-redirect=true"
-                                                 actionListener="#{searchController.makeListNull}"
-                                                 rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtSearchBillItem')}"
-                                                 icon="pi pi-search-plus"
-                                                 ajax="false"/>
+                                <p:commandButton 
+                                    value="Search Direct Issues"
+                                    class="w-100"
+                                    action="/inward/pharmacy_search_sale_bill_bht?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull}"
+                                    rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
+                                    icon="pi pi-search"
+                                    ajax="false"/>
+                                <p:commandButton 
+                                    value="Search Direct Issue Items"
+                                    class="w-100"
+                                    action="/inward/pharmacy_search_sale_bill_item_bht?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull}"
+                                    rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
+                                    icon="pi pi-search-plus"
+                                    ajax="false"/>
+                                <p:commandButton 
+                                    value="Search Direct Issue Returns"
+                                    class="w-100"
+                                    action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull}"
+                                    rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
+                                    icon="pi pi-search-minus"
+                                    ajax="false"/>
+                                <p:commandButton
+                                    value="Search Direct Issue Return Items"
+                                    class="w-100"
+                                    action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull}"
+                                    rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
+                                    icon="pi pi-search-minus"
+                                    ajax="false"/>
+
+                            </p:panelGrid>
+                            <p:panelGrid columns="1" layout="tabular" class="m-1 w-100">
+                                <f:facet name="header" >
+                                    <h:outputLabel value="Store Issues for Theatre" ></h:outputLabel>
+                                </f:facet>
+
+                                <p:commandButton
+                                    value="Direct Issue"
+                                    class="w-100"
+                                    action="/store/store_retail_sale_bht?faces-redirect=true"
+                                    actionListener="#{pharmacySaleBhtController.resetAll()}"
+                                    rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtBilling')}"
+                                    icon="pi pi-shopping-cart"
+                                    ajax="false"/>
+                                <p:commandButton
+                                    value="Search Issue Bill"
+                                    class="w-100"
+                                    action="/store/store_search_sale_bill_bht?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull}"
+                                    rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtSearchBill')}"
+                                    icon="pi pi-search"
+                                    ajax="false"/>
+                                <p:commandButton 
+                                    value="Search Issue Bill Items"
+                                    class="w-100"
+                                    action="/store/store_search_sale_bill_item_bht?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull}"
+                                    rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtSearchBillItem')}"
+                                    icon="pi pi-search-plus"
+                                    ajax="false"/>
                             </p:panelGrid>
                         </h:form>
                     </div>
-                    <div class="col-9 p-1" >
+                    <div class="col-10 p-1" >
                         <ui:insert name="subcontent" >
 
                         </ui:insert>

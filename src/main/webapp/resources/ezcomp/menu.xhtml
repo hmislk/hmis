@@ -935,10 +935,11 @@
 
                     <p:menuitem 
                         ajax="false" 
-                        action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
-                        value="Pharmacy BHT Issue"
-                        actionListener="#{pharmacySaleBhtController.makeNull()}"
-                        rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}" />
+                        icon="fa fa-pills"
+                        action="/theater/issue_index?faces-redirect=true" 
+                        value="Pharmacy &amp; Stores"
+                        rendered="#{webUserController.hasPrivilege('TheaterIssue')}" />
+
 
                     <p:submenu label="BHT Issue" rendered="#{webUserController.hasPrivilege('TheaterIssue')}" >
                         <p:submenu label="Pharmacy Issue" rendered="#{webUserController.hasPrivilege('TheaterIssue')}">
