@@ -158,11 +158,9 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("There are No Medicines/Devices to Bill!!!");
             return;
         }
-
         if (getBatchBill().getProcedure() == null) {
             return;
         }
-
         if (getBatchBill().getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
