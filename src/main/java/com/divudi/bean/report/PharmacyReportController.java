@@ -1895,6 +1895,7 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
         } else if ("purchaseDoc".equals(documentType)) {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
