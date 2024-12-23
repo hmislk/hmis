@@ -1090,7 +1090,7 @@
                                                     library="image" 
                                                     name="approved_icon.png" 
                                                     style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" />
-                                                
+
                                                 <p:graphicImage 
                                                     id="imgPrinted" 
                                                     library="image" 
@@ -1143,23 +1143,25 @@
 
                             <div class="col-2" >
                                 <h:panelGrid columns="1" class="w-100">
-                                    <p:commandButton rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
-                                                     id="btnGenerateBarcodes"
-                                                     value="Generate Barcodes"
-                                                     ajax="false"
-                                                     action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
-                                                     title="Generate Barcodes"
-                                                     icon="pi pi-barcode"
-                                                     styleClass="m-1 w-100 ui-button-success" />
+                                    <p:commandButton 
+                                        rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
+                                        id="btnGenerateBarcodes"
+                                        value="Generate Barcodes"
+                                        ajax="false"
+                                        action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
+                                        title="Generate Barcodes"
+                                        icon="pi pi-barcode"
+                                        styleClass="m-1 w-100 ui-button-success" />
 
-                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                     id="btnCollectSamples"
-                                                     value="Collect Samples"
-                                                     ajax="false"
-                                                     action="#{patientInvestigationController.collectSamples()}"
-                                                     title="Collect Samples"
-                                                     icon="pi pi-plus-circle"
-                                                     styleClass="m-1  w-100 ui-button-primary" />
+                                    <p:commandButton 
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                        id="btnCollectSamples"
+                                        value="Collect Samples"
+                                        ajax="false"
+                                        action="#{patientInvestigationController.collectSamples()}"
+                                        title="Collect Samples"
+                                        icon="pi pi-plus-circle"
+                                        styleClass="m-1  w-100 ui-button-primary" />
                                     <hr/>
 
                                     <style>
