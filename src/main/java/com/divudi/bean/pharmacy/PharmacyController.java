@@ -912,36 +912,32 @@ public class PharmacyController implements Serializable {
     }
 
     public void createConsumptionReportTable() {
+        resetFields();
 
-        if ("byBillItem".equals(reportType)) {
+        switch (reportType) {
+            case "byBillItem":
+                generateConsumptionReportTableByBillItems(BillType.PharmacyIssue);
+                break;
 
-            bills = null;
-            departmentSummaries = null;
-            issueDepartmentCategoryWiseItems = null;
-            generateConsumptionReportTableByBillItems(BillType.PharmacyIssue);
+            case "byBill":
+                generateConsumptionReportTableByBill(BillType.PharmacyIssue);
+                break;
 
-        } else if ("byBill".equals(reportType)) {
+            case "summeryReport":
+            case "categoryWise":
+                generateConsumptionReportTableByDepartmentAndCategoryWise(BillType.PharmacyIssue);
+                break;
 
-            billItems = null;
-            departmentSummaries = null;
-            issueDepartmentCategoryWiseItems = null;
-            generateConsumptionReportTableByBill(BillType.PharmacyIssue);
-
-        } else if ("summeryReport".equals(reportType)) {
-
-            bills = null;
-            billItems = null;
-            issueDepartmentCategoryWiseItems = null;
-            generateConsumptionReportTableAsSummary(BillType.PharmacyIssue);
-
-        } else if ("categoryWise".equals(reportType)) {
-
-            bills = null;
-            billItems = null;
-            generateConsumptionReportTableByDepartmentAndCategoryWise(BillType.PharmacyIssue);
-
+            default:
+                throw new IllegalArgumentException("Invalid report type: " + reportType);
         }
+    }
 
+    private void resetFields() {
+        bills = null;
+        billItems = null;
+        departmentSummaries = null;
+        issueDepartmentCategoryWiseItems = null;
     }
 
     public void generateConsumptionReportTableByBill(BillType billType) {
@@ -989,7 +985,7 @@ public class PharmacyController implements Serializable {
         }
         totalPurchase = 0.0;
         for (Bill i : bills) {
-            totalPurchase += i.getNetTotal();
+            totalPurchase += i.getPaidAmount();
         }
 
     }
@@ -1115,6 +1111,7 @@ public class PharmacyController implements Serializable {
         }
     }
 
+    @Deprecated
     public void generateConsumptionReportTableByDepartmentAndCategoryWise() {
         totalPurchase = 0.0;
         grantIssueQty = 0.0;
@@ -1287,12 +1284,68 @@ public class PharmacyController implements Serializable {
                 return Collections.emptyList();
             }
 
+            totalPurchase = 0.0;
+            grantIssueQty = 0.0;
+            for (DepartmentCategoryWiseItems i : resultsList) {
+                totalPurchase += i.getNetTotal();
+                grantIssueQty += i.getQty();
+            }
+            if ("summeryReport".equals(reportType)) {
+                generateConsumptionReportTableAsDepartmentSummary(resultsList);
+            }
             return resultsList;
         } catch (Exception e) {
             e.printStackTrace();
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
             return Collections.emptyList();
+        }
+    }
+
+    public void generateConsumptionReportTableAsDepartmentSummary(List<DepartmentCategoryWiseItems> list) {
+        // Initialize department summaries and reset total sales value
+        departmentSummaries = new ArrayList<>();
+        totalSaleValue = 0.0;
+
+        // Create a map to store net totals grouped by main and consumption departments
+        Map<String, Map<String, Double>> departmentTotals = new HashMap<>();
+
+        // Populate the map with department-wise data
+        for (DepartmentCategoryWiseItems item : list) {
+            String mainDepartmentName = item.getMainDepartment().getName();
+            String consumptionDepartmentName = item.getConsumptionDepartment().getName();
+            double paidAmount = item.getNetTotal();
+
+            // Initialize nested maps if necessary
+            departmentTotals.putIfAbsent(mainDepartmentName, new HashMap<>());
+            Map<String, Double> consumptionMap = departmentTotals.get(mainDepartmentName);
+
+            // Accumulate paid amounts for consumption departments
+            consumptionMap.put(consumptionDepartmentName,
+                    consumptionMap.getOrDefault(consumptionDepartmentName, 0.0) + paidAmount);
+
+            // Accumulate the total sale value for the main department
+            totalSaleValue += paidAmount;
+        }
+
+        // Build the summaries
+        for (Map.Entry<String, Map<String, Double>> mainEntry : departmentTotals.entrySet()) {
+            String mainDepartmentName = mainEntry.getKey();
+            Map<String, Double> consumptionMap = mainEntry.getValue();
+
+            // Add a header entry for the main department
+            departmentSummaries.add(new PharmacySummery(mainDepartmentName, null, null)); // Main department header
+
+            // Add each consumption department's contribution
+            for (Map.Entry<String, Double> consumptionEntry : consumptionMap.entrySet()) {
+                String consumptionDepartmentName = consumptionEntry.getKey();
+                double netTotal = consumptionEntry.getValue();
+                departmentSummaries.add(new PharmacySummery(null, consumptionDepartmentName, netTotal));
+            }
+
+            // Add a total entry for the main department
+            double mainTotal = consumptionMap.values().stream().mapToDouble(Double::doubleValue).sum();
+            departmentSummaries.add(new PharmacySummery("Total", null, mainTotal));
         }
     }
 

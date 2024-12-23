@@ -246,11 +246,18 @@
                                 <p:column headerText="Department">
                                     <h:outputText value="#{s.departmentName}" />
                                 </p:column>
+                                <p:column headerText="Consumption Department">
+                                    <h:outputText value="#{s.department}" />
+                                </p:column>
 
                                 <p:column headerText="Net Total" class="ml-4" style="text-align: right;">
                                     <h:outputText value="#{s.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyController.totalSaleValue}" >
+                                         <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                    </f:facet>
                                 </p:column>>
 
                             </p:dataTable>
