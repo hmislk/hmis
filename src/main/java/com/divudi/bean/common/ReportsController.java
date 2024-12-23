@@ -392,6 +392,7 @@ public class ReportsController implements Serializable {
         this.selectedDateType = selectedDateType;
     }
 
+
     public Investigation getInvestigation() {
         return investigation;
     }
@@ -3774,4 +3775,5 @@ public class ReportsController implements Serializable {
         b.calculateTotalsWithCredit();
         return b;
     }
+
 }
