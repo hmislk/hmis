@@ -53,6 +53,7 @@
                                 <div class="col-1"><p:outputLabel value="Item Type" ></p:outputLabel></div>
                                 <div class="col-1"><p:outputLabel value="Item Value Type" ></p:outputLabel></div>
                                 <div class="col-1"><p:outputLabel value="Automated" ></p:outputLabel></div>
+                                <div class="col-1"><p:outputLabel value="Retired" ></p:outputLabel></div>
                             </div>
                             <ui:repeat value="#{investigationItemController.userChangableItems}" var="ii">
                                 <div class="row mb-1">
@@ -60,6 +61,7 @@
                                     <div class="col-1"><p:outputLabel value="#{ii.ixItemType}" ></p:outputLabel></div>
                                     <div class="col-1"><p:outputLabel value="#{ii.ixItemValueType}" ></p:outputLabel></div>
                                     <div class="col-1"><p:outputLabel value="#{ii.automated}" ></p:outputLabel></div>
+                                    <div class="col-1"><p:outputLabel value="#{ii.retired}" ></p:outputLabel></div>
                                 </div>
 
                             </ui:repeat>
