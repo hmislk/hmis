@@ -1964,25 +1964,6 @@ public class PharmacyReportController implements Serializable {
         stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
-    public String navigateToViewStockLedgerReportBills(Bill b) {
-
-        BillTypeAtomic billTypeAtomic = b.getBillTypeAtomic();
-        BillType billType = b.getBillType();
-
-        switch (billTypeAtomic) {
-            case PHARMACY_RETAIL_SALE:
-                return "pharmacy_reprint_bill_sale";
-            case PHARMACY_RETAIL_SALE_PRE:
-                return "pharmacy_bill_retail_sale";
-            case PHARMACY_RETAIL_SALE_REFUND:
-                return "pharmacy_search_return_bill_pre";
-            case PHARMACY_RETAIL_SALE_CANCELLED:
-                return "pharmacy_search_sale_bill";
-    
-        }
-        return null;
-    }
-
     public void processClosingStockReport() {
         switch (reportType) {
             case "itemWise":

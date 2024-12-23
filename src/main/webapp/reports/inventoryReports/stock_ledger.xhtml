@@ -277,12 +277,18 @@
                                     styleClass="mr-2" />
                             </p:column>
                             <p:column headerText="Doc No." width="10em">
-                                <p:commandLink 
-                                    id="billNo" 
-                                    ajax="false" 
-                                    value="#{f.pbItem.billItem.bill.deptId}"
-                                    action="#{pharmacyReportController.navigateToViewStockLedgerReportBills(f.pbItem.billItem.bill)}">
-                                </p:commandLink>
+                                <h:outputText value = "#{f.pbItem.billItem.bill.deptId}" />
+                            </p:column>
+                            <p:column headerText="Doc" width="10em">
+                                <p:commandButton 
+                                    value="View" 
+                                    icon="fa fa-eye" 
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                </p:commandButton>
                             </p:column>
                             <p:column headerText="Doc Date" width="5em">
                                 <h:outputText value="#{f.createdAt}" />
