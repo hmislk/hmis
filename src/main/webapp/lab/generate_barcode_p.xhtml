@@ -1143,7 +1143,8 @@
 
                             <div class="col-2" >
                                 <h:panelGrid columns="1" class="w-100">
-                                    <p:commandButton rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
+                                    <p:commandButton 
+                                        rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
                                                      id="btnGenerateBarcodes"
                                                      value="Generate Barcodes"
                                                      ajax="false"
@@ -1152,7 +1153,8 @@
                                                      icon="pi pi-barcode"
                                                      styleClass="m-1 w-100 ui-button-success" />
 
-                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                    <p:commandButton 
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                                      id="btnCollectSamples"
                                                      value="Collect Samples"
                                                      ajax="false"
