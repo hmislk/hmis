@@ -1049,7 +1049,8 @@ public class PharmacyController implements Serializable {
             totalPurchase += i.getQty() * i.getPharmaceuticalBillItem().getPurchaseRate();
         }
     }
-@Deprecated
+
+    @Deprecated
     public void generateConsumptionReportTableAsSummary(BillType billType) {
         // Initialize bill types
         List<BillType> bt = new ArrayList<>();
