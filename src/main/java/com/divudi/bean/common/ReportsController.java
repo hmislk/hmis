@@ -390,6 +390,8 @@ public class ReportsController implements Serializable {
 
     public void setSelectedDateType(String selectedDateType) {
         this.selectedDateType = selectedDateType;
+    }
+
 
     public Investigation getInvestigation() {
         return investigation;
@@ -397,7 +399,6 @@ public class ReportsController implements Serializable {
 
     public void setInvestigation(Investigation investigation) {
         this.investigation = investigation;
-
     }
 
     public Institution getCreditCompany() {
@@ -1662,7 +1663,7 @@ public class ReportsController implements Serializable {
         }
 
         if (staff != null) {
-            jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
+            jpql += "AND pi.sampleTransportedToLabByStaff.person.name = :staff ";
             parameters.put("staff", staff.getPerson().getName());
         }
 
@@ -3514,6 +3515,7 @@ public class ReportsController implements Serializable {
 
         return discount;
     }
+
 
     public Double calculateSubTotal() {
         double subTotal = 0.0;
