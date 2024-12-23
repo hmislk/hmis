@@ -302,16 +302,6 @@
                                     <h:outputText value="#{b.creater.webUserPerson.name}" />
                                 </p:column>
 
-                                <p:column headerText="Approved Date and Time" width="6em">
-                                    <h:outputText value="#{b.approveAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputText>
-                                </p:column>
-
-                                <p:column headerText="Document Approved By" width="10em">
-                                    <h:outputText value="#{b.approveUser.webUserPerson.name}" />
-                                </p:column>
-
                                 <p:column headerText="Remarks" width="10em">
                                     <h:outputText value="#{b.comments}" />
                                 </p:column>
@@ -381,23 +371,12 @@
                                 </p:column>
 
                                 <p:column headerText="Created Date and Time" width="8em">
-                                    <p:outputLabel value="#{i.bill.backwardReferenceBill.createdAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Document Created By" width="8em">
-                                    <p:outputLabel value="#{i.bill.backwardReferenceBill.creater.webUserPerson.name}" >
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Approved Date and Time" width="8em">
                                     <p:outputLabel value="#{i.bill.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Documnet Approved By" width="8em">
+                                <p:column headerText="Document Created By" width="8em">
                                     <p:outputLabel value="#{i.bill.creater.webUserPerson.name}" >
                                     </p:outputLabel>
                                 </p:column>
