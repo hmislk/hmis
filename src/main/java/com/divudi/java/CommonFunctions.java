@@ -449,7 +449,7 @@ public class CommonFunctions {
             return "";
         }
         String code;
-        code = name.replaceAll(" ", "_");
+        code = name.trim().replaceAll("\\s+", "_");
         code = code.toLowerCase();
         return code;
     }

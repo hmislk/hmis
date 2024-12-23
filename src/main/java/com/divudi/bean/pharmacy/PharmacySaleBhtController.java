@@ -19,6 +19,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
@@ -150,51 +151,42 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void settleSurgeryBhtIssue() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (getBatchBill() == null) {
             return;
         }
-
         if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("There are No Medicines/Devices to Bill!!!");
             return;
         }
-
         if (getBatchBill().getProcedure() == null) {
             return;
         }
-
         if (getBatchBill().getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
         }
-
-        settleBhtIssue(BillType.PharmacyBhtPre, getBatchBill().getFromDepartment(), BillNumberSuffix.PHISSUE);
-
+        BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE;
+        BillType bt = BillType.PharmacyBhtPre;
+        settleBhtIssue(bt, bta, getBatchBill().getFromDepartment());
         getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
-
     }
 
-    public void settleSurgeryBhtIssueStore() {
-        if (getBatchBill() == null) {
-            return;
-        }
-
-        if (getBatchBill().getProcedure() == null) {
-            return;
-        }
-
-        settleBhtIssue(BillType.StoreBhtPre, getBatchBill().getFromDepartment(), BillNumberSuffix.PHISSUE);
-
-        getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
-        getBillBean().updateBatchBill(getBatchBill());
-
-    }
-
+//    public void settleSurgeryBhtIssueStore() {
+//        if (getBatchBill() == null) {
+//            return;
+//        }
+//
+//        if (getBatchBill().getProcedure() == null) {
+//            return;
+//        }
+//
+//        settleBhtIssue(BillType.StoreBhtPre, getBatchBill().getFromDepartment(), BillNumberSuffix.PHISSUE);
+//
+//        getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
+//        getBillBean().updateBatchBill(getBatchBill());
+//
+//    }
     public void makeNull() {
         selectedAlternative = null;
         preBill = null;
@@ -558,10 +550,12 @@ public class PharmacySaleBhtController implements Serializable {
         this.billItem = billItem;
     }
 
-    private void savePreBillFinally(Patient pt, Department matrixDepartment, BillType billType, BillNumberSuffix billNumberSuffix) {
+    private void savePreBillFinally(Patient pt, Department matrixDepartment, BillType billType, BillTypeAtomic billTypeAtomic) {
         getPreBill().setBillType(billType);
-        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.PreBill, billNumberSuffix));
-        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.PreBill, billNumberSuffix));
+        getPreBill().setBillTypeAtomic(billTypeAtomic);
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getLoggedUser().getDepartment(), billTypeAtomic);
+        getPreBill().setInsId(deptId);
+        getPreBill().setDeptId(deptId);
 
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
@@ -737,36 +731,29 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void settlePharmacyBhtIssue() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please add items to the bill.");
             return;
         }
-
         if (errorCheck()) {
             return;
         }
-        settleBhtIssue(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
-
+        BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE;
+        BillType bt = BillType.PharmacyBhtPre;
+        settleBhtIssue(bt, bta, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment());
     }
 
     public void settlePharmacyBhtIssueAccept() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         if (errorCheck()) {
             return;
         }
-
         if (getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Nothing To Settle.");
             return;
         }
-
-        settleBhtIssueRequestAccept(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
+        BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE;
+        BillType bt = BillType.PharmacyBhtPre;
+        settleBhtIssueRequestAccept(bt, bta, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
         userNotificationController.userNotificationRequestComplete();
 
     }
@@ -786,7 +773,9 @@ public class PharmacySaleBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        settleBhtIssue(BillType.StoreBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
+        BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_STORE_INWARD;
+        BillType bt = BillType.StoreBhtPre;
+        settleBhtIssue(bt, bta, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment());
     }
 
     private boolean errorCheck() {
@@ -841,7 +830,7 @@ public class PharmacySaleBhtController implements Serializable {
         return false;
     }
 
-    private void settleBhtIssue(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
+    private void settleBhtIssue(BillType btp, BillTypeAtomic bta, Department matrixDepartment) {
 
         if (matrixDepartment == null) {
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
@@ -854,7 +843,7 @@ public class PharmacySaleBhtController implements Serializable {
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
 
-        savePreBillFinally(pt, matrixDepartment, btp, billNumberSuffix);
+        savePreBillFinally(pt, matrixDepartment, btp, bta);
         savePreBillItemsFinally(tmpBillItems);
 
         // Calculation Margin
@@ -902,18 +891,18 @@ public class PharmacySaleBhtController implements Serializable {
         calTotal();
     }
 
-    private void settleBhtIssueRequestAccept(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
+    private void settleBhtIssueRequestAccept(BillType btp, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
             return;
         }
         List<BillItem> tmpBillItems = getBillItems();
-        
+
         if (!getBillItems().isEmpty()) {
             getPreBill().setReferenceBill(getBillItems().get(0).getReferanceBillItem().getBill());
         }
-        
+
         for (BillItem tbi : tmpBillItems) {
             if (tbi.getPharmaceuticalBillItem().getQty() == 0.0) {
                 JsfUtil.addErrorMessage("Item Qty is Zero " + tbi.getItem().getName());
@@ -930,7 +919,7 @@ public class PharmacySaleBhtController implements Serializable {
 
         getPreBill().setBillItems(null);
 
-        savePreBillFinally(pt, matrixDepartment, btp, billNumberSuffix);
+        savePreBillFinally(pt, matrixDepartment, btp, bta);
         savePreBillItemsFinally(tmpBillItems);
 
         // Calculation Margin

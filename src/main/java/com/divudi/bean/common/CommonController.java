@@ -192,6 +192,7 @@ public class CommonController implements Serializable {
         return timeInMs / 1000;
     }
 
+    @Deprecated // Use Common Functions
     public static String nameToCode(String name) {
         return name.toLowerCase().replaceAll("\\s+", "_");
     }
