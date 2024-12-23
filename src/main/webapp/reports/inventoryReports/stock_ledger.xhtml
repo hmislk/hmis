@@ -27,7 +27,6 @@
                                 navigator="false" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
-                            
 
 
                             <p:spacer width="20"></p:spacer>
@@ -291,6 +290,22 @@
                                 <h:outputText value="#{f.createdAt}" />
                             </p:column>
                             <p:column headerText="Ref Doc No." width="10em">
+                                <p:commandLink 
+                                    value="#{f.pbItem.billItem.bill.cancelledBill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
+                                </p:commandLink>
+                                <p:commandLink 
+                                    value="#{f.pbItem.billItem.bill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
+                                </p:commandLink>
                                 <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.deptId}" />
                                 <h:outputText value="#{f.pbItem.billItem.bill.referenceBill.deptId}" />
                             </p:column>
