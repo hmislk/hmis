@@ -281,8 +281,7 @@
                                     id="billNo" 
                                     ajax="false" 
                                     value="#{f.pbItem.billItem.bill.deptId}"
-                                    action="#{pharmacyReportController.navigateToViewStockLedgerReports()}">
-<!--                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>-->
+                                    action="#{pharmacyReportController.navigateToViewStockLedgerReportBills(f.pbItem.billItem.bill)}">
                                 </p:commandLink>
                             </p:column>
                             <p:column headerText="Doc Date" width="5em">

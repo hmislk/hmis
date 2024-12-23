@@ -1971,13 +1971,13 @@ public class PharmacyReportController implements Serializable {
 
         switch (billTypeAtomic) {
             case PHARMACY_RETAIL_SALE:
-                return "/pharmacy/pharmacy_reprint_bill_sale";
+                return "pharmacy_reprint_bill_sale";
             case PHARMACY_RETAIL_SALE_PRE:
-                return "/pharmacy/pharmacy_search_sale_pre_bill";
+                return "pharmacy_bill_retail_sale";
             case PHARMACY_RETAIL_SALE_REFUND:
-                return "/pharmacy/pharmacy_search_return_bill_pre";
+                return "pharmacy_search_return_bill_pre";
             case PHARMACY_RETAIL_SALE_CANCELLED:
-                return "/pharmacy/pharmacy_search_sale_bill";
+                return "pharmacy_search_sale_bill";
     
         }
         return null;
