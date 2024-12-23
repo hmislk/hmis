@@ -933,6 +933,14 @@
                     </p:submenu>
 
 
+                    <p:menuitem 
+                        ajax="false" 
+                        icon="fa fa-pills"
+                        action="/theater/issue_index?faces-redirect=true" 
+                        value="Pharmacy &amp; Stores"
+                        rendered="#{webUserController.hasPrivilege('TheaterIssue')}" />
+
+
                     <p:submenu label="BHT Issue" rendered="#{webUserController.hasPrivilege('TheaterIssue')}" >
                         <p:submenu label="Pharmacy Issue" rendered="#{webUserController.hasPrivilege('TheaterIssue')}">
                             <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
@@ -1561,7 +1569,7 @@
                         icon="fa fa-database"
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >
                     </p:menuitem>
-                    
+
                 </p:submenu>
 
                 <f:facet name="options">
