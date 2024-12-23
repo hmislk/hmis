@@ -433,7 +433,8 @@
                                         <f:convertNumber pattern="#,##0"/>
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.grantIssueQty}" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyController.grantIssueQty}" >
+                                         <f:convertNumber pattern="#,##0"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Total"  class="ml-4" style="text-align: right;" >
