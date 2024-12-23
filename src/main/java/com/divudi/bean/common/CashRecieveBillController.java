@@ -192,14 +192,33 @@ public class CashRecieveBillController implements Serializable {
     @Inject
     private AdmissionController admissionController;
 
+//    public void selectInstitutionListenerBht() {
+//        Institution ins = institution;
+//        makeNull();
+//
+//        List<Admission> list = getAdmissionController().getCreditBillsBht(ins);
+//        for (PatientEncounter b : list) {
+//            getCurrentBillItem().setPatientEncounter(b);
+//            selectBhtListener();
+//            addToBht();
+//        }
+//        if (billItems != null) {
+//            selectedBillItems.addAll(billItems);
+//        }
+//        calTotal();
+//    }
+    
     public void selectInstitutionListenerBht() {
         Institution ins = institution;
         makeNull();
 
-        List<Admission> list = getAdmissionController().getCreditBillsBht(ins);
-        for (PatientEncounter b : list) {
-            getCurrentBillItem().setPatientEncounter(b);
-            selectBhtListener();
+        List<Bill> list = getAdmissionController().getCreditPaymentBillsBht(ins);
+        for (Bill b : list) {
+            getCurrentBillItem().setPatientEncounter(b.getPatientEncounter());
+            getCurrentBillItem().setNetValue(b.getNetTotal());
+            getCurrentBillItem().getPatientEncounter().setCreditCompany(b.getCreditCompany());
+            getCurrentBillItem().setBill(b);
+//            selectBhtListener();
             addToBht();
         }
         if (billItems != null) {
@@ -1033,14 +1052,25 @@ public class CashRecieveBillController implements Serializable {
         getCurrent().setTotal(getCurrent().getNetTotal());
 
         saveBill(BillType.CashRecieveBill, BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        updateReferanceBills();
         saveBillItemBht();
-
+        
+        
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         //   savePayments();
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
+    }
+    
+    public void updateReferanceBills(){
+        for(BillItem b : getSelectedBillItems()){
+            b.getBill().setPaid(true);
+            b.getBill().setPaidAmount(b.getNetValue());
+            b.getBill().setPaidBill(getCurrent());
+            billFacade.edit(b.getBill());
+        }
     }
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
@@ -1249,6 +1279,7 @@ public class CashRecieveBillController implements Serializable {
             getCurrent().getBillItems().add(tmp);
             getBillItemFacade().create(tmp);
 
+            getBillBean().updateInwardDipositList(tmp.getPatientEncounter(), getCurrent());
             updateReferenceBht(tmp);
 
         }
