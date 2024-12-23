@@ -3879,4 +3879,5 @@ public class ReportsController implements Serializable {
         b.calculateTotalsWithCredit();
         return b;
     }
+
 }
