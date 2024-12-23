@@ -1963,6 +1963,10 @@ public class PharmacyReportController implements Serializable {
         jpql += " order by s.createdAt ";
         stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
+    
+    public void navigateToViewStockLedgerReports() {
+        
+    }
 
     public void processClosingStockReport() {
         switch (reportType) {

@@ -237,7 +237,7 @@
                                     target="tbl" 
                                     fileName="Stock Ledger Report" />
                             </p:commandButton>
-                            
+
                         </div>
 
 
@@ -277,7 +277,13 @@
                                     styleClass="mr-2" />
                             </p:column>
                             <p:column headerText="Doc No." width="10em">
-                                <h:outputText value="#{f.pbItem.billItem.bill.deptId}" />
+                                <p:commandLink 
+                                    id="billNo" 
+                                    ajax="false" 
+                                    value="#{f.pbItem.billItem.bill.deptId}"
+                                    action="#{pharmacyReportController.navigateToViewStockLedgerReports()}">
+<!--                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>-->
+                                </p:commandLink>
                             </p:column>
                             <p:column headerText="Doc Date" width="5em">
                                 <h:outputText value="#{f.createdAt}" />
