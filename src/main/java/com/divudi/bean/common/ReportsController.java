@@ -30,15 +30,26 @@ import com.divudi.light.common.BillLight;
 import com.divudi.light.common.BillSummaryRow;
 import com.divudi.service.BillService;
 import com.divudi.service.PatientInvestigationService;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.StreamedContent;
-import org.primefaces.model.charts.line.LineChartModel;
 import org.primefaces.model.file.UploadedFile;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.time.YearMonth;
 import java.time.LocalDate;
@@ -333,7 +344,6 @@ public class ReportsController implements Serializable {
     public void setDischargedStatus(String dischargedStatus) {
         this.dischargedStatus = dischargedStatus;
     }
-
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
@@ -1640,7 +1650,6 @@ public class ReportsController implements Serializable {
     private ReportTemplateRowBundle generateSampleCarrierBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(pi) "
                 + "FROM PatientInvestigation pi "
                 + "JOIN pi.billItem billItem "
@@ -1648,7 +1657,6 @@ public class ReportsController implements Serializable {
                 + "WHERE pi.retired=false "
                 + " and billItem.retired=false "
                 + " and bill.retired=false ";
-
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
@@ -2605,7 +2613,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-                                                                    boolean onlyDueBills) {
+            boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -3128,7 +3136,6 @@ public class ReportsController implements Serializable {
 //                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
 //                + "WHERE bill.billTypeAtomic IN :bts "
 //                + "AND bill.createdAt BETWEEN :fd AND :td ";
-
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
                 + "FROM PatientInvestigation pi "
                 + "JOIN pi.billItem billItem "
@@ -3514,7 +3521,6 @@ public class ReportsController implements Serializable {
         return discount;
     }
 
-
     public Double calculateSubTotal() {
         double subTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
@@ -3526,6 +3532,144 @@ public class ReportsController implements Serializable {
         }
 
         return subTotal;
+    }
+
+    public Double calculateNetAmountNetTotal() {
+        double netAmountNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            netAmountNetTotal += calculateNetAmountSubTotalByBills(bills);
+        }
+
+        return netAmountNetTotal;
+    }
+
+    public Double calculateNetAmountSubTotalByBills(List<Bill> bills) {
+        Double netTotal = 0.0;
+
+        for (Bill bill : bills) {
+            netTotal += bill.getNetTotal();
+        }
+
+        return netTotal;
+    }
+
+    public Double calculateGrossAmountSubTotalByBills(List<Bill> bills) {
+        Double billTotal = 0.0;
+
+        for (Bill bill : bills) {
+            billTotal += bill.getBillTotal();
+        }
+
+        return billTotal;
+    }
+
+    public Double calculatePatientShareSubTotalByBills(List<Bill> bills) {
+        Double settledAmountByPatient = 0.0;
+
+        for (Bill bill : bills) {
+            settledAmountByPatient += bill.getSettledAmountByPatient();
+        }
+
+        return settledAmountByPatient;
+    }
+
+    public Double calculateSponsorShareSubTotalByBills(List<Bill> bills) {
+        Double settledAmountBySponsor = 0.0;
+
+        for (Bill bill : bills) {
+            settledAmountBySponsor += bill.getSettledAmountBySponsor();
+        }
+
+        return settledAmountBySponsor;
+    }
+
+    public Double calculateDueAmountSubTotalByBills(List<Bill> bills) {
+        Double balance = 0.0;
+
+        for (Bill bill : bills) {
+            balance += bill.getBalance();
+        }
+
+        return balance;
+    }
+
+    public Double calculateGrossAmountNetTotal() {
+        double grossAmountNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            grossAmountNetTotal += calculateGrossAmountSubTotalByBills(bills);
+        }
+
+        return grossAmountNetTotal;
+    }
+
+    public Double calculateDiscountNetTotal() {
+        double discountNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            discountNetTotal += calculateDiscountSubTotalByBills(bills);
+        }
+
+        return discountNetTotal;
+    }
+
+    public Double calculateDiscountSubTotalByBills(List<Bill> bills) {
+        Double discount = 0.0;
+
+        for (Bill bill : bills) {
+            discount += bill.getDiscount();
+        }
+
+        return discount;
+    }
+
+    public Double calculatePatientShareNetTotal() {
+        double patientShareNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            patientShareNetTotal += calculatePatientShareSubTotalByBills(bills);
+        }
+
+        return patientShareNetTotal;
+    }
+
+    public Double calculateDueAmountNetTotal() {
+        double dueAmountNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            dueAmountNetTotal += calculateDueAmountSubTotalByBills(bills);
+        }
+
+        return dueAmountNetTotal;
+    }
+
+    public Double calculateSponsorShareNetTotal() {
+        double sponsorShareNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            sponsorShareNetTotal += calculateSponsorShareSubTotalByBills(bills);
+        }
+
+        return sponsorShareNetTotal;
     }
 
     public void generateDiscountReport() {
@@ -3774,4 +3918,150 @@ public class ReportsController implements Serializable {
         return b;
     }
 
+    public void exportCollectionCenterBillWiseDetailReportToPDF() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Collection_Center_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document();
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            document.add(new Paragraph("Collection Center Bill Wise Detail Report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+
+            PdfPTable table = new PdfPTable(7);
+            float[] columnWidths = {1f, 1f, 1f, 1f, 1f, 1f, 3f};
+            table.setWidths(columnWidths);
+            table.setWidthPercentage(100);
+
+            table.addCell("CC Code");
+            table.addCell("Leaf No.");
+            table.addCell("MRN");
+            table.addCell("Patient Name");
+            table.addCell("Invoice Date");
+            table.addCell("Invoice No");
+            table.addCell("Details");
+
+            for (Map.Entry<String, List<BillItem>> entry : bundle.getGroupedBillItems().entrySet()) {
+                List<BillItem> billItems = entry.getValue();
+
+                if (billItems == null || billItems.isEmpty()) {
+                    table.addCell("N/A");
+                    table.addCell("N/A");
+                    table.addCell("N/A");
+                    table.addCell("N/A");
+                    table.addCell("N/A");
+                    table.addCell(entry.getKey());
+                    PdfPCell emptyCell = new PdfPCell(new Phrase("No Details Available"));
+                    emptyCell.setColspan(7);
+                    table.addCell(emptyCell);
+                    continue;
+                }
+
+                BillItem firstItem = billItems.get(0);
+
+                table.addCell(firstItem.getBill().getCollectingCentre().getCode());
+                table.addCell(firstItem.getBill().getReferenceNumber());
+                table.addCell(firstItem.getBill().getPatient().getPhn());
+                table.addCell(firstItem.getBill().getPatient().getPerson().getName());
+                table.addCell(firstItem.getBill().getCreatedAt().toString());
+                table.addCell(entry.getKey());
+
+                PdfPTable detailsTable = new PdfPTable(5);
+                float[] columnWidthsInner = {2f, 1f, 1f, 1f, 1f};
+                detailsTable.setWidths(columnWidthsInner);
+
+                detailsTable.addCell("Service Name");
+                detailsTable.addCell("Hos Fee");
+                detailsTable.addCell("Staff Fee");
+                detailsTable.addCell("CC Fee");
+                detailsTable.addCell("Net Amount");
+
+                for (BillItem bi : billItems) {
+                    detailsTable.addCell(bi.getItem().getName());
+                    detailsTable.addCell(String.valueOf(bi.getHospitalFee()));
+                    detailsTable.addCell(String.valueOf(bi.getStaffFee()));
+                    detailsTable.addCell(String.valueOf(bi.getCollectingCentreFee()));
+                    detailsTable.addCell(String.valueOf(bi.getNetValue()));
+                }
+                PdfPCell nestedCell = new PdfPCell(detailsTable);
+                nestedCell.setColspan(7);
+                table.addCell(nestedCell);
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportCollectionCenterBillWiseDetailReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Collection_Center_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("Report");
+            int rowIndex = 0;
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            headerRow.createCell(0).setCellValue("CC Code");
+            headerRow.createCell(1).setCellValue("Leaf No.");
+            headerRow.createCell(2).setCellValue("MRN");
+            headerRow.createCell(3).setCellValue("Patient Name");
+            headerRow.createCell(4).setCellValue("Invoice Date");
+            headerRow.createCell(5).setCellValue("Invoice No");
+            headerRow.createCell(6).setCellValue("Details");
+
+            for (Map.Entry<String, List<BillItem>> entry : bundle.getGroupedBillItems().entrySet()) {
+                List<BillItem> billItems = entry.getValue();
+
+                if (billItems == null || billItems.isEmpty()) {
+                    Row emptyRow = sheet.createRow(rowIndex++);
+                    emptyRow.createCell(0).setCellValue("N/A");
+                    emptyRow.createCell(1).setCellValue("N/A");
+                    emptyRow.createCell(2).setCellValue("N/A");
+                    emptyRow.createCell(3).setCellValue("N/A");
+                    emptyRow.createCell(4).setCellValue("N/A");
+                    emptyRow.createCell(5).setCellValue(entry.getKey());
+                    emptyRow.createCell(6).setCellValue("No Details Available");
+                    continue;
+                }
+
+                BillItem firstItem = billItems.get(0);
+                Row row = sheet.createRow(rowIndex++);
+
+                row.createCell(0).setCellValue(firstItem.getBill().getCollectingCentre().getCode());
+                row.createCell(1).setCellValue(firstItem.getBill().getReferenceNumber());
+                row.createCell(2).setCellValue(firstItem.getBill().getPatient().getPhn());
+                row.createCell(3).setCellValue(firstItem.getBill().getPatient().getPerson().getName());
+                row.createCell(4).setCellValue(firstItem.getBill().getCreatedAt().toString());
+                row.createCell(5).setCellValue(entry.getKey());
+
+                for (BillItem bi : billItems) {
+                    Row detailRow = sheet.createRow(rowIndex++);
+                    detailRow.createCell(6).setCellValue(bi.getItem().getName());
+                    detailRow.createCell(7).setCellValue(bi.getHospitalFee());
+                    detailRow.createCell(8).setCellValue(bi.getStaffFee());
+                    detailRow.createCell(9).setCellValue(bi.getCollectingCentreFee());
+                    detailRow.createCell(10).setCellValue(bi.getNetValue());
+                }
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
