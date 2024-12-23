@@ -31,7 +31,6 @@ import com.divudi.light.common.BillSummaryRow;
 import com.divudi.service.BillService;
 import com.divudi.service.PatientInvestigationService;
 import org.primefaces.model.StreamedContent;
-import org.primefaces.model.charts.line.LineChartModel;
 import org.primefaces.model.file.UploadedFile;
 
 import javax.ejb.EJB;
@@ -316,8 +315,9 @@ public class ReportsController implements Serializable {
     private String dischargedStatus;
 
     private String selectedDateType = "invoice";
-
+    private boolean showChart;
     private Investigation investigation;
+
 
     // Map<Week, Map<ItemName, Map<dayOfMonth, Count>>>
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to7;
@@ -325,7 +325,6 @@ public class ReportsController implements Serializable {
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap1to7;
 
 
-    private boolean showChart;
 
     public String getDischargedStatus() {
         return dischargedStatus;
@@ -391,13 +390,14 @@ public class ReportsController implements Serializable {
     public void setSelectedDateType(String selectedDateType) {
         this.selectedDateType = selectedDateType;
     }
-
+    
     public Investigation getInvestigation() {
         return investigation;
     }
 
     public void setInvestigation(Investigation investigation) {
         this.investigation = investigation;
+
     }
 
     public Institution getCreditCompany() {
@@ -1598,14 +1598,6 @@ public class ReportsController implements Serializable {
         this.groupedRouteWiseBillsMonthly = groupedRouteWiseBillsMonthly;
     }
 
-    public boolean isShowChart() {
-        return showChart;
-    }
-
-    public void setShowChart(boolean showChart) {
-        this.showChart = showChart;
-    }
-
     public void generateSampleCarrierReport() {
         System.out.println("generateSampleCarrierReport = " + this);
         bundle = new ReportTemplateRowBundle();
@@ -1662,7 +1654,7 @@ public class ReportsController implements Serializable {
         }
 
         if (staff != null) {
-            jpql += "AND pi.sampleTransportedToLabByStaff.person.name = :staff ";
+            jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
             parameters.put("staff", staff.getPerson().getName());
         }
 
@@ -2253,6 +2245,38 @@ public class ReportsController implements Serializable {
         }
     }
 
+    public Map<YearMonth, Double> getSampleCountChartData() {
+        Map<YearMonth, Double> data = new HashMap<>();
+
+        if (reportType.equalsIgnoreCase("detail")) {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, getCollectionCenterWiseTotalSampleCount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
+            }
+        } else {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, calculateRouteWiseTotalSampleCount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
+            }
+        }
+
+        return data;
+    }
+
+    public Map<YearMonth, Double> getServiceAmountChartData() {
+        Map<YearMonth, Double> data = new HashMap<>();
+
+        if (reportType.equalsIgnoreCase("detail")) {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, getCollectionCenterWiseTotalServiceAmount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
+            }
+        } else {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, calculateRouteWiseTotalServiceAmount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
+            }
+        }
+
+        return data;
+    }
+
     private void groupRouteWiseBillsMonthly() {
         Map<Route, Map<YearMonth, Bill>> map = new HashMap<>();
         List<YearMonth> yearMonths = new ArrayList<>();
@@ -2396,38 +2420,6 @@ public class ReportsController implements Serializable {
             }
         }
         return total;
-    }
-
-    public Map<YearMonth, Double> getSampleCountChartData() {
-        Map<YearMonth, Double> data = new HashMap<>();
-
-        if (reportType.equalsIgnoreCase("detail")) {
-            for (YearMonth yearMonth : yearMonths) {
-                data.put(yearMonth, getCollectionCenterWiseTotalSampleCount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
-            }
-        } else {
-            for (YearMonth yearMonth : yearMonths) {
-                data.put(yearMonth, calculateRouteWiseTotalSampleCount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
-            }
-        }
-
-        return data;
-    }
-
-    public Map<YearMonth, Double> getServiceAmountChartData() {
-        Map<YearMonth, Double> data = new HashMap<>();
-
-        if (reportType.equalsIgnoreCase("detail")) {
-            for (YearMonth yearMonth : yearMonths) {
-                data.put(yearMonth, getCollectionCenterWiseTotalServiceAmount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
-            }
-        } else {
-            for (YearMonth yearMonth : yearMonths) {
-                data.put(yearMonth, calculateRouteWiseTotalServiceAmount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
-            }
-        }
-
-        return data;
     }
 
     public ReportTemplateRowBundle generateCollectingCenterWiseBillItems(List<BillTypeAtomic> bts) {
@@ -3495,7 +3487,7 @@ public class ReportsController implements Serializable {
         bundle.setGroupedBillItemsByInstitution(billMap);
     }
 
-    public Double calculateNetAmountSubTotalByBills(List<Bill> bills) {
+    public Double calculateNetTotalByBills(List<Bill> bills) {
         Double netTotal = 0.0;
 
         for (Bill bill : bills) {
@@ -3505,7 +3497,7 @@ public class ReportsController implements Serializable {
         return netTotal;
     }
 
-    public Double calculateDiscountSubTotalByBills(List<Bill> bills) {
+    public Double calculateDiscountByBills(List<Bill> bills) {
         Double discount = 0.0;
 
         for (Bill bill : bills) {
@@ -3516,122 +3508,17 @@ public class ReportsController implements Serializable {
     }
 
 
-    public Double calculateNetAmountNetTotal() {
-        double netAmountNetTotal = 0.0;
+    public Double calculateSubTotal() {
+        double subTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            netAmountNetTotal += calculateNetAmountSubTotalByBills(bills);
+            subTotal += calculateNetTotalByBills(bills);
         }
 
-        return netAmountNetTotal;
-    }
-    
-    public Double calculateGrossAmountSubTotalByBills(List<Bill> bills) {
-        Double billTotal = 0.0;
-
-        for (Bill bill : bills) {
-            billTotal += bill.getBillTotal();
-        }
-
-        return billTotal;
-    }
-    
-    public Double calculatePatientShareSubTotalByBills(List<Bill> bills) {
-        Double settledAmountByPatient = 0.0;
-
-        for (Bill bill : bills) {
-            settledAmountByPatient += bill.getSettledAmountByPatient();
-        }
-
-        return settledAmountByPatient;
-    }
-    
-    public Double calculateSponsorShareSubTotalByBills(List<Bill> bills) {
-        Double settledAmountBySponsor = 0.0;
-
-        for (Bill bill : bills) {
-            settledAmountBySponsor += bill.getSettledAmountBySponsor();
-        }
-
-        return settledAmountBySponsor;
-    }
-    
-    public Double calculateDueAmountSubTotalByBills(List<Bill> bills) {
-        Double balance = 0.0;
-
-        for (Bill bill : bills) {
-            balance += bill.getBalance();
-        }
-
-        return balance;
-    }
-    
-    public Double calculateGrossAmountNetTotal() {
-        double grossAmountNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            grossAmountNetTotal += calculateGrossAmountSubTotalByBills(bills);
-        }
-
-        return grossAmountNetTotal;
-    }
-    
-    public Double calculateDiscountNetTotal() {
-        double discountNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            discountNetTotal += calculateDiscountSubTotalByBills(bills);
-        }
-
-        return discountNetTotal;
-    }
-    
-    public Double calculatePatientShareNetTotal() {
-        double patientShareNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            patientShareNetTotal += calculatePatientShareSubTotalByBills(bills);
-        }
-
-        return patientShareNetTotal;
-    }
-    
-    public Double calculateDueAmountNetTotal() {
-        double dueAmountNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            dueAmountNetTotal += calculateDueAmountSubTotalByBills(bills);
-        }
-
-        return dueAmountNetTotal;
-    }
-    
-    public Double calculateSponsorShareNetTotal() {
-        double sponsorShareNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            sponsorShareNetTotal += calculateSponsorShareSubTotalByBills(bills);
-        }
-
-        return sponsorShareNetTotal;
+        return subTotal;
     }
 
     public void generateDiscountReport() {
@@ -3879,4 +3766,5 @@ public class ReportsController implements Serializable {
         b.calculateTotalsWithCredit();
         return b;
     }
+
 }
