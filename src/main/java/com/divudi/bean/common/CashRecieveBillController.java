@@ -122,6 +122,7 @@ public class CashRecieveBillController implements Serializable {
         selectedBillItems = null;
         paymentMethodData = null;
         institution = null;
+        recreateModel();
     }
 
     public void selectInstitutionListener() {
@@ -535,7 +536,7 @@ public class CashRecieveBillController implements Serializable {
         }
         getCurrent().setNetTotal(n);
     }
-    
+
     public void calulateTotalForSettlingCreditForOpdBatchBills() {
         double n = 0.0;
         for (BillItem b : selectedBillItems) {
@@ -789,7 +790,7 @@ public class CashRecieveBillController implements Serializable {
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
     }
-    
+
     public void settleCreditForOpdBatchBills() {
         if (getSelectedBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Item ");
@@ -867,7 +868,7 @@ public class CashRecieveBillController implements Serializable {
 
         List payments = createPayment(current, current.getPaymentMethod());
         drawerController.updateDrawerForIns(payments);
-       
+
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
@@ -1314,12 +1315,14 @@ public class CashRecieveBillController implements Serializable {
         billItemWithReferanceToCreditBill.getReferenceBill().setSettledAmountBySponsor(settledCreditValueByCompanies);
         System.out.println("Settled Amount By Sponsor Set: " + settledCreditValueByCompanies);
 
-        double absBillAmount = Math.abs( billItemWithReferanceToCreditBill.getReferenceBill().getNetTotal());
-        double absSettledAmount = Math.abs( billItemWithReferanceToCreditBill.getReferenceBill().getPaidAmount());
+        double absBillAmount = Math.abs(billItemWithReferanceToCreditBill.getReferenceBill().getNetTotal());
+        double absSettledAmount = Math.abs(billItemWithReferanceToCreditBill.getReferenceBill().getPaidAmount());
         double difference = absBillAmount - absSettledAmount;
         double absDifference = Math.abs(difference);
-        if(absDifference<1.0)  billItemWithReferanceToCreditBill.getReferenceBill().setPaidAt(new Date());
-        
+        if (absDifference < 1.0) {
+            billItemWithReferanceToCreditBill.getReferenceBill().setPaidAt(new Date());
+        }
+
         getBillFacade().edit(billItemWithReferanceToCreditBill.getReferenceBill());
         System.out.println("Reference Bill Updated: " + billItemWithReferanceToCreditBill.getReferenceBill());
         System.out.println("Completed updateSettlingCreditBillSettledValues");
@@ -1371,6 +1374,10 @@ public class CashRecieveBillController implements Serializable {
 
     public String prepareNewBill() {
         recreateModel();
+        return "";
+    }
+
+    public String navigateToCancelCreditSettleBill() {
         return "";
     }
 
