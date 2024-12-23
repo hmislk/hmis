@@ -142,6 +142,27 @@
                             </td>
                         </tr>
                     </h:panelGroup>-->
+                    <h:panelGroup rendered="#{not empty cc.attrs.bill.externalDoctor}" >
+                        <tr>
+                            <td style="text-align: left; font-size: 12px;" >
+                                <h:outputLabel  
+                                    class="billDetailsFiveFive"  
+                                    value="Ext. Doctor" 
+                                    style="font-size: 12px;">
+                                </h:outputLabel>
+                            </td>
+                            <td></td>
+                            <td>:</td>
+                            <td></td>
+                            <td>
+                                <h:outputLabel 
+                                    class="billDetailsFiveFive"  
+                                    value="#{cc.attrs.bill.externalDoctor}" 
+                                    style="font-size: 12px;">
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.institution ne null}" >
                         <tr>
