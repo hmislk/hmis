@@ -105,6 +105,9 @@
                                         <h:outputLabel value="File Uploaded Time" />
                                         <p:calendar value="#{patientReportUploadController.patientInvestigation.dataEntryAt}"  
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        
+                                        <h:outputLabel value="File Uploaded By" />
+                                        <h:outputLabel value="#{patientReportUploadController.patientInvestigation.dataEntryUser.webUserPerson.nameWithTitle}"/>
 
                                         <h:outputLabel value="Approved Time" />
                                         <p:calendar value="#{patientReportUploadController.patientInvestigation.approveAt}"  
@@ -131,8 +134,9 @@
                                                         value="Approval"
                                                         action="#{patientReportUploadController.reportApproval()}" 
                                                         icon="pi pi-check"
+                                                        disabled ="#{patientReportController.currentPatientReport.approved }"   
                                                         ajax="false" 
-                                                        disabled="#{patientReportController.currentPatientReport.approved}"
+                                                        rendered="#{webUserController.hasPrivilege('LabAutherizing')}"
                                                         style="width: 170px;"
                                                         class="ui-button-success" >
                                                     </p:commandButton>
@@ -201,7 +205,7 @@
                                                     </p:commandButton>
                                                     <p:commandButton  
                                                         ajax="false" 
-                                                        class="ui-button-danger" 
+                                                        class="ui-button-danger"
                                                         action="#{patientReportUploadController.removeUploadedFile()}" 
                                                         disabled="#{patientReportController.currentPatientReport.approved}"
                                                         icon="fa-solid fa-trash"
@@ -213,28 +217,27 @@
                                         </div>
                                     </f:facet>
 
-
-
-                                    <h:panelGroup rendered="#{not empty labReportViewController.reportUpload}">
+                                    <h:panelGroup rendered="#{not empty patientReportUploadController.reportUpload}">
                                         <!-- Render PDF Files -->
-                                        <h:panelGroup rendered="#{labReportViewController.pdf}">
+                                        <h:panelGroup rendered="#{patientReportUploadController.pdf}">
                                             <p:media 
-                                                value="#{labReportViewController.pdfReportStream}" 
+                                                cache="false"
+                                                value="#{patientReportUploadController.pdfReportStream}" 
                                                 player="pdf" 
                                                 width="100%" 
                                                 height="1000px" />
                                         </h:panelGroup>
 
                                         <!-- Render Image Files -->
-                                        <h:panelGroup id="image" rendered="#{labReportViewController.image}">
+                                        <h:panelGroup id="image" rendered="#{patientReportUploadController.image}">
                                             <p:graphicImage 
-                                                value="#{labReportViewController.imageReportStream}" 
+                                                value="#{patientReportUploadController.imageReportStream}" 
                                                 stream="true"
                                                 cache="false"
                                                 style="max-width:100%; height:auto;" />
                                         </h:panelGroup>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{empty labReportViewController.reportUpload}">
+                                    <h:panelGroup rendered="#{empty patientReportUploadController.reportUpload}">
                                         <h:outputText value="No report uploaded yet." />
                                     </h:panelGroup>
                                 </p:panel>

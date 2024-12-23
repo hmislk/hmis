@@ -299,6 +299,7 @@
                         <p:menuitem  ajax="false"  action="#{appointmentController.navigateToInwardAppointmentFromMenu()}" value="Inward Appointment" rendered="#{webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" ></p:menuitem>
                     </p:submenu>
                     <p:submenu label="Room" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
+                        <p:menuitem ajax="false" action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}" value="Room Reservations" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="#{admissionController.navigateToRoomOccupancy()}" value="Room Occupancy" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="#{admissionController.navigateToRoomVacancy()}" value="Room Vacancy" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="#{admissionController.navigateToRoomChange()}" value="Room Change" actionListener="#{roomChangeController.recreate()}" rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange')}" ></p:menuitem>   
@@ -932,6 +933,14 @@
                     </p:submenu>
 
 
+                    <p:menuitem 
+                        ajax="false" 
+                        icon="fa fa-pills"
+                        action="/theater/issue_index?faces-redirect=true" 
+                        value="Pharmacy &amp; Stores"
+                        rendered="#{webUserController.hasPrivilege('TheaterIssue')}" />
+
+
                     <p:submenu label="BHT Issue" rendered="#{webUserController.hasPrivilege('TheaterIssue')}" >
                         <p:submenu label="Pharmacy Issue" rendered="#{webUserController.hasPrivilege('TheaterIssue')}">
                             <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
@@ -1560,7 +1569,7 @@
                         icon="fa fa-database"
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >
                     </p:menuitem>
-                    
+
                 </p:submenu>
 
                 <f:facet name="options">

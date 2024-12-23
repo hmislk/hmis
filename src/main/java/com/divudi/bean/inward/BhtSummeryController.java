@@ -1674,6 +1674,7 @@ public class BhtSummeryController implements Serializable {
 //        getCurrent().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patientEncounter.getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
         creditCompanyBill.setCreatedAt(new Date());
         creditCompanyBill.setCreater(getSessionController().getLoggedUser());
+        creditCompanyBill.setReferenceBill(getCurrent());
 
         if (creditCompanyBill.getId() == null) {
             getBillFacade().create(creditCompanyBill);

@@ -68,6 +68,28 @@
                                 </p:commandButton>
                                 
                                 <p:commandButton 
+                                    value="Add Baby Admission" 
+                                    disabled="#{admissionController.current.discharged eq true}"
+                                    action="#{admissionController.navigateToAddBabyAdmission}"                                    
+                                    icon="fa fa-baby"
+                                    class="w-100">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{roomChangeController.current}" />
+                                </p:commandButton>
+                                
+                                <p:commandButton 
+                                    value="List Baby Admission" 
+                                    disabled="#{admissionController.current.discharged eq true}"
+                                    action="#{admissionController.navigateToGuardianRoomChange}" 
+                                    icon="fa fa-baby-carriage"
+                                    class="w-100">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{roomChangeController.current}" />
+                                </p:commandButton>
+                                
+                                <p:commandButton 
                                     rendered="#{not admissionController.current.discharged and not admissionController.current.paymentFinalized}" 
                                     action="#{bhtSummeryController.navigateToIntrimBillFromPatientProfile()}"
                                     value="Interim Bill" 

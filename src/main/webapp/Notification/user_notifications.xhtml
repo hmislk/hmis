@@ -51,7 +51,7 @@
                         <h:panelGroup id="reNot" >
                             <ui:repeat value="#{userNotificationController.items}" var="un">
                                 <div class="row mt-2 shadow-lg" style="#{un.notification.bill.cancelled ? 'background-color: #e35656;' : ''}">
-                                    <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'INWARD_PHARMACY_REQUEST'}">
+                                    <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'REQUEST_MEDICINE_INWARD'}">
                                         <div class="col-4 p-2 text-left" style="background: linear-gradient(90deg, rgba(58,71,180,1) 0%, rgba(65,6,27,1) 100%);">
                                             <div class="d-flex align-items-center justify-content-between">
                                                 <h:outputText styleClass="fa-solid fa-comments mx-4 text-white" />

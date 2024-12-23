@@ -1079,7 +1079,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     continue;
                 }
                 Double amount = safeDouble(isOutpatient ? row.getBillItem().getReferenceBill().getNetTotal() :
-                        row.getBillItem().getReferenceBill().getPatientEncounter().getFinalBill().getNetTotal());
+                        row.getBillItem().getPatientEncounter().getFinalBill().getNetTotal());
                 total += amount;
             }
         }
@@ -1133,6 +1133,32 @@ public class ReportTemplateRowBundle implements Serializable {
                 }
                 Double amount = safeDouble(row.getBill().getTotalHospitalFee());
                 total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalDiscountByBillItems() {
+        discount = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem().getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBillItem().getBill().getDiscount());
+                discount += amount;
+            }
+        }
+    }
+
+    public void calculateTotalDiscountByBills() {
+        discount = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBill().getDiscount());
+                discount += amount;
             }
         }
     }

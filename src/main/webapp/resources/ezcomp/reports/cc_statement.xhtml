@@ -91,8 +91,8 @@
                     icon="fas fa-cogs"
                     class="mx-2 ui-button-warning"
                     action="#{reportController.processCollectingCentreStatementReportNew()}"  />
-                
-                 <p:commandButton 
+
+                <p:commandButton 
                     icon="fa-solid fa-print"
                     style="width: 150px"
                     class="mx-2 ui-button-info"
@@ -123,7 +123,7 @@
                     <p:dataExporter type="pdf" target="tbl"  fileName="cc_statement.pdf" ></p:dataExporter>
                 </p:commandButton>
 
-               
+
 
                 <h:panelGrid columns="2" styleClass="mt-4">
                     <h:outputLabel value="From Date :" />
@@ -145,7 +145,8 @@
                 var="agentHx" 
                 paginator="true" 
                 rowKey="#{agentHx.id}"
-                rows="10" 
+                rows="10"
+                paginatorPosition="bottom"
                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
                 rowsPerPageTemplate="5,10,20"
                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
@@ -153,19 +154,31 @@
                 sortMode="multiple"
                 reflow="true">
 
-                <p:column width="7em" headerText="Bill Number*" sortBy="#{agentHx.bill.deptId}" filterBy="#{agentHx.bill.deptId}" filterMatchMode="contains">
+                <p:column 
+                    width="7em" 
+                    headerText="Bill Number*" 
+                    sortBy="#{agentHx.bill.deptId}" 
+                    filterBy="#{agentHx.bill.deptId}"
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    filterMatchMode="contains">
+                    #{agentHx.bill.billTypeAtomic}
+                    #{agentHx.bill.billTypeAtomic eq null}
+                    #{reportController.getTableRowColor(agentHx)}
                     <p:commandLink 
                         value="#{agentHx.bill.deptId}" 
                         ajax="false"
                         action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
                         <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
                     </p:commandLink>
-
                     <p:badge value="#{agentHx.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{agentHx.bill.cancelled}" />
                     <p:badge value="#{agentHx.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{agentHx.bill.refunded}" />
                 </p:column>
 
-                <p:column  width="4em" headerText="Actions" rendered="#{webUserController.hasPrivilege('Developers')}">
+                <p:column  
+                    width="4em" 
+                    headerText="Actions"
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    rendered="#{webUserController.hasPrivilege('Developers')}">
                     <p:commandButton 
                         ajax="false"
                         value="Edit"
@@ -173,83 +186,168 @@
                     </p:commandButton>
                 </p:column>
 
-                <p:column width="5rem" headerText="Data &nbsp; Time" sortBy="#{agentHx.createdAt}" filterBy="#{agentHx.createdAt}" filterMatchMode="contains">
+                <p:column 
+                    width="5rem" 
+                    headerText="Data &nbsp; Time" 
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    sortBy="#{agentHx.createdAt}" 
+                    filterBy="#{agentHx.createdAt}" 
+                    filterMatchMode="contains" 
+                    >
                     <h:outputText value="#{agentHx.createdAt}" >
                         <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" ></f:convertDateTime>
                     </h:outputText>
                 </p:column>
 
-                <p:column width="5rem" toggleable="true" headerText="Bill Type" sortBy="#{agentHx.bill.billTypeAtomic.label}" filterBy="#{agentHx.bill.billTypeAtomic.label}" filterMatchMode="contains">
+                <p:column 
+                    width="5rem" 
+                    toggleable="true" 
+                    headerText="Bill Type" 
+                    sortBy="#{agentHx.bill.billTypeAtomic.label}" 
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    filterBy="#{agentHx.bill.billTypeAtomic.label}" 
+                    filterMatchMode="contains">
                     <h:outputText value="#{agentHx.bill.billTypeAtomic.label}" />
                 </p:column>
-                
-                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" width="5rem" toggleable="true" headerText="History Type" sortBy="#{agentHx.historyType}" filterBy="#{agentHx.historyType}" filterMatchMode="contains">
+
+                <p:column 
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    rendered="#{webUserController.hasPrivilege('Developers')}" 
+                    width="10rem" 
+                    toggleable="true" 
+                    headerText="History Type" 
+                    sortBy="#{agentHx.historyType}" 
+                    filterBy="#{agentHx.historyType}" filterMatchMode="contains">
                     <h:outputText value="#{agentHx.historyType}" />
                 </p:column>
-                
-                <p:column  width="7em"  toggleable="true" headerText="CC Code" sortBy="#{agentHx.bill.fromInstitution.code}" filterBy="#{agentHx.bill.fromInstitution.code}" filterMatchMode="contains">
+
+                <p:column
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    width="7em"  toggleable="true" 
+                    headerText="CC Code" 
+                    sortBy="#{agentHx.bill.fromInstitution.code}" 
+                    filterBy="#{agentHx.bill.fromInstitution.code}" 
+                    filterMatchMode="contains">
 <!--                    <h:outputText value="#{agentHx.bill.collectingCentre.code}" style="text-align: right; display: block;"/>-->
                     <h:outputText value="#{agentHx.bill.fromInstitution.code}" style="text-align: right; display: block;" />
                 </p:column>
-                
-                <p:column   toggleable="true" headerText="CC Name" sortBy="#{agentHx.bill.fromInstitution.name}" filterBy="#{agentHx.bill.fromInstitution.name}" filterMatchMode="contains">
+
+                <p:column
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    toggleable="true" 
+                    headerText="CC Name" 
+                    sortBy="#{agentHx.bill.fromInstitution.name}" 
+                    filterBy="#{agentHx.bill.fromInstitution.name}" 
+                    filterMatchMode="contains">
                     <h:outputText value="#{agentHx.bill.fromInstitution.name}" />
                 </p:column>
-                
-                <p:column width="5rem" toggleable="true" headerText="Leaf No." sortBy="#{agentHx.bill.referenceNumber}" filterBy="#{agentHx.bill.referenceNumber}" filterMatchMode="contains">
+
+                <p:column 
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    width="5rem" 
+                    toggleable="true" 
+                    headerText="Leaf No." 
+                    sortBy="#{agentHx.bill.referenceNumber}" 
+                    filterBy="#{agentHx.bill.referenceNumber}" 
+                    filterMatchMode="contains">
                     <h:outputText value="#{agentHx.bill.referenceNumber}" style="text-align: right; display: block;"/>
                     <h:outputText value="#{agentHx.bill.invoiceNumber}" style="text-align: right; display: block;"/>
                 </p:column>
 
-                <p:column width="5rem" headerText="Hospital Fee" sortBy="#{agentHx.bill.totalHospitalFee}" filterBy="#{agentHx.bill.totalHospitalFee}">
+                <p:column 
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    width="5rem" 
+                    headerText="Hospital Fee" 
+                    sortBy="#{agentHx.bill.totalHospitalFee}" 
+                    filterBy="#{agentHx.bill.totalHospitalFee}">
                     <h:outputText value="#{agentHx.companyTransactionValue}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
-                <p:column width="5rem" headerText="Staff Fee" sortBy="#{agentHx.bill.totalStaffFee}" filterBy="#{agentHx.bill.totalStaffFee}">
+                <p:column 
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    width="5rem" 
+                    headerText="Staff Fee" 
+                    sortBy="#{agentHx.bill.totalStaffFee}" 
+                    filterBy="#{agentHx.bill.totalStaffFee}">
                     <h:outputText value="#{agentHx.staffTrasnactionValue}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
-                <p:column width="5rem" headerText="CC Fee" sortBy="#{agentHx.bill.totalCenterFee}" filterBy="#{agentHx.bill.totalCenterFee}">
+                <p:column 
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    width="5rem" 
+                    headerText="CC Fee" 
+                    sortBy="#{agentHx.bill.totalCenterFee}" 
+                    filterBy="#{agentHx.bill.totalCenterFee}">
                     <h:outputText value="#{agentHx.agentTransactionValue}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
-                <p:column width="5rem" headerText="Received from CC" sortBy="#{agentHx.paidAmountByAgency}" filterBy="#{agentHx.paidAmountByAgency}">
+                <p:column 
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    width="5rem" 
+                    headerText="Received from CC" 
+                    sortBy="#{agentHx.paidAmountByAgency}" 
+                    filterBy="#{agentHx.paidAmountByAgency}">
                     <h:outputText value="#{agentHx.paidAmountByAgency}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
-                <p:column width="5rem" headerText="Paid to CC" sortBy="#{agentHx.paidAmountToAgency}" filterBy="#{agentHx.paidAmountToAgency}">
+                <p:column 
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    width="5rem" 
+                    headerText="Paid to CC" 
+                    sortBy="#{agentHx.paidAmountToAgency}" 
+                    filterBy="#{agentHx.paidAmountToAgency}">
                     <h:outputText value="#{agentHx.paidAmountToAgency}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
-                <p:column width="5rem" headerText="Adjustments to CC Balance" sortBy="#{agentHx.adjustmentToAgencyBalance}" filterBy="#{agentHx.adjustmentToAgencyBalance}">
+                <p:column 
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    width="5rem" 
+                    headerText="Adjustments to CC Balance" 
+                    sortBy="#{agentHx.adjustmentToAgencyBalance}" 
+                    filterBy="#{agentHx.adjustmentToAgencyBalance}">
                     <h:outputText value="#{agentHx.adjustmentToAgencyBalance}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
-                <p:column width="5rem" headerText="CC Balance Before Transaction" sortBy="#{agentHx.balanceBeforeTransaction}" filterBy="#{agentHx.balanceBeforeTransaction}">
+                <p:column 
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    width="5rem" 
+                    headerText="CC Balance Before Transaction" 
+                    sortBy="#{agentHx.balanceBeforeTransaction}" 
+                    filterBy="#{agentHx.balanceBeforeTransaction}">
                     <h:outputText value="#{agentHx.balanceBeforeTransaction}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
-                <p:column width="5rem" headerText="Transaction Amount" sortBy="#{agentHx.transactionValue}" filterBy="#{agentHx.transactionValue}">
+                <p:column 
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    width="5rem"
+                    headerText="Transaction Amount" 
+                    sortBy="#{agentHx.transactionValue}" 
+                    filterBy="#{agentHx.transactionValue}">
                     <h:outputText value="#{agentHx.transactionValue}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
-                <p:column width="5rem" headerText="CC Balance After Transaction" sortBy="#{agentHx.balanceAfterTransaction}" filterBy="#{agentHx.balanceAfterTransaction}">
+                <p:column 
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    width="5rem" 
+                    headerText="CC Balance After Transaction" 
+                    sortBy="#{agentHx.balanceAfterTransaction}" 
+                    filterBy="#{agentHx.balanceAfterTransaction}">
                     <h:outputText value="#{agentHx.balanceAfterTransaction}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>

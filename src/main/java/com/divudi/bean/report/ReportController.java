@@ -1,5 +1,6 @@
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemApplicationController;
@@ -61,7 +62,6 @@ import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -82,7 +82,6 @@ import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import org.hl7.fhir.r5.model.Bundle;
 
 /**
  *
@@ -121,6 +120,8 @@ public class ReportController implements Serializable {
     WebUserController webUserController;
     @Inject
     PatientInvestigationFacade patientInvestigationFacade;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     private int reportIndex;
     private Institution institution;
@@ -225,6 +226,30 @@ public class ReportController implements Serializable {
     private String type;
     private String reportType;
     private Speciality speciality;
+
+    public String getTableRowColor(AgentHistory ah) {
+        if (ah == null) {
+            return ""; // Default style or no style
+        }
+        String style;
+        if (ah.getHistoryType() == null) {
+            style = ""; // Default style or no style
+        } else {
+            switch (ah.getHistoryType()) {
+                case CollectingCentreDeposit:
+                    style = configOptionApplicationController.getColorValueByKey("Collecting Centre Payment Received Bill Row Color in CC Statement","#79f199");
+                    break;
+                case CollectingCentreDepositCancel:
+                    style = configOptionApplicationController.getColorValueByKey("Collecting Centre Payment Cancel Bill Row Color in CC Statement","#df8663");
+                    break;
+                default:
+                    style = ""; 
+                    // Default style or no style
+                    break;
+            }
+        }
+        return style;
+    }
 
     public void generateItemMovementByBillReport() {
         billAndItemDataRows = new ArrayList<>();

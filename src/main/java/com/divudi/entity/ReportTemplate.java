@@ -28,6 +28,7 @@ import javax.persistence.Transient;
 public class ReportTemplate implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -35,6 +36,8 @@ public class ReportTemplate implements Serializable {
     @Enumerated
     private ReportTemplateType reportTemplateType;
 
+    private ReportTemplate parent;
+    
     private String name;
     private String code;
     @Lob
@@ -49,6 +52,8 @@ public class ReportTemplate implements Serializable {
     private String billTypes;
     @Lob
     private String columns;
+    @Lob
+    private String rows;
     @Lob
     private String totals;
 
@@ -245,6 +250,8 @@ public class ReportTemplate implements Serializable {
         this.billTypeAtomics = null;
         this.billTypes = billTypes;
     }
+    
+    
 
 
     @Transient
@@ -334,4 +341,22 @@ public class ReportTemplate implements Serializable {
         return reportFilters;
     }
 
+    public String getRows() {
+        return rows;
+    }
+
+    public void setRows(String rows) {
+        this.rows = rows;
+    }
+
+    public ReportTemplate getParent() {
+        return parent;
+    }
+
+    public void setParent(ReportTemplate parent) {
+        this.parent = parent;
+    }
+
+    
+    
 }

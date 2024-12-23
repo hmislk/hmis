@@ -391,7 +391,7 @@ public class UserNotificationController implements Serializable {
         Bill bill = un.getNotification().getBill();
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
-            case INWARD_PHARMACY_REQUEST:
+            case REQUEST_MEDICINE_INWARD:
                 pharmacySaleBhtController.setBhtRequestBill(bill);
                 return pharmacySaleBhtController.navigateToIssueMedicinesDirectlyForBhtRequest();
 

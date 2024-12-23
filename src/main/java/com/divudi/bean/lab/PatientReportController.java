@@ -45,6 +45,8 @@ import com.divudi.bean.common.util.JsfUtil;
 import static com.divudi.data.InvestigationItemValueType.Memo;
 import static com.divudi.data.InvestigationItemValueType.Varchar;
 import com.divudi.data.ReportType;
+import static com.divudi.data.ReportType.GENARATE;
+import static com.divudi.data.ReportType.UPLOAD;
 import com.divudi.data.UploadType;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.Upload;
@@ -230,6 +232,8 @@ public class PatientReportController implements Serializable {
         }
     }
 
+    
+    
     public Upload loadUpload(PatientReport pr) {
         String jpql = "select u "
                 + " from Upload u "
@@ -245,6 +249,60 @@ public class PatientReportController implements Serializable {
         params.put("prr", false);
 
         return uploadFacade.findFirstByJpql(jpql, params);
+    }
+
+    public String navigateToPrintPatientReport(PatientReport pr) {
+        if (pr == null) {
+            JsfUtil.addErrorMessage("No Select Patient Report");
+            return "";
+        }
+
+        System.out.println("pr = " + pr.getReportType());
+
+        if (pr.getReportType() == null) {
+            setCurrentPatientReport(pr);
+            return "/lab/patient_report_print?faces-redirect=true";
+        } else {
+            switch (pr.getReportType()) {
+                case GENARATE:
+                    setCurrentPatientReport(pr);
+                    return "/lab/patient_report_print?faces-redirect=true";
+                case UPLOAD:
+                    Upload currentReportUpload = loadUpload(pr);
+                    patientReportUploadController.setReportUpload(currentReportUpload);
+                    return "/lab/upload_patient_report_print?faces-redirect=true";
+                default:
+                    return "";
+            }
+        }
+
+    }
+    
+    public String navigateToPrintPatientReportForCourier(PatientReport pr) {
+        if (pr == null) {
+            JsfUtil.addErrorMessage("No Select Patient Report");
+            return "";
+        }
+
+        System.out.println("pr = " + pr.getReportType());
+
+        if (pr.getReportType() == null) {
+            setCurrentPatientReport(pr);
+            return "/collecting_centre/courier/patient_report_print?faces-redirect=true";
+        } else {
+            switch (pr.getReportType()) {
+                case GENARATE:
+                    setCurrentPatientReport(pr);
+                    return "/collecting_centre/courier/patient_report_print?faces-redirect=true";
+                case UPLOAD:
+                    Upload currentReportUpload = loadUpload(pr);
+                    patientReportUploadController.setReportUpload(currentReportUpload);
+                    return "/collecting_centre/courier/upload_patient_report_print?faces-redirect=true";
+                default:
+                    return "";
+            }
+        }
+
     }
 
     public String searchRecentReportsOrderedByMyself() {
@@ -891,12 +949,15 @@ public class PatientReportController implements Serializable {
                         System.out.println("resultStr = " + resultObj);
                     } else if (resultObj instanceof Double) {
                         result = (double) resultObj;
+                        resultStr= result+"";
                         System.out.println("result = " + result);
                     } else {
                         System.out.println("Else = ");
                         result = 0.0;
                         resultStr = "";
                     }
+                    System.out.println("resultStr = " + resultStr);
+                    System.out.println("result = " + result);
 
                 } catch (Exception ex) {
                     Logger.getLogger(PatientReportController.class

@@ -1895,6 +1895,9 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            billTypes.add(BillType.PharmacyGrnBill);
+            billTypes.add(BillType.PharmacyGrnReturn);
         } else if ("purchaseDoc".equals(documentType)) {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
@@ -1906,6 +1909,12 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
+        } else if ("transferIssueDoc".equals(documentType)) {
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+        } else if ("transferReceiveDoc".equals(documentType)) {
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
         }
 
         stockLedgerHistories = new ArrayList();
@@ -1980,6 +1989,11 @@ public class PharmacyReportController implements Serializable {
             jpql.append("and sh.institution = :ins ");
             params.put("ins", institution);
         }
+        
+        if (site != null) {
+            jpql.append("and sh.department.site = :sit ");
+            params.put("sit", site);
+        }
 
         if (department != null) {
             jpql.append("and sh.department = :dep ");
@@ -2053,6 +2067,11 @@ public class PharmacyReportController implements Serializable {
         if (institution != null) {
             jpql.append("and sh.institution = :ins ");
             params.put("ins", institution);
+        }
+        
+        if (site != null) {
+            jpql.append("and sh.department.site = :sit ");
+            params.put("sit", site);
         }
 
         if (department != null) {

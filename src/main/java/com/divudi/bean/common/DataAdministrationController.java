@@ -53,6 +53,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.sql.SQLSyntaxErrorException;
 import java.text.DecimalFormat;
@@ -68,7 +69,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ejb.EJB;
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
@@ -89,8 +89,9 @@ import org.reflections.Reflections;
  */
 @Named
 @SessionScoped
-public class DataAdministrationController implements Serializable{
-     private static final long serialVersionUID = 1L;
+public class DataAdministrationController implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * EJBs
@@ -190,8 +191,15 @@ public class DataAdministrationController implements Serializable{
 
     Date fromDate;
     Date toDate;
-    
+
+    private String name;
+    private String code;
+
     private int tabIndex;
+
+    public void convertNameToCode() {
+        code = CommonFunctions.nameToCode(name);
+    }
 
     public void addWholesalePrices() {
         List<ItemBatch> ibs = itemBatchFacade.findAll();
@@ -285,6 +293,10 @@ public class DataAdministrationController implements Serializable{
         return "/dataAdmin/missing_database_fields?faces-redirect=true";
     }
 
+    public String navigateToNameToCode() {
+        return "/dataAdmin/name_to_code?faces-redirect=true";
+    }
+
     public String navigateToListOpdBillsAndBillItemsFields() {
         return "/dataAdmin/opd_bills_and_bill_items?faces-redirect=true";
     }
@@ -295,17 +307,17 @@ public class DataAdministrationController implements Serializable{
 
     public void addMissingDeptBillNumber(Bill bill) {
         Bill originalBill = billFacade.find(bill.getId());
-        
-        if (originalBill.getDeptId().trim().length() != 0){
+
+        if (originalBill.getDeptId().trim().length() != 0) {
             JsfUtil.addErrorMessage("Already Add Dept Bill Number");
             return;
         }
-        
-        String genarateeddeptID =  bill.getInsId();
- 
+
+        String genarateeddeptID = bill.getInsId();
+
         originalBill.setDeptId(genarateeddeptID);
         billFacade.edit(originalBill);
-        
+
         JsfUtil.addSuccessMessage("Added Dept Bill Number");
     }
 
@@ -1737,8 +1749,6 @@ public class DataAdministrationController implements Serializable{
         this.departmentType = departmentType;
     }
 
-    
-    
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = commonFunctionsController.getStartOfMonth(new Date());
@@ -1870,6 +1880,24 @@ public class DataAdministrationController implements Serializable{
         this.tabIndex = tabIndex;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    
+
     public class EntityFieldError {
 
         private String entityName;
@@ -1905,5 +1933,7 @@ public class DataAdministrationController implements Serializable{
         }
 
     }
+    
+    
 
 }

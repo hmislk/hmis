@@ -289,27 +289,39 @@
 
                 <p:panel  rendered="#{cashRecieveBillController.printPreview}" >
 
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p:commandButton 
-                                value="New Bill" 
-                                ajax="false" 
-                                action="#{cashRecieveBillController.prepareNewBill()}" 
-                                icon="fa fa-plus"
-                                class="ui-button-warning d-flex">
-                            </p:commandButton>
-                        </div>
-                        <div>
-                            <p:commandButton
-                                value="Print"
-                                ajax="false"
-                                icon="fas fa-print"
-                                class="ui-button-info">
-                                <p:printer target="prints" />
-                            </p:commandButton>
-                        </div>
+                    <div class="d-flex">
+
+                        <p:commandButton 
+                            value="New Bill" 
+                            ajax="false" 
+                            action="#{cashRecieveBillController.prepareNewBill()}" 
+                            icon="fa fa-plus"
+                            class="ui-button-success m-1">
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="To Cancel Bill" 
+                            disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true}"
+                            ajax="false" 
+                            action="credit_company_bill_cancel" 
+                            icon="pi pi-times"
+                            styleClass="ui-button-danger m-1">
+                            <f:setPropertyActionListener value="#{cashRecieveBillController.current}" target="#{creditCompanyBillSearch.bill}" ></f:setPropertyActionListener>
+                        </p:commandButton>
+                        <p:commandButton
+                            value="Print"
+                            ajax="false"
+                            icon="fas fa-print"
+                            class="ui-button-info m-1">
+                            <p:printer target="prints" />
+                        </p:commandButton>
+
                     </div>
-                    <h:panelGroup id="prints">
+                    <p:outputLabel class="w-100 text-center bg-danger text-white m-1 p-1" value="This Bill is Cancelled" rendered="#{cashRecieveBillController.current.cancelled eq true}" ></p:outputLabel>
+                    <p:outputLabel class="w-100 text-center bg-danger text-white m-1 p-1" value="This Bill is Refunded" rendered="#{cashRecieveBillController.current.refunded eq true}" ></p:outputLabel>
+
+                    <h:panelGroup id="prints" class="align-center">
+
                         <bi:five_five_paper_coustom_1_credit_payemnt  bill="#{cashRecieveBillController.current}" duplicate="false"/>
                     </h:panelGroup>
                 </p:panel>

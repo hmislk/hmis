@@ -67,8 +67,10 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
@@ -774,6 +776,71 @@ public class PharmacyController implements Serializable {
 
     }
 
+    public String generateFileNameForReport(String reportName) {
+        if (reportName == null || reportName.trim().isEmpty()) {
+            return ""; // Handle null or empty reportName
+        }
+        if (reportType != null && !reportType.trim().isEmpty()) {
+            return reportName.trim() + " " + reportType.trim();
+        }
+        return reportName.trim();
+    }
+
+    public void generateGRNReportTableByBillItem(List<BillType> bt) {
+        bills = null;
+        totalCreditPurchaseValue = 0.0;
+        totalCashPurchaseValue = 0.0;
+        totalPurchase = 0.0;
+
+        billItems = new ArrayList<>();
+
+        String sql = "SELECT b FROM BillItem b WHERE b.bill.retired = false"
+                + " and b.bill.billType In :btp"
+                + " and b.bill.createdAt between :fromDate and :toDate";
+
+        Map<String, Object> tmp = new HashMap<>();
+
+        tmp.put("btp", bt);
+        tmp.put("fromDate", getFromDate());
+        tmp.put("toDate", getToDate());
+
+        if (institution != null) {
+            sql += " and b.bill.institution = :fIns";
+            tmp.put("fIns", institution);
+        }
+
+        if (site != null) {
+            sql += " and b.bill.department.site = :site";
+            tmp.put("site", site);
+        }
+
+        if (dept != null) {
+            sql += " and b.bill.department = :dept";
+            tmp.put("dept", dept);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.bill.paymentMethod = :pm";
+            tmp.put("pm", paymentMethod);
+        }
+
+        if (fromInstitution != null) {
+            sql += " AND b.bill.fromInstitution = :supplier";
+            tmp.put("supplier", fromInstitution);
+        }
+
+        sql += " order by b.bill.id desc";
+
+        try {
+            billItems = getBillItemFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, " Something Went Worng!");
+        }
+//        calculateTotals(bills);
+//        calculateTotalsForBillItems(billItems);
+    }
+
     public void generateGRNReportTable() {
         bills = null;
         totalCreditPurchaseValue = 0.0;
@@ -783,8 +850,10 @@ public class PharmacyController implements Serializable {
         List<BillType> bt = new ArrayList<>();
         if ("detailReport".equals(reportType)) {
             bt.add(BillType.PharmacyGrnBill);
+            generateGRNReportTableByBillItem(bt);
         } else if ("returnReport".equals(reportType)) {
             bt.add(BillType.PharmacyGrnReturn);
+            generateGRNReportTableByBillItem(bt);
         } else if ("summeryReport".equals(reportType)) {
             bt.add(BillType.PharmacyGrnBill);
             bt.add(BillType.PharmacyGrnReturn);
@@ -865,6 +934,11 @@ public class PharmacyController implements Serializable {
 
         } else if ("categoryWise".equals(reportType)) {
 
+            bills = null;
+            billItems = null;
+            generateConsumptionReportTableByDepartmentAndCategoryWise();
+
+        } else {
             bills = null;
             billItems = null;
             departmentSummaries = null;
@@ -1068,7 +1142,7 @@ public class PharmacyController implements Serializable {
         // Mandatory parameters
         parameters.put("fromDate", fromDate);
         parameters.put("toDate", toDate);
-        parameters.put("billType", BillType.PharmacyIssue);
+        parameters.put("billType", BillType.PharmacyTransferIssue);
 
         // Dynamic filters
         if (institution != null) {
@@ -1195,6 +1269,59 @@ public class PharmacyController implements Serializable {
         return data;
     }
 
+    public List<String1Value1> calculateTotalsForBillItems(List<BillItem> billItemList) {
+        data = new ArrayList<>();
+
+        totalSaleValue = 0.0;
+        totalCreditSaleValue = 0.0;
+        totalCashSaleValue = 0.0;
+
+        String1Value1 credit = new String1Value1();
+        String1Value1 cash = new String1Value1();
+        String1Value1 cashAndCredit = new String1Value1();
+
+        cash.setString("Final Cash Total");
+        credit.setString("Final Credit Total");
+        cashAndCredit.setString("Final Cash and Credit Total");
+
+        // Use a set to keep track of processed bills
+        Set<Long> processedBillIds = new HashSet<>();
+
+        for (BillItem billItem : billItemList) {
+            Bill bill = billItem.getBill(); // Access the associated Bill object
+
+            // Process each bill only once
+            if (!processedBillIds.contains(bill.getId())) {
+                processedBillIds.add(bill.getId()); // Mark the bill as processed
+
+                if (bill.getPaymentMethod() == PaymentMethod.Credit) {
+                    totalCreditPurchaseValue += bill.getNetTotal();
+                    totalCreditSaleValue += bill.getSaleValue();
+                } else if (bill.getPaymentMethod() == PaymentMethod.Cash) {
+                    totalCashPurchaseValue += bill.getNetTotal();
+                    totalCashSaleValue += bill.getSaleValue();
+                }
+                totalPurchase += bill.getNetTotal();
+                totalSaleValue += bill.getSaleValue();
+            }
+        }
+
+        credit.setValue(totalCreditPurchaseValue);
+        credit.setValue2(totalCreditSaleValue);
+
+        cash.setValue(totalCashPurchaseValue);
+        cash.setValue2(totalCashSaleValue);
+
+        cashAndCredit.setValue(totalPurchase);
+        cashAndCredit.setValue2(totalSaleValue);
+
+        data.add(cash);
+        data.add(credit);
+        data.add(cashAndCredit);
+
+        return data;
+    }
+
     public void createStockTransferReport() {
         BillType bt;
 
@@ -1228,8 +1355,6 @@ public class PharmacyController implements Serializable {
         }
 
     }
-
-    
 
     public void deleteSelectedPharmaceuticalLight() {
         if (selectedLights == null || selectedLights.isEmpty()) {

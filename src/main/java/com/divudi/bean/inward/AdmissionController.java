@@ -9,6 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ClinicalFindingValueController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
@@ -92,6 +93,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private CommonController commonController;
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -447,6 +450,18 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 //         roomChangeController.recreate();
         roomChangeController.createGuardianRoom();
         return "/inward/inward_room_change_guardian?faces-redirect=true";
+    }
+    
+    public String navigateToAddBabyAdmission() {
+        parentAdmission = current;
+        Admission ad = new Admission();
+        if (ad.getDateOfAdmission() == null) {
+            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+        }
+        setCurrent(ad);
+        current.setParentEncounter(parentAdmission);
+        setPrintPreview(false);
+        return "/inward/inward_admission_child?faces-redirect=true";
     }
 
 //    // Services & Items Submenu Methods
