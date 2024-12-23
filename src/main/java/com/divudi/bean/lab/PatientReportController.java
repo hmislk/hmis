@@ -949,12 +949,15 @@ public class PatientReportController implements Serializable {
                         System.out.println("resultStr = " + resultObj);
                     } else if (resultObj instanceof Double) {
                         result = (double) resultObj;
+                        resultStr= result+"";
                         System.out.println("result = " + result);
                     } else {
                         System.out.println("Else = ");
                         result = 0.0;
                         resultStr = "";
                     }
+                    System.out.println("resultStr = " + resultStr);
+                    System.out.println("result = " + result);
 
                 } catch (Exception ex) {
                     Logger.getLogger(PatientReportController.class

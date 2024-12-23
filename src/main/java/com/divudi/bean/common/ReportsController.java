@@ -398,7 +398,6 @@ public class ReportsController implements Serializable {
 
     public void setInvestigation(Investigation investigation) {
         this.investigation = investigation;
-
     }
 
     public Institution getCreditCompany() {
@@ -3775,4 +3774,5 @@ public class ReportsController implements Serializable {
         b.calculateTotalsWithCredit();
         return b;
     }
+
 }
