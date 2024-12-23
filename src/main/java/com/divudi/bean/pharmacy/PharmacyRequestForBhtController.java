@@ -791,14 +791,12 @@ public class PharmacyRequestForBhtController implements Serializable {
     }
 
     public void settlePharmacyBhtIssueRequest() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         if (errorCheck()) {
             return;
         }
-        settleBhtIssueRequest(BillType.InwardPharmacyRequest, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUEREQ);
-
+        BillTypeAtomic bta = BillTypeAtomic.REQUEST_MEDICINE_INWARD;
+        BillType bt = BillType.InwardPharmacyRequest;
+        settleBhtIssueRequest(bt, bta, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUEREQ);
     }
 
     public void settleStoreBhtIssue() {
@@ -897,7 +895,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
         setPrintBill(getBillFacade().find(getPreBill().getId()));
         Bill bill = getBillFacade().find(getPreBill().getId());
-        bill.setBillTypeAtomic(BillTypeAtomic.INWARD_PHARMACY_REQUEST);
+        bill.setBillTypeAtomic(BillTypeAtomic.REQUEST_MEDICINE_INWARD);
         bill.setEditedAt(new Date());
         bill.setEditor(getSessionController().getLoggedUser());
         billFacade.edit(bill);
@@ -908,8 +906,7 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     }
 
-    private void settleBhtIssueRequest(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
-
+    private void settleBhtIssueRequest(BillType bt, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
         if (matrixDepartment == null) {
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
             return;
@@ -921,14 +918,16 @@ public class PharmacyRequestForBhtController implements Serializable {
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
 
-        savePreBillFinallyRequest(pt, matrixDepartment, btp, billNumberSuffix);
+        savePreBillFinallyRequest(pt, matrixDepartment, bt, billNumberSuffix);
         savePreBillItemsFinallyRequest(tmpBillItems);
 
         // Calculation Margin
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
         setPrintBill(getBillFacade().find(getPreBill().getId()));
         Bill bill = getBillFacade().find(getPreBill().getId());
-        bill.setBillTypeAtomic(BillTypeAtomic.INWARD_PHARMACY_REQUEST);
+        bill.setBillTypeAtomic(bta);
+        bill.setBillType(bt);
+
         billFacade.edit(bill);
         notificationController.createNotification(bill);
         clearBill();
@@ -1402,7 +1401,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         getPreBill().setEditedAt(null);
         getPreBill().setEditor(null);
 
-        getPreBill().setBillTypeAtomic(BillTypeAtomic.INWARD_PHARMACY_REQUEST);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.REQUEST_MEDICINE_INWARD);
         getPreBill().setBillClassType(BillClassType.PreBill);
         getPreBill().setBillType(BillType.PharmacyBhtPre);
 

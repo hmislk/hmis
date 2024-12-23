@@ -18,43 +18,66 @@
                                              update="optionsTable" style="float: right;" />
                         </f:facet>
                         <!-- Data Table for Options -->
-                        <p:dataTable var="option" 
-                                     rowKey="#{option.id}"
-                                     value="#{configOptionController.options}" id="optionsTable"
-                                     paginator="true" rows="10" 
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15"
-                                     selection="#{configOptionController.option}"
-                                     filteredValue="#{configOptionController.filteredOptions}">
-                            <p:column headerText="Key" 
-                                      sortBy="#{option.optionKey}" 
-                                      filterBy="#{option.optionKey}"
-                                      filterFunction="#{configOptionController.filterByCustom}">
+                        <p:dataTable 
+                            var="option" 
+                            rowKey="#{option.id}"
+                            value="#{configOptionController.options}" 
+                            id="optionsTable"
+                            paginator="true"
+                            rows="15" 
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="15,50,100"
+                            selection="#{configOptionController.option}"
+                            filteredValue="#{configOptionController.filteredOptions}">
+                            <p:column 
+                                style="padding: 7px;"
+                                headerText="Key" 
+                                sortBy="#{option.optionKey}" 
+                                filterBy="#{option.optionKey}"
+                                filterFunction="#{configOptionController.filterByCustom}">
                                 #{option.optionKey}
                             </p:column>
-                            <p:column headerText="Type" width="10em" sortBy="#{option.valueType}">
+
+                            <p:column 
+                                headerText="Type" 
+                                width="10em" 
+                                sortBy="#{option.valueType}" 
+                                filterBy="#{option.valueType}"
+                                filterFunction="#{configOptionController.filterByCustom}"
+                                style="padding: 7px;">
                                 #{option.valueType}
                             </p:column>
-                            <p:column headerText="Value">
-                                <h:outputText value="#{option.optionValue}" />
-                            </p:column>
-                            <p:column headerText="Actions" width="7em">
-                                <p:commandButton 
-                                    icon="pi pi-pencil" 
-                                    styleClass="ui-button-success m-1" 
-                                    oncomplete="PF('optionEditDialog').show()" 
-                                    update=":editForm"
-                                    title="Edit Option">
-                                    <f:setPropertyActionListener value="#{option}" target="#{configOptionController.option}" ></f:setPropertyActionListener>
-                                </p:commandButton>
-                                <p:commandButton 
-                                    icon="pi pi-trash" 
-                                    styleClass="ui-button-danger m-1" 
-                                    ajax="false"
-                                    action="#{configOptionController.deleteOption(option)}" 
-                                    update=":optionTable"
-                                    title="Delete Option">
-                                </p:commandButton>
+
+                            <p:column headerText="Value" style="padding: 7px;">
+                                <div class="d-flex gap-5">
+                                    <h:outputText value="#{option.optionValue}"/>
+                                    <h:panelGroup rendered="#{configOptionController.option.valueType eq 'COLOR'}">
+                                        <div style="width: 50px; height: 30px; background-color: #{option.optionValue};"></div>
+                                    </h:panelGroup>
+                                </div>
+                            </p:column >
+
+                            <p:column headerText="Actions" width="7em" style="padding: 7px;">
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        icon="pi pi-pencil" 
+                                        styleClass="ui-button-success" 
+                                        oncomplete="PF('optionEditDialog').show()" 
+                                        update=":editForm"
+                                        title="Edit Option">
+                                        <f:setPropertyActionListener value="#{option}" target="#{configOptionController.option}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        icon="pi pi-trash" 
+                                        styleClass="ui-button-danger" 
+                                        ajax="false"
+                                        action="#{configOptionController.deleteOption(option)}" 
+                                        update=":optionTable"
+                                        title="Delete Option">
+                                    </p:commandButton>
+                                </div>
+
                             </p:column>
 
                         </p:dataTable>
@@ -67,70 +90,108 @@
                 </h:form>
                 <p:dialog 
                     header="Edit Option" widgetVar="optionEditDialog" modal="true" 
-                    style="min-width: 80%; min-height: 400px;">
+                    style="min-width: 60%; min-height: 400px;">
                     <h:form id="editForm" class="w-100" >
-                        <p:panelGrid 
-                            columns="2"
+                        <p:panel
                             class="w-100">
                             <f:facet name="header">
                                 <p:outputPanel styleClass="header-style">Option Details</p:outputPanel>
                             </f:facet>
 
-                            <p:outputLabel for="keyInput" value="Key:"  class="w-100" />
-                            <p:inputText class="w-100" id="keyInput" value="#{configOptionController.option.optionKey}" disabled="true" />
+                            <div class="d-flex">
+                                <div class="col-3">
+                                    <p:outputLabel for="keyInput" value="Option Key"  class="w-100" />
+                                </div>
+                                <div class="col-9">
+                                    <h:outputText class="w-100" id="keyInput" value="#{configOptionController.option.optionKey}"/>
+                                </div>
+                            </div>
 
-                            <p:outputLabel value="Value:" />
+                            <hr/>
 
-                            <!-- Rendered based on the valueType of the option -->
-                            <!-- For SHORT_TEXT -->
-                            <p:inputText 
-                                class="w-100" 
-                                id="valueInputShortText" value="#{configOptionController.option.optionValue}"
-                                rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}" />
+                            <div class="d-flex mt-3">
+                                <div class="col-3">
+                                    <p:outputLabel value="Key Value" />
+                                </div>
+                                <div class="col-9">
+                                    <!-- For SHORT_TEXT -->
+                                    <p:inputText 
+                                        class="w-100" 
+                                        id="valueInputShortText" value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}" />
 
-                            <!-- For Long -->
-                            <p:inputText 
-                                class="w-100" 
-                                id="valueInputLong" 
-                                value="#{configOptionController.option.optionValue}"
-                                rendered="#{configOptionController.option.valueType eq 'LONG'}" />
+                                    <!-- For Long -->
+                                    <p:inputText 
+                                        class="w-100" 
+                                        id="valueInputLong" 
+                                        value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'LONG'}" />
 
-                            <!-- For LONG_TEXT -->
-                            <p:inputTextarea 
-                                class="w-100" 
-                                rows="5"
-                                id="valueInputLongText" value="#{configOptionController.option.optionValue}"
-                                rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}" autoResize="false"/>
-                            
-                            <!-- For DOUBLE -->
-                            <p:inputText 
-                                class="w-100" 
-                                id="valueInputDouble" value="#{configOptionController.option.optionValue}"
-                                rendered="#{configOptionController.option.valueType eq 'DOUBLE'}" />
+                                    <!-- For LONG_TEXT -->
+                                    <p:inputTextarea 
+                                        class="w-100" 
+                                        rows="5"
+                                        id="valueInputLongText" value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}" 
+                                        autoResize="false"/>
 
-                            <p:selectOneMenu 
-                                id="enumValueSelector"
-                                filter="true"
-                                filterMatchMode="contains"
-                                value="#{configOptionController.option.optionValue}" 
-                                rendered="#{configOptionController.option.valueType eq 'ENUM'}">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value="#{enumController.getEnumValues(configOptionController.option.enumType)}"
-                                               var="enumVal"
-                                               itemLabel="#{enumVal}"
-                                               itemValue="#{enumVal}" />
-                            </p:selectOneMenu>
+                                    <!-- For DOUBLE -->
+                                    <p:inputText 
+                                        class="w-100" 
+                                        id="valueInputDouble" value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'DOUBLE'}" />
 
-                            <p:selectBooleanCheckbox id="valueInputBoolean" value="#{configOptionController.option.optionValue}"
-                                                     rendered="#{configOptionController.option.valueType eq 'BOOLEAN'}" />
+                                    <!-- For COLOR -->
+                                    <p:colorPicker 
+                                        id="color" 
+                                        mode="inline" 
+                                        rendered="#{configOptionController.option.valueType eq 'COLOR'}"
+                                        value="#{configOptionController.option.optionValue}"
+                                        formatToggle="true" 
+                                        theme="large">
+                                    </p:colorPicker>
 
-                            <p:spacer ></p:spacer>
-                            <p:commandButton icon="pi pi-save"
-                                             value="Save" 
-                                             action="#{configOptionController.saveOption(configOptionController.option)}" 
-                                             process="@this @form"
-                                             oncomplete="PF('optionEditDialog').hide();" update=":optionsForm:optionsTable" />
-                        </p:panelGrid>
+                                    <p:selectOneMenu 
+                                        id="enumValueSelector"
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        value="#{configOptionController.option.optionValue}" 
+                                        rendered="#{configOptionController.option.valueType eq 'ENUM'}">
+                                        <f:selectItem itemLabel="Select" ></f:selectItem>
+                                        <f:selectItems 
+                                            value="#{enumController.getEnumValues(configOptionController.option.enumType)}"
+                                            var="enumVal"
+                                            itemLabel="#{enumVal}"
+                                            itemValue="#{enumVal}" />
+                                    </p:selectOneMenu>
+
+                                    <p:toggleSwitch 
+                                        value="#{configOptionController.option.optionValue}" 
+                                        onIcon="pi pi-check" 
+                                        offIcon="pi pi-times" 
+                                        rendered="#{configOptionController.option.valueType eq 'BOOLEAN'}">
+                                    </p:toggleSwitch>
+
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <div class="d-flex mt-4">
+                                <div class="col-3"></div>
+                                <div class="col-9">
+                                    <p:commandButton 
+                                        icon="pi pi-save"
+                                        value="Save" 
+                                        style="width: 250px; background-color: #da8545; float: right;"
+                                        action="#{configOptionController.saveOption(configOptionController.option)}" 
+                                        process="@this @form"
+                                        oncomplete="PF('optionEditDialog').hide();" update=":optionsForm:optionsTable" >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </p:panel>
+
                     </h:form>
                 </p:dialog>
 
