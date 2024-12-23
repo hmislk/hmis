@@ -8,6 +8,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward"
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
                 xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany">
 
 
@@ -15,184 +16,263 @@
         <h:form>
             <h:panelGroup rendered="#{!admissionController.printPreview}" >
                 <p:panel>
-                    <h:panelGrid columns="5" styleClass="alignTop" >                   
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h:outputText styleClass="fa fa-hospital"></h:outputText>
+                                <h:outputText class="mx-4" value="Admit a Baby"/>
+                            </div>
+                            <div>
+                                <p:commandButton 
+                                    id="admt" 
+                                    action="#{admissionController.saveSelected}" 
+                                    ajax="false" 
+                                    class="ui-button-success mx-1"
+                                    value="Admit"  />
+                                <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" />
+                                <p:commandButton 
+                                    ajax="false" 
+                                    immediate="true"
+                                    value="Patient Lookup" 
+                                    class="ui-button-warning mx-1" 
+                                    action="#{patientController.navigateToSearchPatients()}" 
+                                    icon="fa fa-search" /> <!-- Font Awesome icon for search -->
 
-                        <p:selectOneMenu  id="lstSelect"   value="#{admissionController.current.admissionType}" >
-                            <f:selectItem itemLabel="Select Admission Type"/>
-                            <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
-                            <p:ajax event="change" process="@this" update="bh cmbDoc" listener="#{admissionController.bhtNumberCalculation()}" />
-                        </p:selectOneMenu>
-                        <p:outputLabel id="bh" value="#{admissionController.bhtText}" style="font-weight: bold ; margin: 1px; border: 3px  solid black ; padding: 3px; min-width: 150px; display: block; text-align: center ;  "   />
+                                <p:commandButton 
+                                    ajax="false" 
+                                    immediate="true"
+                                    class="ui-button-warning mx-1" 
+                                    value="Patient Profile" 
+                                    action="#{patientController.navigateToOpdPatientProfile()}" 
+                                    icon="fa fa-user" > <!-- Font Awesome icon for user -->
+                                    <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet>
 
-                        <p:autoComplete  forceSelection="true"  
-                                         id="cmbDoc" disabled="#{admissionController.current.admissionType eq null or admissionController.current.admissionType.roomFacilityCharge ne null}"
-                                         value="#{admissionController.patientRoom.roomFacilityCharge}" 
-                                         completeMethod="#{roomFacilityChargeController.completeRoom}"
-                                         var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" size="30"   
-                                         style="width: 400px;">                            
-                        </p:autoComplete>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h:panelGrid columns="8" class="m-2 w-100" > 
+                                <h:panelGroup >
+                                    <p:outputLabel value="Admission Type :" ></p:outputLabel>
+                                    <p:selectOneMenu  id="lstSelect"   value="#{admissionController.current.admissionType}" >
+                                        <f:selectItem itemLabel="Select Admission Type"/>
+                                        <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                                        <p:ajax event="change" process="@this" update="bh cmbDoc" listener="#{admissionController.bhtNumberCalculation()}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <div class="d-flex align-items-center ">
+                                        <p:outputLabel class="px-2 py-2 " id="bht" value="BHT :"/>
+                                        <div class="border mx-4">
+                                            <p:outputLabel class="px-2 py-2" id="bh" value="#{admissionController.bhtText}"/>
+                                        </div> 
+                                    </div>
+                                </h:panelGroup>
 
-                        <p:commandButton id="admt" action="#{admissionController.saveSelected}" ajax="false" value="Admit"  />
-                        <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" />
-                        <p:defaultCommand target="admt"/>
+                                <h:panelGroup >
+                                    <p:outputLabel class="mx-1 " value="Room No :" />
+                                    <p:autoComplete  forceSelection="true"  
+                                                     id="cmbDoc" disabled="#{admissionController.current.admissionType eq null or admissionController.current.admissionType.roomFacilityCharge ne null}"
+                                                     value="#{admissionController.patientRoom.roomFacilityCharge}" 
+                                                     completeMethod="#{roomFacilityChargeController.completeRoom}"
+                                                     var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" size="30"   
+                                                     style="width: 400px;">                            
+                                    </p:autoComplete>
+                                </h:panelGroup>
 
-                                                
-                    </h:panelGrid>
+                                <h:panelGroup >
+                                    <p:outputLabel value="Comments :" ></p:outputLabel>
+                                    <p:inputText class="mx-4" id="comment" value="#{admissionController.current.comments}" placeholder="Comment/Reference No"/>
+                                </h:panelGroup>
+
+                            </h:panelGrid>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="row my-2">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Parent Details" />
+                                    </f:facet>
+                                    <common:patient patient="#{admissionController.parentAdmission.patient}" class="w-100"/>
+                                </p:panel>
+                            </div>
+                            <div class="row my-2">
+                                <common:parent_admission_details admission="#{admissionController.parentAdmission}" class="w-100 m-1"></common:parent_admission_details>
+                            </div>
+                        </div>
+                        <div class="col-4 my-2">
+                            <p:panel header="Patient Detail">
+                                <p:tabView  id="tvPt"  style="min-height: 250px;"  >
+                                    <p:ajax event="tabChange"  process="@this" listener="#{admissionController.onTabChange}" />
+                                    <p:tab  title="New Patient" id="tabNewPt">
+
+                                        <in:inputPatientDetail patient="#{admissionController.current.patient}"/>
+
+                                    </p:tab>
+                                    <p:tab id="tabSearchPt" title="Search Patient">
+                                        <h:panelGrid columns="1" >
+                                            <in:searchPatient patient="#{admissionController.parentAdmission.patient}"/>
+                                        </h:panelGrid>
+
+                                    </p:tab>
+                                </p:tabView>
+                            </p:panel>
+                        </div>
+                        <div class="col-4">
+                            <div class="row my-2">
+                                <p:panel header="Hospital Use">
+                                    <h:panelGrid columns="2">
+
+                                        <p:selectBooleanCheckbox value="#{admissionController.current.foriegner}"
+                                                                 itemLabel="Mark as Foreigner"/>
+
+                                        <p:selectBooleanCheckbox value="#{admissionController.current.claimable}" 
+                                                                 itemLabel="Claimable"/>
+
+                                        <p:outputLabel value="Admitted Time"/>
+                                        <p:calendar value="#{admissionController.current.dateOfAdmission}" 
+                                                    id="admissionTimeStamp"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                               
+                                        </p:calendar>     
+
+
+
+
+                                        <h:outputLabel value="Referring Doctor Speciality"/>
+                                        <p:autoComplete forceSelection="true" id="acRefDocSpe"
+                                                        value="#{inwardStaffPaymentBillController.referringDoctorSpeciality}" 
+                                                        completeMethod="#{specialityController.completeSpeciality}" 
+                                                        var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                        style="width: 200px!important;"  >
+                                            <f:ajax event="itemSelect" execute="@this" render="acRefDoc"/>
+                                            <f:ajax event="blur" execute="@this" render="acRefDoc"/>
+                                        </p:autoComplete>
+                                        <p:outputLabel value=""/>
+                                        <p:autoComplete id="acRefDoc" 
+                                                        forceSelection="true" 
+                                                        value="#{admissionController.current.referringDoctor}"
+                                                        completeMethod="#{inwardStaffPaymentBillController.completeReferringDoctor}" 
+                                                        var="ix" 
+                                                        itemLabel="#{ix.person.name}" 
+                                                        itemValue="#{ix}" size="30"  
+                                                        >
+                                        </p:autoComplete>
+
+
+
+
+                                        <h:outputLabel  value="OPD Doctor Speciality" ></h:outputLabel>
+                                        <p:autoComplete forceSelection="true" 
+                                                        value="#{inwardStaffPaymentBillController.speciality}" 
+                                                        id="acSpeciality"
+                                                        completeMethod="#{specialityController.completeSpeciality}" 
+                                                        var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                        >
+
+                                            <f:ajax event="itemSelect" execute="@this" render="scStaff"/>
+                                            <f:ajax event="blur" execute="@this" render="scStaff"/>
+                                        </p:autoComplete>
+                                        <p:outputLabel value=""/>
+                                        <p:autoComplete  style="width: 400px;" forceSelection="true" id="scStaff"
+                                                         value="#{admissionController.current.opdDoctor}" 
+                                                         completeMethod="#{inwardStaffPaymentBillController.completeStaff}"
+                                                         var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                         >
+                                        </p:autoComplete>
+
+                                    </h:panelGrid>
+                                </p:panel>
+                            </div>
+                            <div class="row my-2">
+                                <p:panel header="Payment Detail">
+
+                                    <h:panelGrid columns="2">
+                                        <h:outputLabel value="BHT Type"/>
+                                        <p:selectOneMenu   id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
+                                            <f:selectItem itemLabel="Select" />                           
+                                            <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                                            <p:ajax process="@this" update="crd" event="change" />
+                                        </p:selectOneMenu>
+                                    </h:panelGrid>
+
+                                    <h:panelGroup id="crd" style="display: #{admissionController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
+                                        <credit:inputCredit  patientEncounter="#{admissionController.current}"/>
+                                    </h:panelGroup>
+
+
+                                </p:panel>
+                            </div>
+                        </div>
+                    </div>
+
                 </p:panel>
                 <h:panelGrid columns="1" id="gpDetail">
                     <h:panelGrid columns="2" style="min-width: 100%;"  styleClass="alignTop">
 
-                        <p:panel header="Patient Detail">
-                            <p:tabView  id="tvPt"  style="min-height: 250px;"  >
-                                <p:ajax event="tabChange"  process="@this" listener="#{admissionController.onTabChange}" />
-                                <p:tab  title="New Patient" id="tabNewPt">
-
-                                    <in:inputPatientDetail patient="#{admissionController.newPatient}"/>
-
-                                </p:tab>
-                                <p:tab id="tabSearchPt" title="Search Patient">
-                                    <h:panelGrid columns="1" >
-                                        <in:searchPatient patient="#{admissionController.current.patient}"/>
-                                    </h:panelGrid>
-
-                                </p:tab>
-                            </p:tabView>
-                        </p:panel>
 
 
 
 
-                        <p:panel header="Other" style="min-width: 100%;">                           
-                            <p:tabView>
-                                <p:tab title="Guardian Detail">
-                                    <h:panelGrid columns="2">
-                                        <p:outputLabel  value="Name" />
-                                        <p:inputText autocomplete="off" value="#{admissionController.current.guardian.name}"/>
-                                        <p:outputLabel value="NIC / Passport"/>
-                                        <p:inputText autocomplete="off" value="#{admissionController.current.guardian.nic}"/>
-                                        <p:outputLabel value="Address" />
-                                        <p:inputText autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
-                                        <p:outputLabel value="Mobile No" />
-                                        <p:inputText    value="#{admissionController.current.guardian.mobile}"  />
-                                        <p:outputLabel value="Home Phone No" />
-                                        <p:inputText    value="#{admissionController.current.guardian.phone}"  />
-                                    </h:panelGrid>
-                                </p:tab>
-                                <p:tab title="Appointment" >
-                                    <p:autoComplete forceSelection="true" id="aBill" 
-                                                    value="#{admissionController.appointmentBill}" 
-                                                    completeMethod="#{billController.completeAppointmentBill}" 
-                                                    var="apt2" itemLabel="#{apt2.patient.person.nameWithTitle}" 
-                                                    itemValue="#{apt2}" size="30"  style="width: 400px;">
-                                        <p:ajax event="itemSelect" process="aBill" update="panSearch2" />
-                                        <p:column>
-                                            #{apt2.deptId}
-                                        </p:column>
-                                        <p:column>
-                                            #{apt2.patient.person.nameWithTitle}
-                                        </p:column>
-                                    </p:autoComplete>   
-                                    <h:panelGrid id="panSearch2" columns="2">
-                                        <h:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="Name" />
-                                        <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.nameWithTitle}" ></h:outputLabel>
-                                        <h:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="Sex" />
-                                        <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.sex}" ></h:outputLabel>
-                                        <h:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="DOB"  />
 
-                                        <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.dob}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                        </h:outputLabel>
+                        <!--                        <p:panel header="Other" style="min-width: 100%;">                           
+                                                    <p:tabView>
+                                                        <p:tab title="Guardian Detail">
+                                                            <h:panelGrid columns="2">
+                                                                <p:outputLabel  value="Name" />
+                                                                <p:inputText autocomplete="off" value="#{admissionController.current.guardian.name}"/>
+                                                                <p:outputLabel value="NIC / Passport"/>
+                                                                <p:inputText autocomplete="off" value="#{admissionController.current.guardian.nic}"/>
+                                                                <p:outputLabel value="Address" />
+                                                                <p:inputText autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
+                                                                <p:outputLabel value="Mobile No" />
+                                                                <p:inputText    value="#{admissionController.current.guardian.mobile}"  />
+                                                                <p:outputLabel value="Home Phone No" />
+                                                                <p:inputText    value="#{admissionController.current.guardian.phone}"  />
+                                                            </h:panelGrid>
+                                                        </p:tab>
+                                                        <p:tab title="Appointment" >
+                                                            <p:autoComplete forceSelection="true" id="aBill" 
+                                                                            value="#{admissionController.appointmentBill}" 
+                                                                            completeMethod="#{billController.completeAppointmentBill}" 
+                                                                            var="apt2" itemLabel="#{apt2.patient.person.nameWithTitle}" 
+                                                                            itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                                                <p:ajax event="itemSelect" process="aBill" update="panSearch2" />
+                                                                <p:column>
+                        #{apt2.deptId}
+                    </p:column>
+                    <p:column>
+                        #{apt2.patient.person.nameWithTitle}
+                    </p:column>
+                </p:autoComplete>   
+                <h:panelGrid id="panSearch2" columns="2">
+                    <h:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="Name" />
+                    <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.nameWithTitle}" ></h:outputLabel>
+                    <h:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="Sex" />
+                    <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.sex}" ></h:outputLabel>
+                    <h:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="DOB"  />
 
-                                        <h:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="Adress" />
-                                        <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.address}" ></h:outputLabel>
-                                    </h:panelGrid>
-                                </p:tab>
-                            </p:tabView>
+                    <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.dob}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                    </h:outputLabel>
 
-
-                        </p:panel>
+                    <h:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="Adress" />
+                    <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.address}" ></h:outputLabel>
+                </h:panelGrid>
+            </p:tab>
+        </p:tabView>
 
 
-                        <p:panel header="Hospital Use">
-                            <h:panelGrid columns="2">
-
-                                <p:selectBooleanCheckbox value="#{admissionController.current.foriegner}"
-                                                         itemLabel="Mark as Foreigner"/>
-
-                                <p:selectBooleanCheckbox value="#{admissionController.current.claimable}" 
-                                                         itemLabel="Claimable"/>
-
-                                <p:outputLabel value="Admitted Time"/>
-                                <p:calendar value="#{admissionController.current.dateOfAdmission}" 
-                                            id="admissionTimeStamp"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                               
-                                </p:calendar>     
-
-                                
-                                
-
-                                <h:outputLabel value="Referring Doctor Speciality"/>
-                                <p:autoComplete forceSelection="true" id="acRefDocSpe"
-                                                value="#{inwardStaffPaymentBillController.referringDoctorSpeciality}" 
-                                                completeMethod="#{specialityController.completeSpeciality}" 
-                                                var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                 style="width: 200px!important;"  >
-                                    <f:ajax event="itemSelect" execute="@this" render="acRefDoc"/>
-                                    <f:ajax event="blur" execute="@this" render="acRefDoc"/>
-                                </p:autoComplete>
-                                <p:outputLabel value=""/>
-                                <p:autoComplete id="acRefDoc" 
-                                                forceSelection="true" 
-                                                value="#{admissionController.current.referringDoctor}"
-                                                completeMethod="#{inwardStaffPaymentBillController.completeReferringDoctor}" 
-                                                var="ix" 
-                                                itemLabel="#{ix.person.name}" 
-                                                itemValue="#{ix}" size="30"  
-                                                 >
-                                </p:autoComplete>
-
-                                
-                                
-
-                                <h:outputLabel  value="OPD Doctor Speciality" ></h:outputLabel>
-                                <p:autoComplete forceSelection="true" 
-                                                value="#{inwardStaffPaymentBillController.speciality}" 
-                                                id="acSpeciality"
-                                                completeMethod="#{specialityController.completeSpeciality}" 
-                                                var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                >
-
-                                    <f:ajax event="itemSelect" execute="@this" render="scStaff"/>
-                                    <f:ajax event="blur" execute="@this" render="scStaff"/>
-                                </p:autoComplete>
-                                <p:outputLabel value=""/>
-                                <p:autoComplete  style="width: 400px;" forceSelection="true" id="scStaff"
-                                                 value="#{admissionController.current.opdDoctor}" 
-                                                 completeMethod="#{inwardStaffPaymentBillController.completeStaff}"
-                                                 var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                 >
-                                </p:autoComplete>
-
-                            </h:panelGrid>
-                        </p:panel>
-
-                        <p:panel header="Payment Detail">
-
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="BHT Type"/>
-                                <p:selectOneMenu   id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
-                                    <f:selectItem itemLabel="Select" />                           
-                                    <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                    <p:ajax process="@this" update="crd" event="change" />
-                                </p:selectOneMenu>
-                            </h:panelGrid>
-
-                            <h:panelGroup id="crd" style="display: #{admissionController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
-                                <credit:inputCredit  patientEncounter="#{admissionController.current}"/>
-                            </h:panelGroup>
+    </p:panel>-->
 
 
-                        </p:panel>
+
+
+
                     </h:panelGrid>
                 </h:panelGrid>
             </h:panelGroup>
