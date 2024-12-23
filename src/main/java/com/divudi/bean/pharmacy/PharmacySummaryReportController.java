@@ -29,6 +29,7 @@ import com.divudi.data.BillClassType;
 
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.IncomeBundle;
+import com.divudi.data.IncomeRow;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Category;
 import com.divudi.entity.WebUser;
@@ -55,8 +56,6 @@ import org.primefaces.model.StreamedContent;
 @Named
 @SessionScoped
 public class PharmacySummaryReportController implements Serializable {
-
-   
 
     private static final long serialVersionUID = 1L;
 
@@ -232,7 +231,7 @@ public class PharmacySummaryReportController implements Serializable {
         setToDate(null);
     }
 
-    public void processPharmacyIncomeReport(){
+    public void processPharmacyIncomeReport() {
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
@@ -243,12 +242,23 @@ public class PharmacySummaryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_PRE);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
-        
-        List<Bill> bills = billService.fetchBills(fromDate,toDate,institution,site,department,webUser, billTypeAtomics);
+
+        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics);
         bundle = new IncomeBundle(bills);
+        for (IncomeRow r : bundle.getRows()) {
+            if (r.getBill() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod() == null) {
+                continue;
+            }
+            if(r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)){
+                r.setPayments(billService.fetchBillPayments(r.getBill()));
+            }
+        }
         bundle.generatePaymentDetailsForBills();
     }
-    
+
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="Constructors">
     public PharmacySummaryReportController() {
@@ -256,7 +266,7 @@ public class PharmacySummaryReportController implements Serializable {
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
 
-     /**
+    /**
      * @return the commonFunctions
      */
     public CommonFunctions getCommonFunctions() {
@@ -572,7 +582,8 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     /**
-     * @param configOptionApplicationController the configOptionApplicationController to set
+     * @param configOptionApplicationController the
+     * configOptionApplicationController to set
      */
     public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
         this.configOptionApplicationController = configOptionApplicationController;
@@ -750,6 +761,9 @@ public class PharmacySummaryReportController implements Serializable {
      * @return the fromDate
      */
     public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay();
+        }
         return fromDate;
     }
 
@@ -764,6 +778,9 @@ public class PharmacySummaryReportController implements Serializable {
      * @return the toDate
      */
     public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay();
+        }
         return toDate;
     }
 
@@ -1165,6 +1182,6 @@ public class PharmacySummaryReportController implements Serializable {
     public void setMaxResult(int maxResult) {
         this.maxResult = maxResult;
     }
-    
+
 // </editor-fold>  
 }
