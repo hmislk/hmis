@@ -191,12 +191,6 @@
                                 itemLabel="#{item.name}" 
                                 itemValue="#{item}" 
                                 ></p:autoComplete>
-
-
-
-
-
-
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center mt-5">
@@ -299,15 +293,13 @@
                                     <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                                 <p:commandLink 
-                                    value="#{f.pbItem.billItem.bill.deptId}"
+                                    value="#{f.pbItem.billItem.bill.referenceBill.deptId}"
                                     class="m-1 ui-button-info"
                                     style="width: 100px;"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
-                                <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.deptId}" />
-                                <h:outputText value="#{f.pbItem.billItem.bill.referenceBill.deptId}" />
                             </p:column>
                             <p:column headerText="Ref Doc Date" width="5em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.createdAt}" />
