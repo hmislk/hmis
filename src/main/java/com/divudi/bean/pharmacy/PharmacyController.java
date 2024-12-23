@@ -938,6 +938,7 @@ public class PharmacyController implements Serializable {
         billItems = null;
         departmentSummaries = null;
         issueDepartmentCategoryWiseItems = null;
+        resultsList = null;
     }
 
     public void generateConsumptionReportTableByBill(BillType billType) {
@@ -1048,7 +1049,7 @@ public class PharmacyController implements Serializable {
             totalPurchase += i.getQty() * i.getPharmaceuticalBillItem().getPurchaseRate();
         }
     }
-
+@Deprecated
     public void generateConsumptionReportTableAsSummary(BillType billType) {
         // Initialize bill types
         List<BillType> bt = new ArrayList<>();
@@ -1334,7 +1335,7 @@ public class PharmacyController implements Serializable {
             Map<String, Double> consumptionMap = mainEntry.getValue();
 
             // Add a header entry for the main department
-            departmentSummaries.add(new PharmacySummery(mainDepartmentName, null, null)); // Main department header
+            departmentSummaries.add(new PharmacySummery(mainDepartmentName, null, 0.0)); // Main department header
 
             // Add each consumption department's contribution
             for (Map.Entry<String, Double> consumptionEntry : consumptionMap.entrySet()) {

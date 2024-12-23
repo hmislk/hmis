@@ -441,7 +441,8 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" >
+                                         <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
