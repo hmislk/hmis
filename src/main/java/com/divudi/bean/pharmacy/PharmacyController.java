@@ -54,6 +54,7 @@ import com.divudi.facade.VtmFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.DepartmentCategoryWiseItems;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.CategoryWithItem;
 import com.divudi.data.dataStructure.PharmacySummery;
@@ -737,6 +738,7 @@ public class PharmacyController implements Serializable {
     private List<BillItem> billItems;
     private List<PharmacySummery> departmentSummaries;
     private List<CategoryWithItem> issueDepartmentCategoryWiseItems;
+    private List<DepartmentCategoryWiseItems> resultsList;
 
     private String transferType;
     private Institution FromSite;
@@ -936,13 +938,7 @@ public class PharmacyController implements Serializable {
 
             bills = null;
             billItems = null;
-            generateConsumptionReportTableByDepartmentAndCategoryWise();
-
-        } else {
-            bills = null;
-            billItems = null;
-            departmentSummaries = null;
-            generateConsumptionReportTableByDepartmentAndCategoryWise();
+            generateConsumptionReportTableByDepartmentAndCategoryWise(BillType.PharmacyIssue);
 
         }
 
@@ -1224,6 +1220,79 @@ public class PharmacyController implements Serializable {
         for (CategoryWithItem i : issueDepartmentCategoryWiseItems) {
             totalPurchase += i.getTotal();
             grantIssueQty += i.getQty();
+        }
+    }
+
+    public List<DepartmentCategoryWiseItems> generateConsumptionReportTableByDepartmentAndCategoryWise(BillType billType) {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.DepartmentCategoryWiseItems("
+                + "bi.bill.department, "
+                + "bi.bill.toDepartment, "
+                + "bi.item, "
+                + "bi.item.category, "
+                + "SUM(bi.qty * bi.pharmaceuticalBillItem.purchaseRate), "
+                + "bi.pharmaceuticalBillItem.purchaseRate, "
+                + "SUM(bi.qty)) "
+                + "FROM BillItem bi "
+                + "WHERE bi.retired = false AND bi.bill.retired = false "
+                + "AND bi.bill.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND bi.bill.billType = :billType ";
+
+        // Mandatory parameters
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+        parameters.put("billType", billType);
+
+        // Dynamic filters
+        if (institution != null) {
+            jpql += "AND bi.bill.institution = :institution ";
+            parameters.put("institution", institution);
+        }
+
+        if (site != null) {
+            jpql += "AND bi.bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+
+        if (dept != null) {
+            jpql += "AND bi.bill.department = :department ";
+            parameters.put("department", dept);
+        }
+
+        if (category != null) {
+            jpql += "AND bi.item.category = :category ";
+            parameters.put("category", category);
+        }
+
+        if (item != null) {
+            jpql += "AND bi.item = :item ";
+            parameters.put("item", item);
+        }
+
+        if (toDepartment != null) {
+            jpql += "AND bi.bill.toDepartment = :toDepartment ";
+            parameters.put("toDepartment", toDepartment);
+        }
+
+        // Group by clause
+        jpql += "GROUP BY bi.bill.department, bi.bill.toDepartment, bi.item, bi.item.category, bi.pharmaceuticalBillItem.purchaseRate "
+                + "ORDER BY bi.bill.toDepartment, bi.item.category";
+
+        try {
+            resultsList = (List<DepartmentCategoryWiseItems>) getBillItemFacade().findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+            if (resultsList.isEmpty()) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_WARN, "No Data", "No records found for the selected criteria."));
+                return Collections.emptyList();
+            }
+
+            return resultsList;
+        } catch (Exception e) {
+            e.printStackTrace();
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
+            return Collections.emptyList();
         }
     }
 
@@ -3746,6 +3815,14 @@ public class PharmacyController implements Serializable {
 
     public void setToSite(Institution toSite) {
         this.toSite = toSite;
+    }
+
+    public List<DepartmentCategoryWiseItems> getResultsList() {
+        return resultsList;
+    }
+
+    public void setResultsList(List<DepartmentCategoryWiseItems> resultsList) {
+        this.resultsList = resultsList;
     }
 
 }
