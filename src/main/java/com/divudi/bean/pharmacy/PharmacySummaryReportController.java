@@ -232,6 +232,7 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeReport() {
+        System.out.println("processPharmacyIncomeReport");
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
@@ -242,6 +243,18 @@ public class PharmacySummaryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_PRE);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
+        billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+        billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
+        billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
+        billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE);
+        billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
+        billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE);
 
         List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics);
         bundle = new IncomeBundle(bills);
@@ -252,7 +265,7 @@ public class PharmacySummaryReportController implements Serializable {
             if (r.getBill().getPaymentMethod() == null) {
                 continue;
             }
-            if(r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)){
+            if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
                 r.setPayments(billService.fetchBillPayments(r.getBill()));
             }
         }
