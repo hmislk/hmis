@@ -265,6 +265,8 @@ public class PharmacyReportController implements Serializable {
     private double stockTotal;
     private List<PharmacyStockRow> pharmacyStockRows;
     private double stockTottal;
+    
+    private Date dateRange;
 
     private List<PharmacyRow> rows;
 
@@ -2706,6 +2708,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setAmp(Amp amp) {
         this.amp = amp;
+    }
+
+    public Date getDateRange() {
+        return dateRange;
+    }
+
+    public void setDateRange(Date dateRange) {
+        this.dateRange = dateRange;
     }
 
 }
