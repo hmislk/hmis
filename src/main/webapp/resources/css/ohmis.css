@@ -290,6 +290,63 @@ th.align-right-header .ui-column-title {
     width: 58%;
 }
 
+.compact-datatable {
+    --content-padding: 0.0rem; /* Reduced from 1rem */
+    --inline-spacing: 0.0rem; /* Reduced from 0.5rem */
+    --border-radius: 0px; /* Reduced from 4px */
+}
+.compact-datatable .ui-datatable-data tr td {
+    margin: 0 !important;
+    padding: 2px !important;  /* Minimal padding */
+    line-height: 1.2; /* Reduce line spacing */
+}
+.compact-datatable .ui-datatable-header,
+.compact-datatable .ui-datatable-footer,
+.compact-datatable .ui-column-title,
+.compact-datatable .ui-datatable-footer .ui-datatable-footer-table,
+.compact-datatable .ui-datatable-footer .ui-datatable-footer-tablewrapper,
+.compact-datatable .ui-datatable-footer table,
+.compact-datatable .ui-datatable-footer td,
+.compact-datatable .ui-datatable-footer td.ui-state-default,
+.compact-datatable .ui-datatable-footer td:empty,
+.compact-datatable .ui-datatable-footer .ui-datatable-footer-tablewrapper table {
+    margin: 0 !important;
+    padding: 2px !important;
+    line-height: 1.1;
+}
+.compact-datatable .ui-datatable-footer td:empty {
+    display: none; /* Hide empty cells completely */
+}
+.compact-datatable .ui-datatable-footer,
+.compact-datatable tfoot.ui-widget-content,
+.compact-datatable .ui-datatable-footer td,
+.compact-datatable .ui-datatable-footer td.ui-state-default {
+    margin: 0 !important;
+    padding: 0.1rem !important;
+    line-height: 1;
+    font-size: 0.8rem;
+}
+.compact-datatable .ui-state-default {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.light-grey-background {
+    background-color: #e2e3e5; /* Slightly darker grey than before */
+    color: #343a40; /* Dark grey text, ensuring good contrast */
+}
+.light-grey-background,
+.light-grey-background .ui-column-footer,
+.light-grey-background .ui-column-header {
+    background-color: #e2e3e5; /* Slightly darker grey than before */
+    color: #343a40; /* Dark grey text, ensuring good contrast */
+}
+.compact-datatable .light-grey-background,
+.compact-datatable .ui-datatable thead th.light-grey-background,
+.compact-datatable .ui-datatable tfoot td.light-grey-background {
+    background-color: #e2e3e5; /* Slightly darker grey */
+    color: #343a40; /* Dark grey text for contrast */
+}
 
 
 @media print {
