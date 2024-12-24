@@ -1039,7 +1039,7 @@ public class ReportsController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1050,7 +1050,7 @@ public class ReportsController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -3455,13 +3455,13 @@ public class ReportsController implements Serializable {
                 Bill bill1 = row.getBill();
 
                 if (reportType != null && reportType.equalsIgnoreCase("paid")) {
-                    if (bill1.getBalance() != 0) {
+                    if ((bill1.getNetTotal()-bill1.getPaidAmount()) != 0) {
                         continue;
                     }
                 }
 
                 if (reportType != null && reportType.equalsIgnoreCase("due")) {
-                    if (bill1.getBalance() == 0) {
+                    if ((bill1.getNetTotal()-bill1.getPaidAmount()) == 0) {
                         continue;
                     }
                 }
@@ -3479,13 +3479,13 @@ public class ReportsController implements Serializable {
                 Bill bill1 = row.getBill();
 
                 if (reportType != null && reportType.equalsIgnoreCase("paid")) {
-                    if (bill1.getBalance() != 0) {
+                    if (bill1.getPatientEncounter().getFinalBill().getBalance() != 0) {
                         continue;
                     }
                 }
 
                 if (reportType != null && reportType.equalsIgnoreCase("due")) {
-                    if (bill1.getBalance() == 0) {
+                    if (bill1.getPatientEncounter().getFinalBill().getBalance() == 0) {
                         continue;
                     }
                 }
