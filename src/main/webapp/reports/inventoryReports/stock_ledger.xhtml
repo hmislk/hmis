@@ -191,12 +191,6 @@
                                 itemLabel="#{item.name}" 
                                 itemValue="#{item}" 
                                 ></p:autoComplete>
-
-
-
-
-
-
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center mt-5">
@@ -237,7 +231,7 @@
                                     target="tbl" 
                                     fileName="Stock Ledger Report" />
                             </p:commandButton>
-                            
+
                         </div>
 
 
@@ -276,15 +270,36 @@
                                     severity="#{f.pbItem.transThisIsStockIn ? 'success' : 'danger'}" 
                                     styleClass="mr-2" />
                             </p:column>
-                            <p:column headerText="Doc No." width="10em">
-                                <h:outputText value="#{f.pbItem.billItem.bill.deptId}" />
+                            <p:column headerText="Doc No" width="10em">
+                                <p:commandLink 
+                                    value="#{f.pbItem.billItem.bill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
+                                </p:commandLink>
                             </p:column>
                             <p:column headerText="Doc Date" width="5em">
                                 <h:outputText value="#{f.createdAt}" />
                             </p:column>
                             <p:column headerText="Ref Doc No." width="10em">
-                                <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.deptId}" />
-                                <h:outputText value="#{f.pbItem.billItem.bill.referenceBill.deptId}" />
+                                <p:commandLink 
+                                    value="#{f.pbItem.billItem.bill.cancelledBill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
+                                </p:commandLink>
+                                <p:commandLink 
+                                    value="#{f.pbItem.billItem.bill.referenceBill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
+                                </p:commandLink>
                             </p:column>
                             <p:column headerText="Ref Doc Date" width="5em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.createdAt}" />
@@ -335,7 +350,6 @@
                             <p:column headerText="UserName" width="5em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.creater.name}" />
                             </p:column>
-
 
                         </p:dataTable>
 
