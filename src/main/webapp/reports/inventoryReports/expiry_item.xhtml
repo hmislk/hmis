@@ -15,7 +15,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="From Date" class="m-3" >
+                                <p:outputLabel value="From Date" for="fromDate" class="m-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:calendar 
@@ -31,14 +31,17 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="To Date" class="m-3" >
+                                <p:outputLabel value="To Date" for="toDate" class="m-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value=""
-                                          inputStyleClass="w-100"
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}">
-                            </p:datePicker>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{pharmacyReportController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
                             
 <p:spacer width="20"></p:spacer>                            
 
@@ -47,9 +50,14 @@
                                 <p:outputLabel value="Date Range" class="m-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
+                            <p:selectOneMenu 
+                                id="phmDateRange"
+                                value="#{pharmacyReportController.reportType}" 
+                                required="true"  
+                                class="w-100 " >
+                                <f:selectItem itemLabel="Within 3 Months" itemValue="within3months"/>
+                                <f:selectItem itemLabel="Within 6 Months" itemValue="within6months"/>
+                                <f:selectItem itemLabel="Within 12 Months" itemValue="within12months"/>
                             </p:selectOneMenu>
 
 
