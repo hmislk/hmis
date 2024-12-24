@@ -14,7 +14,6 @@
 
             <h:form>
                 <p:panel header="Collection Center Bill Wise Detail Report" styleClass="w-100">
-
                     <p:panelGrid columns="4" styleClass="" columnClasses="col-md-2, col-md-4, col-md-2, col-md-4">
                         <h:panelGroup>
                             <h:outputText value="&#xf073;" styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
@@ -207,18 +206,30 @@
                                 style="width: 150px"
                                 ajax="false"
                                 value="Print">
-                            <p:printer target="#{reportsController.reportType eq 'Report' ? 'tblExport1' :
-                                            (reportsController.reportType eq 'SummaryWithLetter' ? 'tblExport2' : 'tblExport3')}"/>
+                            <p:printer target="#{reportsController.reportType eq 'Report' ? 'tableContainer' :
+                                                                        (reportsController.reportType eq 'SummaryWithLetter' ? 'tblExport2' : 'tblExport3')}"/>
                         </p:commandButton>
+
                         <p:commandButton
                                 class="m-2 ui-button-success"
                                 style="width: 150px"
                                 icon="fas fa-file-excel"
                                 ajax="false"
+                                action="#{reportsController.exportCollectionCenterBillWiseDetailReportToExcel()}"
+                                rendered="#{reportsController.reportType eq 'Report'}"
+                                value="Excel">
+                        </p:commandButton>
+
+                        <p:commandButton
+                                class="m-2 ui-button-success"
+                                style="width: 150px"
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                action="#{reportsController.exportCollectionCenterBillWiseDetailReportToExcel()}"
+                                rendered="#{reportsController.reportType ne 'Report'}"
                                 value="Excel">
                             <p:dataExporter type="xlsx"
-                                            target="#{reportsController.reportType eq 'Report' ? 'tblExport1' :
-                                            (reportsController.reportType eq 'SummaryWithLetter' ? 'tblExport2' : 'tblExport3')}"
+                                            target="#{reportsController.reportType eq 'SummaryWithLetter' ? 'tblExport2' : 'tblExport3'}"
                                             fileName="collection_center_bill_wise_detail_report.xlsx"/>
                         </p:commandButton>
 
@@ -227,10 +238,20 @@
                                 icon="fa-solid fa-file-pdf"
                                 style="width: 150px"
                                 ajax="false"
+                                action="#{reportsController.exportCollectionCenterBillWiseDetailReportToPDF()}"
+                                rendered="#{reportsController.reportType eq 'Report'}"
+                                value="PDF">
+                        </p:commandButton>
+
+                        <p:commandButton
+                                class="m-2 ui-button-danger"
+                                icon="fa-solid fa-file-pdf"
+                                style="width: 150px"
+                                ajax="false"
+                                rendered="#{reportsController.reportType ne 'Report'}"
                                 value="PDF">
                             <p:dataExporter type="pdf"
-                                            target="#{reportsController.reportType eq 'Report' ? 'tblExport1' :
-                                            (reportsController.reportType eq 'SummaryWithLetter' ? 'tblExport2' : 'tblExport3')}"
+                                            target="#{reportsController.reportType eq 'SummaryWithLetter' ? 'tblExport2' : 'tblExport3'}"
                                             fileName="collection_center_bill_wise_detail_report.pdf"/>
                         </p:commandButton>
 
@@ -248,99 +269,76 @@
                         </h:outputLabel>
                     </h:panelGrid>
 
-                    <p:dataTable
-                            id="tblExport1"
-                            value="#{reportsController.bundle.groupedBillItems.entrySet()}"
-                            rows="10"
-                            var="entry"
-                            rowKey="#{entry.key}"
-                            paginator="true"
-                            paginatorPosition="bottom"
-                            rendered="#{reportsController.reportType eq 'Report'}"
-                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="10,25,50">
-                        <f:facet name="header">
-                            <h:outputText value="Collection Center Bill Wise Detail Report"
-                                          style="font-size: 18px; font-weight: bold; text-align: center; display: block;"/>
-                        </f:facet>
-
-                        <p:column headerText="CC Code" width="5rem">
-                            <h:outputText value="#{entry.value[0].bill.collectingCentre.code}"
-                                          rendered="#{not empty entry.value}"/>
-                        </p:column>
-                        <p:column headerText="Leaf No." width="5rem">
-                            <h:outputText value="#{entry.value[0].bill.referenceNumber}"
-                                          rendered="#{not empty entry.value}"/>
-                        </p:column>
-                        <p:column headerText="MRN" width="5rem">
-                            <h:outputText value="#{entry.value[0].bill.patient.phn}"
-                                          rendered="#{not empty entry.value}"/>
-                        </p:column>
-                        <p:column headerText="Patient Name" width="5rem">
-                            <h:outputText value="#{entry.value[0].bill.patient.person.name}"
-                                          rendered="#{not empty entry.value}"/>
-                        </p:column>
-                        <p:column headerText="Invoice Date" width="7rem">
-                            <h:outputText value="#{entry.value[0].bill.createdAt}" rendered="#{not empty entry.value}">
-                                <f:convertDateTime
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Invoice No" width="10rem">
-                            <h:outputText value="#{entry.key}"/>
-                        </p:column>
-                        <p:column headerText="Details" width="40rem">
-                            <p:accordionPanel activeIndex="-1">
-                                <p:tab title="">
-                                    <p:dataTable value="#{entry.value}" var="bi" rowKey="#{bi.id}">
-                                        <p:column headerText="Service Name" width="5rem">
-                                            <h:outputText value="#{bi.item.name}"/>
-                                        </p:column>
-                                        <p:column headerText="Hos Fee." width="5rem">
-                                            <h:outputText value="#{bi.hospitalFee}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{entry.value[0].bill.totalHospitalFee}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column headerText="Staff fee." width="5rem">
-                                            <h:outputText value="#{bi.staffFee}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{entry.value[0].bill.totalStaffFee}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column headerText="CC fee." width="5rem">
-                                            <h:outputText value="#{bi.collectingCentreFee}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{entry.value[0].bill.totalCenterFee}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column headerText="Net Amount" width="5rem">
-                                            <h:outputText value="#{bi.netValue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{entry.value[0].bill.netTotal}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:dataTable>
-                                </p:tab>
-                            </p:accordionPanel>
-                        </p:column>
-                    </p:dataTable>
+                    <h:panelGroup id="tableContainer" layout="block" style="margin: 20px 0;"
+                                  rendered="#{reportsController.reportType eq 'Report'}">
+                        <table id="tblExport1" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                            <tr>
+                                <th colspan="7"
+                                    style="font-size: 18px; font-weight: bold; text-align: center; background-color: lightgrey;">
+                                    Collection Center Bill Wise Detail Report
+                                </th>
+                            </tr>
+                            <tr>
+                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">CC Code</th>
+                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Leaf No.</th>
+                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">MRN</th>
+                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Patient Name</th>
+                                <th style="width: 7rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Invoice Date</th>
+                                <th style="width: 10rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Invoice No</th>
+                                <th style="width: 40rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Details</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <ui:repeat value="#{reportsController.bundle.groupedBillItems.entrySet()}" var="entry">
+                                <tr style="border-bottom: 1px solid #d9d9d9;">
+                                    <td>#{entry.value[0].bill.collectingCentre.code}</td>
+                                    <td>#{entry.value[0].bill.referenceNumber}</td>
+                                    <td>#{entry.value[0].bill.patient.phn}</td>
+                                    <td>#{entry.value[0].bill.patient.person.name}</td>
+                                    <td>
+                                        #{entry.value[0].bill.createdAt}
+                                    </td>
+                                    <td>#{entry.key}</td>
+                                    <td>
+                                        <!-- Inner Table -->
+                                        <table style="width: 100%; border-collapse: collapse;">
+                                            <thead>
+                                            <tr>
+                                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Service Name</th>
+                                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Hos Fee.</th>
+                                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Staff Fee.</th>
+                                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">CC Fee.</th>
+                                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Net Amount</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <ui:repeat value="#{entry.value}" var="bi">
+                                                <tr style="border-bottom: 1px solid #d9d9d9;">
+                                                    <td>#{bi.item.name}</td>
+                                                    <td>#{bi.hospitalFee}</td>
+                                                    <td>#{bi.staffFee}</td>
+                                                    <td>#{bi.collectingCentreFee}</td>
+                                                    <td>#{bi.netValue}</td>
+                                                </tr>
+                                            </ui:repeat>
+                                            </tbody>
+                                            <tfoot>
+                                            <tr>
+                                                <td style="font-weight: bold;">Total</td>
+                                                <td>#{entry.value[0].bill.totalHospitalFee}</td>
+                                                <td>#{entry.value[0].bill.totalStaffFee}</td>
+                                                <td>#{entry.value[0].bill.totalCenterFee}</td>
+                                                <td>#{entry.value[0].bill.netTotal}</td>
+                                            </tr>
+                                            </tfoot>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                            </tbody>
+                        </table>
+                    </h:panelGroup>
 
                     <!--table 2 / report type - Summary With Letter-->
                     <p:dataTable

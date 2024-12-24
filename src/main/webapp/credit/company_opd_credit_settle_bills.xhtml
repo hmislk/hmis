@@ -190,7 +190,6 @@
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="10,15,50"
                                 >
-
                                 <p:column 
                                     width="1em"
                                     headerText="No">                                
@@ -228,8 +227,6 @@
                                         <p:badge value="Returned" styleClass="ui-badge-warning" rendered="#{bill.refunded}" />
                                     </h:panelGroup>
                                 </p:column>
-
-
                                 <p:column headerText="Net Value" styleClass="averageNumericColumn">
                                     <h:outputLabel value="#{bill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>

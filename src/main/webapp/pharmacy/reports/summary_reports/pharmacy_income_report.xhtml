@@ -171,10 +171,11 @@
                         <p:printer target="tbl" />
                     </p:commandButton>
 
-
+          
 
                     <p:dataTable
                         id="tbl"
+                        styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                         value="#{pharmacySummaryReportController.bundle.rows}" var="row"
                         paginator="true" rows="10" rowsPerPageTemplate="5,10,15,50,100,500,1000,2000,5000,10000"
                         paginatorPosition="bottom">
@@ -232,7 +233,7 @@
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Inpatient Credit" class="text-end bg-secondary text-white">
+                        <p:column headerText="Inpatient Credit" class="text-end light-grey-background">
                             <h:outputText value="#{row.inpatientCreditValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
@@ -243,7 +244,7 @@
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Outpatient Credit" class="text-end bg-secondary text-white">
+                        <p:column headerText="Outpatient Credit"  class="text-end light-grey-background">
                             <h:outputText value="#{row.opdCreditValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
@@ -254,7 +255,7 @@
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Staff Credit"   class="text-end bg-secondary text-white" >
+                        <p:column headerText="Staff Credit"   class="text-end light-grey-background" >
                             <h:outputText value="#{row.staffValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
@@ -265,7 +266,7 @@
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Agent Credit" class="text-end bg-secondary text-white" >
+                        <p:column headerText="Agent Credit" class="text-end light-grey-background" >
                             <h:outputText value="#{row.agentValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>

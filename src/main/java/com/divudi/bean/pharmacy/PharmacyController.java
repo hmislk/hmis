@@ -54,6 +54,7 @@ import com.divudi.facade.VtmFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.DepartmentCategoryWiseItems;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.CategoryWithItem;
 import com.divudi.data.dataStructure.PharmacySummery;
@@ -737,6 +738,7 @@ public class PharmacyController implements Serializable {
     private List<BillItem> billItems;
     private List<PharmacySummery> departmentSummaries;
     private List<CategoryWithItem> issueDepartmentCategoryWiseItems;
+    private List<DepartmentCategoryWiseItems> resultsList;
 
     private String transferType;
     private Institution FromSite;
@@ -910,42 +912,33 @@ public class PharmacyController implements Serializable {
     }
 
     public void createConsumptionReportTable() {
+        resetFields();
 
-        if ("byBillItem".equals(reportType)) {
+        switch (reportType) {
+            case "byBillItem":
+                generateConsumptionReportTableByBillItems(BillType.PharmacyIssue);
+                break;
 
-            bills = null;
-            departmentSummaries = null;
-            issueDepartmentCategoryWiseItems = null;
-            generateConsumptionReportTableByBillItems(BillType.PharmacyIssue);
+            case "byBill":
+                generateConsumptionReportTableByBill(BillType.PharmacyIssue);
+                break;
 
-        } else if ("byBill".equals(reportType)) {
+            case "summeryReport":
+            case "categoryWise":
+                generateConsumptionReportTableByDepartmentAndCategoryWise(BillType.PharmacyIssue);
+                break;
 
-            billItems = null;
-            departmentSummaries = null;
-            issueDepartmentCategoryWiseItems = null;
-            generateConsumptionReportTableByBill(BillType.PharmacyIssue);
-
-        } else if ("summeryReport".equals(reportType)) {
-
-            bills = null;
-            billItems = null;
-            issueDepartmentCategoryWiseItems = null;
-            generateConsumptionReportTableAsSummary(BillType.PharmacyIssue);
-
-        } else if ("categoryWise".equals(reportType)) {
-
-            bills = null;
-            billItems = null;
-            generateConsumptionReportTableByDepartmentAndCategoryWise();
-
-        } else {
-            bills = null;
-            billItems = null;
-            departmentSummaries = null;
-            generateConsumptionReportTableByDepartmentAndCategoryWise();
-
+            default:
+                throw new IllegalArgumentException("Invalid report type: " + reportType);
         }
+    }
 
+    private void resetFields() {
+        bills = null;
+        billItems = null;
+        departmentSummaries = null;
+        issueDepartmentCategoryWiseItems = null;
+        resultsList = null;
     }
 
     public void generateConsumptionReportTableByBill(BillType billType) {
@@ -993,7 +986,7 @@ public class PharmacyController implements Serializable {
         }
         totalPurchase = 0.0;
         for (Bill i : bills) {
-            totalPurchase += i.getNetTotal();
+            totalPurchase += i.getPaidAmount();
         }
 
     }
@@ -1057,6 +1050,7 @@ public class PharmacyController implements Serializable {
         }
     }
 
+    @Deprecated
     public void generateConsumptionReportTableAsSummary(BillType billType) {
         // Initialize bill types
         List<BillType> bt = new ArrayList<>();
@@ -1119,6 +1113,7 @@ public class PharmacyController implements Serializable {
         }
     }
 
+    @Deprecated
     public void generateConsumptionReportTableByDepartmentAndCategoryWise() {
         totalPurchase = 0.0;
         grantIssueQty = 0.0;
@@ -1224,6 +1219,135 @@ public class PharmacyController implements Serializable {
         for (CategoryWithItem i : issueDepartmentCategoryWiseItems) {
             totalPurchase += i.getTotal();
             grantIssueQty += i.getQty();
+        }
+    }
+
+    public List<DepartmentCategoryWiseItems> generateConsumptionReportTableByDepartmentAndCategoryWise(BillType billType) {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.DepartmentCategoryWiseItems("
+                + "bi.bill.department, "
+                + "bi.bill.toDepartment, "
+                + "bi.item, "
+                + "bi.item.category, "
+                + "SUM(bi.qty * bi.pharmaceuticalBillItem.purchaseRate), "
+                + "bi.pharmaceuticalBillItem.purchaseRate, "
+                + "SUM(bi.qty)) "
+                + "FROM BillItem bi "
+                + "WHERE bi.retired = false AND bi.bill.retired = false "
+                + "AND bi.bill.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND bi.bill.billType = :billType ";
+
+        // Mandatory parameters
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+        parameters.put("billType", billType);
+
+        // Dynamic filters
+        if (institution != null) {
+            jpql += "AND bi.bill.institution = :institution ";
+            parameters.put("institution", institution);
+        }
+
+        if (site != null) {
+            jpql += "AND bi.bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+
+        if (dept != null) {
+            jpql += "AND bi.bill.department = :department ";
+            parameters.put("department", dept);
+        }
+
+        if (category != null) {
+            jpql += "AND bi.item.category = :category ";
+            parameters.put("category", category);
+        }
+
+        if (item != null) {
+            jpql += "AND bi.item = :item ";
+            parameters.put("item", item);
+        }
+
+        if (toDepartment != null) {
+            jpql += "AND bi.bill.toDepartment = :toDepartment ";
+            parameters.put("toDepartment", toDepartment);
+        }
+
+        // Group by clause
+        jpql += "GROUP BY bi.bill.department, bi.bill.toDepartment, bi.item, bi.item.category, bi.pharmaceuticalBillItem.purchaseRate "
+                + "ORDER BY bi.bill.toDepartment, bi.item.category";
+
+        try {
+            resultsList = (List<DepartmentCategoryWiseItems>) getBillItemFacade().findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+            if (resultsList.isEmpty()) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_WARN, "No Data", "No records found for the selected criteria."));
+                return Collections.emptyList();
+            }
+
+            totalPurchase = 0.0;
+            grantIssueQty = 0.0;
+            for (DepartmentCategoryWiseItems i : resultsList) {
+                totalPurchase += i.getNetTotal();
+                grantIssueQty += i.getQty();
+            }
+            if ("summeryReport".equals(reportType)) {
+                generateConsumptionReportTableAsDepartmentSummary(resultsList);
+            }
+            return resultsList;
+        } catch (Exception e) {
+            e.printStackTrace();
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
+            return Collections.emptyList();
+        }
+    }
+
+    public void generateConsumptionReportTableAsDepartmentSummary(List<DepartmentCategoryWiseItems> list) {
+        // Initialize department summaries and reset total sales value
+        departmentSummaries = new ArrayList<>();
+        totalSaleValue = 0.0;
+
+        // Create a map to store net totals grouped by main and consumption departments
+        Map<String, Map<String, Double>> departmentTotals = new HashMap<>();
+
+        // Populate the map with department-wise data
+        for (DepartmentCategoryWiseItems item : list) {
+            String mainDepartmentName = item.getMainDepartment().getName();
+            String consumptionDepartmentName = item.getConsumptionDepartment().getName();
+            double paidAmount = item.getNetTotal();
+
+            // Initialize nested maps if necessary
+            departmentTotals.putIfAbsent(mainDepartmentName, new HashMap<>());
+            Map<String, Double> consumptionMap = departmentTotals.get(mainDepartmentName);
+
+            // Accumulate paid amounts for consumption departments
+            consumptionMap.put(consumptionDepartmentName,
+                    consumptionMap.getOrDefault(consumptionDepartmentName, 0.0) + paidAmount);
+
+            // Accumulate the total sale value for the main department
+            totalSaleValue += paidAmount;
+        }
+
+        // Build the summaries
+        for (Map.Entry<String, Map<String, Double>> mainEntry : departmentTotals.entrySet()) {
+            String mainDepartmentName = mainEntry.getKey();
+            Map<String, Double> consumptionMap = mainEntry.getValue();
+
+            // Add a header entry for the main department
+            departmentSummaries.add(new PharmacySummery(mainDepartmentName, null, 0.0)); // Main department header
+
+            // Add each consumption department's contribution
+            for (Map.Entry<String, Double> consumptionEntry : consumptionMap.entrySet()) {
+                String consumptionDepartmentName = consumptionEntry.getKey();
+                double netTotal = consumptionEntry.getValue();
+                departmentSummaries.add(new PharmacySummery(null, consumptionDepartmentName, netTotal));
+            }
+
+            // Add a total entry for the main department
+            double mainTotal = consumptionMap.values().stream().mapToDouble(Double::doubleValue).sum();
+            departmentSummaries.add(new PharmacySummery("Total", null, mainTotal));
         }
     }
 
@@ -3746,6 +3870,14 @@ public class PharmacyController implements Serializable {
 
     public void setToSite(Institution toSite) {
         this.toSite = toSite;
+    }
+
+    public List<DepartmentCategoryWiseItems> getResultsList() {
+        return resultsList;
+    }
+
+    public void setResultsList(List<DepartmentCategoryWiseItems> resultsList) {
+        this.resultsList = resultsList;
     }
 
 }
