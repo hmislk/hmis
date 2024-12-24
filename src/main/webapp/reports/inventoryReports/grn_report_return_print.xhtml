@@ -19,7 +19,7 @@
                         icon="fas fa-file-excel" 
                         ajax="false" 
                         value="Download"
-                        onclick="exportTableToExcel('tbl', 'grn_detailed_report')"
+                        onclick="exportTableToExcel('tbl', 'grn_return_report')"
                         >
                     </p:commandButton>
                     <p:commandButton 
@@ -32,44 +32,39 @@
                     <table id="tbl"  class="table table-striped">
                         <tr>
                             <th >
+                                <h:outputText value="Purchase Return No" ></h:outputText>
+                            </th>
+                            <th>
                                 <h:outputText value="GRN No" ></h:outputText>
                             </th>
                             <th>
-                                <h:outputText value="Invoice No" ></h:outputText>
+                                <h:outputText value="GRN Invoice No" ></h:outputText>
                             </th>
                             <th>
-                                <h:outputText value="Creted Date" ></h:outputText>
+                                <h:outputText value="GRN Date" ></h:outputText>
                             </th>
                             <th>
-                                <h:outputText value="Approved Date" ></h:outputText>
+                                <h:outputText value="Reference Institution" ></h:outputText>
                             </th>
                             <th>
-                                <h:outputText value="Supplier Name" ></h:outputText>
+                                <h:outputText value="Created At" ></h:outputText>
                             </th>
                             <th>
-                                <h:outputText value="Institution" ></h:outputText>
+                                <h:outputText value="Approved At" ></h:outputText>
                             </th>
                             <th>
-                                <h:outputText value="Site" ></h:outputText>
+                                <h:outputText value="Supplier" ></h:outputText>
                             </th>
                             <th>
-                                <h:outputText value="Department" ></h:outputText>
+                                <h:outputText value="Purchase Value" ></h:outputText>
                             </th>
                             <th>
-                                <h:outputText value="PO Number" ></h:outputText>
+                                <h:outputText value="Sale Value" ></h:outputText>
                             </th>
-                            <th>
-                                <h:outputText value="Purchase Value - Cash" ></h:outputText>
-                            </th>
-                            <th>
-                                <h:outputText value="Purchase Value - Credit" ></h:outputText>
-                            </th>
-                            <th>
-                                <h:outputText value="Sale Value - Cash" ></h:outputText>
-                            </th>
-                            <th>
-                                <h:outputText value="Sale Value - Credit" ></h:outputText>
-                            </th>
+
+
+
+
                             <th>
                                 <h:outputText value="Remarks" ></h:outputText>
                             </th>
@@ -101,69 +96,56 @@
                         </tr>
 
                         <ui:repeat  value="#{pharmacyController.bills}" 
-                                    var="b"  >
+                                    var="r"  >
                             <tr>
-                                <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.deptId}" ></h:outputText>
+                                <td  rowspan="#{r.billItems.size() + 1}">
+                                    <h:outputText value="#{r.deptId}" ></h:outputText>
                                 </td>
-                                <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.invoiceNumber}" ></h:outputText>
+                                <td  rowspan="#{r.billItems.size() + 1}">
+                                    <h:outputText value="#{r.referenceBill.deptId}" ></h:outputText>
                                 </td>
-                                <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.createdAt}" >
+                                <td  rowspan="#{r.billItems.size() + 1}">
+                                    <h:outputText value="#{r.referenceBill.invoiceNumber}" ></h:outputText>
+                                </td>
+                                <td  rowspan="#{r.billItems.size() + 1}">
+                                    <h:outputText value="#{r.referenceBill.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
                                 </td>
-                                <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.referenceBill.createdAt}" >
+                                <td  rowspan="#{r.billItems.size() + 1}">
+                                    <h:outputText value="#{r.referenceBill.referenceInstitution.name}" />
+                                </td>
+                                <td  rowspan="#{r.billItems.size() + 1}">
+                                    <h:outputText value="#{r.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
                                 </td>
-                                <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.fromInstitution.name}" />
+                                <td  rowspan="#{r.billItems.size() + 1}">
+                                    <h:outputText value="#{r.referenceBill.createdAt}"  >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
                                 </td>
-                                <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.institution.name}" />
+                                <td  rowspan="#{r.billItems.size() + 1}">
+                                    <h:outputText value="#{r.toInstitution.name}" />
                                 </td>
-                                <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.department.site.name}" />
-                                </td>
-                                <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.department.name}" />
-                                </td>
-                                <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.referenceBill.deptId}" ></h:outputText>
-                                </td>
-                                <td  rowspan="#{b.billItems.size() + 1}" style="text-align: right;">
-                                    <h:outputText rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}">
+                                <td  rowspan="#{r.billItems.size() + 1}"  style="text-align: right; padding-right: 20px">
+                                    <h:outputText value="#{r.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                    <h:outputText rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
                                 </td>
-                                <td  rowspan="#{b.billItems.size() + 1}" style="text-align: right;">
-                                    <h:outputText rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}">
+                                <td  rowspan="#{r.billItems.size() + 1}" style="text-align: right; padding-right: 20px">
+                                    <h:outputText value="#{r.saleValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                    <h:outputText rendered="#{b.paymentMethod!='Credit'}" value="0.00" />
+
                                 </td>
-                                <td  rowspan="#{b.billItems.size() + 1}" style="text-align: right;">
-                                    <h:outputText rendered="#{b.paymentMethod=='Cash'}" value="#{b.saleValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                    <h:outputText rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
-                                </td>
-                                <td  rowspan="#{b.billItems.size() + 1}" style="text-align: right;">
-                                    <h:outputText rendered="#{b.paymentMethod=='Credit'}" value="#{b.saleValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                    <h:outputText rendered="#{b.paymentMethod!='Credit'}" value="0.00" />
-                                </td>
-                                <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.comments}" ></h:outputText>
+
+                                <td  rowspan="#{r.billItems.size() + 1}">
+                                    <h:outputText value="#{r.comments}" ></h:outputText>
                                 </td>
                             </tr>
 
-                            <ui:repeat value="#{b.billItems}" var="bi" >
+                            <ui:repeat value="#{r.billItems}" var="bi" >
                                 <tr>
 
 
@@ -201,61 +183,32 @@
 
                         <tr>
                             <td style="text-align: left;   font-weight: bold;">
-                                <h:outputText value="Net Purchase Value" />
-                                
+                                <h:outputText value="Totals" />
+
                             </td>
-                            <td style="text-align: left;  font-weight: bold;">
-                                <h:outputText value="#{pharmacyController.totalPurchase}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                
-                            </td>
+
                             <td colspan="7">
                             </td>
                             <td  style="text-align: left;  font-weight: bold;">
-                                <h:outputText value="#{pharmacyController.totalCashPurchaseValue}">
+                                <h:outputText value="#{pharmacyController.totalPurchase}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>
                             <td style="text-align: left;  font-weight: bold;">
-                                <h:outputText value="#{pharmacyController.totalCreditPurchaseValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </td>
-                            <td  style="text-align: left;  font-weight: bold;">
-                                <h:outputText value="#{pharmacyController.totalCashSaleValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </td>
-                            <td colspan="2" style="text-align: left; font-weight: bold;">
-                                <h:outputText value="#{pharmacyController.totalCreditSaleValue}">
+                                <h:outputText value="#{pharmacyController.totalSaleValue}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>
                         </tr>
 
-                        <tr>
-                            <td style="text-align: left;   font-weight: bold;">
-                                
-                                <h:outputText value="Net Sale Value" />
-                            </td>
-                            <td style="text-align: left;  font-weight: bold;">
-                                
-                                <h:outputText value="#{pharmacyController.totalSaleValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </td>
-                            <td colspan="12">
-                            </td>
-                           
-                        </tr>
+
                     </table>
 
 
                     <script>
                         function exportTableToExcel(tableID, filename) {
                             if (!filename || filename.trim() === "") {
-                                filename = 'grn_detailed_report.xlsx';
+                                filename = 'grn_return_report.xlsx';
                             }
                             if (!filename.endsWith('.xlsx')) {
                                 filename += '.xlsx';
