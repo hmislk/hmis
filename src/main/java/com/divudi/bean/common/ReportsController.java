@@ -345,7 +345,6 @@ public class ReportsController implements Serializable {
         this.dischargedStatus = dischargedStatus;
     }
 
-
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
     }
@@ -1651,7 +1650,6 @@ public class ReportsController implements Serializable {
     private ReportTemplateRowBundle generateSampleCarrierBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(pi) "
                 + "FROM PatientInvestigation pi "
                 + "JOIN pi.billItem billItem "
@@ -1659,7 +1657,6 @@ public class ReportsController implements Serializable {
                 + "WHERE pi.retired=false "
                 + " and billItem.retired=false "
                 + " and bill.retired=false ";
-
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
@@ -2616,7 +2613,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-                                                                    boolean onlyDueBills) {
+            boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -3139,7 +3136,6 @@ public class ReportsController implements Serializable {
 //                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
 //                + "WHERE bill.billTypeAtomic IN :bts "
 //                + "AND bill.createdAt BETWEEN :fd AND :td ";
-
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
                 + "FROM PatientInvestigation pi "
                 + "JOIN pi.billItem billItem "
@@ -3339,11 +3335,13 @@ public class ReportsController implements Serializable {
         bundle = new ReportTemplateRowBundle();
 
         if (visitType.equalsIgnoreCase("IP")) {
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+//            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+//            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+//            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
         } else if (visitType.equalsIgnoreCase("OP")) {
             opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -3492,12 +3490,12 @@ public class ReportsController implements Serializable {
                     }
                 }
 
-                if (billMap.containsKey(bill1.getPatientEncounter().getFinalBill().getCreditCompany())) {
-                    billMap.get(bill1.getPatientEncounter().getFinalBill().getCreditCompany()).add(bill1);
+                if (billMap.containsKey(bill1.getCreditCompany())) {
+                    billMap.get(bill1.getCreditCompany()).add(bill1);
                 } else {
                     List<Bill> bills = new ArrayList<>();
                     bills.add(bill1);
-                    billMap.put(bill1.getPatientEncounter().getFinalBill().getCreditCompany(), bills);
+                    billMap.put(bill1.getCreditCompany(), bills);
                 }
             }
         }
@@ -3524,7 +3522,6 @@ public class ReportsController implements Serializable {
 
         return discount;
     }
-
 
     public Double calculateSubTotal() {
         double subTotal = 0.0;
@@ -3643,7 +3640,7 @@ public class ReportsController implements Serializable {
 
         return sponsorShareNetTotal;
     }
-    
+
     public Double calculateNetAmountSubTotalByBills(List<Bill> bills) {
         Double netTotal = 0.0;
 
@@ -3663,7 +3660,6 @@ public class ReportsController implements Serializable {
 
         return discount;
     }
-
 
     public Double calculateNetAmountNetTotal() {
         double netAmountNetTotal = 0.0;
@@ -4015,8 +4011,7 @@ public class ReportsController implements Serializable {
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=Collection_Center_Report.xlsx");
 
-        try (XSSFWorkbook workbook = new XSSFWorkbook();
-             OutputStream out = response.getOutputStream()) {
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
 
             XSSFSheet sheet = workbook.createSheet("Report");
             int rowIndex = 0;
