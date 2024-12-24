@@ -24,10 +24,10 @@
                                 id="fromDate" 
                                 value="#{pharmacyReportController.fromDate}" 
                                 navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                pattern="#{sessionController.applicationPreference.longDateFormat}" 
                                 />
 
-<p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
@@ -40,24 +40,27 @@
                                 id="toDate" 
                                 value="#{pharmacyReportController.toDate}" 
                                 navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                pattern="#{sessionController.applicationPreference.longDateFormat}" 
                                 />
-                            
-<p:spacer width="20"></p:spacer>                            
+
+                            <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Date Range" for="phmDateRange" class="m-3" >
-                                </p:outputLabel>
+                                <p:outputLabel value="Date Range" for="phmDateRange" class="m-3" />
                             </h:panelGroup>
                             <p:selectOneMenu 
-                                id="phmDateRange"
-                                value="#{pharmacyReportController.dateRange}" 
-                                class="w-100 " >
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItem itemLabel="Within 3 Months" itemValue="within3months"/>
-                                <f:selectItem itemLabel="Within 6 Months" itemValue="within6months"/>
-                                <f:selectItem itemLabel="Within 12 Months" itemValue="within12months"/>
+                                id="phmDateRange" 
+                                styleClass="w-100"
+                                value="#{pharmacyReportController.dateRange}">
+                                <f:selectItem itemLabel="Select" itemValue="" />
+                                <f:selectItem itemLabel="Within 3 Months" itemValue="within3months" />
+                                <f:selectItem itemLabel="Within 6 Months" itemValue="within6months" />
+                                <f:selectItem itemLabel="Within 12 Months" itemValue="within12months" />
+                                <p:ajax 
+                                    event="change" 
+                                    listener="#{pharmacyReportController.updateDateRange}" 
+                                    update="fromDate toDate" />
                             </p:selectOneMenu>
 
 
@@ -74,7 +77,11 @@
                                 value="#{pharmacyReportController.institution}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions" />
-                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <f:selectItems 
+                                    value="#{institutionController.companies}" 
+                                    var="ins" 
+                                    itemLabel="#{ins.name}" 
+                                    itemValue="#{ins}" />
                                 <p:ajax process="phmIns" update="phmDept" />
                             </p:selectOneMenu>
 
@@ -169,8 +176,29 @@
                                 </p:selectOneMenu>
 
                             </h:panelGroup>
-                            
-                            
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-tags mr-2" />
+                                <p:outputLabel value="Item Category" for="phmCategory" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                id="phmCategory"
+                                value="#{pharmacyReportController.category}" 
+                                filter="true" 
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All Categories" ></f:selectItem>
+                                <f:selectItems 
+                                    value="#{pharmaceuticalItemCategoryController.items}" 
+                                    var="category" 
+                                    itemLabel="#{category.name}" 
+                                    itemValue="#{category}" />
+                                <p:ajax process="phmCategory" update="phmItem" />
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-box mr-2" />
@@ -190,17 +218,6 @@
                                 itemValue="#{item}" 
                                 ></p:autoComplete>
 
-<p:spacer width="20"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-pills mr-2" />
-                                <p:outputLabel value="Drug Form" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
 
 
 
@@ -313,7 +330,7 @@
                 </h:form>
 
             </ui:define>
-            
+
         </ui:composition>
 
     </h:body>

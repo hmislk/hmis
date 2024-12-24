@@ -72,6 +72,8 @@ import java.io.IOException;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -265,8 +267,8 @@ public class PharmacyReportController implements Serializable {
     private double stockTotal;
     private List<PharmacyStockRow> pharmacyStockRows;
     private double stockTottal;
-    
-    private Date dateRange;
+
+    private String dateRange;
 
     private List<PharmacyRow> rows;
 
@@ -2134,6 +2136,34 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    //method for update dates when select date range
+    public void updateDateRange() {
+        //System.out.println("Date Range Selected: " + dateRange);
+        LocalDate today = LocalDate.now();
+
+        switch (dateRange) {
+            case "within3months":
+                fromDate = convertToDate(today.minusMonths(3));
+                toDate = convertToDate(today);
+                break;
+            case "within6months":
+                fromDate = convertToDate(today.minusMonths(6));
+                toDate = convertToDate(today);
+                break;
+            case "within12months":
+                fromDate = convertToDate(today.minusMonths(12));
+                toDate = convertToDate(today);
+                break;
+        }
+       // System.out.println("Updated From Date: " + fromDate);
+       // System.out.println("Updated To Date: " + toDate);
+    }
+
+    // Utility to convert LocalDate to Date
+    private Date convertToDate(LocalDate localDate) {
+        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
     public void processLabTestWiseCountReport() {
         String jpql = "select new com.divudi.data.TestWiseCountReport("
                 + "bi.item.name, "
@@ -2710,11 +2740,11 @@ public class PharmacyReportController implements Serializable {
         this.amp = amp;
     }
 
-    public Date getDateRange() {
+    public String getDateRange() {
         return dateRange;
     }
 
-    public void setDateRange(Date dateRange) {
+    public void setDateRange(String dateRange) {
         this.dateRange = dateRange;
     }
 
