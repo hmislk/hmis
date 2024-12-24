@@ -61,6 +61,7 @@ import com.divudi.data.dataStructure.PharmacySummery;
 import com.divudi.data.table.String1Value1;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.pharmacy.PharmaceuticalItemLight;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -111,6 +112,8 @@ public class PharmacyController implements Serializable {
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
+    @EJB
+    BillService billService;
     @EJB
     ItemFacade itemFacade;
     @EJB
@@ -794,55 +797,77 @@ public class PharmacyController implements Serializable {
         totalCashPurchaseValue = 0.0;
         totalPurchase = 0.0;
 
-        billItems = new ArrayList<>();
-
-        String sql = "SELECT b FROM BillItem b WHERE b.bill.retired = false"
-                + " and b.bill.billType In :btp"
-                + " and b.bill.createdAt between :fromDate and :toDate";
-
-        Map<String, Object> tmp = new HashMap<>();
-
-        tmp.put("btp", bt);
-        tmp.put("fromDate", getFromDate());
-        tmp.put("toDate", getToDate());
-
-        if (institution != null) {
-            sql += " and b.bill.institution = :fIns";
-            tmp.put("fIns", institution);
-        }
-
-        if (site != null) {
-            sql += " and b.bill.department.site = :site";
-            tmp.put("site", site);
-        }
-
-        if (dept != null) {
-            sql += " and b.bill.department = :dept";
-            tmp.put("dept", dept);
-        }
-
-        if (paymentMethod != null) {
-            sql += " and b.bill.paymentMethod = :pm";
-            tmp.put("pm", paymentMethod);
-        }
-
-        if (fromInstitution != null) {
-            sql += " AND b.bill.fromInstitution = :supplier";
-            tmp.put("supplier", fromInstitution);
-        }
-
-        sql += " order by b.bill.id desc";
-
-        try {
-            billItems = getBillItemFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, " Something Went Worng!");
-        }
+//        billItems = new ArrayList<>();
+//
+//        String sql = "SELECT b FROM BillItem b WHERE b.bill.retired = false"
+//                + " and b.bill.billType In :btp"
+//                + " and b.bill.createdAt between :fromDate and :toDate";
+//
+//        Map<String, Object> tmp = new HashMap<>();
+//
+//        tmp.put("btp", bt);
+//        tmp.put("fromDate", getFromDate());
+//        tmp.put("toDate", getToDate());
+//
+//        if (institution != null) {
+//            sql += " and b.bill.institution = :fIns";
+//            tmp.put("fIns", institution);
+//        }
+//
+//        if (site != null) {
+//            sql += " and b.bill.department.site = :site";
+//            tmp.put("site", site);
+//        }
+//
+//        if (dept != null) {
+//            sql += " and b.bill.department = :dept";
+//            tmp.put("dept", dept);
+//        }
+//
+//        if (paymentMethod != null) {
+//            sql += " and b.bill.paymentMethod = :pm";
+//            tmp.put("pm", paymentMethod);
+//        }
+//
+//        if (fromInstitution != null) {
+//            sql += " AND b.bill.fromInstitution = :supplier";
+//            tmp.put("supplier", fromInstitution);
+//        }
+//
+//        sql += " order by b.bill.id desc";
+//
+//        try {
+//            billItems = getBillItemFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+//
+//        } catch (Exception e) {
+//            JsfUtil.addErrorMessage(e, " Something Went Worng!");
+//        }
 //        calculateTotals(bills);
 //        calculateTotalsForBillItems(billItems);
     }
 
+    public String navigateToPrinteGeneratedGrnDetailedRportTable() {
+        if(bills==null){
+            JsfUtil.addErrorMessage("No Bills");
+            return null;
+        }
+        if(bills.isEmpty()){
+            JsfUtil.addErrorMessage("Bill List Empty");
+            return null;
+        }
+        for(Bill b:bills){
+            if(b.getBillItems()==null || b.getBillItems().isEmpty()){
+               b.setBillItems(billService.fetchBillItems(b));
+            }
+        }
+        return "/reports/inventoryReports/grn_report_detail_print?faces-redirect=true";
+    }
+
+    public String navigateBackToGeneratedGrnDetailedRportTable() {
+        return "/reports/inventoryReports/grn_report?faces-redirect=true";
+    }
+
+    
     public void generateGRNReportTable() {
         bills = null;
         totalCreditPurchaseValue = 0.0;

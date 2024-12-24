@@ -89,6 +89,7 @@ import com.divudi.data.SymanticType;
 import com.divudi.data.dataStructure.PharmacyImportCol;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Doctor;
+import com.divudi.entity.Person;
 import com.divudi.entity.inward.InwardService;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
@@ -292,6 +293,7 @@ public class DataUploadController implements Serializable {
 
     private List<Doctor> doctorsTosave;
     private List<Staff> staffToSave;
+    private List<Person> personsToSave;
 
     private boolean pollActive;
     private boolean uploadComplete;
@@ -343,6 +345,11 @@ public class DataUploadController implements Serializable {
     public String navigateToDepartmentUpload() {
         uploadComplete = false;
         return "/admin/institutions/department_upload?faces-redirect=true";
+    }
+    
+    public String navigateToUploadMembers() {
+        uploadComplete = false;
+        return "/membership/upload_members?faces-redirect=true";
     }
 
     public String navigateToSupplierUpload() {
@@ -1480,6 +1487,19 @@ public class DataUploadController implements Serializable {
         }
         pollActive = false;
     }
+    
+    public void uploadMembers() {
+        pollActive = true;
+        items = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                personsToSave = readMembersFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        pollActive = false;
+    }
 
     public void uploadFeeListItemFees() {
         itemFees = new ArrayList<>();
@@ -2211,6 +2231,39 @@ public class DataUploadController implements Serializable {
         }
 
         return stf;
+    }
+    
+    
+    public List<Person> readMembersFromExcel(InputStream inputStream) throws IOException {
+        List<Person> persons = new ArrayList<>();
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        
+        String name="";
+        String phoneNumber1="";
+        Long phoneNumber; //convert string phone Number to Long
+        
+        Person p = new Person();
+        p.setName(name);
+        p.setPhone(phoneNumber1);
+        p.setMobile(name);
+        
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            Person person = new Person();
+            person.setName(name);
+            persons.add(person);
+        }
+
+        return persons;
     }
 
     public void saveConsultants() {
