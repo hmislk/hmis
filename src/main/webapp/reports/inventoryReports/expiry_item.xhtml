@@ -11,7 +11,7 @@
                 <h:form >
                     <p:panel header="Expiry Item Report" >
 
-                        <p:panelGrid columns="6" class="w-100">
+                        <h:panelGrid columns="8" class="w-100">
 
                             <h:panelGroup layout="block" styleClass="form-group" class="my-1">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" />
@@ -36,6 +36,17 @@
                                           class="w-100"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}">
                             </p:datePicker>
+                            
+                            
+                            <h:panelGroup layout="block" styleClass="form-group" class="my-1">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="Date Range" class="mx-2" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
 
 
 
@@ -110,7 +121,7 @@
 
 
 
-                        </p:panelGrid>
+                        </h:panelGrid>
 
                         <div class="d-flex align-items-center">
                             <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" >
