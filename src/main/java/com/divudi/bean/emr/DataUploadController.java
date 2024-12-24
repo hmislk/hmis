@@ -2260,20 +2260,20 @@ public class DataUploadController implements Serializable {
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
 
-            String membershipName = row.getCell(1).getStringCellValue();
-            Long membershipNumberLong = getNumericCellAsLong(row.getCell(4));
-            Long phoneNumberLong = getNumericCellAsLong(row.getCell(5));
+            
             String name = row.getCell(1).getStringCellValue();
-            String address = row.getCell(7).getStringCellValue();
             String titleString = row.getCell(2).getStringCellValue();
             String sexString = row.getCell(3).getStringCellValue();
+            Long membershipNumberLong = getNumericCellAsLong(row.getCell(4));
+            Long phoneNumberLong = getNumericCellAsLong(row.getCell(5));
             String nicNumber = getStringOrNumericCellValue(row.getCell(6));
+            String address = row.getCell(7).getStringCellValue();
+            String membershipName = row.getCell(8).getStringCellValue();
             String relationName = row.getCell(9).getStringCellValue();
-
             Integer ageInt = row.getCell(10) != null ? (int) row.getCell(10).getNumericCellValue() : null;
 
             MembershipScheme ms = membershipSchemeController.fetchMembershipByName(membershipName);
-            Family family = patientController.fetchFamilyFromMembershipNumber(phoneNumberLong, ms);
+            Family family = patientController.fetchFamilyFromMembershipNumber(membershipNumberLong, ms);
             Relation relation = relationController.fetchRelationByName(relationName);
             Title title = Title.getTitleEnum(titleString);
             Sex sex = Sex.getByLabelOrShortLabel(sexString);
@@ -2297,6 +2297,7 @@ public class DataUploadController implements Serializable {
             FamilyMember fm = new FamilyMember();
             fm.setFamily(family);
             fm.setPatient(pt);
+            fm.setRelationToChh(relation);
             familyMemberFacade.create(fm);
 
             family.getFamilyMembers().add(fm);
