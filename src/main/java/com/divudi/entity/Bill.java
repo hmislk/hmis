@@ -409,6 +409,9 @@ public class Bill implements Serializable {
     private PharmacyBill pharmacyBill;
 
     private String externalDoctor;
+    
+    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER, optional = true,orphanRemoval = true)
+    private StockBill stockBill;
 
     public Bill() {
         if (status == null) {
@@ -2517,4 +2520,17 @@ public class Bill implements Serializable {
     public void setExternalDoctor(String externalDoctor) {
         this.externalDoctor = externalDoctor;
     }
+
+    public StockBill getStockBill() {
+        if(stockBill==null){
+            stockBill=new StockBill();
+        }
+        return stockBill;
+    }
+
+    public void setStockBill(StockBill stockBill) {
+        this.stockBill = stockBill;
+    }
+    
+    
 }
