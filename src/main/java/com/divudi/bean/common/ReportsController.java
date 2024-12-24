@@ -402,6 +402,7 @@ public class ReportsController implements Serializable {
         this.selectedDateType = selectedDateType;
     }
 
+
     public Investigation getInvestigation() {
         return investigation;
     }
