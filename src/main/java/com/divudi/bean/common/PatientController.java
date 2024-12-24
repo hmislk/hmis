@@ -2142,6 +2142,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageFamilyMembership() {
+        familyMembers = fetchFamilyMembers(currentFamily);
         return "/membership/family_membership_manage?faces-redirect=true";
     }
 
@@ -2187,16 +2188,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
     }
 
-    public Family fetchFamilyFromMembershipNumber(String paramMembershipNumber, MembershipScheme paramMembershipScheme) {
+    public Family fetchFamilyFromMembershipNumber(String paramMembershipNumber, MembershipScheme paramMembershipScheme, String phoneNumber) {
         if (paramMembershipNumber == null) {
             return null;
         }
         String membershipNumberWithDigitsOnly = CommonFunctions.getDigitsOnlyByRemovingWhitespacesAndNonDigitCharacters(paramMembershipNumber);
         Long membershipNumberLong = CommonFunctions.convertStringToLong(membershipNumberWithDigitsOnly);
-        return fetchFamilyFromMembershipNumber(membershipNumberLong, paramMembershipScheme);
+        return fetchFamilyFromMembershipNumber(membershipNumberLong, paramMembershipScheme, phoneNumber);
     }
 
-    public Family fetchFamilyFromMembershipNumber(Long membershipNumber, MembershipScheme paramMembershipScheme) {
+    public Family fetchFamilyFromMembershipNumber(Long membershipNumber, MembershipScheme paramMembershipScheme, String phoneNumber) {
         if (membershipNumber == null) {
             return null;
         }
@@ -2212,9 +2213,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
             fm.setCreatedDepartment(sessionController.getDepartment());
             fm.setCreatedInstitution(sessionController.getInstitution());
             fm.setCreater(sessionController.getLoggedUser());
+            fm.setPhoneNo(phoneNumber);
             familyFacade.create(fm);
-        }else{
+        } else {
             fm.setMembershipScheme(paramMembershipScheme);
+            fm.setPhoneNo(phoneNumber);
             familyFacade.edit(fm);
         }
         return fm;
@@ -3736,6 +3739,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setFamilyMember(FamilyMember familyMember) {
         this.familyMember = familyMember;
+    }
+
+    public List<FamilyMember> fetchFamilyMembers(Family family) {
+        String jpql = "select fm"
+                + " from FamilyMember fm"
+                + " where fm.retired=:ret "
+                + " and fm.family=:family";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("family", family);
+        return familyMemberFacade.findByJpql(jpql, params);
     }
 
     public List<FamilyMember> getFamilyMembers() {

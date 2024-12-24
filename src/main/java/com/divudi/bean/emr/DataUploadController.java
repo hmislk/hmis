@@ -2273,7 +2273,7 @@ public class DataUploadController implements Serializable {
             Integer ageInt = row.getCell(10) != null ? (int) row.getCell(10).getNumericCellValue() : null;
 
             MembershipScheme ms = membershipSchemeController.fetchMembershipByName(membershipName);
-            Family family = patientController.fetchFamilyFromMembershipNumber(membershipNumberLong, ms);
+            Family family = patientController.fetchFamilyFromMembershipNumber(membershipNumberLong, ms, phoneNumberLong.toString());
             Relation relation = relationController.fetchRelationByName(relationName);
             Title title = Title.getTitleEnum(titleString);
             Sex sex = Sex.getByLabelOrShortLabel(sexString);
