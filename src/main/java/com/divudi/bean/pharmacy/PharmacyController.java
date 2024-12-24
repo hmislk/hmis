@@ -862,10 +862,26 @@ public class PharmacyController implements Serializable {
         }
         return "/reports/inventoryReports/grn_report_detail_print?faces-redirect=true";
     }
+    public String navigateToPrinteGeneratedGrnReturnReportTable() {
+        if(bills==null){
+            JsfUtil.addErrorMessage("No Bills");
+            return null;
+        }
+        if(bills.isEmpty()){
+            JsfUtil.addErrorMessage("Bill List Empty");
+            return null;
+        }
+        for(Bill b:bills){
+            if(b.getBillItems()==null || b.getBillItems().isEmpty()){
+               b.setBillItems(billService.fetchBillItems(b));
+            }
+        }
+        return "/reports/inventoryReports/grn_report_return_print?faces-redirect=true";
+    }
 
     public String navigateBackToGeneratedGrnDetailedRportTable() {
         return "/reports/inventoryReports/grn_report?faces-redirect=true";
-    }
+    }    
 
     
     public void generateGRNReportTable() {

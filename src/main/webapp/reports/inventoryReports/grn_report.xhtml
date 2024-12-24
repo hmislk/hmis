@@ -160,12 +160,22 @@
                             </p:commandButton>
 
 
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'detailReport'}">
-                                <p:dataExporter type="xlsx" target="tbl1" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'returnReport'}">
-                                <p:dataExporter type="xlsx" target="tbl2" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
-                            </p:commandButton>
+                            <p:commandButton 
+                                class="ui-button-success mx-1" 
+                                icon="fas fa-file-excel"
+                                ajax="false" 
+                                value="Export to Excel"
+                                action="#{pharmacyController.navigateToPrinteGeneratedGrnDetailedRportTable()}"
+                                rendered="#{pharmacyController.reportType eq 'detailReport'}"></p:commandButton>
+                            
+                                <p:commandButton 
+                                class="ui-button-success mx-1" 
+                                icon="fas fa-file-excel"
+                                ajax="false" 
+                                value="Export to Excel"
+                                action="#{pharmacyController.navigateToPrinteGeneratedGrnReturnReportTable()}"
+                                rendered="#{pharmacyController.reportType eq 'returnReport'}"></p:commandButton>
+                                
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
                                 <p:dataExporter type="xlsx" target="tbl3" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
                             </p:commandButton>
@@ -190,12 +200,7 @@
                         <h:panelGroup class="m-5" rendered="#{pharmacyController.reportType eq 'detailReport'}">
                             <h5>GRN Report</h5>
 
-                            <p:commandButton 
-                                ajax="false" 
-                                value="To Print" 
-                                action="#{pharmacyController.navigateToPrinteGeneratedGrnDetailedRportTable()}"
-                                ></p:commandButton>
-
+                            
                             <p:dataTable id="tbl1" value="#{pharmacyController.bills}" 
                                          var="b" 
                                          rowKey="#{b.id}"
@@ -442,7 +447,7 @@
                                 <p:column headerText="Purchase Details" width="50em"  style="text-align: center; padding-left: 50px;">
 
 
-                                    <p:dataTable id="billItemsTable" value="#{pharmacyController.billItems}" var="bi">
+                                    <p:dataTable id="billItemsTable" value="#{r.billItems}" var="bi">
                                         <p:columnGroup type="header" >
                                             <p:row  style="text-align: right;">
                                                 <p:column headerText="Item Name" />
