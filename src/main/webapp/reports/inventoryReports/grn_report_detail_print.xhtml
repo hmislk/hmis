@@ -15,18 +15,17 @@
 
 
                     <p:commandButton 
-                        class="ui-button- mx-1" 
-                        icon="fas fa-print" 
+                        class="ui-button-success m-1" 
+                        icon="fas fa-file-excel" 
                         ajax="false" 
-                        value="Excel"
+                        value="Download"
                         onclick="exportTableToExcel('tbl', 'tableData')"
                         >
                     </p:commandButton>
                     <p:commandButton 
                         ajax="false" 
                         value="Back" 
-                        action="#{pharmacyController.navigateBackToGeneratedGrnDetailedRportTable()}"
-                        >
+                        action="#{pharmacyController.navigateBackToGeneratedGrnDetailedRportTable()}">
                     </p:commandButton>
 
 
