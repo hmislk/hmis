@@ -96,7 +96,7 @@ public class RelationController implements Serializable {
             relation.setName(relationName);
             relation.setCreatedAt(new Date());
             relation.setCreater(sessionController.getLoggedUser());
-            getFacade().edit(relation);
+            getFacade().create(relation);
         }
         return relation;
     }
