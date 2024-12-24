@@ -47,6 +47,8 @@
                                                 inputStyleClass="w-100"
                                                 forceSelection="true"
                                                 id="acStock" 
+                                                maxResults="10"
+                                                minQueryLength="3"
                                                 value="#{pharmacyIssueController.stock}"
                                                 completeMethod="#{stockController.completeAvailableStocks}" 
                                                 var="i" 
@@ -146,7 +148,7 @@
                                                 value="Add" 
                                                 action="#{pharmacyIssueController.addBillItem}"
                                                 process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" 
-                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty txtVal acStock focusItem tabI" >
+                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty txtVal acStock focusItem" >
                                             </p:commandButton>
 
                                             <p:defaultCommand  target="btnAdd" />  
@@ -222,38 +224,7 @@
 
                                     </p:dataTable>
                                 </p:panel>
-                                <h:panelGroup id="tabI" class="w-100 my-1" >
-                                    <h:panelGrid columns="2" class="w-100">
-                                        <p:panel header="Not Available" >
-                                            <f:facet name="header">
-                                                <h:outputText styleClass="fas fa-times-circle"/>
-                                                <h:outputText class="mx-4" value="Not Available" />
-                                            </f:facet>
-                                            <p:selectOneListbox
-                                                id="lstSelectItems" 
-                                                scrollHeight="400" 
-                                                filter="true"
-                                                style=" min-width: 300px; min-height: 200px;" 
-                                                value="#{pharmacyIssueController.selectedAlternative}"  >
-                                                <f:selectItems  value="#{pharmacyIssueController.itemsWithoutStocks}" var="si" itemLabel="#{si.name}" itemValue="#{si}" ></f:selectItems>
-                                                <p:ajax event="change" process="lstSelectItems" update="lstReplaceableBatch" listener="#{pharmacyIssueController.selectReplaceableStocks}" ></p:ajax>
-                                            </p:selectOneListbox>
-                                        </p:panel>
-                                        <p:panel header="Available" >
-                                            <f:facet name="header">
-                                                <h:outputText styleClass="fas fa-check-circle"/>
-                                                <h:outputText class="mx-4" value="Available" />
-                                            </f:facet>
-                                            <p:selectOneListbox 
-                                                filter="true"
-                                                id="lstReplaceableBatch" 
-                                                scrollHeight="400" 
-                                                style="min-width: 300px; min-height: 200px;">
-                                                <f:selectItems  value="#{pharmacyIssueController.replaceableStocks}" var="rs" itemLabel="#{rs.itemBatch.item.name}" itemValue="#{rs}" ></f:selectItems>
-                                            </p:selectOneListbox>
-                                        </p:panel>
-                                    </h:panelGrid>
-                                </h:panelGroup>
+                               
 
 
                             </div>
