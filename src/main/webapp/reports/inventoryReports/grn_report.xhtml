@@ -177,18 +177,18 @@
                                 rendered="#{pharmacyController.reportType eq 'returnReport'}"></p:commandButton>
                                 
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
-                                <p:dataExporter type="xlsx" target="tbl3" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
+                                <p:dataExporter type="xlsx" target="tbl3" fileName="grn_summery_report" />
                             </p:commandButton>
 
 
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'detailReport'}">
-                                <p:dataExporter type="pdf" target="tbl1" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
+                                <p:dataExporter type="pdf" target="tbl1" fileName="grn_detailed_report" />
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'returnReport'}">
-                                <p:dataExporter type="pdf" target="tbl2" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
+                                <p:dataExporter type="pdf" target="tbl2" fileName="grn_return_report" />
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
-                                <p:dataExporter type="pdf" target="tbl3" fileName="#{pharmacyController.generateFileNameForReport('GRN')}" />
+                                <p:dataExporter type="pdf" target="tbl3" fileName="grn_summery_report" />
                             </p:commandButton>
 
 
