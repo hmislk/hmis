@@ -2187,6 +2187,39 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
     }
 
+    public Family fetchFamilyFromMembershipNumber(String paramMembershipNumber, MembershipScheme paramMembershipScheme) {
+        if (paramMembershipNumber == null) {
+            return null;
+        }
+        String membershipNumberWithDigitsOnly = CommonFunctions.getDigitsOnlyByRemovingWhitespacesAndNonDigitCharacters(paramMembershipNumber);
+        Long membershipNumberLong = CommonFunctions.convertStringToLong(membershipNumberWithDigitsOnly);
+        return fetchFamilyFromMembershipNumber(membershipNumberLong, paramMembershipScheme);
+    }
+
+    public Family fetchFamilyFromMembershipNumber(Long membershipNumber, MembershipScheme paramMembershipScheme) {
+        if (membershipNumber == null) {
+            return null;
+        }
+        String jpql = "Select f from Family f where f.retired=false and f.membershipCardNo = :mcn";
+        Map<String, Object> params = new HashMap<>();
+        params.put("mcn", membershipNumber);
+        Family fm = getFamilyFacade().findFirstByJpql(jpql, params);
+        if (fm == null) {
+            fm = new Family();
+            fm.setMembershipCardNo(membershipNumber);
+            fm.setMembershipScheme(paramMembershipScheme);
+            fm.setCreatedAt(new Date());
+            fm.setCreatedDepartment(sessionController.getDepartment());
+            fm.setCreatedInstitution(sessionController.getInstitution());
+            fm.setCreater(sessionController.getLoggedUser());
+            familyFacade.create(fm);
+        }else{
+            fm.setMembershipScheme(paramMembershipScheme);
+            familyFacade.edit(fm);
+        }
+        return fm;
+    }
+
     public String searchFamilyMember() {
         familyMembers = null;
         String j = "Select fm "
