@@ -185,8 +185,16 @@
                         </div>
 
 
+
+
                         <h:panelGroup class="m-5" rendered="#{pharmacyController.reportType eq 'detailReport'}">
                             <h5>GRN Report</h5>
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="To Print" 
+                                action="#{pharmacyController.navigateToPrinteGeneratedGrnDetailedRportTable()}"
+                                ></p:commandButton>
 
                             <p:dataTable id="tbl1" value="#{pharmacyController.bills}" 
                                          var="b" 
@@ -430,6 +438,8 @@
 
 
                                 <p:column headerText="Purchase Details" width="50em"  style="text-align: center; padding-left: 50px;">
+
+
                                     <p:dataTable id="billItemsTable" value="#{pharmacyController.billItems}" var="bi">
                                         <p:columnGroup type="header" >
                                             <p:row  style="text-align: right;">
