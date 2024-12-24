@@ -75,29 +75,29 @@
                                 <h:outputText value="Remarks" ></h:outputText>
                             </th>
                             <th  style="text-align: left;">
-                                <h:outputLabel value="Item Name" />
+                                <h:outputText value="Item Name" />
                             </th>
                             <th  style="text-align: left;">
-                                <h:outputLabel value="Qty" />
+                                <h:outputText value="Qty" />
                             </th>
                             <th  style="text-align: left;">
-                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.freeQty}" />
+                                <h:outputText value="#{bi.pharmaceuticalBillItem.freeQty}" />
                             </th>
                             <th  style="text-align: left;">
-                                <h:outputLabel value="Free Qty" />
+                                <h:outputText value="Free Qty" />
                             </th>
                             <th  style="text-align: left;">
-                                <h:outputLabel value="MRP" />
+                                <h:outputText value="MRP" />
                             </th>
                             <th style="text-align: left;">
                                 <h:outputText value="DOE" >
                                 </h:outputText>
                             </th>
                             <th style="text-align: left;">
-                                <h:outputLabel value="Batch No." />
+                                <h:outputText value="Batch No." />
                             </th>
                             <th  style="text-align: left;">
-                                <h:outputLabel value="UOM" />
+                                <h:outputText value="UOM" />
                             </th>
                         </tr>
 
@@ -169,19 +169,19 @@
 
 
                                     <td headerText="Item Name"  style="text-align: left;">
-                                        <h:outputLabel value="#{bi.item.name}" />
+                                        <h:outputText value="#{bi.item.name}" />
                                     </td>
                                     <td headerText="Qty"   style="text-align: left;">
-                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.qty}" />
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.qty}" />
                                     </td>
                                     <td headerText="Free Qty" style="text-align: left;">
-                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.freeQty}" />
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.freeQty}" />
                                     </td>
                                     <td headerText="Item Rate" style="text-align: left;">
-                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}" />
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate}" />
                                     </td>
                                     <td headerText="Item MRP" style="text-align: left;">
-                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.retailRate}" />
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.retailRate}" />
                                     </td>
                                     <td headerText="DoE" style="text-align: left;">
                                         <h:outputText value="#{bi.pharmaceuticalBillItem.doe}" >
@@ -189,10 +189,10 @@
                                         </h:outputText>
                                     </td>
                                     <td headerText="Batch Code"  style="text-align: left;">
-                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
                                     </td>
                                     <td headerText="UOM"  style="text-align: left;">
-                                        <h:outputLabel value="#{bi.item.measurementUnit.name}" />
+                                        <h:outputText value="#{bi.item.measurementUnit.name}" />
                                     </td>
                                 </tr>
                             </ui:repeat>
@@ -202,49 +202,49 @@
 
                         <tr>
                             <td style="text-align: left;   font-weight: bold;">
-                                <h:outputLabel value="Net Purchase Value" />
+                                <h:outputText value="Net Purchase Value" />
                                 
                             </td>
                             <td style="text-align: left;  font-weight: bold;">
-                                <h:outputLabel value="#{pharmacyController.totalPurchase}">
+                                <h:outputText value="#{pharmacyController.totalPurchase}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
+                                </h:outputText>
                                 
                             </td>
                             <td colspan="7">
                             </td>
                             <td  style="text-align: left;  font-weight: bold;">
-                                <h:outputLabel value="#{pharmacyController.totalCashPurchaseValue}">
+                                <h:outputText value="#{pharmacyController.totalCashPurchaseValue}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
+                                </h:outputText>
                             </td>
                             <td style="text-align: left;  font-weight: bold;">
-                                <h:outputLabel value="#{pharmacyController.totalCreditPurchaseValue}">
+                                <h:outputText value="#{pharmacyController.totalCreditPurchaseValue}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
+                                </h:outputText>
                             </td>
                             <td  style="text-align: left;  font-weight: bold;">
-                                <h:outputLabel value="#{pharmacyController.totalCashSaleValue}">
+                                <h:outputText value="#{pharmacyController.totalCashSaleValue}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
+                                </h:outputText>
                             </td>
                             <td colspan="2" style="text-align: left; font-weight: bold;">
-                                <h:outputLabel value="#{pharmacyController.totalCreditSaleValue}">
+                                <h:outputText value="#{pharmacyController.totalCreditSaleValue}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
+                                </h:outputText>
                             </td>
                         </tr>
 
                         <tr>
                             <td style="text-align: left;   font-weight: bold;">
                                 
-                                <h:outputLabel value="Net Sale Value" />
+                                <h:outputText value="Net Sale Value" />
                             </td>
                             <td style="text-align: left;  font-weight: bold;">
                                 
-                                <h:outputLabel value="#{pharmacyController.totalSaleValue}">
+                                <h:outputText value="#{pharmacyController.totalSaleValue}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
+                                </h:outputText>
                             </td>
                             <td colspan="12">
                             </td>
