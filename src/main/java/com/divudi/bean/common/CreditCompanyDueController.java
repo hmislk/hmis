@@ -20,17 +20,11 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.java.CommonFunctions;
+
 import java.io.OutputStream;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -38,6 +32,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
@@ -633,7 +628,7 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     private void setInwardValues(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod,
-            Institution institutionOfDepartment, Department department, Institution site) {
+                                 Institution institutionOfDepartment, Department department, Institution site) {
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(
                 inst, true, paymentMethod, institutionOfDepartment, department, site);
         for (PatientEncounter b : lst) {
@@ -849,23 +844,49 @@ public class CreditCompanyDueController implements Serializable {
             InstitutionEncounters newIns = new InstitutionEncounters();
             newIns.setInstitution(ins);
             newIns.setPatientEncounters(lst);
-            for (PatientEncounter b : lst) {
+
+            // Use an iterator to safely remove items from the list while iterating
+            Iterator<PatientEncounter> iterator = lst.iterator();
+            while (iterator.hasNext()) {
+                PatientEncounter b = iterator.next();
+
+                if (withOutDueUpdate) {
+                    if (isDue(b)) {
+                        // Safe removal with iterator
+                        iterator.remove();
+                        continue;
+                    }
+                }
+
+                // Set payment totals for each PatientEncounter
                 b.setTransPaidByPatient(createInwardPaymentTotal(b, getFromDate(), getToDate(), BillType.InwardPaymentBill));
                 b.setTransPaidByCompany(createInwardPaymentTotalCredit(b, getFromDate(), getToDate(), BillType.CashRecieveBill));
+
+                // Update totals for newIns
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
                 newIns.setPaidTotalPatient(newIns.getPaidTotalPatient() + b.getFinalBill().getPaidAmount());
                 newIns.setTransPaidTotalPatient(newIns.getTransPaidTotalPatient() + b.getTransPaidByPatient());
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidByCreditCompany());
                 newIns.setTransPaidTotal(newIns.getTransPaidTotal() + b.getTransPaidByCompany());
             }
+
+            // Update the final totals
             finalTotal += newIns.getTotal();
             finalPaidTotal += newIns.getPaidTotal();
             finalPaidTotalPatient += newIns.getPaidTotalPatient();
             finalTransPaidTotal += newIns.getTransPaidTotal();
             finalTransPaidTotalPatient += newIns.getTransPaidTotalPatient();
 
+            if (newIns.getPatientEncounters().isEmpty()) {
+                continue;
+            }
+
             institutionEncounters.add(newIns);
         }
+    }
+
+    private boolean isDue(final PatientEncounter pe) {
+        return pe.getFinalBill().getNetTotal() - (Math.abs(pe.getFinalBill().getPaidAmount()) + Math.abs(pe.getCreditPaidAmount())) > 0;
     }
 
     public double createInwardPaymentTotal(PatientEncounter pe, Date fd, Date td, BillType bt) {

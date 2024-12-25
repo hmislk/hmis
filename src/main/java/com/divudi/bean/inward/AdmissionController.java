@@ -43,6 +43,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
@@ -360,6 +361,23 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         //     hash.put("pm", PaymentMethod.Credit);
         List<Admission> lst = getFacade().findByJpql(sql, hash);
 
+        return lst;
+    }
+    
+    public List<Bill> getCreditPaymentBillsBht(Institution institution) {
+        String sql;
+        HashMap hash = new HashMap();
+
+        sql = "select b from Bill b "
+                + " where b.retired=false "
+                + " and b.creditCompany=:ins"
+                + " and b.billTypeAtomic=:bta ";
+        
+        hash.put("ins", institution);
+        hash.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        //     hash.put("pm", PaymentMethod.Credit);
+        List<Bill> lst = getBillFacade().findByJpql(sql, hash);
+        System.out.println("lst = " + lst);
         return lst;
     }
 

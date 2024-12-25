@@ -203,8 +203,8 @@ public class PaymentService {
                 break;
             case Cash:
 //                payment.getBill().getNetTotal();
-                payment.setPaidValue(paymentMethodData.getCash().getTotalValue());
-                payment.setComments(paymentMethodData.getCash().getComment());
+                payment.setPaidValue(payment.getBill().getNetTotal());
+                payment.setComments(payment.getBill().getComments());
                 break;
             case ewallet:
                 payment.setPaidValue(paymentMethodData.getEwallet().getTotalValue());

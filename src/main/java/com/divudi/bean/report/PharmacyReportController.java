@@ -1134,7 +1134,6 @@ public class PharmacyReportController implements Serializable {
     }
 
     // </editor-fold>
-    
     @Deprecated
     public void createPharmacyCashInOutLedgerOld() {
         bundleList = new ArrayList<>();
@@ -1889,6 +1888,7 @@ public class PharmacyReportController implements Serializable {
             billTypes.add(BillType.PharmacyBhtPre);
         } else if ("opSaleDoc".equals(documentType)) {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
         } else if ("grnDoc".equals(documentType)) {
@@ -1989,7 +1989,7 @@ public class PharmacyReportController implements Serializable {
             jpql.append("and sh.institution = :ins ");
             params.put("ins", institution);
         }
-        
+
         if (site != null) {
             jpql.append("and sh.department.site = :sit ");
             params.put("sit", site);
@@ -2055,7 +2055,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processClosingStockItemWiseReport() {
-       List<Long> ids;
+        List<Long> ids;
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
                 + " from StockHistory sh where sh.retired=:ret "
@@ -2068,7 +2068,7 @@ public class PharmacyReportController implements Serializable {
             jpql.append("and sh.institution = :ins ");
             params.put("ins", institution);
         }
-        
+
         if (site != null) {
             jpql.append("and sh.department.site = :sit ");
             params.put("sit", site);
@@ -2707,7 +2707,5 @@ public class PharmacyReportController implements Serializable {
     public void setAmp(Amp amp) {
         this.amp = amp;
     }
-    
-    
 
 }
