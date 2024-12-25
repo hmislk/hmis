@@ -230,14 +230,26 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public String navigateToPharmacyBillForCashier() {
-        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+        if (sessionController.getPharmacyBillingAfterShiftStart()) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                resetAll();
+                return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+            }
+        } else {
+            resetAll();
+            return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+        }
     }
 
     public String navigateToPharmacyBillForCashierWholeSale() {
         return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
     }
-    
-    public String navigateToBillCancellationView(){
+
+    public String navigateToBillCancellationView() {
         return "pharmacy_cancel_bill_retail?faces-redirect=true";
     }
 
@@ -664,9 +676,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public String navigateToPharmacyRetailSale() {
-        Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
-
-        if (pharmacyBillingAfterShiftStart) {
+        if (sessionController.getPharmacyBillingAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 resetAll();
@@ -675,12 +685,80 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 return "/cashier/index?faces-redirect=true";
             }
-        } 
-        else {
+        } else {
             resetAll();
             return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
         }
+    }
 
+    private String navigateToPharmacyRetailSaleAfterCashierCheck(Patient pt, PaymentScheme ps) {
+        if (pt == null) {
+            JsfUtil.addErrorMessage("No Patient Selected");
+            return "";
+        }
+        if (ps == null) {
+            JsfUtil.addErrorMessage("No Membership");
+            return "";
+        }
+        if (patient == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            patient = new Patient();
+            patientDetailsEditable = true;
+        }
+        resetAll();
+        patient = pt;
+        paymentScheme = ps;
+        setPatient(getPatient());
+        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyRetailSale(Patient pt, PaymentScheme ps) {
+        if (sessionController.getPharmacyBillingAfterShiftStart()) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                return navigateToPharmacyRetailSaleAfterCashierCheck(pt, ps);
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            return navigateToPharmacyRetailSaleAfterCashierCheck(pt, ps);
+        }
+    }
+
+    private String navigateToPharmacyRetailSaleAfterCashierCheckForCashier(Patient pt, PaymentScheme ps) {
+        if (pt == null) {
+            JsfUtil.addErrorMessage("No Patient Selected");
+            return "";
+        }
+        if (ps == null) {
+            JsfUtil.addErrorMessage("No Membership");
+            return "";
+        }
+        if (patient == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            patient = new Patient();
+            patientDetailsEditable = true;
+        }
+        resetAll();
+        patient = pt;
+        paymentScheme = ps;
+        setPatient(getPatient());
+        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+    }
+
+    public String navigateToPharmacyRetailSaleForCashier(Patient pt, PaymentScheme ps) {
+        if (sessionController.getPharmacyBillingAfterShiftStart()) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                return navigateToPharmacyRetailSaleAfterCashierCheckForCashier(pt, ps);
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            return navigateToPharmacyRetailSaleAfterCashierCheckForCashier(pt, ps);
+        }
     }
 
     public void resetAll() {
@@ -2156,7 +2234,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
 
         }
-        
+
         resetAll();
 
         billPreview = true;

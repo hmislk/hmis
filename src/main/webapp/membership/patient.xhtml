@@ -73,16 +73,18 @@
                                             ajax="false" 
                                             icon="fa fa-fw fa-calendar-check" 
                                             class="m-1 w-100"
-                                            action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
-                                            value="Pharmacy Retail Sale" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                                            disabled="#{!webUserController.hasPrivilege('PharmacySale')}"
+                                            action="#{pharmacySaleController.navigateToPharmacyRetailSale(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
+                                            value="Pharmacy Retail Sale"  >
                                             <f:setPropertyActionListener value="#{patientController.current}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
                                         </p:commandButton>
-                                         <p:commandButton 
+                                        <p:commandButton 
                                             ajax="false" 
                                             icon="fa fa-fw fa-calendar-check" 
                                             class="m-1 w-100"
-                                            action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
-                                            value="Pharmacy Retail Sale for Cashier" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                                            disabled="#{!webUserController.hasPrivilege('PharmacySaleForCashier')}"
+                                            action="#{pharmacySaleController.navigateToPharmacyRetailSaleForCashier(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}"  
+                                            value="Pharmacy Retail Sale for Cashier" >
                                             <f:setPropertyActionListener value="#{patientController.current}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
                                         </p:commandButton>
                                     </h:panelGroup>

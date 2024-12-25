@@ -186,6 +186,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private Drawer loggedUserDrawer;
     private Boolean opdBillingAfterShiftStart;
     private Boolean opdBillItemSearchByAutocomplete;
+    private Boolean pharmacyBillingAfterShiftStart;
 
     public String navigateToLoginPage() {
         return "/index1.xhtml";
@@ -1563,7 +1564,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         pharmacySaleController.clearForNewBill();
         opdBillingAfterShiftStart = null;
         opdBillItemSearchByAutocomplete = null;
-
+        pharmacyBillingAfterShiftStart = null;
     }
 
     public WebUser getCurrent() {
@@ -2278,6 +2279,17 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setOpdBillItemSearchByAutocomplete(Boolean opdBillItemSearchByAutocomplete) {
         this.opdBillItemSearchByAutocomplete = opdBillItemSearchByAutocomplete;
+    }
+
+    public Boolean getPharmacyBillingAfterShiftStart() {
+        if (pharmacyBillingAfterShiftStart == null) {
+            pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
+        }
+        return pharmacyBillingAfterShiftStart;
+    }
+
+    public void setPharmacyBillingAfterShiftStart(Boolean pharmacyBillingAfterShiftStart) {
+        this.pharmacyBillingAfterShiftStart = pharmacyBillingAfterShiftStart;
     }
 
 }
