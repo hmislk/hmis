@@ -13,10 +13,10 @@
             <ui:define name="content">
                 <h:outputStylesheet library="css" name="printing.css" ></h:outputStylesheet>
                 <h:form>
-                    <p:panel>
+                    <p:panel class="p-1 m-1">
                         <f:facet name="header">
                             <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
-                            <p:outputLabel value="Manage Patients" class="m-2"/>
+                            <p:outputLabel value="Manage Members" class="m-2"/>
                             <h:panelGrid columns="5" style="float: right">
                                 <p:commandButton  ajax="false"
                                                   value="Save" 
@@ -39,40 +39,82 @@
                             </h:panelGrid>
                         </f:facet>
 
+                        <div class="row" >
+                            <div class="col-6" >
+                                <common:patient_details
+                                    id="ccPatientDetails"
+                                    editable="true"
+                                    controller="#{patientController}"/>
+                            </div>
+                            <div class="col-6" >
+                                <div class="row" >
+                                    <h:panelGroup layout="block" class="col" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD is available for Members',true)}">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
+                                            value="OPD Billing" 
+                                            class="m-1"
+                                            disabled="#{!webUserController.hasPrivilege('OpdBilling')}" 
+                                            icon="fa fa-fw fa-notes-medical" >
+                                        </p:commandButton>
 
-                        <common:patient_details
-                            id="ccPatientDetails"
-                            editable="true"
-                            controller="#{patientController}"/>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            action="#{opdPreBillController.navigateToBillingForCashierFromMembership(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
+                                            value="OPD Billing for Cashier" 
+                                            class="m-1"
+                                            disabled="#{!webUserController.hasPrivilege('OpdBilling')}" 
+                                            icon="fa fa-fw fa-cash-register"  >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            icon="fa fa-fw fa-calendar-check" 
+                                            class="m-1"
+                                            action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
+                                            value="Channelling" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                                            <f:setPropertyActionListener value="#{patientController.current}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup layout="block"  class="col"  rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy is available for Members',true)}">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
+                                            value="OPD Billing" 
+                                            class="m-1"
+                                            disabled="#{!webUserController.hasPrivilege('OpdBilling')}" 
+                                            icon="fa fa-fw fa-notes-medical" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            action="#{opdPreBillController.navigateToBillingForCashierFromMembership(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
+                                            value="OPD Billing for Cashier" 
+                                            class="m-1"
+                                            disabled="#{!webUserController.hasPrivilege('OpdBilling')}" 
+                                            icon="fa fa-fw fa-cash-register"  >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            icon="fa fa-fw fa-calendar-check" 
+                                            class="m-1"
+                                            action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
+                                            value="Channelling" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                                            <f:setPropertyActionListener value="#{patientController.current}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                    
+                                </div>
+                            </div>
+                        </div>
 
 
 
-                        <p:commandButton 
-                            ajax="false" 
-                            action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
-                            value="OPD Billing" 
-                            class="mx-2"
-                            disabled="#{!webUserController.hasPrivilege('OpdBilling')}" 
-                            icon="fa fa-fw fa-notes-medical" >
-                        </p:commandButton>
 
-                        <p:commandButton 
-                            ajax="false" 
-                            action="#{opdPreBillController.navigateToBillingForCashierFromMembership(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
-                            value="OPD Billing for Cashier" 
-                            class="mx-2"
-                            disabled="#{!webUserController.hasPrivilege('OpdBilling')}" 
-                            icon="fa fa-fw fa-cash-register"  >
-                        </p:commandButton>
 
-                        <p:commandButton 
-                            ajax="false" 
-                            icon="fa fa-fw fa-calendar-check" 
-                            class="mx-2"
-                            action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
-                            value="Channelling" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
-                            <f:setPropertyActionListener value="#{patientController.current}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
-                        </p:commandButton>
+
 
 
 
