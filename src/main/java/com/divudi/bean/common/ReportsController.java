@@ -1820,6 +1820,12 @@ public class ReportsController implements Serializable {
 
     public void generateOPDWeeklyReport() {
         System.out.println("generateOPDWeeklyReport = " + this);
+
+        if (month == null) {
+            JsfUtil.addErrorMessage("Please select a month");
+            return;
+        }
+
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
