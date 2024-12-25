@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/membership/analytics/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:dataTable 
+                        value="#{familyController.families}"  
+                        var="fm"
+                        paginator="true"
+                        rows="10"
+                        paginatorPosition="bottom"
+                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                        rowKey="#{fm.id}">
+                        <p:column headerText="Membership Scheme" sortBy="#{fm.membershipScheme.name}" filterBy="#{fm.membershipScheme.name}" filterMatchMode="contains">
+                            <p:outputLabel value="#{fm.membershipScheme.name}" />
+                        </p:column>
+                        <p:column headerText="Membership Card No" sortBy="#{fm.membershipCardNo}" filterBy="#{fm.membershipCardNo}" filterMatchMode="contains">
+                            <p:outputLabel value="#{fm.membershipCardNo}" />
+                        </p:column>
+                        <p:column headerText="Phone No" sortBy="#{fm.phoneNo}" filterBy="#{fm.phoneNo}" filterMatchMode="contains">
+                            <p:outputLabel value="#{fm.phoneNo}" />
+                        </p:column>
+                        <p:column headerText="Action" style="width:100px;text-align:center;">
+                            <p:commandButton value="Manage" icon="fa fa-pencil" ajax="false" action="#{patientController.navigateToManageFamilyMembership()}">
+                                <f:setPropertyActionListener value="#{fm}" target="#{patientController.currentFamily}" />
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

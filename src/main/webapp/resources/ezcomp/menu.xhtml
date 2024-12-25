@@ -303,8 +303,9 @@
                         icon="fa fa-search-plus"></p:menuitem>
                     <p:menuitem 
                         ajax="false" 
-                        action="/membership/reports?faces-redirect=true"
-                        value="Membership Analytics"
+                        id="mnuItemMembershipAnalytics"
+                        action="#{membershipController.navigateToMembershipAnalyticsIndex()}"
+                        value="Analytics"
                         rendered="#{webUserController.hasPrivilege('MemberShip')}"
                         icon="fa fa-bar-chart"></p:menuitem>
                 </p:submenu>

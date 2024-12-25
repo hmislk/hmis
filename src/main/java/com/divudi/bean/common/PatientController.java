@@ -2142,11 +2142,19 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageFamilyMembership() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Family is Selected");
+            return null;
+        }
         familyMembers = fetchFamilyMembers(currentFamily);
         return "/membership/family_membership_manage?faces-redirect=true";
     }
 
     public String navigateToManageIndividualMembership() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Patient is Selected");
+            return null;
+        }
         return "/membership/patient?faces-redirect=true";
     }
 
@@ -2174,8 +2182,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         m.put("pn", searchText);
         m.put("mcn", mcn);
         List<Family> fs = getFamilyFacade().findByJpql(j, m);
-        if (fs == null) {
-            JsfUtil.addErrorMessage("No matches");
+        if (fs == null || fs.isEmpty()) {
+            JsfUtil.addErrorMessage("No matching families found");
             return "";
         } else if (fs.size() == 1) {
             currentFamily = fs.get(0);
@@ -2184,7 +2192,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         } else {
             families = fs;
             searchText = "";
-            return "/membership/search_family?faces-redirect=true;";
+            return null;
         }
     }
 
