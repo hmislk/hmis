@@ -30,14 +30,14 @@ import com.divudi.light.common.BillLight;
 import com.divudi.light.common.BillSummaryRow;
 import com.divudi.service.BillService;
 import com.divudi.service.PatientInvestigationService;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
+import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.StreamedContent;
@@ -45,6 +45,7 @@ import org.primefaces.model.file.UploadedFile;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -56,6 +57,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author safrin
@@ -2620,7 +2622,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-            boolean onlyDueBills) {
+                                                                    boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -4058,6 +4060,344 @@ public class ReportsController implements Serializable {
             context.responseComplete();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void exportWeeklyOPDSummaryReportToPDF() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Weekly_Summary_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document();
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            document.add(new Paragraph("Weekly Summary Report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+
+            document.add(new Paragraph("Month: " + getMonth(),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph("Report Type: Summary",
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            for (Map.Entry<Integer, Map<String, Map<Integer, Double>>> entry : getGroupedBillItemsWeekly().entrySet()) {
+                Integer key = entry.getKey();
+                Map<String, Map<Integer, Double>> weeklyData = entry.getValue();
+
+                PdfPTable table = new PdfPTable(8);
+                table.setWidthPercentage(100);
+                float[] columnWidths = {3f, 1f, 1f, 1f, 1f, 1f, 1f, 1.5f};
+                table.setWidths(columnWidths);
+
+                table.addCell(new PdfPCell(new Phrase(getShiftDescription(key),
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
+
+                for (int week = 1; week <= 6; week++) {
+                    table.addCell(new PdfPCell(new Phrase("Week " + week,
+                            FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
+                }
+                table.addCell(new PdfPCell(new Phrase("Total",
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
+
+                for (Map.Entry<String, Map<Integer, Double>> rowEntry : weeklyData.entrySet()) {
+                    String name = rowEntry.getKey();
+                    Map<Integer, Double> weekValues = rowEntry.getValue();
+
+                    table.addCell(new PdfPCell(new Phrase(name)));
+
+                    for (int week = 1; week <= 6; week++) {
+                        table.addCell(String.valueOf(weekValues.getOrDefault(week, 0.0)));
+                    }
+
+                    double total = weekValues.values().stream().mapToDouble(Double::doubleValue).sum();
+                    table.addCell(String.valueOf(total));
+                }
+
+                document.add(table);
+                document.add(new Paragraph(" "));
+            }
+
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportWeeklyOPDSummaryReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Weekly_Summary_Report.xlsx");
+
+        try (OutputStream out = response.getOutputStream(); Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Weekly Summary Report");
+
+            int rowIndex = 0;
+
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Weekly Summary Report");
+            CellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 18);
+            titleStyle.setFont(titleFont);
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
+
+            Row metaRow1 = sheet.createRow(rowIndex++);
+            metaRow1.createCell(0).setCellValue("Month: " + getMonth());
+
+            Row metaRow2 = sheet.createRow(rowIndex++);
+            metaRow2.createCell(0).setCellValue("Report Type: Summary");
+
+            rowIndex++;
+
+            for (Map.Entry<Integer, Map<String, Map<Integer, Double>>> entry : getGroupedBillItemsWeekly().entrySet()) {
+                Integer key = entry.getKey();
+                Map<String, Map<Integer, Double>> weeklyData = entry.getValue();
+
+                Row shiftRow = sheet.createRow(rowIndex++);
+                Cell shiftCell = shiftRow.createCell(0);
+                shiftCell.setCellValue(getShiftDescription(key));
+                CellStyle shiftStyle = workbook.createCellStyle();
+                Font shiftFont = workbook.createFont();
+                shiftFont.setBold(true);
+                shiftStyle.setFont(shiftFont);
+                shiftCell.setCellStyle(shiftStyle);
+
+                Row headerRow = sheet.createRow(rowIndex++);
+                String[] headers = {"Name", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Total"};
+                for (int col = 0; col < headers.length; col++) {
+                    Cell cell = headerRow.createCell(col);
+                    cell.setCellValue(headers[col]);
+                    CellStyle headerStyle = workbook.createCellStyle();
+                    headerStyle.setFont(shiftFont);
+                    headerStyle.setBorderBottom(BorderStyle.THIN);
+                    cell.setCellStyle(headerStyle);
+                }
+
+                for (Map.Entry<String, Map<Integer, Double>> rowEntry : weeklyData.entrySet()) {
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    String name = rowEntry.getKey();
+                    Map<Integer, Double> weekValues = rowEntry.getValue();
+
+                    dataRow.createCell(0).setCellValue(name);
+
+                    double total = 0.0;
+                    for (int week = 1; week <= 6; week++) {
+                        double value = weekValues.getOrDefault(week, 0.0);
+                        dataRow.createCell(week).setCellValue(value);
+                        total += value;
+                    }
+
+                    dataRow.createCell(7).setCellValue(total);
+                }
+
+                rowIndex++;
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String getShiftDescription(Integer key) {
+        switch (key) {
+            case 1:
+                return "7:00 PM - 7:00 AM (Night)";
+            case 2:
+                return "7:00 AM - 1:00 PM";
+            case 3:
+                return "1:00 PM - 7:00 PM";
+            default:
+                return "Unknown Shift";
+        }
+    }
+
+    public void exportDetailedWeeklyOPDReportToPDF() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Detailed_Weekly_OPD_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document();
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            com.itextpdf.text.Font regularFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            for (int week = 1; week <= 6; week++) {
+                List<Integer> daysOfWeek = getDaysOfWeek(week);
+
+                if (daysOfWeek.isEmpty()) {
+                    continue;
+                }
+
+                Paragraph title = new Paragraph("Detailed Weekly OPD Report", titleFont);
+                title.setAlignment(Element.ALIGN_CENTER);
+                document.add(title);
+
+                document.add(new Paragraph("Week: " + week, headerFont));
+                document.add(new Paragraph("Report Type: Detail", regularFont));
+                document.add(Chunk.NEWLINE);
+
+                addWeeklyReportSection(document, "Weekly Report OPD (7.00pm - 7.00am) Night",
+                        getItemListByWeek(week, weeklyDailyBillItemMap7to7), daysOfWeek, weeklyDailyBillItemMap7to7, week, headerFont, regularFont);
+
+                addWeeklyReportSection(document, "Weekly Report OPD (7.00pm - 1.00pm) Night",
+                        getItemListByWeek(week, weeklyDailyBillItemMap7to1), daysOfWeek, weeklyDailyBillItemMap7to1, week, headerFont, regularFont);
+
+                addWeeklyReportSection(document, "Weekly Report OPD (1.00pm - 7.00am) Night",
+                        getItemListByWeek(week, weeklyDailyBillItemMap1to7), daysOfWeek, weeklyDailyBillItemMap1to7, week, headerFont, regularFont);
+
+                document.add(Chunk.NEWLINE);
+            }
+
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
+                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+        document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
+        document.add(com.itextpdf.text.Chunk.NEWLINE);
+
+        com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(daysOfWeek.size() + 2); // +2 for Item and Total columns
+        table.setWidthPercentage(100);
+        table.setSpacingBefore(10f);
+        table.setSpacingAfter(10f);
+
+        table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase("Item", headerFont)));
+        for (int day : daysOfWeek) {
+            table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(String.valueOf(day), headerFont)));
+        }
+        table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase("Total", headerFont)));
+
+        for (String item : itemList) {
+            table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(item, regularFont)));
+            for (int day : daysOfWeek) {
+                double count = getCountByWeekAndDay(week, day, item, weeklyDailyBillItemMap);
+                table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(String.valueOf(count), regularFont)));
+            }
+            double total = getSumByWeek(week, item, weeklyDailyBillItemMap);
+            table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(String.valueOf(total), regularFont)));
+        }
+
+        document.add(table);
+    }
+
+    public void exportDetailedWeeklyOPDReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Detailed_Weekly_OPD_Report.xlsx");
+
+        try (OutputStream out = response.getOutputStream(); Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Detailed Weekly OPD Report");
+
+            int rowIndex = 0;
+
+            for (int week = 1; week <= 6; week++) {
+                List<Integer> daysOfWeek = getDaysOfWeek(week);
+
+                if (daysOfWeek.isEmpty()) {
+                    continue;
+                }
+
+                Row headerRow1 = sheet.createRow(rowIndex++);
+                Cell headerCell1 = headerRow1.createCell(0);
+                headerCell1.setCellValue("Report Type: Detail");
+                CellStyle boldStyle = workbook.createCellStyle();
+                Font boldFont = workbook.createFont();
+                boldFont.setBold(true);
+                boldStyle.setFont(boldFont);
+                headerCell1.setCellStyle(boldStyle);
+
+                Row headerRow2 = sheet.createRow(rowIndex++);
+                headerRow2.createCell(0).setCellValue("Week: " + week);
+
+                Row headerRow3 = sheet.createRow(rowIndex++);
+                headerRow3.createCell(0).setCellValue("Weekly Report OPD (7.00pm - 7.00am) Night");
+
+                rowIndex++;
+
+                Row columnHeaderRow = sheet.createRow(rowIndex++);
+                columnHeaderRow.createCell(0).setCellValue("Item");
+                int colIndex = 1;
+                for (int day : daysOfWeek) {
+                    columnHeaderRow.createCell(colIndex++).setCellValue(day);
+                }
+                columnHeaderRow.createCell(colIndex).setCellValue("Total");
+
+                // Data Rows for (7.00 PM - 7.00 AM)
+                populateDataRows(sheet, rowIndex, getItemListByWeek(week, weeklyDailyBillItemMap7to7), daysOfWeek, weeklyDailyBillItemMap7to7, week);
+                rowIndex += getItemListByWeek(week, weeklyDailyBillItemMap7to7).size();
+
+                // Section for (7.00 PM - 1.00 PM)
+                rowIndex++;
+                Row sectionHeaderRow1 = sheet.createRow(rowIndex++);
+                sectionHeaderRow1.createCell(0).setCellValue("Weekly Report OPD (7.00pm - 1.00pm) Night");
+
+                populateDataRows(sheet, rowIndex, getItemListByWeek(week, weeklyDailyBillItemMap7to1), daysOfWeek, weeklyDailyBillItemMap7to1, week);
+                rowIndex += getItemListByWeek(week, weeklyDailyBillItemMap7to1).size();
+
+                // Section for (1.00 PM - 7.00 AM)
+                rowIndex++;
+                Row sectionHeaderRow2 = sheet.createRow(rowIndex++);
+                sectionHeaderRow2.createCell(0).setCellValue("Weekly Report OPD (1.00pm - 7.00am) Night");
+
+                populateDataRows(sheet, rowIndex, getItemListByWeek(week, weeklyDailyBillItemMap1to7), daysOfWeek, weeklyDailyBillItemMap1to7, week);
+                rowIndex += getItemListByWeek(week, weeklyDailyBillItemMap1to7).size();
+
+                rowIndex++;
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void populateDataRows(Sheet sheet, int rowIndex, List<String> itemList, List<Integer> daysOfWeek, Map
+            <Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap, int week) {
+        for (String item : itemList) {
+            Row dataRow = sheet.createRow(rowIndex++);
+            int colIndex = 0;
+
+            dataRow.createCell(colIndex++).setCellValue(item);
+
+            for (int day : daysOfWeek) {
+                double count = getCountByWeekAndDay(week, day, item, weeklyDailyBillItemMap);
+                dataRow.createCell(colIndex++).setCellValue(count);
+            }
+
+            double total = getSumByWeek(week, item, weeklyDailyBillItemMap);
+            dataRow.createCell(colIndex).setCellValue(total);
         }
     }
 }
