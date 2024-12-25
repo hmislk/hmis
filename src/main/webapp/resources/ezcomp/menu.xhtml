@@ -277,12 +277,36 @@
                 </p:submenu>
 
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
-                    <p:menuitem ajax="false" action="#{patientController.navigateToAddNewIndividualMembership()}" value="Add Individual Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="#{patientController.navigateToSearchIndividualMembership()}" value="Search Individual Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
-
-                    <p:menuitem ajax="false" action="#{patientController.navigateToAddNewFamilyMembership()}" value="Add Family Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="#{patientController.navigateToSearchFamilyMembership()}" value="Search Family Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/membership/reports?faces-redirect=true" value="Family Membership Reports" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{patientController.navigateToAddNewIndividualMembership()}"
+                        value="Add Individual Membership" 
+                        rendered="#{webUserController.hasPrivilege('MemberShip')}"
+                        icon="fa fa-user-plus"></p:menuitem>
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{patientController.navigateToSearchIndividualMembership()}"
+                        value="Search Individual Membership"
+                        rendered="#{webUserController.hasPrivilege('MemberShip')}"
+                        icon="fa fa-search"></p:menuitem>
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{patientController.navigateToAddNewFamilyMembership()}"
+                        value="Add Family Membership" 
+                        rendered="#{webUserController.hasPrivilege('MemberShip')}"
+                        icon="fa fa-users"></p:menuitem>
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{patientController.navigateToSearchFamilyMembership()}"
+                        value="Search Family Membership" 
+                        rendered="#{webUserController.hasPrivilege('MemberShip')}"
+                        icon="fa fa-search-plus"></p:menuitem>
+                    <p:menuitem 
+                        ajax="false" 
+                        action="/membership/reports?faces-redirect=true"
+                        value="Membership Analytics"
+                        rendered="#{webUserController.hasPrivilege('MemberShip')}"
+                        icon="fa fa-bar-chart"></p:menuitem>
                 </p:submenu>
 
                 <p:submenu id="smInpatient"  icon="fa fa-fw fa-bed"  rendered="#{webUserController.hasPrivilege('Inward')}">
