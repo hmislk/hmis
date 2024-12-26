@@ -41,7 +41,7 @@ public class DesignComponentController implements Serializable {
     public List<ComponentPresentationType> getComponentPresentationTypes() {
         return Arrays.asList(ComponentPresentationType.values());
     }
-    
+
     public List<ComponentMappingType> getComponentMappingTypes() {
         return Arrays.asList(ComponentMappingType.values());
     }
@@ -103,7 +103,6 @@ public class DesignComponentController implements Serializable {
         return "/forms/data_entry_forms?faces-redirect=true";
     }
 
-    
     public String navigateToListDataEntryItems() {
 
         listOfDataEntryItems = listDataEntryForms();
@@ -234,6 +233,15 @@ public class DesignComponentController implements Serializable {
         return designComponents;
     }
 
+    public List<DesignComponent> completeDesignComponents(String query) {
+        String jpql = "SELECT d FROM DesignComponent d WHERE "
+                + " d.retired=false"
+                + "and LOWER(d.name) LIKE :query";
+        Map<String, Object> params = new HashMap<>();
+        params.put("query", "%" + query.toLowerCase() + "%");
+        return facade.findByJpql(jpql, params);
+    }
+
     public int getManageEmrIndex() {
         return manageEmrIndex;
     }
@@ -270,8 +278,8 @@ public class DesignComponentController implements Serializable {
     }
 
     public List<DesignComponent> getListOfDataEntryItems() {
-        if(listOfDataEntryItems==null){
-            listOfDataEntryItems=new ArrayList<>();
+        if (listOfDataEntryItems == null) {
+            listOfDataEntryItems = new ArrayList<>();
         }
         return listOfDataEntryItems;
     }

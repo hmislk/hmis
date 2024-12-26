@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.divudi.entity.web;
 
 import com.divudi.entity.process.ProcessDefinition;
@@ -16,7 +12,7 @@ import javax.persistence.ManyToOne;
 
 /**
  *
- * @author buddhika
+ * @author Dr M H Buddhika Ariyaratne
  */
 @Entity
 public class DesignComponentAssignment implements Serializable {
