@@ -1661,6 +1661,7 @@ public class BhtSummeryController implements Serializable {
         creditCompanyBill.setNetTotal(value);
         creditCompanyBill.setInstitution(getSessionController().getInstitution());
         creditCompanyBill.setCreditCompany(ecc.getInstitution());
+        creditCompanyBill.setPaymentMethod(PaymentMethod.Credit);
         
 
         creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
