@@ -180,7 +180,7 @@
                             icon="fas fa-print"
                             ajax="false"
                             value="Print">
-                        <!--                        <p:printer target="#{reportsController.reportType eq 'detail' ? 'detailTables' : 'summaryTable'}"/>-->
+                        <p:printer target="printableContent"/>
                     </p:commandButton>
 
                     <p:commandButton
@@ -223,7 +223,8 @@
                             value="PDF">
                     </p:commandButton>
 
-                    <ui:repeat value="#{reportsController.groupedBillItemsWeekly.entrySet()}" var="entry"
+                <p:panel id="printableContent" header="OPD Weekly Report" class="w-100">
+                <ui:repeat value="#{reportsController.groupedBillItemsWeekly.entrySet()}" var="entry"
                                rendered="#{reportsController.reportType eq 'summary'}">
                         <p:dataTable
                                 id="summary#{entry.key}"
@@ -375,6 +376,7 @@
                             </p:column>
                         </p:dataTable>
                     </c:forEach>
+                </p:panel>
                 </p:panel>
             </h:form>
         </ui:define>
