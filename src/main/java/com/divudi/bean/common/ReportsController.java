@@ -1660,7 +1660,8 @@ public class ReportsController implements Serializable {
                 + "JOIN billItem.bill bill "
                 + "WHERE pi.retired=false "
                 + " and billItem.retired=false "
-                + " and bill.retired=false ";
+                + " and bill.retired=false "
+                + "AND pi.sampleSentAt IS NOT NULL ";
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
