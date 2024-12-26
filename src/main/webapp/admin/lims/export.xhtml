@@ -11,6 +11,8 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form id="form" >
+                    <p:growl />
+                    
                     <p:panel header="Format Expoet" styleClass="w-100 p-0 m-1" >
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
@@ -30,15 +32,17 @@
                             <div class="d-flex col-5 gap-4" style="font-size: 18px; font-weight: 700">
                                 <h:outputText value="Current Investigation" class="mt-2"/>
                                 <h:outputText value="-" class="mt-2"/>
-                                <h:outputText value="#{investigationItemController.currentInvestigation.name}" class="mt-2 text-dark"/>
+                                <h:outputText value="#{labReportExportImportController.current.name}" class="mt-2 text-dark"/>
                             </div>
                             <p:commandButton 
                                 ajax="false" 
                                 style="float: right; width: 200px;"
                                 icon="fas fa-file-export export-icon"
                                 class="ui-button-warning"
-                                action="#{labReportExportImportController.export()}" 
-                                value="Export" >
+                                value="Export" 
+                                onclick="PrimeFaces.monitorDownload(start, stop);" >
+                            <p:fileDownload value="#{labReportExportImportController.export()}" />
+                                
                             </p:commandButton>
                         </div>
 
