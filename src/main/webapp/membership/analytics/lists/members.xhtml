@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/membership/analytics/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:dataTable 
+                        value="#{familyController.members}"  
+                        var="fm"
+                        paginator="true"
+                        rows="10"
+                        paginatorPosition="bottom"
+                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                        rowKey="#{fm.id}">
+                        <p:column headerText="Membership Scheme" sortBy="#{fm.family.membershipScheme.name}" filterBy="#{fm.family.membershipScheme.name}" filterMatchMode="contains">
+                            <p:outputLabel value="#{fm.family.membershipScheme.name}" />
+                        </p:column>
+                        <p:column headerText="Membership Card No" sortBy="#{fm.family.membershipCardNo}" filterBy="#{fm.family.membershipCardNo}" filterMatchMode="contains">
+                            <p:outputLabel value="#{fm.family.membershipCardNo}" />
+                        </p:column>
+                        <p:column headerText="Name" sortBy="#{fm.patient.person.nameWithTitle}" filterBy="#{fm.patient.person.nameWithTitle}" filterMatchMode="contains">
+                            <p:outputLabel value="#{fm.patient.person.nameWithTitle}" />
+                        </p:column>
+                        <p:column headerText="Age" sortBy="#{fm.patient.person.ageAsString}" filterBy="#{fm.patient.person.ageAsString}" filterMatchMode="contains">
+                            <p:outputLabel value="#{fm.patient.person.ageAsString}" />
+                        </p:column>
+                        <p:column headerText="Gender" sortBy="#{fm.patient.person.sex.label}" filterBy="#{fm.patient.person.sex.label}" filterMatchMode="contains">
+                            <p:outputLabel value="#{fm.patient.person.sex.label}" />
+                        </p:column>
+                        <p:column headerText="Phone" sortBy="#{fm.patient.person.phone}" filterBy="#{fm.patient.person.phone}" filterMatchMode="contains">
+                            <p:outputLabel value="#{fm.patient.person.phone}" />
+                        </p:column>
+                        <p:column headerText="Mobile" sortBy="#{fm.patient.person.mobile}" filterBy="#{fm.patient.person.mobile}" filterMatchMode="contains">
+                            <p:outputLabel value="#{fm.patient.person.mobile}" />
+                        </p:column>
+                        <p:column headerText="Actions" style="width:100px;text-align:center;">
+                            <p:commandButton value="Manage" icon="fa fa-pencil" ajax="false" action="#{patientController.navigateToManageIndividualMembership()}">
+                                <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" />
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

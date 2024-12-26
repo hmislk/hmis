@@ -536,7 +536,7 @@ public class WebUserController implements Serializable {
 
         //Save Web User
         getCurrent().setCreatedAt(new Date());
-        getCurrent().setCreater(sessionController.loggedUser);
+        getCurrent().setCreater(sessionController.getLoggedUser());
         getCurrent().setName((getCurrent().getName()));
         getCurrent().setWebUserPassword(getSecurityController().hashAndCheck(getCurrent().getWebUserPassword()));
         getFacade().create(getCurrent());
@@ -630,7 +630,7 @@ public class WebUserController implements Serializable {
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
-            current.setRetirer(sessionController.loggedUser);
+            current.setRetirer(sessionController.getLoggedUser());
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successful");
         } else {
