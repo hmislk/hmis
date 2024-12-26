@@ -678,6 +678,7 @@ public class CashRecieveBillController implements Serializable {
         getCurrent().setDeptId(deptId);
         getCurrent().setBillType(billType);
         getCurrent().setBillTypeAtomic(billTypeAtomic);
+        getCurrent().setCreditCompany(institution);
         getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getCurrent().setComments(comment);

@@ -335,7 +335,6 @@ public class ReportsController implements Serializable {
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to1;
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap1to7;
 
-
     private boolean showChart;
 
     public String getDischargedStatus() {
@@ -402,6 +401,7 @@ public class ReportsController implements Serializable {
     public void setSelectedDateType(String selectedDateType) {
         this.selectedDateType = selectedDateType;
     }
+
 
     public Investigation getInvestigation() {
         return investigation;
@@ -3506,7 +3506,7 @@ public class ReportsController implements Serializable {
         bundle.setGroupedBillItemsByInstitution(billMap);
     }
 
-    public Double calculateNetAmountSubTotalByBills(List<Bill> bills) {
+    public Double calculateNetTotalByBills(List<Bill> bills) {
         Double netTotal = 0.0;
 
         for (Bill bill : bills) {
@@ -3516,7 +3516,7 @@ public class ReportsController implements Serializable {
         return netTotal;
     }
 
-    public Double calculateDiscountSubTotalByBills(List<Bill> bills) {
+    public Double calculateDiscountByBills(List<Bill> bills) {
         Double discount = 0.0;
 
         for (Bill bill : bills) {
@@ -3526,17 +3526,18 @@ public class ReportsController implements Serializable {
         return discount;
     }
 
-    public Double calculateNetAmountNetTotal() {
-        double netAmountNetTotal = 0.0;
+
+    public Double calculateSubTotal() {
+        double subTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            netAmountNetTotal += calculateNetAmountSubTotalByBills(bills);
+            subTotal += calculateNetTotalByBills(bills);
         }
 
-        return netAmountNetTotal;
+        return subTotal;
     }
 
     public Double calculateGrossAmountSubTotalByBills(List<Bill> bills) {
@@ -3642,6 +3643,40 @@ public class ReportsController implements Serializable {
         }
 
         return sponsorShareNetTotal;
+    }
+    
+    public Double calculateNetAmountSubTotalByBills(List<Bill> bills) {
+        Double netTotal = 0.0;
+
+        for (Bill bill : bills) {
+            netTotal += bill.getNetTotal();
+        }
+
+        return netTotal;
+    }
+
+    public Double calculateDiscountSubTotalByBills(List<Bill> bills) {
+        Double discount = 0.0;
+
+        for (Bill bill : bills) {
+            discount += bill.getDiscount();
+        }
+
+        return discount;
+    }
+
+
+    public Double calculateNetAmountNetTotal() {
+        double netAmountNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            netAmountNetTotal += calculateNetAmountSubTotalByBills(bills);
+        }
+
+        return netAmountNetTotal;
     }
 
     public void generateDiscountReport() {
