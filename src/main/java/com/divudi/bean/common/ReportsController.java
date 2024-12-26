@@ -3526,7 +3526,6 @@ public class ReportsController implements Serializable {
         return discount;
     }
 
-
     public Double calculateNetAmountNetTotal() {
         double netAmountNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
