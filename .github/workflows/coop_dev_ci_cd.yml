@@ -101,7 +101,7 @@ jobs:
             sudo su - appuser
             echo 'AS_ADMIN_PASSWORD=${{ secrets.PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
-            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force $WAR_DIR/$WAR_NAME
+            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
           "
 
