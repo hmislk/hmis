@@ -234,9 +234,18 @@ public class IncomeBundle implements Serializable {
             r.setNetTotal(b.getNetTotal());
             r.setDiscount(b.getDiscount());
             r.setActualTotal(b.getNetTotal() - b.getServiceCharge());
-            
+
             if (b.getPaymentMethod() == null) {
-                r.setNoneValue(b.getNetTotal());
+                r.setCreditValue(b.getNetTotal());
+                if (r.getBill().getPatientEncounter() != null) {
+                    r.setOpdCreditValue(0);
+                    r.setInpatientCreditValue(b.getNetTotal());
+                } else {
+                    r.setOpdCreditValue(0);
+                    r.setInpatientCreditValue(0);
+                    r.setNoneValue(b.getNetTotal());
+                }
+
             } else {
                 switch (b.getPaymentMethod()) {
                     case Agent:
@@ -261,7 +270,7 @@ public class IncomeBundle implements Serializable {
                         break;
                     case Credit:
                         r.setCreditValue(b.getNetTotal());
-                        if (r.getBill().getPatientEncounter() == null) {
+                        if (r.getBill().getPatientEncounter() != null) {
                             r.setOpdCreditValue(0);
                             r.setInpatientCreditValue(b.getNetTotal());
                         } else {
@@ -301,7 +310,7 @@ public class IncomeBundle implements Serializable {
                 }
 
             }
-            
+
         }
         populateSummaryRow();
     }
@@ -336,10 +345,10 @@ public class IncomeBundle implements Serializable {
                         break;
                     case Credit:
                         r.setCreditValue(r.getCreditValue() + p.getPaidValue());
-                        if (r.getBill().getPatientEncounter() == null) {
-                            r.setOpdCreditValue(r.getOpdCreditValue() + p.getPaidValue());
-                        } else {
+                        if (r.getBill().getPatientEncounter() != null) {
                             r.setInpatientCreditValue(r.getInpatientCreditValue() + p.getPaidValue());
+                        } else {
+                            r.setOpdCreditValue(r.getOpdCreditValue() + p.getPaidValue());
                         }
                         break;
                     case IOU:
