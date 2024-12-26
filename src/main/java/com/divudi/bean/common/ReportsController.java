@@ -4518,4 +4518,121 @@ public class ReportsController implements Serializable {
             e.printStackTrace();
         }
     }
+
+    public void exportRouteAnalysisSummaryReportToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Route_Wise_Monthly_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Route Wise Monthly Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            PdfPTable table = new PdfPTable(2 + getYearMonths().size() * 2);
+            table.setWidthPercentage(100);
+
+            table.addCell(new PdfPCell(new Phrase("S. No")));
+            table.addCell(new PdfPCell(new Phrase("Route")));
+
+            List<YearMonth> yearMonths = getYearMonths();
+            for (YearMonth yearMonth : yearMonths) {
+                table.addCell(new PdfPCell(new Phrase(yearMonth.toString() + " - Sample Count")));
+                table.addCell(new PdfPCell(new Phrase(yearMonth.toString() + " - Service Amount")));
+            }
+
+            int serialNumber = 1;
+            for (Map.Entry<Route, Map<YearMonth, Bill>> entrySet : getGroupedRouteWiseBillsMonthly().entrySet()) {
+                Route route = entrySet.getKey();
+                Map<YearMonth, Bill> monthlyData = entrySet.getValue();
+
+                table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++))));
+                table.addCell(new PdfPCell(new Phrase(route.getName())));
+
+                for (YearMonth yearMonth : yearMonths) {
+                    Bill billData = monthlyData.get(yearMonth);
+                    if (billData != null) {
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(billData.getQty()))));
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(billData.getTotalHospitalFee()))));
+                    } else {
+                        table.addCell(new PdfPCell(new Phrase("0")));
+                        table.addCell(new PdfPCell(new Phrase("0.0")));
+                    }
+                }
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportRouteAnalysisSummaryReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Route_Wise_Monthly_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Route Wise Monthly Report");
+            int rowIndex = 0;
+
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Route Wise Monthly Report");
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 2 + getYearMonths().size() * 2 - 1));
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            int cellIndex = 0;
+            headerRow.createCell(cellIndex++).setCellValue("S. No");
+            headerRow.createCell(cellIndex++).setCellValue("Route");
+
+            List<YearMonth> yearMonths = getYearMonths();
+            for (YearMonth yearMonth : yearMonths) {
+                headerRow.createCell(cellIndex++).setCellValue(yearMonth.toString() + " - Sample Count");
+                headerRow.createCell(cellIndex++).setCellValue(yearMonth.toString() + " - Service Amount");
+            }
+
+            int serialNumber = 1;
+            for (Map.Entry<Route, Map<YearMonth, Bill>> entrySet : getGroupedRouteWiseBillsMonthly().entrySet()) {
+                Route route = entrySet.getKey();
+                Map<YearMonth, Bill> monthlyData = entrySet.getValue();
+
+                Row row = sheet.createRow(rowIndex++);
+                cellIndex = 0;
+
+                row.createCell(cellIndex++).setCellValue(serialNumber++);
+                row.createCell(cellIndex++).setCellValue(route.getName());
+
+                for (YearMonth yearMonth : yearMonths) {
+                    Bill billData = monthlyData.get(yearMonth);
+                    if (billData != null) {
+                        row.createCell(cellIndex++).setCellValue(billData.getQty());
+                        row.createCell(cellIndex++).setCellValue(billData.getTotalHospitalFee());
+                    } else {
+                        row.createCell(cellIndex++).setCellValue(0);
+                        row.createCell(cellIndex++).setCellValue(0.0);
+                    }
+                }
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

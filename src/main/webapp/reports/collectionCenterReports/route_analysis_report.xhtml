@@ -235,6 +235,7 @@
                                      style="width: 150px"
                                      icon="fas fa-file-excel"
                                      rendered="#{reportsController.reportType eq 'summery'}"
+                                     action="#{reportsController.exportRouteAnalysisSummaryReportToExcel}"
                                      ajax="false" value="Excel">
                     </p:commandButton>
                     <p:commandButton class="m-2 ui-button-success"
@@ -249,6 +250,7 @@
                             style="width: 150px"
                             icon="fa-solid fa-file-pdf"
                             ajax="false"
+                            action="#{reportsController.exportRouteAnalysisSummaryReportToPdf}"
                             rendered="#{reportsController.reportType eq 'summery'}"
                             value="PDF">
                     </p:commandButton>
