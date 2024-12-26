@@ -3625,6 +3625,7 @@ public class ReportsController implements Serializable {
             List<Bill> bills = entry.getValue();
 
             sponsorShareNetTotal += calculateSponsorShareSubTotalByBills(bills);
+
         }
 
         return sponsorShareNetTotal;
