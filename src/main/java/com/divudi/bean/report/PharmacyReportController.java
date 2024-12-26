@@ -2155,13 +2155,46 @@ public class PharmacyReportController implements Serializable {
                 toDate = convertToDate(today);
                 break;
         }
-       // System.out.println("Updated From Date: " + fromDate);
-       // System.out.println("Updated To Date: " + toDate);
+        // System.out.println("Updated From Date: " + fromDate);
+        // System.out.println("Updated To Date: " + toDate);
     }
 
     // Utility to convert LocalDate to Date
     private Date convertToDate(LocalDate localDate) {
         return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    public void processExpiryItemReport() {
+        stocks = new ArrayList();
+        String jpql;
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        jpql = "select s"
+                + " from StockHistory s "
+                + " where s.itemBatch.dateOfExpire between :fd and :td ";
+        if (institution != null) {
+            jpql += " and s.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and s.department=:dep ";
+            m.put("dep", department);
+        }
+        if (site != null) {
+            jpql += " and s.department.site=:sit ";
+            m.put("sit", site);
+        }
+        if (amp != null) {
+            item = amp;
+            System.out.println("item = " + item);
+            jpql += "and s.item=:itm ";
+            m.put("itm", item);
+        }
+
+        jpql += " order by s.createdAt ";
+        stocks = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public void processLabTestWiseCountReport() {
