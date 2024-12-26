@@ -408,6 +408,11 @@ public class Bill implements Serializable {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private PharmacyBill pharmacyBill;
 
+    private String externalDoctor;
+    
+    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER, optional = true,orphanRemoval = true)
+    private StockBill stockBill;
+
     public Bill() {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
@@ -2507,4 +2512,25 @@ public class Bill implements Serializable {
     public void setPharmacyBill(PharmacyBill pharmacyBill) {
         this.pharmacyBill = pharmacyBill;
     }
+
+    public String getExternalDoctor() {
+        return externalDoctor;
+    }
+
+    public void setExternalDoctor(String externalDoctor) {
+        this.externalDoctor = externalDoctor;
+    }
+
+    public StockBill getStockBill() {
+        if(stockBill==null){
+            stockBill=new StockBill();
+        }
+        return stockBill;
+    }
+
+    public void setStockBill(StockBill stockBill) {
+        this.stockBill = stockBill;
+    }
+    
+    
 }

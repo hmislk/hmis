@@ -10,10 +10,27 @@
 
                 <p:panel header="Pharmacy Analytics" >
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <h:form>
                                 <p:accordionPanel activeIndex="#{pharmacyController.managePharamcyReportIndex}">
                                     <p:ajax process="@this"></p:ajax>
+
+                                    <p:tab title="Summary Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                style="text-align: left" 
+                                                value="Pharmacy Income Report"
+                                                action="#{pharmacySummaryReportController.navigateToPharmacyIncomeReport()}"/>
+                                             <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                style="text-align: left" 
+                                                value="Daily Stock Balance"
+                                                action="#{pharmacySummaryReportController.navigateToDailyStockBalanceReport()}"/>
+                                        </div>
+                                    </p:tab>
 
                                     <p:tab title="Financial Reports">
                                         <div class="d-grid gap-2">
@@ -91,7 +108,7 @@
                                             <p:commandButton class="w-100" value="Medicine (VTM,ATM,VMP,AMP,VMPP &amp; AMPP) List" action="#{ampController.navigateToCreateMedicineList}" ajax="false"></p:commandButton>
                                             <p:commandButton class="w-100" value="Single Items Summary" action="#{pharmacyController.navigateToItemTransactionDetails}" ajax="false"></p:commandButton>
                                             <p:commandButton class="w-100" value="All Items Summary" action="#{pharmacyController.navigateToAllItemsTransactionSummary}" ajax="false"></p:commandButton>
-                                            
+
                                             <p:commandButton class="w-100" value="Items Without Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndReportItemsWithoutDistributor}" ajax="false"></p:commandButton>
                                             <p:commandButton class="w-100" value="Items With Suppliers and Prices" action="#{pharmacyController.navigateToItemsWithSuppliersAndPrices}" ajax="false"></p:commandButton>
                                             <p:commandButton class="w-100" value="Items With Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndItemsWithDistributor}" ajax="false"></p:commandButton>
@@ -99,7 +116,7 @@
                                             <p:commandButton class="w-100" value="Item With Multiple Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndItemWithMultipleDistributors}" ajax="false"></p:commandButton>
                                             <p:commandButton class="w-100" value="ROL &amp; ROQ Management" action="#{pharmacyController.navigateToReorderManagement()}" ajax="false"></p:commandButton>
                                             <p:commandButton class="w-100" value="Reorder Analysis" action="#{pharmacyController.navigateToReorderAnalysis}" ajax="false"></p:commandButton>
-                                            
+
                                             <p:commandButton class="w-100" ajax="false" value="Movement Report Stock By Date" action="#{pharmacySaleReportController.navigatePharmacyReportCategoryViceMovement}"></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Movement Report Stock By Date - By Batch" action="#{pharmacySaleReportController.navigatePharmacyReportCategoryViceMovementItemBach}"></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Pharmacy All Report" action="#{pharmacySaleReportController.navigatePharmacyReportSummaryAll}"></p:commandButton>
@@ -192,7 +209,8 @@
                                             <p:commandButton class="w-100" value="Item - wise Purchase/Good Receive" action="/pharmacy/report_item_vice_purchase_and_good_receive?faces-redirect=true" ajax="false" ></p:commandButton>
                                             <p:commandButton class="w-100" value="Purcharse Bill with Supplier" action="/pharmacy/pharmacy_search_purcharse_bill?faces-redirect=true" ajax="false" ></p:commandButton>
                                             <p:commandButton class="w-100" value="Pharmacy GRN Report" action="pharmacy_search_purcharse_bill_1?faces-redirect=true" ajax="false" ></p:commandButton>                            
-                                            <p:commandButton class="w-100" value="Pharmacy GRN and purchase Report" action="pharmacy_search_purcharse_GRN_bill?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Pharmacy GRN and purchase Report" action="pharmacy_search_purcharse_GRN_bill?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="GRN Purchase Items by Supplier" action="/pharmacy/pharmacy_report_grn_free_items_by_supplier?faces-redirect=true" ajax="false" ></p:commandButton> 
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="GRN Summary" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
@@ -279,7 +297,7 @@
                                 </p:accordionPanel>
                             </h:form>
                         </div>
-                        <div class="col-md-9">
+                        <div class="col-md-10">
                             <ui:insert name="subcontent">
 
                             </ui:insert>

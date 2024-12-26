@@ -545,11 +545,19 @@ public class DepartmentController implements Serializable {
     }
 
     public List<Department> completeDeptPharmacy(String qry) {
+        List<Department> results = new ArrayList<>();
+        if (qry == null) {
+            return results;
+        }
+        if (qry.trim().equals("")) {
+            return results;
+        }
+        qry = qry.trim();
         String sql;
         HashMap hm = new HashMap();
         sql = "select c from Department c "
                 + " where c.retired=false "
-                + " and (c.name) like :q "
+                + " and c.name like :q "
                 + " and c.institution=:ins "
                 + " and c.departmentType=:dt"
                 + " order by c.name";
@@ -557,8 +565,22 @@ public class DepartmentController implements Serializable {
         hm.put("dt", DepartmentType.Pharmacy);
         hm.put("ins", getSessionController().getInstitution());
         hm.put("q", "%" + qry.toUpperCase() + "%");
+        results = getFacade().findByJpql(sql, hm);
 
-        return getFacade().findByJpql(sql, hm);
+        if (results != null && !results.isEmpty()) {
+            return results;
+        }
+        results = new ArrayList<>();
+        if (qry.length() > 2) {
+            hm = new HashMap();
+            sql = "select c from Department c "
+                    + " where c.retired=false "
+                    + " and c.name like :q "
+                    + " order by c.name";
+            hm.put("q", "%" + qry.toUpperCase() + "%");
+            results = getFacade().findByJpql(sql, hm);
+        }
+        return results;
     }
 
     public List<Department> completeDeptWithDeptOrIns(String qry) {

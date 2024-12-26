@@ -95,7 +95,7 @@ public class TransferReceiveController implements Serializable {
     public String navigateToAproveRecieveIssue() {
         return "/pharmacy/pharmacy_transfer_receive_approval?faces-redirect=true";
     }
-    
+
     public String navigateToReprintRecieveIssue() {
         return "/pharmacy/pharmacy_reprint_transfer_receive?faces-redirect=true";
     }
@@ -125,12 +125,11 @@ public class TransferReceiveController implements Serializable {
         receivedBill = null;
         generateBillComponent();
     }
-    
+
 //   public String navigateBackToRecieveList(){    
 //        return "/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true";
 //    }
-    
-    public String navigateToRecieveIssue(){  
+    public String navigateToRecieveIssue() {
         return "/pharmacy/pharmacy_transfer_receive_with_approval?faces-redirect=true";
     }
 
@@ -165,6 +164,27 @@ public class TransferReceiveController implements Serializable {
 
     @EJB
     private StockFacade stockFacade;
+
+    public String navigateToPharmacyReceiveForRequests() {
+        if (issuedBill == null || issuedBill.getId() == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+
+        if (isAlreadyReceived(issuedBill)) {
+            JsfUtil.addErrorMessage("Already Received!");
+            return "";
+        }
+
+        return "/pharmacy/pharmacy_transfer_receive?faces-redirect=true";
+    }
+
+    public boolean isAlreadyReceived(Bill bill) {
+        if (bill.getForwardReferenceBills() == null || bill.getForwardReferenceBills().isEmpty()) {
+            return false;
+        }
+        return true; 
+    }
 
     public void settle() {
 
@@ -423,7 +443,7 @@ public class TransferReceiveController implements Serializable {
 
         getReceivedBill().setNetTotal(calTotal());
         getReceivedBill().setTotal(calTotal());
-        
+
         getIssuedBill().setReferenceBill(getReceivedBill());
         getReceivedBill().setReferenceBill(getIssuedBill());
 

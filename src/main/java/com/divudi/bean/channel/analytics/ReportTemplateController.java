@@ -115,12 +115,30 @@ public class ReportTemplateController implements Serializable {
     public List<ReportTemplate> completeReportTemplate(String qry) {
         List<ReportTemplate> list;
         String jpql;
-        HashMap params = new HashMap();
-        jpql = "select c from ReportTemplate c "
-                + " where c.retired=false "
-                + " and (c.name) like :q "
-                + " order by c.name";
-        params.put("q", "%" + qry.toUpperCase() + "%");
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT c FROM ReportTemplate c "
+                + "WHERE c.retired = false "
+                + "AND (LOWER(c.name) LIKE :q OR LOWER(c.code) LIKE :q) "
+                + "ORDER BY c.name";
+        params.put("q", "%" + qry.toLowerCase() + "%");
+        list = getFacade().findByJpql(jpql, params);
+
+        if (list == null) {
+            list = new ArrayList<>();
+        }
+        return list;
+    }
+
+    public List<ReportTemplate> completeRootReportTemplate(String qry) {
+        List<ReportTemplate> list;
+        String jpql;
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT c FROM ReportTemplate c "
+                + "WHERE c.retired = false "
+                + "AND c.parent is null "
+                + "AND (LOWER(c.name) LIKE :q OR LOWER(c.code) LIKE :q) "
+                + "ORDER BY c.name";
+        params.put("q", "%" + qry.toLowerCase() + "%");
         list = getFacade().findByJpql(jpql, params);
 
         if (list == null) {
@@ -223,7 +241,6 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bill.department";
 
-
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -244,7 +261,7 @@ public class ReportTemplateController implements Serializable {
             Institution paramSite,
             Boolean excludeCredit,
             Boolean creditOnly) {
-        System.out.println("generateBillReport = " );
+        System.out.println("generateBillReport = ");
         System.out.println("creditOnly = " + creditOnly);
         System.out.println("excludeCredit = " + excludeCredit);
 
@@ -321,7 +338,7 @@ public class ReportTemplateController implements Serializable {
 
         return pb;
     }
-    
+
     public ReportTemplateRowBundle generateBillReportWithoutProfessionalFees(
             List<BillTypeAtomic> btas,
             Date paramFromDate,
@@ -371,7 +388,6 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bill";
 
-
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -411,9 +427,9 @@ public class ReportTemplateController implements Serializable {
             jpql += " and bill.billTypeAtomic in :btas ";
             parameters.put("btas", btas);
         }
-        
-        if(creditBillsOnly!=null && creditBillsOnly){
-             jpql += " and bill.paymentMethod in :pms ";
+
+        if (creditBillsOnly != null && creditBillsOnly) {
+            jpql += " and bill.paymentMethod in :pms ";
             parameters.put("pms", PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT));
         }
 
@@ -443,7 +459,6 @@ public class ReportTemplateController implements Serializable {
         }
 
         jpql += " group by bill";
-
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
@@ -511,7 +526,6 @@ public class ReportTemplateController implements Serializable {
         }
 
         jpql += " group by p";
-
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
@@ -1599,7 +1613,6 @@ public class ReportTemplateController implements Serializable {
             parameters.put("wu", paramUser);
         }
 
-
         Double sumResult = ejbFacade.findSingleResultByJpql(jpql, parameters, TemporalType.DATE);
 
         if (sumResult != null) {
@@ -2177,7 +2190,6 @@ public class ReportTemplateController implements Serializable {
             Long paramStartId,
             Long paramEndId) {
 
-
         String jpql;
         Map<String, Object> parameters = new HashMap<>();
         ReportTemplateRowBundle bundle = new ReportTemplateRowBundle();
@@ -2264,7 +2276,6 @@ public class ReportTemplateController implements Serializable {
 //                + " and bi.item.department is not null ";
         jpql += " group by bi.item.department ";
 
-        
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         if (rs == null || rs.isEmpty()) {

@@ -1134,7 +1134,6 @@ public class PharmacyReportController implements Serializable {
     }
 
     // </editor-fold>
-    
     @Deprecated
     public void createPharmacyCashInOutLedgerOld() {
         bundleList = new ArrayList<>();
@@ -1889,12 +1888,16 @@ public class PharmacyReportController implements Serializable {
             billTypes.add(BillType.PharmacyBhtPre);
         } else if ("opSaleDoc".equals(documentType)) {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
         } else if ("grnDoc".equals(documentType)) {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            billTypes.add(BillType.PharmacyGrnBill);
+            billTypes.add(BillType.PharmacyGrnReturn);
         } else if ("purchaseDoc".equals(documentType)) {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
@@ -1906,6 +1909,12 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
+        } else if ("transferIssueDoc".equals(documentType)) {
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+        } else if ("transferReceiveDoc".equals(documentType)) {
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
         }
 
         stockLedgerHistories = new ArrayList();
@@ -1981,6 +1990,11 @@ public class PharmacyReportController implements Serializable {
             params.put("ins", institution);
         }
 
+        if (site != null) {
+            jpql.append("and sh.department.site = :sit ");
+            params.put("sit", site);
+        }
+
         if (department != null) {
             jpql.append("and sh.department = :dep ");
             params.put("dep", department);
@@ -2041,7 +2055,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processClosingStockItemWiseReport() {
-       List<Long> ids;
+        List<Long> ids;
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
                 + " from StockHistory sh where sh.retired=:ret "
@@ -2053,6 +2067,11 @@ public class PharmacyReportController implements Serializable {
         if (institution != null) {
             jpql.append("and sh.institution = :ins ");
             params.put("ins", institution);
+        }
+
+        if (site != null) {
+            jpql.append("and sh.department.site = :sit ");
+            params.put("sit", site);
         }
 
         if (department != null) {
@@ -2688,7 +2707,5 @@ public class PharmacyReportController implements Serializable {
     public void setAmp(Amp amp) {
         this.amp = amp;
     }
-    
-    
 
 }

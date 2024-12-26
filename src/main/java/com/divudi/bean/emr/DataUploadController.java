@@ -28,6 +28,7 @@ import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemFeeController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.PatientController;
+import com.divudi.bean.common.RelationController;
 import com.divudi.bean.common.RouteController;
 import com.divudi.bean.common.ServiceController;
 import com.divudi.bean.common.SessionController;
@@ -83,13 +84,20 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.membership.MembershipController;
+import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.pharmacy.PharmacyPurchaseController;
 import com.divudi.data.SymanticHyrachi;
 import com.divudi.data.SymanticType;
 import com.divudi.data.dataStructure.PharmacyImportCol;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Doctor;
+import com.divudi.entity.Family;
+import com.divudi.entity.FamilyMember;
+import com.divudi.entity.Person;
+import com.divudi.entity.Relation;
 import com.divudi.entity.inward.InwardService;
+import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.entity.pharmacy.PharmaceuticalItemType;
@@ -98,6 +106,8 @@ import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.AmppFacade;
 import com.divudi.facade.AtmFacade;
+import com.divudi.facade.FamilyFacade;
+import com.divudi.facade.FamilyMemberFacade;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
@@ -155,6 +165,10 @@ import org.apache.poi.ss.SpreadsheetVersion;
 public class DataUploadController implements Serializable {
 
     @Inject
+    MembershipSchemeController membershipSchemeController;
+    @Inject
+    PatientController patientController;
+    @Inject
     ItemController itemController;
     @Inject
     SessionController sessionController;
@@ -175,7 +189,7 @@ public class DataUploadController implements Serializable {
     @Inject
     DiagnosisController diagnosisController;
     @Inject
-    PatientController patientController;
+    RelationController relationController;
     @Inject
     PatientEncounterController patientEncounterController;
     @Inject
@@ -229,6 +243,10 @@ public class DataUploadController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     PatientFacade patientFacade;
+    @EJB
+    FamilyMemberFacade familyMemberFacade;
+    @EJB
+    FamilyFacade familyFacade;
     @EJB
     PersonFacade personFacade;
     @EJB
@@ -292,6 +310,7 @@ public class DataUploadController implements Serializable {
 
     private List<Doctor> doctorsTosave;
     private List<Staff> staffToSave;
+    private List<Patient> savedPatients;
 
     private boolean pollActive;
     private boolean uploadComplete;
@@ -343,6 +362,11 @@ public class DataUploadController implements Serializable {
     public String navigateToDepartmentUpload() {
         uploadComplete = false;
         return "/admin/institutions/department_upload?faces-redirect=true";
+    }
+
+    public String navigateToUploadMembers() {
+        uploadComplete = false;
+        return "/membership/upload_members?faces-redirect=true";
     }
 
     public String navigateToSupplierUpload() {
@@ -1405,9 +1429,9 @@ public class DataUploadController implements Serializable {
             System.out.println("Total Foreigner Fee = " + item.getTotalForForeigner());
             itemsToSave.add(item);
         }
-        
+
         System.out.println("---------------------------------------------");
-        
+
         itemFacade.batchCreate(masterItemsToSave, 5000);
         itemFacade.batchCreate(itemsToSave, 5000);
         itemFeeFacade.batchCreate(itemFeesToSave, 10000);
@@ -1474,6 +1498,19 @@ public class DataUploadController implements Serializable {
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
                 staffToSave = readStaffFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        pollActive = false;
+    }
+
+    public void uploadMembers() {
+        pollActive = true;
+        items = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                savedPatients = readMembersFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -2211,6 +2248,134 @@ public class DataUploadController implements Serializable {
         }
 
         return stf;
+    }
+
+    public List<Patient> readMembersFromExcel(InputStream inputStream) throws IOException {
+        List<Patient> patients = new ArrayList<>();
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.iterator();
+
+        if (rowIterator.hasNext()) {
+            rowIterator.next();  // Skip the header row
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            
+            String name = row.getCell(1).getStringCellValue();
+            String titleString = row.getCell(2).getStringCellValue();
+            String sexString = row.getCell(3).getStringCellValue();
+            Long membershipNumberLong = getNumericCellAsLong(row.getCell(4));
+            Long phoneNumberLong = getNumericCellAsLong(row.getCell(5));
+            String nicNumber = getStringOrNumericCellValue(row.getCell(6));
+            String address = row.getCell(7).getStringCellValue();
+            String membershipName = row.getCell(8).getStringCellValue();
+            String relationName = row.getCell(9).getStringCellValue();
+            Integer ageInt = row.getCell(10) != null ? (int) row.getCell(10).getNumericCellValue() : null;
+
+            MembershipScheme ms = membershipSchemeController.fetchMembershipByName(membershipName);
+            Family family = patientController.fetchFamilyFromMembershipNumber(membershipNumberLong, ms, phoneNumberLong.toString());
+            Relation relation = relationController.fetchRelationByName(relationName);
+            Title title = Title.getTitleEnum(titleString);
+            Sex sex = Sex.getByLabelOrShortLabel(sexString);
+            Date dateOfBirth = CommonFunctions.fetchDateOfBirthFromAge(ageInt);
+
+            Patient pt = new Patient();
+            pt.getPerson().setName(name);
+            pt.getPerson().setAddress(address);
+            pt.getPerson().setPhone(phoneNumberLong.toString());
+            pt.getPerson().setMobile(phoneNumberLong.toString());
+            pt.getPerson().setTitle(title);
+            pt.getPerson().setSex(sex);
+            pt.getPerson().setDob(dateOfBirth);
+            pt.getPerson().setMembershipScheme(ms);
+            pt.getPerson().setNic(nicNumber);
+
+            pt.setPatientMobileNumber(phoneNumberLong);
+            pt.setPatientPhoneNumber(phoneNumberLong);
+            patientFacade.create(pt);
+
+            FamilyMember fm = new FamilyMember();
+            fm.setFamily(family);
+            fm.setPatient(pt);
+            fm.setRelationToChh(relation);
+            familyMemberFacade.create(fm);
+
+            family.getFamilyMembers().add(fm);
+            family.setChiefHouseHolder(pt);
+            familyFacade.edit(family);
+            
+            patients.add(pt);
+        }
+
+        workbook.close();
+        return patients;
+    }
+
+    private static Long getNumericCellAsLong(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+        try {
+            if (cell.getCellType() == CellType.STRING) {
+                return Long.parseLong(cell.getStringCellValue().replaceAll("\\D+", ""));
+            } else if (cell.getCellType() == CellType.NUMERIC) {
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    // Optionally handle date-to-long conversion or throw an exception
+                    throw new IllegalArgumentException("Date cannot be converted to Long");
+                }
+                return (long) cell.getNumericCellValue();
+            } else if (cell.getCellType() == CellType.FORMULA) {
+                switch (cell.getCachedFormulaResultType()) {
+                    case NUMERIC:
+                        return (long) cell.getNumericCellValue();
+                    case STRING:
+                        return Long.parseLong(cell.getStringCellValue().replaceAll("\\D+", ""));
+                    default:
+                        throw new IllegalArgumentException("Unsupported formula result type");
+                }
+            } else {
+                return null;
+            }
+        } catch (NumberFormatException | IllegalStateException e) {
+            return null;
+        }
+    }
+
+    private static String getStringOrNumericCellValue(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+        try {
+            switch (cell.getCellType()) {
+                case STRING:
+                    return cell.getStringCellValue();
+                case NUMERIC:
+                    if (DateUtil.isCellDateFormatted(cell)) {
+                        // Convert date to a string format if needed
+                        return new SimpleDateFormat("yyyy-MM-dd").format(cell.getDateCellValue());
+                    }
+                    return String.valueOf((long) cell.getNumericCellValue());
+                case FORMULA:
+                    switch (cell.getCachedFormulaResultType()) {
+                        case STRING:
+                            return cell.getStringCellValue();
+                        case NUMERIC:
+                            if (DateUtil.isCellDateFormatted(cell)) {
+                                return new SimpleDateFormat("yyyy-MM-dd").format(cell.getDateCellValue());
+                            }
+                            return String.valueOf((long) cell.getNumericCellValue());
+                        default:
+                            throw new IllegalArgumentException("Unsupported formula result type");
+                    }
+                default:
+                    return null;
+            }
+        } catch (IllegalStateException e) {
+            return null;
+        }
     }
 
     public void saveConsultants() {
@@ -6620,7 +6785,7 @@ public class DataUploadController implements Serializable {
         }
         return templateForItemWithFeeUpload;
     }
-    
+
     public StreamedContent getTemplateForItemAndFeeUpload() {
         try {
             createTemplateForItemandFeeUpload();
@@ -6629,7 +6794,7 @@ public class DataUploadController implements Serializable {
         }
         return templateForItemWithFeeUpload;
     }
-    
+
     public void createTemplateForItemandFeeUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -7227,6 +7392,14 @@ public class DataUploadController implements Serializable {
 
     public InstitutionController getInstitutionController() {
         return institutionController;
+    }
+
+    public List<Patient> getSavedPatients() {
+        return savedPatients;
+    }
+
+    public void setSavedPatients(List<Patient> savedPatients) {
+        this.savedPatients = savedPatients;
     }
 
 }

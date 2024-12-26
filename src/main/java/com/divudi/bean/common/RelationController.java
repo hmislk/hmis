@@ -2,14 +2,12 @@ package com.divudi.bean.common;
 
 import com.divudi.entity.Relation;
 
-
 import com.divudi.facade.RelationFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.common.util.JsfUtil.PersistAction;
 
-
-
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -22,13 +20,17 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
 
-@Named("relationController")
+@Named
 @SessionScoped
 public class RelationController implements Serializable {
 
     @EJB
     private RelationFacade ejbFacade;
+    @Inject
+    SessionController sessionController;
+
     private List<Relation> items = null;
     private Relation selected;
 
@@ -84,6 +86,19 @@ public class RelationController implements Serializable {
             items = getFacade().findByJpql(j);
         }
         return items;
+    }
+
+    public Relation fetchRelationByName(String relationName) {
+        String j = "select r from Relation r where r.retired=false and r.name=:relationName order by r.orderNo";
+        Relation relation = getFacade().findFirstByJpql(j);
+        if (relation == null) {
+            relation = new Relation();
+            relation.setName(relationName);
+            relation.setCreatedAt(new Date());
+            relation.setCreater(sessionController.getLoggedUser());
+            getFacade().create(relation);
+        }
+        return relation;
     }
 
     private void persist(PersistAction persistAction, String successMessage) {

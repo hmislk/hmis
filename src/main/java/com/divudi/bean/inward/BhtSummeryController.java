@@ -1628,6 +1628,8 @@ public class BhtSummeryController implements Serializable {
         getCurrent().setNetTotal(grantTotal - discount);
         getCurrent().setPaidAmount(paid);
         getCurrent().setClaimableTotal(adjustedTotal);
+        getCurrent().setPaymentMethod(getPatientEncounter().getPaymentMethod());
+        getCurrent().setCreditCompany(getPatientEncounter().getCreditCompany());
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL);
         getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL));
@@ -1659,6 +1661,7 @@ public class BhtSummeryController implements Serializable {
         creditCompanyBill.setNetTotal(value);
         creditCompanyBill.setInstitution(getSessionController().getInstitution());
         creditCompanyBill.setCreditCompany(ecc.getInstitution());
+        creditCompanyBill.setPaymentMethod(PaymentMethod.Credit);
         
 
         creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
@@ -1674,6 +1677,7 @@ public class BhtSummeryController implements Serializable {
 //        getCurrent().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patientEncounter.getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
         creditCompanyBill.setCreatedAt(new Date());
         creditCompanyBill.setCreater(getSessionController().getLoggedUser());
+        creditCompanyBill.setReferenceBill(getCurrent());
 
         if (creditCompanyBill.getId() == null) {
             getBillFacade().create(creditCompanyBill);

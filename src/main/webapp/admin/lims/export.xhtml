@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" 
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="form" >
+                    <p:growl />
+                    
+                    <p:panel header="Format Expoet" styleClass="w-100 p-0 m-1" >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Format Expoet" class="mt-2" style="font-size: 22px; font-weight: 700"/>
+                                <p:commandButton 
+                                    value="Back" 
+                                    icon="fa fa-arrow-left"
+                                    style="float: right;"
+                                    action="#{investigationController.navigateToManageInvestigation}" 
+                                    ajax="false" >
+                                </p:commandButton>
+                            </div>
+
+                        </f:facet>
+
+                        <div class="d-flex justify-content-between">
+                            <div class="d-flex col-5 gap-4" style="font-size: 18px; font-weight: 700">
+                                <h:outputText value="Current Investigation" class="mt-2"/>
+                                <h:outputText value="-" class="mt-2"/>
+                                <h:outputText value="#{labReportExportImportController.current.name}" class="mt-2 text-dark"/>
+                            </div>
+                            <p:commandButton 
+                                ajax="false" 
+                                style="float: right; width: 200px;"
+                                icon="fas fa-file-export export-icon"
+                                class="ui-button-warning"
+                                value="Export" 
+                                onclick="PrimeFaces.monitorDownload(start, stop);" >
+                            <p:fileDownload value="#{labReportExportImportController.export()}" />
+                                
+                            </p:commandButton>
+                        </div>
+
+                        <p:panel id="pIx" class=" w-100 mt-3">
+
+                            <f:facet name="header">
+                                <h:outputText value="Investigation Items List" class="mt-2"/>
+                            </f:facet>
+
+                            <div class="row mb-1" style="font-weight: 700; font-size: 16px;">
+                                <div class="col-2"><p:outputLabel value="Item Name" ></p:outputLabel></div>
+                                <div class="col-1"><p:outputLabel value="Item Type" ></p:outputLabel></div>
+                                <div class="col-1"><p:outputLabel value="Item Value Type" ></p:outputLabel></div>
+                                <div class="col-1"><p:outputLabel value="Automated" ></p:outputLabel></div>
+                                <div class="col-1"><p:outputLabel value="Retired" ></p:outputLabel></div>
+                            </div>
+                            <ui:repeat value="#{investigationItemController.userChangableItems}" var="ii">
+                                <div class="row mb-1">
+                                    <div class="col-2"><p:outputLabel value="#{ii.name}" ></p:outputLabel></div>
+                                    <div class="col-1"><p:outputLabel value="#{ii.ixItemType}" ></p:outputLabel></div>
+                                    <div class="col-1"><p:outputLabel value="#{ii.ixItemValueType}" ></p:outputLabel></div>
+                                    <div class="col-1"><p:outputLabel value="#{ii.automated}" ></p:outputLabel></div>
+                                    <div class="col-1"><p:outputLabel value="#{ii.retired}" ></p:outputLabel></div>
+                                </div>
+
+                            </ui:repeat>
+
+                        </p:panel>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
