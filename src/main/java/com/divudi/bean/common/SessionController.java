@@ -85,60 +85,62 @@ public class SessionController implements Serializable, HttpSessionListener {
     @EJB
     private CashTransactionBean cashTransactionBean;
     @EJB
-    DepartmentFacade departmentFacade;
+    private DepartmentFacade departmentFacade;
     @EJB
-    ApplicationEjb applicationEjb;
+    private ApplicationEjb applicationEjb;
     @EJB
-    PersonFacade personFacade;
+    private PersonFacade personFacade;
     @EJB
-    StaffFacade staffFacade;
+    private StaffFacade staffFacade;
     @EJB
-    WebUserFacade webUserFacade;
+    private WebUserFacade webUserFacade;
     @EJB
-    WebUserDashboardFacade webUserDashboardFacade;
+    private WebUserDashboardFacade webUserDashboardFacade;
     @EJB
-    InstitutionFacade institutionFacade;
+    private InstitutionFacade institutionFacade;
     /**
      * Controllers
      */
     @Inject
-    SecurityController securityController;
+    private SecurityController securityController;
     @Inject
-    ApplicationController applicationController;
+    private ApplicationController applicationController;
     @Inject
-    SearchController searchController;
+    private SearchController searchController;
     @Inject
-    InstitutionController institutionController;
+    private InstitutionController institutionController;
     @Inject
-    DepartmentController departmentController;
+    private DepartmentController departmentController;
     @Inject
-    WebUserController webUserController;
+    private WebUserController webUserController;
     @Inject
-    PersonController personController;
+    private PersonController personController;
     @Inject
-    UserIconController userIconController;
+    private UserIconController userIconController;
     @Inject
-    TokenController tokenController;
+    private TokenController tokenController;
     @Inject
-    OpdTokenController opdTokenController;
+    private OpdTokenController opdTokenController;
     @Inject
-    BookingController bookingController;
+    private BookingController bookingController;
     @Inject
-    ConfigOptionApplicationController configOptionApplicationController;
+    private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
-    CourierController courierController;
+    private CourierController courierController;
     @Inject
-    CashBookController cashBookController;
+    private CashBookController cashBookController;
     @Inject
-    DenominationController denominationController;
+    private DenominationController denominationController;
     @Inject
-    DrawerController drawerController;
+    private DrawerController drawerController;
+    @Inject
+    private PharmacySaleController pharmacySaleController;
     /**
      * Properties
      */
 
     private static final long serialVersionUID = 1L;
-    WebUser loggedUser = null;
+    private WebUser loggedUser = null;
     private UserPreference loggedPreference;
     private UserPreference applicationPreference;
     private UserPreference institutionPreference;
@@ -147,10 +149,10 @@ public class SessionController implements Serializable, HttpSessionListener {
     boolean logged = false;
     boolean activated = false;
     private String primeTheme;
-    String defLocale;
+    private String defLocale;
     private List<Privileges> privilegeses;
-    Department department;
-    List<Department> departments;
+    private Department department;
+    private List<Department> departments;
 
     private List<Department> loggableDepartments;
     private List<Department> loggableSubDepartments;
@@ -158,16 +160,16 @@ public class SessionController implements Serializable, HttpSessionListener {
     private List<Institution> loggableCollectingCentres;
     private List<UserIcon> userIcons;
 
-    Institution institution;
+    private Institution institution;
     private List<WebUserDashboard> dashboards;
     boolean paginator;
-    WebUser webUser;
-    String billNo;
-    String phoneNo;
-    UserPreference currentPreference;
-    Bill bill;
+    private WebUser webUser;
+    private String billNo;
+    private String phoneNo;
+    private UserPreference currentPreference;
+    private Bill bill;
 //    private DashboardModel dashboardModel;
-    String loginRequestResponse;
+    private String loginRequestResponse;
     private Boolean firstLogin;
 
     private boolean websiteUserGoingToLog = false;
@@ -182,6 +184,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     private Institution loggedSite;
 
     private Drawer loggedUserDrawer;
+    private Boolean opdBillingAfterShiftStart;
+    private Boolean opdBillItemSearchByAutocomplete;
+    private Boolean pharmacyBillingAfterShiftStart;
 
     public String navigateToLoginPage() {
         return "/index1.xhtml";
@@ -994,7 +999,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 //            i++;
 //        }
 //    }
-
     public boolean loginForRequests() {
         return loginForRequests(userName, password);
     }
@@ -1470,7 +1474,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " order by wd.department.name";
         return departmentFacade.findByJpql(sql, m);
     }
-    
+
     private List<Department> fillLoggableSubDepts(Department loggableDept) {
         List<Department> ds = new ArrayList<>();
         ds.add(loggableDept);
@@ -1544,9 +1548,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.applicationController = applicationController;
     }
 
-    @Inject
-    private PharmacySaleController pharmacySaleController;
-
     public void logout() {
         userPrivilages = null;
         websiteUserGoingToLog = false;
@@ -1560,8 +1561,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         userIcons = null;
         setLogged(false);
         setActivated(false);
-        getPharmacySaleController().clearForNewBill();
-
+        pharmacySaleController.clearForNewBill();
+        opdBillingAfterShiftStart = null;
+        opdBillItemSearchByAutocomplete = null;
+        pharmacyBillingAfterShiftStart = null;
     }
 
     public WebUser getCurrent() {
@@ -1900,15 +1903,15 @@ public class SessionController implements Serializable, HttpSessionListener {
         thisLogin.setIpaddress(ip);
         thisLogin.setComputerName(host);
         // This should print null if the ID is not set.
-        
+
         if (thisLogin.getId() == null) {
-            try{
+            try {
                 getLoginsFacade().create(thisLogin);
-            }catch(Exception e){
+            } catch (Exception e) {
                 getLoginsFacade().edit(thisLogin);
                 System.err.println("e = " + e);
             }
-            
+
         } else {
             getLoginsFacade().edit(thisLogin);
         }
@@ -1935,14 +1938,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void sessionDestroyed(HttpSessionEvent se) {
         //////// // System.out.println("recording logout as session is distroid");
         recordLogout();
-    }
-
-    public PharmacySaleController getPharmacySaleController() {
-        return pharmacySaleController;
-    }
-
-    public void setPharmacySaleController(PharmacySaleController pharmacySaleController) {
-        this.pharmacySaleController = pharmacySaleController;
     }
 
     public CashTransactionBean getCashTransactionBean() {
@@ -2129,13 +2124,13 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public Boolean getFirstLogin() {
         if (firstLogin == null) {
-            if(applicationController.getFirstLogin()==null){
+            if (applicationController.getFirstLogin() == null) {
                 firstLogin = isFirstVisit();
                 applicationController.setFirstLogin(firstLogin);
-            }else{
-                firstLogin=applicationController.getFirstLogin();
+            } else {
+                firstLogin = applicationController.getFirstLogin();
             }
-            
+
         }
         return firstLogin;
     }
@@ -2252,7 +2247,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.loggedSite = loggedSite;
     }
 
-    
     public List<Denomination> findDefaultDenominations() {
         return denominationController.getDenominations();
     }
@@ -2263,6 +2257,39 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setLoggedUsersDrawer(Drawer loggedUserDrawer) {
         this.loggedUserDrawer = loggedUserDrawer;
+    }
+
+    public Boolean getOpdBillingAfterShiftStart() {
+        if (opdBillingAfterShiftStart == null) {
+            opdBillingAfterShiftStart = getApplicationPreference().isOpdBillingAftershiftStart();
+        }
+        return opdBillingAfterShiftStart;
+    }
+
+    public void setOpdBillingAfterShiftStart(Boolean opdBillingAfterShiftStart) {
+        this.opdBillingAfterShiftStart = opdBillingAfterShiftStart;
+    }
+
+    public Boolean getOpdBillItemSearchByAutocomplete() {
+        if (opdBillItemSearchByAutocomplete == null) {
+            opdBillItemSearchByAutocomplete = configOptionApplicationController.getBooleanValueByKey("OPD Bill Item Search By Autocomplete", false);
+        }
+        return opdBillItemSearchByAutocomplete;
+    }
+
+    public void setOpdBillItemSearchByAutocomplete(Boolean opdBillItemSearchByAutocomplete) {
+        this.opdBillItemSearchByAutocomplete = opdBillItemSearchByAutocomplete;
+    }
+
+    public Boolean getPharmacyBillingAfterShiftStart() {
+        if (pharmacyBillingAfterShiftStart == null) {
+            pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
+        }
+        return pharmacyBillingAfterShiftStart;
+    }
+
+    public void setPharmacyBillingAfterShiftStart(Boolean pharmacyBillingAfterShiftStart) {
+        this.pharmacyBillingAfterShiftStart = pharmacyBillingAfterShiftStart;
     }
 
 }

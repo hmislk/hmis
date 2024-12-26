@@ -204,6 +204,27 @@ public class MembershipSchemeController implements Serializable {
         return items;
     }
 
+    public MembershipScheme fetchMembershipByName(String membershipName) {
+        String j;
+        j = "select s "
+                + " from MembershipScheme s "
+                + " where s.retired=:ret "
+                + " and s.name=:mn ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("mn", membershipName);
+        MembershipScheme ms = getFacade().findFirstByJpql(j, m);
+        if (ms == null) {
+            ms = new MembershipScheme();
+            ms.setName(membershipName);
+            ms.setCreatedAt(new Date());
+            ms.setCreater(sessionController.getLoggedUser());
+            ms.setInstitution(sessionController.getInstitution());
+            getFacade().create(ms);
+        }
+        return ms;
+    }
+
     public void fillItems() {
         String j;
         j = "select s "

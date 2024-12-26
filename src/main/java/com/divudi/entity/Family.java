@@ -38,6 +38,8 @@ public class Family implements Serializable {
     private Long membershipCardNo;
     private String phoneNo;
     @ManyToOne
+    private Patient chiefHouseHolder;
+    @ManyToOne
     private MembershipScheme membershipScheme;
     @Lob
     private String comments;
@@ -221,6 +223,14 @@ public class Family implements Serializable {
 
     public void setCreatedDepartment(Department createdDepartment) {
         this.createdDepartment = createdDepartment;
+    }
+
+    public Patient getChiefHouseHolder() {
+        return chiefHouseHolder;
+    }
+
+    public void setChiefHouseHolder(Patient chiefHouseHolder) {
+        this.chiefHouseHolder = chiefHouseHolder;
     }
 
     

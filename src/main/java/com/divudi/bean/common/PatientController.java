@@ -205,7 +205,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     Long patientId;
     private FamilyMember familyMember;
     private List<FamilyMember> familyMembers;
-    Family currentFamily;
+    private Family currentFamily;
     private List<Family> families;
     FamilyMember currentFamilyMember;
     Patient addingPatientToFamily;
@@ -2142,10 +2142,19 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageFamilyMembership() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Family is Selected");
+            return null;
+        }
+        familyMembers = fetchFamilyMembers(currentFamily);
         return "/membership/family_membership_manage?faces-redirect=true";
     }
 
     public String navigateToManageIndividualMembership() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Patient is Selected");
+            return null;
+        }
         return "/membership/patient?faces-redirect=true";
     }
 
@@ -2173,8 +2182,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         m.put("pn", searchText);
         m.put("mcn", mcn);
         List<Family> fs = getFamilyFacade().findByJpql(j, m);
-        if (fs == null) {
-            JsfUtil.addErrorMessage("No matches");
+        if (fs == null || fs.isEmpty()) {
+            JsfUtil.addErrorMessage("No matching families found");
             return "";
         } else if (fs.size() == 1) {
             currentFamily = fs.get(0);
@@ -2183,8 +2192,43 @@ public class PatientController implements Serializable, ControllerWithPatient {
         } else {
             families = fs;
             searchText = "";
-            return "/membership/search_family?faces-redirect=true;";
+            return null;
         }
+    }
+
+    public Family fetchFamilyFromMembershipNumber(String paramMembershipNumber, MembershipScheme paramMembershipScheme, String phoneNumber) {
+        if (paramMembershipNumber == null) {
+            return null;
+        }
+        String membershipNumberWithDigitsOnly = CommonFunctions.getDigitsOnlyByRemovingWhitespacesAndNonDigitCharacters(paramMembershipNumber);
+        Long membershipNumberLong = CommonFunctions.convertStringToLong(membershipNumberWithDigitsOnly);
+        return fetchFamilyFromMembershipNumber(membershipNumberLong, paramMembershipScheme, phoneNumber);
+    }
+
+    public Family fetchFamilyFromMembershipNumber(Long membershipNumber, MembershipScheme paramMembershipScheme, String phoneNumber) {
+        if (membershipNumber == null) {
+            return null;
+        }
+        String jpql = "Select f from Family f where f.retired=false and f.membershipCardNo = :mcn";
+        Map<String, Object> params = new HashMap<>();
+        params.put("mcn", membershipNumber);
+        Family fm = getFamilyFacade().findFirstByJpql(jpql, params);
+        if (fm == null) {
+            fm = new Family();
+            fm.setMembershipCardNo(membershipNumber);
+            fm.setMembershipScheme(paramMembershipScheme);
+            fm.setCreatedAt(new Date());
+            fm.setCreatedDepartment(sessionController.getDepartment());
+            fm.setCreatedInstitution(sessionController.getInstitution());
+            fm.setCreater(sessionController.getLoggedUser());
+            fm.setPhoneNo(phoneNumber);
+            familyFacade.create(fm);
+        } else {
+            fm.setMembershipScheme(paramMembershipScheme);
+            fm.setPhoneNo(phoneNumber);
+            familyFacade.edit(fm);
+        }
+        return fm;
     }
 
     public String searchFamilyMember() {
@@ -2319,6 +2363,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         current.getPerson().setMembershipScheme(currentFamily.getMembershipScheme());
         save(current);
+        if(currentFamily.getPhoneNo()==null){
+            currentFamily.setPhoneNo(current.getPerson().getPhone());
+        }
+        currentFamily.setChiefHouseHolder(current);
+        getFamilyFacade().edit(currentFamily);
         FamilyMember tfm = new FamilyMember();
         tfm.setPatient(current);
         tfm.setFamily(currentFamily);
@@ -2401,6 +2450,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
         tfm.setRelationToChh(currentRelation);
         getFamilyMemberFacade().create(tfm);
         currentFamily.getFamilyMembers().add(tfm);
+        if(currentFamily.getChiefHouseHolder()==null){
+            currentFamily.setChiefHouseHolder(current);
+        }
+        if(currentFamily.getPhoneNo()==null || currentFamily.getPhoneNo().trim().equals("")){
+            currentFamily.setPhoneNo(current.getPerson().getPhone());
+        }
         saveFamily();
         JsfUtil.addSuccessMessage("Family Member Added to Family");
         current = null;
@@ -3703,6 +3758,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setFamilyMember(FamilyMember familyMember) {
         this.familyMember = familyMember;
+    }
+
+    public List<FamilyMember> fetchFamilyMembers(Family family) {
+        String jpql = "select fm"
+                + " from FamilyMember fm"
+                + " where fm.retired=:ret "
+                + " and fm.family=:family";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("family", family);
+        return familyMemberFacade.findByJpql(jpql, params);
     }
 
     public List<FamilyMember> getFamilyMembers() {

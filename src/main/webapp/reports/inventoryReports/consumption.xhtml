@@ -246,11 +246,18 @@
                                 <p:column headerText="Department">
                                     <h:outputText value="#{s.departmentName}" />
                                 </p:column>
+                                <p:column headerText="Consumption Department">
+                                    <h:outputText value="#{s.department}" />
+                                </p:column>
 
                                 <p:column headerText="Net Total" class="ml-4" style="text-align: right;">
                                     <h:outputText value="#{s.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyController.totalSaleValue}" >
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                    </f:facet>
                                 </p:column>>
 
                             </p:dataTable>
@@ -283,12 +290,23 @@
                                     <h:outputText value="#{b.cancelledBill.deptId}" />
                                 </p:column>
 
-                                <p:column headerText="Value" width="4em" style="text-align: right;">
-                                    <h:outputText value="#{b.netTotal}" >
+                                <p:column headerText="Purchase Rate Value" width="4em" style="text-align: right;">
+                                    <h:outputText value="#{b.stockBill.stockValueAtPurchaseRates}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyController.stockAverages}" >
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Retail Sale Value" width="4em" style="text-align: right;">
+                                    <h:outputText value="#{b.stockBill.stockValueAsSaleRate}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" >
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
@@ -300,16 +318,6 @@
 
                                 <p:column headerText="Documnet Created By" width="10em">
                                     <h:outputText value="#{b.creater.webUserPerson.name}" />
-                                </p:column>
-
-                                <p:column headerText="Approved Date and Time" width="6em">
-                                    <h:outputText value="#{b.approveAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputText>
-                                </p:column>
-
-                                <p:column headerText="Document Approved By" width="10em">
-                                    <h:outputText value="#{b.approveUser.webUserPerson.name}" />
                                 </p:column>
 
                                 <p:column headerText="Remarks" width="10em">
@@ -342,7 +350,7 @@
                                 </p:column>
 
                                 <p:column headerText="Request No" width="6em">
-                                    <p:outputLabel value="#{i.bill.backwardReferenceBill.deptId}" />
+                                    <p:outputLabel value="#{i.bill.invoiceNumber}" />
                                 </p:column>
 
                                 <p:column headerText="Consumption Department" width="10em">
@@ -376,28 +384,18 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" >
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Created Date and Time" width="8em">
-                                    <p:outputLabel value="#{i.bill.backwardReferenceBill.createdAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Document Created By" width="8em">
-                                    <p:outputLabel value="#{i.bill.backwardReferenceBill.creater.webUserPerson.name}" >
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Approved Date and Time" width="8em">
                                     <p:outputLabel value="#{i.bill.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Documnet Approved By" width="8em">
+                                <p:column headerText="Document Created By" width="8em">
                                     <p:outputLabel value="#{i.bill.creater.webUserPerson.name}" >
                                     </p:outputLabel>
                                 </p:column>
@@ -412,7 +410,7 @@
 
                         <h:panelGroup rendered="#{pharmacyController.reportType eq 'categoryWise'}">
                             <h5 class="mt-3">Department Summary</h5>
-                            <p:dataTable id="tbl4" value="#{pharmacyController.issueDepartmentCategoryWiseItems}" 
+                            <p:dataTable id="tbl4" value="#{pharmacyController.resultsList}" 
                                          var="s" 
                                          rowIndexVar="n" 
                                          rowKey="#{s.id}"
@@ -422,14 +420,17 @@
                                          currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
                                          rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
+                                <p:column headerText="Department">
+                                    <h:outputText value="#{s.mainDepartment.name}" />
+                                </p:column>
                                 <p:column headerText="Consumption Department">
-                                    <h:outputText value="#{s.department.name}" />
+                                    <h:outputText value="#{s.consumptionDepartment.name}" />
                                 </p:column>
                                 <p:column headerText="Category">
                                     <h:outputText value="#{s.category.name}" />
                                 </p:column>
                                 <p:column headerText="Item">
-                                    <h:outputText value="#{s.itm.name}" />
+                                    <h:outputText value="#{s.item.name}" />
                                 </p:column>
                                 <p:column headerText="Rate" style="text-align: right;">
                                     <h:outputText value="#{s.purchaseRate}" >
@@ -442,15 +443,17 @@
                                         <f:convertNumber pattern="#,##0"/>
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.grantIssueQty}" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyController.grantIssueQty}" >
+                                            <f:convertNumber pattern="#,##0"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Total"  class="ml-4" style="text-align: right;" >
-                                    <h:outputText value="#{s.total}">
+                                    <h:outputText value="#{s.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" >
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>
 

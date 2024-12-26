@@ -555,6 +555,7 @@
                                         icon="fas fa-file-export export-icon"
                                         action="#{investigationController.navigateExportReoirtFormat()}" 
                                         value="Export Format" >
+                                        <f:setPropertyActionListener value="#{investigationController.current}" target="#{labReportExportImportController.current}"/>
                                     </p:commandButton>
 
                                     <p:commandButton                                                 
