@@ -12,7 +12,21 @@
 
             <p:growl />
 
-            <p:panel header="Upload Lab Report Format" >
+            <p:panel >
+                <f:facet name="header">
+                    <h:form >
+                        <h:outputText value="Upload Lab Report Format" class="mt-2"/>
+
+                        <p:commandButton 
+                            class="ui-button-info" 
+                            ajax="false" 
+                            style="float: right;"
+                            action="#{labReportExportImportController.makeNull()}"
+                            icon="fa fa-plus"
+                            value="New Format Upload" >
+                        </p:commandButton>
+                    </h:form>
+                </f:facet>
                 <h:form  enctype="multipart/form-data" >
                     <div class="row ">
                         <div class="col-1">
@@ -70,7 +84,7 @@
                         <f:facet name="header">
                             <h:outputText value="Successfully Upload Items" class="mt-2"/>
                         </f:facet>
-                        
+
                         <div class="row mb-1" style="font-weight: 700; font-size: 16px;">
                             <div class="col-3"><p:outputLabel value="Item Name" ></p:outputLabel></div>
                             <div class="col-1"><p:outputLabel value="Item Type" ></p:outputLabel></div>

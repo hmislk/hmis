@@ -41,10 +41,14 @@ import com.divudi.data.CssTextDecoration;
 import com.divudi.data.CssVerticalAlign;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.java.CommonFunctions;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import static org.apache.poi.ss.usermodel.CellType.FORMULA;
 import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
 import static org.apache.poi.ss.usermodel.CellType.STRING;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -78,6 +82,7 @@ public class LabReportExportImportController implements Serializable {
     private List<InvestigationItem> uploadedSuccessItems;
     private List<InvestigationItem> uploadedRejectedItems;
     private UploadedFile file;
+    private StreamedContent downloadingExcel;
 
 // </editor-fold>   
     
@@ -133,20 +138,26 @@ public class LabReportExportImportController implements Serializable {
         return tis;
     }
 
-    public void export() throws IOException {
+    public StreamedContent export(){
         if (getCurrent() == null) {
             JsfUtil.addErrorMessage("Pleace select Investigations ");
-            return;
+            return null;
         }
         List<InvestigationItem> items = investigationItemController.getUserChangableItems();
+        
         if (items == null) {
             JsfUtil.addErrorMessage("This Investigation has no InvestigationItem");
-            return;
+            return null;
         }
         
-        exportInvestigationItemsToExcel(items);
-        JsfUtil.addSuccessMessage("Successfuly Uploaed !");
-
+        try {
+            downloadingExcel = exportInvestigationItemsToExcel(items);
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        JsfUtil.addSuccessMessage("Successfuly Download !");
+        return downloadingExcel;
+        
     }
 
     public void importFormat() {
@@ -193,19 +204,21 @@ public class LabReportExportImportController implements Serializable {
         return (value == null || value.trim().isEmpty()) ? defaultValue : value;
     }
 
-    public void exportInvestigationItemsToExcel(List<InvestigationItem> investigationItems) throws IOException {
+    public StreamedContent exportInvestigationItemsToExcel(List<InvestigationItem> investigationItems) throws IOException {
         // Define a predefined directory (e.g., user's desktop)
         System.out.println("Investigation Items = " + investigationItems.size());
-        String userHome = System.getProperty("user.home");
-        String defaultDirectory = userHome + File.separator + "Desktop"; // Change to any other directory if needed
-        String fileName = getCurrent().getName() + ".xlsx";
-        String fullFilePath = defaultDirectory + File.separator + fileName;
+//        String userHome = System.getProperty("user.home");
+//        String defaultDirectory = userHome + File.separator + "Desktop"; // Change to any other directory if needed
+//        String fullFilePath = defaultDirectory + File.separator + fileName;
+//
+//        // Ensure the directory exists
+//        File file = new File(fullFilePath);
+//        file.getParentFile().mkdirs(); // Create parent directories if they don't exist
 
-        // Ensure the directory exists
-        File file = new File(fullFilePath);
-        file.getParentFile().mkdirs(); // Create parent directories if they don't exist
+        StreamedContent excelSc;
 
         // Create a new workbook and a sheet
+        
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet sheet = workbook.createSheet("InvestigationItems");
 
@@ -262,17 +275,21 @@ public class LabReportExportImportController implements Serializable {
             sheet.autoSizeColumn(i);
         }
 
-        // Write the workbook to the default file path
-        System.out.println("Attempting to write to: " + fullFilePath);
-        try (FileOutputStream outputStream = new FileOutputStream(file)) {
-            workbook.write(outputStream);
-            System.out.println("Excel file created successfully at " + fullFilePath);
-        } catch (IOException e) {
-            System.out.println("Error writing Excel file: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            workbook.close();
-        }
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        String fileName = getCurrent().getName() + ".xlsx";
+        // Set the downloading file
+        excelSc = DefaultStreamedContent.builder()
+                .name(fileName)
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+        
+        return excelSc;
     }
 
 // </editor-fold>
@@ -761,5 +778,13 @@ public class LabReportExportImportController implements Serializable {
         this.dataUploadController = dataUploadController;
     }
 // </editor-fold>
+
+    public StreamedContent getDownloadingExcel() {
+        return downloadingExcel;
+    }
+
+    public void setDownloadingExcel(StreamedContent downloadingExcel) {
+        this.downloadingExcel = downloadingExcel;
+    }
 
 }
