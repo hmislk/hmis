@@ -231,20 +231,36 @@
                             value="Print">
                         <p:printer target="printPanel"/>
                     </p:commandButton>
-                    <p:commandButton id="btnExcel" class="m-2 ui-button-success"
+                    <p:commandButton class="m-2 ui-button-success"
                                      style="width: 150px"
                                      icon="fas fa-file-excel"
+                                     rendered="#{reportsController.reportType eq 'summery'}"
                                      ajax="false" value="Excel">
-                        <p:dataExporter type="xlsx" target="printPanel" fileName="itemized_sale_summary"/>
+                    </p:commandButton>
+                    <p:commandButton class="m-2 ui-button-success"
+                                     style="width: 150px"
+                                     icon="fas fa-file-excel"
+                                     rendered="#{reportsController.reportType eq 'detail'}"
+                                     action="#{reportsController.exportRouteAnalysisDetailReportToExcel}"
+                                     ajax="false" value="Excel">
                     </p:commandButton>
                     <p:commandButton
                             class="m-2 ui-button-danger"
                             style="width: 150px"
                             icon="fa-solid fa-file-pdf"
                             ajax="false"
+                            rendered="#{reportsController.reportType eq 'summery'}"
                             value="PDF">
-                        <p:dataExporter type="pdf" target="printPanel"
-                                        fileName="Collection_Center_Wise_Transaction_Report.pdf"/>
+                    </p:commandButton>
+
+                    <p:commandButton
+                            class="m-2 ui-button-danger"
+                            style="width: 150px"
+                            icon="fa-solid fa-file-pdf"
+                            ajax="false"
+                            rendered="#{reportsController.reportType eq 'detail'}"
+                            action="#{reportsController.exportRouteAnalysisDetailReportToPdf}"
+                            value="PDF">
                     </p:commandButton>
 
                     <h:panelGrid columns="2" class="mb-2">

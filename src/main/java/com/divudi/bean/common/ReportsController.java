@@ -4400,4 +4400,122 @@ public class ReportsController implements Serializable {
             dataRow.createCell(colIndex).setCellValue(total);
         }
     }
+
+    public void exportRouteAnalysisDetailReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Collecting_Center_Monthly_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+             OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("Monthly Report");
+            int rowIndex = 0;
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            headerRow.createCell(0).setCellValue("S. No");
+            headerRow.createCell(1).setCellValue("Collecting Center Code");
+            headerRow.createCell(2).setCellValue("Collecting Center");
+
+            List<YearMonth> yearMonths = getYearMonths();
+            int dynamicColumnIndex = 3;
+            for (YearMonth yearMonth : yearMonths) {
+                headerRow.createCell(dynamicColumnIndex++).setCellValue(yearMonth.toString() + " - Sample Count");
+                headerRow.createCell(dynamicColumnIndex++).setCellValue(yearMonth.toString() + " - Service Amount");
+            }
+
+            int serialNumber = 1;
+            for (Map.Entry<Institution, Map<YearMonth, Bill>> entrySet : getGroupedCollectingCenterWiseBillsMonthly().entrySet()) {
+                Institution center = entrySet.getKey();
+                Map<YearMonth, Bill> monthlyData = entrySet.getValue();
+
+                Row dataRow = sheet.createRow(rowIndex++);
+                dataRow.createCell(0).setCellValue(serialNumber++);
+                dataRow.createCell(1).setCellValue(center.getCode());
+                dataRow.createCell(2).setCellValue(center.getName());
+
+                dynamicColumnIndex = 3;
+                for (YearMonth yearMonth : yearMonths) {
+                    Bill bill = monthlyData.get(yearMonth);
+
+                    if (bill != null) {
+                        dataRow.createCell(dynamicColumnIndex++).setCellValue(bill.getQty());
+                        dataRow.createCell(dynamicColumnIndex++).setCellValue(bill.getTotalHospitalFee());
+                    } else {
+                        dataRow.createCell(dynamicColumnIndex++).setCellValue(0);
+                        dataRow.createCell(dynamicColumnIndex++).setCellValue(0.0);
+                    }
+                }
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportRouteAnalysisDetailReportToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Collecting_Center_Monthly_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Collecting Center Monthly Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            PdfPTable table = new PdfPTable(3 + getYearMonths().size() * 2);
+            table.setWidthPercentage(100);
+
+            table.addCell(new PdfPCell(new Phrase("S. No")));
+            table.addCell(new PdfPCell(new Phrase("Collecting Center Code")));
+            table.addCell(new PdfPCell(new Phrase("Collecting Center")));
+
+            List<YearMonth> yearMonths = getYearMonths();
+            for (YearMonth yearMonth : yearMonths) {
+                table.addCell(new PdfPCell(new Phrase(yearMonth.toString() + " - Sample Count")));
+                table.addCell(new PdfPCell(new Phrase(yearMonth.toString() + " - Service Amount")));
+            }
+
+            int serialNumber = 1;
+            for (Map.Entry<Institution, Map<YearMonth, Bill>> entrySet : getGroupedCollectingCenterWiseBillsMonthly().entrySet()) {
+                Institution center = entrySet.getKey();
+                Map<YearMonth, Bill> monthlyData = entrySet.getValue();
+
+                table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++))));
+                table.addCell(new PdfPCell(new Phrase(center.getCode())));
+                table.addCell(new PdfPCell(new Phrase(center.getName())));
+
+                for (YearMonth yearMonth : yearMonths) {
+                    Bill bill = monthlyData.get(yearMonth);
+                    if (bill != null) {
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getQty()))));
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getTotalHospitalFee()))));
+                    } else {
+                        table.addCell(new PdfPCell(new Phrase("0")));
+                        table.addCell(new PdfPCell(new Phrase("0.0")));
+                    }
+                }
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
