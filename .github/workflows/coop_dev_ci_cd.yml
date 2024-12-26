@@ -3,7 +3,7 @@ name: COOP-DEV Deployment Pipeline
 on:
   push:
     branches:
-      - replace-with-coop-dev
+      - coop-dev
 
 jobs:
   build:
