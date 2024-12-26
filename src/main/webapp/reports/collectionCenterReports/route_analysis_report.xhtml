@@ -55,16 +55,14 @@
                         </h:panelGroup>
 
                         <p:selectOneMenu
-                                id="cmdInstitution"
+                                id="cmbIns"
+                                styleClass="w-100 form-control"
                                 value="#{reportsController.institution}"
-                                filter="true"
-                                style=" max-width: 100%; overflow-x: auto;" class="w-100"
-                        >
-                            <f:selectItem itemLabel="All"/>
-                            <f:selectItems value="#{institutionController.items}"
-                                           var="i"
-                                           itemLabel="#{i.name}"
-                                           itemValue="#{i}"/>
+                                filter="true">
+                            <f:selectItem itemLabel="All Institutions"/>
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                           itemValue="#{ins}"/>
+                            <p:ajax process="cmbIns" update="cmbDept"/>
                         </p:selectOneMenu>
 
                         <p:spacer/>
