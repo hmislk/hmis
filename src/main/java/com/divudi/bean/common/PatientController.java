@@ -205,7 +205,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     Long patientId;
     private FamilyMember familyMember;
     private List<FamilyMember> familyMembers;
-    Family currentFamily;
+    private Family currentFamily;
     private List<Family> families;
     FamilyMember currentFamilyMember;
     Patient addingPatientToFamily;
@@ -2142,11 +2142,19 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageFamilyMembership() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Family is Selected");
+            return null;
+        }
         familyMembers = fetchFamilyMembers(currentFamily);
         return "/membership/family_membership_manage?faces-redirect=true";
     }
 
     public String navigateToManageIndividualMembership() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Patient is Selected");
+            return null;
+        }
         return "/membership/patient?faces-redirect=true";
     }
 
@@ -2174,8 +2182,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         m.put("pn", searchText);
         m.put("mcn", mcn);
         List<Family> fs = getFamilyFacade().findByJpql(j, m);
-        if (fs == null) {
-            JsfUtil.addErrorMessage("No matches");
+        if (fs == null || fs.isEmpty()) {
+            JsfUtil.addErrorMessage("No matching families found");
             return "";
         } else if (fs.size() == 1) {
             currentFamily = fs.get(0);
@@ -2184,7 +2192,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         } else {
             families = fs;
             searchText = "";
-            return "/membership/search_family?faces-redirect=true;";
+            return null;
         }
     }
 
@@ -2355,6 +2363,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         current.getPerson().setMembershipScheme(currentFamily.getMembershipScheme());
         save(current);
+        if(currentFamily.getPhoneNo()==null){
+            currentFamily.setPhoneNo(current.getPerson().getPhone());
+        }
+        currentFamily.setChiefHouseHolder(current);
+        getFamilyFacade().edit(currentFamily);
         FamilyMember tfm = new FamilyMember();
         tfm.setPatient(current);
         tfm.setFamily(currentFamily);
@@ -2437,6 +2450,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
         tfm.setRelationToChh(currentRelation);
         getFamilyMemberFacade().create(tfm);
         currentFamily.getFamilyMembers().add(tfm);
+        if(currentFamily.getChiefHouseHolder()==null){
+            currentFamily.setChiefHouseHolder(current);
+        }
+        if(currentFamily.getPhoneNo()==null || currentFamily.getPhoneNo().trim().equals("")){
+            currentFamily.setPhoneNo(current.getPerson().getPhone());
+        }
         saveFamily();
         JsfUtil.addSuccessMessage("Family Member Added to Family");
         current = null;
