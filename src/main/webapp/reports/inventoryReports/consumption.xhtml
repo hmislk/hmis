@@ -256,7 +256,7 @@
                                     </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{pharmacyController.totalSaleValue}" >
-                                         <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>>
 
@@ -290,13 +290,23 @@
                                     <h:outputText value="#{b.cancelledBill.deptId}" />
                                 </p:column>
 
-                                <p:column headerText="Value" width="4em" style="text-align: right;">
-                                    <h:outputText value="#{b.paidAmount}" >
+                                <p:column headerText="Purchase Rate Value" width="4em" style="text-align: right;">
+                                    <h:outputText value="#{b.stockBill.stockValueAtPurchaseRates}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyController.stockAverages}" >
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Retail Sale Value" width="4em" style="text-align: right;">
+                                    <h:outputText value="#{b.stockBill.stockValueAsSaleRate}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{pharmacyController.totalPurchase}" >
-                                        <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
@@ -434,7 +444,7 @@
                                     </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{pharmacyController.grantIssueQty}" >
-                                         <f:convertNumber pattern="#,##0"/></h:outputLabel>
+                                            <f:convertNumber pattern="#,##0"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Total"  class="ml-4" style="text-align: right;" >
@@ -443,7 +453,7 @@
                                     </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{pharmacyController.totalPurchase}" >
-                                         <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
