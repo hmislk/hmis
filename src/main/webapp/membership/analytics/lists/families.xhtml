@@ -20,6 +20,9 @@
                         <p:column headerText="Membership Scheme" sortBy="#{fm.membershipScheme.name}" filterBy="#{fm.membershipScheme.name}" filterMatchMode="contains">
                             <p:outputLabel value="#{fm.membershipScheme.name}" />
                         </p:column>
+                         <p:column headerText="Discount Scheme" sortBy="#{fm.membershipScheme.paymentScheme.name}" filterBy="#{fm.membershipScheme.paymentScheme.name}" filterMatchMode="contains">
+                             <p:outputLabel value="#{fm.membershipScheme.paymentScheme.name}" />
+                        </p:column>
                         <p:column headerText="Membership Card No" sortBy="#{fm.membershipCardNo}" filterBy="#{fm.membershipCardNo}" filterMatchMode="contains">
                             <p:outputLabel value="#{fm.membershipCardNo}" />
                         </p:column>

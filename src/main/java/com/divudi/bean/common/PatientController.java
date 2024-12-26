@@ -205,7 +205,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     Long patientId;
     private FamilyMember familyMember;
     private List<FamilyMember> familyMembers;
-    Family currentFamily;
+    private Family currentFamily;
     private List<Family> families;
     FamilyMember currentFamilyMember;
     Patient addingPatientToFamily;
@@ -2363,6 +2363,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         current.getPerson().setMembershipScheme(currentFamily.getMembershipScheme());
         save(current);
+        if(currentFamily.getPhoneNo()==null){
+            currentFamily.setPhoneNo(current.getPerson().getPhone());
+        }
+        currentFamily.setChiefHouseHolder(current);
+        getFamilyFacade().edit(currentFamily);
         FamilyMember tfm = new FamilyMember();
         tfm.setPatient(current);
         tfm.setFamily(currentFamily);
@@ -2445,6 +2450,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
         tfm.setRelationToChh(currentRelation);
         getFamilyMemberFacade().create(tfm);
         currentFamily.getFamilyMembers().add(tfm);
+        if(currentFamily.getChiefHouseHolder()==null){
+            currentFamily.setChiefHouseHolder(current);
+        }
+        if(currentFamily.getPhoneNo()==null || currentFamily.getPhoneNo().trim().equals("")){
+            currentFamily.setPhoneNo(current.getPerson().getPhone());
+        }
         saveFamily();
         JsfUtil.addSuccessMessage("Family Member Added to Family");
         current = null;
