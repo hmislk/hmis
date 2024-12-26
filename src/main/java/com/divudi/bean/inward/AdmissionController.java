@@ -1171,7 +1171,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addSuccessMessage("Patient Admitted Succesfully");
         }
 
-        if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
+        if (getCurrent().getAdmissionType().isRoomChargesAllowed() && getPatientRoom().getRoomFacilityCharge() != null) {
             PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
         }

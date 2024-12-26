@@ -18,9 +18,12 @@
                                 <p:outputLabel value="From Date" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportsController.fromDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" inputStyleClass="w-100"/>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100"
+                                id="fromDate"
+                                value="#{reportsController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
                             <p:spacer width="20"/>
 
@@ -29,9 +32,13 @@
                                 <p:outputLabel value="To Date" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportsController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class="w-100" inputStyleClass="w-100"/>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100"
+                                id="toDate"
+                                value="#{reportsController.toDate}"
+                                navigator="false"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
                             <p:spacer width="20"/>
 
