@@ -852,6 +852,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         boolean passwordRequirementsCorrect = passwordRequirementsCorrect();
         if (passwordRequirementsCorrect) {
             user.setWebUserPassword(getSecurityController().hashAndCheck(password));
+            user.setNeedToResetPassword(false);
             uFacade.edit(user);
             passwordRequirementsFulfilled = true;
             JsfUtil.addSuccessMessage("Password changed");
