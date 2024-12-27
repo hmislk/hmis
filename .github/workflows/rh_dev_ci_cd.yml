@@ -1,4 +1,4 @@
-name: DEV Deployment Pipeline
+name: RH-DEV Deployment Pipeline
 
 on:
   push:
@@ -55,18 +55,19 @@ jobs:
 
       - name: Deploy to Payara
         env:
-          SERVER_IP: ${{ secrets.SERVER_IP }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          PAYARA_ADMIN_PASS: ${{ secrets.PAYARA_ADMIN_PASS }}
+          SERVER_IP: ${{ secrets.DEV_SERVER_IP }}
+          SERVER_USER: ${{ secrets.DEV_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+          PAYARA_ADMIN_PASS: ${{ secrets.DEV_PAYARA_ADMIN_PASS }}
         run: |
           # Add SSH private key to the SSH agent
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
           # Variables
-          WAR_NAME="hmis.war"
+          WAR_NAME="dev.war"
           WAR_DIR="/home/appuser/app/latest"
+          APP_NAME="dev"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
@@ -98,17 +99,17 @@ jobs:
           # Deploy the WAR using asadmin
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             sudo su - appuser
-            echo 'AS_ADMIN_PASSWORD=${{ secrets.PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
-            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy hmis || true
-            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force $WAR_DIR/$WAR_NAME
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.DEV_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
+            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
           "
 
           # Validate if the application is running
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             sudo su - appuser
-            echo 'AS_ADMIN_PASSWORD=${{ secrets.PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
-            if /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q 'hmis'; then
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.DEV_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            if /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
               echo 'Application is running.'
             else
               echo 'Application failed to start.'
@@ -118,12 +119,12 @@ jobs:
 
           # Check if the application is reachable
           for i in {1..5}; do
-            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://dev.carecode.org/rh/faces/index1.xhtml)
+            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://'$APP_NAME'.carecode.org/'$APP_NAME'/faces/index1.xhtml)
             if [ "$RESPONSE_CODE" == "200" ]; then
               echo "Application is reachable and healthy."
               break
             elif [ "$i" == "5" ]; then
-              echo "Application is not reachable or unhealthy at https://dev.carecode.org/rh (HTTP $RESPONSE_CODE)"
+              echo "Application is not reachable or unhealthy at https://'$APP_NAME'.carecode.org/'$APP_NAME' (HTTP $RESPONSE_CODE)"
               break
             fi
             sleep 10

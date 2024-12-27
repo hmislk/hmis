@@ -355,3 +355,194 @@ th.align-right-header .ui-column-title {
     }
 }
 
+/* OPD Button */
+.ui-button.ui-button-opd,
+.ui-widget.ui-button-opd,
+.ui-state-default.ui-button-opd {
+    background-color: #007bff !important; /* Blue */
+    border-color: #0056b3 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-opd:hover,
+.ui-widget.ui-button-opd:hover,
+.ui-state-default.ui-button-opd:hover {
+    background-color: #0056b3 !important;
+    border-color: #003f7f !important;
+}
+
+/* Pharmacy Button */
+.ui-button.ui-button-pharmacy,
+.ui-widget.ui-button-pharmacy,
+.ui-state-default.ui-button-pharmacy {
+    background-color: #28a745 !important; /* Green */
+    border-color: #1e7e34 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-pharmacy:hover,
+.ui-widget.ui-button-pharmacy:hover,
+.ui-state-default.ui-button-pharmacy:hover {
+    background-color: #1e7e34 !important;
+    border-color: #155724 !important;
+}
+
+/* Channelling Button */
+.ui-button.ui-button-channelling,
+.ui-widget.ui-button-channelling,
+.ui-state-default.ui-button-channelling {
+    background-color: #17a2b8 !important; /* Teal */
+    border-color: #117a8b !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-channelling:hover,
+.ui-widget.ui-button-channelling:hover,
+.ui-state-default.ui-button-channelling:hover {
+    background-color: #117a8b !important;
+    border-color: #0d6674 !important;
+}
+
+/* Stores Button */
+.ui-button.ui-button-stores,
+.ui-widget.ui-button-stores,
+.ui-state-default.ui-button-stores {
+    background-color: #ffc107 !important; /* Yellow */
+    border-color: #e0a800 !important;
+    color: #212529 !important;
+}
+
+.ui-button.ui-button-stores:hover,
+.ui-widget.ui-button-stores:hover,
+.ui-state-default.ui-button-stores:hover {
+    background-color: #e0a800 !important;
+    border-color: #c69500 !important;
+}
+
+/* Inpatients Button */
+.ui-button.ui-button-inpatients,
+.ui-widget.ui-button-inpatients,
+.ui-state-default.ui-button-inpatients {
+    background-color: #dc3545 !important; /* Red */
+    border-color: #bd2130 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-inpatients:hover,
+.ui-widget.ui-button-inpatients:hover,
+.ui-state-default.ui-button-inpatients:hover {
+    background-color: #bd2130 !important;
+    border-color: #94171c !important;
+}
+
+/* Human Resource Button */
+.ui-button.ui-button-human-resource,
+.ui-widget.ui-button-human-resource,
+.ui-state-default.ui-button-human-resource {
+    background-color: #6610f2 !important; /* Purple */
+    border-color: #520dc2 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-human-resource:hover,
+.ui-widget.ui-button-human-resource:hover,
+.ui-state-default.ui-button-human-resource:hover {
+    background-color: #520dc2 !important;
+    border-color: #40099a !important;
+}
+
+/* Administration Button */
+.ui-button.ui-button-administration,
+.ui-widget.ui-button-administration,
+.ui-state-default.ui-button-administration {
+    background-color: #6c757d !important; /* Grey */
+    border-color: #545b62 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-administration:hover,
+.ui-widget.ui-button-administration:hover,
+.ui-state-default.ui-button-administration:hover {
+    background-color: #545b62 !important;
+    border-color: #3c4044 !important;
+}
+
+/* Membership Button */
+.ui-button.ui-button-membership,
+.ui-widget.ui-button-membership,
+.ui-state-default.ui-button-membership {
+    background-color: #fd7e14 !important; /* Orange */
+    border-color: #e05a00 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-membership:hover,
+.ui-widget.ui-button-membership:hover,
+.ui-state-default.ui-button-membership:hover {
+    background-color: #e05a00 !important;
+    border-color: #c15000 !important;
+}
+
+/* Lab Button */
+.ui-button.ui-button-lab,
+.ui-widget.ui-button-lab,
+.ui-state-default.ui-button-lab {
+    background-color: #20c997 !important; /* Light Green */
+    border-color: #17a589 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-lab:hover,
+.ui-widget.ui-button-lab:hover,
+.ui-state-default.ui-button-lab:hover {
+    background-color: #17a589 !important;
+    border-color: #127c66 !important;
+}
+
+/* Operating Theatre Button */
+.ui-button.ui-button-operating-theatre,
+.ui-widget.ui-button-operating-theatre,
+.ui-state-default.ui-button-operating-theatre {
+    background-color: #e83e8c !important; /* Pink */
+    border-color: #d63384 !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-operating-theatre:hover,
+.ui-widget.ui-button-operating-theatre:hover,
+.ui-state-default.ui-button-operating-theatre:hover {
+    background-color: #d63384 !important;
+    border-color: #b7256b !important;
+}
+
+/* Finance Button */
+.ui-button.ui-button-finance,
+.ui-widget.ui-button-finance,
+.ui-state-default.ui-button-finance {
+    background-color: #343a40 !important; /* Dark Grey */
+    border-color: #23272b !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-finance:hover,
+.ui-widget.ui-button-finance:hover,
+.ui-state-default.ui-button-finance:hover {
+    background-color: #23272b !important;
+    border-color: #121416 !important;
+}
+
+/* EMR Button */
+.ui-button.ui-button-emr,
+.ui-widget.ui-button-emr,
+.ui-state-default.ui-button-emr {
+    background-color: #00d1b2 !important; /* Aqua */
+    border-color: #00a88f !important;
+    color: #ffffff !important;
+}
+
+.ui-button.ui-button-emr:hover,
+.ui-widget.ui-button-emr:hover,
+.ui-state-default.ui-button-emr:hover {
+    background-color: #00a88f !important;
+    border-color: #007f6b !important;
+}
