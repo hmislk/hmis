@@ -1502,7 +1502,7 @@
                 </p:submenu>
 
                 <p:submenu id="smSettings" icon="pi pi-cog" >
-                    <p:menuitem  ajax="false"  action="/user_change_password?faces-redirect=true" value="Change My Password"></p:menuitem>
+                    <p:menuitem  ajax="false"  action="#{sessionController.navigateToChangePasswordByUser}" value="Change My Password"></p:menuitem>
                     <p:menuitem  ajax="false"  action="#{themeController.navigateToChangeOwnTheme()}" value="Change My Theme"  ></p:menuitem>
                     <p:menuitem  ajax="false"  action="#{sessionController.navigateToManageOwnWebUserPreferences()}" value="Change My Preferences"  ></p:menuitem>
                     <p:menuitem  

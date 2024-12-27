@@ -72,6 +72,8 @@ import java.io.IOException;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -265,6 +267,8 @@ public class PharmacyReportController implements Serializable {
     private double stockTotal;
     private List<PharmacyStockRow> pharmacyStockRows;
     private double stockTottal;
+
+    private String dateRange;
 
     private List<PharmacyRow> rows;
 
@@ -2132,6 +2136,67 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    //method for update dates when select date range
+    public void updateDateRange() {
+        //System.out.println("Date Range Selected: " + dateRange);
+        LocalDate today = LocalDate.now();
+
+        switch (dateRange) {
+            case "within3months":
+                fromDate = convertToDate(today.minusMonths(3));
+                toDate = convertToDate(today);
+                break;
+            case "within6months":
+                fromDate = convertToDate(today.minusMonths(6));
+                toDate = convertToDate(today);
+                break;
+            case "within12months":
+                fromDate = convertToDate(today.minusMonths(12));
+                toDate = convertToDate(today);
+                break;
+        }
+        // System.out.println("Updated From Date: " + fromDate);
+        // System.out.println("Updated To Date: " + toDate);
+    }
+
+    // Utility to convert LocalDate to Date
+    private Date convertToDate(LocalDate localDate) {
+        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    public void processExpiryItemReport() {
+        stocks = new ArrayList();
+        String jpql;
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        jpql = "select s"
+                + " from StockHistory s "
+                + " where s.itemBatch.dateOfExpire between :fd and :td ";
+        if (institution != null) {
+            jpql += " and s.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and s.department=:dep ";
+            m.put("dep", department);
+        }
+        if (site != null) {
+            jpql += " and s.department.site=:sit ";
+            m.put("sit", site);
+        }
+        if (amp != null) {
+            item = amp;
+            System.out.println("item = " + item);
+            jpql += "and s.item=:itm ";
+            m.put("itm", item);
+        }
+
+        jpql += " order by s.createdAt ";
+        stocks = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
+
     public void processLabTestWiseCountReport() {
         String jpql = "select new com.divudi.data.TestWiseCountReport("
                 + "bi.item.name, "
@@ -2706,6 +2771,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setAmp(Amp amp) {
         this.amp = amp;
+    }
+
+    public String getDateRange() {
+        return dateRange;
+    }
+
+    public void setDateRange(String dateRange) {
+        this.dateRange = dateRange;
     }
 
 }
