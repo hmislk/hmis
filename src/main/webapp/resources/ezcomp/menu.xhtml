@@ -62,8 +62,12 @@
                             value="OPD Billing"
                             icon="fa fa-fw fa-notes-medical" 
                             rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
-
-
+                        <p:menuitem 
+                            ajax="false" 
+                            action="#{opdOrderController.navigateToNewOpdOrder()}" 
+                            value="OPD Ordering"
+                            icon="fa fa-fw fa-notes-medical" 
+                            rendered="#{webUserController.hasPrivilege('OpdOrdering')}" ></p:menuitem>
                         <p:menuitem 
                             ajax="false" 
                             action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
