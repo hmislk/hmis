@@ -180,7 +180,7 @@
                             icon="fas fa-print"
                             ajax="false"
                             value="Print">
-                        <!--                        <p:printer target="summary1"/>-->
+                        <p:printer target="printableContent"/>
                     </p:commandButton>
 
                     <p:commandButton
@@ -188,20 +188,43 @@
                             style="width: 150px"
                             icon="fas fa-file-excel"
                             ajax="false"
+                            action="#{reportsController.exportDetailedWeeklyOPDReportToExcel()}"
+                            rendered="#{reportsController.reportType eq 'detail'}"
                             value="Excel">
-                        <p:dataExporter type="xlsx" target="tblExport" fileName="sample_carrier.xlsx"/>
                     </p:commandButton>
 
                     <p:commandButton
-                            class="ui-button-danger my-4 mx-2"
+                            class="ui-button-success my-4 mx-2"
                             style="width: 150px"
-                            icon="fas fa-file-pdf"
+                            icon="fas fa-file-excel"
                             ajax="false"
-                            value="PDF">
-                        <p:dataExporter type="pdf" target="tblExport" fileName="sample_carrier.pdf"/>
+                            action="#{reportsController.exportWeeklyOPDSummaryReportToExcel()}"
+                            rendered="#{reportsController.reportType eq 'summary'}"
+                            value="Excel">
                     </p:commandButton>
 
-                    <ui:repeat value="#{reportsController.groupedBillItemsWeekly.entrySet()}" var="entry"
+                    <p:commandButton
+                            class="m-2 ui-button-danger"
+                            icon="fa-solid fa-file-pdf"
+                            style="width: 150px"
+                            ajax="false"
+                            action="#{reportsController.exportDetailedWeeklyOPDReportToPDF()}"
+                            rendered="#{reportsController.reportType eq 'detail'}"
+                            value="PDF">
+                    </p:commandButton>
+
+                    <p:commandButton
+                            class="m-2 ui-button-danger"
+                            icon="fa-solid fa-file-pdf"
+                            style="width: 150px"
+                            ajax="false"
+                            action="#{reportsController.exportWeeklyOPDSummaryReportToPDF()}"
+                            rendered="#{reportsController.reportType eq 'summary'}"
+                            value="PDF">
+                    </p:commandButton>
+
+                <p:panel id="printableContent" header="OPD Weekly Report" class="w-100">
+                <ui:repeat value="#{reportsController.groupedBillItemsWeekly.entrySet()}" var="entry"
                                rendered="#{reportsController.reportType eq 'summary'}">
                         <p:dataTable
                                 id="summary#{entry.key}"
@@ -353,6 +376,7 @@
                             </p:column>
                         </p:dataTable>
                     </c:forEach>
+                </p:panel>
                 </p:panel>
             </h:form>
         </ui:define>
