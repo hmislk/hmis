@@ -6,30 +6,32 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-
-
-    <h:head>
-
-    </h:head>
-
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-
                 <h:panelGroup >
                     <h:form  >
-                        <p:growl />
-                        <p:panel header="Search and Edit Families" >
-                            <h:panelGrid columns="3" >
-                                <p:outputLabel value="Membership Card No / Phone No of CHH" ></p:outputLabel>
-                                <p:inputText value="#{patientController.searchText}" autocomplete="off"></p:inputText>
-                                <p:commandButton ajax="false" action="#{patientController.searchFamily()}" value="Search" >
+                        <p:panel header="Search Families" >
+                            <p:panelGrid columns="3" layout="tabular">
+                                <p:outputLabel value="Membership Card No / Phone No of Chief House Holder" ></p:outputLabel>
+                                <p:inputText value="#{patientController.searchText}" autocomplete="off" style="width: 30em;"></p:inputText>
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-search-plus"
+                                    class="ui-button-success"
+                                    action="#{patientController.searchFamily()}" 
+                                    value="Search Families" >
                                 </p:commandButton>
-                            </h:panelGrid>
+                            </p:panelGrid>
                         </p:panel>
 
 
-                        <p:dataTable value="#{patientController.families}" var="f" rowIndexVar="n" rowKey="#{f.id}" >
+                        <p:dataTable 
+                             rendered="#{patientController.families ne null and not empty patientController.families}"
+                            value="#{patientController.families}" 
+                            var="f" 
+                            rowIndexVar="n" 
+                            rowKey="#{f.id}" >
                             <p:column headerText="Membership No" >
                                 <p:outputLabel value="#{f.membershipCardNo}" ></p:outputLabel>
                             </p:column>

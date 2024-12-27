@@ -99,43 +99,59 @@
                                     <p:column headerText="Membership" rendered="false">
                                         <p:outputLabel value="#{fm.family.membershipScheme.name}" ></p:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Billing" rendered="true">
+                                    <p:column headerText="Billing" >
                                         <p:commandButton 
                                             action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(fm.patient, fm.family.membershipScheme.paymentScheme)}" 
                                             ajax="false"
-                                            class="mx-2"
+                                            styleClass="ui-button-opd"
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD is available for Members',true)}"
+                                            class="m-1 ui-button-opd"
                                             icon="fa fa-fw fa-file-medical"
                                             title="OPD Billing">
                                         </p:commandButton>
-
                                         <p:commandButton 
                                             action="#{opdPreBillController.navigateToBillingForCashierFromMembership(fm.patient, fm.family.membershipScheme.paymentScheme)}" 
                                             ajax="false"
-                                            class="mx-2"
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD is available for Members',true)}"
+                                            class="m-1 ui-button-opd"
                                             icon="fa fa-fw fa-cash-register"
                                             title="OPD Billing for Cashier">
                                         </p:commandButton>
-
                                         <p:commandButton 
+                                            ajax="false" 
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy is available for Members',true)}"
+                                            icon="fa fa-fw fa-prescription-bottle-alt" 
+                                            class="m-1 ui-button-pharmacy"
+                                            disabled="#{!webUserController.hasPrivilege('PharmacySale')}"
+                                            action="#{pharmacySaleController.navigateToPharmacyRetailSale(fm.patient, fm.family.membershipScheme.paymentScheme)}" 
+                                            title="Pharmacy Retail Sale">
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy is available for Members',true)}"
+                                            ajax="false" 
+                                            icon="fa fa-fw fa-cash-register" 
+                                            class="m-1  ui-button  ui-button-pharmacy"
+                                            disabled="#{!webUserController.hasPrivilege('PharmacySaleForCashier')}"
+                                            action="#{pharmacySaleController.navigateToPharmacyRetailSaleForCashier(fm.patient, fm.family.membershipScheme.paymentScheme)}"  
+                                            title="Pharmacy Retail Sale for Cashier">
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Channelling is available for Members',true)}"
                                             ajax="false"
                                             action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(fm.patient, fm.family.membershipScheme.paymentScheme)}" 
                                             icon="fa fa-fw fa-calendar-check" 
-                                            class="mx-1"
+                                            class="m-1  ui-button  ui-button-channelling"
                                             title="Channelling"
                                             disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}">
                                         </p:commandButton>
-
-
-
-
-
                                     </p:column>
                                     <p:column headerText="Actions" >
                                         <p:commandButton ajax="false" value="Profile"
-                                                         action="#{patientController.navigateToOpdPatientProfile()}"
+                                                         action="#{patientController.navigateToManageIndividualMembership()}"
                                                          class="ui-button-warning mx-1" icon="pi pi-user">
                                             <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}"></f:setPropertyActionListener>
                                         </p:commandButton>
+
 
                                         <p:commandButton ajax="false" value="Edit" action="patient"   class="ui-button-warning mx-1" icon="fa-solid fa-pen">
                                             <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>

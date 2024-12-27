@@ -106,6 +106,7 @@ import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.AmppFacade;
 import com.divudi.facade.AtmFacade;
+import com.divudi.facade.FamilyFacade;
 import com.divudi.facade.FamilyMemberFacade;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.VmpFacade;
@@ -244,6 +245,8 @@ public class DataUploadController implements Serializable {
     PatientFacade patientFacade;
     @EJB
     FamilyMemberFacade familyMemberFacade;
+    @EJB
+    FamilyFacade familyFacade;
     @EJB
     PersonFacade personFacade;
     @EJB
@@ -2301,6 +2304,9 @@ public class DataUploadController implements Serializable {
             familyMemberFacade.create(fm);
 
             family.getFamilyMembers().add(fm);
+            family.setChiefHouseHolder(pt);
+            familyFacade.edit(family);
+            
             patients.add(pt);
         }
 
