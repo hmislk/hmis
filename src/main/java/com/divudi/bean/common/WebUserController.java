@@ -649,11 +649,15 @@ public class WebUserController implements Serializable {
     private void fillLightUsers() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
-        jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id, wu.role.name)"
-                + " from WebUser wu "
-                + " where wu.retired=:ret "
-                + " and wu.staff is not null "
-                + " order by wu.name";
+        jpql = "Select new com.divudi.light.common.WebUserLight("
+                + "wu.name, "
+                + "wu.webUserPerson.name, "
+                + "wu.id, "
+                + "COALESCE(wu.role.name, 'No Role')) "
+                + "from WebUser wu "
+                + "where wu.retired=:ret "
+                + "and wu.staff is not null "
+                + "order by wu.name";
         m.put("ret", false);
         webUseLights = (List<WebUserLight>) getPersonFacade().findLightsByJpql(jpql, m);
     }
@@ -661,11 +665,15 @@ public class WebUserController implements Serializable {
     private void fillLightUsersWithoutStaff() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
-        jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id, wu.role.name)"
-                + " from WebUser wu "
-                + " where wu.retired=:ret "
-                + " and wu.staff is null "
-                + " order by wu.name";
+        jpql = "Select new com.divudi.light.common.WebUserLight("
+                + "wu.name, "
+                + "wu.webUserPerson.name, "
+                + "wu.id, "
+                + "COALESCE(wu.role.name, 'No Role')) "
+                + "from WebUser wu "
+                + "where wu.retired=:ret "
+                + "and wu.staff is null "
+                + "order by wu.name";
         m.put("ret", false);
         webUseLights = (List<WebUserLight>) getPersonFacade().findLightsByJpql(jpql, m);
     }
@@ -1070,8 +1078,7 @@ public class WebUserController implements Serializable {
         JsfUtil.addSuccessMessage("Password Reset Request Cancelled");
         return navigateToListUsers();
     }
-    
-    
+
     public UserPaymentSchemeController getUserPaymentSchemeController() {
         return userPaymentSchemeController;
     }
