@@ -55,16 +55,14 @@
                         </h:panelGroup>
 
                         <p:selectOneMenu
-                                id="cmdInstitution"
+                                id="cmbIns"
+                                styleClass="w-100 form-control"
                                 value="#{reportsController.institution}"
-                                filter="true"
-                                style=" max-width: 100%; overflow-x: auto;" class="w-100"
-                        >
-                            <f:selectItem itemLabel="All"/>
-                            <f:selectItems value="#{institutionController.items}"
-                                           var="i"
-                                           itemLabel="#{i.name}"
-                                           itemValue="#{i}"/>
+                                filter="true">
+                            <f:selectItem itemLabel="All Institutions"/>
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                           itemValue="#{ins}"/>
+                            <p:ajax process="cmbIns" update="cmbDept"/>
                         </p:selectOneMenu>
 
                         <p:spacer/>
@@ -233,20 +231,38 @@
                             value="Print">
                         <p:printer target="printPanel"/>
                     </p:commandButton>
-                    <p:commandButton id="btnExcel" class="m-2 ui-button-success"
+                    <p:commandButton class="m-2 ui-button-success"
                                      style="width: 150px"
                                      icon="fas fa-file-excel"
+                                     rendered="#{reportsController.reportType eq 'summery'}"
+                                     action="#{reportsController.exportRouteAnalysisSummaryReportToExcel}"
                                      ajax="false" value="Excel">
-                        <p:dataExporter type="xlsx" target="printPanel" fileName="itemized_sale_summary"/>
+                    </p:commandButton>
+                    <p:commandButton class="m-2 ui-button-success"
+                                     style="width: 150px"
+                                     icon="fas fa-file-excel"
+                                     rendered="#{reportsController.reportType eq 'detail'}"
+                                     action="#{reportsController.exportRouteAnalysisDetailReportToExcel}"
+                                     ajax="false" value="Excel">
                     </p:commandButton>
                     <p:commandButton
                             class="m-2 ui-button-danger"
                             style="width: 150px"
                             icon="fa-solid fa-file-pdf"
                             ajax="false"
+                            action="#{reportsController.exportRouteAnalysisSummaryReportToPdf}"
+                            rendered="#{reportsController.reportType eq 'summery'}"
                             value="PDF">
-                        <p:dataExporter type="pdf" target="printPanel"
-                                        fileName="Collection_Center_Wise_Transaction_Report.pdf"/>
+                    </p:commandButton>
+
+                    <p:commandButton
+                            class="m-2 ui-button-danger"
+                            style="width: 150px"
+                            icon="fa-solid fa-file-pdf"
+                            ajax="false"
+                            rendered="#{reportsController.reportType eq 'detail'}"
+                            action="#{reportsController.exportRouteAnalysisDetailReportToPdf}"
+                            value="PDF">
                     </p:commandButton>
 
                     <h:panelGrid columns="2" class="mb-2">
