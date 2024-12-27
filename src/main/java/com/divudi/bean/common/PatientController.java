@@ -2116,11 +2116,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Membership Updated");
     }
 
-    @Deprecated
-    public String toAddAFamily() {
-        currentFamily = new Family();
-        return "/membership/add_family";
-    }
+//    @Deprecated
+//    public String toAddAFamily() {
+//        currentFamily = new Family();
+//        return "/membership/add_family";
+//    }
 
     public String navigateToAddNewFamilyMembership() {
         currentFamily = new Family();
@@ -2181,6 +2181,38 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         m.put("pn", searchText);
         m.put("mcn", mcn);
+        List<Family> fs = getFamilyFacade().findByJpql(j, m);
+        if (fs == null || fs.isEmpty()) {
+            JsfUtil.addErrorMessage("No matching families found");
+            return "";
+        } else if (fs.size() == 1) {
+            currentFamily = fs.get(0);
+            searchText = "";
+            return navigateToManageFamilyMembership();
+        } else {
+            families = fs;
+            searchText = "";
+            return null;
+        }
+    }
+
+    public String searchFamilyByChhName() {
+        if (searchText == null) {
+            JsfUtil.addErrorMessage("No Search Text");
+            return null;
+        }
+        if (searchText.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No Search Text");
+            return null;
+        }
+        if (searchText.trim().length() < 4) {
+            JsfUtil.addErrorMessage("Enter At Least 4 charactors");
+            return null;
+        }
+        families = null;
+        String j = "Select f from Family f where f.retired=false and f.chiefHouseHolder.person.name like :pn order by f.chiefHouseHolder.person.name";
+        Map m = new HashMap();
+        m.put("pn", "%" + searchText + "%");
         List<Family> fs = getFamilyFacade().findByJpql(j, m);
         if (fs == null || fs.isEmpty()) {
             JsfUtil.addErrorMessage("No matching families found");
@@ -2363,7 +2395,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         current.getPerson().setMembershipScheme(currentFamily.getMembershipScheme());
         save(current);
-        if(currentFamily.getPhoneNo()==null){
+        if (currentFamily.getPhoneNo() == null) {
             currentFamily.setPhoneNo(current.getPerson().getPhone());
         }
         currentFamily.setChiefHouseHolder(current);
@@ -2385,14 +2417,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String saveAndClearForNewFamilyMembership() {
         saveFamily();
         currentFamily = new Family();
-        return toFamily();
-    }
-
-    public String saveAndClearForNewFamily() {
-        saveFamily();
-        currentFamily = new Family();
         return navigateToAddNewFamilyMembership();
     }
+
+//    public String saveAndClearForNewFamily() {
+//        saveFamily();
+//        currentFamily = new Family();
+//        return navigateToAddNewFamilyMembership();
+//    }
 
     public String saveAndClearForNewIndividual() {
         if (currentFamily == null) {
@@ -2413,22 +2445,25 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return navigateToAddNewIndividualMembership();
     }
 
-    public String toAddNewFamily() {
-        currentFamily = new Family();
-        return toFamily();
-    }
+//    public String toAddNewFamily() {
+//        currentFamily = new Family();
+//        return toFamily();
+//    }
 
-    public String toFamily() {
-        return "/membership/add_family?faces-redirect=true;";
-    }
+//    public String toFamily() {
+//        return "/membership/add_family?faces-redirect=true;";
+//    }
 
     public String toNewPatient() {
         prepareAdd();
         return "/membership/patient?faces-redirect=true;";
     }
 
+    public void clearPatientToAddNewMemberToFamily() {
+        current = new Patient();
+    }
+    
     public void addNewMemberToFamily() {
-        saveFamily();
         if (currentFamily == null) {
             JsfUtil.addErrorMessage("No Family Selected.");
             return;
@@ -2437,11 +2472,25 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Member is selected to add to family.");
             return;
         }
-        if (current.getPerson().getMembershipScheme() == null) {
-            current.getPerson().setMembershipScheme(currentFamily.getMembershipScheme());
-            getPersonFacade().edit(current.getPerson());
+        if (current.getPerson() == null) {
+            JsfUtil.addErrorMessage("No Member is selected to add to family.");
+            return;
         }
+        if (current.getPerson().getName() == null || current.getPerson().getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No Name for the Member to add to family.");
+            return;
+        }
+        if(currentFamily.getMembershipScheme()==null){
+            JsfUtil.addErrorMessage("No Membership Scheme for the family.");
+            return;
+        }
+        if(currentRelation==null){
+            JsfUtil.addErrorMessage("No relationship.");
+            return;
+        }
+        current.getPerson().setMembershipScheme(currentFamily.getMembershipScheme());
         save(current);
+        saveFamily();
         FamilyMember tfm = new FamilyMember();
         tfm.setPatient(current);
         tfm.setFamily(currentFamily);
@@ -2450,10 +2499,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         tfm.setRelationToChh(currentRelation);
         getFamilyMemberFacade().create(tfm);
         currentFamily.getFamilyMembers().add(tfm);
-        if(currentFamily.getChiefHouseHolder()==null){
+        if (currentFamily.getChiefHouseHolder() == null) {
             currentFamily.setChiefHouseHolder(current);
         }
-        if(currentFamily.getPhoneNo()==null || currentFamily.getPhoneNo().trim().equals("")){
+        if (currentFamily.getPhoneNo() == null || currentFamily.getPhoneNo().trim().equals("")) {
             currentFamily.setPhoneNo(current.getPerson().getPhone());
         }
         saveFamily();

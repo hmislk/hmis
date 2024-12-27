@@ -854,10 +854,10 @@ public class SessionController implements Serializable, HttpSessionListener {
             user.setWebUserPassword(getSecurityController().hashAndCheck(password));
             uFacade.edit(user);
             JsfUtil.addSuccessMessage("Password changed");
-        }else{
+        } else {
             JsfUtil.addErrorMessage("Password NOT changed");
-            if(!enforcedPasswordChange){
-                passwordRequirementsFulfilled=true;
+            if (!enforcedPasswordChange) {
+                passwordRequirementsFulfilled = true;
             }
         }
     }
@@ -1108,20 +1108,14 @@ public class SessionController implements Serializable, HttpSessionListener {
         List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
-
                 boolean passwordIsOk;
-
                 if (webUserController.isGrantAllPrivilegesToAllUsersForTesting()) {
                     passwordIsOk = true;
                 } else {
-
                     passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
                 }
-
                 if (passwordIsOk) {
-
                     departments = listLoggableDepts(u);
-
                     if (webUserController.isGrantAllPrivilegesToAllUsersForTesting()) {
                         departments = departmentController.fillAllItems();
                     }
