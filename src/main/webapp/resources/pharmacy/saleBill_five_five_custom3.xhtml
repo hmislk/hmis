@@ -1,0 +1,199 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+        <cc:attribute name="duplicate" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:outputLabel value="#{pharmacySaleController.printBill.creater.name}" rendered="false"/>
+
+        <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
+        <div class="fivefivecustom3bill" style="page-break-after: always!important;">
+            <div style="height: 2.2cm;">
+
+            </div>
+
+            <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
+                <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+            </div>
+
+            <div style="margin-left: 1.25cm; margin-right: 1.25cm;" >
+                <hr/>                    
+            </div>
+
+            <div style="margin-left: 1.25cm; margin-right: 1.25cm; font-size: 11px">
+
+                <div class="row">
+                    <div class="col-4">
+                        <h:outputLabel value="BILL NO"/>
+                    </div>
+                    <div class="col-1">
+                        <h:outputLabel style="text-align: center" value=":"/>
+                    </div>
+                    <div class="col-7">
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4">
+                        <h:outputLabel value="BILL DATE"/>
+                    </div>
+                    <div class="col-1">
+                        <h:outputLabel style="text-align: center" value=":"/>
+                    </div>
+                    <div class="col-7">
+                        <h:outputLabel style="width: 3cm" value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="yyyy-MM-dd " ></f:convertDateTime>
+                        </h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
+                        </h:outputLabel>
+                    </div>
+                </div>
+
+                <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}">
+                    <div class="row">
+                        <div class="col-4">
+                            <h:outputLabel value="PATIENT NAME"/>
+                        </div>
+                        <div class="col-1">
+                            <h:outputLabel style="text-align: center" value=":"/>
+                        </div>
+                        <div class="col-7">
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{cc.attrs.bill.patient.person.phone ne null}">
+                    <div class="row">
+                        <div class="col-4">
+                            <h:outputLabel value="PHONE NO"/>
+                        </div>
+                        <div class="col-1">
+                            <h:outputLabel style="text-align: center" value=":"/>
+                        </div>
+                        <div class="col-7">
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}"/>
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </div>
+
+            <div style="margin-left: 1.25cm; margin-right: 1.25cm; padding: 0px;" >
+                <hr/>                    
+            </div>
+
+
+            <div style="margin-left: 1.25cm;">
+                <table style="width: 9.5cm; border-collapse: collapse;">
+                    <colgroup>
+                        <col style="width: 5%;"/>
+                        <col style="width: 65%;"/>
+                        <col style="width: 8%;"/>
+                        <col style="width: 10%;"/>
+                        <col style="width: 12%;"/>
+                    </colgroup>
+                    <thead style="font-size: 12px">
+                        <tr>
+                            <th style="text-align: left; padding: 6px;">NO</th>
+                            <th style="text-align: left; padding: 6px;">PARTICULAR</th>
+                            <th style="text-align: right; padding: 6px;">QTY</th>
+                            <th style="text-align: right; padding: 6px;">RATE</th>
+                            <th style="text-align: right; padding: 6px;">AMOUNT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip" varStatus="status" >
+                            <tr style="font-size: 11px;  line-height: 0.8;" >
+                                <td style="text-align: left; padding: 6px;">#{status.index + 1}</td>
+                                <td style="text-align: left; padding: 6px;">#{bip.item.name}</td>
+                                <td style="text-align: right; padding: 6px;">
+                                    <h:outputLabel value="#{bip.qty}">
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputLabel>
+                                </td>
+                                <td style="text-align: right; padding: 6px;">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <td style="text-align: right; padding: 6px;">
+                                    <h:outputLabel value="#{bip.grossValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-left: 1.25cm; margin-right: 1.25cm; padding: 0px;" >
+                <hr/>                    
+            </div>
+
+            <div class="d-flex" style="margin-left: 1.25cm; margin-right: 1.25cm; font-size: 11px">
+                <div class="col-5">
+                    <div class="d-flex justify-content-between">
+                        <h:outputLabel value="PAY TYPE"></h:outputLabel>
+                        <h:outputLabel value="AMOUNT Rs."></h:outputLabel>
+                    </div>
+                    <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill)}" var="pm" >
+                        <div class="d-flex justify-content-between">
+                            <h:outputLabel value="#{pm.paymentMethod.label}"></h:outputLabel>
+                            <h:outputLabel value="#{pm.paidValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </div>
+                    </ui:repeat>
+                </div>
+                <div class="col-1">
+                    
+                </div>
+                <div class="col-6">
+                    <div class="d-flex justify-content-between">
+                        <h:outputLabel value="TOTAL AMOUNT"></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.total}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </div>
+                    <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
+                        <div class="d-flex justify-content-between">
+                            <h:outputLabel value="DISCOUNT"></h:outputLabel>
+                            <h:outputLabel value="">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </div>
+                    </h:panelGroup>
+                    <div class="d-flex justify-content-between">
+                        <h:outputLabel value="NET AMOUNT (LKR)"></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </div>
+                </div>
+            </div> 
+
+            <div class="d-flex justify-content-between mt-3" style="margin-left: 1.25cm; margin-right: 1.25cm; font-size: 11px">
+                <h:outputLabel value="PREPARED BY : #{cc.attrs.bill.creater.name}"></h:outputLabel>
+                <h:outputLabel value="ITEM COUNT : #{cc.attrs.bill.billItems.size()}"></h:outputLabel>
+            </div>
+
+        </div>
+    </cc:implementation>
+</html>
