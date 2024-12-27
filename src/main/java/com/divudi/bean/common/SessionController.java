@@ -849,10 +849,11 @@ public class SessionController implements Serializable, HttpSessionListener {
             JsfUtil.addErrorMessage("Password and Re-entered password are not maching");
             return;
         }
-        passwordRequirementsFulfilled = arePasswordRequirementsFulfilled();
-        if (passwordRequirementsFulfilled) {
+        boolean passwordRequirementsCorrect = passwordRequirementsCorrect();
+        if (passwordRequirementsCorrect) {
             user.setWebUserPassword(getSecurityController().hashAndCheck(password));
             uFacade.edit(user);
+            passwordRequirementsFulfilled = true;
             JsfUtil.addSuccessMessage("Password changed");
         } else {
             JsfUtil.addErrorMessage("Password NOT changed");
@@ -1342,6 +1343,32 @@ public class SessionController implements Serializable, HttpSessionListener {
         // If all checks pass
         return true;
     }
+    
+    private boolean passwordRequirementsCorrect() {
+        passwordRequirementMessage = "";
+        boolean preventMatchingPasswordWithUsername = configOptionApplicationController.getBooleanValueByKey("Prevent matching password with username", false);
+        boolean enforcePasswordComplexity = configOptionApplicationController.getBooleanValueByKey("Enforce password complexity", false);
+        String passwordComplexityRegex = configOptionApplicationController.getShortTextValueByKey("Password complexity regex", "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
+        Long passwordExpirationPeriodLong = configOptionApplicationController.getLongValueByKey("Set password expiration period (days)", 30l);
+
+        // Check if password matches the username
+        if (preventMatchingPasswordWithUsername && password.equals(userName)) {
+            JsfUtil.addErrorMessage("Password cannot be the same as the username.");
+            passwordRequirementMessage = "Password cannot be the same as the username.";
+            return false;
+        }
+
+        // Check password complexity
+        if (enforcePasswordComplexity && !password.matches(passwordComplexityRegex)) {
+            passwordRequirementMessage = "Password cannot be the same as the username.";
+            JsfUtil.addErrorMessage("Password does not meet complexity requirements.");
+            return false;
+        }
+
+        // If all checks pass
+        return true;
+    }
+    
 
     public String navigateToLoginPageByUsersDefaultLoginPage() {
         if (loggedUser == null) {
