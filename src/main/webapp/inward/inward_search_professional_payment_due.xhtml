@@ -142,7 +142,7 @@
                                         <h:outputLabel value="#{bf.feeValue}" />
                                     </p:column>
                                     <p:column headerText="Action">
-                                        <p:commandButton ajax="false" value="Pay Professional" action="#{inwardStaffPaymentBillController.calculateDueFees()}"  >
+                                        <p:commandButton ajax="false" icon="fas fa-eye" value="Pay" action="#{inwardStaffPaymentBillController.calculateDueFees()}"  >
                                             <f:setPropertyActionListener value="#{bf.staff}" target="#{inwardStaffPaymentBillController.currentStaff}"/>
 <!--                                            <f:setPropertyActionListener value="#{bf.staff.speciality}" target="#{inwardStaffPaymentBillController.speciality}"/>-->
                                         </p:commandButton>
