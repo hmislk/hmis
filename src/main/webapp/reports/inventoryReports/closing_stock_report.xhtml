@@ -240,11 +240,7 @@
                                 class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                                 <p:printer target="gpBatchWise" />
                             </p:commandButton>
-                            <p:commandButton 
-                                rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
-                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                                <p:dataExporter type="xlsx" target="batchWIse" fileName="Batch Wise Report" />
-                            </p:commandButton>
+                            
                             <p:commandButton 
                                 rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
                                 class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
@@ -257,6 +253,11 @@
                             id="gpBatchWise" 
                             header="Report Data By Batch Wise" 
                             rendered="#{pharmacyReportController.reportType eq 'batchWise'}">
+                            <p:commandButton 
+                                rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
+                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                                <p:dataExporter type="xlsx" target="batchWise" fileName="Batch Wise Report" />
+                            </p:commandButton>
                             <p:dataTable 
                                 id="batchWise" 
                                 value="#{pharmacyReportController.rows}" 
@@ -280,7 +281,7 @@
                                     <h:outputText value="#{f.stockHistory.itemBatch.item.code}" />
                                 </p:column>
                                 <p:column headerText="Item Name">
-                                    <h:outputText value="#{f.stockHistory.itemBatch.item.name}" />
+                                    <h:outputText value="#{f.stockHistory.id}" />
                                 </p:column>
                                 <p:column headerText="UOM">
                                     <h:outputText value="#{f.stockHistory.itemBatch.item.measurementUnit.name}" />
@@ -297,14 +298,14 @@
                                     <!--Item Batch Stock for Selected Department-->
                                     <h:outputText value="#{f.stockHistory.stockQty}"><f:convertNumber pattern="#,##0" /></h:outputText>
 
-                                    <!--Item Stock for Selected Department-->
+<!--                                    Item Stock for Selected Department
                                     <h:outputText value="#{f.stockHistory.itemStock}"><f:convertNumber pattern="#,##0" /></h:outputText>
 
-                                    <!--Item Stock for Selected Institution-->
+                                    Item Stock for Selected Institution
                                     <h:outputText value="#{f.stockHistory.institutionItemStock}"><f:convertNumber pattern="#,##0" /></h:outputText>
 
-                                    <!--Item Stock for All Institutions-->
-                                    <h:outputText value="#{f.stockHistory.totalItemStock}"><f:convertNumber pattern="#,##0" /></h:outputText>
+                                    Item Stock for All Institutions
+                                    <h:outputText value="#{f.stockHistory.totalItemStock}"><f:convertNumber pattern="#,##0" /></h:outputText>-->
 
 
                                     <f:facet name="footer">
