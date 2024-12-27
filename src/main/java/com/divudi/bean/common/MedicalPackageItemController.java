@@ -1,10 +1,7 @@
 /*
- * Milk Payment System for Lucky Lanka Milk Processing Company
+ * 
+ * (94) 71 5812399
  *
- * Development and Implementation of Web-based System by ww.divudi.com
- Development and Implementation of Web-based System by ww.divudi.com
- * (94) 71 5812399
- * (94) 71 5812399
  */
 package com.divudi.bean.common;
 import com.divudi.entity.Item;
@@ -35,7 +32,7 @@ import com.divudi.bean.common.util.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- Informatics)
+ * 
  */
 @Named
 @SessionScoped
@@ -179,7 +176,7 @@ public class MedicalPackageItemController implements Serializable {
         pi.setPackege(getCurrentMedicalPackage());
         pi.setItem(getCurrentItem());
         pi.setCreatedAt(new Date());
-        pi.setCreater(sessionController.loggedUser);
+        pi.setCreater(sessionController.getLoggedUser());
         getFacade().create(pi);
         JsfUtil.addSuccessMessage("Added");
         recreateModel();

@@ -30,14 +30,14 @@ import com.divudi.light.common.BillLight;
 import com.divudi.light.common.BillSummaryRow;
 import com.divudi.service.BillService;
 import com.divudi.service.PatientInvestigationService;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
+import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.StreamedContent;
@@ -45,6 +45,7 @@ import org.primefaces.model.file.UploadedFile;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -56,6 +57,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author safrin
@@ -345,7 +347,6 @@ public class ReportsController implements Serializable {
     public void setDischargedStatus(String dischargedStatus) {
         this.dischargedStatus = dischargedStatus;
     }
-
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
@@ -1653,15 +1654,14 @@ public class ReportsController implements Serializable {
     private ReportTemplateRowBundle generateSampleCarrierBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(pi) "
                 + "FROM PatientInvestigation pi "
                 + "JOIN pi.billItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE pi.retired=false "
                 + " and billItem.retired=false "
-                + " and bill.retired=false ";
-
+                + " and bill.retired=false "
+                + "AND pi.sampleSentAt IS NOT NULL ";
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
@@ -1824,6 +1824,12 @@ public class ReportsController implements Serializable {
 
     public void generateOPDWeeklyReport() {
         System.out.println("generateOPDWeeklyReport = " + this);
+
+        if (month == null) {
+            JsfUtil.addErrorMessage("Please select a month");
+            return;
+        }
+
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -3507,27 +3513,6 @@ public class ReportsController implements Serializable {
         bundle.setGroupedBillItemsByInstitution(billMap);
     }
 
-    public Double calculateNetAmountSubTotalByBills(List<Bill> bills) {
-        Double netTotal = 0.0;
-
-        for (Bill bill : bills) {
-            netTotal += bill.getNetTotal();
-        }
-
-        return netTotal;
-    }
-
-    public Double calculateDiscountSubTotalByBills(List<Bill> bills) {
-        Double discount = 0.0;
-
-        for (Bill bill : bills) {
-            discount += bill.getDiscount();
-        }
-
-        return discount;
-    }
-
-
     public Double calculateSubTotal() {
         double subTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
@@ -3535,115 +3520,10 @@ public class ReportsController implements Serializable {
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
-            subTotal += calculateNetTotalByBills(bills);
+            subTotal += calculateNetAmountSubTotalByBills(bills);
         }
 
         return subTotal;
-    }
-
-    public Double calculateGrossAmountSubTotalByBills(List<Bill> bills) {
-        Double billTotal = 0.0;
-
-        for (Bill bill : bills) {
-            billTotal += bill.getBillTotal();
-        }
-
-        return billTotal;
-    }
-
-    public Double calculatePatientShareSubTotalByBills(List<Bill> bills) {
-        Double settledAmountByPatient = 0.0;
-
-        for (Bill bill : bills) {
-            settledAmountByPatient += bill.getSettledAmountByPatient();
-        }
-
-        return settledAmountByPatient;
-    }
-
-    public Double calculateSponsorShareSubTotalByBills(List<Bill> bills) {
-        Double settledAmountBySponsor = 0.0;
-
-        for (Bill bill : bills) {
-            settledAmountBySponsor += bill.getSettledAmountBySponsor();
-        }
-
-        return settledAmountBySponsor;
-    }
-
-    public Double calculateDueAmountSubTotalByBills(List<Bill> bills) {
-        Double balance = 0.0;
-
-        for (Bill bill : bills) {
-            balance += bill.getBalance();
-        }
-
-        return balance;
-    }
-
-    public Double calculateGrossAmountNetTotal() {
-        double grossAmountNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            grossAmountNetTotal += calculateGrossAmountSubTotalByBills(bills);
-        }
-
-        return grossAmountNetTotal;
-    }
-
-    public Double calculateDiscountNetTotal() {
-        double discountNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            discountNetTotal += calculateDiscountSubTotalByBills(bills);
-        }
-
-        return discountNetTotal;
-    }
-
-    public Double calculatePatientShareNetTotal() {
-        double patientShareNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            patientShareNetTotal += calculatePatientShareSubTotalByBills(bills);
-        }
-
-        return patientShareNetTotal;
-    }
-
-    public Double calculateDueAmountNetTotal() {
-        double dueAmountNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            dueAmountNetTotal += calculateDueAmountSubTotalByBills(bills);
-        }
-
-        return dueAmountNetTotal;
-    }
-
-    public Double calculateNetAmountNetTotal() {
-        double netAmountNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            netAmountNetTotal += calculateNetAmountSubTotalByBills(bills);
-        }
-
-        return netAmountNetTotal;
     }
 
     public Double calculateGrossAmountSubTotalByBills(List<Bill> bills) {
@@ -3747,19 +3627,6 @@ public class ReportsController implements Serializable {
 
             sponsorShareNetTotal += calculateSponsorShareSubTotalByBills(bills);
 
-        }
-
-        return sponsorShareNetTotal;
-    }
-
-    public Double calculateNetAmountNetTotal() {
-        double netAmountNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            netAmountNetTotal += calculateNetAmountSubTotalByBills(bills);
         }
 
         return sponsorShareNetTotal;
@@ -4139,6 +4006,7 @@ public class ReportsController implements Serializable {
         try (XSSFWorkbook workbook = new XSSFWorkbook();
              OutputStream out = response.getOutputStream()) {
 
+
             XSSFSheet sheet = workbook.createSheet("Report");
             int rowIndex = 0;
 
@@ -4188,6 +4056,579 @@ public class ReportsController implements Serializable {
 
             workbook.write(out);
             context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportWeeklyOPDSummaryReportToPDF() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Weekly_Summary_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document();
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            document.add(new Paragraph("Weekly Summary Report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+
+            document.add(new Paragraph("Month: " + getMonth(),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph("Report Type: Summary",
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            for (Map.Entry<Integer, Map<String, Map<Integer, Double>>> entry : getGroupedBillItemsWeekly().entrySet()) {
+                Integer key = entry.getKey();
+                Map<String, Map<Integer, Double>> weeklyData = entry.getValue();
+
+                PdfPTable table = new PdfPTable(8);
+                table.setWidthPercentage(100);
+                float[] columnWidths = {3f, 1f, 1f, 1f, 1f, 1f, 1f, 1.5f};
+                table.setWidths(columnWidths);
+
+                table.addCell(new PdfPCell(new Phrase(getShiftDescription(key),
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
+
+                for (int week = 1; week <= 6; week++) {
+                    table.addCell(new PdfPCell(new Phrase("Week " + week,
+                            FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
+                }
+                table.addCell(new PdfPCell(new Phrase("Total",
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
+
+                for (Map.Entry<String, Map<Integer, Double>> rowEntry : weeklyData.entrySet()) {
+                    String name = rowEntry.getKey();
+                    Map<Integer, Double> weekValues = rowEntry.getValue();
+
+                    table.addCell(new PdfPCell(new Phrase(name)));
+
+                    for (int week = 1; week <= 6; week++) {
+                        table.addCell(String.valueOf(weekValues.getOrDefault(week, 0.0)));
+                    }
+
+                    double total = weekValues.values().stream().mapToDouble(Double::doubleValue).sum();
+                    table.addCell(String.valueOf(total));
+                }
+
+                document.add(table);
+                document.add(new Paragraph(" "));
+            }
+
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportWeeklyOPDSummaryReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Weekly_Summary_Report.xlsx");
+
+        try (OutputStream out = response.getOutputStream(); Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Weekly Summary Report");
+
+            int rowIndex = 0;
+
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Weekly Summary Report");
+            CellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 18);
+            titleStyle.setFont(titleFont);
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
+
+            Row metaRow1 = sheet.createRow(rowIndex++);
+            metaRow1.createCell(0).setCellValue("Month: " + getMonth());
+
+            Row metaRow2 = sheet.createRow(rowIndex++);
+            metaRow2.createCell(0).setCellValue("Report Type: Summary");
+
+            rowIndex++;
+
+            for (Map.Entry<Integer, Map<String, Map<Integer, Double>>> entry : getGroupedBillItemsWeekly().entrySet()) {
+                Integer key = entry.getKey();
+                Map<String, Map<Integer, Double>> weeklyData = entry.getValue();
+
+                Row shiftRow = sheet.createRow(rowIndex++);
+                Cell shiftCell = shiftRow.createCell(0);
+                shiftCell.setCellValue(getShiftDescription(key));
+                CellStyle shiftStyle = workbook.createCellStyle();
+                Font shiftFont = workbook.createFont();
+                shiftFont.setBold(true);
+                shiftStyle.setFont(shiftFont);
+                shiftCell.setCellStyle(shiftStyle);
+
+                Row headerRow = sheet.createRow(rowIndex++);
+                String[] headers = {"Name", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Total"};
+                for (int col = 0; col < headers.length; col++) {
+                    Cell cell = headerRow.createCell(col);
+                    cell.setCellValue(headers[col]);
+                    CellStyle headerStyle = workbook.createCellStyle();
+                    headerStyle.setFont(shiftFont);
+                    headerStyle.setBorderBottom(BorderStyle.THIN);
+                    cell.setCellStyle(headerStyle);
+                }
+
+                for (Map.Entry<String, Map<Integer, Double>> rowEntry : weeklyData.entrySet()) {
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    String name = rowEntry.getKey();
+                    Map<Integer, Double> weekValues = rowEntry.getValue();
+
+                    dataRow.createCell(0).setCellValue(name);
+
+                    double total = 0.0;
+                    for (int week = 1; week <= 6; week++) {
+                        double value = weekValues.getOrDefault(week, 0.0);
+                        dataRow.createCell(week).setCellValue(value);
+                        total += value;
+                    }
+
+                    dataRow.createCell(7).setCellValue(total);
+                }
+
+                rowIndex++;
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String getShiftDescription(Integer key) {
+        switch (key) {
+            case 1:
+                return "7:00 PM - 7:00 AM (Night)";
+            case 2:
+                return "7:00 AM - 1:00 PM";
+            case 3:
+                return "1:00 PM - 7:00 PM";
+            default:
+                return "Unknown Shift";
+        }
+    }
+
+    public void exportDetailedWeeklyOPDReportToPDF() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Detailed_Weekly_OPD_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document();
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            com.itextpdf.text.Font regularFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            for (int week = 1; week <= 6; week++) {
+                List<Integer> daysOfWeek = getDaysOfWeek(week);
+
+                if (daysOfWeek.isEmpty()) {
+                    continue;
+                }
+
+                Paragraph title = new Paragraph("Detailed Weekly OPD Report", titleFont);
+                title.setAlignment(Element.ALIGN_CENTER);
+                document.add(title);
+
+                document.add(new Paragraph("Week: " + week, headerFont));
+                document.add(new Paragraph("Report Type: Detail", regularFont));
+                document.add(Chunk.NEWLINE);
+
+                addWeeklyReportSection(document, "Weekly Report OPD (7.00pm - 7.00am) Night",
+                        getItemListByWeek(week, weeklyDailyBillItemMap7to7), daysOfWeek, weeklyDailyBillItemMap7to7, week, headerFont, regularFont);
+
+                addWeeklyReportSection(document, "Weekly Report OPD (7.00pm - 1.00pm) Night",
+                        getItemListByWeek(week, weeklyDailyBillItemMap7to1), daysOfWeek, weeklyDailyBillItemMap7to1, week, headerFont, regularFont);
+
+                addWeeklyReportSection(document, "Weekly Report OPD (1.00pm - 7.00am) Night",
+                        getItemListByWeek(week, weeklyDailyBillItemMap1to7), daysOfWeek, weeklyDailyBillItemMap1to7, week, headerFont, regularFont);
+
+                document.add(Chunk.NEWLINE);
+            }
+
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
+                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+        document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
+        document.add(com.itextpdf.text.Chunk.NEWLINE);
+
+        com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(daysOfWeek.size() + 2); // +2 for Item and Total columns
+        table.setWidthPercentage(100);
+        table.setSpacingBefore(10f);
+        table.setSpacingAfter(10f);
+
+        table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase("Item", headerFont)));
+        for (int day : daysOfWeek) {
+            table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(String.valueOf(day), headerFont)));
+        }
+        table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase("Total", headerFont)));
+
+        for (String item : itemList) {
+            table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(item, regularFont)));
+            for (int day : daysOfWeek) {
+                double count = getCountByWeekAndDay(week, day, item, weeklyDailyBillItemMap);
+                table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(String.valueOf(count), regularFont)));
+            }
+            double total = getSumByWeek(week, item, weeklyDailyBillItemMap);
+            table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(String.valueOf(total), regularFont)));
+        }
+
+        document.add(table);
+    }
+
+    public void exportDetailedWeeklyOPDReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Detailed_Weekly_OPD_Report.xlsx");
+
+        try (OutputStream out = response.getOutputStream(); Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Detailed Weekly OPD Report");
+
+            int rowIndex = 0;
+
+            for (int week = 1; week <= 6; week++) {
+                List<Integer> daysOfWeek = getDaysOfWeek(week);
+
+                if (daysOfWeek.isEmpty()) {
+                    continue;
+                }
+
+                Row headerRow1 = sheet.createRow(rowIndex++);
+                Cell headerCell1 = headerRow1.createCell(0);
+                headerCell1.setCellValue("Report Type: Detail");
+                CellStyle boldStyle = workbook.createCellStyle();
+                Font boldFont = workbook.createFont();
+                boldFont.setBold(true);
+                boldStyle.setFont(boldFont);
+                headerCell1.setCellStyle(boldStyle);
+
+                Row headerRow2 = sheet.createRow(rowIndex++);
+                headerRow2.createCell(0).setCellValue("Week: " + week);
+
+                Row headerRow3 = sheet.createRow(rowIndex++);
+                headerRow3.createCell(0).setCellValue("Weekly Report OPD (7.00pm - 7.00am) Night");
+
+                rowIndex++;
+
+                Row columnHeaderRow = sheet.createRow(rowIndex++);
+                columnHeaderRow.createCell(0).setCellValue("Item");
+                int colIndex = 1;
+                for (int day : daysOfWeek) {
+                    columnHeaderRow.createCell(colIndex++).setCellValue(day);
+                }
+                columnHeaderRow.createCell(colIndex).setCellValue("Total");
+
+                // Data Rows for (7.00 PM - 7.00 AM)
+                populateDataRows(sheet, rowIndex, getItemListByWeek(week, weeklyDailyBillItemMap7to7), daysOfWeek, weeklyDailyBillItemMap7to7, week);
+                rowIndex += getItemListByWeek(week, weeklyDailyBillItemMap7to7).size();
+
+                // Section for (7.00 PM - 1.00 PM)
+                rowIndex++;
+                Row sectionHeaderRow1 = sheet.createRow(rowIndex++);
+                sectionHeaderRow1.createCell(0).setCellValue("Weekly Report OPD (7.00pm - 1.00pm) Night");
+
+                populateDataRows(sheet, rowIndex, getItemListByWeek(week, weeklyDailyBillItemMap7to1), daysOfWeek, weeklyDailyBillItemMap7to1, week);
+                rowIndex += getItemListByWeek(week, weeklyDailyBillItemMap7to1).size();
+
+                // Section for (1.00 PM - 7.00 AM)
+                rowIndex++;
+                Row sectionHeaderRow2 = sheet.createRow(rowIndex++);
+                sectionHeaderRow2.createCell(0).setCellValue("Weekly Report OPD (1.00pm - 7.00am) Night");
+
+                populateDataRows(sheet, rowIndex, getItemListByWeek(week, weeklyDailyBillItemMap1to7), daysOfWeek, weeklyDailyBillItemMap1to7, week);
+                rowIndex += getItemListByWeek(week, weeklyDailyBillItemMap1to7).size();
+
+                rowIndex++;
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void populateDataRows(Sheet sheet, int rowIndex, List<String> itemList, List<Integer> daysOfWeek, Map
+            <Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap, int week) {
+        for (String item : itemList) {
+            Row dataRow = sheet.createRow(rowIndex++);
+            int colIndex = 0;
+
+            dataRow.createCell(colIndex++).setCellValue(item);
+
+            for (int day : daysOfWeek) {
+                double count = getCountByWeekAndDay(week, day, item, weeklyDailyBillItemMap);
+                dataRow.createCell(colIndex++).setCellValue(count);
+            }
+
+            double total = getSumByWeek(week, item, weeklyDailyBillItemMap);
+            dataRow.createCell(colIndex).setCellValue(total);
+        }
+    }
+
+    public void exportRouteAnalysisDetailReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Collecting_Center_Monthly_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+             OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("Monthly Report");
+            int rowIndex = 0;
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            headerRow.createCell(0).setCellValue("S. No");
+            headerRow.createCell(1).setCellValue("Collecting Center Code");
+            headerRow.createCell(2).setCellValue("Collecting Center");
+
+            List<YearMonth> yearMonths = getYearMonths();
+            int dynamicColumnIndex = 3;
+            for (YearMonth yearMonth : yearMonths) {
+                headerRow.createCell(dynamicColumnIndex++).setCellValue(yearMonth.toString() + " - Sample Count");
+                headerRow.createCell(dynamicColumnIndex++).setCellValue(yearMonth.toString() + " - Service Amount");
+            }
+
+            int serialNumber = 1;
+            for (Map.Entry<Institution, Map<YearMonth, Bill>> entrySet : getGroupedCollectingCenterWiseBillsMonthly().entrySet()) {
+                Institution center = entrySet.getKey();
+                Map<YearMonth, Bill> monthlyData = entrySet.getValue();
+
+                Row dataRow = sheet.createRow(rowIndex++);
+                dataRow.createCell(0).setCellValue(serialNumber++);
+                dataRow.createCell(1).setCellValue(center.getCode());
+                dataRow.createCell(2).setCellValue(center.getName());
+
+                dynamicColumnIndex = 3;
+                for (YearMonth yearMonth : yearMonths) {
+                    Bill bill = monthlyData.get(yearMonth);
+
+                    if (bill != null) {
+                        dataRow.createCell(dynamicColumnIndex++).setCellValue(bill.getQty());
+                        dataRow.createCell(dynamicColumnIndex++).setCellValue(bill.getTotalHospitalFee());
+                    } else {
+                        dataRow.createCell(dynamicColumnIndex++).setCellValue(0);
+                        dataRow.createCell(dynamicColumnIndex++).setCellValue(0.0);
+                    }
+                }
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportRouteAnalysisDetailReportToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Collecting_Center_Monthly_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Collecting Center Monthly Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            PdfPTable table = new PdfPTable(3 + getYearMonths().size() * 2);
+            table.setWidthPercentage(100);
+
+            table.addCell(new PdfPCell(new Phrase("S. No")));
+            table.addCell(new PdfPCell(new Phrase("Collecting Center Code")));
+            table.addCell(new PdfPCell(new Phrase("Collecting Center")));
+
+            List<YearMonth> yearMonths = getYearMonths();
+            for (YearMonth yearMonth : yearMonths) {
+                table.addCell(new PdfPCell(new Phrase(yearMonth.toString() + " - Sample Count")));
+                table.addCell(new PdfPCell(new Phrase(yearMonth.toString() + " - Service Amount")));
+            }
+
+            int serialNumber = 1;
+            for (Map.Entry<Institution, Map<YearMonth, Bill>> entrySet : getGroupedCollectingCenterWiseBillsMonthly().entrySet()) {
+                Institution center = entrySet.getKey();
+                Map<YearMonth, Bill> monthlyData = entrySet.getValue();
+
+                table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++))));
+                table.addCell(new PdfPCell(new Phrase(center.getCode())));
+                table.addCell(new PdfPCell(new Phrase(center.getName())));
+
+                for (YearMonth yearMonth : yearMonths) {
+                    Bill bill = monthlyData.get(yearMonth);
+                    if (bill != null) {
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getQty()))));
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getTotalHospitalFee()))));
+                    } else {
+                        table.addCell(new PdfPCell(new Phrase("0")));
+                        table.addCell(new PdfPCell(new Phrase("0.0")));
+                    }
+                }
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportRouteAnalysisSummaryReportToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Route_Wise_Monthly_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Route Wise Monthly Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            PdfPTable table = new PdfPTable(2 + getYearMonths().size() * 2);
+            table.setWidthPercentage(100);
+
+            table.addCell(new PdfPCell(new Phrase("S. No")));
+            table.addCell(new PdfPCell(new Phrase("Route")));
+
+            List<YearMonth> yearMonths = getYearMonths();
+            for (YearMonth yearMonth : yearMonths) {
+                table.addCell(new PdfPCell(new Phrase(yearMonth.toString() + " - Sample Count")));
+                table.addCell(new PdfPCell(new Phrase(yearMonth.toString() + " - Service Amount")));
+            }
+
+            int serialNumber = 1;
+            for (Map.Entry<Route, Map<YearMonth, Bill>> entrySet : getGroupedRouteWiseBillsMonthly().entrySet()) {
+                Route route = entrySet.getKey();
+                Map<YearMonth, Bill> monthlyData = entrySet.getValue();
+
+                table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++))));
+                table.addCell(new PdfPCell(new Phrase(route.getName())));
+
+                for (YearMonth yearMonth : yearMonths) {
+                    Bill billData = monthlyData.get(yearMonth);
+                    if (billData != null) {
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(billData.getQty()))));
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(billData.getTotalHospitalFee()))));
+                    } else {
+                        table.addCell(new PdfPCell(new Phrase("0")));
+                        table.addCell(new PdfPCell(new Phrase("0.0")));
+                    }
+                }
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportRouteAnalysisSummaryReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Route_Wise_Monthly_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Route Wise Monthly Report");
+            int rowIndex = 0;
+
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Route Wise Monthly Report");
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 2 + getYearMonths().size() * 2 - 1));
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            int cellIndex = 0;
+            headerRow.createCell(cellIndex++).setCellValue("S. No");
+            headerRow.createCell(cellIndex++).setCellValue("Route");
+
+            List<YearMonth> yearMonths = getYearMonths();
+            for (YearMonth yearMonth : yearMonths) {
+                headerRow.createCell(cellIndex++).setCellValue(yearMonth.toString() + " - Sample Count");
+                headerRow.createCell(cellIndex++).setCellValue(yearMonth.toString() + " - Service Amount");
+            }
+
+            int serialNumber = 1;
+            for (Map.Entry<Route, Map<YearMonth, Bill>> entrySet : getGroupedRouteWiseBillsMonthly().entrySet()) {
+                Route route = entrySet.getKey();
+                Map<YearMonth, Bill> monthlyData = entrySet.getValue();
+
+                Row row = sheet.createRow(rowIndex++);
+                cellIndex = 0;
+
+                row.createCell(cellIndex++).setCellValue(serialNumber++);
+                row.createCell(cellIndex++).setCellValue(route.getName());
+
+                for (YearMonth yearMonth : yearMonths) {
+                    Bill billData = monthlyData.get(yearMonth);
+                    if (billData != null) {
+                        row.createCell(cellIndex++).setCellValue(billData.getQty());
+                        row.createCell(cellIndex++).setCellValue(billData.getTotalHospitalFee());
+                    } else {
+                        row.createCell(cellIndex++).setCellValue(0);
+                        row.createCell(cellIndex++).setCellValue(0.0);
+                    }
+                }
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
         } catch (Exception e) {
             e.printStackTrace();
         }

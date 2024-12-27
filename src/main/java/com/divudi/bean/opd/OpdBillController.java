@@ -2739,12 +2739,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     }
                     double creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
                     PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
-                    if(pd==null){
+                    if (pd == null) {
                         JsfUtil.addErrorMessage("No Patient Deposit.");
                         return true;
                     }
-                    double runningBalance=pd.getBalance();
-                    
+                    double runningBalance = pd.getBalance();
+
                     double availableForPurchase = runningBalance + creditLimitAbsolute;
 
                     if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
@@ -3289,9 +3289,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public String navigateToNewOpdBill() {
-        Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
-        Boolean opdBillItemSearchByAutocomplete = configOptionApplicationController.getBooleanValueByKey("OPD Bill Item Search By Autocomplete", false);
-        if (opdBillingAfterShiftStart) {
+        if (sessionController.getOpdBillingAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 clearBillItemValues();
@@ -3300,7 +3298,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 paymentScheme = null;
                 paymentMethod = PaymentMethod.Cash;
                 collectingCentreBillController.setCollectingCentre(null);
-                if (opdBillItemSearchByAutocomplete) {
+                if (sessionController.getOpdBillItemSearchByAutocomplete()) {
                     return "/opd/opd_bill_ac?faces-redirect=true";
                 } else {
                     return "/opd/opd_bill?faces-redirect=true";
@@ -3316,13 +3314,16 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             paymentScheme = null;
             paymentMethod = PaymentMethod.Cash;
             collectingCentreBillController.setCollectingCentre(null);
-            return "/opd/opd_bill?faces-redirect=true";
+            if (sessionController.getOpdBillItemSearchByAutocomplete()) {
+                return "/opd/opd_bill_ac?faces-redirect=true";
+            } else {
+                return "/opd/opd_bill?faces-redirect=true";
+            }
         }
     }
 
     public String navigateToNewOpdBillAutocomplete() {
-        Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
-        if (opdBillingAfterShiftStart) {
+        if (sessionController.getOpdBillingAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 clearBillItemValues();
@@ -3391,8 +3392,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public String navigateToNewOpdBillFromToken() {
-        Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
-        if (opdBillingAfterShiftStart) {
+        if (sessionController.getOpdBillingAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 paymentMethodData = null;
@@ -3402,7 +3402,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 if (getToken() != null) {
                     setPatient(token.getPatient());
                 }
-                return "/opd/opd_bill?faces-redirect=true";
+                if (sessionController.getOpdBillItemSearchByAutocomplete()) {
+                    return "/opd/opd_bill_ac?faces-redirect=true";
+                } else {
+                    return "/opd/opd_bill?faces-redirect=true";
+                }
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 return "/cashier/index?faces-redirect=true";
@@ -3415,7 +3419,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (getToken() != null) {
                 setPatient(token.getPatient());
             }
-            return "/opd/opd_bill?faces-redirect=true";
+            if (sessionController.getOpdBillItemSearchByAutocomplete()) {
+                return "/opd/opd_bill_ac?faces-redirect=true";
+            } else {
+                return "/opd/opd_bill?faces-redirect=true";
+            }
         }
     }
 
@@ -3452,11 +3460,19 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         navigateToNewOpdBill();
         patient = pt;
         paymentScheme = ps;
-        return "/opd/opd_bill?faces-redirect=true";
+        if (sessionController.getOpdBillItemSearchByAutocomplete()) {
+            return "/opd/opd_bill_ac?faces-redirect=true";
+        } else {
+            return "/opd/opd_bill?faces-redirect=true";
+        }
     }
 
     public String toOpdBilling() {
-        return "/opd/opd_bill?faces-redirect=true";
+        if (sessionController.getOpdBillItemSearchByAutocomplete()) {
+            return "/opd/opd_bill_ac?faces-redirect=true";
+        } else {
+            return "/opd/opd_bill?faces-redirect=true";
+        }
     }
 
     public void prepareNewBillForMember() {
