@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - coop-prod
-  workflow_dispatch:
+  # workflow_dispatch:
 
 jobs:
   build:
@@ -44,7 +44,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
+    # if: github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout Code
