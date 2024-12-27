@@ -374,7 +374,7 @@
                                                                 <p:ajax process="@this cmbPs cmbPs2" 
                                                                         update="pBillDetails panelPaymentDetails" 
                                                                         event="change"  
-                                                                        listener="#{pharmacySaleController.changeListener()}"/>
+                                                                        listener="#{pharmacySaleController.listnerForPaymentMethodChange()}"/>
                                                             </p:selectOneMenu>
 
                                                             <p:selectOneMenu   id="cmbPs2" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq true}">   
@@ -382,7 +382,7 @@
                                                                 <p:ajax process="@this pay " 
                                                                         update="pBillDetails panelPaymentDetails" 
                                                                         event="change"  
-                                                                        listener="#{pharmacySaleController.changeListener()}"/>
+                                                                        listener="#{pharmacySaleController.listnerForPaymentMethodChange()}"/>
                                                             </p:selectOneMenu>
                                                         </div>
 
@@ -564,7 +564,7 @@
                                                             <p:ajax process="@this pay " 
                                                                     update="pBillDetails panelPaymentDetails" 
                                                                     event="change"  
-                                                                    listener="#{pharmacySaleController.changeListener()}"/>
+                                                                    listener="#{pharmacySaleController.listnerForPaymentMethodChange()}"/>
                                                         </p:selectOneMenu>
                                                     </div>
 
