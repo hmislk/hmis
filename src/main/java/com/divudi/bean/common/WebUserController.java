@@ -106,7 +106,7 @@ public class WebUserController implements Serializable {
     private DrawerController drawerController;
     @Inject
     StaffImageController staffImageController;
-    
+
     /**
      * Class Variables
      */
@@ -649,7 +649,7 @@ public class WebUserController implements Serializable {
     private void fillLightUsers() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
-        jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
+        jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id, wu.role.name)"
                 + " from WebUser wu "
                 + " where wu.retired=:ret "
                 + " and wu.staff is not null "
@@ -661,7 +661,7 @@ public class WebUserController implements Serializable {
     private void fillLightUsersWithoutStaff() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
-        jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
+        jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id, wu.role.name)"
                 + " from WebUser wu "
                 + " where wu.retired=:ret "
                 + " and wu.staff is null "
@@ -891,7 +891,7 @@ public class WebUserController implements Serializable {
         getStaffController().setCurrent(selected.getStaff());
         return "/admin/institutions/admin_staff_signature_url?faces-redirect=true";
     }
-    
+
     public String navigateToManageSignature() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -900,7 +900,7 @@ public class WebUserController implements Serializable {
         getStaffController().setCurrent(selected.getStaff());
         return "/admin/users/manage_user_signature?faces-redirect=true";
     }
-    
+
     public String navigateToSelectedSignatureType() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -908,18 +908,18 @@ public class WebUserController implements Serializable {
         }
         String signatureType = staffImageController.getViewImageType();
         System.out.println("signatureType = " + signatureType);
-        if(signatureType == null || signatureType.isEmpty()){
+        if (signatureType == null || signatureType.isEmpty()) {
             JsfUtil.addErrorMessage("Please select a Type");
             return "";
-        }else if (signatureType.equalsIgnoreCase("URL")){
+        } else if (signatureType.equalsIgnoreCase("URL")) {
             return toManageSignatureURL();
-        }else if(signatureType.equalsIgnoreCase("UPLOADIMAGE")){
+        } else if (signatureType.equalsIgnoreCase("UPLOADIMAGE")) {
             return toManageSignature();
-        }else{
+        } else {
             JsfUtil.addErrorMessage("Please select a Type");
             return "";
         }
-       
+
     }
 
     public String navigateToManageDepartments() {
@@ -1027,11 +1027,11 @@ public class WebUserController implements Serializable {
     public String backToViewUsers() {
         return "/admin/users/user_list";
     }
-    
+
     public String backToManageSignatureType() {
         return "/admin/users/manage_user_signature?faces-redirect=true";
     }
-    
+
     public String changeCurrentUserPassword() {
         if (getCurrent() == null) {
             JsfUtil.addErrorMessage("Select a User");
@@ -1049,6 +1049,29 @@ public class WebUserController implements Serializable {
         return navigateToListUsers();
     }
 
+    public String forceChangePasswordOnNextLogin() {
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("Select a User");
+            return "";
+        }
+        current.setNeedToResetPassword(true);
+        getFacade().edit(current);
+        JsfUtil.addSuccessMessage("Password Reset Requested");
+        return navigateToListUsers();
+    }
+
+    public String reverseChangePasswordOnNextLogin() {
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("Select a User");
+            return "";
+        }
+        current.setNeedToResetPassword(false);
+        getFacade().edit(current);
+        JsfUtil.addSuccessMessage("Password Reset Request Cancelled");
+        return navigateToListUsers();
+    }
+    
+    
     public UserPaymentSchemeController getUserPaymentSchemeController() {
         return userPaymentSchemeController;
     }
@@ -1265,8 +1288,8 @@ public class WebUserController implements Serializable {
         if (userNotificationController.fillLoggedUserNotifications() != null) {
             userNotificationCount = 0;
             List<UserNotification> allNotifications = userNotificationController.fillLoggedUserNotifications();
-            for(UserNotification un : allNotifications){
-                if(!un.isSeen()){
+            for (UserNotification un : allNotifications) {
+                if (!un.isSeen()) {
                     userNotificationCount++;
                 }
             }
