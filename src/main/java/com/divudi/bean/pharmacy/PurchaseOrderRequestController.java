@@ -213,12 +213,14 @@ public class PurchaseOrderRequestController implements Serializable {
         getPharmacyController().setPharmacyItem(bi.getItem());
         calTotal();
     }
-
+    
     public void saveBill() {
 
-        getCurrentBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyOrder, BillClassType.BilledBill, BillNumberSuffix.POR));
-        getCurrentBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyOrder, BillClassType.BilledBill, BillNumberSuffix.POR));
-
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+ 
+        getCurrentBill().setDeptId(deptId);
+        getCurrentBill().setInsId(deptId);
+        
         getCurrentBill().setCreater(getSessionController().getLoggedUser());
         getCurrentBill().setCreatedAt(Calendar.getInstance().getTime());
 
