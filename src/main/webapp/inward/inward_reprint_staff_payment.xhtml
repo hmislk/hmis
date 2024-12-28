@@ -11,77 +11,133 @@
 
 
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/payments/pay_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="admin">
                 <h:form>
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
-                            <h:outputLabel value="Reprint" ></h:outputLabel>
-                            <hr/>
-                            <p:commandButton value="Reprint" ajax="false">
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" action="inward_bill_staff_payment_cancel"   >                           
-                            </p:commandButton>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputLabel value="Reprint" ></h:outputLabel>
+                                </div>
+                                <div>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        class="ui-button-danger" 
+                                        icon="fas fa-ban" 
+                                        value="To Cancel" 
+                                        disabled="#{inwardSearch.bill.cancelled}"
+                                        action="inward_bill_staff_payment_cancel" >                           
+                                    </p:commandButton>
+                                </div>
+                            </div>
                         </f:facet>
-
-                        <p:panel>
-                            <p:panelGrid columns="2" style="width: 100%;">
-                                <p:panel header="Patient Detail">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Staff ​Name:" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.staff.person.nameWithTitle }" ></h:outputLabel>                                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p:panel header="Staff Detail">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa fa-user-circle"></h:outputText>
+                                        <h:outputLabel value="Staff Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <h:panelGrid columns="3" class="w-100" style="font-size: 12pt">
+                                        <h:outputLabel value="Staff ​Name" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.staff.person.nameWithTitle }" ></h:outputLabel>
+                                        <h:outputLabel value="Speciality" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.staff.speciality.name }" ></h:outputLabel>
+                                        <h:outputLabel value="Department" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.staff.department.name }" ></h:outputLabel>
+                                        <h:outputLabel value="Address" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.staff.person.address}" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Age" />
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.staff.person.ageAsString}"  />
                                         <h:outputLabel value="Phone" >
                                         </h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
                                         <h:outputLabel value="#{inwardSearch.bill.staff.person.phone}" >
                                         </h:outputLabel>
-                                    </p:panelGrid>
+                                    </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="Bill Detail">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                            </div>
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-file-invoice"></h:outputText>
+                                        <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <h:panelGrid columns="3" class="w-100">
+                                        <h:outputLabel value="Bill No " ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
                                         <h:outputLabel value="#{inwardSearch.bill.deptId}" ></h:outputLabel>
-                                        <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                        <h:outputLabel value="Payment Type " ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
                                         <h:outputLabel value="#{inwardSearch.bill.paymentMethod}" ></h:outputLabel>
-                                        <h:outputLabel value="Paid amount :" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.total}" ></h:outputLabel>
-                                    </p:panelGrid>
+                                        <h:outputLabel value="Paid Amount" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{-inwardSearch.bill.absoluteNetTotal}" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                    </h:panelGrid>
                                 </p:panel>
-                            </p:panelGrid>
-
-                            <p:panel header="Bill Fee Detail">
-                                <p:dataTable value="#{inwardSearch.billItems}" var="bip21" emptyMessage="No Items" >
-                                    <p:column headerText="Bill No">
-                                        <h:outputLabel value="#{bip21.bill.deptId}" />
-                                    </p:column>
-                                    <p:column headerText="Test/Service">
-                                        <h:outputLabel value="#{bip21.paidForBillFee.billItem.item.name}" />
-                                    </p:column>
-                                    <p:column headerText="Fee" >
-                                        <h:outputLabel value="#{bip21.netValue}" />
-                                    </p:column>
-                                </p:dataTable>
-                            </p:panel>
+                            </div>
+                        </div>
+                        <p:panel header="Bill Fee Details" class="my-2">
+                            <p:dataTable value="#{inwardSearch.billItems}" var="bip21" emptyMessage="No Items" >
+                                <p:column headerText="Bill No">
+                                    <h:outputLabel value="#{bip21.bill.deptId}" />
+                                </p:column>
+                                <p:column headerText="Date">
+                                    <h:outputLabel value="#{bip21.bill.createdAt}" />
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="BHT No" ></h:outputLabel>
+                                    </f:facet>                          
+                                    <h:outputLabel value="#{bip21.referanceBillItem.bill.patientEncounter.bhtNo}"/>                                                                                
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Patient Name" ></h:outputLabel>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{bip21.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}"/>                                                                                
+                                </p:column>
+                                <p:column headerText="Fee" >
+                                    <h:outputLabel value="#{bip21.netValue}" />
+                                </p:column>
+                            </p:dataTable>
                         </p:panel>
                     </p:panel>
 
 
 
-
-                    <h:panelGroup >
-                        <h:panelGroup rendered="true" id="gpBillPreview">
-
-                            <bi:staffBill bill="#{inwardSearch.bill}" dup="true"/>
-
-                        </h:panelGroup>
-                    </h:panelGroup>
-
-
                 </h:form>
+
+                <h:form >
+                    <p:commandButton icon="fas fa-print"
+                                     class="ui-badge-info"
+                                     value="Print">
+                        <p:printer target="gpBillPreview" />
+                    </p:commandButton>
+                    <h:panelGroup id="gpBillPreview">
+                        <bi:staffBill bill="#{inwardSearch.bill}" dup="true"/>
+                    </h:panelGroup>
+                </h:form>
+
             </ui:define>
-
-
 
         </ui:composition>
 
