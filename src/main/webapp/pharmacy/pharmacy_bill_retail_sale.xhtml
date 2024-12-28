@@ -960,13 +960,11 @@
                                 <p:commandButton 
                                     accesskey="p" 
                                     id="btnPrint" 
-                                    value="Print"
-                                    icon="fa fa-print"
-
+                                    value="PRINT"
+                                    style="width: 10em;"
                                     class="ui-button-info"
                                     rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
-                                    ajax="false" 
-                                    action="#" >
+                                    ajax="false"  >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
                                 <p:commandButton 
@@ -988,25 +986,20 @@
                             </div>
 
                             <div class="d-flex gap-3">
-
                                 <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
-
-
                             </div>
                         </div>
 
 
                         <h:panelGroup id="gpBillPreview" >
-
-<!--                            <h:panelGroup   id="gpBillWithOutItem" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosPaper',true)}">
+                            <h:panelGroup   id="gpBillWithOutItem" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosPaper',true)}">
                                 <div style="page-break-inside: avoid;">
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" style="page-break-after: always!important;"> 
                                         <phi:saleBill_without_item bill="#{pharmacySaleController.printBill}"></phi:saleBill_without_item>                                        
                                     </h:panelGroup>
-
                                 </div>
                                 <br/>
                                 <div style="page-break-inside: avoid;">
@@ -1023,9 +1016,9 @@
                                         <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
                                     </h:panelGroup>
                                 </div>
-                            </h:panelGroup>-->
+                            </h:panelGroup>
 
-<!--                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFivePaper',true)}"> 
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFivePaper',true)}"> 
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
                                         <phi:saleBill_five_five bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five>
@@ -1040,27 +1033,12 @@
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>  
-                            
                             <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
-                                <div >
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill_Header bill="#{pharmacySaleController.printBill}"></phi:saleBill_Header>
+                                        <phi:sale_bill_five_five_custom_3 bill="#{pharmacySaleController.printBill}"/>
                                     </h:panelGroup>
-                                </div>
-                            </h:panelGroup>-->
-                            <phi:saleBill_five_five_custom3 bill="#{pharmacySaleController.printBill}"/>
-
+                            </h:panelGroup>
                         </h:panelGroup>                     
-
-
-                        <!--                        <div class="mt-5">
-                                                    <h:panelGroup   id="gpBillPreview"> 
-                                                        <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
-                                                    </h:panelGroup>
-                        
-                        
-                                                </div>-->
-
                     </p:panel>
 
 
