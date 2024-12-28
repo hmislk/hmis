@@ -1009,7 +1009,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 return true;
             }
         }
-        if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
+        if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
             if (getPatientRoom().getRoomFacilityCharge() == null) {
                 JsfUtil.addErrorMessage("Select Room ");
                 return true;
@@ -1030,7 +1030,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
 
-        if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
+        if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
             if (getInwardBean().isRoomFilled(getPatientRoom().getRoomFacilityCharge().getRoom())) {
                 JsfUtil.addErrorMessage("Select Empty Room");
                 return true;
@@ -1171,7 +1171,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addSuccessMessage("Patient Admitted Succesfully");
         }
 
-        if (getCurrent().getAdmissionType().isRoomChargesAllowed() && getPatientRoom().getRoomFacilityCharge() != null) {
+        if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
             PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
         }

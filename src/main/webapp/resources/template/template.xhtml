@@ -104,6 +104,12 @@
 
 
         <h:panelGroup rendered="true" >
+            <h:panelGroup layout="block" class="p-2 text-center" rendered="#{webUserController.grantAllPrivilegesToAllUsersForTesting}">
+                <h:outputLabel 
+                    value="Warning: You are running a developer-only version of the application. This mode allows unrestricted access for any user to perform any action for testing purposes. Please update the settings in WebUserController to disable this mode."
+                    class="ui-message-fatal m-1 p-4 b-2">
+                </h:outputLabel>
+            </h:panelGroup>
             <h:panelGroup rendered="#{!sessionController.firstLogin}" class="w-100">
                 <h:panelGroup rendered ="#{not sessionController.logged}"  >
                     <h:panelGroup rendered="#{!applicationController.hasAwebsiteAsFrontEnd}" >

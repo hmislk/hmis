@@ -515,7 +515,7 @@ public class BillBhtController implements Serializable {
         }
         //for daily return credit card transaction
         paymentMethod = null;
-        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
+        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
             settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
         } else {
             settleBill(getPatientEncounter().getDepartment(), getPatientEncounter().getPaymentMethod());
@@ -628,7 +628,7 @@ public class BillBhtController implements Serializable {
             return true;
         }
 
-        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
+        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
             if (getPatientEncounter().getCurrentPatientRoom() == null) {
                 return true;
             }
@@ -728,7 +728,7 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        if (patientEncounter.getAdmissionType().isRoomChargesAllowed()) {
+        if (patientEncounter.getAdmissionType().isRoomChargesAllowed() || patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge() != null) {
             if (errorCheckForPatientRoomDepartment()) {
                 return;
             }
@@ -753,7 +753,7 @@ public class BillBhtController implements Serializable {
             bItem.setQty(1.0);
             addingEntry.setBillItem(bItem);
             addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
-            if (patientEncounter.getAdmissionType().isRoomChargesAllowed()) {
+            if (patientEncounter.getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
                 addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod()));
             } else {
                 addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getDepartment(), getPatientEncounter().getPaymentMethod()));

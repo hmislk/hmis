@@ -112,6 +112,21 @@
     .channelNumber{
         font-size: 50px!important;
     }
+    
+    .fivefivecustom3bill{
+        position: relative!important;
+        padding: 5px!important;
+        height: 14cm!important;
+
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        margin-left: 10px!important;
+        background-size: 100% auto!important;
+        /*        border: 1px solid!important;*/
+        font-size: 130%;
+        text-transform: capitalize!important;
+
+    }
 
 }
 
@@ -130,6 +145,20 @@
         border: 1px solid!important;
         font-size: 100%!important;
         text-transform: capitalize!important;
+
+    }
+    
+    .fivefivecustom3bill{
+        position: relative!important;
+
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        background-size: 100% auto!important;
+        margin-left: 10px!important;
+        margin-top: -1cm!important;
+        font-size: 100%!important;
+        text-transform: capitalize!important;
+        height: 14cm!important;
 
     }
     
