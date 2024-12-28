@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+        <cc:attribute name="duplicate" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <!-- Link to the external CSS file -->
+        <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
+
+        <div class="receipt-container">
+            <!-- Header with Institution Name -->
+            <div class="receipt-header">
+                #{cc.attrs.bill.department.name}<br />
+                <h:outputText value="**Duplicate**" rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputText value="**Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}" />
+            </div>
+
+            <hr />
+
+            <!-- Bill Details in Two Columns -->
+            <div class="bill-details">
+                <div class="key-value">
+                    <span>BILL NO:</span>
+                    <span>#{cc.attrs.bill.deptId}</span>
+                </div>
+                <div class="key-value">
+                    <span>BILL DATE / TIME:</span>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                        </h:outputLabel>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Patient Information -->
+            <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}">
+                <div class="key-value">
+                    <span>PATIENT NAME:</span>
+                    <span>#{cc.attrs.bill.patient.person.nameWithTitle}</span>
+                </div>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{cc.attrs.bill.patient.person.phone ne null}">
+                <div class="key-value">
+                    <span>PHONE NO:</span>
+                    <span>#{cc.attrs.bill.patient.person.phone}</span>
+                </div>
+            </h:panelGroup>
+
+            <!--<hr />-->
+
+            <!-- Table of Bill Items -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>NO</th>
+                        <th>PARTICULAR</th>
+                        <th>QTY</th>
+                        <th>RATE</th>
+                        <th>AMOUNT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip" varStatus="status">
+                        <tr>
+                            <td>#{status.index + 1}</td>
+                            <td>#{bip.item.name}</td>
+                            <td>
+                                <h:outputLabel value="#{bip.qty}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputLabel>
+                            </td>
+                            <td>
+                                <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                            <td>
+                                <h:outputLabel value="#{bip.grossValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </tbody>
+            </table>
+
+            <!--<hr />-->
+
+            <!-- Payment Summary -->
+            <div class="payment-summary">
+                <div class="key-value">
+                    <span>PAY TYPE:</span>
+                    <span>AMOUNT Rs.</span>
+                </div>
+                <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill)}" var="pm">
+                    <div class="key-value">
+                        <span>#{pm.paymentMethod.label}</span>
+                        <span>
+                            <h:outputLabel value="#{pm.paidValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </span>
+                    </div>
+                </ui:repeat>
+            </div>
+
+            <!--<hr />-->
+
+            <!-- Footer Section with Total and Prepared By -->
+            <div class="footer">
+                <div class="key-value">
+                    <span>TOTAL AMOUNT:</span>
+                    <span>#{cc.attrs.bill.total}</span>
+                </div>
+                <div class="key-value">
+                    <span>DISCOUNT:</span>
+                    <span>#{cc.attrs.bill.discount}</span>
+                </div>
+                <div class="key-value">
+                    <span>NET AMOUNT (LKR):</span>
+                    <span>#{cc.attrs.bill.netTotal}</span>
+                </div>
+                <div class="key-value">
+                    <span>ITEM COUNT &amp; USER:</span>
+                    <span>#{cc.attrs.bill.billItems.size()} / #{cc.attrs.bill.creater.name}</span>
+                </div>
+            </div>
+        </div>
+    </cc:implementation>
+</html>
