@@ -175,7 +175,7 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
                         <div class="d-flex justify-content-between">
                             <h:outputLabel value="DISCOUNT"></h:outputLabel>
-                            <h:outputLabel value="">
+                            <h:outputLabel value="#{cc.attrs.bill.discount}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </div>
