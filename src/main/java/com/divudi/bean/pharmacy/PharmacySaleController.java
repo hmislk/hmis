@@ -2747,18 +2747,23 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     @Override
     public void setPatient(Patient patient) {
+        System.out.println("setPatient in PharmacySaleController");
         this.patient = patient;
         selectPaymentSchemeAsPerPatientMembership();
     }
 
     private void selectPaymentSchemeAsPerPatientMembership() {
+        System.out.println("selectPaymentSchemeAsPerPatientMembership");
+        System.out.println("patient = " + patient);
         if (patient == null) {
             return;
         }
+        System.out.println("patient.getPerson().getMembershipScheme() = " + patient.getPerson().getMembershipScheme());
         if (patient.getPerson().getMembershipScheme() == null) {
             paymentScheme = null;
         } else {
-            paymentScheme = patient.getPerson().getMembershipScheme().getPaymentScheme();
+            System.out.println("patient.getPerson().getMembershipScheme().getPaymentScheme() = " + patient.getPerson().getMembershipScheme().getPaymentScheme());
+            setPaymentScheme(patient.getPerson().getMembershipScheme().getPaymentScheme());
         }
         listnerForPaymentMethodChange();
     }
@@ -2915,13 +2920,15 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public PaymentScheme getPaymentScheme() {
-        //  //System.err.println("GEtting Paymen");
+        System.err.println("GEtting Paymen");
+        System.out.println("paymentScheme = " + paymentScheme);
         return paymentScheme;
     }
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
-        //     //System.err.println("Setting Pay");
+        System.err.println("Setting Pay");
         this.paymentScheme = paymentScheme;
+        System.out.println("paymentScheme = " + paymentScheme);
     }
 
     public StockHistoryFacade getStockHistoryFacade() {
@@ -3099,6 +3106,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     @Override
     public void listnerForPaymentMethodChange() {
+        System.out.println("listnerForPaymentMethodChange");
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
