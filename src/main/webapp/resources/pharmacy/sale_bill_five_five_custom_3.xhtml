@@ -4,7 +4,9 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -14,129 +16,277 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <!-- Link to the external CSS file -->
-        <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
 
-        <div class="receipt-container">
-            <!-- Header with Institution Name -->
-            <div class="receipt-header">
-                #{cc.attrs.bill.department.name}<br />
-                <h:outputText value="**Duplicate**" rendered="#{cc.attrs.duplicate eq true}" />
-                <h:outputText value="**Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}" />
+        <h:outputLabel value="#{pharmacySaleController.printBill.patientEncounter.bhtNo}" rendered="false"/>
+
+        <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
+        <div class="fivefivecustom3bill" style="page-break-after: always!important;">
+            <div style="text-align: center;font-weight: bold;">
+                <h:outputLabel style="font-size: 18px" value="#{cc.attrs.bill.department.name}"/>
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
-            <hr />
+            <div style="font-size: 12px" class="medicineListTable">
 
-            <!-- Bill Details in Two Columns -->
-            <div class="bill-details">
-                <div class="key-value">
-                    <span>BILL NO:</span>
-                    <span>#{cc.attrs.bill.deptId}</span>
+                <div class="row">
+                    <div class="col-4">
+                        <h:outputLabel value="BILL NO"/>
+                    </div>
+                    <div class="col-1">
+                        <h:outputLabel style="text-align: center" value=":"/>
+                    </div>
+                    <div class="col-7">
+                        <h:outputLabel style="width: 3cm" value="#{cc.attrs.bill.deptId}"/>
+                        <h:outputLabel rendered="#{cc.attrs.bill.patientEncounter}" value="BHT : #{cc.attrs.bill.patientEncounter.bhtNo}"/>
+                    </div>
                 </div>
-                <div class="key-value">
-                    <span>BILL DATE / TIME:</span>
-                    <span>
-                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+
+                <div class="row">
+                    <div class="col-4">
+                        <h:outputLabel value="BILL DATE"/>
+                    </div>
+                    <div class="col-1">
+                        <h:outputLabel style="text-align: center" value=":"/>
+                    </div>
+                    <div class="col-7">
+                        <h:outputLabel style="width: 3cm" value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                         </h:outputLabel>
-                    </span>
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
+                        </h:outputLabel>
+                    </div>
                 </div>
+
+                <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}">
+                    <div class="row">
+                        <div class="col-4">
+                            <h:outputLabel value="PATIENT NAME"/>
+                        </div>
+                        <div class="col-1">
+                            <h:outputLabel style="text-align: center" value=":"/>
+                        </div>
+                        <div class="col-7">
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{cc.attrs.bill.patient.person.phone ne null}">
+                    <div class="row">
+                        <div class="col-4">
+                            <h:outputLabel value="PHONE NO"/>
+                        </div>
+                        <div class="col-1">
+                            <h:outputLabel style="text-align: center" value=":"/>
+                        </div>
+                        <div class="col-7">
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}"/>
+                        </div>
+                    </div>
+                </h:panelGroup>
             </div>
 
-            <!-- Patient Information -->
-            <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}">
-                <div class="key-value">
-                    <span>PATIENT NAME:</span>
-                    <span>#{cc.attrs.bill.patient.person.nameWithTitle}</span>
-                </div>
-            </h:panelGroup>
 
-            <h:panelGroup rendered="#{cc.attrs.bill.patient.person.phone ne null}">
-                <div class="key-value">
-                    <span>PHONE NO:</span>
-                    <span>#{cc.attrs.bill.patient.person.phone}</span>
-                </div>
-            </h:panelGroup>
-
-            <!--<hr />-->
-
-            <!-- Table of Bill Items -->
-            <table>
-                <thead>
-                    <tr>
-                        <th>NO</th>
-                        <th>PARTICULAR</th>
-                        <th>QTY</th>
-                        <th>RATE</th>
-                        <th>AMOUNT</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip" varStatus="status">
+            <div class="medicineListTable">
+                <table style="  border-collapse: collapse;">
+                    <colgroup>
+                        <col style="width: 5%;"/>
+                        <col style="width: 65%;"/>
+                        <col style="width: 8%;"/>
+                        <col style="width: 10%;"/>
+                        <col style="width: 12%;"/>
+                    </colgroup>
+                    <thead style="font-size: 12px">
                         <tr>
-                            <td>#{status.index + 1}</td>
-                            <td>#{bip.item.name}</td>
+                            <th style="text-align: left; padding: 6px;">NO</th>
+                            <th style="text-align: left; padding: 6px;">PARTICULAR</th>
+                            <th style="text-align: right; padding: 6px;">QTY</th>
+                            <th style="text-align: right; padding: 6px;">RATE</th>
+                            <th style="text-align: right; padding: 6px;">AMOUNT</th>
+                        </tr>
+                    </thead>
+                    <tbody >
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip" varStatus="status" >
+                            <tr style="font-size: 12px;  line-height: 0.6;" >
+                                <td style="text-align: left; padding: 6px;">#{status.index + 1}</td>
+                                <td style="text-align: left; padding: 6px;">#{bip.item.name}</td>
+                                <td style="text-align: right; padding: 6px;">
+                                    <h:outputLabel value="#{bip.qty}">
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputLabel>
+                                </td>
+                                <td style="text-align: right; padding: 6px;">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <td style="text-align: right; padding: 6px;">
+                                    <h:outputLabel value="#{bip.grossValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="padding: 0px;" >
+                <hr/>                    
+            </div>
+
+            <div class="row medicineListTable">
+                <div class="col-6">
+                    <table style="font-size: 12px; ">
+                        <tr>
                             <td>
-                                <h:outputLabel value="#{bip.qty}">
-                                    <f:convertNumber pattern="#,##0" />
-                                </h:outputLabel>
+                                <h:outputLabel value="PAY TYPE"></h:outputLabel>
                             </td>
                             <td>
-                                <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
+                                <p:spacer width="2em" ></p:spacer>
                             </td>
                             <td>
-                                <h:outputLabel value="#{bip.grossValue}">
+                                <h:outputLabel value="AMOUNT Rs."></h:outputLabel>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill)}" var="pm" >
+                                    <div >
+                                        <h:outputLabel value="#{pm.paymentMethod.label}"></h:outputLabel>
+                                    </div>
+                                </ui:repeat>
+                            </td>
+                            <td>
+                                <p:spacer width="2em" ></p:spacer>
+                            </td>
+                            <td>
+                                <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill)}" var="pm" >
+                                    <div style="text-align: right">
+                                        <h:outputLabel  value="#{pm.paidValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </div>
+                                </ui:repeat>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+                
+
+                <div class="col-6">
+                    <table style="font-size: 12px; ">
+                        <tr>
+                            <td>
+                                <h:outputLabel value="TOTAL AMOUNT"></h:outputLabel>
+                            </td>
+                            <td>
+                                <p:spacer width="2em" ></p:spacer>
+                            </td>
+                            <td style="text-align: right">
+                                <h:outputLabel value="#{cc.attrs.bill.total}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>
-                    </ui:repeat>
-                </tbody>
+                        <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
+                            <tr>
+                            <td>
+                                <h:outputLabel value="DISCOUNT"></h:outputLabel>
+                            </td>
+                            <td>
+                                <p:spacer width="2em" ></p:spacer>
+                            </td>
+                            <td style="text-align: right">
+                                <h:outputLabel value="#{cc.attrs.bill.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                        </h:panelGroup>
+                        
+
+                        <tr>
+                            <td>
+                                <h:outputLabel value="NET AMOUNT (LKR)"></h:outputLabel>
+                            </td>
+                            <td>
+                                <p:spacer width="2em" ></p:spacer>
+                            </td>
+                            <td style="text-align: right">
+                                <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+            </div>
+
+            <!--            <div  style="font-size: 11px">
+                            <div class="col-5">
+                                <div >
+                                    <h:outputLabel value="PAY TYPE"></h:outputLabel>
+                                    <h:outputLabel value="AMOUNT Rs."></h:outputLabel>
+                                </div>
+                                <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill)}" var="pm" >
+                                    <div >
+                                        <h:outputLabel value="#{pm.paymentMethod.label}"></h:outputLabel>
+                                        <h:outputLabel value="#{pm.paidValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </div>
+                                </ui:repeat>
+                            </div>
+                            <div class="col-1">
+            
+                            </div>
+                            <div class="col-6">
+                                <div >
+                                    <h:outputLabel value="TOTAL AMOUNT"></h:outputLabel>
+                                    <h:outputLabel value="#{cc.attrs.bill.total}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </div>
+                                <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
+                                    <div >
+                                        <h:outputLabel value="DISCOUNT"></h:outputLabel>
+                                        <h:outputLabel value="#{cc.attrs.bill.discount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </div>
+                                </h:panelGroup>
+                                <div >
+                                    <h:outputLabel value="NET AMOUNT (LKR)"></h:outputLabel>
+                                    <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </div>
+                            </div>
+                        </div> -->
+
+
+            <table class="billFooter">
+                <tr>
+                    <td>
+                        <h:outputLabel value="PREPARED BY : #{cc.attrs.bill.creater.name}"></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10em" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value="ITEM COUNT : #{cc.attrs.bill.billItems.size()}"></h:outputLabel>
+                    </td>
+                </tr>
             </table>
 
-            <!--<hr />-->
 
-            <!-- Payment Summary -->
-            <div class="payment-summary">
-                <div class="key-value">
-                    <span>PAY TYPE:</span>
-                    <span>AMOUNT Rs.</span>
-                </div>
-                <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill)}" var="pm">
-                    <div class="key-value">
-                        <span>#{pm.paymentMethod.label}</span>
-                        <span>
-                            <h:outputLabel value="#{pm.paidValue}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </span>
-                    </div>
-                </ui:repeat>
-            </div>
 
-            <!--<hr />-->
-
-            <!-- Footer Section with Total and Prepared By -->
-            <div class="footer">
-                <div class="key-value">
-                    <span>TOTAL AMOUNT:</span>
-                    <span>#{cc.attrs.bill.total}</span>
-                </div>
-                <div class="key-value">
-                    <span>DISCOUNT:</span>
-                    <span>#{cc.attrs.bill.discount}</span>
-                </div>
-                <div class="key-value">
-                    <span>NET AMOUNT (LKR):</span>
-                    <span>#{cc.attrs.bill.netTotal}</span>
-                </div>
-                <div class="key-value">
-                    <span>ITEM COUNT &amp; USER:</span>
-                    <span>#{cc.attrs.bill.billItems.size()} / #{cc.attrs.bill.creater.name}</span>
-                </div>
-            </div>
         </div>
     </cc:implementation>
 </html>
