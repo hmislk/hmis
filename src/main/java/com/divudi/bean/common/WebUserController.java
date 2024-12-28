@@ -150,7 +150,7 @@ public class WebUserController implements Serializable {
 
     private boolean grantAllPrivilegesToAllUsersForTesting = false;
 
-    private boolean skipDevelopersPrivilege = false;
+    private boolean skipDevelopersPrivilege = true;
 
     private List<UserNotification> userNotifications;
     private int userNotificationCount;
