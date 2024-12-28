@@ -1,0 +1,92 @@
+/* General styles */
+body {
+    font-family: monospace;
+    font-size: 10px;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.receipt-container {
+    width: 12cm;
+    height: 14cm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+    border: 1px solid black;
+    box-sizing: border-box;
+}
+
+.receipt-header {
+    text-align: center;
+    font-size: 14px; /* Increased font size */
+    font-weight: bold;
+}
+
+hr {
+    border: none;
+    border-top: 1px dashed black;
+    margin: 5px 0;
+}
+
+.key-value {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.key-value span:first-child {
+    font-weight: bold; /* Bold for labels */
+}
+
+/* Highlight specific fields */
+.key-value.bill-no span:first-child,
+.key-value.bill-date span:first-child,
+.key-value.pay-type span:first-child {
+    font-size: 10px; 
+}
+
+.key-value.bill-no span:last-child,
+.key-value.bill-date span:last-child,
+.key-value.pay-type span:last-child {
+    font-size: 10px; 
+}
+
+/* Table styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 5px;
+}
+
+table th, table td {
+    text-align: left;
+    padding: 5px;
+    font-size: 10px;
+}
+
+table th:nth-child(3), table th:nth-child(4), table th:nth-child(5),
+table td:nth-child(3), table td:nth-child(4), table td:nth-child(5) {
+    text-align: right;
+}
+
+.payment-summary {
+    margin-top: 10px;
+}
+
+.footer {
+    margin-top: auto;
+    border-top: 1px dashed black;
+    padding-top: 5px;
+}
+
+/* Print-specific styles */
+@media print {
+    .receipt-container {
+        width: 100%;
+        height: auto;
+        margin: 0;
+        padding: 10px;
+    }
+}
