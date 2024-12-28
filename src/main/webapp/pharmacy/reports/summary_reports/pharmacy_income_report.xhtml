@@ -300,11 +300,11 @@
 
                         </p:column>
                         <p:column headerText="Actual Total"  class="text-end">
-                            <h:outputText value="#{row.actualTotal}" >
+                            <h:outputText value="#{row.netTotal + row.discount}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.actualTotal}">
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal + pharmacySummaryReportController.bundle.summaryRow.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
