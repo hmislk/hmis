@@ -16,25 +16,22 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <h:outputLabel value="#{pharmacySaleController.printBill.creater.name}" rendered="false"/>
+        <h:outputLabel value="#{pharmacySaleController.printBill.patientEncounter.bhtNo}" rendered="false"/>
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
-        <div class="fivefivecustom3bill" style="page-break-after: always!important;">
-            <div style="height: 2.2cm;">
+        <div class="fivefivecustom3bill" style="page-break-after: always!important; width: 9.8cm;">
+            <div style="height: 1cm;">
 
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
+                <br style="font-size: 50%; "/>
                 <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
-            <div style="margin-left: 1.25cm; margin-right: 1.25cm;" >
-                <hr/>                    
-            </div>
-
-            <div style="margin-left: 1.25cm; margin-right: 1.25cm; font-size: 11px">
+            <div style="font-size: 11px">
 
                 <div class="row">
                     <div class="col-4">
@@ -44,7 +41,8 @@
                         <h:outputLabel style="text-align: center" value=":"/>
                     </div>
                     <div class="col-7">
-                        <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
+                        <h:outputLabel style="width: 3cm" value="#{cc.attrs.bill.deptId}"/>
+                        <h:outputLabel rendered="#{cc.attrs.bill.patientEncounter}" value="BHT : #{cc.attrs.bill.patientEncounter.bhtNo}"/>
                     </div>
                 </div>
 
@@ -94,13 +92,13 @@
                 </h:panelGroup>
             </div>
 
-            <div style="margin-left: 1.25cm; margin-right: 1.25cm; padding: 0px;" >
+            <div style="padding: 0px;" >
                 <hr/>                    
             </div>
 
 
-            <div style="margin-left: 1.25cm;">
-                <table style="width: 9.5cm; border-collapse: collapse;">
+            <div >
+                <table style="  border-collapse: collapse;">
                     <colgroup>
                         <col style="width: 5%;"/>
                         <col style="width: 65%;"/>
@@ -143,11 +141,11 @@
                 </table>
             </div>
 
-            <div style="margin-left: 1.25cm; margin-right: 1.25cm; padding: 0px;" >
+            <div style="padding: 0px;" >
                 <hr/>                    
             </div>
 
-            <div class="d-flex" style="margin-left: 1.25cm; margin-right: 1.25cm; font-size: 11px">
+            <div class="d-flex" style="font-size: 11px">
                 <div class="col-5">
                     <div class="d-flex justify-content-between">
                         <h:outputLabel value="PAY TYPE"></h:outputLabel>
@@ -189,7 +187,7 @@
                 </div>
             </div> 
 
-            <div class="d-flex justify-content-between mt-3" style="margin-left: 1.25cm; margin-right: 1.25cm; font-size: 11px">
+            <div class="d-flex justify-content-between mt-3" style="font-size: 11px">
                 <h:outputLabel value="PREPARED BY : #{cc.attrs.bill.creater.name}"></h:outputLabel>
                 <h:outputLabel value="ITEM COUNT : #{cc.attrs.bill.billItems.size()}"></h:outputLabel>
             </div>

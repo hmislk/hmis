@@ -116,12 +116,11 @@
     .fivefivecustom3bill{
         position: relative!important;
         padding: 5px!important;
-        width: 12cm!important;
-        height: 14.5cm!important;
+        height: 14cm!important;
 
         font-family: sans-serif!important;
         font-size: 11px!important;
-        margin: auto!important;
+        margin-left: 10px!important;
         background-size: 100% auto!important;
         /*        border: 1px solid!important;*/
         font-size: 130%;
@@ -151,16 +150,15 @@
     
     .fivefivecustom3bill{
         position: relative!important;
-        width: 12cm!important;
 
         font-family: sans-serif!important;
         font-size: 11px!important;
-        margin: auto!important;
         background-size: 100% auto!important;
-        border: 1px solid black !important;
+        margin-left: 10px!important;
+        margin-top: -1cm!important;
         font-size: 100%!important;
         text-transform: capitalize!important;
-        height: 13.8cm!important;
+        height: 14cm!important;
 
     }
     
