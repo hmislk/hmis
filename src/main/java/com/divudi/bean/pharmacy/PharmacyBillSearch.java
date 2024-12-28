@@ -290,6 +290,11 @@ public class PharmacyBillSearch implements Serializable {
                 getSessionController().getDepartment(), BillNumberSuffix.ISSCAN);
 
         if (prebill != null) {
+            if (getBill().getStockBill() != null) {
+                prebill.setStockBill(getBill().getStockBill());
+                prebill.getStockBill().copyStockBill(getBill().getStockBill());
+                getBillFacade().edit(prebill);
+            }
             getBill().setCancelled(true);
             getBill().setCancelledBill(prebill);
             getBillFacade().edit(getBill());

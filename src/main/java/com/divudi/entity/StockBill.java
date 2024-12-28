@@ -37,7 +37,12 @@ public class StockBill implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+    public void copyStockBill(StockBill bill) {
+        if (bill!= null) {
+            stockValueAsSaleRate = bill.getStockValueAsSaleRate();
+            stockValueAtPurchaseRates = bill.getStockValueAtPurchaseRates();
+        }
+    }
     
 
     @Override
