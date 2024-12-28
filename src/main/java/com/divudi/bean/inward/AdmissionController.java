@@ -758,6 +758,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public String navigateToListChildAdmissions() {
         clearSearchValues();
         perantAddmission = current;
+        searchAdmissions();
         return "/inward/inpatient_search?faces-redirect=true;";
     }
 
