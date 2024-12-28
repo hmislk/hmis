@@ -1,0 +1,87 @@
+/* Styles specific to the receipt composite component */
+.receipt-container {
+    font-family: monospace;
+    font-size: 10px;
+    width: 12cm;
+    height: auto;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.receipt-header {
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+hr {
+    border: none;
+    border-top: 1px dashed black;
+    margin: 5px 0;
+}
+
+.bill-details, .payment-summary, .footer {
+    margin-bottom: 10px;
+}
+
+.key-value {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.key-value span:first-child {
+    font-weight: bold;
+}
+
+.key-value span:last-child {
+    text-align: right;
+}
+
+/* Table styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table th, table td {
+    padding: 5px;
+    text-align: left;
+}
+
+table th:nth-child(3),
+table th:nth-child(4),
+table th:nth-child(5),
+table td:nth-child(3),
+table td:nth-child(4),
+table td:nth-child(5) {
+    text-align: right;
+}
+
+.payment-summary {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    margin-top: auto;
+}
+
+/* Print-specific styles */
+@media print {
+    .receipt-container {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: auto;
+    }
+
+    hr {
+        border-top: 1px dashed black;
+    }
+}
