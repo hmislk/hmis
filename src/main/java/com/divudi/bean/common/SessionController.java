@@ -849,15 +849,17 @@ public class SessionController implements Serializable, HttpSessionListener {
             JsfUtil.addErrorMessage("Password and Re-entered password are not maching");
             return;
         }
-        passwordRequirementsFulfilled = arePasswordRequirementsFulfilled();
-        if (passwordRequirementsFulfilled) {
+        boolean passwordRequirementsCorrect = passwordRequirementsCorrect();
+        if (passwordRequirementsCorrect) {
             user.setWebUserPassword(getSecurityController().hashAndCheck(password));
+            user.setNeedToResetPassword(false);
             uFacade.edit(user);
+            passwordRequirementsFulfilled = true;
             JsfUtil.addSuccessMessage("Password changed");
-        }else{
+        } else {
             JsfUtil.addErrorMessage("Password NOT changed");
-            if(!enforcedPasswordChange){
-                passwordRequirementsFulfilled=true;
+            if (!enforcedPasswordChange) {
+                passwordRequirementsFulfilled = true;
             }
         }
     }
@@ -1108,20 +1110,14 @@ public class SessionController implements Serializable, HttpSessionListener {
         List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
-
                 boolean passwordIsOk;
-
                 if (webUserController.isGrantAllPrivilegesToAllUsersForTesting()) {
                     passwordIsOk = true;
                 } else {
-
                     passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
                 }
-
                 if (passwordIsOk) {
-
                     departments = listLoggableDepts(u);
-
                     if (webUserController.isGrantAllPrivilegesToAllUsersForTesting()) {
                         departments = departmentController.fillAllItems();
                     }
@@ -1348,6 +1344,32 @@ public class SessionController implements Serializable, HttpSessionListener {
         // If all checks pass
         return true;
     }
+    
+    private boolean passwordRequirementsCorrect() {
+        passwordRequirementMessage = "";
+        boolean preventMatchingPasswordWithUsername = configOptionApplicationController.getBooleanValueByKey("Prevent matching password with username", false);
+        boolean enforcePasswordComplexity = configOptionApplicationController.getBooleanValueByKey("Enforce password complexity", false);
+        String passwordComplexityRegex = configOptionApplicationController.getShortTextValueByKey("Password complexity regex", "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
+        Long passwordExpirationPeriodLong = configOptionApplicationController.getLongValueByKey("Set password expiration period (days)", 30l);
+
+        // Check if password matches the username
+        if (preventMatchingPasswordWithUsername && password.equals(userName)) {
+            JsfUtil.addErrorMessage("Password cannot be the same as the username.");
+            passwordRequirementMessage = "Password cannot be the same as the username.";
+            return false;
+        }
+
+        // Check password complexity
+        if (enforcePasswordComplexity && !password.matches(passwordComplexityRegex)) {
+            passwordRequirementMessage = "Password cannot be the same as the username.";
+            JsfUtil.addErrorMessage("Password does not meet complexity requirements.");
+            return false;
+        }
+
+        // If all checks pass
+        return true;
+    }
+    
 
     public String navigateToLoginPageByUsersDefaultLoginPage() {
         if (loggedUser == null) {
