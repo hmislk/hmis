@@ -359,6 +359,7 @@ public enum Privileges {
     //<editor-fold defaultstate="collapsed" desc="Memberships">
     MemberShip("Membership"),
     MemberShipAdd("Membership Add"),
+    MemberShipSearch("Membership Search"),
     MemberShipEdit("Membership Edit"),
     MembershipReports("Membership Reports"),
     MembershipDiscountManagement("Membership Discount Management"),
