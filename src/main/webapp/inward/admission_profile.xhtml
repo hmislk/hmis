@@ -81,12 +81,9 @@
                                 <p:commandButton 
                                     value="List Baby Admission" 
                                     disabled="#{admissionController.current.discharged eq true}"
-                                    action="#{admissionController.navigateToGuardianRoomChange}" 
+                                    action="#{admissionController.navigateToListChildAdmissions}" 
                                     icon="fa fa-baby-carriage"
                                     class="w-100">
-                                    <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
-                                        target="#{roomChangeController.current}" />
                                 </p:commandButton>
                                 
                                 <p:commandButton 
