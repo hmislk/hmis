@@ -28,6 +28,7 @@ public enum Privileges {
     //<editor-fold defaultstate="collapsed" desc="OPD">
     // Submenu Privileges
     OpdBilling("OPD Billing"),
+    OpdOrdering("OPD Ordering without Financial Details"),
     OpdCollectingCentreBillingMenu("OPD Collecting Centre Billing Menu"),
     OpdCollectingCentreBilling("OPD Collecting Centre Billing"),
     OpdCollectingCentreBillSearch("OPD Collecting Centre Bill Search"),
@@ -622,6 +623,7 @@ public enum Privileges {
             case OpdCancel:
             case OpdReturn:
             case OpdBilling:
+            case OpdOrdering:
             case OpdReprint:
             case OpdBillSearch:
             case OpdPreBilling:

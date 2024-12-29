@@ -155,6 +155,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Doctor referringDoctorForSearch;
     private Institution institutionForSearch;
     private AdmissionStatus admissionStatusForSearch;
+    private Admission perantAddmission;
     private boolean patientDetailsEditable;
     private List<ClinicalFindingValue> patientAllergies;
     private ClinicalFindingValue currentPatientAllergy;
@@ -363,7 +364,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         return lst;
     }
-    
+
     public List<Bill> getCreditPaymentBillsBht(Institution institution) {
         String sql;
         HashMap hash = new HashMap();
@@ -372,7 +373,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + " where b.retired=false "
                 + " and b.creditCompany=:ins"
                 + " and b.billTypeAtomic=:bta ";
-        
+
         hash.put("ins", institution);
         hash.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
         //     hash.put("pm", PaymentMethod.Credit);
@@ -469,7 +470,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         roomChangeController.createGuardianRoom();
         return "/inward/inward_room_change_guardian?faces-redirect=true";
     }
-    
+
     public String navigateToAddBabyAdmission() {
         parentAdmission = current;
         Admission ad = new Admission();
@@ -601,11 +602,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             j += "  and c.institution=:ins ";
             m.put("ins", institutionForSearch);
         }
-        
+
         if (loggedDepartment != null) {
             j += "  and c.department=:dept ";
             m.put("dept", loggedDepartment);
         }
+
+        if (parentAdmission != null) {
+            j += "  and c.parentEncounter=:pent ";
+            m.put("pent", parentAdmission);
+        }
+
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
     }
 
@@ -736,14 +743,21 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         referringDoctorForSearch = null;
         institutionForSearch = null;
         admissionStatusForSearch = null;
+        parentAdmission = null;
     }
 
     public String navigateToListAdmissions() {
         institutionForSearch = sessionController.getLoggedUser().getInstitution();
-        if(configOptionApplicationController.getBooleanValueByKey("Restirct Inward Admission Search to Logged Department of the User")){
+        if (configOptionApplicationController.getBooleanValueByKey("Restirct Inward Admission Search to Logged Department of the User")) {
             loggedDepartment = sessionController.getLoggedUser().getDepartment();
         }
         clearSearchValues();
+        return "/inward/inpatient_search?faces-redirect=true;";
+    }
+    
+    public String navigateToListChildAdmissions() {
+        perantAddmission = current;
+        searchAdmissions();
         return "/inward/inpatient_search?faces-redirect=true;";
     }
 
@@ -1009,7 +1023,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 return true;
             }
         }
-        if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
+        if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
             if (getPatientRoom().getRoomFacilityCharge() == null) {
                 JsfUtil.addErrorMessage("Select Room ");
                 return true;
@@ -1030,7 +1044,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
 
-        if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
+        if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
             if (getInwardBean().isRoomFilled(getPatientRoom().getRoomFacilityCharge().getRoom())) {
                 JsfUtil.addErrorMessage("Select Empty Room");
                 return true;
@@ -1171,7 +1185,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addSuccessMessage("Patient Admitted Succesfully");
         }
 
-        if (getCurrent().getAdmissionType().isRoomChargesAllowed() && getPatientRoom().getRoomFacilityCharge() != null) {
+        if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
             PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
         }
@@ -1720,6 +1734,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setSite(Institution site) {
         this.site = site;
+    }
+
+    public Admission getPerantAddmission() {
+        return perantAddmission;
+    }
+
+    public void setPerantAddmission(Admission perantAddmission) {
+        this.perantAddmission = perantAddmission;
     }
 
     /**
