@@ -45,8 +45,12 @@
                                     <h:outputLabel value="#{bItm.referanceBillItem.qty}"/>                        
                                 </p:column>
                                 
+                                <p:column headerText="Stock. Qty" width="70px;">
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.stock}"/>                        
+                                </p:column>
+                                
                                 <p:column headerText="Issued Qty" width="80px;">
-                                    <h:outputLabel value="#{bItm.referanceBillItem.qty - bItm.pharmaceuticalBillItem.qty}"/>                        
+                                    <h:outputLabel value="#{bItm.issuedPhamaceuticalItemQty}"/>                        
                                 </p:column>
 
                                 <p:column headerText="Batch No" width="100px;">  

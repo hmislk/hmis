@@ -106,6 +106,21 @@ public class TransferIssueController implements Serializable {
         return "/pharmacy/pharmacy_transfer_issue";
     }
 
+    public boolean isFullyIssued() {
+        for (BillItem originalItem : billItems) {
+
+            if (originalItem.getIssuedPhamaceuticalItemQty() == originalItem.getQty()) {
+                if (originalItem.getPharmaceuticalBillItem().getItemBatch() == null) {
+                    continue;
+                }
+                System.out.println(originalItem.getIssuedPhamaceuticalItemQty() + " originalItem.getIssuedPhamaceuticalItemQty " + originalItem.getQty() + " originalItem.getQty()");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public boolean isFullyIssued(Bill bill) {
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
             return false; // Null or empty bills are not considered fully issued
@@ -115,6 +130,8 @@ public class TransferIssueController implements Serializable {
 
             if (originalItem.getPharmaceuticalBillItem().getQty() > 0) {
                 return false; // If any item's issued quantity is less than its original quantity
+            }else if(originalItem.getPharmaceuticalBillItem().getItemBatch() == null){
+                return false;
             }
         }
 
@@ -251,13 +268,14 @@ public class TransferIssueController implements Serializable {
 
             double issuableQty = i.getQty() - (Math.abs(billedIssue) - Math.abs(cancelledIssue));
 
+            //i.setIssuedPhamaceuticalItemQty(i.getQty() - issuableQty);
             List<StockQty> stockQtys = pharmacyBean.getStockByQty(i.getItem(), issuableQty, getSessionController().getDepartment());
 
             for (StockQty sq : stockQtys) {
 
-                if (sq.getQty() == 0) {
-                    continue;
-                }
+//                if (sq.getQty() == 0) {
+//                    continue;
+//                }
 
                 //Checking User Stock Entity
                 if (!userStockController.isStockAvailable(sq.getStock(), sq.getQty(), getSessionController().getLoggedUser())) {
@@ -271,6 +289,15 @@ public class TransferIssueController implements Serializable {
                 bItem.setReferanceBillItem(i);
                 bItem.setQty(i.getQty());
                 bItem.setTmpQty(sq.getQty());
+                bItem.setIssuedPhamaceuticalItemQty(i.getQty() - sq.getQty());
+
+                if (stockQtys.size() > 1) {
+                    double billedIssueByItemBatch = getPharmacyCalculation().getBilledIssuedByRequestedItemBatch(i, BillType.PharmacyTransferIssue, sq.getStock().getItemBatch());
+                    System.out.println(billedIssueByItemBatch + " billedIssueByItemBatch");
+                    double cancelledIssueByItemBatch = getPharmacyCalculation().getCancelledIssuedByRequestedItemBatch(i, BillType.PharmacyTransferIssue, sq.getStock().getItemBatch());
+                    System.out.println(cancelledIssueByItemBatch + " cancelledIssueByItemBatch");
+                    bItem.setIssuedPhamaceuticalItemQty(Math.abs(billedIssueByItemBatch) + Math.abs(cancelledIssueByItemBatch));
+                }
 
 //               s bItem.setTmpSuggession(getSuggession(i.getBillItem().getItem()));
                 //     //System.err.println("List "+bItem.getTmpSuggession());
@@ -290,6 +317,15 @@ public class TransferIssueController implements Serializable {
                 UserStock us = userStockController.saveUserStock(bItem, getSessionController().getLoggedUser(), usc);
                 bItem.setTransUserStock(us);
 
+//                double totalIssueAmount = 0;
+//
+//                if (stockQtys.size() > 1) {
+//                    for (StockQty s : stockQtys) {
+//                        totalIssueAmount += s.getQty();
+//                    }
+//                    bItem.setIssuedPhamaceuticalItemQty(totalIssueAmount);
+//
+//                }
                 getBillItems().add(bItem);
                 flagStockFound = true;
 
@@ -510,6 +546,25 @@ public class TransferIssueController implements Serializable {
         if (getIssuedBill().getToStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Staff");
             return;
+        }
+
+        for (BillItem bi : getBillItems()) {
+            if (bi.getPharmaceuticalBillItem().getItemBatch() != null) {
+                if (bi.getPharmaceuticalBillItem().getStock().getStock() < bi.getPharmaceuticalBillItem().getQty()) {
+                    JsfUtil.addErrorMessage("Available quantity is less than issued quantity in " + bi.getPharmaceuticalBillItem().getItemBatch().getItem().getName());
+                    return;
+                }
+            } else if (bi.getPharmaceuticalBillItem().getItemBatch() == null) {
+                if (bi.getPharmaceuticalBillItem().getQty() > 0) {
+                    JsfUtil.addErrorMessage(bi.getItem().getName() + " is not available in the stock");
+                    return;
+                }
+            }
+
+            if (bi.getReferanceBillItem().getQty() < bi.getPharmaceuticalBillItem().getQty()) {
+                JsfUtil.addErrorMessage("Issued quantity is higher than requested quantity in " + bi.getItem().getName());
+                return;
+            }
         }
 
         saveBill();
