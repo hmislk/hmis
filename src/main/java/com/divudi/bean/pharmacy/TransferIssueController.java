@@ -129,7 +129,7 @@ public class TransferIssueController implements Serializable {
         for (BillItem originalItem : billItems) {
 
             if (originalItem.getPharmaceuticalBillItem().getQty() > 0) {
-                return false; // If any item's issued quantity is less than its original quantity
+                return false; 
             }else if(originalItem.getPharmaceuticalBillItem().getItemBatch() == null){
                 return false;
             }
