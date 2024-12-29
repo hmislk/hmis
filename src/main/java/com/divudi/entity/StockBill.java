@@ -43,13 +43,7 @@ public class StockBill implements Serializable {
         }
     }
 
-    public StockBill invertStockBill() {
-        StockBill newStockBill = new StockBill();
-        // Copy relevant fields but avoid duplicating the ID
-        newStockBill.setStockValueAtPurchaseRates(-this.getStockValueAtPurchaseRates());
-        newStockBill.setStockValueAsSaleRate(-this.getStockValueAsSaleRate());
-        return newStockBill;
-    }
+
 
     public void invertStockBillValues(Bill bill) {
         stockValueAsSaleRate = 0 - bill.getStockBill().getStockValueAsSaleRate();
