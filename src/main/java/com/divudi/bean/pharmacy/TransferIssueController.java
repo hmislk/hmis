@@ -106,20 +106,20 @@ public class TransferIssueController implements Serializable {
         return "/pharmacy/pharmacy_transfer_issue";
     }
 
-    public boolean isFullyIssued() {
-        for (BillItem originalItem : billItems) {
-
-            if (originalItem.getIssuedPhamaceuticalItemQty() == originalItem.getQty()) {
-                if (originalItem.getPharmaceuticalBillItem().getItemBatch() == null) {
-                    continue;
-                }
-                System.out.println(originalItem.getIssuedPhamaceuticalItemQty() + " originalItem.getIssuedPhamaceuticalItemQty " + originalItem.getQty() + " originalItem.getQty()");
-                return true;
-            }
-        }
-
-        return false;
-    }
+//    public boolean isFullyIssued() {
+//        for (BillItem originalItem : billItems) {
+//
+//            if (originalItem.getIssuedPhamaceuticalItemQty() == originalItem.getQty()) {
+//                if (originalItem.getPharmaceuticalBillItem().getItemBatch() == null) {
+//                    continue;
+//                }
+//                System.out.println(originalItem.getIssuedPhamaceuticalItemQty() + " originalItem.getIssuedPhamaceuticalItemQty " + originalItem.getQty() + " originalItem.getQty()");
+//                return true;
+//            }
+//        }
+//
+//        return false;
+//    }
 
     public boolean isFullyIssued(Bill bill) {
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
