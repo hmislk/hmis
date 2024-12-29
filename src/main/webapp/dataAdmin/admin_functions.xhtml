@@ -13,12 +13,22 @@
             <ui:define name="subcontent">
 
                 <h:form >
+                    <!-- Progress Bar Dialog -->
+                    <p:dialog id="progressBarDialog" widgetVar="progressBarDialog" modal="true" header="Progress" closable="false" draggable="false" resizable="false">
+                        <p:outputLabel id="progressBarLabel" value="#{dataAdministrationController.progressMessage}" />
+                        <p:progressBar widgetVar="progressBar" value="#{dataAdministrationController.progress}" labelTemplate="{value}%" style="width:100%" />
+                    </p:dialog>
+
                     <div class='row' >
                         <div class="col" >
                             <p:commandButton 
                                 value="Delete All Patient Investigation Related Data" 
-                                action="#{dataAdministrationController.retireAllPatientInvestigationRelatedData}" 
-                                onclick="return confirm('Are you sure you want to delete all patient investigation-related data?');">
+                                action="#{dataAdministrationController.startRetireAllPatientInvestigationRelatedData}" 
+                                onstart="PF('progressBarDialog').show();" 
+                                oncomplete="PF('progressBarDialog').hide();"
+                                update="progressBarLabel"
+                                process="@this" 
+                                global="false">
                             </p:commandButton>
 
                         </div>

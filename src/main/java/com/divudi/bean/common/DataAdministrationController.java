@@ -63,6 +63,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.entity.inward.PatientRoom;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.entity.lab.PatientSampleComponant;
+import com.divudi.facade.AbstractFacade;
 import com.divudi.facade.PatientDepositFacade;
 import com.divudi.facade.PatientDepositHistoryFacade;
 import com.divudi.facade.PatientEncounterFacade;
@@ -87,6 +88,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -234,6 +236,9 @@ public class DataAdministrationController implements Serializable {
 
     private int tabIndex;
 
+    private int progress;
+    private String progressMessage;
+
     public void convertNameToCode() {
         code = CommonFunctions.nameToCode(name);
     }
@@ -301,118 +306,118 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    @Asynchronous
     public void retireAllPatientInvestigationRelatedData() {
+        progress = 0;
+        progressMessage = "Starting retirement process...";
+
         Date retiredAt = new Date(); // Common timestamp for all retire operations
         WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
-
         String uuid = CommonFunctions.generateUuid();
-        // Retire all patients
-        for (Patient patient : patientFacade.findAll()) {
-            patient.setRetired(true);
-            patient.setRetireComments(uuid);
-            patient.setRetiredAt(retiredAt);
-            patient.setRetirer(retirer);
-            patientFacade.edit(patient);
+
+        // Get total record count dynamically
+        int totalRecords = 0;
+
+        totalRecords += safeCount(patientFacade.findAll());
+        totalRecords += safeCount(patientInvestigationFacade.findAll());
+        totalRecords += safeCount(patientReportFacade.findAll());
+        totalRecords += safeCount(patientDepositFacade.findAll());
+        totalRecords += safeCount(patientReportItemValueFacade.findAll());
+        totalRecords += safeCount(patientEncounterFacade.findAll());
+        totalRecords += safeCount(patientDepositHistoryFacade.findAll());
+        totalRecords += safeCount(patientFlagFacade.findAll());
+        totalRecords += safeCount(patientItemFacade.findAll());
+        totalRecords += safeCount(patientRoomFacade.findAll());
+        totalRecords += safeCount(patientSampleFacade.findAll());
+        totalRecords += safeCount(patientSampleComponantFacade.findAll());
+
+        if (totalRecords == 0) {
+            progress = 100;
+            progressMessage = "No records to retire.";
+            return;
         }
 
-        // Retire all patient investigations
-        for (PatientInvestigation pi : patientInvestigationFacade.findAll()) {
-            pi.setRetired(true);
-            pi.setRetiredAt(retiredAt);
-            pi.setRetireComments(uuid);
-            pi.setRetirer(retirer);
-            patientInvestigationFacade.edit(pi);
+        int processedRecords = 0;
+
+        // Handle retiring all entities
+        processedRecords += retireEntities(patientFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
+        processedRecords += retireEntities(patientInvestigationFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
+        processedRecords += retireEntities(patientReportFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
+        processedRecords += retireEntities(patientDepositFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
+        processedRecords += retireEntities(patientReportItemValueFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
+        processedRecords += retireEntities(patientEncounterFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
+        processedRecords += retireEntities(patientDepositHistoryFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
+        processedRecords += retireEntities(patientFlagFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
+        processedRecords += retireEntities(patientItemFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
+        processedRecords += retireEntities(patientRoomFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
+        processedRecords += retireEntities(patientSampleFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
+        processedRecords += retireEntities(patientSampleComponantFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
+
+        // Completion message
+        progress = 100;
+        progressMessage = "Retirement process completed.";
+    }
+
+    private <T> int retireEntities(List<T> entities, Date retiredAt, WebUser retirer, String uuid, int totalRecords, int processedRecords) {
+        if (entities == null || entities.isEmpty()) {
+            return 0;
         }
 
-        // Retire all patient reports
-        for (PatientReport pr : patientReportFacade.findAll()) {
-            pr.setRetired(true);
-            pr.setRetiredAt(retiredAt);
-            pr.setRetireComments(uuid);
-            pr.setRetirer(retirer);
-            patientReportFacade.edit(pr);
+        AbstractFacade<T> facade = getFacadeForEntity(entities.get(0)); // Determine the facade for this entity type
+        if (facade == null) {
+            return 0;
         }
 
-        // Retire all patient deposits
-        for (PatientDeposit pd : patientDepositFacade.findAll()) {
-            pd.setRetired(true);
-            pd.setRetiredAt(retiredAt);
-            pd.setRetirer(retirer);
-            pd.setRetireComments(uuid);
-            patientDepositFacade.edit(pd);
+        for (T entity : entities) {
+            if (entity instanceof RetirableEntity) {
+                RetirableEntity retirable = (RetirableEntity) entity;
+                retirable.setRetired(true);
+                retirable.setRetiredAt(retiredAt);
+                retirable.setRetirer(retirer);
+                retirable.setRetireComments(uuid);
+                facade.edit(entity);
+            }
+            processedRecords++;
+            updateProgress(processedRecords, totalRecords);
         }
+        return entities.size();
+    }
 
-        // Retire all patient report item values
-        for (PatientReportItemValue priv : patientReportItemValueFacade.findAll()) {
-            priv.setRetired(true);
-            priv.setRetiredAt(retiredAt);
-            priv.setRetirer(retirer);
-            priv.setRetireComments(uuid);
-            patientReportItemValueFacade.edit(priv);
+    private <T> AbstractFacade<T> getFacadeForEntity(T entity) {
+        if (entity instanceof Patient) {
+            return (AbstractFacade<T>) patientFacade;
+        } else if (entity instanceof PatientInvestigation) {
+            return (AbstractFacade<T>) patientInvestigationFacade;
+        } else if (entity instanceof PatientReport) {
+            return (AbstractFacade<T>) patientReportFacade;
+        } else if (entity instanceof PatientDeposit) {
+            return (AbstractFacade<T>) patientDepositFacade;
+        } else if (entity instanceof PatientReportItemValue) {
+            return (AbstractFacade<T>) patientReportItemValueFacade;
+        } else if (entity instanceof PatientEncounter) {
+            return (AbstractFacade<T>) patientEncounterFacade;
+        } else if (entity instanceof PatientDepositHistory) {
+            return (AbstractFacade<T>) patientDepositHistoryFacade;
+        } else if (entity instanceof PatientFlag) {
+            return (AbstractFacade<T>) patientFlagFacade;
+        } else if (entity instanceof PatientItem) {
+            return (AbstractFacade<T>) patientItemFacade;
+        } else if (entity instanceof PatientRoom) {
+            return (AbstractFacade<T>) patientRoomFacade;
+        } else if (entity instanceof PatientSample) {
+            return (AbstractFacade<T>) patientSampleFacade;
+        } else if (entity instanceof PatientSampleComponant) {
+            return (AbstractFacade<T>) patientSampleComponantFacade;
         }
+        return null;
+    }
 
-        // Retire all patient encounters
-        for (PatientEncounter pe : patientEncounterFacade.findAll()) {
-            pe.setRetired(true);
-            pe.setRetiredAt(retiredAt);
-            pe.setRetireComments(uuid);
-            pe.setRetirer(retirer);
-            patientEncounterFacade.edit(pe);
-        }
+    private void updateProgress(int processedRecords, int totalRecords) {
+        progress = (processedRecords * 100) / totalRecords;
+    }
 
-        // Retire all patient deposit histories
-        for (PatientDepositHistory pdh : patientDepositHistoryFacade.findAll()) {
-            pdh.setRetired(true);
-            pdh.setRetiredAt(retiredAt);
-            pdh.setRetirer(retirer);
-            pdh.setRetireComments(uuid);
-            patientDepositHistoryFacade.edit(pdh);
-        }
-
-        // Retire all patient flags
-        for (PatientFlag pf : patientFlagFacade.findAll()) {
-            pf.setRetired(true);
-            pf.setRetiredAt(retiredAt);
-            pf.setRetireComments(uuid);
-            pf.setRetirer(retirer);
-            patientFlagFacade.edit(pf);
-        }
-
-        // Retire all patient items
-        for (PatientItem pi : patientItemFacade.findAll()) {
-            pi.setRetired(true);
-            pi.setRetiredAt(retiredAt);
-            pi.setRetireComments(uuid);
-            pi.setRetirer(retirer);
-            patientItemFacade.edit(pi);
-        }
-
-        // Retire all patient rooms
-        for (PatientRoom pr : patientRoomFacade.findAll()) {
-            pr.setRetired(true);
-            pr.setRetiredAt(retiredAt);
-            pr.setRetirer(retirer);
-            pr.setRetireComments(uuid);
-            patientRoomFacade.edit(pr);
-        }
-
-        // Retire all patient samples
-        for (PatientSample ps : patientSampleFacade.findAll()) {
-            ps.setRetired(true);
-            ps.setRetiredAt(retiredAt);
-            ps.setRetirer(retirer);
-            ps.setRetireComments(uuid);
-            patientSampleFacade.edit(ps);
-        }
-
-        // Retire all patient sample components
-        for (PatientSampleComponant psc : patientSampleComponantFacade.findAll()) {
-            psc.setRetired(true);
-            psc.setRetiredAt(retiredAt);
-            psc.setRetirer(retirer);
-            psc.setRetireComments(uuid);
-            patientSampleComponantFacade.edit(psc);
-        }
+    private int safeCount(List<?> list) {
+        return (list == null) ? 0 : list.size();
     }
 
     public void detectWholeSaleBills() {
@@ -2045,6 +2050,22 @@ public class DataAdministrationController implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getProgress() {
+        return progress;
+    }
+
+    public void setProgress(int progress) {
+        this.progress = progress;
+    }
+
+    public String getProgressMessage() {
+        return progressMessage;
+    }
+
+    public void setProgressMessage(String progressMessage) {
+        this.progressMessage = progressMessage;
     }
 
     public class EntityFieldError {
