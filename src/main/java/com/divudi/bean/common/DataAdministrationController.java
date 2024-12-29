@@ -53,6 +53,25 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.entity.Patient;
+import com.divudi.entity.PatientDeposit;
+import com.divudi.entity.PatientDepositHistory;
+import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.PatientFlag;
+import com.divudi.entity.PatientItem;
+import com.divudi.entity.WebUser;
+import com.divudi.entity.inward.PatientRoom;
+import com.divudi.entity.lab.PatientSample;
+import com.divudi.entity.lab.PatientSampleComponant;
+import com.divudi.facade.PatientDepositFacade;
+import com.divudi.facade.PatientDepositHistoryFacade;
+import com.divudi.facade.PatientEncounterFacade;
+import com.divudi.facade.PatientFacade;
+import com.divudi.facade.PatientFlagFacade;
+import com.divudi.facade.PatientItemFacade;
+import com.divudi.facade.PatientRoomFacade;
+import com.divudi.facade.PatientSampleComponantFacade;
+import com.divudi.facade.PatientSampleFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.sql.SQLSyntaxErrorException;
@@ -114,6 +133,24 @@ public class DataAdministrationController implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     BillFacade billFacade;
+    @EJB
+    PatientFacade patientFacade;
+    @EJB
+    PatientDepositFacade patientDepositFacade;
+    @EJB
+    PatientEncounterFacade patientEncounterFacade;
+    @EJB
+    PatientDepositHistoryFacade patientDepositHistoryFacade;
+    @EJB
+    PatientFlagFacade patientFlagFacade;
+    @EJB
+    PatientItemFacade patientItemFacade;
+    @EJB
+    PatientRoomFacade patientRoomFacade;
+    @EJB
+    PatientSampleFacade patientSampleFacade;
+    @EJB
+    PatientSampleComponantFacade patientSampleComponantFacade;
     @EJB
     BillNumberFacade billNumberFacade;
     @EJB
@@ -261,6 +298,120 @@ public class DataAdministrationController implements Serializable {
                 ix.setInstitution(ix.getDepartment().getInstitution());
                 itemFacade.edit(ix);
             }
+        }
+    }
+
+    public void retireAllPatientInvestigationRelatedData() {
+        Date retiredAt = new Date(); // Common timestamp for all retire operations
+        WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
+
+        String uuid = CommonFunctions.generateUuid();
+        // Retire all patients
+        for (Patient patient : patientFacade.findAll()) {
+            patient.setRetired(true);
+            patient.setRetireComments(uuid);
+            patient.setRetiredAt(retiredAt);
+            patient.setRetirer(retirer);
+            patientFacade.edit(patient);
+        }
+
+        // Retire all patient investigations
+        for (PatientInvestigation pi : patientInvestigationFacade.findAll()) {
+            pi.setRetired(true);
+            pi.setRetiredAt(retiredAt);
+            pi.setRetireComments(uuid);
+            pi.setRetirer(retirer);
+            patientInvestigationFacade.edit(pi);
+        }
+
+        // Retire all patient reports
+        for (PatientReport pr : patientReportFacade.findAll()) {
+            pr.setRetired(true);
+            pr.setRetiredAt(retiredAt);
+            pr.setRetireComments(uuid);
+            pr.setRetirer(retirer);
+            patientReportFacade.edit(pr);
+        }
+
+        // Retire all patient deposits
+        for (PatientDeposit pd : patientDepositFacade.findAll()) {
+            pd.setRetired(true);
+            pd.setRetiredAt(retiredAt);
+            pd.setRetirer(retirer);
+            pd.setRetireComments(uuid);
+            patientDepositFacade.edit(pd);
+        }
+
+        // Retire all patient report item values
+        for (PatientReportItemValue priv : patientReportItemValueFacade.findAll()) {
+            priv.setRetired(true);
+            priv.setRetiredAt(retiredAt);
+            priv.setRetirer(retirer);
+            priv.setRetireComments(uuid);
+            patientReportItemValueFacade.edit(priv);
+        }
+
+        // Retire all patient encounters
+        for (PatientEncounter pe : patientEncounterFacade.findAll()) {
+            pe.setRetired(true);
+            pe.setRetiredAt(retiredAt);
+            pe.setRetireComments(uuid);
+            pe.setRetirer(retirer);
+            patientEncounterFacade.edit(pe);
+        }
+
+        // Retire all patient deposit histories
+        for (PatientDepositHistory pdh : patientDepositHistoryFacade.findAll()) {
+            pdh.setRetired(true);
+            pdh.setRetiredAt(retiredAt);
+            pdh.setRetirer(retirer);
+            pdh.setRetireComments(uuid);
+            patientDepositHistoryFacade.edit(pdh);
+        }
+
+        // Retire all patient flags
+        for (PatientFlag pf : patientFlagFacade.findAll()) {
+            pf.setRetired(true);
+            pf.setRetiredAt(retiredAt);
+            pf.setRetireComments(uuid);
+            pf.setRetirer(retirer);
+            patientFlagFacade.edit(pf);
+        }
+
+        // Retire all patient items
+        for (PatientItem pi : patientItemFacade.findAll()) {
+            pi.setRetired(true);
+            pi.setRetiredAt(retiredAt);
+            pi.setRetireComments(uuid);
+            pi.setRetirer(retirer);
+            patientItemFacade.edit(pi);
+        }
+
+        // Retire all patient rooms
+        for (PatientRoom pr : patientRoomFacade.findAll()) {
+            pr.setRetired(true);
+            pr.setRetiredAt(retiredAt);
+            pr.setRetirer(retirer);
+            pr.setRetireComments(uuid);
+            patientRoomFacade.edit(pr);
+        }
+
+        // Retire all patient samples
+        for (PatientSample ps : patientSampleFacade.findAll()) {
+            ps.setRetired(true);
+            ps.setRetiredAt(retiredAt);
+            ps.setRetirer(retirer);
+            ps.setRetireComments(uuid);
+            patientSampleFacade.edit(ps);
+        }
+
+        // Retire all patient sample components
+        for (PatientSampleComponant psc : patientSampleComponantFacade.findAll()) {
+            psc.setRetired(true);
+            psc.setRetiredAt(retiredAt);
+            psc.setRetirer(retirer);
+            psc.setRetireComments(uuid);
+            patientSampleComponantFacade.edit(psc);
         }
     }
 
@@ -1895,8 +2046,6 @@ public class DataAdministrationController implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-    
-    
 
     public class EntityFieldError {
 
@@ -1933,7 +2082,5 @@ public class DataAdministrationController implements Serializable {
         }
 
     }
-    
-    
 
 }

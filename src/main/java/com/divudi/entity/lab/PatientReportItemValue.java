@@ -6,14 +6,17 @@ package com.divudi.entity.lab;
 
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
 /**
@@ -51,12 +54,20 @@ public class PatientReportItemValue implements Serializable {
     @Transient
     private String displayValue;
     
-    
+    //Retairing properties 
+    private boolean retired;
+    @ManyToOne
+    private WebUser retirer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date retiredAt;
+    private String retireComments;
 
     public String getStrValue() {
         return strValue;
     }
 
+    
+    
     public void setStrValue(String strValue) {
         this.strValue = strValue;
     }
@@ -237,6 +248,38 @@ public class PatientReportItemValue implements Serializable {
 
     public void setCodeSystemCode(String codeSystemCode) {
         this.codeSystemCode = codeSystemCode;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
     }
 
 }
