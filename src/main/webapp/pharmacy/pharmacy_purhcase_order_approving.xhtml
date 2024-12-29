@@ -89,15 +89,13 @@
                                      id="itemList" sortBy="#{bi.searialNo}"  rowKey="#{bi.searialNo}"
                                      paginator="true" 
                                      rows="10" 
+                                     selectionMode="multiple"
                                      paginatorPosition="bottom"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15"
                                      selection="#{purchaseOrderController.selectedItems}">  
 
-
-
-                            <p:column selectionMode="multiple" style="width: 30px;"></p:column>
-
+                            <p:column selectionBox="true" style="width: 30px;"></p:column>
 
                             <p:column headerText="No" style="width: 50px;" >
                                 <p:outputLabel value="#{bi.searialNo + 1}" ></p:outputLabel>
