@@ -39,10 +39,8 @@ public class StockBill implements Serializable {
         if (bill != null) {
             stockValueAsSaleRate = bill.getStockValueAsSaleRate();
             stockValueAtPurchaseRates = bill.getStockValueAtPurchaseRates();
-
         }
     }
-
 
 
     public void invertStockBillValues(Bill bill) {
