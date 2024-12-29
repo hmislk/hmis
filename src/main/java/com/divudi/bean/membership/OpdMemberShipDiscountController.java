@@ -8,8 +8,10 @@
  */
 package com.divudi.bean.membership;
 
+import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.pharmacy.PharmaceuticalItemCategoryController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Category;
@@ -27,11 +29,13 @@ import com.divudi.entity.membership.OpdMemberShipDiscount;
 import com.divudi.entity.membership.PaymentSchemeDiscount;
 import com.divudi.entity.membership.PharmacyMemberShipDiscount;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.facade.PaymentSchemeDiscountFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -49,8 +53,12 @@ public class OpdMemberShipDiscountController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    PharmaceuticalItemCategoryController pharmaceuticalItemCategoryController;
     @EJB
     private PriceMatrixFacade ejbFacade;
+    @EJB
+    PaymentSchemeDiscountFacade paymentSchemeDiscountFacade;
     private PriceMatrix current;
     private List<PriceMatrix> items = null;
     BillType billType;
@@ -161,7 +169,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " and a.category is null "
                 + " and a.toInstitution is not null"
                 + " order by a.paymentScheme.name,a.toInstitution.name";
-        
+
         hm.put("pm", paymentScheme);
         items = getFacade().findByJpql(sql, hm);
     }
@@ -414,6 +422,28 @@ public class OpdMemberShipDiscountController implements Serializable {
         clearInstanceVars();
     }
 
+    public void savePharmacyCategoryPaymentSchemeForAllCategoriesAndAllPaymentMethods() {
+        if (paymentScheme == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Scheme");
+            return;
+        }
+        for (PaymentMethod pm : PaymentMethod.asList()) {
+            for (Category c : pharmaceuticalItemCategoryController.getItems()) {
+                PaymentSchemeDiscount p = fetchPaymentSchemeDiscount(null,
+                        c,
+                        null,
+                        paymentScheme,
+                        pm,
+                        null,
+                        null);
+                p.setDiscountPercent(margin);
+                System.out.println("p = " + p);
+                System.out.println("margin = " + margin);
+                paymentSchemeDiscountFacade.edit(p);
+            }
+        }
+    }
+
     public void savePharmacyCategoryPaymentMethod() {
         PriceMatrix p = new PaymentSchemeDiscount();
         saveSelectedCategoryPaymentMethod(p);
@@ -454,6 +484,76 @@ public class OpdMemberShipDiscountController implements Serializable {
         JsfUtil.addSuccessMessage("Saved Successfully");
         //    recreateModel();
 
+    }
+
+    public PaymentSchemeDiscount fetchPaymentSchemeDiscount(Item item, Category category, MembershipScheme membershipScheme,
+            PaymentScheme paymentScheme, PaymentMethod paymentMethod,
+            Department department, Institution institution) {
+        StringBuilder jpql = new StringBuilder("select m from PaymentSchemeDiscount m where m.retired = :ret");
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+
+        if (item != null) {
+            jpql.append(" and m.item = :item");
+            parameters.put("item", item);
+        }
+        if (category != null) {
+            jpql.append(" and m.category = :category");
+            parameters.put("category", category);
+        }
+        if (membershipScheme != null) {
+            jpql.append(" and m.membershipScheme = :membershipScheme");
+            parameters.put("membershipScheme", membershipScheme);
+        }
+        if (paymentScheme != null) {
+            jpql.append(" and m.paymentScheme = :paymentScheme");
+            parameters.put("paymentScheme", paymentScheme);
+        }
+        if (paymentMethod != null) {
+            jpql.append(" and m.paymentMethod = :paymentMethod");
+            parameters.put("paymentMethod", paymentMethod);
+        }
+        if (department != null) {
+            jpql.append(" and m.institution = :institution");
+            parameters.put("institution", department.getInstitution());
+        }
+        if (institution != null) {
+            jpql.append(" and m.institution = :institution");
+            parameters.put("institution", institution);
+        }
+
+        PaymentSchemeDiscount m = paymentSchemeDiscountFacade.findFirstByJpql(jpql.toString(), parameters);
+
+        if (m == null) {
+            m = new PaymentSchemeDiscount();
+            if (item != null) {
+                m.setItem(item);
+            }
+            if (category != null) {
+                m.setCategory(category);
+            }
+            if (membershipScheme != null) {
+                m.setMembershipScheme(membershipScheme);
+            }
+            if (paymentScheme != null) {
+                m.setPaymentScheme(paymentScheme);
+            }
+            if (paymentMethod != null) {
+                m.setPaymentMethod(paymentMethod);
+            }
+            if (department != null) {
+                m.setInstitution(department.getInstitution());
+            }
+            if (institution != null) {
+                m.setInstitution(institution);
+            }
+            m.setCreatedAt(new Date());
+            m.setCreater(getSessionController().getLoggedUser());
+            m.setRetired(false); // Default value
+            getFacade().create(m);
+        }
+
+        return m;
     }
 
     public void saveSelectedCategoryPaymentMethod(PriceMatrix a) {

@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
@@ -48,7 +49,7 @@ import javax.persistence.Transient;
  */
 @Entity
 @Inheritance
-public class Bill implements Serializable {
+public class Bill implements Serializable, RetirableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -402,6 +403,16 @@ public class Bill implements Serializable {
 
     @Enumerated(EnumType.ORDINAL)
     private PatientInvestigationStatus status;
+
+    // One-to-one relationship with PharmacyBill
+    // Optional one-to-one relationship with PharmacyBill
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private PharmacyBill pharmacyBill;
+
+    private String externalDoctor;
+    
+    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER, optional = true,orphanRemoval = true)
+    private StockBill stockBill;
 
     public Bill() {
         if (status == null) {
@@ -820,6 +831,10 @@ public class Bill implements Serializable {
         totalHospitalFee = 0 - bill.getTotalHospitalFee();
         totalCenterFee = 0 - bill.getTotalCenterFee();
         totalStaffFee = 0 - bill.getTotalStaffFee();
+        // Check if the PharmacyBill exists and then call the method from PharmacyBill
+        if (this.getPharmacyBill() != null && bill.getPharmacyBill() != null) {
+            this.getPharmacyBill().invertAndAssignValues(bill.getPharmacyBill());
+        }
     }
 
     public void invertValueOfThisBill() {
@@ -854,10 +869,15 @@ public class Bill implements Serializable {
         totalStaffFee = 0 - getTotalStaffFee();
         settledAmountByPatient = 0 - getSettledAmountByPatient();
         settledAmountBySponsor = 0 - getSettledAmountBySponsor();
+        // Invert values for the associated PharmacyBill, if present
+        if (this.getPharmacyBill() != null) {
+            this.getPharmacyBill().invertValues();
+        }
     }
 
     public void copy(Bill bill) {
         billType = bill.getBillType();
+        referenceNumber = bill.getReferenceNumber();
         membershipScheme = bill.getMembershipScheme();
         collectingCentre = bill.getCollectingCentre();
         catId = bill.getCatId();
@@ -894,6 +914,10 @@ public class Bill implements Serializable {
         settledAmountByPatient = bill.getSettledAmountByPatient();
         settledAmountBySponsor = bill.getSettledAmountBySponsor();
         //      referenceBill=bill.getReferenceBill();
+        if (bill.getPharmacyBill() != null) {
+            pharmacyBill = bill.getPharmacyBill().cloneWithoutIdAndBill();
+            pharmacyBill.setBill(this);
+        }
     }
 
     public void copyValue(Bill bill) {
@@ -910,6 +934,9 @@ public class Bill implements Serializable {
         this.vatPlusNetTotal = bill.getVatPlusNetTotal();
         this.settledAmountByPatient = bill.getSettledAmountByPatient();
         this.settledAmountBySponsor = bill.getSettledAmountBySponsor();
+        if (this.getPharmacyBill() != null && bill.getPharmacyBill() != null) {
+            this.getPharmacyBill().copyValue(bill.getPharmacyBill());
+        }
     }
 
     public List<BillComponent> getBillComponents() {
@@ -2314,7 +2341,6 @@ public class Bill implements Serializable {
         return localNumber;
     }
 
-
     public void setLocalNumber(String localNumber) {
         this.localNumber = localNumber;
     }
@@ -2479,4 +2505,33 @@ public class Bill implements Serializable {
     public void setReleasedAt(Date releasedAt) {
         this.releasedAt = releasedAt;
     }
+
+    public PharmacyBill getPharmacyBill() {
+        return pharmacyBill;
+    }
+
+    public void setPharmacyBill(PharmacyBill pharmacyBill) {
+        this.pharmacyBill = pharmacyBill;
+    }
+
+    public String getExternalDoctor() {
+        return externalDoctor;
+    }
+
+    public void setExternalDoctor(String externalDoctor) {
+        this.externalDoctor = externalDoctor;
+    }
+
+    public StockBill getStockBill() {
+        if(stockBill==null){
+            stockBill=new StockBill();
+        }
+        return stockBill;
+    }
+
+    public void setStockBill(StockBill stockBill) {
+        this.stockBill = stockBill;
+    }
+    
+    
 }

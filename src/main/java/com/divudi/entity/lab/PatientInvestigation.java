@@ -1,9 +1,10 @@
 /*
-* Dr M H B Ariyaratne
+ * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
 package com.divudi.entity.lab;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillItem;
@@ -12,7 +13,9 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Packege;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,11 +33,10 @@ import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 
 /**
- *
  * @author Buddhika
  */
 @Entity
-public class PatientInvestigation implements Serializable {
+public class PatientInvestigation implements Serializable, RetirableEntity {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -80,6 +82,8 @@ public class PatientInvestigation implements Serializable {
     private String sampleComments;
     //Sample Sent to Lab
     private Boolean sampleSent = false;
+    @ManyToOne
+    private Staff sampleTransportedToLabByStaff;
     @ManyToOne
     private WebUser sampleSentBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -196,89 +200,88 @@ public class PatientInvestigation implements Serializable {
     private WebUser reportHandedOverBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date reportHandedOverAt;
-//Report Printed
+    //Report Printed
     private Boolean reportPrinted = false;
     @ManyToOne
     private WebUser reportPrintedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date reportPrintedAt;
-//Report reached at Collecting Centre
+    //Report reached at Collecting Centre
     private Boolean reportReachedCollectingCentre = false;
     @ManyToOne
     private WebUser reportReachedCollectingCentreBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date reportReachedCollectingCentreAt;
-//Sample Accepted
+    //Sample Accepted
     private Boolean sampleAccepted = false;
     @ManyToOne
     private WebUser sampleAcceptedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleAcceptedAt;
-//Sample Approved
+    //Sample Approved
     private Boolean sampleApproved = false;
     @ManyToOne
     private WebUser sampleApprovedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleApprovedAt;
-//Sample Repeated
+    //Sample Repeated
     private Boolean sampleApprovedAndRepeated = false;
     @ManyToOne
     private WebUser sampleApprovedAndRepeatedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleApprovedAndRepeatedAt;
-//Sample Collected
+    //Sample Collected
     private Boolean sampleCollected = false;
     @ManyToOne
     private WebUser sampleCollectedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleCollectedAt;
-//Sample Generate
+    //Sample Generate
     private Boolean sampleGenerated = false;
     @ManyToOne
     private WebUser sampleGeneratedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleGeneratedAt;
-//Sample Interfaces
+    //Sample Interfaces
     private Boolean sampleInterfaced = false;
     @ManyToOne
     private WebUser sampleInterfacedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleInterfacedAt;
-//Sample Recollected
+    //Sample Recollected
     private Boolean sampleRecollected = false;
     @ManyToOne
     private WebUser sampleRecollectedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleRecollectedAt;
-//Sample Rejected
+    //Sample Rejected
     private Boolean sampleRejected = false;
     @ManyToOne
     private WebUser sampleRejectedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleRejectedAt;
-//Sample Repeated
+    //Sample Repeated
     private Boolean sampleRepeated = false;
     @ManyToOne
     private WebUser sampleRepeatedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleRepeatedAt;
-//Sample Resent
+    //Sample Resent
     private Boolean sampleResent = false;
     @ManyToOne
     private WebUser sampleResentBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleResentAt;
-//Sample Reverted
+    //Sample Reverted
     private Boolean sampleReverted = false;
     @ManyToOne
     private WebUser sampleRevertedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleRevertedAt;
-    
+
     String sampleIds;
 
-    
-    
+
     public PatientInvestigation() {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
@@ -286,7 +289,7 @@ public class PatientInvestigation implements Serializable {
     }
 
     public String getSampleIds() {
-        if(sampleIds == null){
+        if (sampleIds == null) {
             sampleIds = "";
         }
         return sampleIds;
@@ -295,8 +298,7 @@ public class PatientInvestigation implements Serializable {
     public void setSampleIds(String sampleIds) {
         this.sampleIds = sampleIds;
     }
-    
-    
+
 
     public List<PatientReport> getPatientReports() {
         if (patientReports == null) {
@@ -1322,4 +1324,11 @@ public class PatientInvestigation implements Serializable {
         this.sampleRevertedAt = sampleRevertedAt;
     }
 
+    public Staff getSampleTransportedToLabByStaff() {
+        return sampleTransportedToLabByStaff;
+    }
+
+    public void setSampleTransportedToLabByStaff(Staff sampleTransportedToLabByStaff) {
+        this.sampleTransportedToLabByStaff = sampleTransportedToLabByStaff;
+    }
 }

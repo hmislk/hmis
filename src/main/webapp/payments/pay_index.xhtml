@@ -47,9 +47,38 @@
 
                                 <p:tab title="Professional Payments - Inward" >
                                     <div class="d-grid gap-2">
-                                        <p:commandButton  class="w-100" ajax="false" value="Pay Doctor / Staff" action="/inward/inward_bill_staff_payment?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
-                                        <p:commandButton  class="w-100" ajax="false" action="/inward/inward_search_professional_payment_due?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Payments Due Search" rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
-                                        <p:commandButton  class="w-100" ajax="false" value="Payment Done Search" action="/inward/inward_search_professional_payment_done?faces-redirect=true" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"/>
+                                        <p:commandButton  
+                                            class="w-100" 
+                                            ajax="false" 
+                                            icon="fa fa-money-bill-wave"
+                                            value="Initiate Professional Payments" 
+                                            action="/inward/inward_bill_staff_payment?faces-redirect=true" 
+                                            rendered="#{webUserController.hasPrivilege('PaymentBilling') and false}" />
+                                        
+                                        <p:commandButton  
+                                            class="w-100"
+                                            ajax="false" 
+                                            value="Initiate Professional Payments"
+                                            action="#{inwardStaffPaymentBillController.navigateToViewInwardPayProfessionalPayments()}" 
+                                            icon="fa fa-money-bill-wave"
+                                            rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
+                                        
+                                        <p:commandButton  
+                                            class="w-100" 
+                                            ajax="false" 
+                                            icon="fa fa-search-dollar"
+                                            action="/inward/inward_search_professional_payment_due?faces-redirect=true" 
+                                            actionListener="#{searchController.makeListNull}"  
+                                            value="Search Outstanding Professinal Payments" 
+                                            rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
+                                        <p:commandButton  
+                                            class="w-100" 
+                                            ajax="false" 
+                                            icon="fa fa-check-circle"
+                                            value="List Completed Professional Payments" 
+                                            action="/inward/inward_search_professional_payment_done?faces-redirect=true" 
+                                            actionListener="#{searchController.makeListNull}" 
+                                            rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"/>
                                     </div>
                                 </p:tab>
                                 <p:tab title="Professional Payments - Channelling">
@@ -81,7 +110,13 @@
                                         <p:commandButton class="w-100" ajax="false" value="OPD Due Search" action="/credit/credit_company_opd_due?faces-redirect=true" />
                                         <p:commandButton class="w-100" ajax="false" value="OPD Due Age" action="/credit/credit_company_opd_due_age?faces-redirect=true" />
                                         <p:commandButton class="w-100" ajax="false" value="Settle Credit for OPD Batch Bills" action="/credit/credit_compnay_bill_opd?faces-redirect=true" actionListener="#{cashRecieveBillController.makeNull()}" icon="fa fa-th-large"/>
-                                        <p:commandButton class="w-100" ajax="false" value="Settle Credit for OPD Package Bills" action="/credit/credit_compnay_package_bill_opd?faces-redirect=true" actionListener="#{cashRecieveBillController.makeNull()}" icon="fa fa-suitcase"/>
+                                        <p:commandButton 
+                                            class="w-100" 
+                                            ajax="false" 
+                                            value="Settle Credit for OPD Package Bills" 
+                                            action="/credit/credit_compnay_package_bill_opd?faces-redirect=true" 
+                                            actionListener="#{cashRecieveBillController.makeNull()}" 
+                                            icon="fa fa-suitcase"/>
                                         <p:commandButton class="w-100" ajax="false" value="OPD Done Search" action="/credit/company_opd_credit_settle_bills?faces-redirect=true" />
                                         <p:separator></p:separator>
                                         <!-- Inward -->

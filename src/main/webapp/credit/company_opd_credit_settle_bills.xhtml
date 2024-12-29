@@ -183,13 +183,13 @@
                                 scrollable="true"
                                 var="bill"
                                 rows="10"
+                                rowStyleClass="#{bill.billClass eq 'class com.divudi.entity.CancelledBill' ? 'bg-danger text-white' : ''}"
                                 paginatorAlwaysVisible="false"
                                 paginator="true"
                                 paginatorPosition="top"
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="10,15,50"
                                 >
-
                                 <p:column 
                                     width="1em"
                                     headerText="No">                                
@@ -203,11 +203,11 @@
                                     filterMatchMode="contains" >                                
                                     <h:outputLabel value="#{bill.deptId}"/>
                                 </p:column>
-                                <p:column headerText="Bill Class" >                                
+<!--                                <p:column headerText="Bill Class" >                                
                                     <h:outputLabel value="#{bill.billClass}"/>
-                                </p:column>
+                                </p:column>-->
                                 <p:column headerText="Bill Type" >                                
-                                    <h:outputLabel value="#{bill.billTypeAtomic}"/>
+                                    <h:outputLabel value="#{bill.billTypeAtomic.label}"/>
                                 </p:column>
                                 <p:column headerText="Payment Method" >                                
                                     <h:outputLabel value="#{bill.paymentMethod}"/>
@@ -227,8 +227,6 @@
                                         <p:badge value="Returned" styleClass="ui-badge-warning" rendered="#{bill.refunded}" />
                                     </h:panelGroup>
                                 </p:column>
-
-
                                 <p:column headerText="Net Value" styleClass="averageNumericColumn">
                                     <h:outputLabel value="#{bill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>

@@ -6,6 +6,7 @@
 package com.divudi.data.dataStructure;
 
 import com.divudi.data.table.String1Value3;
+import com.divudi.entity.Department;
 import java.util.List;
 
 /**
@@ -19,6 +20,22 @@ public class PharmacySummery {
     private Double cancelledTotal = 0.0;
     private Double refundedTotal = 0.0;
     private Long count;
+    private String departmentName;
+    private double netTotal;
+    private String department;
+
+    public PharmacySummery(String departmentName, double netTotal) {
+        this.departmentName = departmentName;
+        this.netTotal = netTotal;
+    }
+    public PharmacySummery(String departmentName, String department, double netTotal) {
+        this.departmentName = departmentName;
+        this.department = department;
+        this.netTotal = netTotal;
+    }
+    public PharmacySummery() {
+        
+    }
 
     public Long getCount() {
         return count;
@@ -58,6 +75,30 @@ public class PharmacySummery {
 
     public void setRefundedTotal(Double refundedTotal) {
         this.refundedTotal = refundedTotal;
+    }
+
+    public String getDepartmentName() {
+        return departmentName;
+    }
+
+    public void setDepartmentName(String departmentName) {
+        this.departmentName = departmentName;
+    }
+
+    public double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(double netTotal) {
+        this.netTotal = netTotal;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
     }
 
 }

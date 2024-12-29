@@ -2260,8 +2260,18 @@ public class BillBeanController implements Serializable {
             if (patientEncounter.isPaymentFinalized() && patientEncounter.getFinalBill() != null) {
                 bill.setForwardReferenceBill(patientEncounter.getFinalBill());
                 getBillFacade().edit(bill);
-
                 patientEncounter.getFinalBill().getBackwardReferenceBills().add(bill);
+                if(patientEncounter.getFinalBill().getBalance() <= 0){
+                     patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getNetTotal());
+                }
+                patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getBalance() - bill.getNetTotal());
+                patientEncounter.getFinalBill().setPaidAmount(patientEncounter.getFinalBill().getPaidAmount() + bill.getNetTotal());
+                
+                if(bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT){   
+                    patientEncounter.getFinalBill().setSettledAmountByPatient(patientEncounter.getFinalBill().getSettledAmountByPatient() + bill.getNetTotal());
+                }else if(bill.getBillTypeAtomic()== BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED){
+                    patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor()+ bill.getNetTotal());
+                }
                 getBillFacade().edit(patientEncounter.getFinalBill());
             }
         }
@@ -3150,6 +3160,40 @@ public class BillBeanController implements Serializable {
                 + " and b.retired=false "
                 + " and b.netTotal!=0 "
                 + " order by b.id desc ";
+
+        temMap.put("billType", type);
+        temMap.put("dep", department);
+
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+        if (lstBills == null) {
+            lstBills = new ArrayList<>();
+        }
+        return lstBills;
+    }
+    
+    public List<Bill> billsForTheDayNotPaid(BillType type, Department department, Date fromDate, Date toDate) {
+        List<Bill> lstBills;
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from PreBill b "
+                + " where b.billType = :billType "
+                + " and b.department=:dep "
+                + " and b.referenceBill is null "
+                + " and b.backwardReferenceBill is null "
+                + " and b.forwardReferenceBill is null "
+                + " and b.billedBill is null "
+                + " and b.retired=false "
+                + " and b.netTotal!=0 ";
+
+        
+        if(fromDate != null && toDate !=null){
+            sql += " and b.createdAt between :fromDate and :toDate ";
+            temMap.put("fromDate", fromDate);
+            temMap.put("toDate", toDate);
+        }
+        
+        sql += " order by b.id desc";
 
         temMap.put("billType", type);
         temMap.put("dep", department);

@@ -97,7 +97,7 @@
                                         <h:outputLabel value="Payment Method" class="mb-2"/>
                                         <p:selectOneMenu style="width: 300px;" id="cmbPs" value="#{pharmacyPurchaseController.bill.paymentMethod}">       
                                             <f:selectItem itemLabel="Select Payment Method" />
-                                            <f:selectItems value="#{enumController.paymentMethodsForPo}" />
+                                            <f:selectItems value="#{enumController.paymentMethodsForPharmacyPurchase}" />
                                             <p:ajax event="change" process="cmbPs" update="paymentMethodDetails" ></p:ajax>
                                         </p:selectOneMenu>
 
@@ -109,7 +109,7 @@
                                             layout="block" 
                                             id="cash"  
                                             rendered="#{pharmacyPurchaseController.bill.paymentMethod eq 'Cash'}" >
-                                           
+
                                             <p:inputText class="mx-2"  value="#{pharmacyPurchaseController.bill.comments}" placeholder="Enter a Comment" style="width: 300px;" id="comment"/>
                                         </h:panelGroup>
                                         <h:panelGroup
@@ -138,7 +138,11 @@
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <p:panel id="itemselectgrid" class="my-2 w-100" rendered="#{sessionController.loggedPreference.pharmayPurchaseWithLastRate eq false}" header="Add Item">
+                        <p:panel 
+                            id="itemselectgrid"
+                            class="my-2 w-100" 
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Direct Purchase - Give Item Details and Teh Add', true)}" 
+                            header="Add Item">
                             <f:facet name="header" > 
                                 <h:outputText styleClass="fa-solid fa-circle-plus" />
                                 <h:outputText  class="mx-4" value="Add Items" />  
@@ -279,7 +283,9 @@
                         </p:panel>
                     </div>
                     <div class="my-2" >
-                        <p:panel id="PnlAdd" header="Add Item" rendered="#{sessionController.loggedPreference.pharmayPurchaseWithLastRate eq true}" >
+                        <p:panel id="PnlAdd"
+                                 header="Add Item" 
+                                 rendered="#{not configOptionApplicationController.getBooleanValueByKey('Pharmacy Direct Purchase - Give Item Details and Teh Add', true)}"  >
                             <h:panelGrid columns="2" style="width: 100%">
                                 <p:autoComplete 
                                     class="w-100" 
@@ -487,8 +493,7 @@
                         </p:panel>
                     </div>
                 </div>
-
-
+                
                 <p:commandButton 
                     id="nullButton" 
                     value="No Action"
@@ -505,8 +510,6 @@
                         </p:column>
                     </p:dataTable>
                 </h:panelGroup>
-
-
             </p:panel>
 
             <p:panel rendered="#{pharmacyPurchaseController.printPreview}">

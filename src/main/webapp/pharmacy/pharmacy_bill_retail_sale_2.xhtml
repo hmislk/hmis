@@ -202,8 +202,13 @@
                                             <p:ajax event="rowEdit" listener="#{pharmacySaleController2.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
                                             <p:ajax event="rowEditCancel" listener="#{pharmacySaleController2.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
 
+                                            <p:column headerText="No" style="width: 2em; padding: 6px;">
+                                                <h:outputLabel value="#{s+1}" >
+                                                    <f:convertNumber pattern="#,##0" />
+                                                </h:outputLabel>
+                                            </p:column>
 
-                                            <p:column headerText="Item" width="30%">
+                                            <p:column headerText="Item" style="padding: 6px;">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" />
                                                 <p:commandLink id="showDetails" type="button" value="&nbsp;(+)" oncomplete="PF('dlg').show();" process="showDetails" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />
 
@@ -253,23 +258,23 @@
                                                 </p:dialog>
                                             </p:column>
 
-                                            <p:column headerText="Rate" style="width: 10%">
+                                            <p:column headerText="Rate" style="width: 5em; padding: 6px;">
                                                 <h:outputLabel id="rate" value="#{bi.rate}" >
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Value" style="width: 10%">
+                                            <p:column headerText="Value" style="width: 5em; padding: 6px;">
                                                 <h:outputLabel value="#{bi.grossValue}" id="gros">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Expiry" style="width: 15%">
+                                            <p:column headerText="Expiry" style="width: 7em; padding: 6px;">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                                 </h:outputLabel>
 
                                             </p:column>
-                                            <p:column headerText="Qty" style="width: 8%">
+                                            <p:column headerText="Qty" style="width: 3em; padding: 6px;">
                                                 <p:cellEditor>  
                                                     <f:facet name="output">  
                                                         <h:outputText value="#{bi.qty}" >
@@ -282,9 +287,9 @@
                                                 </p:cellEditor> 
                                             </p:column>
 
-                                            <p:column style="width:4%"> 
+                                            <p:column style="width: 10em; padding: 6px;"> 
 
-                                                <p:rowEditor />  
+                                                <p:rowEditor style="display: inline-block; margin-right: 10px;" />  
                                                 <p:commandButton icon="fas fa-trash" action="#{pharmacySaleController2.removeBillItem(bi)}" class="ui-button-danger" ajax="false" >
 
                                                 </p:commandButton>

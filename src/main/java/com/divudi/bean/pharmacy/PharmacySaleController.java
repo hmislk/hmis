@@ -14,6 +14,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
+import com.divudi.bean.common.PatientDepositController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
@@ -46,6 +47,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.Payment;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PreBill;
@@ -123,7 +125,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     SessionController sessionController;
     @Inject
     SearchController searchController;
-
+    @Inject
+    PatientDepositController patientDepositController;
     @Inject
     CommonController commonController;
 
@@ -230,11 +233,27 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public String navigateToPharmacyBillForCashier() {
-        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+        if (sessionController.getPharmacyBillingAfterShiftStart()) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                resetAll();
+                return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+            }
+        } else {
+            resetAll();
+            return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+        }
     }
 
     public String navigateToPharmacyBillForCashierWholeSale() {
         return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+    }
+
+    public String navigateToBillCancellationView() {
+        return "pharmacy_cancel_bill_retail?faces-redirect=true";
     }
 
     private void prepareForPharmacySaleWithoutStock() {
@@ -660,9 +679,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public String navigateToPharmacyRetailSale() {
-        Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
-
-        if (pharmacyBillingAfterShiftStart) {
+        if (sessionController.getPharmacyBillingAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 resetAll();
@@ -671,12 +688,80 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 return "/cashier/index?faces-redirect=true";
             }
-        } 
-        else {
+        } else {
             resetAll();
             return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
         }
+    }
 
+    private String navigateToPharmacyRetailSaleAfterCashierCheck(Patient pt, PaymentScheme ps) {
+        if (pt == null) {
+            JsfUtil.addErrorMessage("No Patient Selected");
+            return "";
+        }
+        if (ps == null) {
+            JsfUtil.addErrorMessage("No Membership");
+            return "";
+        }
+        if (patient == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            patient = new Patient();
+            patientDetailsEditable = true;
+        }
+        resetAll();
+        patient = pt;
+        paymentScheme = ps;
+        setPatient(getPatient());
+        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyRetailSale(Patient pt, PaymentScheme ps) {
+        if (sessionController.getPharmacyBillingAfterShiftStart()) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                return navigateToPharmacyRetailSaleAfterCashierCheck(pt, ps);
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            return navigateToPharmacyRetailSaleAfterCashierCheck(pt, ps);
+        }
+    }
+
+    private String navigateToPharmacyRetailSaleAfterCashierCheckForCashier(Patient pt, PaymentScheme ps) {
+        if (pt == null) {
+            JsfUtil.addErrorMessage("No Patient Selected");
+            return "";
+        }
+        if (ps == null) {
+            JsfUtil.addErrorMessage("No Membership");
+            return "";
+        }
+        if (patient == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            patient = new Patient();
+            patientDetailsEditable = true;
+        }
+        resetAll();
+        patient = pt;
+        paymentScheme = ps;
+        setPatient(getPatient());
+        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+    }
+
+    public String navigateToPharmacyRetailSaleForCashier(Patient pt, PaymentScheme ps) {
+        if (sessionController.getPharmacyBillingAfterShiftStart()) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                return navigateToPharmacyRetailSaleAfterCashierCheckForCashier(pt, ps);
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            return navigateToPharmacyRetailSaleAfterCashierCheckForCashier(pt, ps);
+        }
     }
 
     public void resetAll() {
@@ -2152,7 +2237,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
 
         }
-        
+
         resetAll();
 
         billPreview = true;
@@ -2369,6 +2454,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         calculateAllRates();
     }
 
+    @Deprecated // Use listnerForPaymentMethodChange
     public void changeListener() {
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
@@ -2661,7 +2747,25 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     @Override
     public void setPatient(Patient patient) {
+        System.out.println("setPatient in PharmacySaleController");
         this.patient = patient;
+        selectPaymentSchemeAsPerPatientMembership();
+    }
+
+    private void selectPaymentSchemeAsPerPatientMembership() {
+        System.out.println("selectPaymentSchemeAsPerPatientMembership");
+        System.out.println("patient = " + patient);
+        if (patient == null) {
+            return;
+        }
+        System.out.println("patient.getPerson().getMembershipScheme() = " + patient.getPerson().getMembershipScheme());
+        if (patient.getPerson().getMembershipScheme() == null) {
+            paymentScheme = null;
+        } else {
+            System.out.println("patient.getPerson().getMembershipScheme().getPaymentScheme() = " + patient.getPerson().getMembershipScheme().getPaymentScheme());
+            setPaymentScheme(patient.getPerson().getMembershipScheme().getPaymentScheme());
+        }
+        listnerForPaymentMethodChange();
     }
 
     public YearMonthDay getYearMonthDay() {
@@ -2816,13 +2920,15 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public PaymentScheme getPaymentScheme() {
-        //  //System.err.println("GEtting Paymen");
+        System.err.println("GEtting Paymen");
+        System.out.println("paymentScheme = " + paymentScheme);
         return paymentScheme;
     }
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
-        //     //System.err.println("Setting Pay");
+        System.err.println("Setting Pay");
         this.paymentScheme = paymentScheme;
+        System.out.println("paymentScheme = " + paymentScheme);
     }
 
     public StockHistoryFacade getStockHistoryFacade() {
@@ -3000,7 +3106,40 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     @Override
     public void listnerForPaymentMethodChange() {
-        // ToDo: Add Logic
+        System.out.println("listnerForPaymentMethodChange");
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            getPaymentMethodData().getPatient_deposit().setPatient(patient);
+            getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
+            if (pd != null && pd.getId() != null) {
+                getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+            }
+        } else if (paymentMethod == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
+            System.out.println("this = " + this);
+        } else if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            getPaymentMethodData().getPatient_deposit().setPatient(patient);
+            getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
+
+            if (pd != null && pd.getId() != null) {
+                System.out.println("pd = " + pd);
+                boolean hasPatientDeposit = false;
+                for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    System.out.println("cd = " + cd);
+                    if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                        System.out.println("cd = " + cd);
+                        hasPatientDeposit = true;
+                        cd.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                        cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+
+                    }
+                }
+            }
+
+        }
+        processBillItems();
     }
 
 }

@@ -1,0 +1,323 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+
+
+
+                    <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                            <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:calendar 
+                            styleClass="w-100" 
+                            inputStyleClass="w-100 form-control" 
+                            id="fromDate" 
+                            value="#{pharmacySummaryReportController.fromDate}" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                            />
+
+                        <p:spacer width="50" ></p:spacer>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                            <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:calendar 
+                            styleClass="w-100" 
+                            inputStyleClass="w-100 form-control" 
+                            id="toDate" 
+                            value="#{pharmacySummaryReportController.toDate}" 
+                            navigator="false" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                            />
+
+                        <p:spacer width="50" ></p:spacer>
+                        <p:spacer width="50" ></p:spacer>
+                        <p:spacer width="50" ></p:spacer>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
+                            <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                            id="cmbIns"
+                            styleClass="w-100 form-control" 
+                            value="#{pharmacySummaryReportController.institution}" 
+                            filter="true">
+                            <f:selectItem itemLabel="All Institutions" />
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                            <p:ajax process="cmbIns" update="cmbDept" />
+                        </p:selectOneMenu>
+
+                        <p:spacer ></p:spacer>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> 
+                            <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                            id="siteMenu"
+                            styleClass="w-100 form-control"  
+                            value="#{pharmacySummaryReportController.site}" 
+                            filter="true">
+                            <f:selectItem itemLabel="All Sites" />
+                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                            <p:ajax process="siteMenu" update="cmbDept" />
+                        </p:selectOneMenu>
+
+                        <p:spacer ></p:spacer>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                            <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="cmbDept">
+
+                            <!-- Component 1: Without Institution and Site -->
+                            <p:selectOneMenu
+                                rendered="#{pharmacySummaryReportController.institution eq null and pharmacySummaryReportController.site eq null}"
+                                styleClass="w-100 form-control"
+                                value="#{pharmacySummaryReportController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 2: With Site Only -->
+                            <p:selectOneMenu
+                                rendered="#{pharmacySummaryReportController.institution eq null and pharmacySummaryReportController.site ne null}"
+                                styleClass="w-100 form-control"
+                                value="#{pharmacySummaryReportController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacySummaryReportController.site)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 3: With Institution Only -->
+                            <p:selectOneMenu
+                                rendered="#{pharmacySummaryReportController.institution ne null and pharmacySummaryReportController.site eq null}"
+                                styleClass="w-100 form-control"
+                                value="#{pharmacySummaryReportController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacySummaryReportController.institution)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 4: With Both Institution and Site -->
+                            <p:selectOneMenu
+                                rendered="#{pharmacySummaryReportController.institution ne null and pharmacySummaryReportController.site ne null}"
+                                styleClass="w-100 form-control"
+                                value="#{pharmacySummaryReportController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacySummaryReportController.institution, pharmacySummaryReportController.site)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                        </h:panelGroup>
+                    </h:panelGrid>
+
+                    <p:commandButton 
+                        value="Process" 
+                        ajax="false"
+                        action="#{pharmacySummaryReportController.processPharmacyIncomeReport()}" 
+                        styleClass="ui-button-success m-1" 
+                        icon="pi pi-cog">
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        value="Download" 
+                        ajax="false"
+                        styleClass="ui-button-info m-1"
+                        icon="pi pi-download">
+                        <p:dataExporter fileName="pharmacy_income_report.xlsx" target="tbl" type="xlsx" />
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        value="Print" 
+                        ajax="false"
+                        styleClass="ui-button-warning m-1"
+                        icon="pi pi-print">
+                        <p:printer target="tbl" />
+                    </p:commandButton>
+
+
+
+                    <p:dataTable
+                        id="tbl"
+                        styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                        value="#{pharmacySummaryReportController.bundle.rows}" var="row"
+                        paginator="true" rows="10" rowsPerPageTemplate="5,10,15,50,100,500,1000,2000,5000,10000"
+                        paginatorPosition="bottom">
+                        <p:column headerText="Bill No" >
+                            <h:outputText value="#{row.bill.deptId}" />
+                        </p:column>
+                        <p:column headerText="Patient" >
+                            <h:outputText value="#{row.bill.patient.person.nameWithTitle}" />
+                        </p:column>
+                        <p:column headerText="Date" >
+                            <h:outputText value="#{row.bill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Net Total"  class="text-end">
+                            <h:outputText value="#{row.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Cash"  class="text-end">
+                            <h:outputText value="#{row.cashValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cashValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Card" class="text-end">
+                            <h:outputText value="#{row.cardValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cardValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Cheque"  class="text-end">
+                            <h:outputText value="#{row.chequeValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.chequeValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Inpatient Credit" class="text-end light-grey-background">
+                            <h:outputText value="#{row.inpatientCreditValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.inpatientCreditValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Outpatient Credit"  class="text-end light-grey-background">
+                            <h:outputText value="#{row.opdCreditValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.opdCreditValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Staff Credit"   class="text-end light-grey-background" >
+                            <h:outputText value="#{row.staffValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.staffValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Agent Credit" class="text-end light-grey-background" >
+                            <h:outputText value="#{row.agentValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.agentValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Discount"  class="text-end">
+                            <h:outputText value="#{row.discount}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Service Charge"  class="text-end" >
+                            <h:outputText value="#{row.serviceCharge}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.serviceCharge}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Actual Total"  class="text-end">
+                            <h:outputText value="#{row.netTotal + row.discount}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal + pharmacySummaryReportController.bundle.summaryRow.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+
+
+                    </p:dataTable>
+
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

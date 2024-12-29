@@ -21,6 +21,7 @@ import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.RoomCategory;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.facade.*;
@@ -29,16 +30,34 @@ import com.divudi.light.common.BillLight;
 import com.divudi.light.common.BillSummaryRow;
 import com.divudi.service.BillService;
 import com.divudi.service.PatientInvestigationService;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.time.YearMonth;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author safrin
@@ -194,6 +213,8 @@ public class ReportsController implements Serializable {
     List<PatientInvestigation> userPatientInvestigations;
     double netTotalValue;
 
+    private ItemLight investigationCode;
+
     String menuBarSearchText;
     String smsText;
     String uniqueSmsText;
@@ -240,6 +261,9 @@ public class ReportsController implements Serializable {
     private Long barcodeIdLong;
     private Date maxDate;
     private Doctor referingDoctor;
+    private Month month;
+    private PaymentScheme paymentScheme;
+    private String remarks;
 
     private double cashTotal;
     private double cardTotal;
@@ -284,6 +308,11 @@ public class ReportsController implements Serializable {
     private Department billedDepartment;
     private List<Department> departments;
 
+    private Map<Integer, Map<String, Map<Integer, Double>>> groupedBillItemsWeekly;
+    private Map<String, Map<Integer, Double>> groupedBillItemsWeeklyValues7to7;
+    private Map<String, Map<Integer, Double>> groupedBillItemsWeeklyValues7to1;
+    private Map<String, Map<Integer, Double>> groupedBillItemsWeeklyValues1to7;
+
     double total;
     double paid;
     double creditPaid;
@@ -291,6 +320,33 @@ public class ReportsController implements Serializable {
     double calTotal;
     double totalVat;
     double totalVatCalculatedValue;
+
+    private Map<Institution, Map<YearMonth, Bill>> groupedCollectingCenterWiseBillsMonthly;
+    private Map<Route, Map<YearMonth, Bill>> groupedRouteWiseBillsMonthly;
+    private List<YearMonth> yearMonths;
+
+    private String settlementStatus;
+    private String dischargedStatus;
+
+    private String selectedDateType = "invoice";
+
+    private Investigation investigation;
+
+    // Map<Week, Map<ItemName, Map<dayOfMonth, Count>>>
+    Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to7;
+    Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to1;
+    Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap1to7;
+
+
+    private boolean showChart;
+
+    public String getDischargedStatus() {
+        return dischargedStatus;
+    }
+
+    public void setDischargedStatus(String dischargedStatus) {
+        this.dischargedStatus = dischargedStatus;
+    }
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
@@ -322,6 +378,39 @@ public class ReportsController implements Serializable {
 
     public void setPatientReportFacade(PatientReportFacade patientReportFacade) {
         this.patientReportFacade = patientReportFacade;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+
+    public String getSelectedDateType() {
+        return selectedDateType;
+    }
+
+    public void setSelectedDateType(String selectedDateType) {
+        this.selectedDateType = selectedDateType;
+    }
+
+
+    public Investigation getInvestigation() {
+        return investigation;
+    }
+
+    public void setInvestigation(Investigation investigation) {
+        this.investigation = investigation;
     }
 
     public Institution getCreditCompany() {
@@ -362,6 +451,30 @@ public class ReportsController implements Serializable {
 
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
+    }
+
+    public Map<Integer, Map<String, Map<Integer, Double>>> getWeeklyDailyBillItemMap7to7() {
+        return weeklyDailyBillItemMap7to7;
+    }
+
+    public void setWeeklyDailyBillItemMap7to7(Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to7) {
+        this.weeklyDailyBillItemMap7to7 = weeklyDailyBillItemMap7to7;
+    }
+
+    public Map<Integer, Map<String, Map<Integer, Double>>> getWeeklyDailyBillItemMap7to1() {
+        return weeklyDailyBillItemMap7to1;
+    }
+
+    public void setWeeklyDailyBillItemMap7to1(Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to1) {
+        this.weeklyDailyBillItemMap7to1 = weeklyDailyBillItemMap7to1;
+    }
+
+    public Map<Integer, Map<String, Map<Integer, Double>>> getWeeklyDailyBillItemMap1to7() {
+        return weeklyDailyBillItemMap1to7;
+    }
+
+    public void setWeeklyDailyBillItemMap1to7(Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap1to7) {
+        this.weeklyDailyBillItemMap1to7 = weeklyDailyBillItemMap1to7;
     }
 
     public PatientFacade getPatientFacade() {
@@ -579,6 +692,38 @@ public class ReportsController implements Serializable {
     public Date getMaxDate() {
         maxDate = commonFunctions.getEndOfDay(new Date());
         return maxDate;
+    }
+
+    public Map<Integer, Map<String, Map<Integer, Double>>> getGroupedBillItemsWeekly() {
+        return groupedBillItemsWeekly;
+    }
+
+    public void setGroupedBillItemsWeekly(Map<Integer, Map<String, Map<Integer, Double>>> groupedBillItemsWeekly) {
+        this.groupedBillItemsWeekly = groupedBillItemsWeekly;
+    }
+
+    public Map<String, Map<Integer, Double>> getGroupedBillItemsWeeklyValues7to7() {
+        return groupedBillItemsWeeklyValues7to7;
+    }
+
+    public void setGroupedBillItemsWeeklyValues7to7(Map<String, Map<Integer, Double>> groupedBillItemsWeeklyValues7to7) {
+        this.groupedBillItemsWeeklyValues7to7 = groupedBillItemsWeeklyValues7to7;
+    }
+
+    public Map<String, Map<Integer, Double>> getGroupedBillItemsWeeklyValues7to1() {
+        return groupedBillItemsWeeklyValues7to1;
+    }
+
+    public void setGroupedBillItemsWeeklyValues7to1(Map<String, Map<Integer, Double>> groupedBillItemsWeeklyValues7to1) {
+        this.groupedBillItemsWeeklyValues7to1 = groupedBillItemsWeeklyValues7to1;
+    }
+
+    public Map<String, Map<Integer, Double>> getGroupedBillItemsWeeklyValues1to7() {
+        return groupedBillItemsWeeklyValues1to7;
+    }
+
+    public void setGroupedBillItemsWeeklyValues1to7(Map<String, Map<Integer, Double>> groupedBillItemsWeeklyValues1to7) {
+        this.groupedBillItemsWeeklyValues1to7 = groupedBillItemsWeeklyValues1to7;
     }
 
     public void setMaxDate(Date maxDate) {
@@ -849,6 +994,14 @@ public class ReportsController implements Serializable {
         this.visitType = visitType;
     }
 
+    public Month getMonth() {
+        return month;
+    }
+
+    public void setMonth(Month month) {
+        this.month = month;
+    }
+
     public String getMethodType() {
         return methodType;
     }
@@ -881,12 +1034,16 @@ public class ReportsController implements Serializable {
         this.billedDepartment = billedDepartment;
     }
 
+    public List<Month> getMonths() {
+        return Arrays.asList(Month.values());
+    }
+
     public ReportsController() {
     }
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -897,7 +1054,7 @@ public class ReportsController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1390,6 +1547,14 @@ public class ReportsController implements Serializable {
         this.patientEncounters = patientEncounters;
     }
 
+    public ItemLight getInvestigationCode() {
+        return investigationCode;
+    }
+
+    public void setInvestigationCode(ItemLight investigationCode) {
+        this.investigationCode = investigationCode;
+    }
+
     public double getPaid() {
         return paid;
     }
@@ -1414,6 +1579,46 @@ public class ReportsController implements Serializable {
         this.creditPaid = creditPaid;
     }
 
+    public String getSettlementStatus() {
+        return settlementStatus;
+    }
+
+    public void setSettlementStatus(String settlementStatus) {
+        this.settlementStatus = settlementStatus;
+    }
+
+    public Map<Institution, Map<YearMonth, Bill>> getGroupedCollectingCenterWiseBillsMonthly() {
+        return groupedCollectingCenterWiseBillsMonthly;
+    }
+
+    public void setGroupedCollectingCenterWiseBillsMonthly(Map<Institution, Map<YearMonth, Bill>> groupedCollectingCenterWiseBillsMonthly) {
+        this.groupedCollectingCenterWiseBillsMonthly = groupedCollectingCenterWiseBillsMonthly;
+    }
+
+    public List<YearMonth> getYearMonths() {
+        return yearMonths;
+    }
+
+    public void setYearMonths(List<YearMonth> yearMonths) {
+        this.yearMonths = yearMonths;
+    }
+
+    public Map<Route, Map<YearMonth, Bill>> getGroupedRouteWiseBillsMonthly() {
+        return groupedRouteWiseBillsMonthly;
+    }
+
+    public void setGroupedRouteWiseBillsMonthly(Map<Route, Map<YearMonth, Bill>> groupedRouteWiseBillsMonthly) {
+        this.groupedRouteWiseBillsMonthly = groupedRouteWiseBillsMonthly;
+    }
+
+    public boolean isShowChart() {
+        return showChart;
+    }
+
+    public void setShowChart(boolean showChart) {
+        this.showChart = showChart;
+    }
+
     public void generateSampleCarrierReport() {
         System.out.println("generateSampleCarrierReport = " + this);
         bundle = new ReportTemplateRowBundle();
@@ -1432,6 +1637,10 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
         }
 
         System.out.println("bill items");
@@ -1445,12 +1654,14 @@ public class ReportsController implements Serializable {
     private ReportTemplateRowBundle generateSampleCarrierBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) " +
-                "FROM BillItem billItem " +
-                "JOIN billItem.bill bill " +
-                "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem " +
-                "WHERE bill.billTypeAtomic IN :bts " +
-                "AND bill.createdAt BETWEEN :fd AND :td ";
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(pi) "
+                + "FROM PatientInvestigation pi "
+                + "JOIN pi.billItem billItem "
+                + "JOIN billItem.bill bill "
+                + "WHERE pi.retired=false "
+                + " and billItem.retired=false "
+                + " and bill.retired=false "
+                + "AND pi.sampleSentAt IS NOT NULL ";
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
@@ -1463,7 +1674,7 @@ public class ReportsController implements Serializable {
         }
 
         if (staff != null) {
-            jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
+            jpql += "AND pi.sampleTransportedToLabByStaff.person.name = :staff ";
             parameters.put("staff", staff.getPerson().getName());
         }
 
@@ -1494,7 +1705,7 @@ public class ReportsController implements Serializable {
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
 
-        jpql += "GROUP BY billItem";
+        jpql += "GROUP BY pi";
 
         System.out.println("jpql = " + jpql);
         System.out.println("parameters = " + parameters);
@@ -1503,7 +1714,7 @@ public class ReportsController implements Serializable {
 
         for (ReportTemplateRow row : rs) {
             BillItem billItem = row.getBillItem();
-            PatientInvestigation investigation = billItem.getPatientInvestigation();
+            PatientInvestigation investigation = row.getPatientInvestigation();
 
             if (investigation != null && investigation.getSampleSentAt() != null && investigation.getReceivedAt() != null) {
                 long duration = investigation.getReceivedAt().getTime() - investigation.getSampleSentAt().getTime();
@@ -1592,6 +1803,316 @@ public class ReportsController implements Serializable {
             jpql += "AND bill.creater = :wu ";
             parameters.put("wu", webUser);
         }
+
+        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY billItem";
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+        b.setReportTemplateRows(rs);
+        b.createRowValuesFromBillItems();
+        b.calculateTotalsWithCredit();
+        return b;
+    }
+
+    public void generateOPDWeeklyReport() {
+        System.out.println("generateOPDWeeklyReport = " + this);
+
+        if (month == null) {
+            JsfUtil.addErrorMessage("Please select a month");
+            return;
+        }
+
+        bundle = new ReportTemplateRowBundle();
+
+        List<BillTypeAtomic> opdBts = new ArrayList<>();
+
+        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+
+        opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+        opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+        opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+
+        System.out.println("bill items");
+
+        bundle.setName("Bill Items");
+        bundle.setBundleType("billItemList");
+
+        bundle = generateWeeklyBillItems(opdBts);
+
+        if (reportType.equalsIgnoreCase("summary")) {
+            groupBillItemsWeekly();
+        } else if (reportType.equalsIgnoreCase("detail")) {
+            groupBillItemsDaily();
+        }
+    }
+
+    private void groupBillItemsDaily() {
+        // Map<Week, Map<ItemName, Map<dayOfMonth, Count>>>
+        Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap7to7 = new HashMap<>();
+        Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap7to1 = new HashMap<>();
+        Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap1to7 = new HashMap<>();
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            final BillItem billItem = row.getBillItem();
+
+            final Date billItemDate = billItem.getBill().getCreatedAt();
+
+            if (billItemDate == null) {
+                continue;
+            }
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(billItemDate);
+
+            final int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
+            final int weekOfMonth = getWeekOfMonth(billItemDate);
+            final int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+
+            if (hourOfDay >= 19 || hourOfDay < 7) {
+                // Between 7 PM to 7 AM
+                Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap7to7.containsKey(weekOfMonth) ? weeklyBillItemMap7to7.get(weekOfMonth) : new HashMap<>();
+
+                billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0);
+
+                weeklyBillItemMap7to7.put(weekOfMonth, billItemMap);
+            } else if (hourOfDay < 13) {
+                // Between 7 AM to 1 PM
+                Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap7to1.containsKey(weekOfMonth) ? weeklyBillItemMap7to1.get(weekOfMonth) : new HashMap<>();
+
+                billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0);
+
+                weeklyBillItemMap7to1.put(weekOfMonth, billItemMap);
+            } else {
+                // Between 1 PM to 7 PM
+                Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap1to7.containsKey(weekOfMonth) ? weeklyBillItemMap1to7.get(weekOfMonth) : new HashMap<>();
+
+                billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0);
+
+                weeklyBillItemMap1to7.put(weekOfMonth, billItemMap);
+            }
+        }
+
+        setWeeklyDailyBillItemMap7to7(weeklyBillItemMap7to7);
+        setWeeklyDailyBillItemMap7to1(weeklyBillItemMap7to1);
+        setWeeklyDailyBillItemMap1to7(weeklyBillItemMap1to7);
+    }
+
+    public List<String> getItemListByWeek(final int week, final Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap) {
+        if (weeklyBillItemMap == null) {
+            return new ArrayList<>();
+        }
+
+        List<String> itemList = new ArrayList<>();
+
+        if (weeklyBillItemMap.containsKey(week)) {
+            itemList.addAll(weeklyBillItemMap.get(week).keySet());
+        }
+
+        return itemList;
+    }
+
+    public double getCountByWeekAndDay(final int week, final int day, final String itemName, final Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap) {
+        return Optional.ofNullable(weeklyBillItemMap)
+                .map(map -> map.get(week))
+                .map(weekMap -> weekMap.get(itemName))
+                .map(itemMap -> itemMap.get(day))
+                .orElse(0.0);
+    }
+
+    public double getSumByWeek(final int week, final String itemName, final Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap) {
+        return Optional.ofNullable(weeklyBillItemMap)
+                .map(map -> map.get(week))
+                .map(weekMap -> weekMap.get(itemName))
+                .map(itemMap -> itemMap.values().stream().mapToDouble(Double::doubleValue).sum())
+                .orElse(0.0);
+    }
+
+    public List<Integer> getDaysOfWeek(final int weekOfMonth) {
+        if (month == null) {
+            return new ArrayList<>();
+        }
+
+        final YearMonth yearMonth = YearMonth.of(LocalDate.now().getYear(), month);
+
+        List<Integer> daysOfWeek = new ArrayList<>();
+
+        LocalDate firstDayOfMonth = yearMonth.atDay(1);
+        int firstDayOfTargetWeek = (weekOfMonth - 1) * 7 + 1;
+
+        for (int i = 0; i < 7; i++) {
+            LocalDate day = firstDayOfMonth.plusDays(firstDayOfTargetWeek - 1 + i);
+
+            if (day.getMonth() != yearMonth.getMonth()) {
+                break;
+            }
+
+            daysOfWeek.add(day.getDayOfMonth());
+        }
+
+        return daysOfWeek;
+    }
+
+    private void groupBillItemsWeekly() {
+        Map<String, Map<Integer, Double>> billItemMap7to7 = new HashMap<>();
+        Map<String, Map<Integer, Double>> billItemMap7to1 = new HashMap<>();
+        Map<String, Map<Integer, Double>> billItemMap1to7 = new HashMap<>();
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            final BillItem billItem = row.getBillItem();
+
+            final Date billItemDate = billItem.getBill().getCreatedAt();
+
+            if (billItemDate == null) {
+                continue;
+            }
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(billItemDate);
+
+            final int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
+            final int weekOfMonth = getWeekOfMonth(billItemDate);
+
+            if (hourOfDay >= 19 || hourOfDay < 7) {
+                // Between 7 PM to 7 AM
+                billItemMap7to7.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+                        .put(weekOfMonth, billItemMap7to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0);
+            } else if (hourOfDay < 13) {
+                // Between 7 AM to 1 PM
+                billItemMap7to1.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+                        .put(weekOfMonth, billItemMap7to1.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0);
+            } else {
+                // Between 1 PM to 7 PM
+                billItemMap1to7.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+                        .put(weekOfMonth, billItemMap1to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0);
+            }
+        }
+
+        setGroupedBillItemsWeeklyValues7to7(billItemMap7to7);
+        setGroupedBillItemsWeeklyValues7to1(billItemMap7to1);
+        setGroupedBillItemsWeeklyValues1to7(billItemMap1to7);
+
+        Map<Integer, Map<String, Map<Integer, Double>>> billItemMap = new HashMap<>();
+        billItemMap.put(1, billItemMap7to7);
+        billItemMap.put(2, billItemMap7to1);
+        billItemMap.put(3, billItemMap1to7);
+
+        setGroupedBillItemsWeekly(billItemMap);
+    }
+
+    public double getWeeklyGroupedBillValues(final String billItemName, final int weekNumber, final int timeSlot) {
+        Map<String, Map<Integer, Double>> billItemMap;
+
+        if (timeSlot == 1) {
+            billItemMap = groupedBillItemsWeeklyValues7to7;
+        } else if (timeSlot == 2) {
+            billItemMap = groupedBillItemsWeeklyValues7to1;
+        } else if (timeSlot == 3) {
+            billItemMap = groupedBillItemsWeeklyValues1to7;
+        } else {
+            return 0.0;
+        }
+
+        if (billItemMap.containsKey(billItemName)) {
+            return billItemMap.get(billItemName).getOrDefault(weekNumber, 0.0);
+        } else {
+            return 0.0;
+        }
+    }
+
+    public Double getTotalWeeklyGroupedBillValues(String key, Integer entryKey) {
+        Double total = 0.0;
+        for (int i = 1; i <= 6; i++) {
+            Double value = getWeeklyGroupedBillValues(key, i, entryKey);
+            if (value != null) {
+                total += value;
+            }
+        }
+
+        return total;
+    }
+
+    public static int getWeekOfMonth(final Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.setFirstDayOfWeek(Calendar.SUNDAY);
+
+        return calendar.get(Calendar.WEEK_OF_MONTH);
+    }
+
+    private ReportTemplateRowBundle generateWeeklyBillItems(List<BillTypeAtomic> bts) {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+                + "FROM BillItem billItem "
+                + "JOIN billItem.bill bill "
+                + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (visitType != null) {
+            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND bill.ipOpOrCc = :type ";
+                parameters.put("type", visitType);
+            }
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
+            jpql += "AND ((bill.billPackege.name) like :itemName ) ";
+            parameters.put("itemName", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
+            jpql += "AND ((bill.deptId) like :billNo ) ";
+            parameters.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (item != null) {
+            jpql += "AND billItem.item = :item ";
+            parameters.put("item", item);
+        }
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND bill.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+
+        LocalDate firstDayOfMonth = LocalDate.of(LocalDate.now().getYear(), month, 1);
+        LocalDate lastDayOfMonth = firstDayOfMonth.withDayOfMonth(firstDayOfMonth.lengthOfMonth());
+        Date fromDate = Date.from(firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date toDate = Date.from(lastDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
@@ -1741,26 +2262,199 @@ public class ReportsController implements Serializable {
         bundle.setName("Route Analysis Bill Items");
         bundle.setBundleType("billItemList");
 
+        bundle = generateCollectingCenterWiseBillItems(opdBts);
+
         if (reportType.equalsIgnoreCase("detail")) {
-            bundle = generateCollectingCenterWiseBillItems(opdBts);
+            groupCollectingCenterWiseBillsMonthly();
         } else {
-            bundle = generateRouteWiseBillItems(opdBts);
+            groupRouteWiseBillsMonthly();
         }
+    }
+
+    private void groupRouteWiseBillsMonthly() {
+        Map<Route, Map<YearMonth, Bill>> map = new HashMap<>();
+        List<YearMonth> yearMonths = new ArrayList<>();
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            Bill bill = row.getBill();
+
+            final Calendar cal = Calendar.getInstance();
+            cal.setTime(bill.getCreatedAt());
+
+            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+
+            if (!yearMonths.contains(yearMonth)) {
+                yearMonths.add(yearMonth);
+            }
+
+            Map<YearMonth, Bill> monthMap;
+            if (map.containsKey(bill.getCollectingCentre().getRoute())) {
+                monthMap = map.get(bill.getCollectingCentre().getRoute());
+
+                if (monthMap.containsKey(yearMonth)) {
+                    Bill existingBill = monthMap.get(yearMonth);
+                    existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + bill.getTotalHospitalFee());
+                    existingBill.setQty(existingBill.getQty() + bill.getQty());
+                } else {
+                    monthMap.put(yearMonth, bill);
+                }
+            } else {
+                monthMap = new HashMap<>();
+                monthMap.put(yearMonth, bill);
+            }
+
+            map.put(bill.getCollectingCentre().getRoute(), monthMap);
+        }
+
+        setGroupedRouteWiseBillsMonthly(map);
+        setYearMonths(yearMonths);
+    }
+
+    private void groupCollectingCenterWiseBillsMonthly() {
+        Map<Institution, Map<YearMonth, Bill>> map = new HashMap<>();
+        List<YearMonth> yearMonths = new ArrayList<>();
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            Bill bill = row.getBill();
+
+            final Calendar cal = Calendar.getInstance();
+            cal.setTime(bill.getCreatedAt());
+
+            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+
+            if (!yearMonths.contains(yearMonth)) {
+                yearMonths.add(yearMonth);
+            }
+
+            Map<YearMonth, Bill> monthMap;
+            if (map.containsKey(bill.getCollectingCentre())) {
+                monthMap = map.get(bill.getCollectingCentre());
+
+                if (monthMap.containsKey(yearMonth)) {
+                    Bill existingBill = monthMap.get(yearMonth);
+                    existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + bill.getTotalHospitalFee());
+                    existingBill.setQty(existingBill.getQty() + bill.getQty());
+                } else {
+                    monthMap.put(yearMonth, bill);
+                }
+
+            } else {
+                monthMap = new HashMap<>();
+                monthMap.put(yearMonth, bill);
+
+            }
+            map.put(bill.getCollectingCentre(), monthMap);
+        }
+
+        setGroupedCollectingCenterWiseBillsMonthly(map);
+        setYearMonths(yearMonths);
+    }
+
+    public double getCollectionCenterWiseTotalSampleCount(YearMonth yearmonth) {
+        double total = 0;
+        for (Map.Entry<Institution, Map<YearMonth, Bill>> entry : groupedCollectingCenterWiseBillsMonthly.entrySet()) {
+            Bill summary = entry.getValue().get(yearmonth);
+            if (summary != null) {
+                total += summary.getQty();
+            }
+        }
+        return total;
+    }
+
+    public double getCollectionCenterWiseTotalServiceAmount(YearMonth yearmonth) {
+        double total = 0;
+        for (Map.Entry<Institution, Map<YearMonth, Bill>> entry : groupedCollectingCenterWiseBillsMonthly.entrySet()) {
+            Bill summary = entry.getValue().get(yearmonth);
+            if (summary != null) {
+                total += summary.getTotalHospitalFee();
+            }
+        }
+        return total;
+    }
+
+    public double calculateCollectionCenterWiseBillCount(YearMonth yearmonth) {
+        double total = 0;
+        for (Map.Entry<Institution, Map<YearMonth, Bill>> entry : groupedCollectingCenterWiseBillsMonthly.entrySet()) {
+            Bill summary = entry.getValue().get(yearmonth);
+            if (summary != null) {
+                total += 1;
+            }
+        }
+        return total;
+    }
+
+    public double calculateRouteWiseBillCount(YearMonth yearmonth) {
+        double total = 0;
+        for (Map.Entry<Route, Map<YearMonth, Bill>> entry : groupedRouteWiseBillsMonthly.entrySet()) {
+            Bill summary = entry.getValue().get(yearmonth);
+            if (summary != null) {
+                total += 1;
+            }
+        }
+        return total;
+    }
+
+    public double calculateRouteWiseTotalSampleCount(YearMonth yearmonth) {
+        double total = 0;
+        for (Map.Entry<Route, Map<YearMonth, Bill>> entry : groupedRouteWiseBillsMonthly.entrySet()) {
+            Bill summary = entry.getValue().get(yearmonth);
+            if (summary != null) {
+                total += summary.getQty();
+            }
+        }
+        return total;
+    }
+
+    public double calculateRouteWiseTotalServiceAmount(YearMonth yearmonth) {
+        double total = 0;
+        for (Map.Entry<Route, Map<YearMonth, Bill>> entry : groupedRouteWiseBillsMonthly.entrySet()) {
+            Bill summary = entry.getValue().get(yearmonth);
+            if (summary != null) {
+                total += summary.getTotalHospitalFee();
+            }
+        }
+        return total;
+    }
+
+    public Map<YearMonth, Double> getSampleCountChartData() {
+        Map<YearMonth, Double> data = new HashMap<>();
+
+        if (reportType.equalsIgnoreCase("detail")) {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, getCollectionCenterWiseTotalSampleCount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
+            }
+        } else {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, calculateRouteWiseTotalSampleCount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
+            }
+        }
+
+        return data;
+    }
+
+    public Map<YearMonth, Double> getServiceAmountChartData() {
+        Map<YearMonth, Double> data = new HashMap<>();
+
+        if (reportType.equalsIgnoreCase("detail")) {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, getCollectionCenterWiseTotalServiceAmount(yearMonth) / calculateCollectionCenterWiseBillCount(yearMonth));
+            }
+        } else {
+            for (YearMonth yearMonth : yearMonths) {
+                data.put(yearMonth, calculateRouteWiseTotalServiceAmount(yearMonth) / calculateRouteWiseBillCount(yearMonth));
+            }
+        }
+
+        return data;
     }
 
     public ReportTemplateRowBundle generateCollectingCenterWiseBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(" +
-                "billItem.bill.collectingCentre, " +
-                "SUM(billItem.bill.totalHospitalFee), " +
-                "SUM(billItem.qty)) " +
-                "FROM BillItem billItem " +
-                "JOIN billItem.bill bill " +
-                "WHERE billItem.retired <> :bfr AND bill.retired <> :br " +
-                "AND bill.billTypeAtomic IN :bts ";
-
-        parameters.put("bfr", true);
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "WHERE bill.retired <> :br ";
         parameters.put("br", true);
+        jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
 
         if (institution != null) {
@@ -1797,67 +2491,7 @@ public class ReportsController implements Serializable {
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
 
-        jpql += "GROUP BY billItem.bill.collectingCentre.route, billItem.bill.collectingCentre";
-
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-
-        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
-        b.setReportTemplateRows(rs);
-        b.createRowValuesFromBillItems();
-        b.calculateTotalsWithCredit();
-        return b;
-    }
-
-    public ReportTemplateRowBundle generateRouteWiseBillItems(List<BillTypeAtomic> bts) {
-        Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(" +
-                "billItem.bill.collectingCentre.route, " +
-                "SUM(billItem.bill.totalHospitalFee), " +
-                "SUM(billItem.qty)) " +
-                "FROM BillItem billItem " +
-                "JOIN billItem.bill bill " +
-                "WHERE billItem.retired <> :bfr AND bill.retired <> :br " +
-                "AND bill.billTypeAtomic IN :bts ";
-
-        parameters.put("bfr", true);
-        parameters.put("br", true);
-        parameters.put("bts", bts);
-
-        if (institution != null) {
-            jpql += "AND bill.department.institution = :ins ";
-            parameters.put("ins", institution);
-        }
-
-        if (department != null) {
-            jpql += "AND bill.department = :dep ";
-            parameters.put("dep", department);
-        }
-
-        if (site != null) {
-            jpql += "AND bill.department.site = :site ";
-            parameters.put("site", site);
-        }
-
-        if (webUser != null) {
-            jpql += "AND bill.creater = :wu ";
-            parameters.put("wu", webUser);
-        }
-
-        if (collectingCentre != null) {
-            jpql += "AND bill.collectingCentre = :cc ";
-            parameters.put("cc", collectingCentre);
-        }
-
-        if (route != null) {
-            jpql += "AND bill.collectingCentre.route = :route ";
-            parameters.put("route", route);
-        }
-
-        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
-        parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
-
-        jpql += "GROUP BY billItem.bill.collectingCentre.route";
+        jpql += "GROUP BY bill";
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -2082,10 +2716,7 @@ public class ReportsController implements Serializable {
 
         bundle = generateReportBillItems(opdBts, null);
 
-        bundle.calculateTotalByBills(visitType.equalsIgnoreCase("OP"));
-        bundle.calculateTotalBalance(visitType.equalsIgnoreCase("OP"));
-        bundle.calculateTotalSettledAmountByPatients(visitType.equalsIgnoreCase("OP"));
-        bundle.calculateTotalSettledAmountBySponsors(visitType.equalsIgnoreCase("OP"));
+        bundle.calculateTotalByReferenceBills(visitType.equalsIgnoreCase("OP"));
     }
 
     public ReportTemplateRowBundle generateReportBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
@@ -2141,8 +2772,13 @@ public class ReportsController implements Serializable {
         }
 
         if (creditCompany != null) {
-            jpql += "AND bill.creditCompany = :cc ";
-            parameters.put("cc", creditCompany);
+            if (visitType != null && visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND billItem.referenceBill.creditCompany = :creditC ";
+            } else if (visitType != null && visitType.equalsIgnoreCase("IP")) {
+                jpql += "AND billItem.referenceBill.patientEncounter.finalBill.creditCompany = :creditC ";
+            }
+
+            parameters.put("creditC", creditCompany);
         }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
@@ -2212,8 +2848,8 @@ public class ReportsController implements Serializable {
         }
 
         if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
-            jpql += "AND bill.referenceNumber = :cbn ";
-            parameters.put("cbn", cashBookNumber);
+            jpql += "AND bill.referenceNumber LIKE :cbn ";
+            parameters.put("cbn", "%" + cashBookNumber + "%");
         }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
@@ -2431,6 +3067,12 @@ public class ReportsController implements Serializable {
             parameters.put("cc", creditCompany);
         }
 
+        if ("notSettled".equalsIgnoreCase(settlementStatus)) {
+            jpql += "AND (billItem.referenceBill.netTotal + billItem.referenceBill.vat + billItem.referenceBill.paidAmount) <> 0 ";
+        } else if ("settled".equalsIgnoreCase(settlementStatus)) {
+            jpql += "AND (billItem.referenceBill.netTotal + billItem.referenceBill.vat + billItem.referenceBill.paidAmount) = 0 ";
+        }
+
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
@@ -2466,9 +3108,15 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
         }
         if (visitType != null && visitType.equalsIgnoreCase("OP")) {
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         }
@@ -2493,12 +3141,20 @@ public class ReportsController implements Serializable {
     private ReportTemplateRowBundle generateExternalLaboratoryWorkloadBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) " +
-                "FROM BillItem billItem " +
-                "JOIN billItem.bill bill " +
-                "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem " +
-                "WHERE bill.billTypeAtomic IN :bts " +
-                "AND bill.createdAt BETWEEN :fd AND :td ";
+//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+//                + "FROM BillItem billItem "
+//                + "JOIN billItem.bill bill "
+//                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
+//                + "WHERE bill.billTypeAtomic IN :bts "
+//                + "AND bill.createdAt BETWEEN :fd AND :td ";
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+                + "FROM PatientInvestigation pi "
+                + "JOIN pi.billItem billItem "
+                + "JOIN billItem.bill bill "
+                + "WHERE pi.retired=false "
+                + " and billItem.retired=false "
+                + " and bill.retired=false ";
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
@@ -2516,8 +3172,8 @@ public class ReportsController implements Serializable {
         }
 
         if (item != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.name = :item ";
-            parameters.put("item", item.getName());
+            jpql += "AND billItem.item = :item ";
+            parameters.put("item", item);
         }
 
         if (institution != null) {
@@ -2549,22 +3205,23 @@ public class ReportsController implements Serializable {
         }
 
         if (referingDoctor != null) {
-            jpql += "AND billItem.bill.referredInstituteOrDoctor = :rd ";
+            jpql += "AND billItem.bill.referredBy = :rd ";
             parameters.put("rd", referingDoctor);
         }
 
         if (mrnNo != null && !mrnNo.trim().isEmpty()) {
-            if (visitType != null && visitType.equalsIgnoreCase("IP")) {
-                jpql += "AND bill.patientEncounter.bhtNo = :phn ";
-            } else {
-                jpql += "AND bill.patient.phn = :phn ";
-            }
-            parameters.put("phn", mrnNo);
+            jpql += "AND billItem.bill.patient.phn LIKE :phn ";
+            parameters.put("phn", mrnNo + "%");
         }
 
         if (category != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.category.id = :cat ";
+            jpql += "AND billItem.item.department.id = :cat ";
             parameters.put("cat", category.getId());
+        }
+
+        if (investigation != null) {
+            jpql += "AND billItem.item = :code ";
+            parameters.put("code", investigation);
         }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
@@ -2591,12 +3248,12 @@ public class ReportsController implements Serializable {
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem.item.name, SUM(billItem.qty)) " +
-                "FROM BillItem billItem " +
-                "JOIN billItem.bill bill " +
-                "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem " +
-                "WHERE bill.billTypeAtomic IN :bts " +
-                "AND bill.createdAt BETWEEN :fd AND :td ";
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem.item.name, SUM(billItem.qty)) "
+                + "FROM BillItem billItem "
+                + "JOIN billItem.bill bill "
+                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
+                + "WHERE bill.billTypeAtomic IN :bts "
+                + "AND bill.createdAt BETWEEN :fd AND :td ";
 
         if (visitType != null) {
             if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP") || visitType.equalsIgnoreCase("CC")) {
@@ -2644,22 +3301,23 @@ public class ReportsController implements Serializable {
         }
 
         if (referingDoctor != null) {
-            jpql += "AND billItem.bill.referredInstituteOrDoctor = :rd ";
+            jpql += "AND billItem.bill.referredBy = :rd ";
             parameters.put("rd", referingDoctor);
         }
 
         if (mrnNo != null && !mrnNo.trim().isEmpty()) {
-            if (visitType != null && visitType.equalsIgnoreCase("IP")) {
-                jpql += "AND bill.patientEncounter.bhtNo = :phn ";
-            } else {
-                jpql += "AND bill.patient.phn = :phn ";
-            }
-            parameters.put("phn", mrnNo);
+            jpql += "AND billItem.bill.patient.phn LIKE :phn ";
+            parameters.put("phn", mrnNo + "%");
         }
 
         if (category != null) {
             jpql += "AND billItem.patientInvestigation.investigation.category.id = :cat ";
             parameters.put("cat", category.getId());
+        }
+
+        if (investigationCode != null) {
+            jpql += "AND billItem.patientInvestigation.investigation.code = :code ";
+            parameters.put("code", investigationCode.getCode());
         }
 
         jpql += "GROUP BY billItem.item.name";
@@ -2689,11 +3347,12 @@ public class ReportsController implements Serializable {
         bundle = new ReportTemplateRowBundle();
 
         if (visitType.equalsIgnoreCase("IP")) {
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+//            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+//            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+//            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
         } else if (visitType.equalsIgnoreCase("OP")) {
             opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -2744,6 +3403,16 @@ public class ReportsController implements Serializable {
         if (visitType != null && (visitType.equalsIgnoreCase("IP") && roomCategory != null)) {
             jpql += "AND bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory = :category ";
             parameters.put("category", roomCategory);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && dischargedStatus != null && !dischargedStatus.trim().isEmpty())) {
+            if (dischargedStatus.equalsIgnoreCase("notDischarged")) {
+                jpql += "AND bill.patientEncounter.discharged = :status ";
+                parameters.put("status", false);
+            } else if (dischargedStatus.equalsIgnoreCase("discharged")) {
+                jpql += "AND bill.patientEncounter.discharged = :status ";
+                parameters.put("status", true);
+            }
         }
 
         if (institution != null) {
@@ -2797,13 +3466,13 @@ public class ReportsController implements Serializable {
                 Bill bill1 = row.getBill();
 
                 if (reportType != null && reportType.equalsIgnoreCase("paid")) {
-                    if (bill1.getBalance() != 0) {
+                    if ((bill1.getNetTotal()-bill1.getPaidAmount()) != 0) {
                         continue;
                     }
                 }
 
                 if (reportType != null && reportType.equalsIgnoreCase("due")) {
-                    if (bill1.getBalance() == 0) {
+                    if ((bill1.getNetTotal()-bill1.getPaidAmount()) == 0) {
                         continue;
                     }
                 }
@@ -2821,13 +3490,13 @@ public class ReportsController implements Serializable {
                 Bill bill1 = row.getBill();
 
                 if (reportType != null && reportType.equalsIgnoreCase("paid")) {
-                    if (bill1.getBalance() != 0) {
+                    if (bill1.getPatientEncounter().getFinalBill().getBalance() != 0) {
                         continue;
                     }
                 }
 
                 if (reportType != null && reportType.equalsIgnoreCase("due")) {
-                    if (bill1.getBalance() == 0) {
+                    if (bill1.getPatientEncounter().getFinalBill().getBalance() == 0) {
                         continue;
                     }
                 }
@@ -2843,5 +3512,1126 @@ public class ReportsController implements Serializable {
         }
 
         bundle.setGroupedBillItemsByInstitution(billMap);
+    }
+
+    public Double calculateSubTotal() {
+        double subTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            subTotal += calculateNetAmountSubTotalByBills(bills);
+        }
+
+        return subTotal;
+    }
+
+    public Double calculateGrossAmountSubTotalByBills(List<Bill> bills) {
+        Double billTotal = 0.0;
+
+        for (Bill bill : bills) {
+            billTotal += bill.getBillTotal();
+        }
+
+        return billTotal;
+    }
+
+    public Double calculatePatientShareSubTotalByBills(List<Bill> bills) {
+        Double settledAmountByPatient = 0.0;
+
+        for (Bill bill : bills) {
+            settledAmountByPatient += bill.getSettledAmountByPatient();
+        }
+
+        return settledAmountByPatient;
+    }
+
+    public Double calculateSponsorShareSubTotalByBills(List<Bill> bills) {
+        Double settledAmountBySponsor = 0.0;
+
+        for (Bill bill : bills) {
+            settledAmountBySponsor += bill.getSettledAmountBySponsor();
+        }
+
+        return settledAmountBySponsor;
+    }
+
+    public Double calculateDueAmountSubTotalByBills(List<Bill> bills) {
+        Double balance = 0.0;
+
+        for (Bill bill : bills) {
+            balance += bill.getBalance();
+        }
+
+        return balance;
+    }
+
+    public Double calculateGrossAmountNetTotal() {
+        double grossAmountNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            grossAmountNetTotal += calculateGrossAmountSubTotalByBills(bills);
+        }
+
+        return grossAmountNetTotal;
+    }
+
+    public Double calculateDiscountNetTotal() {
+        double discountNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            discountNetTotal += calculateDiscountSubTotalByBills(bills);
+        }
+
+        return discountNetTotal;
+    }
+
+    public Double calculatePatientShareNetTotal() {
+        double patientShareNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            patientShareNetTotal += calculatePatientShareSubTotalByBills(bills);
+        }
+
+        return patientShareNetTotal;
+    }
+
+    public Double calculateDueAmountNetTotal() {
+        double dueAmountNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            dueAmountNetTotal += calculateDueAmountSubTotalByBills(bills);
+        }
+
+        return dueAmountNetTotal;
+    }
+
+    public Double calculateSponsorShareNetTotal() {
+        double sponsorShareNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            sponsorShareNetTotal += calculateSponsorShareSubTotalByBills(bills);
+
+        }
+
+        return sponsorShareNetTotal;
+    }
+    
+    public Double calculateNetAmountSubTotalByBills(List<Bill> bills) {
+        Double netTotal = 0.0;
+
+        for (Bill bill : bills) {
+            netTotal += bill.getNetTotal();
+        }
+
+        return netTotal;
+    }
+
+    public Double calculateDiscountSubTotalByBills(List<Bill> bills) {
+        Double discount = 0.0;
+
+        for (Bill bill : bills) {
+            discount += bill.getDiscount();
+        }
+
+        return discount;
+    }
+
+
+    public Double calculateNetAmountNetTotal() {
+        double netAmountNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            netAmountNetTotal += calculateNetAmountSubTotalByBills(bills);
+        }
+
+        return netAmountNetTotal;
+    }
+
+    public void generateDiscountReport() {
+        if (visitType == null || visitType.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please select a visit type");
+            return;
+        }
+
+        System.out.println("generateDiscountReport = " + this);
+        bundle = new ReportTemplateRowBundle();
+
+        List<BillTypeAtomic> opdBts = new ArrayList<>();
+        bundle = new ReportTemplateRowBundle();
+
+        if (visitType.equalsIgnoreCase("IP")) {
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+        } else if (visitType.equalsIgnoreCase("OP")) {
+            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        }
+
+        if (reportType.equalsIgnoreCase("detail")) {
+            bundle.setName("BillItems");
+            bundle.setBundleType("billItemList");
+
+            bundle = generateDiscountBillItems(opdBts);
+            bundle.calculateTotalDiscountByBillItems();
+        } else if (reportType.equalsIgnoreCase("summary")) {
+            bundle.setName("Bills");
+            bundle.setBundleType("billList");
+
+            bundle = generateDiscountBills(opdBts);
+            bundle.calculateTotalDiscountByBills();
+        }
+    }
+
+    public ReportTemplateRowBundle generateDiscountBills(List<BillTypeAtomic> bts) {
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.paymentScheme is not null ";
+
+        parameters.put("br", true);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (paymentMethod != null) {
+            List<PaymentMethod> billPaymentMethods = new ArrayList<>();
+            billPaymentMethods.add(paymentMethod);
+
+            jpql += "AND bill.paymentMethod in :bpms ";
+            parameters.put("bpms", billPaymentMethods);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && admissionType != null)) {
+            jpql += "AND bill.patientEncounter.admissionType = :type ";
+            parameters.put("type", admissionType);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && roomCategory != null)) {
+            jpql += "AND bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory = :category ";
+            parameters.put("category", roomCategory);
+        }
+
+        if (discount > 0) {
+            jpql += "AND bill.discount = :dis ";
+            parameters.put("dis", discount);
+        }
+
+        if (remarks != null && !remarks.trim().isEmpty()) {
+            jpql += "AND bill.comments LIKE :rem ";
+            parameters.put("rem", remarks + "%");
+        }
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND bill.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+
+        if (collectingCentre != null) {
+            jpql += "AND bill.collectingCentre = :cc ";
+            parameters.put("cc", collectingCentre);
+        }
+
+        if (creditCompany != null) {
+            jpql += "AND bill.creditCompany = :cc ";
+            parameters.put("cc", creditCompany);
+        }
+
+        if (paymentScheme != null) {
+            jpql += "AND bill.paymentScheme = :ps ";
+            parameters.put("ps", paymentScheme);
+        }
+
+        if (selectedDateType != null && !selectedDateType.trim().isEmpty() && selectedDateType.equalsIgnoreCase("admission")) {
+            jpql += "AND bill.patientEncounter.dateOfAdmission BETWEEN :fd AND :td ";
+        } else if (selectedDateType != null && !selectedDateType.trim().isEmpty() && selectedDateType.equalsIgnoreCase("discharge")) {
+            jpql += "AND bill.patientEncounter.dateOfDischarge BETWEEN :fd AND :td ";
+        } else {
+            jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+        }
+
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+        b.setReportTemplateRows(rs);
+        b.createRowValuesFromBill();
+        b.calculateTotalsWithCredit();
+        return b;
+    }
+
+    public ReportTemplateRowBundle generateDiscountBillItems(List<BillTypeAtomic> bts) {
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+                + "FROM BillItem billItem "
+                + "JOIN billItem.bill bill "
+                + "WHERE billItem.retired <> :bfr AND bill.retired <> :br "
+                + "AND billItem.bill.paymentScheme is not null ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (paymentMethod != null) {
+            List<PaymentMethod> billPaymentMethods = new ArrayList<>();
+            billPaymentMethods.add(paymentMethod);
+
+            jpql += "AND bill.paymentMethod in :bpms ";
+            parameters.put("bpms", billPaymentMethods);
+        }
+
+        if (discount > 0) {
+            jpql += "AND billItem.bill.discount = :dis ";
+            parameters.put("dis", discount);
+        }
+
+        if (remarks != null && !remarks.trim().isEmpty()) {
+            jpql += "AND billItem.bill.comments LIKE :rem ";
+            parameters.put("rem", remarks + "%");
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && admissionType != null)) {
+            jpql += "AND bill.patientEncounter.admissionType = :type ";
+            parameters.put("type", admissionType);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && roomCategory != null)) {
+            jpql += "AND bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory = :category ";
+            parameters.put("category", roomCategory);
+        }
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND bill.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+
+        if (collectingCentre != null) {
+            jpql += "AND bill.collectingCentre = :cc ";
+            parameters.put("cc", collectingCentre);
+        }
+
+        if (creditCompany != null) {
+            jpql += "AND bill.creditCompany = :cc ";
+            parameters.put("cc", creditCompany);
+        }
+
+        if (paymentScheme != null) {
+            jpql += "AND bill.paymentScheme = :ps ";
+            parameters.put("ps", paymentScheme);
+        }
+
+        if ("notSettled".equalsIgnoreCase(settlementStatus)) {
+            jpql += "AND (billItem.referenceBill.netTotal + billItem.referenceBill.vat + billItem.referenceBill.paidAmount) <> 0 ";
+        } else if ("settled".equalsIgnoreCase(settlementStatus)) {
+            jpql += "AND (billItem.referenceBill.netTotal + billItem.referenceBill.vat + billItem.referenceBill.paidAmount) = 0 ";
+        }
+
+        if (selectedDateType != null && !selectedDateType.trim().isEmpty() && selectedDateType.equalsIgnoreCase("admission")) {
+            jpql += "AND bill.patientEncounter.dateOfAdmission BETWEEN :fd AND :td ";
+        } else if (selectedDateType != null && !selectedDateType.trim().isEmpty() && selectedDateType.equalsIgnoreCase("discharge")) {
+            jpql += "AND bill.patientEncounter.dateOfDischarge BETWEEN :fd AND :td ";
+        } else {
+            jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+        }
+
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY billItem";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+        b.setReportTemplateRows(rs);
+        b.createRowValuesFromBillItems();
+        b.calculateTotalsWithCredit();
+        return b;
+    }
+
+    public void exportCollectionCenterBillWiseDetailReportToPDF() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Collection_Center_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document();
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            document.add(new Paragraph("Collection Center Bill Wise Detail Report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+
+            PdfPTable table = new PdfPTable(7);
+            float[] columnWidths = {1f, 1f, 1f, 1f, 1f, 1f, 3f};
+            table.setWidths(columnWidths);
+            table.setWidthPercentage(100);
+
+            table.addCell("CC Code");
+            table.addCell("Leaf No.");
+            table.addCell("MRN");
+            table.addCell("Patient Name");
+            table.addCell("Invoice Date");
+            table.addCell("Invoice No");
+            table.addCell("Details");
+
+            for (Map.Entry<String, List<BillItem>> entry : bundle.getGroupedBillItems().entrySet()) {
+                List<BillItem> billItems = entry.getValue();
+
+                if (billItems == null || billItems.isEmpty()) {
+                    table.addCell("N/A");
+                    table.addCell("N/A");
+                    table.addCell("N/A");
+                    table.addCell("N/A");
+                    table.addCell("N/A");
+                    table.addCell(entry.getKey());
+                    PdfPCell emptyCell = new PdfPCell(new Phrase("No Details Available"));
+                    emptyCell.setColspan(7);
+                    table.addCell(emptyCell);
+                    continue;
+                }
+
+                BillItem firstItem = billItems.get(0);
+
+                table.addCell(firstItem.getBill().getCollectingCentre().getCode());
+                table.addCell(firstItem.getBill().getReferenceNumber());
+                table.addCell(firstItem.getBill().getPatient().getPhn());
+                table.addCell(firstItem.getBill().getPatient().getPerson().getName());
+                table.addCell(firstItem.getBill().getCreatedAt().toString());
+                table.addCell(entry.getKey());
+
+                PdfPTable detailsTable = new PdfPTable(5);
+                float[] columnWidthsInner = {2f, 1f, 1f, 1f, 1f};
+                detailsTable.setWidths(columnWidthsInner);
+
+                detailsTable.addCell("Service Name");
+                detailsTable.addCell("Hos Fee");
+                detailsTable.addCell("Staff Fee");
+                detailsTable.addCell("CC Fee");
+                detailsTable.addCell("Net Amount");
+
+                for (BillItem bi : billItems) {
+                    detailsTable.addCell(bi.getItem().getName());
+                    detailsTable.addCell(String.valueOf(bi.getHospitalFee()));
+                    detailsTable.addCell(String.valueOf(bi.getStaffFee()));
+                    detailsTable.addCell(String.valueOf(bi.getCollectingCentreFee()));
+                    detailsTable.addCell(String.valueOf(bi.getNetValue()));
+                }
+                PdfPCell nestedCell = new PdfPCell(detailsTable);
+                nestedCell.setColspan(7);
+                table.addCell(nestedCell);
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportCollectionCenterBillWiseDetailReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Collection_Center_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+             OutputStream out = response.getOutputStream()) {
+
+
+            XSSFSheet sheet = workbook.createSheet("Report");
+            int rowIndex = 0;
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            headerRow.createCell(0).setCellValue("CC Code");
+            headerRow.createCell(1).setCellValue("Leaf No.");
+            headerRow.createCell(2).setCellValue("MRN");
+            headerRow.createCell(3).setCellValue("Patient Name");
+            headerRow.createCell(4).setCellValue("Invoice Date");
+            headerRow.createCell(5).setCellValue("Invoice No");
+            headerRow.createCell(6).setCellValue("Details");
+
+            for (Map.Entry<String, List<BillItem>> entry : bundle.getGroupedBillItems().entrySet()) {
+                List<BillItem> billItems = entry.getValue();
+
+                if (billItems == null || billItems.isEmpty()) {
+                    Row emptyRow = sheet.createRow(rowIndex++);
+                    emptyRow.createCell(0).setCellValue("N/A");
+                    emptyRow.createCell(1).setCellValue("N/A");
+                    emptyRow.createCell(2).setCellValue("N/A");
+                    emptyRow.createCell(3).setCellValue("N/A");
+                    emptyRow.createCell(4).setCellValue("N/A");
+                    emptyRow.createCell(5).setCellValue(entry.getKey());
+                    emptyRow.createCell(6).setCellValue("No Details Available");
+                    continue;
+                }
+
+                BillItem firstItem = billItems.get(0);
+                Row row = sheet.createRow(rowIndex++);
+
+                row.createCell(0).setCellValue(firstItem.getBill().getCollectingCentre().getCode());
+                row.createCell(1).setCellValue(firstItem.getBill().getReferenceNumber());
+                row.createCell(2).setCellValue(firstItem.getBill().getPatient().getPhn());
+                row.createCell(3).setCellValue(firstItem.getBill().getPatient().getPerson().getName());
+                row.createCell(4).setCellValue(firstItem.getBill().getCreatedAt().toString());
+                row.createCell(5).setCellValue(entry.getKey());
+
+                for (BillItem bi : billItems) {
+                    Row detailRow = sheet.createRow(rowIndex++);
+                    detailRow.createCell(6).setCellValue(bi.getItem().getName());
+                    detailRow.createCell(7).setCellValue(bi.getHospitalFee());
+                    detailRow.createCell(8).setCellValue(bi.getStaffFee());
+                    detailRow.createCell(9).setCellValue(bi.getCollectingCentreFee());
+                    detailRow.createCell(10).setCellValue(bi.getNetValue());
+                }
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportWeeklyOPDSummaryReportToPDF() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Weekly_Summary_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document();
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            document.add(new Paragraph("Weekly Summary Report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+
+            document.add(new Paragraph("Month: " + getMonth(),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph("Report Type: Summary",
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            for (Map.Entry<Integer, Map<String, Map<Integer, Double>>> entry : getGroupedBillItemsWeekly().entrySet()) {
+                Integer key = entry.getKey();
+                Map<String, Map<Integer, Double>> weeklyData = entry.getValue();
+
+                PdfPTable table = new PdfPTable(8);
+                table.setWidthPercentage(100);
+                float[] columnWidths = {3f, 1f, 1f, 1f, 1f, 1f, 1f, 1.5f};
+                table.setWidths(columnWidths);
+
+                table.addCell(new PdfPCell(new Phrase(getShiftDescription(key),
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
+
+                for (int week = 1; week <= 6; week++) {
+                    table.addCell(new PdfPCell(new Phrase("Week " + week,
+                            FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
+                }
+                table.addCell(new PdfPCell(new Phrase("Total",
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
+
+                for (Map.Entry<String, Map<Integer, Double>> rowEntry : weeklyData.entrySet()) {
+                    String name = rowEntry.getKey();
+                    Map<Integer, Double> weekValues = rowEntry.getValue();
+
+                    table.addCell(new PdfPCell(new Phrase(name)));
+
+                    for (int week = 1; week <= 6; week++) {
+                        table.addCell(String.valueOf(weekValues.getOrDefault(week, 0.0)));
+                    }
+
+                    double total = weekValues.values().stream().mapToDouble(Double::doubleValue).sum();
+                    table.addCell(String.valueOf(total));
+                }
+
+                document.add(table);
+                document.add(new Paragraph(" "));
+            }
+
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportWeeklyOPDSummaryReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Weekly_Summary_Report.xlsx");
+
+        try (OutputStream out = response.getOutputStream(); Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Weekly Summary Report");
+
+            int rowIndex = 0;
+
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Weekly Summary Report");
+            CellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 18);
+            titleStyle.setFont(titleFont);
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
+
+            Row metaRow1 = sheet.createRow(rowIndex++);
+            metaRow1.createCell(0).setCellValue("Month: " + getMonth());
+
+            Row metaRow2 = sheet.createRow(rowIndex++);
+            metaRow2.createCell(0).setCellValue("Report Type: Summary");
+
+            rowIndex++;
+
+            for (Map.Entry<Integer, Map<String, Map<Integer, Double>>> entry : getGroupedBillItemsWeekly().entrySet()) {
+                Integer key = entry.getKey();
+                Map<String, Map<Integer, Double>> weeklyData = entry.getValue();
+
+                Row shiftRow = sheet.createRow(rowIndex++);
+                Cell shiftCell = shiftRow.createCell(0);
+                shiftCell.setCellValue(getShiftDescription(key));
+                CellStyle shiftStyle = workbook.createCellStyle();
+                Font shiftFont = workbook.createFont();
+                shiftFont.setBold(true);
+                shiftStyle.setFont(shiftFont);
+                shiftCell.setCellStyle(shiftStyle);
+
+                Row headerRow = sheet.createRow(rowIndex++);
+                String[] headers = {"Name", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Total"};
+                for (int col = 0; col < headers.length; col++) {
+                    Cell cell = headerRow.createCell(col);
+                    cell.setCellValue(headers[col]);
+                    CellStyle headerStyle = workbook.createCellStyle();
+                    headerStyle.setFont(shiftFont);
+                    headerStyle.setBorderBottom(BorderStyle.THIN);
+                    cell.setCellStyle(headerStyle);
+                }
+
+                for (Map.Entry<String, Map<Integer, Double>> rowEntry : weeklyData.entrySet()) {
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    String name = rowEntry.getKey();
+                    Map<Integer, Double> weekValues = rowEntry.getValue();
+
+                    dataRow.createCell(0).setCellValue(name);
+
+                    double total = 0.0;
+                    for (int week = 1; week <= 6; week++) {
+                        double value = weekValues.getOrDefault(week, 0.0);
+                        dataRow.createCell(week).setCellValue(value);
+                        total += value;
+                    }
+
+                    dataRow.createCell(7).setCellValue(total);
+                }
+
+                rowIndex++;
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String getShiftDescription(Integer key) {
+        switch (key) {
+            case 1:
+                return "7:00 PM - 7:00 AM (Night)";
+            case 2:
+                return "7:00 AM - 1:00 PM";
+            case 3:
+                return "1:00 PM - 7:00 PM";
+            default:
+                return "Unknown Shift";
+        }
+    }
+
+    public void exportDetailedWeeklyOPDReportToPDF() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Detailed_Weekly_OPD_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document();
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            com.itextpdf.text.Font regularFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            for (int week = 1; week <= 6; week++) {
+                List<Integer> daysOfWeek = getDaysOfWeek(week);
+
+                if (daysOfWeek.isEmpty()) {
+                    continue;
+                }
+
+                Paragraph title = new Paragraph("Detailed Weekly OPD Report", titleFont);
+                title.setAlignment(Element.ALIGN_CENTER);
+                document.add(title);
+
+                document.add(new Paragraph("Week: " + week, headerFont));
+                document.add(new Paragraph("Report Type: Detail", regularFont));
+                document.add(Chunk.NEWLINE);
+
+                addWeeklyReportSection(document, "Weekly Report OPD (7.00pm - 7.00am) Night",
+                        getItemListByWeek(week, weeklyDailyBillItemMap7to7), daysOfWeek, weeklyDailyBillItemMap7to7, week, headerFont, regularFont);
+
+                addWeeklyReportSection(document, "Weekly Report OPD (7.00pm - 1.00pm) Night",
+                        getItemListByWeek(week, weeklyDailyBillItemMap7to1), daysOfWeek, weeklyDailyBillItemMap7to1, week, headerFont, regularFont);
+
+                addWeeklyReportSection(document, "Weekly Report OPD (1.00pm - 7.00am) Night",
+                        getItemListByWeek(week, weeklyDailyBillItemMap1to7), daysOfWeek, weeklyDailyBillItemMap1to7, week, headerFont, regularFont);
+
+                document.add(Chunk.NEWLINE);
+            }
+
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
+                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+        document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
+        document.add(com.itextpdf.text.Chunk.NEWLINE);
+
+        com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(daysOfWeek.size() + 2); // +2 for Item and Total columns
+        table.setWidthPercentage(100);
+        table.setSpacingBefore(10f);
+        table.setSpacingAfter(10f);
+
+        table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase("Item", headerFont)));
+        for (int day : daysOfWeek) {
+            table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(String.valueOf(day), headerFont)));
+        }
+        table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase("Total", headerFont)));
+
+        for (String item : itemList) {
+            table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(item, regularFont)));
+            for (int day : daysOfWeek) {
+                double count = getCountByWeekAndDay(week, day, item, weeklyDailyBillItemMap);
+                table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(String.valueOf(count), regularFont)));
+            }
+            double total = getSumByWeek(week, item, weeklyDailyBillItemMap);
+            table.addCell(new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(String.valueOf(total), regularFont)));
+        }
+
+        document.add(table);
+    }
+
+    public void exportDetailedWeeklyOPDReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Detailed_Weekly_OPD_Report.xlsx");
+
+        try (OutputStream out = response.getOutputStream(); Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Detailed Weekly OPD Report");
+
+            int rowIndex = 0;
+
+            for (int week = 1; week <= 6; week++) {
+                List<Integer> daysOfWeek = getDaysOfWeek(week);
+
+                if (daysOfWeek.isEmpty()) {
+                    continue;
+                }
+
+                Row headerRow1 = sheet.createRow(rowIndex++);
+                Cell headerCell1 = headerRow1.createCell(0);
+                headerCell1.setCellValue("Report Type: Detail");
+                CellStyle boldStyle = workbook.createCellStyle();
+                Font boldFont = workbook.createFont();
+                boldFont.setBold(true);
+                boldStyle.setFont(boldFont);
+                headerCell1.setCellStyle(boldStyle);
+
+                Row headerRow2 = sheet.createRow(rowIndex++);
+                headerRow2.createCell(0).setCellValue("Week: " + week);
+
+                Row headerRow3 = sheet.createRow(rowIndex++);
+                headerRow3.createCell(0).setCellValue("Weekly Report OPD (7.00pm - 7.00am) Night");
+
+                rowIndex++;
+
+                Row columnHeaderRow = sheet.createRow(rowIndex++);
+                columnHeaderRow.createCell(0).setCellValue("Item");
+                int colIndex = 1;
+                for (int day : daysOfWeek) {
+                    columnHeaderRow.createCell(colIndex++).setCellValue(day);
+                }
+                columnHeaderRow.createCell(colIndex).setCellValue("Total");
+
+                // Data Rows for (7.00 PM - 7.00 AM)
+                populateDataRows(sheet, rowIndex, getItemListByWeek(week, weeklyDailyBillItemMap7to7), daysOfWeek, weeklyDailyBillItemMap7to7, week);
+                rowIndex += getItemListByWeek(week, weeklyDailyBillItemMap7to7).size();
+
+                // Section for (7.00 PM - 1.00 PM)
+                rowIndex++;
+                Row sectionHeaderRow1 = sheet.createRow(rowIndex++);
+                sectionHeaderRow1.createCell(0).setCellValue("Weekly Report OPD (7.00pm - 1.00pm) Night");
+
+                populateDataRows(sheet, rowIndex, getItemListByWeek(week, weeklyDailyBillItemMap7to1), daysOfWeek, weeklyDailyBillItemMap7to1, week);
+                rowIndex += getItemListByWeek(week, weeklyDailyBillItemMap7to1).size();
+
+                // Section for (1.00 PM - 7.00 AM)
+                rowIndex++;
+                Row sectionHeaderRow2 = sheet.createRow(rowIndex++);
+                sectionHeaderRow2.createCell(0).setCellValue("Weekly Report OPD (1.00pm - 7.00am) Night");
+
+                populateDataRows(sheet, rowIndex, getItemListByWeek(week, weeklyDailyBillItemMap1to7), daysOfWeek, weeklyDailyBillItemMap1to7, week);
+                rowIndex += getItemListByWeek(week, weeklyDailyBillItemMap1to7).size();
+
+                rowIndex++;
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void populateDataRows(Sheet sheet, int rowIndex, List<String> itemList, List<Integer> daysOfWeek, Map
+            <Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap, int week) {
+        for (String item : itemList) {
+            Row dataRow = sheet.createRow(rowIndex++);
+            int colIndex = 0;
+
+            dataRow.createCell(colIndex++).setCellValue(item);
+
+            for (int day : daysOfWeek) {
+                double count = getCountByWeekAndDay(week, day, item, weeklyDailyBillItemMap);
+                dataRow.createCell(colIndex++).setCellValue(count);
+            }
+
+            double total = getSumByWeek(week, item, weeklyDailyBillItemMap);
+            dataRow.createCell(colIndex).setCellValue(total);
+        }
+    }
+
+    public void exportRouteAnalysisDetailReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Collecting_Center_Monthly_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+             OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("Monthly Report");
+            int rowIndex = 0;
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            headerRow.createCell(0).setCellValue("S. No");
+            headerRow.createCell(1).setCellValue("Collecting Center Code");
+            headerRow.createCell(2).setCellValue("Collecting Center");
+
+            List<YearMonth> yearMonths = getYearMonths();
+            int dynamicColumnIndex = 3;
+            for (YearMonth yearMonth : yearMonths) {
+                headerRow.createCell(dynamicColumnIndex++).setCellValue(yearMonth.toString() + " - Sample Count");
+                headerRow.createCell(dynamicColumnIndex++).setCellValue(yearMonth.toString() + " - Service Amount");
+            }
+
+            int serialNumber = 1;
+            for (Map.Entry<Institution, Map<YearMonth, Bill>> entrySet : getGroupedCollectingCenterWiseBillsMonthly().entrySet()) {
+                Institution center = entrySet.getKey();
+                Map<YearMonth, Bill> monthlyData = entrySet.getValue();
+
+                Row dataRow = sheet.createRow(rowIndex++);
+                dataRow.createCell(0).setCellValue(serialNumber++);
+                dataRow.createCell(1).setCellValue(center.getCode());
+                dataRow.createCell(2).setCellValue(center.getName());
+
+                dynamicColumnIndex = 3;
+                for (YearMonth yearMonth : yearMonths) {
+                    Bill bill = monthlyData.get(yearMonth);
+
+                    if (bill != null) {
+                        dataRow.createCell(dynamicColumnIndex++).setCellValue(bill.getQty());
+                        dataRow.createCell(dynamicColumnIndex++).setCellValue(bill.getTotalHospitalFee());
+                    } else {
+                        dataRow.createCell(dynamicColumnIndex++).setCellValue(0);
+                        dataRow.createCell(dynamicColumnIndex++).setCellValue(0.0);
+                    }
+                }
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportRouteAnalysisDetailReportToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Collecting_Center_Monthly_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Collecting Center Monthly Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            PdfPTable table = new PdfPTable(3 + getYearMonths().size() * 2);
+            table.setWidthPercentage(100);
+
+            table.addCell(new PdfPCell(new Phrase("S. No")));
+            table.addCell(new PdfPCell(new Phrase("Collecting Center Code")));
+            table.addCell(new PdfPCell(new Phrase("Collecting Center")));
+
+            List<YearMonth> yearMonths = getYearMonths();
+            for (YearMonth yearMonth : yearMonths) {
+                table.addCell(new PdfPCell(new Phrase(yearMonth.toString() + " - Sample Count")));
+                table.addCell(new PdfPCell(new Phrase(yearMonth.toString() + " - Service Amount")));
+            }
+
+            int serialNumber = 1;
+            for (Map.Entry<Institution, Map<YearMonth, Bill>> entrySet : getGroupedCollectingCenterWiseBillsMonthly().entrySet()) {
+                Institution center = entrySet.getKey();
+                Map<YearMonth, Bill> monthlyData = entrySet.getValue();
+
+                table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++))));
+                table.addCell(new PdfPCell(new Phrase(center.getCode())));
+                table.addCell(new PdfPCell(new Phrase(center.getName())));
+
+                for (YearMonth yearMonth : yearMonths) {
+                    Bill bill = monthlyData.get(yearMonth);
+                    if (bill != null) {
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getQty()))));
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getTotalHospitalFee()))));
+                    } else {
+                        table.addCell(new PdfPCell(new Phrase("0")));
+                        table.addCell(new PdfPCell(new Phrase("0.0")));
+                    }
+                }
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportRouteAnalysisSummaryReportToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Route_Wise_Monthly_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Route Wise Monthly Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            PdfPTable table = new PdfPTable(2 + getYearMonths().size() * 2);
+            table.setWidthPercentage(100);
+
+            table.addCell(new PdfPCell(new Phrase("S. No")));
+            table.addCell(new PdfPCell(new Phrase("Route")));
+
+            List<YearMonth> yearMonths = getYearMonths();
+            for (YearMonth yearMonth : yearMonths) {
+                table.addCell(new PdfPCell(new Phrase(yearMonth.toString() + " - Sample Count")));
+                table.addCell(new PdfPCell(new Phrase(yearMonth.toString() + " - Service Amount")));
+            }
+
+            int serialNumber = 1;
+            for (Map.Entry<Route, Map<YearMonth, Bill>> entrySet : getGroupedRouteWiseBillsMonthly().entrySet()) {
+                Route route = entrySet.getKey();
+                Map<YearMonth, Bill> monthlyData = entrySet.getValue();
+
+                table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++))));
+                table.addCell(new PdfPCell(new Phrase(route.getName())));
+
+                for (YearMonth yearMonth : yearMonths) {
+                    Bill billData = monthlyData.get(yearMonth);
+                    if (billData != null) {
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(billData.getQty()))));
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(billData.getTotalHospitalFee()))));
+                    } else {
+                        table.addCell(new PdfPCell(new Phrase("0")));
+                        table.addCell(new PdfPCell(new Phrase("0.0")));
+                    }
+                }
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportRouteAnalysisSummaryReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Route_Wise_Monthly_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Route Wise Monthly Report");
+            int rowIndex = 0;
+
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Route Wise Monthly Report");
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 2 + getYearMonths().size() * 2 - 1));
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            int cellIndex = 0;
+            headerRow.createCell(cellIndex++).setCellValue("S. No");
+            headerRow.createCell(cellIndex++).setCellValue("Route");
+
+            List<YearMonth> yearMonths = getYearMonths();
+            for (YearMonth yearMonth : yearMonths) {
+                headerRow.createCell(cellIndex++).setCellValue(yearMonth.toString() + " - Sample Count");
+                headerRow.createCell(cellIndex++).setCellValue(yearMonth.toString() + " - Service Amount");
+            }
+
+            int serialNumber = 1;
+            for (Map.Entry<Route, Map<YearMonth, Bill>> entrySet : getGroupedRouteWiseBillsMonthly().entrySet()) {
+                Route route = entrySet.getKey();
+                Map<YearMonth, Bill> monthlyData = entrySet.getValue();
+
+                Row row = sheet.createRow(rowIndex++);
+                cellIndex = 0;
+
+                row.createCell(cellIndex++).setCellValue(serialNumber++);
+                row.createCell(cellIndex++).setCellValue(route.getName());
+
+                for (YearMonth yearMonth : yearMonths) {
+                    Bill billData = monthlyData.get(yearMonth);
+                    if (billData != null) {
+                        row.createCell(cellIndex++).setCellValue(billData.getQty());
+                        row.createCell(cellIndex++).setCellValue(billData.getTotalHospitalFee());
+                    } else {
+                        row.createCell(cellIndex++).setCellValue(0);
+                        row.createCell(cellIndex++).setCellValue(0.0);
+                    }
+                }
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

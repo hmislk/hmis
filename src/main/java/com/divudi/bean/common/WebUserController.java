@@ -29,6 +29,7 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.hr.StaffImageController;
 import com.divudi.data.LoginPage;
 import com.divudi.entity.UserNotification;
 import com.divudi.entity.WebUserRole;
@@ -103,6 +104,9 @@ public class WebUserController implements Serializable {
     WebUserRoleUserController webUserRoleUserController;
     @Inject
     private DrawerController drawerController;
+    @Inject
+    StaffImageController staffImageController;
+
     /**
      * Class Variables
      */
@@ -146,7 +150,7 @@ public class WebUserController implements Serializable {
 
     private boolean grantAllPrivilegesToAllUsersForTesting = false;
 
-    private boolean skipDevelopersPrivilege = false;
+    private boolean skipDevelopersPrivilege = true;
 
     private List<UserNotification> userNotifications;
     private int userNotificationCount;
@@ -532,7 +536,7 @@ public class WebUserController implements Serializable {
 
         //Save Web User
         getCurrent().setCreatedAt(new Date());
-        getCurrent().setCreater(sessionController.loggedUser);
+        getCurrent().setCreater(sessionController.getLoggedUser());
         getCurrent().setName((getCurrent().getName()));
         getCurrent().setWebUserPassword(getSecurityController().hashAndCheck(getCurrent().getWebUserPassword()));
         getFacade().create(getCurrent());
@@ -626,7 +630,7 @@ public class WebUserController implements Serializable {
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
-            current.setRetirer(sessionController.loggedUser);
+            current.setRetirer(sessionController.getLoggedUser());
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successful");
         } else {
@@ -879,6 +883,45 @@ public class WebUserController implements Serializable {
         return "/admin/institutions/admin_staff_signature?faces-redirect=true";
     }
 
+    public String toManageSignatureURL() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        getStaffController().setCurrent(selected.getStaff());
+        return "/admin/institutions/admin_staff_signature_url?faces-redirect=true";
+    }
+
+    public String navigateToManageSignature() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        getStaffController().setCurrent(selected.getStaff());
+        return "/admin/users/manage_user_signature?faces-redirect=true";
+    }
+
+    public String navigateToSelectedSignatureType() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        String signatureType = staffImageController.getViewImageType();
+        System.out.println("signatureType = " + signatureType);
+        if (signatureType == null || signatureType.isEmpty()) {
+            JsfUtil.addErrorMessage("Please select a Type");
+            return "";
+        } else if (signatureType.equalsIgnoreCase("URL")) {
+            return toManageSignatureURL();
+        } else if (signatureType.equalsIgnoreCase("UPLOADIMAGE")) {
+            return toManageSignature();
+        } else {
+            JsfUtil.addErrorMessage("Please select a Type");
+            return "";
+        }
+
+    }
+
     public String navigateToManageDepartments() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -985,9 +1028,17 @@ public class WebUserController implements Serializable {
         return "/admin/users/user_list";
     }
 
+    public String backToManageSignatureType() {
+        return "/admin/users/manage_user_signature?faces-redirect=true";
+    }
+
     public String changeCurrentUserPassword() {
         if (getCurrent() == null) {
             JsfUtil.addErrorMessage("Select a User");
+            return "";
+        }
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Enter a password");
             return "";
         }
         if (!newPassword.equals(newPasswordConfirm)) {
@@ -999,6 +1050,28 @@ public class WebUserController implements Serializable {
         current.setWebUserPassword(hashedPassword);
         getFacade().edit(current);
         JsfUtil.addSuccessMessage("Password changed");
+        return navigateToListUsers();
+    }
+
+    public String forceChangePasswordOnNextLogin() {
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("Select a User");
+            return "";
+        }
+        current.setNeedToResetPassword(true);
+        getFacade().edit(current);
+        JsfUtil.addSuccessMessage("Password Reset Requested");
+        return navigateToListUsers();
+    }
+
+    public String reverseChangePasswordOnNextLogin() {
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("Select a User");
+            return "";
+        }
+        current.setNeedToResetPassword(false);
+        getFacade().edit(current);
+        JsfUtil.addSuccessMessage("Password Reset Request Cancelled");
         return navigateToListUsers();
     }
 
@@ -1218,8 +1291,8 @@ public class WebUserController implements Serializable {
         if (userNotificationController.fillLoggedUserNotifications() != null) {
             userNotificationCount = 0;
             List<UserNotification> allNotifications = userNotificationController.fillLoggedUserNotifications();
-            for(UserNotification un : allNotifications){
-                if(!un.isSeen()){
+            for (UserNotification un : allNotifications) {
+                if (!un.isSeen()) {
                     userNotificationCount++;
                 }
             }

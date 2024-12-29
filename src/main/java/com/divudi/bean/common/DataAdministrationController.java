@@ -52,6 +52,61 @@ import com.divudi.facade.PharmaceuticalItemCategoryFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.entity.BillComponent;
+import com.divudi.entity.BillEntry;
+import com.divudi.entity.BillSession;
+import com.divudi.entity.Patient;
+import com.divudi.entity.PatientDeposit;
+import com.divudi.entity.PatientDepositHistory;
+import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.PatientFlag;
+import com.divudi.entity.PatientItem;
+import com.divudi.entity.Payment;
+import com.divudi.entity.Person;
+import com.divudi.entity.WebUser;
+import com.divudi.entity.cashTransaction.CashBook;
+import com.divudi.entity.cashTransaction.CashBookEntry;
+import com.divudi.entity.cashTransaction.CashTransaction;
+import com.divudi.entity.cashTransaction.CashTransactionHistory;
+import com.divudi.entity.cashTransaction.Drawer;
+import com.divudi.entity.cashTransaction.DrawerEntry;
+import com.divudi.entity.inward.PatientRoom;
+import com.divudi.entity.lab.PatientSample;
+import com.divudi.entity.lab.PatientSampleComponant;
+import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.entity.pharmacy.PharmaceuticalItem;
+import com.divudi.entity.pharmacy.Stock;
+import com.divudi.entity.pharmacy.StockHistory;
+import com.divudi.entity.pharmacy.StockVarientBillItem;
+import com.divudi.entity.pharmacy.UserStock;
+import com.divudi.entity.pharmacy.UserStockContainer;
+import com.divudi.facade.AbstractFacade;
+import com.divudi.facade.BillSessionFacade;
+import com.divudi.facade.CashBookEntryFacade;
+import com.divudi.facade.CashBookFacade;
+import com.divudi.facade.CashTransactionFacade;
+import com.divudi.facade.CashTransactionHistoryFacade;
+import com.divudi.facade.DrawerEntryFacade;
+import com.divudi.facade.DrawerFacade;
+import com.divudi.facade.PatientDepositFacade;
+import com.divudi.facade.PatientDepositHistoryFacade;
+import com.divudi.facade.PatientEncounterFacade;
+import com.divudi.facade.PatientFacade;
+import com.divudi.facade.PatientFlagFacade;
+import com.divudi.facade.PatientItemFacade;
+import com.divudi.facade.PatientRoomFacade;
+import com.divudi.facade.PatientSampleComponantFacade;
+import com.divudi.facade.PatientSampleFacade;
+import com.divudi.facade.PaymentFacade;
+import com.divudi.facade.PharmaceuticalItemFacade;
+import com.divudi.facade.StockFacade;
+import com.divudi.facade.StockHistoryFacade;
+import com.divudi.facade.StockVarientBillItemFacade;
+import com.divudi.facade.UserStockContainerFacade;
+import com.divudi.facade.UserStockFacade;
+import com.divudi.java.CommonFunctions;
+import java.io.Serializable;
 import java.sql.SQLSyntaxErrorException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -66,7 +121,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ejb.EJB;
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -84,9 +139,11 @@ import org.reflections.Reflections;
  *
  * @author Administrator
  */
-@Named(value = "dataAdministrationController")
-@ApplicationScoped
-public class DataAdministrationController {
+@Named
+@SessionScoped
+public class DataAdministrationController implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * EJBs
@@ -110,6 +167,24 @@ public class DataAdministrationController {
     @EJB
     BillFacade billFacade;
     @EJB
+    PatientFacade patientFacade;
+    @EJB
+    PatientDepositFacade patientDepositFacade;
+    @EJB
+    PatientEncounterFacade patientEncounterFacade;
+    @EJB
+    PatientDepositHistoryFacade patientDepositHistoryFacade;
+    @EJB
+    PatientFlagFacade patientFlagFacade;
+    @EJB
+    PatientItemFacade patientItemFacade;
+    @EJB
+    PatientRoomFacade patientRoomFacade;
+    @EJB
+    PatientSampleFacade patientSampleFacade;
+    @EJB
+    PatientSampleComponantFacade patientSampleComponantFacade;
+    @EJB
     BillNumberFacade billNumberFacade;
     @EJB
     PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
@@ -117,6 +192,29 @@ public class DataAdministrationController {
     InstitutionFacade institutionFacade;
     @EJB
     PharmaceuticalItemCategoryFacade pharmaceuticalItemCategoryFacade;
+    @EJB
+    protected BillSessionFacade billSessionFacade;
+
+    @EJB
+    protected PaymentFacade paymentFacade;
+
+    @EJB
+    protected CashBookFacade cashBookFacade;
+
+    @EJB
+    protected CashBookEntryFacade cashBookEntryFacade;
+
+    @EJB
+    protected CashTransactionFacade cashTransactionFacade;
+
+    @EJB
+    protected CashTransactionHistoryFacade cashTransactionHistoryFacade;
+
+    @EJB
+    protected DrawerFacade drawerFacade;
+
+    @EJB
+    protected DrawerEntryFacade drawerEntryFacade;
 
     @Inject
     SessionController sessionController;
@@ -141,6 +239,26 @@ public class DataAdministrationController {
     ServiceSessionFacade serviceSessionFacade;
     @EJB
     private DepartmentFacade departmentFacade;
+    @EJB
+    BillNumberGenerator billNumberGenerator;
+
+    @EJB
+    protected PharmaceuticalItemFacade pharmaceuticalItemFacade;
+
+    @EJB
+    protected StockFacade stockFacade;
+
+    @EJB
+    protected StockHistoryFacade stockHistoryFacade;
+
+    @EJB
+    protected StockVarientBillItemFacade stockVarientBillItemFacade;
+
+    @EJB
+    protected UserStockFacade userStockFacade;
+
+    @EJB
+    protected UserStockContainerFacade userStockContainerFacade;
 
     @EJB
     BillEjb billEjb;
@@ -175,7 +293,6 @@ public class DataAdministrationController {
     private Double vatPrecentage = 0.0;
     private DepartmentType departmentType;
     private SearchKeyword searchKeyword;
-    CommonController commonController;
     private int manageCheckEnteredDataIndex;
     private String errors;
     private String suggestedSql;
@@ -185,6 +302,20 @@ public class DataAdministrationController {
 
     Date fromDate;
     Date toDate;
+
+    private String name;
+    private String code;
+
+    private int tabIndex;
+
+    private int progress;
+    private String progressMessage;
+    int processedRecords = 0;
+    int totalRecords = 0;
+
+    public void convertNameToCode() {
+        code = CommonFunctions.nameToCode(name);
+    }
 
     public void addWholesalePrices() {
         List<ItemBatch> ibs = itemBatchFacade.findAll();
@@ -249,6 +380,210 @@ public class DataAdministrationController {
         }
     }
 
+    public void retireAllPharmacyRelatedData() {
+        progress = 0;
+        progressMessage = "Starting retirement process for pharmacy-related data...";
+        System.out.println(progressMessage);
+
+        Date retiredAt = new Date(); // Common timestamp for all retire operations
+        WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
+        String uuid = CommonFunctions.generateUuid();
+
+        // Retrieve all entities and calculate the total record count in one go
+        List<PharmaceuticalItem> pharmaceuticalItems = pharmaceuticalItemFacade.findAll();
+        List<ItemBatch> itemBatches = itemBatchFacade.findAll();
+        List<Stock> stocks = stockFacade.findAll();
+        List<StockHistory> stockHistories = stockHistoryFacade.findAll();
+        List<StockVarientBillItem> stockVarientBillItems = stockVarientBillItemFacade.findAll();
+        List<UserStock> userStocks = userStockFacade.findAll();
+        List<UserStockContainer> userStockContainers = userStockContainerFacade.findAll();
+
+        totalRecords = safeCount(pharmaceuticalItems) + safeCount(itemBatches) + safeCount(stocks)
+                + safeCount(stockHistories) + safeCount(stockVarientBillItems) + safeCount(userStocks)
+                + safeCount(userStockContainers);
+
+        if (totalRecords == 0) {
+            progress = 100;
+            progressMessage = "No pharmacy-related records to retire.";
+            System.out.println(progressMessage);
+            return;
+        }
+
+        // Retire all entities
+        processedRecords += retireEntities(pharmaceuticalItems, retiredAt, retirer, uuid, pharmaceuticalItemFacade);
+        processedRecords += retireEntities(itemBatches, retiredAt, retirer, uuid, itemBatchFacade);
+        processedRecords += retireEntities(stocks, retiredAt, retirer, uuid, stockFacade);
+        processedRecords += retireEntities(stockHistories, retiredAt, retirer, uuid, stockHistoryFacade);
+        processedRecords += retireEntities(stockVarientBillItems, retiredAt, retirer, uuid, stockVarientBillItemFacade);
+        processedRecords += retireEntities(userStocks, retiredAt, retirer, uuid, userStockFacade);
+        processedRecords += retireEntities(userStockContainers, retiredAt, retirer, uuid, userStockContainerFacade);
+
+        // Completion message
+        progress = 100;
+        progressMessage = "Retirement process for pharmacy-related data completed.";
+        System.out.println(progressMessage);
+    }
+
+    public void retireAllBillRelatedData() {
+        progress = 0;
+        progressMessage = "Starting retirement process for bill-related data...";
+        System.out.println(progressMessage);
+
+        Date retiredAt = new Date(); // Common timestamp for all retire operations
+        WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
+        String uuid = CommonFunctions.generateUuid();
+
+        // Retrieve all entities and calculate the total record count in one go
+        List<Bill> bills = billFacade.findAll();
+        List<BillItem> billItems = billItemFacade.findAll();
+        List<BillComponent> billComponents = billComponentFacade.findAll();
+        List<BillSession> billSessions = billSessionFacade.findAll();
+        List<BillFee> billFees = billFeeFacade.findAll();
+        List<Payment> payments = paymentFacade.findAll();
+        List<BillEntry> billEntries = billEntryFacade.findAll();
+        List<BillNumber> billNumbers = billNumberFacade.findAll();
+        List<CashBook> cashBooks = cashBookFacade.findAll();
+        List<CashBookEntry> cashBookEntries = cashBookEntryFacade.findAll();
+        List<CashTransaction> cashTransactions = cashTransactionFacade.findAll();
+        List<CashTransactionHistory> cashTransactionHistories = cashTransactionHistoryFacade.findAll();
+        List<Drawer> drawers = drawerFacade.findAll();
+        List<DrawerEntry> drawerEntries = drawerEntryFacade.findAll();
+        List<PatientDeposit> deposits = patientDepositFacade.findAll();
+        List<PatientDepositHistory> depositHistories = patientDepositHistoryFacade.findAll();
+        List<PharmaceuticalBillItem> pharmaceuticalBillItems = pharmaceuticalBillItemFacade.findAll();
+
+        totalRecords = safeCount(bills) + safeCount(billItems) + safeCount(billComponents) + safeCount(billSessions)
+                + safeCount(billFees) + safeCount(payments) + safeCount(billEntries) + safeCount(billNumbers)
+                + safeCount(cashBooks) + safeCount(cashBookEntries) + safeCount(cashTransactions) + safeCount(cashTransactionHistories)
+                + safeCount(drawers) + safeCount(drawerEntries) + safeCount(deposits) + safeCount(depositHistories)
+                + safeCount(pharmaceuticalBillItems);
+
+        if (totalRecords == 0) {
+            progress = 100;
+            progressMessage = "No bill-related records to retire.";
+            System.out.println(progressMessage);
+            return;
+        }
+
+        // Retire all entities
+        processedRecords += retireEntities(bills, retiredAt, retirer, uuid, billFacade);
+        processedRecords += retireEntities(billItems, retiredAt, retirer, uuid, billItemFacade);
+        processedRecords += retireEntities(billComponents, retiredAt, retirer, uuid, billComponentFacade);
+        processedRecords += retireEntities(billSessions, retiredAt, retirer, uuid, billSessionFacade);
+        processedRecords += retireEntities(billFees, retiredAt, retirer, uuid, billFeeFacade);
+        processedRecords += retireEntities(payments, retiredAt, retirer, uuid, paymentFacade);
+        processedRecords += retireEntities(billEntries, retiredAt, retirer, uuid, billEntryFacade);
+        processedRecords += retireEntities(billNumbers, retiredAt, retirer, uuid, billNumberFacade);
+        processedRecords += retireEntities(cashBooks, retiredAt, retirer, uuid, cashBookFacade);
+        processedRecords += retireEntities(cashBookEntries, retiredAt, retirer, uuid, cashBookEntryFacade);
+        processedRecords += retireEntities(cashTransactions, retiredAt, retirer, uuid, cashTransactionFacade);
+        processedRecords += retireEntities(cashTransactionHistories, retiredAt, retirer, uuid, cashTransactionHistoryFacade);
+        processedRecords += retireEntities(drawers, retiredAt, retirer, uuid, drawerFacade);
+        processedRecords += retireEntities(drawerEntries, retiredAt, retirer, uuid, drawerEntryFacade);
+        processedRecords += retireEntities(deposits, retiredAt, retirer, uuid, patientDepositFacade);
+        processedRecords += retireEntities(depositHistories, retiredAt, retirer, uuid, patientDepositHistoryFacade);
+        processedRecords += retireEntities(pharmaceuticalBillItems, retiredAt, retirer, uuid, pharmaceuticalBillItemFacade);
+
+        // Completion message
+        progress = 100;
+        progressMessage = "Retirement process for bill-related data completed.";
+        System.out.println(progressMessage);
+    }
+
+    public void retireAllPatientInvestigationRelatedData() {
+        progress = 0;
+        progressMessage = "Starting retirement process...";
+        System.out.println(progressMessage);
+
+        Date retiredAt = new Date(); // Common timestamp for all retire operations
+        WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
+        String uuid = CommonFunctions.generateUuid();
+
+        // Retrieve all entities and calculate the total record count in one go
+        List<Patient> patients = patientFacade.findAll();
+        List<Person> persons = new ArrayList<>();
+        for (Patient pt : patients) {
+            Person p = pt.getPerson();
+            if (p != null) {
+                persons.add(p);
+            }
+        }
+        List<PatientInvestigation> investigations = patientInvestigationFacade.findAll();
+        List<PatientReport> reports = patientReportFacade.findAll();
+        List<PatientDeposit> deposits = patientDepositFacade.findAll();
+        List<PatientReportItemValue> reportItemValues = patientReportItemValueFacade.findAll();
+        List<PatientEncounter> encounters = patientEncounterFacade.findAll();
+        List<PatientDepositHistory> depositHistories = patientDepositHistoryFacade.findAll();
+        List<PatientFlag> flags = patientFlagFacade.findAll();
+        List<PatientItem> items = patientItemFacade.findAll();
+        List<PatientRoom> rooms = patientRoomFacade.findAll();
+        List<PatientSample> samples = patientSampleFacade.findAll();
+        List<PatientSampleComponant> sampleComponents = patientSampleComponantFacade.findAll();
+
+        totalRecords = safeCount(patients) + safeCount(persons) + safeCount(investigations) + safeCount(reports) + safeCount(deposits)
+                + safeCount(reportItemValues) + safeCount(encounters) + safeCount(depositHistories) + safeCount(flags)
+                + safeCount(items) + safeCount(rooms) + safeCount(samples) + safeCount(sampleComponents);
+
+        if (totalRecords == 0) {
+            progress = 100;
+            progressMessage = "No records to retire.";
+            System.out.println(progressMessage);
+            return;
+        }
+
+        // Retire all entities
+        processedRecords += retireEntities(patients, retiredAt, retirer, uuid, patientFacade);
+        processedRecords += retireEntities(persons, retiredAt, retirer, uuid, personFacade);
+        processedRecords += retireEntities(investigations, retiredAt, retirer, uuid, patientInvestigationFacade);
+        processedRecords += retireEntities(reports, retiredAt, retirer, uuid, patientReportFacade);
+        processedRecords += retireEntities(deposits, retiredAt, retirer, uuid, patientDepositFacade);
+        processedRecords += retireEntities(reportItemValues, retiredAt, retirer, uuid, patientReportItemValueFacade);
+        processedRecords += retireEntities(encounters, retiredAt, retirer, uuid, patientEncounterFacade);
+        processedRecords += retireEntities(depositHistories, retiredAt, retirer, uuid, patientDepositHistoryFacade);
+        processedRecords += retireEntities(flags, retiredAt, retirer, uuid, patientFlagFacade);
+        processedRecords += retireEntities(items, retiredAt, retirer, uuid, patientItemFacade);
+        processedRecords += retireEntities(rooms, retiredAt, retirer, uuid, patientRoomFacade);
+        processedRecords += retireEntities(samples, retiredAt, retirer, uuid, patientSampleFacade);
+        processedRecords += retireEntities(sampleComponents, retiredAt, retirer, uuid, patientSampleComponantFacade);
+
+        // Completion message
+        progress = 100;
+        progressMessage = "Retirement process completed.";
+        System.out.println(progressMessage);
+    }
+
+    private <T> int retireEntities(List<T> entities, Date retiredAt, WebUser retirer, String uuid, AbstractFacade<T> facade) {
+        if (entities == null || entities.isEmpty()) {
+            return 0;
+        }
+
+        for (T entity : entities) {
+            if (entity instanceof RetirableEntity) {
+                RetirableEntity retirable = (RetirableEntity) entity;
+                retirable.setRetired(true);
+                retirable.setRetiredAt(retiredAt);
+                retirable.setRetirer(retirer);
+                retirable.setRetireComments(uuid);
+                facade.edit(entity); // Use the specific facade passed as a parameter
+            }else{
+                System.out.println("Entity that does not implement retirable");
+                System.out.println("entity = " + entity);
+            }
+            processedRecords++;
+            updateProgress();
+        }
+        return entities.size();
+    }
+
+    private int safeCount(List<?> list) {
+        return (list == null) ? 0 : list.size();
+    }
+
+    private void updateProgress() {
+        progress = (processedRecords * 100) / totalRecords;
+        System.out.println("Progress: " + progress + "%");
+    }
+
     public void detectWholeSaleBills() {
         String sql;
         Map m = new HashMap();
@@ -275,11 +610,35 @@ public class DataAdministrationController {
     }
 
     public String navigateToCheckMissingFields() {
-        return "/dataAdmin/missing_database_fields";
+        return "/dataAdmin/missing_database_fields?faces-redirect=true";
     }
-    
+
+    public String navigateToNameToCode() {
+        return "/dataAdmin/name_to_code?faces-redirect=true";
+    }
+
     public String navigateToListOpdBillsAndBillItemsFields() {
-        return "/dataAdmin/opd_bills_and_bill_items";
+        return "/dataAdmin/opd_bills_and_bill_items?faces-redirect=true";
+    }
+
+    public String navigateToListMissingBillDeptNumber() {
+        return "/dataAdmin/fill_missing_dept_bill_number?faces-redirect=true";
+    }
+
+    public void addMissingDeptBillNumber(Bill bill) {
+        Bill originalBill = billFacade.find(bill.getId());
+
+        if (originalBill.getDeptId().trim().length() != 0) {
+            JsfUtil.addErrorMessage("Already Add Dept Bill Number");
+            return;
+        }
+
+        String genarateeddeptID = bill.getInsId();
+
+        originalBill.setDeptId(genarateeddeptID);
+        billFacade.edit(originalBill);
+
+        JsfUtil.addSuccessMessage("Added Dept Bill Number");
     }
 
     public void checkMissingFields1() {
@@ -1831,6 +2190,46 @@ public class DataAdministrationController {
 
     public void setAlterSql(String alterSql) {
         this.alterSql = alterSql;
+    }
+
+    public int getTabIndex() {
+        return tabIndex;
+    }
+
+    public void setTabIndex(int tabIndex) {
+        this.tabIndex = tabIndex;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getProgress() {
+        return progress;
+    }
+
+    public void setProgress(int progress) {
+        this.progress = progress;
+    }
+
+    public String getProgressMessage() {
+        return progressMessage;
+    }
+
+    public void setProgressMessage(String progressMessage) {
+        this.progressMessage = progressMessage;
     }
 
     public class EntityFieldError {

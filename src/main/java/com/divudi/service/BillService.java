@@ -596,4 +596,48 @@ public class BillService {
         outputBundle.setReportTemplateRows(outputRows);
         return outputBundle;
     }
+
+    public List<Bill> fetchBills(Date fromDate, 
+            Date toDate, 
+            Institution institution, 
+            Institution site, 
+            Department department, 
+            WebUser webUser, 
+            List<BillTypeAtomic> billTypeAtomics) {
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        jpql += " order by b.createdAt desc  ";
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("fetchedBills = " + fetchedBills);
+        return fetchedBills;
+    }
 }

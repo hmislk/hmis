@@ -141,7 +141,7 @@ public class PaymentService {
     }
 
     private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
-        
+
         CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
         List<Payment> payments = new ArrayList<>();
         Date currentDate = new Date();
@@ -203,8 +203,8 @@ public class PaymentService {
                 break;
             case Cash:
 //                payment.getBill().getNetTotal();
-                payment.setPaidValue(paymentMethodData.getCash().getTotalValue());
-                payment.setComments(paymentMethodData.getCash().getComment());
+                payment.setPaidValue(payment.getBill().getNetTotal());
+                payment.setComments(payment.getBill().getComments());
                 break;
             case ewallet:
                 payment.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
@@ -379,7 +379,7 @@ public class PaymentService {
         return new ArrayList<>(uniqueMethods);
     }
 
-    public BillValidation checkForErrorsInPaymentDetailsForInBills(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, Double netTotal, Patient patient) {
+    public BillValidation checkForErrorsInPaymentDetailsForInBills(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, Double netTotal, Patient patient, Department department) {
         BillValidation bv = new BillValidation();
 
         // Check for null payment method
@@ -416,7 +416,7 @@ public class PaymentService {
                 }
 
                 // Recursively call the validation method for each component
-                BillValidation componentValidation = checkForErrorsInPaymentDetailsForInBills(pm, pmd, null, patient);
+                BillValidation componentValidation = checkForErrorsInPaymentDetailsForInBills(pm, pmd, null, patient, department);
                 if (componentValidation.isErrorPresent()) {
                     return componentValidation; // If any component has an error, return immediately with that error
                 }
@@ -518,13 +518,8 @@ public class PaymentService {
                         return bv;
                     }
                     double creditLimitAbsolute = Math.abs(patient.getCreditLimit());
-                    double runningBalance;
-                    if (patient.getRunningBalance() != null) {
-                        runningBalance = patient.getRunningBalance();
-                    } else {
-                        runningBalance = 0.0;
-                    }
-                    double availableForPurchase = runningBalance + creditLimitAbsolute;
+                    PatientDeposit pd = patientDepositService.getDepositOfThePatient(patient, department);
+                    double availableForPurchase = pd.getBalance() + creditLimitAbsolute;
                     double payhingThisTimeValue;
                     if (netTotal == null) {
                         payhingThisTimeValue = paymentMethodData.getPatient_deposit().getTotalValue();
@@ -533,7 +528,6 @@ public class PaymentService {
                     }
 
                     if (payhingThisTimeValue > availableForPurchase) {
-
 
                         bv.setErrorMessage("No Sufficient Patient Deposit");
                         bv.setErrorPresent(true);

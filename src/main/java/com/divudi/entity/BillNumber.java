@@ -5,6 +5,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import java.io.Serializable;
@@ -23,7 +24,7 @@ import javax.persistence.Temporal;
  * @author safrin
  */
 @Entity
-public class BillNumber implements Serializable {
+public class BillNumber implements Serializable, RetirableEntity {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -41,38 +42,43 @@ public class BillNumber implements Serializable {
     @Enumerated(EnumType.STRING)
     private BillClassType billClassType;
     private Integer billYear;
-      //Retairing properties
+    //Retairing properties
     boolean retired;
     @ManyToOne
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
+    private String retireComments;
 
+    @Override
     public boolean isRetired() {
         return retired;
     }
 
+    @Override
     public void setRetired(boolean retired) {
         this.retired = retired;
     }
 
+    @Override
     public WebUser getRetirer() {
         return retirer;
     }
 
+    @Override
     public void setRetirer(WebUser retirer) {
         this.retirer = retirer;
     }
 
+    @Override
     public Date getRetiredAt() {
         return retiredAt;
     }
 
+    @Override
     public void setRetiredAt(Date retiredAt) {
         this.retiredAt = retiredAt;
     }
-    
-    
 
     public Long getLastBillNumber() {
         return lastBillNumber;
@@ -129,8 +135,6 @@ public class BillNumber implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    
 
     @Override
     public int hashCode() {
@@ -163,6 +167,16 @@ public class BillNumber implements Serializable {
 
     public void setBillYear(Integer billYear) {
         this.billYear = billYear;
+    }
+
+    @Override
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    @Override
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
     }
 
 }

@@ -21,20 +21,25 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.java.CommonFunctions;
 
+import java.io.OutputStream;
+
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  * @author safrin
@@ -148,7 +153,6 @@ public class CreditCompanyDueController implements Serializable {
             }
         }
 
-
     }
 
     public void createAgeTablePharmacy() {
@@ -180,7 +184,6 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
-
 
     }
 
@@ -441,7 +444,6 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
-
 
     }
 
@@ -719,7 +721,6 @@ public class CreditCompanyDueController implements Serializable {
             items.add(newIns);
         }
 
-
     }
 
     public void createPharmacyCreditDue() {
@@ -740,7 +741,6 @@ public class CreditCompanyDueController implements Serializable {
 
             items.add(newIns);
         }
-
 
     }
 
@@ -767,7 +767,6 @@ public class CreditCompanyDueController implements Serializable {
             items.add(newIns);
         }
 
-
     }
 
     public void createOpdCreditAccess() {
@@ -788,7 +787,6 @@ public class CreditCompanyDueController implements Serializable {
 
             items.add(newIns);
         }
-
 
     }
 
@@ -826,7 +824,6 @@ public class CreditCompanyDueController implements Serializable {
             institutionEncounters.add(newIns);
         }
 
-
     }
 
     public void createInwardCreditDueWithAdditionalFilters() {
@@ -847,23 +844,49 @@ public class CreditCompanyDueController implements Serializable {
             InstitutionEncounters newIns = new InstitutionEncounters();
             newIns.setInstitution(ins);
             newIns.setPatientEncounters(lst);
-            for (PatientEncounter b : lst) {
+
+            // Use an iterator to safely remove items from the list while iterating
+            Iterator<PatientEncounter> iterator = lst.iterator();
+            while (iterator.hasNext()) {
+                PatientEncounter b = iterator.next();
+
+                if (withOutDueUpdate) {
+                    if (isDue(b)) {
+                        // Safe removal with iterator
+                        iterator.remove();
+                        continue;
+                    }
+                }
+
+                // Set payment totals for each PatientEncounter
                 b.setTransPaidByPatient(createInwardPaymentTotal(b, getFromDate(), getToDate(), BillType.InwardPaymentBill));
                 b.setTransPaidByCompany(createInwardPaymentTotalCredit(b, getFromDate(), getToDate(), BillType.CashRecieveBill));
+
+                // Update totals for newIns
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
                 newIns.setPaidTotalPatient(newIns.getPaidTotalPatient() + b.getFinalBill().getPaidAmount());
                 newIns.setTransPaidTotalPatient(newIns.getTransPaidTotalPatient() + b.getTransPaidByPatient());
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidByCreditCompany());
                 newIns.setTransPaidTotal(newIns.getTransPaidTotal() + b.getTransPaidByCompany());
             }
+
+            // Update the final totals
             finalTotal += newIns.getTotal();
             finalPaidTotal += newIns.getPaidTotal();
             finalPaidTotalPatient += newIns.getPaidTotalPatient();
             finalTransPaidTotal += newIns.getTransPaidTotal();
             finalTransPaidTotalPatient += newIns.getTransPaidTotalPatient();
 
+            if (newIns.getPatientEncounters().isEmpty()) {
+                continue;
+            }
+
             institutionEncounters.add(newIns);
         }
+    }
+
+    private boolean isDue(final PatientEncounter pe) {
+        return pe.getFinalBill().getNetTotal() - (Math.abs(pe.getFinalBill().getPaidAmount()) + Math.abs(pe.getCreditPaidAmount())) > 0;
     }
 
     public double createInwardPaymentTotal(PatientEncounter pe, Date fd, Date td, BillType bt) {
@@ -1090,7 +1113,6 @@ public class CreditCompanyDueController implements Serializable {
             institutionEncounters.add(newIns);
         }
 
-
     }
 
     public void createInwardCreditAccessWithFilters() {
@@ -1148,7 +1170,6 @@ public class CreditCompanyDueController implements Serializable {
 
             institutionEncounters.add(newIns);
         }
-
 
     }
 
@@ -1213,6 +1234,61 @@ public class CreditCompanyDueController implements Serializable {
         hm.put("tp", BillType.OpdBill);
         return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
+    }
+
+    public void downloadExcel() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            // Create a sheet
+            Sheet sheet = workbook.createSheet("Due Report");
+            int rowIndex = 0;
+
+            // Create Header Row
+            Row headerRow = sheet.createRow(rowIndex++);
+            String[] headers = {"Institution Name", "Bill No", "Client Name", "Bill Date", "Billed Amount", "Staff Fee", "Paid Amount", "Net Amount"};
+            int colIndex = 0;
+
+
+            for (String header : headers) {
+                Cell cell = headerRow.createCell(colIndex++);
+                cell.setCellValue(header);
+            }
+
+            // Populate Data Rows
+            for (InstitutionBills institution : items) {
+                for (Bill bill : institution.getBills()) {
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    colIndex = 0;
+
+                    dataRow.createCell(colIndex++).setCellValue(institution.getInstitution().getName());
+                    dataRow.createCell(colIndex++).setCellValue(bill.getDeptId());
+                    dataRow.createCell(colIndex++).setCellValue(bill.getPatient().getPerson().getNameWithTitle());
+                    dataRow.createCell(colIndex++).setCellValue(bill.getCreatedAt().toString());
+                    dataRow.createCell(colIndex++).setCellValue(bill.getNetTotal());
+                    dataRow.createCell(colIndex++).setCellValue(bill.getStaffFee());
+                    dataRow.createCell(colIndex++).setCellValue(bill.getPaidAmount());
+                    dataRow.createCell(colIndex++).setCellValue(bill.getNetTotal() + bill.getPaidAmount());
+                }
+            }
+
+            // Auto-size Columns
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // Set Response Headers
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=Credit Company Due_Report.xlsx");
+            OutputStream outputStream = response.getOutputStream();
+            workbook.write(outputStream);
+
+            // Complete Response
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     //    public List<Admission> completePatientDishcargedNotFinalized(String query) {

@@ -71,12 +71,13 @@
 
                                 <p:panel >
                                     <f:facet name="header" >
-                                        <h:outputText value="Return Details" ></h:outputText>
+                                        <h:outputText value="Return Details" class="mt-2" ></h:outputText>
                                         <p:commandButton 
                                         id="btnSave" 
                                         value="Refund" 
                                         ajax="false"
-                                        class="ui-button-warning mx-5"
+                                        style="float:right;"
+                                        class="ui-button-warning"
                                         onclick="if (!confirm('Are You Sure You Want to Refund this Items?'))
                                                     return false;"
                                         action="#{billReturnController.settleOpdReturnBill()}">
@@ -95,11 +96,6 @@
                                             <p:ajax process="cmbPs" update="paymentDetails" ></p:ajax>
                                         </p:selectOneMenu>
                                     </p:panelGrid>
-
-
-
-
-                                    
 
                                     <h:panelGroup id="paymentDetails"  >
                                         <h:panelGroup
@@ -144,10 +140,9 @@
                                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                 </h:outputText>
                                                             </p:column>
-                                                            <p:ajax process="@this" 
+<!--                                                            <p:ajax process="@this" 
                                                                     update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                                                                    event="itemSelect"  
-                                                                    listener="#{billReturnController.calTotals()}" />
+                                                                    event="itemSelect"  />-->
                                                         </p:autoComplete>
                                                     </div>
                                                 </div>
@@ -189,10 +184,9 @@
                                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                 </h:outputText>
                                                             </p:column>
-                                                            <p:ajax process="@this" 
+<!--                                                            <p:ajax process="@this" 
                                                                     update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                                                                    event="itemSelect"  
-                                                                    listener="#{billReturnController.calTotals()}" />
+                                                                    event="itemSelect"  />-->
                                                         </p:autoComplete>
                                                     </div>
                                                 </div>

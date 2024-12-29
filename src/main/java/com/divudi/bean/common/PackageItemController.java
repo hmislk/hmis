@@ -183,7 +183,7 @@ public class PackageItemController implements Serializable {
             packageItemFacade.edit(pi);
         }else{
             pi.setCreatedAt(new Date());
-            pi.setCreater(sessionController.loggedUser);
+            pi.setCreater(sessionController.getLoggedUser());
             packageItemFacade.create(pi);
         }
         JsfUtil.addSuccessMessage("Added");

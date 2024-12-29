@@ -20,35 +20,67 @@
                                     <!-- Manage Section -->
                                     <p:tab title="Manage" rendered="#{webUserController.hasPrivilege('Payment')}">
                                         <h:panelGrid columns="1" class="w-100" >
-                                            <p:commandButton icon="fa fa-check-circle" 
-                                                             ajax="false" 
-                                                             value="Accept Patient Deposits"
-                                                             action="#{patientDepositController.navigateToAddNewPatientDeposit()}"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-search" ajax="false" value="Search Patient Deposits"
-                                                             action="/patient_deposit/patient_deposit_search?faces-redirect=true"
-                                                             actionListener="#{patientDepositController.clearDataForPatientDeposit()}"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-search" ajax="false" value="Return Patient Deposits"
-                                                             action="/patient_deposit/pay?faces-redirect=true"
-                                                             actionListener="#{patientDepositController.clearDataForPatientDeposit()}"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-book" ajax="false" value="Patient Deposit History"
-                                                             action="/patient_deposit/patient_deposit_history?faces-redirect=true"
-                                                             actionListener="#{patientDepositController.clearDataForPatientDepositHistory()}"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-list-alt" ajax="false" value="Patient Deposit Trancefer"
-                                                             action="/patient_deposit/report_collecting_center_referece_book?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-credit-card" ajax="false" value="Patient Deposit Recive"
-                                                             action="/patient_deposit/cc_update_credit_limit?faces-redirect=true"
-                                                             actionListener="#{institutionController.makeNull()}"
-                                                             rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"
-                                                             class="w-100 m-1"/>
+                                            <p:commandButton 
+                                                icon="fa fa-check-circle" 
+                                                ajax="false" 
+                                                value="Accept Patient Deposits"
+                                                action="#{patientDepositController.navigateToAddNewPatientDeposit()}"
+                                                class="w-100 m-1"/>
+                                            
+                                            <p:commandButton 
+                                                icon="fa fa-search" 
+                                                ajax="false" 
+                                                value="Search Patient Deposits"
+                                                action="/patient_deposit/patient_deposit_search?faces-redirect=true"
+                                                actionListener="#{patientDepositController.clearDataForPatientDeposit()}"
+                                                class="w-100 m-1"/>
+                                            
+                                            <p:commandButton 
+                                                icon="fa fa-search" 
+                                                ajax="false" 
+                                                value="Return Patient Deposits"
+                                                action="/patient_deposit/pay?faces-redirect=true"
+                                                actionListener="#{patientDepositController.clearDataForPatientDeposit()}"
+                                                class="w-100 m-1"/>
+                                            
+                                            <p:commandButton 
+                                                icon="fa fa-search" 
+                                                ajax="false" 
+                                                value="Search Patient Deposit Return"
+                                                action="/patient_deposit/patient_deposit_return_search?faces-redirect=true"
+                                                actionListener="#{patientDepositController.clearDataForPatientDeposit()}"
+                                                class="w-100 m-1"/>
 
-                                            <p:commandButton icon="fa fa-check-circle" ajax="false" value="Search Patient Deposit Trancefers"
-                                                             action="#{collectingCentreController.navigateToPayToCollectingCentre()}"
-                                                             class="w-100 m-1"/>
+                                            <p:commandButton 
+                                                icon="fa fa-book" 
+                                                ajax="false" 
+                                                value="Patient Deposit History"
+                                                action="/patient_deposit/patient_deposit_history?faces-redirect=true"
+                                                actionListener="#{patientDepositController.clearDataForPatientDepositHistory()}"
+                                                class="w-100 m-1"/>
+                                            
+                                            <p:commandButton 
+                                                icon="fa fa-list-alt" 
+                                                ajax="false" 
+                                                value="Patient Deposit Trancefer"
+                                                action="/patient_deposit/report_collecting_center_referece_book?faces-redirect=true"
+                                                class="w-100 m-1"/>
+                                            
+                                            <p:commandButton 
+                                                icon="fa fa-credit-card" 
+                                                ajax="false" 
+                                                value="Patient Deposit Recive"
+                                                action="/patient_deposit/cc_update_credit_limit?faces-redirect=true"
+                                                actionListener="#{institutionController.makeNull()}"
+                                                rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"
+                                                class="w-100 m-1"/>
+
+                                            <p:commandButton 
+                                                icon="fa fa-check-circle" 
+                                                ajax="false" 
+                                                value="Search Patient Deposit Trancefers"
+                                                action="#{collectingCentreController.navigateToPayToCollectingCentre()}"
+                                                class="w-100 m-1"/>
 
                                             <p:commandButton  
                                                 class="w-100 ui-button-secondary" 

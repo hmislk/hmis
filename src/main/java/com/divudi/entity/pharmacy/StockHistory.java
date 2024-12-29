@@ -4,6 +4,7 @@
  */
 package com.divudi.entity.pharmacy;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.HistoryType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -28,7 +29,7 @@ import javax.persistence.Temporal;
  * @author Buddhika
  */
 @Entity
-public class StockHistory implements Serializable {
+public class StockHistory implements Serializable, RetirableEntity  {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -39,7 +40,7 @@ public class StockHistory implements Serializable {
     Date stockAt;
     @OneToOne(fetch = FetchType.LAZY)
     PharmaceuticalBillItem pbItem;
-
+    // This is the Item Batch Stockf of the department
     double stockQty;
     double retailRate;
     double wholesaleRate;
@@ -68,7 +69,12 @@ public class StockHistory implements Serializable {
     int hxMonth;
     int hxDate;
     int hxWeek;
+    // This give the sotck of this Item for this department
     private Double itemStock;
+    // This give the sotck of this Item for this Institution
+    private Double institutionItemStock;
+    // This give the sotck of this Item for the system
+    private Double totalItemStock;
 
     //Created Properties
     @ManyToOne
@@ -332,6 +338,22 @@ public class StockHistory implements Serializable {
         this.itemStock = itemStock;
     }
 
+    public Double getInstitutionItemStock() {
+        return institutionItemStock;
+    }
+
+    public void setInstitutionItemStock(Double institutionItemStock) {
+        this.institutionItemStock = institutionItemStock;
+    }
+
+    public Double getTotalItemStock() {
+        return totalItemStock;
+    }
+
+    public void setTotalItemStock(Double totalItemStock) {
+        this.totalItemStock = totalItemStock;
+    }
     
     
+
 }

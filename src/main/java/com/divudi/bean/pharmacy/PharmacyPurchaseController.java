@@ -685,8 +685,11 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void saveBill() {
 
-        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyPurchaseBill, BillClassType.BilledBill, BillNumberSuffix.PHPUR));
-        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyPurchaseBill, BillClassType.BilledBill, BillNumberSuffix.PHPUR));
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+ 
+        getBill().setDeptId(deptId);
+        getBill().setInsId(deptId);
+        getBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
 
         getBill().setInstitution(getSessionController().getInstitution());
         getBill().setDepartment(getSessionController().getDepartment());

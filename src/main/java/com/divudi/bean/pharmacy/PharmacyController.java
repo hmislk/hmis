@@ -54,10 +54,14 @@ import com.divudi.facade.VtmFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.DepartmentCategoryWiseItems;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.CategoryWithItem;
+import com.divudi.data.dataStructure.PharmacySummery;
 import com.divudi.data.table.String1Value1;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.pharmacy.PharmaceuticalItemLight;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,10 +69,14 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -104,6 +112,8 @@ public class PharmacyController implements Serializable {
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
+    @EJB
+    BillService billService;
     @EJB
     ItemFacade itemFacade;
     @EJB
@@ -713,6 +723,8 @@ public class PharmacyController implements Serializable {
     private Date toDate;
     private Department department;
     private Department dept;
+    private Department fromDepartment;
+    private Department toDepartment;
     private Institution site;
     private Institution toInstitution;
     private Institution fromInstitution;
@@ -725,6 +737,15 @@ public class PharmacyController implements Serializable {
     private double totalSaleValue;
     private double totalCreditSaleValue;
     private double totalCashSaleValue;
+    private Item item;
+    private List<BillItem> billItems;
+    private List<PharmacySummery> departmentSummaries;
+    private List<CategoryWithItem> issueDepartmentCategoryWiseItems;
+    private List<DepartmentCategoryWiseItems> resultsList;
+
+    private String transferType;
+    private Institution FromSite;
+    private Institution toSite;
 
     public void clearItemHistory() {
 
@@ -760,6 +781,109 @@ public class PharmacyController implements Serializable {
 
     }
 
+    public String generateFileNameForReport(String reportName) {
+        if (reportName == null || reportName.trim().isEmpty()) {
+            return ""; // Handle null or empty reportName
+        }
+        if (reportType != null && !reportType.trim().isEmpty()) {
+            return reportName.trim() + " " + reportType.trim();
+        }
+        return reportName.trim();
+    }
+
+    public void generateGRNReportTableByBillItem(List<BillType> bt) {
+        bills = null;
+        totalCreditPurchaseValue = 0.0;
+        totalCashPurchaseValue = 0.0;
+        totalPurchase = 0.0;
+
+//        billItems = new ArrayList<>();
+//
+//        String sql = "SELECT b FROM BillItem b WHERE b.bill.retired = false"
+//                + " and b.bill.billType In :btp"
+//                + " and b.bill.createdAt between :fromDate and :toDate";
+//
+//        Map<String, Object> tmp = new HashMap<>();
+//
+//        tmp.put("btp", bt);
+//        tmp.put("fromDate", getFromDate());
+//        tmp.put("toDate", getToDate());
+//
+//        if (institution != null) {
+//            sql += " and b.bill.institution = :fIns";
+//            tmp.put("fIns", institution);
+//        }
+//
+//        if (site != null) {
+//            sql += " and b.bill.department.site = :site";
+//            tmp.put("site", site);
+//        }
+//
+//        if (dept != null) {
+//            sql += " and b.bill.department = :dept";
+//            tmp.put("dept", dept);
+//        }
+//
+//        if (paymentMethod != null) {
+//            sql += " and b.bill.paymentMethod = :pm";
+//            tmp.put("pm", paymentMethod);
+//        }
+//
+//        if (fromInstitution != null) {
+//            sql += " AND b.bill.fromInstitution = :supplier";
+//            tmp.put("supplier", fromInstitution);
+//        }
+//
+//        sql += " order by b.bill.id desc";
+//
+//        try {
+//            billItems = getBillItemFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+//
+//        } catch (Exception e) {
+//            JsfUtil.addErrorMessage(e, " Something Went Worng!");
+//        }
+//        calculateTotals(bills);
+//        calculateTotalsForBillItems(billItems);
+    }
+
+    public String navigateToPrinteGeneratedGrnDetailedRportTable() {
+        if(bills==null){
+            JsfUtil.addErrorMessage("No Bills");
+            return null;
+        }
+        if(bills.isEmpty()){
+            JsfUtil.addErrorMessage("Bill List Empty");
+            return null;
+        }
+        for(Bill b:bills){
+            if(b.getBillItems()==null || b.getBillItems().isEmpty()){
+               b.setBillItems(billService.fetchBillItems(b));
+            }
+        }
+        return "/reports/inventoryReports/grn_report_detail_print?faces-redirect=true";
+    }
+    public String navigateToPrinteGeneratedGrnReturnReportTable() {
+        if(bills==null){
+            JsfUtil.addErrorMessage("No Bills");
+            return null;
+        }
+        if(bills.isEmpty()){
+            JsfUtil.addErrorMessage("Bill List Empty");
+            return null;
+        }
+        for(Bill b:bills){
+            if(b.getBillItems()==null || b.getBillItems().isEmpty()){
+               b.setBillItems(billService.fetchBillItems(b));
+            }
+        }
+        return "/reports/inventoryReports/grn_report_return_print?faces-redirect=true";
+    }
+
+    public String navigateBackToGeneratedGrnDetailedRportTable() {
+        return "/reports/inventoryReports/grn_report?faces-redirect=true";
+    }    
+
+    
     public void generateGRNReportTable() {
         bills = null;
         totalCreditPurchaseValue = 0.0;
@@ -769,8 +893,10 @@ public class PharmacyController implements Serializable {
         List<BillType> bt = new ArrayList<>();
         if ("detailReport".equals(reportType)) {
             bt.add(BillType.PharmacyGrnBill);
+            generateGRNReportTableByBillItem(bt);
         } else if ("returnReport".equals(reportType)) {
             bt.add(BillType.PharmacyGrnReturn);
+            generateGRNReportTableByBillItem(bt);
         } else if ("summeryReport".equals(reportType)) {
             bt.add(BillType.PharmacyGrnBill);
             bt.add(BillType.PharmacyGrnReturn);
@@ -793,6 +919,11 @@ public class PharmacyController implements Serializable {
         if (institution != null) {
             sql += " and b.institution = :fIns";
             tmp.put("fIns", institution);
+        }
+
+        if (site != null) {
+            sql += " and b.department.site = :site";
+            tmp.put("site", site);
         }
 
         if (dept != null) {
@@ -821,11 +952,451 @@ public class PharmacyController implements Serializable {
         calculateTotals(bills);
     }
 
+    public void createConsumptionReportTable() {
+        resetFields();
+
+        switch (reportType) {
+            case "byBillItem":
+                generateConsumptionReportTableByBillItems(BillType.PharmacyIssue);
+                break;
+
+            case "byBill":
+                generateConsumptionReportTableByBill(BillType.PharmacyIssue);
+                break;
+
+            case "summeryReport":
+            case "categoryWise":
+                generateConsumptionReportTableByDepartmentAndCategoryWise(BillType.PharmacyIssue);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Invalid report type: " + reportType);
+        }
+    }
+
+    private void resetFields() {
+        bills = null;
+        billItems = null;
+        departmentSummaries = null;
+        issueDepartmentCategoryWiseItems = null;
+        resultsList = null;
+    }
+
+    public void generateConsumptionReportTableByBill(BillType billType) {
+        List<BillType> bt = new ArrayList<>();
+        bt.add(BillType.PharmacyIssue);
+        bills = new ArrayList<>();
+
+        String sql = "SELECT b FROM Bill b WHERE b.retired = false"
+                + " and b.billType = :btp"
+                + " and b.createdAt between :fromDate and :toDate";
+
+        Map<String, Object> tmp = new HashMap<>();
+
+        tmp.put("btp", billType);
+        tmp.put("fromDate", getFromDate());
+        tmp.put("toDate", getToDate());
+
+        if (institution != null) {
+            sql += " and b.institution = :fIns";
+            tmp.put("fIns", institution);
+        }
+
+        if (site != null) {
+            sql += " and b.department.site = :site";
+            tmp.put("site", site);
+        }
+
+        if (dept != null) {
+            sql += " and b.department = :dept";
+            tmp.put("dept", dept);
+        }
+
+        if (toDepartment != null) {
+            sql += " AND b.toDepartment = :toDept";
+            tmp.put("toDept", toDepartment);
+        }
+
+        sql += " order by b.id desc";
+
+        try {
+            bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, " Something Went Worng!");
+        }
+        totalPurchase = 0.0;
+        for (Bill i : bills) {
+            totalPurchase += i.getPaidAmount();
+        }
+
+    }
+
+    public void generateConsumptionReportTableByBillItems(BillType billType) {
+        billItems = new ArrayList<>();
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("SELECT bi FROM BillItem bi WHERE bi.retired = false ");
+        sql.append("AND bi.bill.retired = false ");
+        sql.append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ");
+        sql.append("AND bi.bill.billType = :billType ");
+
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+        parameters.put("billType", billType);
+
+        if (institution != null) {
+            sql.append("AND bi.bill.institution = :institution ");
+            parameters.put("institution", institution);
+        }
+
+        if (site != null) {
+            sql.append("AND bi.bill.department.site = :site ");
+            parameters.put("site", site);
+        }
+
+        if (dept != null) {
+            sql.append("AND bi.bill.department = :department ");
+            parameters.put("department", dept);
+        }
+
+        if (category != null) {
+            sql.append("AND bi.item.category = :category ");
+            parameters.put("category", category);
+        }
+
+        if (item != null) {
+            sql.append("AND bi.item = :item ");
+            parameters.put("item", item);
+        }
+
+        if (toDepartment != null) {
+            sql.append("AND bi.bill.toDepartment = :toDepartment ");
+            parameters.put("toDepartment", toDepartment);
+        }
+
+        sql.append("ORDER BY bi.id DESC");
+
+        try {
+            billItems = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            e.printStackTrace();
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
+        }
+        totalPurchase = 0.0;
+        for (BillItem i : billItems) {
+            totalPurchase += i.getQty() * i.getPharmaceuticalBillItem().getPurchaseRate();
+        }
+    }
+
+    @Deprecated
+    public void generateConsumptionReportTableAsSummary(BillType billType) {
+        // Initialize bill types
+        List<BillType> bt = new ArrayList<>();
+        bt.add(BillType.PharmacyIssue);
+
+        // Prepare the SQL query
+        String sql = "SELECT b.department.name, SUM(b.netTotal) FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.billType = :btp "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("btp", billType);
+        parameters.put("fromDate", getFromDate());
+        parameters.put("toDate", getToDate());
+
+        // Add optional filters
+        if (institution != null) {
+            sql += " AND b.institution = :fIns";
+            parameters.put("fIns", institution);
+        }
+        if (site != null) {
+            sql += " AND b.department.site = :site";
+            parameters.put("site", site);
+        }
+        if (dept != null) {
+            sql += " AND b.department = :dept";
+            parameters.put("dept", dept);
+        }
+        if (toDepartment != null) {
+            sql += " AND b.toDepartment = :toDept";
+            parameters.put("toDept", toDepartment);
+        }
+
+        // Group by department name and order by net total in descending order
+        sql += " GROUP BY b.department.name ORDER BY SUM(b.netTotal) DESC";
+
+        try {
+            // Execute the query and fetch summarized data
+            List<Object[]> results = getBillFacade().findObjectsArrayByJpql(sql, parameters, TemporalType.TIMESTAMP);
+
+            // Process results into a summary list
+            departmentSummaries = new ArrayList<>();
+            double grandTotal = 0;
+
+            for (Object[] result : results) {
+                String departmentName = (String) result[0]; // Extract department name
+                Double netTotal = (Double) result[1];       // Extract net total
+                grandTotal += netTotal;                     // Accumulate the grand total
+
+                // Add summary data
+                departmentSummaries.add(new PharmacySummery(departmentName, netTotal));
+            }
+
+            // Add grand total
+            departmentSummaries.add(new PharmacySummery("Total", grandTotal));
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Something Went Wrong!");
+        }
+    }
+
+    @Deprecated
+    public void generateConsumptionReportTableByDepartmentAndCategoryWise() {
+        totalPurchase = 0.0;
+        grantIssueQty = 0.0;
+
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder sql = new StringBuilder();
+
+        // Base query
+        sql.append("SELECT bi.bill.toDepartment, ");
+        sql.append("bi.item.category, ");
+        sql.append("bi.item, ");
+        sql.append("bi.pharmaceuticalBillItem.purchaseRate, ");
+        sql.append("SUM(bi.qty), ");
+        sql.append("SUM(bi.qty * bi.pharmaceuticalBillItem.purchaseRate) ");  // Total amount calculation
+        sql.append("FROM BillItem bi ");
+        sql.append("WHERE bi.retired = false ");
+        sql.append("AND bi.bill.retired = false ");
+        sql.append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ");
+        sql.append("AND bi.bill.billType = :billType ");
+
+        // Mandatory parameters
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+        parameters.put("billType", BillType.PharmacyTransferIssue);
+
+        // Dynamic filters
+        if (institution != null) {
+            sql.append("AND bi.bill.institution = :institution ");
+            parameters.put("institution", institution);
+        }
+
+        if (site != null) {
+            sql.append("AND bi.bill.department.site = :site ");
+            parameters.put("site", site);
+        }
+
+        if (dept != null) {
+            sql.append("AND bi.bill.department = :department ");
+            parameters.put("department", dept);
+        }
+
+        if (category != null) {
+            sql.append("AND bi.item.category = :category ");
+            parameters.put("category", category);
+        }
+
+        if (item != null) {
+            sql.append("AND bi.item = :item ");
+            parameters.put("item", item);
+        }
+
+        if (toDepartment != null) {
+            sql.append("AND bi.bill.toDepartment = :toDepartment ");
+            parameters.put("toDepartment", toDepartment);
+        }
+
+        // Group by department and category
+        sql.append("GROUP BY bi.bill.toDepartment, bi.item.category, bi.item, bi.pharmaceuticalBillItem.purchaseRate ");
+        sql.append("ORDER BY bi.bill.toDepartment, bi.item.category");
+
+        issueDepartmentCategoryWiseItems = new ArrayList<>();
+
+        try {
+            List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+
+            if (results.isEmpty()) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_WARN, "No Data", "No records found for the selected criteria."));
+                return;
+            }
+
+            for (Object[] result : results) {
+                CategoryWithItem report = new CategoryWithItem();
+
+                if (result[0] instanceof Department) {
+                    report.setDepartment((Department) result[0]);
+                }
+                if (result[1] instanceof Category) {
+                    report.setCategory((Category) result[1]);
+                }
+                if (result[2] instanceof Item) {
+                    report.setItm((Item) result[2]);
+                }
+                if (result[3] instanceof Double) {
+                    report.setPurchaseRate((Double) result[3]);
+                }
+                if (result[4] instanceof Double) {
+                    report.setQty((Double) result[4]);
+                }
+                if (result[5] instanceof Double) {
+                    report.setTotal((Double) result[5]);
+                }
+
+                issueDepartmentCategoryWiseItems.add(report);
+            }
+            System.out.println("Report generated successfully. Records: " + issueDepartmentCategoryWiseItems.size());
+        } catch (Exception e) {
+            e.printStackTrace();
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
+        }
+
+        for (CategoryWithItem i : issueDepartmentCategoryWiseItems) {
+            totalPurchase += i.getTotal();
+            grantIssueQty += i.getQty();
+        }
+    }
+
+    public List<DepartmentCategoryWiseItems> generateConsumptionReportTableByDepartmentAndCategoryWise(BillType billType) {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.DepartmentCategoryWiseItems("
+                + "bi.bill.department, "
+                + "bi.bill.toDepartment, "
+                + "bi.item, "
+                + "bi.item.category, "
+                + "SUM(bi.qty * bi.pharmaceuticalBillItem.purchaseRate), "
+                + "bi.pharmaceuticalBillItem.purchaseRate, "
+                + "SUM(bi.qty)) "
+                + "FROM BillItem bi "
+                + "WHERE bi.retired = false AND bi.bill.retired = false "
+                + "AND bi.bill.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND bi.bill.billType = :billType ";
+
+        // Mandatory parameters
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+        parameters.put("billType", billType);
+
+        // Dynamic filters
+        if (institution != null) {
+            jpql += "AND bi.bill.institution = :institution ";
+            parameters.put("institution", institution);
+        }
+
+        if (site != null) {
+            jpql += "AND bi.bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+
+        if (dept != null) {
+            jpql += "AND bi.bill.department = :department ";
+            parameters.put("department", dept);
+        }
+
+        if (category != null) {
+            jpql += "AND bi.item.category = :category ";
+            parameters.put("category", category);
+        }
+
+        if (item != null) {
+            jpql += "AND bi.item = :item ";
+            parameters.put("item", item);
+        }
+
+        if (toDepartment != null) {
+            jpql += "AND bi.bill.toDepartment = :toDepartment ";
+            parameters.put("toDepartment", toDepartment);
+        }
+
+        // Group by clause
+        jpql += "GROUP BY bi.bill.department, bi.bill.toDepartment, bi.item, bi.item.category, bi.pharmaceuticalBillItem.purchaseRate "
+                + "ORDER BY bi.bill.toDepartment, bi.item.category";
+
+        try {
+            resultsList = (List<DepartmentCategoryWiseItems>) getBillItemFacade().findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+            if (resultsList.isEmpty()) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_WARN, "No Data", "No records found for the selected criteria."));
+                return Collections.emptyList();
+            }
+
+            totalPurchase = 0.0;
+            grantIssueQty = 0.0;
+            for (DepartmentCategoryWiseItems i : resultsList) {
+                totalPurchase += i.getNetTotal();
+                grantIssueQty += i.getQty();
+            }
+            if ("summeryReport".equals(reportType)) {
+                generateConsumptionReportTableAsDepartmentSummary(resultsList);
+            }
+            return resultsList;
+        } catch (Exception e) {
+            e.printStackTrace();
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
+            return Collections.emptyList();
+        }
+    }
+
+    public void generateConsumptionReportTableAsDepartmentSummary(List<DepartmentCategoryWiseItems> list) {
+        // Initialize department summaries and reset total sales value
+        departmentSummaries = new ArrayList<>();
+        totalSaleValue = 0.0;
+
+        // Create a map to store net totals grouped by main and consumption departments
+        Map<String, Map<String, Double>> departmentTotals = new HashMap<>();
+
+        // Populate the map with department-wise data
+        for (DepartmentCategoryWiseItems item : list) {
+            String mainDepartmentName = item.getMainDepartment().getName();
+            String consumptionDepartmentName = item.getConsumptionDepartment().getName();
+            double paidAmount = item.getNetTotal();
+
+            // Initialize nested maps if necessary
+            departmentTotals.putIfAbsent(mainDepartmentName, new HashMap<>());
+            Map<String, Double> consumptionMap = departmentTotals.get(mainDepartmentName);
+
+            // Accumulate paid amounts for consumption departments
+            consumptionMap.put(consumptionDepartmentName,
+                    consumptionMap.getOrDefault(consumptionDepartmentName, 0.0) + paidAmount);
+
+            // Accumulate the total sale value for the main department
+            totalSaleValue += paidAmount;
+        }
+
+        // Build the summaries
+        for (Map.Entry<String, Map<String, Double>> mainEntry : departmentTotals.entrySet()) {
+            String mainDepartmentName = mainEntry.getKey();
+            Map<String, Double> consumptionMap = mainEntry.getValue();
+
+            // Add a header entry for the main department
+            departmentSummaries.add(new PharmacySummery(mainDepartmentName, null, 0.0)); // Main department header
+
+            // Add each consumption department's contribution
+            for (Map.Entry<String, Double> consumptionEntry : consumptionMap.entrySet()) {
+                String consumptionDepartmentName = consumptionEntry.getKey();
+                double netTotal = consumptionEntry.getValue();
+                departmentSummaries.add(new PharmacySummery(null, consumptionDepartmentName, netTotal));
+            }
+
+            // Add a total entry for the main department
+            double mainTotal = consumptionMap.values().stream().mapToDouble(Double::doubleValue).sum();
+            departmentSummaries.add(new PharmacySummery("Total", null, mainTotal));
+        }
+    }
+
     public List<String1Value1> calculateTotals(List<Bill> billList) {
         data = new ArrayList<>();
 
         totalSaleValue = 0.0;
-       totalCreditSaleValue = 0.0;
+        totalCreditSaleValue = 0.0;
         totalCashSaleValue = 0.0;
 
         String1Value1 credit = new String1Value1();
@@ -861,6 +1432,93 @@ public class PharmacyController implements Serializable {
         data.add(cashAndCredit);
 
         return data;
+    }
+
+    public List<String1Value1> calculateTotalsForBillItems(List<BillItem> billItemList) {
+        data = new ArrayList<>();
+
+        totalSaleValue = 0.0;
+        totalCreditSaleValue = 0.0;
+        totalCashSaleValue = 0.0;
+
+        String1Value1 credit = new String1Value1();
+        String1Value1 cash = new String1Value1();
+        String1Value1 cashAndCredit = new String1Value1();
+
+        cash.setString("Final Cash Total");
+        credit.setString("Final Credit Total");
+        cashAndCredit.setString("Final Cash and Credit Total");
+
+        // Use a set to keep track of processed bills
+        Set<Long> processedBillIds = new HashSet<>();
+
+        for (BillItem billItem : billItemList) {
+            Bill bill = billItem.getBill(); // Access the associated Bill object
+
+            // Process each bill only once
+            if (!processedBillIds.contains(bill.getId())) {
+                processedBillIds.add(bill.getId()); // Mark the bill as processed
+
+                if (bill.getPaymentMethod() == PaymentMethod.Credit) {
+                    totalCreditPurchaseValue += bill.getNetTotal();
+                    totalCreditSaleValue += bill.getSaleValue();
+                } else if (bill.getPaymentMethod() == PaymentMethod.Cash) {
+                    totalCashPurchaseValue += bill.getNetTotal();
+                    totalCashSaleValue += bill.getSaleValue();
+                }
+                totalPurchase += bill.getNetTotal();
+                totalSaleValue += bill.getSaleValue();
+            }
+        }
+
+        credit.setValue(totalCreditPurchaseValue);
+        credit.setValue2(totalCreditSaleValue);
+
+        cash.setValue(totalCashPurchaseValue);
+        cash.setValue2(totalCashSaleValue);
+
+        cashAndCredit.setValue(totalPurchase);
+        cashAndCredit.setValue2(totalSaleValue);
+
+        data.add(cash);
+        data.add(credit);
+        data.add(cashAndCredit);
+
+        return data;
+    }
+
+    public void createStockTransferReport() {
+        BillType bt;
+
+        if ("issue".equals(transferType)) {
+            bt = BillType.PharmacyTransferIssue;
+        } else {
+            bt = BillType.PharmacyTransferReceive;
+        }
+
+        if ("summeryReport".equals(reportType)) {
+
+            bills = null;
+            departmentSummaries = null;
+            issueDepartmentCategoryWiseItems = null;
+            generateConsumptionReportTableAsSummary(bt);
+
+        } else if ("detailReport".equals(reportType)) {
+
+            billItems = null;
+            departmentSummaries = null;
+            issueDepartmentCategoryWiseItems = null;
+            generateConsumptionReportTableByBillItems(bt);
+
+        } else if ("byBill".equals(reportType)) {
+
+            bills = null;
+            billItems = null;
+            issueDepartmentCategoryWiseItems = null;
+            generateConsumptionReportTableByBill(bt);
+
+        }
+
     }
 
     public void deleteSelectedPharmaceuticalLight() {
@@ -2582,7 +3240,7 @@ public class PharmacyController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -3181,6 +3839,86 @@ public class PharmacyController implements Serializable {
 
     public void setTotalCashSaleValue(double totalCashSaleValue) {
         this.totalCashSaleValue = totalCashSaleValue;
+    }
+
+    public Department getFromDepartment() {
+        return fromDepartment;
+    }
+
+    public void setFromDepartment(Department fromDepartment) {
+        this.fromDepartment = fromDepartment;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public Department getToDepartment() {
+        return toDepartment;
+    }
+
+    public void setToDepartment(Department toDepartment) {
+        this.toDepartment = toDepartment;
+    }
+
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
+
+    public List<PharmacySummery> getDepartmentSummaries() {
+        return departmentSummaries;
+    }
+
+    public void setDepartmentSummaries(List<PharmacySummery> departmentSummaries) {
+        this.departmentSummaries = departmentSummaries;
+    }
+
+    public List<CategoryWithItem> getIssueDepartmentCategoryWiseItems() {
+        return issueDepartmentCategoryWiseItems;
+    }
+
+    public void setIssueDepartmentCategoryWiseItems(List<CategoryWithItem> issueDepartmentCategoryWiseItems) {
+        this.issueDepartmentCategoryWiseItems = issueDepartmentCategoryWiseItems;
+    }
+
+    public String getTransferType() {
+        return transferType;
+    }
+
+    public void setTransferType(String transferType) {
+        this.transferType = transferType;
+    }
+
+    public Institution getFromSite() {
+        return FromSite;
+    }
+
+    public void setFromSite(Institution FromSite) {
+        this.FromSite = FromSite;
+    }
+
+    public Institution getToSite() {
+        return toSite;
+    }
+
+    public void setToSite(Institution toSite) {
+        this.toSite = toSite;
+    }
+
+    public List<DepartmentCategoryWiseItems> getResultsList() {
+        return resultsList;
+    }
+
+    public void setResultsList(List<DepartmentCategoryWiseItems> resultsList) {
+        this.resultsList = resultsList;
     }
 
 }

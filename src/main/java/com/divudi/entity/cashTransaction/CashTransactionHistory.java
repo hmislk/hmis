@@ -5,6 +5,7 @@
  */
 package com.divudi.entity.cashTransaction;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.HistoryType;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
@@ -24,7 +25,7 @@ import javax.persistence.Temporal;
  * @author safrin
  */
 @Entity
-public class CashTransactionHistory implements Serializable {
+public class CashTransactionHistory implements Serializable, RetirableEntity  {
 
     private static final long serialVersionUID = 1L;
     @Id

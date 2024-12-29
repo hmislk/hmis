@@ -109,10 +109,10 @@ public class TransferIssueController implements Serializable {
     public boolean isFullyIssued(Bill bill) {
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
             return false; // Null or empty bills are not considered fully issued
-        }        
-        
+        }
+
         for (BillItem originalItem : billItems) {
-            
+
             if (originalItem.getPharmaceuticalBillItem().getQty() > 0) {
                 return false; // If any item's issued quantity is less than its original quantity
             }
@@ -450,6 +450,7 @@ public class TransferIssueController implements Serializable {
 
                 //Addinng Staff
 //                System.out.println("//Addinng Staff = ");
+                System.out.println(i.getPharmaceuticalBillItem() + " 1 " + i.getPharmaceuticalBillItem().getQtyInUnit() + " " + getIssuedBill().getToStaff());
                 Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
                         Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
 
@@ -578,7 +579,7 @@ public class TransferIssueController implements Serializable {
             getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
         }
 
-//        getIssuedBill().setInstitution(getSessionController().getInstitution());
+        getIssuedBill().setInstitution(getSessionController().getInstitution());
         getIssuedBill().setDepartment(getIssuedBill().getFromDepartment());
 //
         getIssuedBill().setToInstitution(getIssuedBill().getToDepartment().getInstitution());

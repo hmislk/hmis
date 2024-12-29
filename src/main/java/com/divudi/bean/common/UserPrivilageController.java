@@ -112,6 +112,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode billingMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Opd, "Billing Menu"), opdNode);
 
         TreeNode billNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdBilling, "Bill"), opdNode);
+        TreeNode billOrderingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdOrdering, "Bill without Financial Details"), opdNode);
         TreeNode preBillingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdPreBilling, "Pre Billing"), opdNode);
         TreeNode collectingCentreBillingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCollectingCentreBilling, "Collecting Centre Billing"), opdNode);
         TreeNode billSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdBillSearch, "Bill Search"), opdNode);
@@ -405,6 +406,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode membershipNode = new DefaultTreeNode(new PrivilegeHolder(null, "Membership"), allNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShip, "Membership Menu"), membershipNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipAdd, "Add Members"), membershipNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipSearch, "Search Members"), membershipNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipEdit, "Edit Members"), membershipNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.MembershipReports, "Membership Reports"), membershipNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.MembershipDiscountManagement, "Membership Discount Management"), membershipNode);
