@@ -13,14 +13,28 @@
             <ui:define name="subcontent">
 
                 <h:form >
+
                     <div class='row' >
-                        <div class="col" >
+                        <div class="col p-1" >
                             <p:commandButton 
                                 value="Delete All Patient Investigation Related Data" 
                                 action="#{dataAdministrationController.retireAllPatientInvestigationRelatedData}" 
-                                onclick="return confirm('Are you sure you want to delete all patient investigation-related data?');">
+                                ajax="false">
                             </p:commandButton>
-
+                        </div>
+                        <div class="col p-1" >
+                            <p:commandButton 
+                                value="Delete All Bill Related Data" 
+                                action="#{dataAdministrationController.retireAllBillRelatedData}" 
+                                ajax="false">
+                            </p:commandButton>
+                        </div>
+                        <div class="col p-1" >
+                            <p:commandButton 
+                                value="Delete All Pharmacy Related Data" 
+                                action="#{dataAdministrationController.retireAllPharmacyRelatedData}" 
+                                ajax="false">
+                            </p:commandButton>
                         </div>
                     </div>
 
