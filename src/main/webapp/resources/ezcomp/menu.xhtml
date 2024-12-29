@@ -62,8 +62,12 @@
                             value="OPD Billing"
                             icon="fa fa-fw fa-notes-medical" 
                             rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
-
-
+                        <p:menuitem 
+                            ajax="false" 
+                            action="#{opdOrderController.navigateToNewOpdOrder()}" 
+                            value="OPD Ordering"
+                            icon="fa fa-fw fa-notes-medical" 
+                            rendered="#{webUserController.hasPrivilege('OpdOrdering')}" ></p:menuitem>
                         <p:menuitem 
                             ajax="false" 
                             action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
@@ -281,25 +285,25 @@
                         ajax="false" 
                         action="#{patientController.navigateToAddNewIndividualMembership()}"
                         value="Add Individual Membership" 
-                        rendered="#{webUserController.hasPrivilege('MemberShip')}"
+                        rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
                         icon="fa fa-user-plus"></p:menuitem>
                     <p:menuitem 
                         ajax="false" 
                         action="#{patientController.navigateToSearchIndividualMembership()}"
                         value="Search Individual Membership"
-                        rendered="#{webUserController.hasPrivilege('MemberShip')}"
+                        rendered="#{webUserController.hasPrivilege('MemberShipSearch')}"
                         icon="fa fa-search"></p:menuitem>
                     <p:menuitem 
                         ajax="false" 
                         action="#{patientController.navigateToAddNewFamilyMembership()}"
                         value="Add Family Membership" 
-                        rendered="#{webUserController.hasPrivilege('MemberShip')}"
+                        rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
                         icon="fa fa-users"></p:menuitem>
                     <p:menuitem 
                         ajax="false" 
                         action="#{patientController.navigateToSearchFamilyMembership()}"
                         value="Search Family Membership" 
-                        rendered="#{webUserController.hasPrivilege('MemberShip')}"
+                        rendered="#{webUserController.hasPrivilege('MemberShipSearch')}"
                         icon="fa fa-search-plus"></p:menuitem>
                     <p:menuitem 
                         ajax="false" 

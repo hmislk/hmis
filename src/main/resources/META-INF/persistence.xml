@@ -12,6 +12,7 @@
       <property name="eclipselink.ddl-generation.validation" value="true"/>
     </properties>
   </persistence-unit>
+  
   <persistence-unit name="hmisAuditPU" transaction-type="JTA">
     <jta-data-source>jdbc/coopaudit</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>

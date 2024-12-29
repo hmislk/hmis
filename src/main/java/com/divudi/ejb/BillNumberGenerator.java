@@ -42,7 +42,7 @@ import javax.inject.Inject;
 /**
  *
  * @author Dr. M H B Ariyaratne <buddhika.ari at gmail.com>
- * 
+ *
  */
 @Singleton
 public class BillNumberGenerator {
@@ -98,7 +98,7 @@ public class BillNumberGenerator {
         }
     }
 
-     private BillNumber fetchLastBillNumberSynchronized(Institution institution) {
+    private BillNumber fetchLastBillNumberSynchronized(Institution institution) {
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 
         String sql = "SELECT b FROM "
@@ -156,7 +156,7 @@ public class BillNumberGenerator {
 
         return billNumber;
     }
-    
+
     private BillNumber fetchLastBillNumberSynchronized(Institution institution, Department toDepartment, BillType billType, BillClassType billClassType) {
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 
@@ -239,8 +239,6 @@ public class BillNumberGenerator {
 
         return billNumber;
     }
-
-   
 
     public PatientFacade getPatientFacade() {
         return patientFacade;
@@ -1442,10 +1440,12 @@ public class BillNumberGenerator {
 
         // Generate the bill number string
         StringBuilder result = new StringBuilder();
-
+        
         // Append institution code
-        result.append(dep.getInstitution().getInstitutionCode());
-
+        if(configOptionApplicationController.getBooleanValueByKey("Add the Institution Code to the Bill Number Generator",true)){
+            result.append(dep.getInstitution().getInstitutionCode());
+        }
+        
         // Append department code
         result.append(dep.getDepartmentCode());
         result.append("/");
@@ -1464,7 +1464,6 @@ public class BillNumberGenerator {
         return result.toString();
     }
 
-    
     @Deprecated //Use public String departmentBillNumberGeneratorYearly(Department dep, BillTypeAtomic billType)
     public String departmentBillNumberGeneratorYearly(Institution ins, Department dep, BillType billType, BillClassType billClassType) {
         BillNumber billNumber = fetchLastBillNumberForYear(ins);
@@ -1567,7 +1566,9 @@ public class BillNumberGenerator {
         StringBuilder result = new StringBuilder();
 
         result.append(dep.getDepartmentCode());
-
+        
+        result.append("/");
+        
         if (billNumberSuffix != BillNumberSuffix.NONE) {
             result.append(billNumberSuffix);
         }
