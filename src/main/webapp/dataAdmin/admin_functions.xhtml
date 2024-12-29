@@ -13,24 +13,28 @@
             <ui:define name="subcontent">
 
                 <h:form >
-                    <!-- Progress Bar Dialog -->
-                    <p:dialog id="progressBarDialog" widgetVar="progressBarDialog" modal="true" header="Progress" closable="false" draggable="false" resizable="false">
-                        <p:outputLabel id="progressBarLabel" value="#{dataAdministrationController.progressMessage}" />
-                        <p:progressBar widgetVar="progressBar" value="#{dataAdministrationController.progress}" labelTemplate="{value}%" style="width:100%" />
-                    </p:dialog>
 
                     <div class='row' >
                         <div class="col p-1" >
                             <p:commandButton 
                                 value="Delete All Patient Investigation Related Data" 
                                 action="#{dataAdministrationController.retireAllPatientInvestigationRelatedData}" 
-                                onstart="PF('progressBarDialog').show();" 
-                                oncomplete="PF('progressBarDialog').hide();"
-                                update="progressBarLabel"
-                                process="@this" 
-                                global="false">
+                                ajax="false">
                             </p:commandButton>
-                            <p:poll interval="1000" listener="#{dataAdministrationController.updateProgress}" update="progressBarLabel progressForm" widgetVar="progressPoll" />
+                        </div>
+                         <div class="col p-1" >
+                            <p:commandButton 
+                                value="Delete All Bill Related Data" 
+                                action="#{dataAdministrationController.retireAllBillRelatedData}" 
+                                ajax="false">
+                            </p:commandButton>
+                        </div>
+                        <div class="col p-1" >
+                            <p:commandButton 
+                                value="Delete All Pharmacy Related Data" 
+                                action="#{dataAdministrationController.retireAllBillRelatedData}" 
+                                ajax="false">
+                            </p:commandButton>
                         </div>
                     </div>
 
