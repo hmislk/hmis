@@ -5,6 +5,7 @@
 package com.divudi.entity.lab;
 
 //import ch.lambdaj.Lambda;
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.ReportType;
 import com.divudi.data.lab.PatientInvestigationStatus;
@@ -39,7 +40,7 @@ import javax.persistence.Transient;
  * @author Buddhika
  */
 @Entity
-public class PatientReport implements Serializable {
+public class PatientReport implements Serializable, RetirableEntity {
 
     @OneToMany(mappedBy = "patientReport", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PatientReportItemValue> patientReportItemValues;

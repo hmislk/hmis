@@ -565,6 +565,9 @@ public class DataAdministrationController implements Serializable {
                 retirable.setRetirer(retirer);
                 retirable.setRetireComments(uuid);
                 facade.edit(entity); // Use the specific facade passed as a parameter
+            }else{
+                System.out.println("Entity that does not implement retirable");
+                System.out.println("entity = " + entity);
             }
             processedRecords++;
             updateProgress();
