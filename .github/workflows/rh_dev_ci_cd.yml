@@ -65,9 +65,9 @@ jobs:
           chmod 600 private_key.pem
 
           # Variables
-          WAR_NAME="dev.war"
+          WAR_NAME="rh.war"
           WAR_DIR="/home/appuser/app/latest"
-          APP_NAME="dev"
+          APP_NAME="rh"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
@@ -101,7 +101,7 @@ jobs:
             sudo su - appuser
             echo 'AS_ADMIN_PASSWORD=${{ secrets.DEV_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
-            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
+            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --properties Datasource=jdbc/ruhunu:Datasource=jdbc/ruhunuAudit --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
           "
 
