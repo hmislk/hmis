@@ -1206,7 +1206,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         }
         dueBillFees.removeAll(removeingBillFees);
         calculatePaymentsSelected();
-        return "/inward/inward_bill_staff_payment";
+        return "/inward/inward_bill_professional_payment";
     }
 
     public void calculateTotalDue() {
