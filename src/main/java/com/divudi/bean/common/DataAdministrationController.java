@@ -64,7 +64,6 @@ import com.divudi.entity.PatientFlag;
 import com.divudi.entity.PatientItem;
 import com.divudi.entity.Payment;
 import com.divudi.entity.Person;
-import com.divudi.entity.PharmacyBill;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.entity.cashTransaction.CashBookEntry;
@@ -100,6 +99,12 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PatientSampleComponantFacade;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.facade.PharmaceuticalItemFacade;
+import com.divudi.facade.StockFacade;
+import com.divudi.facade.StockHistoryFacade;
+import com.divudi.facade.StockVarientBillItemFacade;
+import com.divudi.facade.UserStockContainerFacade;
+import com.divudi.facade.UserStockFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.sql.SQLSyntaxErrorException;
@@ -238,6 +243,24 @@ public class DataAdministrationController implements Serializable {
     BillNumberGenerator billNumberGenerator;
 
     @EJB
+    protected PharmaceuticalItemFacade pharmaceuticalItemFacade;
+
+    @EJB
+    protected StockFacade stockFacade;
+
+    @EJB
+    protected StockHistoryFacade stockHistoryFacade;
+
+    @EJB
+    protected StockVarientBillItemFacade stockVarientBillItemFacade;
+
+    @EJB
+    protected UserStockFacade userStockFacade;
+
+    @EJB
+    protected UserStockContainerFacade userStockContainerFacade;
+
+    @EJB
     BillEjb billEjb;
 
     List<Bill> bills;
@@ -358,16 +381,47 @@ public class DataAdministrationController implements Serializable {
     }
 
     public void retireAllPharmacyRelatedData() {
-        PharmaceuticalItem pharmaceuticalItem;
-        ItemBatch itemBatch;
-        Stock stock;
-        StockHistory stockHistory;
-        StockVarientBillItem stockVarientBillItem;
-        UserStock userStock;
-        UserStockContainer userStockContainer;
-        
-        
+        progress = 0;
+        progressMessage = "Starting retirement process for pharmacy-related data...";
+        System.out.println(progressMessage);
 
+        Date retiredAt = new Date(); // Common timestamp for all retire operations
+        WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
+        String uuid = CommonFunctions.generateUuid();
+
+        // Retrieve all entities and calculate the total record count in one go
+        List<PharmaceuticalItem> pharmaceuticalItems = pharmaceuticalItemFacade.findAll();
+        List<ItemBatch> itemBatches = itemBatchFacade.findAll();
+        List<Stock> stocks = stockFacade.findAll();
+        List<StockHistory> stockHistories = stockHistoryFacade.findAll();
+        List<StockVarientBillItem> stockVarientBillItems = stockVarientBillItemFacade.findAll();
+        List<UserStock> userStocks = userStockFacade.findAll();
+        List<UserStockContainer> userStockContainers = userStockContainerFacade.findAll();
+
+        totalRecords = safeCount(pharmaceuticalItems) + safeCount(itemBatches) + safeCount(stocks)
+                + safeCount(stockHistories) + safeCount(stockVarientBillItems) + safeCount(userStocks)
+                + safeCount(userStockContainers);
+
+        if (totalRecords == 0) {
+            progress = 100;
+            progressMessage = "No pharmacy-related records to retire.";
+            System.out.println(progressMessage);
+            return;
+        }
+
+        // Retire all entities
+        processedRecords += retireEntities(pharmaceuticalItems, retiredAt, retirer, uuid, pharmaceuticalItemFacade);
+        processedRecords += retireEntities(itemBatches, retiredAt, retirer, uuid, itemBatchFacade);
+        processedRecords += retireEntities(stocks, retiredAt, retirer, uuid, stockFacade);
+        processedRecords += retireEntities(stockHistories, retiredAt, retirer, uuid, stockHistoryFacade);
+        processedRecords += retireEntities(stockVarientBillItems, retiredAt, retirer, uuid, stockVarientBillItemFacade);
+        processedRecords += retireEntities(userStocks, retiredAt, retirer, uuid, userStockFacade);
+        processedRecords += retireEntities(userStockContainers, retiredAt, retirer, uuid, userStockContainerFacade);
+
+        // Completion message
+        progress = 100;
+        progressMessage = "Retirement process for pharmacy-related data completed.";
+        System.out.println(progressMessage);
     }
 
     public void retireAllBillRelatedData() {

@@ -1344,7 +1344,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         // If all checks pass
         return true;
     }
-    
+
     private boolean passwordRequirementsCorrect() {
         passwordRequirementMessage = "";
         boolean preventMatchingPasswordWithUsername = configOptionApplicationController.getBooleanValueByKey("Prevent matching password with username", false);
@@ -1369,7 +1369,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         // If all checks pass
         return true;
     }
-    
 
     public String navigateToLoginPageByUsersDefaultLoginPage() {
         if (loggedUser == null) {
@@ -1996,13 +1995,30 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     @PreDestroy
     private void recordLogout() {
-        //////// // System.out.println("session distroyed " + thisLogin);
+        System.out.println("Session destroyed: " + thisLogin);
+
         if (thisLogin == null) {
             return;
         }
+
         applicationController.removeLoggins(this);
-        thisLogin.setLogoutAt(Calendar.getInstance().getTime());
-        getLoginsFacade().edit(thisLogin);
+
+        try {
+            // Set logout time
+            thisLogin.setLogoutAt(Calendar.getInstance().getTime());
+
+            // Ensure the entity is not detached by re-fetching it using the facade
+            Logins managedLogin = getLoginsFacade().find(thisLogin.getId());
+            if (managedLogin != null) {
+                managedLogin.setLogoutAt(thisLogin.getLogoutAt());
+                getLoginsFacade().edit(managedLogin);
+            } else {
+                System.err.println("Error: Unable to find the Login entity with ID: " + thisLogin.getId());
+            }
+        } catch (Exception e) {
+            System.err.println("Error recording logout: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @Override
