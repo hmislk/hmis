@@ -47,6 +47,7 @@ import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.PreBill;
+import com.divudi.entity.StockBill;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.ParseException;
@@ -290,17 +291,169 @@ public class PharmacyBillSearch implements Serializable {
                 getSessionController().getDepartment(), BillNumberSuffix.ISSCAN);
 
         if (prebill != null) {
-            if (getBill().getStockBill() != null) {
-                prebill.setStockBill(getBill().getStockBill());
-                prebill.getStockBill().copyStockBill(getBill().getStockBill());
-                getBillFacade().edit(prebill);
-            }
             getBill().setCancelled(true);
             getBill().setCancelledBill(prebill);
+            getBill().setReferenceBill(prebill);
             getBillFacade().edit(getBill());
             JsfUtil.addSuccessMessage("Canceled");
             printPreview = true;
         }
+    }
+
+    public void cancelBill() {
+        if (getBill() == null) {
+            JsfUtil.addErrorMessage("Please Select a Bill");
+            return;
+        }
+
+        if (checkIssueReturn(getBill())) {
+            JsfUtil.addErrorMessage("Issue Bill had been Returned. You can't cancel the bill.");
+            return;
+        }
+
+        if (getBill().getComments() == null || getBill().getComments().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please Enter Comments");
+            return;
+        }
+
+        if (checkDepartment(getBill())) {
+            return;
+        }
+
+//        Bill prebill = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(),
+//                getSessionController().getDepartment(), BillNumberSuffix.ISSCAN);
+        if (getBill().isCancelled()) {
+            JsfUtil.addErrorMessage("Already Canceled");
+            return;
+        }
+
+        try {
+            createCancellationBill();
+            JsfUtil.addSuccessMessage("Canceled");
+            printPreview = true;
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to cancel the bill: " + e.getMessage());
+            // Log the exception
+        }
+    }
+
+    private void createCancellationBill() {
+        CancelledBill c = createCancelledBillInstance(getBill());
+        
+        List<BillItem> billItems = savePreBillItems(c, sessionController.getLoggedUser(),
+                sessionController.getLoggedUser().getDepartment());
+        c.setBillItems(billItems);
+
+        if (c.getStockBill() != null) {
+            c.getStockBill().invertStockBillValues(getBill());
+        } else {
+            // Ensure getBill().getStockBill() is not null
+            StockBill stockBill = getBill().getStockBill();
+            if (stockBill != null) {
+                c.setStockBill(stockBill);
+                c.getStockBill().invertStockBillValues(getBill());
+            } else {
+                // Handle the case where there is no StockBill (either log or throw an exception)
+                System.out.println("No StockBill available in getBill()");
+            }
+        }
+
+        getBillFacade().edit(c);
+
+        bill.setForwardReferenceBill(c);
+        bill.setCancelled(true);
+        bill.setCancelledBill(c);
+        bill.setReferenceBill(c);
+        getBillFacade().edit(bill);
+    }
+
+    private CancelledBill createCancelledBillInstance(Bill b) {
+        CancelledBill c = new CancelledBill();
+        c.copy(b);
+        c.copyValue(b);
+        c.invertQty();
+        c.setBilledBill(getBill());
+        c.setDeptId(getBillNumberBean().institutionBillNumberGenerator(
+                sessionController.getLoggedUser().getDepartment(), getBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.ISSCAN));
+        c.setInsId(getBillNumberBean().institutionBillNumberGenerator(
+                sessionController.getLoggedUser().getInstitution(), getBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.ISSCAN));
+        c.setCreatedAt(new Date());
+        c.setCreater(sessionController.getLoggedUser());
+        c.setComments("Re Add To Stock");
+        c.setBackwardReferenceBill(b);
+        c.setBillClassType(BillClassType.CancelledBill);
+        c.setBillType(BillType.PharmacyIssue);
+        c.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
+        if (c.getId() == null) {
+            getBillFacade().create(c);
+        }
+        return c;
+    }
+
+    private List<BillItem> savePreBillItems(CancelledBill cancelBill, WebUser user, Department department) {
+        List<BillItem> billItems = new ArrayList<>();
+
+        if (getBill() == null) {
+            return billItems;
+        }
+
+        if (getBill().getBillItems() == null) {
+            return billItems;
+        }
+
+        for (BillItem bItem : getBill().getBillItems()) {
+            try {
+                if (bItem == null) {
+                    System.err.println("BillItem is null, skipping.");
+                    continue;
+                }
+
+                BillItem newBillItem = new BillItem();
+                newBillItem.copy(bItem);
+                newBillItem.invertValue(bItem);
+                newBillItem.setBill(cancelBill);
+                newBillItem.setReferanceBillItem(bItem);
+                newBillItem.setCreatedAt(new Date());
+                newBillItem.setCreater(user);
+
+                if (newBillItem.getId() == null) {
+                    System.out.println("Creating BillItem: " + newBillItem);
+                    getBillItemFacade().create(newBillItem);
+                }
+
+                PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
+                if (bItem.getPharmaceuticalBillItem() != null) {
+                    ph.copy(bItem.getPharmaceuticalBillItem());
+                    ph.invertValue(bItem.getPharmaceuticalBillItem());
+                    ph.setBillItem(newBillItem);
+
+                    if (ph.getId() == null) {
+                        System.out.println("Creating PharmaceuticalBillItem: " + ph);
+                        getPharmaceuticalBillItemFacade().create(ph);
+                    }
+
+                    newBillItem.setPharmaceuticalBillItem(ph);
+                    getBillItemFacade().edit(newBillItem);
+
+                    double qty = (bItem.getQty() != null) ? Math.abs(bItem.getQty()) : 0.0;
+                    if (ph.getStock() != null) {
+                        getPharmacyBean().addToStock(ph.getStock(), qty, ph, department);
+                    } else {
+                        System.err.println("Stock is null for PharmaceuticalBillItem: " + ph);
+                    }
+                } else {
+                    System.err.println("PharmaceuticalBillItem is null for BillItem: " + bItem);
+                }
+
+                billItems.add(newBillItem);
+            } catch (Exception e) {
+                System.err.println("Error processing BillItem: " + bItem);
+                e.printStackTrace();
+                throw e; // Re-throw to trigger transaction rollback
+            }
+        }
+
+        return billItems;
     }
 
     public void unitIssueCancel() {

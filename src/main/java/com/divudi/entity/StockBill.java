@@ -20,15 +20,12 @@ public class StockBill implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
-    
+
     private double stockValueAtPurchaseRates;
     private double stockValueAsSaleRate;
-    
-    
-    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER, optional = true,orphanRemoval = true)
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
     private Bill bill;
-    
 
     public Long getId() {
         return id;
@@ -37,13 +34,28 @@ public class StockBill implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+
     public void copyStockBill(StockBill bill) {
-        if (bill!= null) {
+        if (bill != null) {
             stockValueAsSaleRate = bill.getStockValueAsSaleRate();
             stockValueAtPurchaseRates = bill.getStockValueAtPurchaseRates();
+
         }
     }
-    
+
+    public StockBill invertStockBill() {
+        StockBill newStockBill = new StockBill();
+        // Copy relevant fields but avoid duplicating the ID
+        newStockBill.setStockValueAtPurchaseRates(-this.getStockValueAtPurchaseRates());
+        newStockBill.setStockValueAsSaleRate(-this.getStockValueAsSaleRate());
+        return newStockBill;
+    }
+
+    public void invertStockBillValues(Bill bill) {
+        stockValueAsSaleRate = 0 - bill.getStockBill().getStockValueAsSaleRate();
+        stockValueAtPurchaseRates = 0 - bill.getStockBill().getStockValueAtPurchaseRates();
+
+    }
 
     @Override
     public int hashCode() {
@@ -93,5 +105,5 @@ public class StockBill implements Serializable {
     public void setBill(Bill bill) {
         this.bill = bill;
     }
-    
+
 }
