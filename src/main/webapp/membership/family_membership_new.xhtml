@@ -4,6 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
@@ -14,7 +15,11 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
-                <h:panelGroup >
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabReportFormatEditing')}">
+                    <na:not_authorize />
+                </h:panelGroup>
+
+                <h:panelGroup  rendered="#{webUserController.hasPrivilege('MemberShipAdd')}">
                     <h:form  >
                         <p:growl />
                         <p:panel >
