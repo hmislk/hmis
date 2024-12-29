@@ -20,17 +20,17 @@
                     </p:dialog>
 
                     <div class='row' >
-                        <div class="col" >
+                        <div class="col p-1" >
                             <p:commandButton 
                                 value="Delete All Patient Investigation Related Data" 
-                                action="#{dataAdministrationController.startRetireAllPatientInvestigationRelatedData}" 
+                                action="#{dataAdministrationController.retireAllPatientInvestigationRelatedData}" 
                                 onstart="PF('progressBarDialog').show();" 
                                 oncomplete="PF('progressBarDialog').hide();"
                                 update="progressBarLabel"
                                 process="@this" 
                                 global="false">
                             </p:commandButton>
-
+                            <p:poll interval="1000" listener="#{dataAdministrationController.updateProgress}" update="progressBarLabel progressForm" widgetVar="progressPoll" />
                         </div>
                     </div>
 

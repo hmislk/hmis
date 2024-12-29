@@ -238,6 +238,8 @@ public class DataAdministrationController implements Serializable {
 
     private int progress;
     private String progressMessage;
+    int processedRecords = 0;
+    int totalRecords = 0;
 
     public void convertNameToCode() {
         code = CommonFunctions.nameToCode(name);
@@ -306,7 +308,7 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
-    @Asynchronous
+//    @Asynchronous
     public void retireAllPatientInvestigationRelatedData() {
         progress = 0;
         progressMessage = "Starting retirement process...";
@@ -316,8 +318,6 @@ public class DataAdministrationController implements Serializable {
         String uuid = CommonFunctions.generateUuid();
 
         // Get total record count dynamically
-        int totalRecords = 0;
-
         totalRecords += safeCount(patientFacade.findAll());
         totalRecords += safeCount(patientInvestigationFacade.findAll());
         totalRecords += safeCount(patientReportFacade.findAll());
@@ -337,28 +337,26 @@ public class DataAdministrationController implements Serializable {
             return;
         }
 
-        int processedRecords = 0;
-
         // Handle retiring all entities
-        processedRecords += retireEntities(patientFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
-        processedRecords += retireEntities(patientInvestigationFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
-        processedRecords += retireEntities(patientReportFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
-        processedRecords += retireEntities(patientDepositFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
-        processedRecords += retireEntities(patientReportItemValueFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
-        processedRecords += retireEntities(patientEncounterFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
-        processedRecords += retireEntities(patientDepositHistoryFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
-        processedRecords += retireEntities(patientFlagFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
-        processedRecords += retireEntities(patientItemFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
-        processedRecords += retireEntities(patientRoomFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
-        processedRecords += retireEntities(patientSampleFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
-        processedRecords += retireEntities(patientSampleComponantFacade.findAll(), retiredAt, retirer, uuid, totalRecords, processedRecords);
+        processedRecords += retireEntities(patientFacade.findAll(), retiredAt, retirer, uuid);
+        processedRecords += retireEntities(patientInvestigationFacade.findAll(), retiredAt, retirer, uuid);
+        processedRecords += retireEntities(patientReportFacade.findAll(), retiredAt, retirer, uuid);
+        processedRecords += retireEntities(patientDepositFacade.findAll(), retiredAt, retirer, uuid);
+        processedRecords += retireEntities(patientReportItemValueFacade.findAll(), retiredAt, retirer, uuid);
+        processedRecords += retireEntities(patientEncounterFacade.findAll(), retiredAt, retirer, uuid);
+        processedRecords += retireEntities(patientDepositHistoryFacade.findAll(), retiredAt, retirer, uuid);
+        processedRecords += retireEntities(patientFlagFacade.findAll(), retiredAt, retirer, uuid);
+        processedRecords += retireEntities(patientItemFacade.findAll(), retiredAt, retirer, uuid);
+        processedRecords += retireEntities(patientRoomFacade.findAll(), retiredAt, retirer, uuid);
+        processedRecords += retireEntities(patientSampleFacade.findAll(), retiredAt, retirer, uuid);
+        processedRecords += retireEntities(patientSampleComponantFacade.findAll(), retiredAt, retirer, uuid);
 
         // Completion message
         progress = 100;
         progressMessage = "Retirement process completed.";
     }
 
-    private <T> int retireEntities(List<T> entities, Date retiredAt, WebUser retirer, String uuid, int totalRecords, int processedRecords) {
+    private <T> int retireEntities(List<T> entities, Date retiredAt, WebUser retirer, String uuid) {
         if (entities == null || entities.isEmpty()) {
             return 0;
         }
@@ -378,7 +376,7 @@ public class DataAdministrationController implements Serializable {
                 facade.edit(entity);
             }
             processedRecords++;
-            updateProgress(processedRecords, totalRecords);
+            updateProgress();
         }
         return entities.size();
     }
@@ -412,8 +410,9 @@ public class DataAdministrationController implements Serializable {
         return null;
     }
 
-    private void updateProgress(int processedRecords, int totalRecords) {
+    private void updateProgress() {
         progress = (processedRecords * 100) / totalRecords;
+        System.out.println("progress = " + progress);
     }
 
     private int safeCount(List<?> list) {
