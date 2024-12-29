@@ -26,7 +26,6 @@
             <div class="institutionContact" >
                 <div >
                     <h:outputLabel value="Telephone : #{cc.attrs.bill.referenceBill.creater.institution.phone} / #{cc.attrs.bill.referenceBill.creater.department.telephone1}"/>
-
                 </div>
                 <!--                <div >
                                     <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.referenceBill.creater.department.telephone1} "/>
@@ -52,7 +51,13 @@
                     <h:panelGrid columns="3">
                         <h:outputLabel value="Supplier Name " />
                         <h:outputLabel value=" : "/>
-                        <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"   /> 
+                        <h:panelGroup >
+                            <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/> 
+                            <h:outputLabel value="&nbsp;&nbsp;&nbsp;("  rendered="#{cc.attrs.bill.toInstitution.code ne null}"/> 
+                            <h:outputLabel value="#{cc.attrs.bill.toInstitution.code}" rendered="#{cc.attrs.bill.toInstitution.code  ne null}"/> 
+                            <h:outputLabel value=")"  rendered="#{cc.attrs.bill.toInstitution.code  ne null}"/> 
+                        </h:panelGroup>
+
                         <h:outputLabel value="P.O. No"/>
                         <h:outputLabel value=" : "/>
                         <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
@@ -102,7 +107,14 @@
                             <h:panelGroup rendered="#{not bip.retired}" >
                                 <tr>
                                     <td style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">#{status.index + 1}</td>
-                                    <td style="text-align: left; min-width: 400px; border: 1px solid black;">#{bip.item.name}</td>
+                                    <td style="text-align: left; min-width: 400px; border: 1px solid black;">
+                                        <h:outputLabel value="#{bip.item.name}" ></h:outputLabel>
+                                        <h:outputLabel value="&nbsp;&nbsp;(" ></h:outputLabel>
+                                          <h:outputLabel value="#{bip.item.code}" ></h:outputLabel>
+                                           <h:outputLabel value=")" ></h:outputLabel>
+                                        
+                                    
+                                    </td>
                                     <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
                                         <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate}">
                                             <f:convertNumber pattern="#,##0.00" />
