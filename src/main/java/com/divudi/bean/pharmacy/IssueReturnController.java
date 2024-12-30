@@ -21,6 +21,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.StockBill;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -230,7 +231,7 @@ public class IssueReturnController implements Serializable {
     private void saveComponent() {
 
         double purchaseValue = 0.0;
-        double retailValue  = 0.0;
+        double retailValue = 0.0;
 
         for (BillItem i : getBillItems()) {
             double itemPurchaseValue = 0.0;
@@ -253,7 +254,7 @@ public class IssueReturnController implements Serializable {
 
             itemPurchaseValue = i.getPharmaceuticalBillItem().getPurchaseRate() * i.getQty();
             itemRetialValue = i.getPharmaceuticalBillItem().getRetailRate() * i.getQty();
-            
+
             PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
             if (i.getId() == null) {
@@ -277,12 +278,13 @@ public class IssueReturnController implements Serializable {
             getReturnBill().getBillItems().add(i);
 
             purchaseValue += itemPurchaseValue;
-            retailValue  += itemRetialValue;
+            retailValue += itemRetialValue;
         }
-        getReturnBill().setStockBill(getBill().getStockBill());
-        getReturnBill().getStockBill().setStockValueAtPurchaseRates(purchaseValue);
-        getReturnBill().getStockBill().setStockValueAsSaleRate(retailValue );
-        getReturnBill().getStockBill().invertStockBillValues(getReturnBill());
+        StockBill clonedStockBill = getBill().getStockBill().createNewBill();
+        clonedStockBill.setStockValueAtPurchaseRates(purchaseValue);
+        clonedStockBill.setStockValueAsSaleRate(retailValue);
+        getReturnBill().setStockBill(clonedStockBill);
+
         getBillFacade().edit(getReturnBill());
 
     }
