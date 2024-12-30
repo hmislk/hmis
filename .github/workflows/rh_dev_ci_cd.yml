@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev-ci-cd-setup
+  workflow_dispatch:
 
 jobs:
   build:
@@ -51,6 +52,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout Code
