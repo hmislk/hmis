@@ -261,13 +261,13 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Parenct Category Code" width="10em">
-                                    <h:outputText value="#{f.itemBatch.item.parentItem.category.code}" />
+                                    <h:outputText value="#{f.itemBatch.item.parentItem.code}" />
                                 </p:column>
                                 <p:column headerText="Parent Category Name" width="10em">
-                                    <h:outputText value="#{f.itemBatch.item.parentItem.category.name}" />
+                                    <h:outputText value="#{f.itemBatch.item.parentItem.name}" />
                                 </p:column>
                                 <p:column headerText="Item Category Code" width="10em">
-                                    <h:outputText value="#{f.itemBatch.item.category.code}" />
+                                    <h:outputText value="#{f.itemBatch.item.category.id}" />
                                 </p:column>
                                 <p:column headerText="Item Category Name" width="10em">
                                     <h:outputText value="#{f.itemBatch.item.category.name}" />
@@ -303,13 +303,13 @@
                                     <h:outputText value="" />
                                 </p:column>
                                 <p:column headerText="Rate" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.purcahseRate}" />
                                 </p:column>
                                 <p:column headerText="MRP" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.retailsaleRate}" />
                                 </p:column>
                                 <p:column headerText="Qty" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.item.totalStockQty}" />
                                 </p:column>
                                 <p:column headerText="Item Value" width="10em">
                                     <h:outputText value="" />
