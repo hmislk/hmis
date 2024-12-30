@@ -1,0 +1,14 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - dev-ci-cd-setup
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Printing Hello Build
+        run: echo 'Hello, Build!'
