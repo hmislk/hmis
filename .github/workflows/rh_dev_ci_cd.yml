@@ -1,4 +1,4 @@
-name: RH-DEV Deployment Pipeline
+name: RH-DEV Build & Deployment Pipeline
 
 on:
   push:
