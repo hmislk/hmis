@@ -43,11 +43,11 @@ public class StockBill implements Serializable {
     }
 
     public StockBill createNewBill() {
-    StockBill newBill = new StockBill();
-    newBill.setStockValueAtPurchaseRates(this.getStockValueAtPurchaseRates());
-    newBill.setStockValueAsSaleRate(this.getStockValueAsSaleRate());
-    return newBill;
-}
+        StockBill newBill = new StockBill();
+        newBill.setStockValueAtPurchaseRates(this.getStockValueAtPurchaseRates());
+        newBill.setStockValueAsSaleRate(this.getStockValueAsSaleRate());
+        return newBill;
+    }
 
     public void invertStockBillValues(Bill bill) {
         stockValueAsSaleRate = 0 - bill.getStockBill().getStockValueAsSaleRate();
