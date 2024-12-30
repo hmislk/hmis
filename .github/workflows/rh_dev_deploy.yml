@@ -3,7 +3,7 @@ name: RH-DEV Deployment Pipeline
 on:
   workflow_run:
     workflows: ["RH-DEV Build & Deployment Pipeline"]
-    branch:
+    branches:
       - dev-ci-cd-setup
     types:
       - completed
