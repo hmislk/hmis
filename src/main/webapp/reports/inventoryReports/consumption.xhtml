@@ -295,12 +295,12 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.stockAverages}" >
+                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" >
                                             <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Retail Sale Value" width="4em" style="text-align: right;">
+<!--                                <p:column headerText="Retail Sale Value" width="4em" style="text-align: right;">
                                     <h:outputText value="#{b.stockBill.stockValueAsSaleRate}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -308,7 +308,7 @@
                                         <h:outputLabel value="#{pharmacyController.totalPurchase}" >
                                             <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                     </f:facet>
-                                </p:column>
+                                </p:column>-->
 
                                 <p:column headerText="Created Date and Time" width="6em">
                                     <h:outputText value="#{b.createdAt}" >
