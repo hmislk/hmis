@@ -82,7 +82,7 @@ jobs:
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             sudo mkdir -p $WAR_DIR
-            sudo chown -R appuser:appuser /home/appuser/app
+            sudo chown -R appuser:appuser /home/appuser/app/latest
             sudo su - appuser
             cd $WAR_DIR
 
