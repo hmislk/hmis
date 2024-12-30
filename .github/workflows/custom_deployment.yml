@@ -13,13 +13,9 @@ on:
         - warning
         - debug
       tags:
-        description: 'Test scenario tags'
-        required: false
-        type: boolean
-      environment:
-        description: 'Environment to run tests againsts'
-        type: environment
+        description: 'Tags of the workflow'
         required: true
+        type: string
 
 jobs:
   log-the-inputs:
@@ -29,8 +25,6 @@ jobs:
       - run: |
           echo "Log level: $LEVEL"
           echo "Tags: $TAGS"
-          echo "Environment: $ENVIRONMENT"
         env:
           LEVEL: ${{ inputs.logLevel }}
           TAGS: ${{ inputs.tags }}
-          ENVIRONMENT: ${{ inputs.environment }}
