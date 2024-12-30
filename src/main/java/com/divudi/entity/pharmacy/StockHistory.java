@@ -4,6 +4,7 @@
  */
 package com.divudi.entity.pharmacy;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.HistoryType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -28,7 +29,7 @@ import javax.persistence.Temporal;
  * @author Buddhika
  */
 @Entity
-public class StockHistory implements Serializable {
+public class StockHistory implements Serializable, RetirableEntity  {
 
     private static final long serialVersionUID = 1L;
     @Id
