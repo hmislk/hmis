@@ -298,13 +298,12 @@
                                 </p:column>
                                 <p:column headerText="Supplier" width="10em">
                                     <h:outputText value="" />
-                                    </p:column>
+                                </p:column>
                                 <p:column headerText="Shelf life remaining (Days)" width="10em">
-    <h:outputText 
-        value="#{pharmacyReportController.calculateDaysRemaining(f.itemBatch.dateOfExpire)}"
-        style="#{pharmacyReportController.calculateDaysRemaining(f.itemBatch.dateOfExpire) &lt; 0 ? 'color:red;' : 'color:green;'}" />
-</p:column>
-
+                                    <h:outputText 
+                                        value="#{pharmacyReportController.calculateDaysRemaining(f.itemBatch.dateOfExpire)}"
+                                        style="#{pharmacyReportController.calculateDaysRemaining(f.itemBatch.dateOfExpire) &lt; 0 ? 'color:red;' : 'color:green;'}" />
+                                </p:column>
                                 <p:column headerText="Rate" width="10em">
                                     <h:outputText value="#{f.itemBatch.purcahseRate}" />
                                 </p:column>
@@ -331,7 +330,7 @@
                                 </p:column>
 
                             </p:dataTable>
-                            
+
 
                         </div>
 
