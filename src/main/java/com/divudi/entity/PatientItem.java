@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -19,7 +20,7 @@ import javax.persistence.Transient;
  * @author Buddhika
  */
 @Entity
-public class PatientItem implements Serializable {
+public class PatientItem implements Serializable, RetirableEntity {
 
     static final long serialVersionUID = 1L;
     @Id
