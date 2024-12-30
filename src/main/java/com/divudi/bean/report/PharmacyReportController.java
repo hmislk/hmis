@@ -2172,7 +2172,7 @@ public class PharmacyReportController implements Serializable {
         m.put("td", toDate);
 
         jpql = "select s"
-                + " from StockHistory s "
+                + " from Stock s "
                 + " where s.itemBatch.dateOfExpire between :fd and :td ";
         if (institution != null) {
             jpql += " and s.institution=:ins ";
@@ -2194,7 +2194,7 @@ public class PharmacyReportController implements Serializable {
         }
 
         jpql += " order by s.createdAt ";
-        stocks = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        stocks = stockFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public void processLabTestWiseCountReport() {
