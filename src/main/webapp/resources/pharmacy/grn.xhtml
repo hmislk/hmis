@@ -117,16 +117,17 @@
                 <table style="text-align: center; width: 100%; border: 2px!important;">
                     <thead style="font-size: 14px;">
                         <tr>
-                            <th style="text-align: left!important;min-width: 36%; font-weight: bold!important;">Item</th>
+                            <th style="text-align: left!important;min-width: 34%; font-weight: bold!important;">Item</th>
                             <th style="width: 4%; text-align: right!important; font-weight: bold!important;">Code</th>
-                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Expiry</th>
-                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Batch No.</th>
-                            <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Received Qty</th>
-                            <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Received Free Qty</th>
-                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Purchase Price</th>
-                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Sale Price</th>
+                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Expiry</th>
+                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Batch No.</th>
+                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Received Qty</th>
+                            <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Received Free Qty</th>
+                            <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Purchase Price</th>
+                            <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Sale Price</th>
                             <th style="width: 4%; text-align: right!important; font-weight: bold!important;">GP Profit%</th>
-                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Value</th>
+                            <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Purchase Value</th>
+                            <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Sale Value</th>
                         </tr>
                     </thead> 
 
@@ -178,7 +179,11 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>
-                                
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.retailRate*bip.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
                             </tr>
                         </ui:repeat>
                     </tbody>
@@ -186,8 +191,8 @@
                     <tfoot class="mt-4" style="font-size: 13px;">
 
                         <tr>
-                            <td colspan="9" style="text-align: left; font-weight: bold!important;">Sale Value</td>
-                            <td colspan="2" style="text-align: right; font-weight: bold!important;">
+                            <td colspan="9" style="text-align: left; ">Sale Value</td>
+                            <td colspan="2" style="text-align: right; ">
 
                                 <h:outputText value="#{cc.attrs.bill.saleValue}">
 
@@ -195,10 +200,19 @@
                                 </h:outputText>
                             </td>
                         </tr>
+                        
+                        <tr>
+                            <td colspan="9" style="text-align: left;">Free Quantity (Purchase Value) </td>
+                            <td colspan="2" style="text-align: right;">
+                                <h:outputText value="#{grnController.calFreeQuantityPurchaseValue(cc.attrs.bill)}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
 
                         <tr>
-                            <td colspan="9" style="text-align: left; font-weight: bold!important;">Total</td>
-                            <td colspan="2" style="text-align: right; font-weight: bold!important;">
+                            <td colspan="9" style="text-align: left;">Total</td>
+                            <td colspan="2" style="text-align: right;">
                                 <h:outputText value="#{0-cc.attrs.bill.total}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -206,8 +220,8 @@
                         </tr>
 
                         <tr>
-                            <td colspan="9" style="text-align: left; font-weight: bold!important;">Expenses</td>
-                            <td colspan="2" style="text-align: right; font-weight: bold!important;">
+                            <td colspan="9" style="text-align: left; ">Expenses</td>
+                            <td colspan="2" style="text-align: right;">
                                 <h:outputText value="#{cc.attrs.bill.expenseTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -215,8 +229,8 @@
                         </tr>
 
                         <tr>
-                            <td colspan="9" style="text-align: left; font-weight: bold!important;">Tax</td>
-                            <td colspan="2" style="text-align: right; font-weight: bold!important;">
+                            <td colspan="9" style="text-align: left; ">Tax</td>
+                            <td colspan="2" style="text-align: right; ">
                                 <h:outputText value="#{cc.attrs.bill.tax}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -224,8 +238,8 @@
                         </tr>
 
                         <tr>
-                            <td colspan="9" style="text-align: left; font-weight: bold!important;">Discount</td>
-                            <td colspan="2" style="text-align: right; font-weight: bold!important;">
+                            <td colspan="9" style="text-align: left; ">Discount</td>
+                            <td colspan="2" style="text-align: right; ">
                                 <h:outputText value="#{0-cc.attrs.bill.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -286,7 +300,8 @@
             </div>
 
             <div class="mb-4">
-                <h:outputLabel value="Received By : " style="text-align: right!important;"/>
+                <h:outputLabel value="Approved By : #{cc.attrs.bill.approveUser.webUserPerson.nameWithTitle}" style="text-align: right!important;" rendered="#{!empty cc.attrs.bill.approveAt}"/>
+                <h:outputLabel value="Printed At : #{sessionController.currentDate}" style="text-align: right!important;"/>
             </div>
 
 

@@ -112,20 +112,29 @@
     .channelNumber{
         font-size: 50px!important;
     }
-    
+
     .fivefivecustom3bill{
         position: relative!important;
-        padding: 5px!important;
+        padding: 0px!important;
         height: 14cm!important;
-
-        font-family: sans-serif!important;
+        width: 12cm!important;
+        padding-right: 1cm;
         font-size: 11px!important;
-        margin-left: 10px!important;
-        background-size: 100% auto!important;
-        /*        border: 1px solid!important;*/
-        font-size: 130%;
+        font-family: serif;
         text-transform: capitalize!important;
+    }
 
+    .medicineListTable{
+        margin-right: 1cm;
+        padding-right: 1cm;
+    }
+
+    .billFooter{
+        position: sticky;
+        top:11.5cm!important;
+        width: 90%;
+        font-size: 12px;
+        color: black;
     }
 
 }
@@ -147,21 +156,33 @@
         text-transform: capitalize!important;
 
     }
-    
+
     .fivefivecustom3bill{
         position: relative!important;
-
-        font-family: sans-serif!important;
-        font-size: 11px!important;
-        background-size: 100% auto!important;
-        margin-left: 10px!important;
-        margin-top: -1cm!important;
-        font-size: 100%!important;
-        text-transform: capitalize!important;
+        padding: 0px!important;
         height: 14cm!important;
-
+        width: 12cm!important;
+        font-size: 11px!important;
+        font-family: serif;
+        text-transform: capitalize!important;
+        padding-right: 1cm;
+        border: 1px solid black;
+        background-color: lightgray;
     }
-    
+
+    .medicineListTable{
+        margin-right: 1cm;
+        padding-right: 1cm;
+    }
+
+    .billFooter{
+        position: sticky;
+        top:11.5cm!important;
+        width: 90%;
+        font-size: 12px;
+        color: black;
+    }
+
     .posbill{
         position: relative!important;
 
