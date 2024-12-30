@@ -286,7 +286,7 @@
                                     <h:outputText value="#{b.invoiceNumber}" />
                                 </p:column>
                                 
-                                <p:column headerText="Cancel No" width="10em">
+                                <p:column headerText="Cancel No" width="5em">
                                     <h:outputText value="#{b.cancelledBill.deptId}" />
                                 </p:column>
 
@@ -299,16 +299,6 @@
                                             <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>
-
-<!--                                <p:column headerText="Retail Sale Value" width="4em" style="text-align: right;">
-                                    <h:outputText value="#{b.stockBill.stockValueAsSaleRate}" >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.totalPurchase}" >
-                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
-                                    </f:facet>
-                                </p:column>-->
 
                                 <p:column headerText="Created Date and Time" width="6em">
                                     <h:outputText value="#{b.createdAt}" >
@@ -365,11 +355,11 @@
                                     <p:outputLabel value="#{i.item.category.name}" />
                                 </p:column>
 
-                                <p:column headerText="Quantity" width="6em" style="text-align: right;">
+                                <p:column headerText="Quantity" width="4em" style="text-align: right; padding-right: 20px;">
                                     <p:outputLabel value="#{i.qty}" />
                                 </p:column>                                                  
 
-                                <p:column headerText="Cancel No" width="10em">
+                                <p:column headerText="Cancel No" width="5em">
                                     <p:outputLabel value="#{i.bill.cancelledBill.deptId}" />
                                 </p:column>
 
