@@ -261,10 +261,10 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Parenct Category Code" width="10em">
-                                    <h:outputText value="#{f.itemBatch.item.parentItem.code}" />
+                                    <h:outputText value="#{f.itemBatch.item.parentItem.name}" />
                                 </p:column>
                                 <p:column headerText="Parent Category Name" width="10em">
-                                    <h:outputText value="#{f.itemBatch.item.parentItem.name}" />
+                                    <h:outputText value="#{f.itemBatch.item.category.parentCategory.name}" />
                                 </p:column>
                                 <p:column headerText="Item Category Code" width="10em">
                                     <h:outputText value="#{f.itemBatch.item.category.id}" />
