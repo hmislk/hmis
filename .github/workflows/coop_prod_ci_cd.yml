@@ -1,4 +1,4 @@
-name: COOP-PROD Deployment Pipeline
+name: COOP-PROD Build & Deployment Pipeline
 
 on:
   push:
