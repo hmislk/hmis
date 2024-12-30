@@ -164,6 +164,16 @@ public class BillItem implements Serializable {
     private double previousRecieveQtyInUnit;
     @Transient
     private double previousRecieveFreeQtyInUnit;
+    @Transient
+    private double issuedPhamaceuticalItemQty;
+
+    public double getIssuedPhamaceuticalItemQty() {
+        return issuedPhamaceuticalItemQty;
+    }
+
+    public void setIssuedPhamaceuticalItemQty(double issuedPhamaceuticalItemQty) {
+        this.issuedPhamaceuticalItemQty = issuedPhamaceuticalItemQty;
+    }
 
 //    @Transient
 //    private double totalHospitalFeeValueTransient;
@@ -171,7 +181,6 @@ public class BillItem implements Serializable {
 //    private double totalDoctorFeeValueTransient;
 //    @Transient
 //    private double totalProcedureFeeValueTransient;
-
     @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
@@ -263,7 +272,7 @@ public class BillItem implements Serializable {
         vatPlusNetValue = billItem.getVatPlusNetValue();
         //  referanceBillItem=billItem.getReferanceBillItem();
     }
-    
+
     public void copyWithoutFinancialData(BillItem billItem) {
         item = billItem.getItem();
         sessionDate = billItem.getSessionDate();
@@ -470,7 +479,6 @@ public class BillItem implements Serializable {
 //    public boolean getRefunded() {
 //        return refunded;
 //    }
-
     public void setRefunded(boolean refunded) {
         this.refunded = refunded;
     }
@@ -631,7 +639,7 @@ public class BillItem implements Serializable {
         }
         return qty;
     }
-    
+
     @Transient
     public double getQtyAbsolute() {
         return Math.abs(getQty());
@@ -641,8 +649,6 @@ public class BillItem implements Serializable {
         this.qty = Qty;
 
     }
-    
-    
 
     public double getRemainingQty() {
         return remainingQty;
@@ -989,8 +995,6 @@ public class BillItem implements Serializable {
 //            }
 //        }
 //    }
-
-    
 //    public double getTotalHospitalFeeValueTransient() {
 //        calculateFeeTotals();
 //        return totalHospitalFeeValueTransient;
@@ -1005,7 +1009,6 @@ public class BillItem implements Serializable {
 //        calculateFeeTotals();
 //        return totalProcedureFeeValueTransient;
 //    }
-
     public double getOtherFee() {
         return otherFee;
     }
@@ -1022,7 +1025,6 @@ public class BillItem implements Serializable {
         this.feeValue = feeValue;
     }
 
-    
     public PatientInvestigation getPatientInvestigation() {
         return patientInvestigation;
     }
@@ -1062,7 +1064,5 @@ public class BillItem implements Serializable {
     public void setPeformedDepartment(Department peformedDepartment) {
         this.peformedDepartment = peformedDepartment;
     }
-    
-    
 
 }
