@@ -228,7 +228,14 @@ public class IssueReturnController implements Serializable {
     }
 
     private void saveComponent() {
+
+        double purchaseValue = 0.0;
+        double retailValue  = 0.0;
+
         for (BillItem i : getBillItems()) {
+            double itemPurchaseValue = 0.0;
+            double itemRetialValue = 0.0;
+
             i.getPharmaceuticalBillItem().setQtyInUnit((double) (double) i.getQty());
 
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
@@ -238,12 +245,15 @@ public class IssueReturnController implements Serializable {
             i.setBill(getReturnBill());
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
-            i.setQty((double) i.getPharmaceuticalBillItem().getQty());
+            i.setQty(0 - (double) i.getPharmaceuticalBillItem().getQty());
 
             double value = i.getRate() * i.getQty();
             i.setGrossValue(0 - value);
             i.setNetValue(0 - value);
 
+            itemPurchaseValue = i.getPharmaceuticalBillItem().getPurchaseRate() * i.getQty();
+            itemRetialValue = i.getPharmaceuticalBillItem().getRetailRate() * i.getQty();
+            
             PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
             if (i.getId() == null) {
@@ -265,7 +275,15 @@ public class IssueReturnController implements Serializable {
             //   getPharmaceuticalBillItemFacade().edit(i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem());
             //      updateRemainingQty(i);
             getReturnBill().getBillItems().add(i);
+
+            purchaseValue += itemPurchaseValue;
+            retailValue  += itemRetialValue;
         }
+        getReturnBill().setStockBill(getBill().getStockBill());
+        getReturnBill().getStockBill().setStockValueAtPurchaseRates(purchaseValue);
+        getReturnBill().getStockBill().setStockValueAsSaleRate(retailValue );
+        
+        getBillFacade().edit(getReturnBill());
 
     }
 
@@ -371,7 +389,7 @@ public class IssueReturnController implements Serializable {
     }
 
     public void generateBillComponent() {
-        billItems=new ArrayList<>();
+        billItems = new ArrayList<>();
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getBill())) {
             BillItem bi = new BillItem();
             bi.setBill(getReturnBill());
