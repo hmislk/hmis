@@ -2193,7 +2193,7 @@ public class PharmacyReportController implements Serializable {
             m.put("itm", item);
         }
 
-        jpql += " order by s.createdAt ";
+        jpql += " order by s.id ";
         stocks = stockFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
