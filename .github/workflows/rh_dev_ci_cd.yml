@@ -77,6 +77,7 @@ jobs:
           WAR_NAME="rh.war"
           WAR_DIR="/home/appuser/app/latest"
           APP_NAME="rh"
+          SUBDOMAIN="dev"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
@@ -128,12 +129,12 @@ jobs:
 
           # Check if the application is reachable
           for i in {1..5}; do
-            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://'$APP_NAME'.carecode.org/'$APP_NAME'/faces/index1.xhtml)
+            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://'$SUBDOMAIN'.carecode.org/'$APP_NAME'/faces/index1.xhtml)
             if [ "$RESPONSE_CODE" == "200" ]; then
               echo "Application is reachable and healthy."
               break
             elif [ "$i" == "5" ]; then
-              echo "Application is not reachable or unhealthy at https://'$APP_NAME'.carecode.org/'$APP_NAME' (HTTP $RESPONSE_CODE)"
+              echo "Application is not reachable or unhealthy at https://'$SUBDOMAIN'.carecode.org/'$APP_NAME' (HTTP $RESPONSE_CODE)"
               break
             fi
             sleep 10
