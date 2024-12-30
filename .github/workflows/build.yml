@@ -11,4 +11,6 @@ jobs:
 
     steps:
       - name: Printing Hello Build
-        run: echo 'Hello, Build!'
+        run: |
+          sleep 5
+          echo 'Hello, Build!'
