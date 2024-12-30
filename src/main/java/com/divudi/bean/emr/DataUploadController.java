@@ -434,7 +434,7 @@ public class DataUploadController implements Serializable {
             int rowIndex = 0;
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
-                System.out.println("row = " + row);
+//                System.out.println("row = " + row);
                 if (rowIndex++ < startRow) {
                     continue; // Skip header or initial rows as per the startRow value
                 }
