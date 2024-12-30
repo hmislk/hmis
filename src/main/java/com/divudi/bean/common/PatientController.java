@@ -1995,7 +1995,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             quickSearchPatientList = findPatientUsingPhnNumber(quickSearchPhoneNumber);
             usePHN = true;
         }
-        controller.setPaymentMethod(null);
+//        controller.setPaymentMethod(null);
         if (quickSearchPatientList == null) {
 
             controller.setPatient(null);
@@ -2021,7 +2021,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
             controller.setPatient(patientSearched);
             controller.setPatientDetailsEditable(false);
-            controller.setPaymentMethod(null);
+//            controller.setPaymentMethod(null);
 
             admissionController.fillCurrentPatientAllergies(current);//TODO
 
@@ -2031,9 +2031,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 if (controller.getPatient().getHasAnAccount() && automaticallySetPatientDeposit) {
                     controller.setPatient(controller.getPatient());
                     controller.setPaymentMethod(PaymentMethod.PatientDeposit);
-                    controller.listnerForPaymentMethodChange();
                 }
             }
+            controller.listnerForPaymentMethodChange();
             quickSearchPatientList = null;
         } else {
             controller.setPatient(null);
@@ -2061,7 +2061,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         controller.setPatient(current);
         controller.setPatientDetailsEditable(false);
-        controller.setPaymentMethod(null);
+//        controller.setPaymentMethod(null);
 
         admissionController.fillCurrentPatientAllergies(current); //TODO
 
@@ -2992,13 +2992,13 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 return false;
             }
         }
-        if (p.getPerson().getId() == null) {
-            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
-            p.getPerson().setCreater(getSessionController().getLoggedUser());
-            getPersonFacade().create(p.getPerson());
-        } else {
-            getPersonFacade().edit(p.getPerson());
-        }
+//        if (p.getPerson().getId() == null) {
+//            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
+//            p.getPerson().setCreater(getSessionController().getLoggedUser());
+//            getPersonFacade().create(p.getPerson());
+//        } else {
+//            getPersonFacade().edit(p.getPerson());
+//        }
         if (p.getId() == null) {
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
