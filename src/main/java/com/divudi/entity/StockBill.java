@@ -46,7 +46,6 @@ public class StockBill implements Serializable {
     StockBill newBill = new StockBill();
     newBill.setStockValueAtPurchaseRates(this.getStockValueAtPurchaseRates());
     newBill.setStockValueAsSaleRate(this.getStockValueAsSaleRate());
-    // Copy other relevant properties here
     return newBill;
 }
 
