@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - coop-prod
-  # workflow_dispatch:
 
 jobs:
   build:
@@ -29,14 +28,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      # - name: Update JDBC Data Sources in persistence.xml
-      #   run: |
-      #     sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coop</jta-data-source>|' src/main/resources/META-INF/persistence.xml
-      #     sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coopaudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+      - name: Update JDBC Data Sources in persistence.xml
+        run: |
+          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coop</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coopaudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
 
-      # - name: Verify JDBC Data Sources in persistence.xml
-      #   run: |
-      #     grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
+      - name: Verify JDBC Data Sources in persistence.xml
+        run: |
+          grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
 
       - name: Build with Maven
         run: mvn clean package -DskipTests
@@ -53,7 +52,6 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    # if: github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout Code
