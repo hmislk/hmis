@@ -284,6 +284,7 @@ public class IssueReturnController implements Serializable {
         clonedStockBill.setStockValueAtPurchaseRates(purchaseValue);
         clonedStockBill.setStockValueAsSaleRate(retailValue);
         getReturnBill().setStockBill(clonedStockBill);
+        getReturnBill().getStockBill().invertStockBillValues(getReturnBill());
 
         getBillFacade().edit(getReturnBill());
 
