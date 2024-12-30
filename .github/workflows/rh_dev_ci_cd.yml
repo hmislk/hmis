@@ -27,6 +27,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Update JDBC Data Sources in persistence.xml
+        run: |
+          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunu</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunuAudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+      
+      - name: Verify JDBC Data Sources in persistence.xml
+        run: |
+          grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
+
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
@@ -75,6 +84,7 @@ jobs:
             sudo chown -R appuser:appuser /home/appuser/app
             sudo su - appuser
             cd $WAR_DIR
+            pwd
 
             # Remove old backup if it exists
             if [ -f $WAR_NAME.old ]; then
@@ -101,7 +111,7 @@ jobs:
             sudo su - appuser
             echo 'AS_ADMIN_PASSWORD=${{ secrets.DEV_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
-            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --properties Datasource=jdbc/ruhunu:Datasource=jdbc/ruhunuAudit --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
+            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
           "
 
