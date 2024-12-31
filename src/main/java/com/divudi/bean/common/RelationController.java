@@ -8,7 +8,9 @@ import com.divudi.bean.common.util.JsfUtil.PersistAction;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,8 +91,10 @@ public class RelationController implements Serializable {
     }
 
     public Relation fetchRelationByName(String relationName) {
-        String j = "select r from Relation r where r.retired=false and r.name=:relationName order by r.orderNo";
-        Relation relation = getFacade().findFirstByJpql(j);
+        String j = "select r from Relation r where r.name=:relationName";
+        Map m = new HashMap();
+        m.put("relationName", relationName);
+        Relation relation = getFacade().findFirstByJpql(j,m);
         if (relation == null) {
             relation = new Relation();
             relation.setName(relationName);
@@ -98,6 +102,8 @@ public class RelationController implements Serializable {
             relation.setCreater(sessionController.getLoggedUser());
             getFacade().create(relation);
         }
+        relation.setRetired(false);
+        getFacade().edit(relation);
         return relation;
     }
 

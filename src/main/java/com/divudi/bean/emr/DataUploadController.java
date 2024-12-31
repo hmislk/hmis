@@ -423,7 +423,11 @@ public class DataUploadController implements Serializable {
         Date doe;
         StringBuilder warningMessages = new StringBuilder();
 
+        int rowCount = 0;
+
         try (InputStream in = file.getInputStream(); Workbook workbook = new XSSFWorkbook(in)) {
+            rowCount++;
+            System.out.println("rowCount at Start of a row= " + rowCount);
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
 
@@ -434,7 +438,7 @@ public class DataUploadController implements Serializable {
             int rowIndex = 0;
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
-                System.out.println("row = " + row);
+//                System.out.println("row = " + row);
                 if (rowIndex++ < startRow) {
                     continue; // Skip header or initial rows as per the startRow value
                 }
@@ -573,7 +577,7 @@ public class DataUploadController implements Serializable {
                     getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(batch);
                 }
                 getPharmacyPurchaseController().addItem();
-
+                System.out.println("rowCount at End of a row= " + rowCount);
             }
             if (warningMessages.length() > 0) {
                 getPharmacyPurchaseController().setWarningMessage(warningMessages.toString());
@@ -2263,7 +2267,6 @@ public class DataUploadController implements Serializable {
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
 
-            
             String name = row.getCell(1).getStringCellValue();
             String titleString = row.getCell(2).getStringCellValue();
             String sexString = row.getCell(3).getStringCellValue();
@@ -2306,7 +2309,7 @@ public class DataUploadController implements Serializable {
             family.getFamilyMembers().add(fm);
             family.setChiefHouseHolder(pt);
             familyFacade.edit(family);
-            
+
             patients.add(pt);
         }
 
