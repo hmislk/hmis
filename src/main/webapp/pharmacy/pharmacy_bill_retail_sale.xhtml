@@ -410,8 +410,8 @@
                                                                 icon="fa fa-search" 
                                                                 title="Quick Search from Phone Number"
                                                                 action="#{patientController.quickSearchPatientLongPhoneNumber(pharmacySaleController)}" 
-                                                                process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                                                update="panelPatient selectPatient editPatient viewPatient"
+                                                                process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber panelPayment"
+                                                                update="panelPatient selectPatient editPatient viewPatient panelPayment panelBillDetails"
                                                                 styleClass="btn-sm mx-1"/>
                                                             <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
                                                             <p:commandButton 
@@ -420,7 +420,7 @@
                                                                 title="Add New Patient"
                                                                 action="#{patientController.quickSearchNewPatient(pharmacySaleController)}" 
                                                                 process="btnAddNewPatient"
-                                                                update="panelPatient selectPatient editPatient viewPatient"
+                                                                update="panelPatient selectPatient editPatient viewPatient panelPayment panelBillDetails"
                                                                 styleClass="btn-sm mx-1"/>
                                                         </h:panelGroup>
                                                     </h:panelGroup>
@@ -442,7 +442,7 @@
                                                             <p:commandButton 
                                                                 action="#{patientController.selectQuickOneFromQuickSearchPatient(pharmacySaleController)}" 
                                                                 id="btnSelectPt"
-                                                                process="btnSelectPt"
+                                                                process="btnSelectPt panelPayment"
                                                                 update=":#{p:resolveFirstComponentWithId('panelPatient',view).clientId} :#{p:resolveFirstComponentWithId('panelPayment',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}"
                                                                 value="Select">
                                                                 <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
