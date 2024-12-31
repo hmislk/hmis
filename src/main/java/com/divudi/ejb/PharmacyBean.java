@@ -611,9 +611,9 @@ public class PharmacyBean {
     }
 
     public List<StockQty> getStockByQty(Item item, double qty, Department department) {
-        if (qty <= 0) {
-            return new ArrayList<>();
-        }
+//        if (qty <= 0) {
+//            return new ArrayList<>();
+//        }
         String sql = "";
         Map m = new HashMap();
 

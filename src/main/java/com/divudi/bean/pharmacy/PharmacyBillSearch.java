@@ -377,13 +377,17 @@ public class PharmacyBillSearch implements Serializable {
                 sessionController.getLoggedUser().getDepartment(), getBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.ISSCAN));
         c.setInsId(getBillNumberBean().institutionBillNumberGenerator(
                 sessionController.getLoggedUser().getInstitution(), getBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.ISSCAN));
+        c.setInstitution(sessionController.getLoggedUser().getInstitution());
+        c.setDepartment(sessionController.getLoggedUser().getDepartment());
         c.setCreatedAt(new Date());
         c.setCreater(sessionController.getLoggedUser());
         c.setComments("Re Add To Stock");
         c.setBackwardReferenceBill(b);
+        c.setReferenceBill(b);
         c.setBillClassType(BillClassType.CancelledBill);
         c.setBillType(BillType.PharmacyIssue);
         c.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
+        
         if (c.getId() == null) {
             getBillFacade().create(c);
         }
