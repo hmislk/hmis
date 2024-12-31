@@ -274,27 +274,21 @@ public class BillService {
     }
 
     public List<Bill> fetchIndividualBillsOfBatchBill(Bill batchBill) {
-        System.out.println("batchBill = " + batchBill);
         String j = "Select b "
                 + " from Bill b "
                 + " where b.backwardReferenceBill=:bb ";
         Map m = new HashMap();
         m.put("bb", batchBill);
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
         List<Bill> tbs = billFacade.findByJpql(j, m);
         return tbs;
     }
 
     public Bill fetchBatchBillOfIndividualBill(Bill individualBill) {
-        System.out.println("individualBill = " + individualBill);
         String j = "SELECT b.backwardReferenceBill "
                 + "FROM Bill b "
                 + "WHERE b = :b";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("b", individualBill);
-        System.out.println("parameters = " + parameters);
-        System.out.println("j = " + j);
         Bill batchBill = (Bill) billFacade.findFirstByJpql(j, parameters);
         return batchBill;
     }
@@ -402,7 +396,6 @@ public class BillService {
     }
 
     public List<Payment> fetchBillPayments(Bill bill) {
-        System.out.println("bill = " + bill);
         List<Payment> fetchingBillComponents;
         String jpql;
         Map params = new HashMap();
@@ -416,13 +409,11 @@ public class BillService {
     }
 
     public void calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees(Bill bill) {
-        System.out.println("calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees");
         double billStaffFee = 0.0;
         double billCollectingCentreFee = 0.0;
         double billHospitalFee = 0.0;
 
         List<BillItem> billItems = fetchBillItems(bill);
-        System.out.println("Processing Bill: " + bill.getId());
 
         for (BillItem bi : billItems) {
             // Initialize fee accumulators for the current BillItem
@@ -430,26 +421,19 @@ public class BillService {
             double collectingCentreFeesCalculatedByBillFees = 0.0;
             double hospitalFeeCalculatedByBillFees = 0.0;
 
-            System.out.println("Processing BillItem: " + bi.getId());
 
             // Fetch BillFees for the current BillItem
             List<BillFee> billFees = fetchBillFees(bi);
             for (BillFee bf : billFees) {
-                System.out.println("Processing BillFee: " + bf.getId()
-                        + ", FeeGrossValue: " + bf.getFeeGrossValue());
 
                 // Calculate fees based on InstitutionType, Staff, or Speciality
                 if (bf.getInstitution() != null
                         && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
                     collectingCentreFeesCalculatedByBillFees += bf.getFeeGrossValue();
-                    System.out.println("CollectingCentre Fee Updated: "
-                            + collectingCentreFeesCalculatedByBillFees);
                 } else if (bf.getStaff() != null || bf.getSpeciality() != null) {
                     staffFeesCalculatedByBillFees += bf.getFeeGrossValue();
-                    System.out.println("Staff Fee Updated: " + staffFeesCalculatedByBillFees);
                 } else {
                     hospitalFeeCalculatedByBillFees += bf.getFeeGrossValue();
-                    System.out.println("Hospital Fee Updated: " + hospitalFeeCalculatedByBillFees);
                 }
             }
 
@@ -458,19 +442,14 @@ public class BillService {
             bi.setStaffFee(staffFeesCalculatedByBillFees);
             bi.setHospitalFee(hospitalFeeCalculatedByBillFees);
             billItemFacade.editAndCommit(bi);
-
             // Log the values set to the BillItem
-            System.out.println("BillItem " + bi.getId()
-                    + " - Hospital Fee: " + hospitalFeeCalculatedByBillFees
-                    + ", Staff Fee: " + staffFeesCalculatedByBillFees
-                    + ", Collecting Centre Fee: " + collectingCentreFeesCalculatedByBillFees);
+            // Log the values set to the BillItem
 
             // Accumulate the fees to the Bill totals
             billCollectingCentreFee += collectingCentreFeesCalculatedByBillFees;
             billStaffFee += staffFeesCalculatedByBillFees;
             billHospitalFee += hospitalFeeCalculatedByBillFees;
 
-            System.out.println("bi.getHospitalFee() = " + bi.getHospitalFee());
             billItemFacade.create(bi);
 
         }
@@ -486,11 +465,8 @@ public class BillService {
         bill.setCollctingCentreFee(billCollectingCentreFee);
         bill.setHospitalFee(billHospitalFee);
         bill.setProfessionalFee(billStaffFee);
-
         // Log the final bill totals
-        System.out.println("Final Bill Totals - Hospital Fee: " + billHospitalFee
-                + ", Staff Fee: " + billStaffFee
-                + ", Collecting Centre Fee: " + billCollectingCentreFee);
+
 
         // Persist the updated Bill
         billFacade.editAndCommit(bill);
@@ -634,10 +610,53 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc  ";
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("fetchedBills = " + fetchedBills);
         return fetchedBills;
+    }
+    
+    public List<BillItem> fetchBillItems(Date fromDate, 
+            Date toDate, 
+            Institution institution, 
+            Institution site, 
+            Department department, 
+            WebUser webUser, 
+            List<BillTypeAtomic> billTypeAtomics) {
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select bi "
+                + " from BillItem bi "
+                + " join bi.bill b"
+                + " where b.retired=:ret "
+                + " and bi.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        jpql += " order by b.createdAt, bi.id  ";
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        List<BillItem> fetchedBillItems = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("fetchedBillItems = " + fetchedBillItems.size());
+        return fetchedBillItems;
     }
 }
