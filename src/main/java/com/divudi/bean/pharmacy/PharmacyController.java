@@ -885,7 +885,7 @@ public class PharmacyController implements Serializable {
     }    
 
     
-    public void generateGRNReportTable() {
+    public void generateGrnReportTable() {
         bills = null;
         totalCreditPurchaseValue = 0.0;
         totalCashPurchaseValue = 0.0;
@@ -894,10 +894,8 @@ public class PharmacyController implements Serializable {
         List<BillType> bt = new ArrayList<>();
         if ("detailReport".equals(reportType)) {
             bt.add(BillType.PharmacyGrnBill);
-//            generateGRNReportTableByBillItem(bt);
         } else if ("returnReport".equals(reportType)) {
             bt.add(BillType.PharmacyGrnReturn);
-//            generateGRNReportTableByBillItem(bt);
         } else if ("summeryReport".equals(reportType)) {
             bt.add(BillType.PharmacyGrnBill);
             bt.add(BillType.PharmacyGrnReturn);
