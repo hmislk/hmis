@@ -150,7 +150,7 @@
                     <p:commandButton 
                         value="Process" 
                         ajax="false"
-                        action="#{pharmacyProcurementReportController.processPharmacyIncomeReport()}" 
+                        action="#{pharmacyProcurementReportController.processProcurementItemList()}" 
                         styleClass="ui-button-success m-1" 
                         icon="pi pi-cog">
                     </p:commandButton>
@@ -170,6 +170,8 @@
                         icon="pi pi-print">
                         <p:printer target="tbl" />
                     </p:commandButton>
+
+
 
 
 
@@ -235,8 +237,12 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column headerText="Quantity + Free" class="text-end" filterBy="#{row.quantityPlusFreeQuantity}" sortBy="#{row.quantityPlusFreeQuantity}">
-                            <h:outputText value="#{row.quantityPlusFreeQuantity}">
+                        <p:column 
+                            headerText="Quantity + Free" 
+                            class="text-end" 
+                            filterBy="#{row.billItem.pharmaceuticalBillItem.freeQty + row.billItem.pharmaceuticalBillItem.qty}"
+                            sortBy="#{row.billItem.pharmaceuticalBillItem.freeQty + row.billItem.pharmaceuticalBillItem.qty}">
+                            <h:outputText value="#{row.billItem.pharmaceuticalBillItem.freeQty + row.billItem.pharmaceuticalBillItem.qty}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer">
@@ -246,8 +252,12 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column headerText="Value @ Purchase Rate" class="text-end" filterBy="#{row.quantityValueAtPurchaseRate}" sortBy="#{row.quantityValueAtPurchaseRate}">
-                            <h:outputText value="#{row.quantityValueAtPurchaseRate}">
+
+                        <!-- Value @ Purchase Rate for Quantity -->
+                        <p:column headerText="Value (Qty) @ Purchase Rate" class="text-end" 
+                                  filterBy="#{row.billItem.pharmaceuticalBillItem.qty * row.billItem.pharmaceuticalBillItem.purchaseRate}" 
+                                  sortBy="#{row.billItem.pharmaceuticalBillItem.qty * row.billItem.pharmaceuticalBillItem.purchaseRate}">
+                            <h:outputText value="#{row.billItem.pharmaceuticalBillItem.qty * row.billItem.pharmaceuticalBillItem.purchaseRate}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer">
@@ -257,8 +267,39 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column headerText="Value @ Retail Rate" class="text-end" filterBy="#{row.quantityValueAtRetailSaleRate}" sortBy="#{row.quantityValueAtRetailSaleRate}">
-                            <h:outputText value="#{row.quantityValueAtRetailSaleRate}">
+                        <!-- Value @ Purchase Rate for Free Quantity -->
+                        <p:column headerText="Value (Free) @ Purchase Rate" class="text-end" 
+                                  filterBy="#{row.billItem.pharmaceuticalBillItem.freeQty * row.billItem.pharmaceuticalBillItem.purchaseRate}" 
+                                  sortBy="#{row.billItem.pharmaceuticalBillItem.freeQty * row.billItem.pharmaceuticalBillItem.purchaseRate}">
+                            <h:outputText value="#{row.billItem.pharmaceuticalBillItem.freeQty * row.billItem.pharmaceuticalBillItem.purchaseRate}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{pharmacyProcurementReportController.bundle.freeQuantityValueAtPurchaseRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+
+                        <!-- Value @ Purchase Rate for Quantity + Free -->
+                        <p:column headerText="Value (Qty + Free) @ Purchase Rate" class="text-end" 
+                                  filterBy="#{(row.billItem.pharmaceuticalBillItem.qty + row.billItem.pharmaceuticalBillItem.freeQty) * row.billItem.pharmaceuticalBillItem.purchaseRate}" 
+                                  sortBy="#{(row.billItem.pharmaceuticalBillItem.qty + row.billItem.pharmaceuticalBillItem.freeQty) * row.billItem.pharmaceuticalBillItem.purchaseRate}">
+                            <h:outputText value="#{(row.billItem.pharmaceuticalBillItem.qty + row.billItem.pharmaceuticalBillItem.freeQty) * row.billItem.pharmaceuticalBillItem.purchaseRate}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{pharmacyProcurementReportController.bundle.quantityPlusFreeQuantityValueAtPurchaseRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+
+                        <!-- Value @ Retail Rate for Quantity -->
+                        <p:column headerText="Value (Qty) @ Retail Rate" class="text-end" 
+                                  filterBy="#{row.billItem.pharmaceuticalBillItem.qty * row.billItem.pharmaceuticalBillItem.retailRate}" 
+                                  sortBy="#{row.billItem.pharmaceuticalBillItem.qty * row.billItem.pharmaceuticalBillItem.retailRate}">
+                            <h:outputText value="#{row.billItem.pharmaceuticalBillItem.qty * row.billItem.pharmaceuticalBillItem.retailRate}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer">
@@ -267,6 +308,38 @@
                                 </h:outputText>
                             </f:facet>
                         </p:column>
+
+                        <!-- Value @ Retail Rate for Free Quantity -->
+                        <p:column headerText="Value (Free) @ Retail Rate" class="text-end" 
+                                  filterBy="#{row.billItem.pharmaceuticalBillItem.freeQty * row.billItem.pharmaceuticalBillItem.retailRate}" 
+                                  sortBy="#{row.billItem.pharmaceuticalBillItem.freeQty * row.billItem.pharmaceuticalBillItem.retailRate}">
+                            <h:outputText value="#{row.billItem.pharmaceuticalBillItem.freeQty * row.billItem.pharmaceuticalBillItem.retailRate}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{pharmacyProcurementReportController.bundle.freeQuantityValueAtRetailSaleRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+
+                        <!-- Value @ Retail Rate for Quantity + Free -->
+                        <p:column headerText="Value (Qty + Free) @ Retail Rate" class="text-end" 
+                                  filterBy="#{(row.billItem.pharmaceuticalBillItem.qty + row.billItem.pharmaceuticalBillItem.freeQty) * row.billItem.pharmaceuticalBillItem.retailRate}" 
+                                  sortBy="#{(row.billItem.pharmaceuticalBillItem.qty + row.billItem.pharmaceuticalBillItem.freeQty) * row.billItem.pharmaceuticalBillItem.retailRate}">
+                            <h:outputText value="#{(row.billItem.pharmaceuticalBillItem.qty + row.billItem.pharmaceuticalBillItem.freeQty) * row.billItem.pharmaceuticalBillItem.retailRate}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{pharmacyProcurementReportController.bundle.quantityPlusFreeQuantityValueAtRetailSaleRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+
+
+
+
                     </p:dataTable>
 
 

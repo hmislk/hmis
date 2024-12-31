@@ -224,7 +224,7 @@ public class IncomeBundle implements Serializable {
                         rows.add(ir);
                     }
                 }
-            } else if (firstElement instanceof Bill) {
+            } else if (firstElement instanceof BillItem) {
                 // Process list as Bills
                 for (Object obj : entries) {
                     if (obj instanceof BillItem) {

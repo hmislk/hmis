@@ -653,7 +653,10 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt, bi.id  ";
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
         List<BillItem> fetchedBillItems = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("fetchedBillItems = " + fetchedBillItems.size());
         return fetchedBillItems;
     }
 }
