@@ -23,7 +23,7 @@
                                                 style="text-align: left" 
                                                 value="Pharmacy Income Report"
                                                 action="#{pharmacySummaryReportController.navigateToPharmacyIncomeReport()}"/>
-                                             <p:commandButton 
+                                            <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
                                                 style="text-align: left" 
@@ -246,6 +246,11 @@
 
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Pharmacy Return Without Traising" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetail1()}" />
+
+                                            <p:commandButton class="w-100" ajax="false" 
+                                                             value="Procurement Bill Item List"
+                                                             action="#{pharmacyProcurementReportController.navigateToPurchaseItemList()}" />
+
                                         </div>
                                     </p:tab>
                                     <p:tab title="Disbursement Reports">
