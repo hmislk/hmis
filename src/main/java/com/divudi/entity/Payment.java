@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.Denomination;
 import com.divudi.data.PaymentHandover;
 import com.divudi.data.PaymentMethod;
@@ -27,7 +28,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 @Entity
-public class Payment implements Serializable {
+public class Payment implements Serializable, RetirableEntity  {
 
     static final long serialVersionUID = 1L;
 

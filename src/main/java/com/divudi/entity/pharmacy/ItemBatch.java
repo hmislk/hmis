@@ -4,10 +4,12 @@
  */
 package com.divudi.entity.pharmacy;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -24,7 +26,7 @@ import javax.persistence.TemporalType;
  * @author safrin
  */
 @Entity
-public class ItemBatch implements Serializable {
+public class ItemBatch implements Serializable, RetirableEntity {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -58,13 +60,23 @@ public class ItemBatch implements Serializable {
     double deprecitionRate;
     @Lob
     String otherNotes;
-    
+
     @ManyToOne
     Institution manufacturer;
-    
+
     @ManyToOne
     BillItem lastPurchaseBillItem;
-    
+
+    private boolean retired;
+
+    @ManyToOne
+    private WebUser retirer;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date retiredAt;
+
+    private String retireComments;
+
     public String getSerialNo() {
         return serialNo;
     }
@@ -73,8 +85,6 @@ public class ItemBatch implements Serializable {
         this.serialNo = serialNo;
     }
 
-    
-    
     public BillItem getLastPurchaseBillItem() {
         return lastPurchaseBillItem;
     }
@@ -82,7 +92,7 @@ public class ItemBatch implements Serializable {
     public void setLastPurchaseBillItem(BillItem lastPurchaseBillItem) {
         this.lastPurchaseBillItem = lastPurchaseBillItem;
     }
-    
+
     public String getWarrentyCertificateNumber() {
         return warrentyCertificateNumber;
     }
@@ -130,10 +140,6 @@ public class ItemBatch implements Serializable {
     public void setManufacturer(Institution manufacturer) {
         this.manufacturer = manufacturer;
     }
-    
-    
-    
-    
 
     public String getBarcode() {
         return barcode;
@@ -182,9 +188,6 @@ public class ItemBatch implements Serializable {
     public void setNumberOfAccessories(int numberOfAccessories) {
         this.numberOfAccessories = numberOfAccessories;
     }
-    
-    
-    
 
     public String getDescription() {
         return description;
@@ -193,8 +196,6 @@ public class ItemBatch implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
-    
-    
 
     public Category getMake() {
         return make;
@@ -211,8 +212,6 @@ public class ItemBatch implements Serializable {
     public void setModal(String modal) {
         this.modal = modal;
     }
-    
-    
 
     public double getPurcahseRate() {
         return purcahseRate;
@@ -237,8 +236,6 @@ public class ItemBatch implements Serializable {
     public void setWholesaleRate(double wholesaleRate) {
         this.wholesaleRate = wholesaleRate;
     }
-    
-    
 
     public Long getId() {
         return id;
@@ -257,7 +254,7 @@ public class ItemBatch implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        
+
         if (!(object instanceof ItemBatch)) {
             return false;
         }
@@ -304,4 +301,38 @@ public class ItemBatch implements Serializable {
     public void setItem(Item item) {
         this.item = item;
     }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
+    }
+    
+    
 }

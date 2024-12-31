@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.Priority;
@@ -37,7 +38,7 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
-public class BillItem implements Serializable {
+public class BillItem implements Serializable, RetirableEntity  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

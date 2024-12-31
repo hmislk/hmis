@@ -14,7 +14,7 @@
                     <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">
                             <p:selectOneMenu   id="cmbPs" value="#{pharmacyBillSearch.bill.paymentMethod}" required="true"  >
-                                <f:selectItems value="#{enumController.paymentMethods}"/>
+                                <f:selectItems value="#{enumController.allPaymentMethods}"/>
                             </p:selectOneMenu>
                             <h:commandButton value="Cancel" action="#{pharmacyBillSearch.pharmacyPurchaseCancel()}" >
                             </h:commandButton>                            
