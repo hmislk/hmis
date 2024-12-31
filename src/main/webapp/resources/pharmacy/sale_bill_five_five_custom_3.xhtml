@@ -28,11 +28,6 @@
                 <div class="receipt-container">
                     <!-- Header Section -->
                     <div class="hospital-name">
-                        <br/>
-                        <br/>
-<!--                        <br/>-->
-                    </div>
-                    <div class="hospital-name">
                         <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
                         <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                         <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
@@ -457,7 +452,7 @@
                                 </div> -->
 
 
-                    <table class="billFooter">
+                    <table class="receipt-footer">
                         <tr>
                             <td>
                                 <h:outputLabel value="PREPARED BY : #{cc.attrs.bill.creater.name}"></h:outputLabel>

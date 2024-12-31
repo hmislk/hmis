@@ -68,7 +68,7 @@
 .receipt-table td {
     text-align: left;
     padding: 5px;
-/*    border-bottom: 1px solid #000;*/
+    /*    border-bottom: 1px solid #000;*/
 }
 
 .receipt-table th {
@@ -100,32 +100,44 @@
 
 /* Footer */
 .receipt-footer {
-    text-align: center;
+    position: sticky;
+    top:10cm!important;
+    width: 90%;
     font-size: 12px;
-    margin-top: 20px;
-    font-style: italic;
+    color: black;
+}
+
+.billFooter{
+    position: sticky;
+    top:11.5cm!important;
+    width: 90%;
+    font-size: 12px;
+    color: black;
 }
 
 /* Print Styles */
 @media print {
-    @page {
+    /*    @page {
+            margin-left: 0cm!important;
+            margin-right: 0cm!important;
+                    margin-top: 3cm!important;
+            margin-bottom: 1cm!important;
+            page-break-after: always!important;
+            page-break-before: always!important;
+        }*/
+    .receipt-container {
+        margin-top: 2cm!important;
         margin-left: 0cm!important;
         margin-right: 1.5cm!important;
-/*        margin-top: 3cm!important;*/
-        margin-bottom: 1cm!important;
-    }
-    .receipt-container {
         font-family: sans-serif !important;
         border: none;
-        width: 10cm!important;;
-        height: 14cm!important;;
-/*        margin-left: 0cm!important;
-        margin-right: 1.5cm!important;
-        margin-top: 3cm!important;
-        margin-bottom: 1cm!important;*/
-        page-break-after: always!important;
-        page-break-before: always!important;
-        page-break-inside: avoid!important;
+        width: 10cm!important;
+        height: 14cm!important;
+        /*        margin-left: 0cm!important;
+                margin-right: 1.5cm!important;
+                margin-top: 3cm!important;
+                margin-bottom: 1cm!important;*/
+
     }
 
     .hospital-name {
@@ -134,7 +146,7 @@
 
     .receipt-table th,
     .receipt-table td {
-/*        border-bottom: 1px solid #000;*/
+        /*        border-bottom: 1px solid #000;*/
     }
 
     .separator {
