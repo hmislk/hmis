@@ -255,13 +255,13 @@
                                          rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                                 <p:column headerText=" Item name wise" width="10em">
-                                    <h:outputText value="#{f.itemBatch.item.department.name}" />
+                                    <h:outputText value="#{f.department.name}" />
                                     <f:facet name="footer">
                                         <h:outputText value="Total" />
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Parenct Category Code" width="10em">
-                                    <h:outputText value="#{f.itemBatch.item.parentItem.name}" />
+                                    <h:outputText value="#{f.itemBatch.item.category.parentCategory.code}" />
                                 </p:column>
                                 <p:column headerText="Parent Category Name" width="10em">
                                     <h:outputText value="#{f.itemBatch.item.category.parentCategory.name}" />
@@ -299,8 +299,10 @@
                                 <p:column headerText="Supplier" width="10em">
                                     <h:outputText value="" />
                                 </p:column>
-                                <p:column headerText="Shelf life remaining(Days)" width="10em">
-                                    <h:outputText value="" />
+                                <p:column headerText="Shelf life remaining (Days)" width="10em">
+                                    <h:outputText 
+                                        value="#{pharmacyReportController.calculateDaysRemaining(f.itemBatch.dateOfExpire)}"
+                                        style="#{pharmacyReportController.calculateDaysRemaining(f.itemBatch.dateOfExpire) &lt; 0 ? 'color:red;' : 'color:green;'}" />
                                 </p:column>
                                 <p:column headerText="Rate" width="10em">
                                     <h:outputText value="#{f.itemBatch.purcahseRate}" />
@@ -309,10 +311,10 @@
                                     <h:outputText value="#{f.itemBatch.retailsaleRate}" />
                                 </p:column>
                                 <p:column headerText="Qty" width="10em">
-                                    <h:outputText value="#{f.itemBatch.item.totalStockQty}" />
+                                    <h:outputText value="" />
                                 </p:column>
                                 <p:column headerText="Item Value" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.purcahseRate}" />
                                 </p:column>
                                 <p:column headerText="Batch wise total" width="10em">
                                     <h:outputText value="" />
@@ -340,5 +342,5 @@
         </ui:composition>
 
     </h:body>
-    
+
 </html>
