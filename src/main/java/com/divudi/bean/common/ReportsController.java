@@ -3354,14 +3354,14 @@ public class ReportsController implements Serializable {
 //            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
             opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
         } else if (visitType.equalsIgnoreCase("OP")) {
-            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         }
