@@ -1026,8 +1026,8 @@ public class PharmacyController implements Serializable {
             JsfUtil.addErrorMessage(e, " Something Went Worng!");
         }
         totalPurchase = 0.0;
-        for (Bill i : bills) {
-            totalPurchase += i.getPaidAmount();
+        for (Bill b : bills) {
+            totalPurchase += b.getStockBill().getStockValueAtPurchaseRates();
         }
 
     }
