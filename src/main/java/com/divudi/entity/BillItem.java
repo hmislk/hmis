@@ -500,34 +500,42 @@ public class BillItem implements Serializable, RetirableEntity  {
         this.createdAt = createdAt;
     }
 
+    @Override
     public boolean isRetired() {
         return retired;
     }
 
+    @Override
     public void setRetired(boolean retired) {
         this.retired = retired;
     }
 
+    @Override
     public WebUser getRetirer() {
         return retirer;
     }
 
+    @Override
     public void setRetirer(WebUser retirer) {
         this.retirer = retirer;
     }
 
+    @Override
     public Date getRetiredAt() {
         return retiredAt;
     }
 
+    @Override
     public void setRetiredAt(Date retiredAt) {
         this.retiredAt = retiredAt;
     }
 
+    @Override
     public String getRetireComments() {
         return retireComments;
     }
 
+    @Override
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }

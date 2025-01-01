@@ -16,18 +16,20 @@
                     <f:facet name="header">
                         <p:outputLabel value="Purchase order Request Order"/>
                         <div style="float:right;" >
-                            <p:commandButton ajax="false"  
-                                             value="Approve" 
-                                             class="ui-button-success mx-2" 
-                                             icon="fas fa-check" 
-                                             disabled="#{!webUserController.hasPrivilege('PurchaseOrdersApprovel')}"
-                                             action="#{purchaseOrderController.approve}">
+                            <p:commandButton 
+                                ajax="false"  
+                                value="Approve" 
+                                class="ui-button-success mx-2" 
+                                icon="fas fa-check" 
+                                disabled="#{!webUserController.hasPrivilege('PurchaseOrdersApprovel')}"
+                                action="#{purchaseOrderController.approve}">
                             </p:commandButton>
-                            <p:commandButton ajax="false"  
-                                             value="Back To Po List" 
-                                             class="ui-button-warning" 
-                                             icon="fas fa-arrow-left" 
-                                             action="pharmacy_purhcase_order_list_to_approve">
+                            <p:commandButton 
+                                ajax="false"  
+                                value="Back To Po List" 
+                                class="ui-button-warning" 
+                                icon="fas fa-arrow-left" 
+                                action="pharmacy_purhcase_order_list_to_approve">
                             </p:commandButton>
                         </div>
                     </f:facet>
@@ -84,18 +86,23 @@
                                 <p:commandButton process="itemList @this" update=":#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('po',view).clientId}" value="Remove All" class="ui-button-Danger" style="float: right" action="#{purchaseOrderController.removeSelected()}"/>                            
                             </div>
                         </f:facet>
-                        <p:dataTable scrollable="true" styleClass="noBorder" scrollHeight="250"
-                                     var="bi" value="#{purchaseOrderController.billItems}"
-                                     id="itemList" sortBy="#{bi.searialNo}"  rowKey="#{bi.searialNo}"
-                                     paginator="true" 
-                                     rows="10" 
-                                     selectionMode="multiple"
-                                     paginatorPosition="bottom"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15"
-                                     selection="#{purchaseOrderController.selectedItems}">  
+                        <p:dataTable 
+                            scrollable="true" 
+                            styleClass="noBorder" 
+                            scrollHeight="250"
+                            var="bi" 
+                            value="#{purchaseOrderController.billItems}"
+                            id="itemList" 
+                            sortBy="#{bi.searialNo}"  
+                            rowKey="#{bi.searialNo}"
+                            paginator="true" 
+                            rows="10" 
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15"
+                            selection="#{purchaseOrderController.selectedItems}">  
 
-                            <p:column selectionBox="true" style="width: 30px;"></p:column>
+                            <p:column selectionMode="multiple" style="width: 30px;"></p:column>
 
                             <p:column headerText="No" style="width: 50px;" >
                                 <p:outputLabel value="#{bi.searialNo + 1}" ></p:outputLabel>

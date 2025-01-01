@@ -168,6 +168,7 @@ public class SaleReturnController implements Serializable {
         getReturnBill().copy(getBill());
 
         getReturnBill().setBillType(BillType.PharmacyPre);
+        //getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
 
         getReturnBill().setBilledBill(getBill());
 
