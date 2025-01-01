@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
@@ -31,7 +32,7 @@ import org.joda.time.PeriodType;
  * @author buddhika
  */
 @Entity
-public class Patient implements Serializable {
+public class Patient implements Serializable, RetirableEntity {
 
     static final long serialVersionUID = 1L;
     @Id

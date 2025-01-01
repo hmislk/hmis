@@ -125,7 +125,7 @@
                                             ajax="false" 
                                             class="mx-2"
                                             value="Return Item and Cash"
-                                            action="pharmacy_bill_return_retail"
+                                            action="pharmacy_bill_return_retail?faces-redirect=true"
                                             disabled="#{bill.cancelled eq true}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{saleReturnController.bill}"/>
                                         </p:commandButton>

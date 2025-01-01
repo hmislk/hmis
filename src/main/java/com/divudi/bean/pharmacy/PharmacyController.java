@@ -847,33 +847,34 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToPrinteGeneratedGrnDetailedRportTable() {
-        if(bills==null){
+        if (bills == null) {
             JsfUtil.addErrorMessage("No Bills");
             return null;
         }
-        if(bills.isEmpty()){
+        if (bills.isEmpty()) {
             JsfUtil.addErrorMessage("Bill List Empty");
             return null;
         }
-        for(Bill b:bills){
-            if(b.getBillItems()==null || b.getBillItems().isEmpty()){
-               b.setBillItems(billService.fetchBillItems(b));
+        for (Bill b : bills) {
+            if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
+                b.setBillItems(billService.fetchBillItems(b));
             }
         }
         return "/reports/inventoryReports/grn_report_detail_print?faces-redirect=true";
     }
+
     public String navigateToPrinteGeneratedGrnReturnReportTable() {
-        if(bills==null){
+        if (bills == null) {
             JsfUtil.addErrorMessage("No Bills");
             return null;
         }
-        if(bills.isEmpty()){
+        if (bills.isEmpty()) {
             JsfUtil.addErrorMessage("Bill List Empty");
             return null;
         }
-        for(Bill b:bills){
-            if(b.getBillItems()==null || b.getBillItems().isEmpty()){
-               b.setBillItems(billService.fetchBillItems(b));
+        for (Bill b : bills) {
+            if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
+                b.setBillItems(billService.fetchBillItems(b));
             }
         }
         return "/reports/inventoryReports/grn_report_return_print?faces-redirect=true";
@@ -881,9 +882,8 @@ public class PharmacyController implements Serializable {
 
     public String navigateBackToGeneratedGrnDetailedRportTable() {
         return "/reports/inventoryReports/grn_report?faces-redirect=true";
-    }    
+    }
 
-    
     public void generateGRNReportTable() {
         bills = null;
         totalCreditPurchaseValue = 0.0;
@@ -983,8 +983,8 @@ public class PharmacyController implements Serializable {
     }
 
     public void generateConsumptionReportTableByBill(BillType billType) {
-        List<BillType> bt = new ArrayList<>();
-        bt.add(BillType.PharmacyIssue);
+//        List<BillType> bt = new ArrayList<>();
+//        bt.add(BillType.PharmacyIssue);
         bills = new ArrayList<>();
 
         String sql = "SELECT b FROM Bill b WHERE b.retired = false"
@@ -1026,8 +1026,8 @@ public class PharmacyController implements Serializable {
             JsfUtil.addErrorMessage(e, " Something Went Worng!");
         }
         totalPurchase = 0.0;
-        for (Bill i : bills) {
-            totalPurchase += i.getPaidAmount();
+        for (Bill b : bills) {
+            totalPurchase += b.getStockBill().getStockValueAtPurchaseRates();
         }
 
     }
@@ -1091,7 +1091,6 @@ public class PharmacyController implements Serializable {
         }
     }
 
-    @Deprecated
     public void generateConsumptionReportTableAsSummary(BillType billType) {
         // Initialize bill types
         List<BillType> bt = new ArrayList<>();
@@ -1488,6 +1487,7 @@ public class PharmacyController implements Serializable {
     }
 
     public void createStockTransferReport() {
+        resetFields();
         BillType bt;
 
         if ("issue".equals(transferType)) {
@@ -1497,24 +1497,12 @@ public class PharmacyController implements Serializable {
         }
 
         if ("summeryReport".equals(reportType)) {
-
-            bills = null;
-            departmentSummaries = null;
-            issueDepartmentCategoryWiseItems = null;
             generateConsumptionReportTableAsSummary(bt);
 
         } else if ("detailReport".equals(reportType)) {
-
-            billItems = null;
-            departmentSummaries = null;
-            issueDepartmentCategoryWiseItems = null;
             generateConsumptionReportTableByBillItems(bt);
 
         } else if ("byBill".equals(reportType)) {
-
-            bills = null;
-            billItems = null;
-            issueDepartmentCategoryWiseItems = null;
             generateConsumptionReportTableByBill(bt);
 
         }
