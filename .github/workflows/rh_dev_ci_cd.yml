@@ -3,7 +3,7 @@ name: RH-DEV Build & Deployment Pipeline
 on:
   push:
     branches:
-      - dev-ci-cd-setup
+      - ruhunu-dev
 
 jobs:
   build:
