@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
@@ -396,42 +397,34 @@ public class Patient implements Serializable, RetirableEntity {
         this.editedAt = editedAt;
     }
 
-    @Override
     public boolean isRetired() {
         return retired;
     }
 
-    @Override
     public void setRetired(boolean retired) {
         this.retired = retired;
     }
 
-    @Override
     public WebUser getRetirer() {
         return retirer;
     }
 
-    @Override
     public void setRetirer(WebUser retirer) {
         this.retirer = retirer;
     }
 
-    @Override
     public Date getRetiredAt() {
         return retiredAt;
     }
 
-    @Override
     public void setRetiredAt(Date retiredAt) {
         this.retiredAt = retiredAt;
     }
 
-    @Override
     public String getRetireComments() {
         return retireComments;
     }
 
-    @Override
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
