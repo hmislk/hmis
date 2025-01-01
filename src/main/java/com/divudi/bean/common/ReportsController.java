@@ -3561,7 +3561,7 @@ public class ReportsController implements Serializable {
         Double balance = 0.0;
 
         for (Bill bill : bills) {
-            balance += bill.getBalance();
+            balance += bill.getNetTotal() - bill.getSettledAmountBySponsor() - bill.getSettledAmountByPatient();
         }
 
         return balance;

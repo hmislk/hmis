@@ -394,7 +394,7 @@
                                     </p:column>
                                     <p:column headerText="Due Amt" width="5rem">
                                         <h:outputText
-                                            value="#{bill.balance}">
+                                            value="#{bill.netTotal - bill.settledAmountBySponsor - bill.settledAmountByPatient}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
