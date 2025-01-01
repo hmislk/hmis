@@ -635,6 +635,7 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public void addItem() {
+        System.out.println("add item = ");
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
@@ -674,6 +675,8 @@ public class PharmacyPurchaseController implements Serializable {
             getCurrentBillItem().getPharmaceuticalBillItem().setFreeQty(getCurrentBillItem().getPharmaceuticalBillItem().getFreeQtyPacks() * getCurrentBillItem().getItem().getDblValue());
             getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRatePack() / getCurrentBillItem().getItem().getDblValue());
         }
+        
+        System.out.println("getBillItems().size() = " + getBillItems().size());
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(currentBillItem);

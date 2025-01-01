@@ -134,6 +134,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     TokenController tokenController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    PaymentSchemeController paymentSchemeController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -218,6 +220,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     private boolean patientDetailsEditable;
     private Department counter;
     Token currentToken;
+
+    PaymentMethod paymentMethod;
 
     public Token getCurrentToken() {
         return currentToken;
@@ -395,6 +399,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     }
 
+    @Override
     public double calculatRemainForMultiplePaymentTotal() {
 
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -413,6 +418,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return getPreBill().getTotal();
     }
 
+    @Override
     public void recieveRemainAmountAutomatically() {
         double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -1071,6 +1077,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void processBillItems() {
+        System.out.println("processBillItems");
         calculateAllRates();
         calculateTotals();
     }
@@ -1084,6 +1091,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void calculateRates(BillItem bi) {
+        System.out.println("calculateRates = ");
         PharmaceuticalBillItem pharmBillItem = bi.getPharmaceuticalBillItem();
         if (pharmBillItem != null && pharmBillItem.getStock() != null) {
             ItemBatch itemBatch = pharmBillItem.getStock().getItemBatch();
@@ -1439,15 +1447,15 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //        return false;
 //
 //    }
-    @Inject
-    PaymentSchemeController paymentSchemeController;
-    PaymentMethod paymentMethod;
-
+    @Override
     public PaymentMethod getPaymentMethod() {
+        System.out.println("get paymentMethod = " + paymentMethod);
         return paymentMethod;
     }
 
+    @Override
     public void setPaymentMethod(PaymentMethod paymentMethod) {
+        System.out.println("setPaymentMethod = " + paymentMethod);
         this.paymentMethod = paymentMethod;
     }
 
@@ -2061,10 +2069,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void settleBillWithPay() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         editingQty = null;
 
         if (sessionController.getApplicationPreference().isCheckPaymentSchemeValidation()) {
@@ -2496,6 +2500,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
 //    TO check the functionality
     public double calculateBillItemDiscountRate(BillItem bi) {
+        System.out.println("calculateBillItemDiscountRate");
         if (bi == null) {
             return 0.0;
         }
@@ -2512,7 +2517,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         double retailRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
         double discountRate = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
-
+        System.out.println("discountAllowed = " + discountAllowed);
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         //MEMBERSHIPSCHEME DISCOUNT
 //        if (membershipScheme != null && discountAllowed) {
@@ -2530,17 +2535,25 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //        }
 //
         //PAYMENTSCHEME DISCOUNT
+
+        System.out.println("getPaymentScheme() = " + getPaymentScheme());
         if (getPaymentScheme() != null && discountAllowed) {
+            System.out.println("getPaymentMethod() = " + getPaymentMethod());
+            System.out.println("getPaymentScheme() = " + getPaymentScheme());
+            System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment());
+            System.out.println("bi.getItem() = " + bi.getItem());
             PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getPaymentScheme(), getSessionController().getDepartment(), bi.getItem());
 
-            //  //System.err.println("tr = " + tr);
+            System.err.println("priceMatrix = " + priceMatrix);
             if (priceMatrix != null) {
                 bi.setPriceMatrix(priceMatrix);
                 discountRate = priceMatrix.getDiscountPercent();
+                System.out.println("discountRate = " + discountRate);
             }
 
             double dr;
             dr = (retailRate * discountRate) / 100;
+            System.out.println("1 dr = " + dr);
             return dr;
 
         }
@@ -2556,7 +2569,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
             double dr;
             dr = (retailRate * discountRate) / 100;
-
+            System.out.println("2 dr = " + dr);
             return dr;
 
         }
@@ -2567,10 +2580,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
             double dr;
             dr = (retailRate * discountRate) / 100;
-
+            System.out.println("3 dr = " + dr);
             return dr;
         }
-
+        System.out.println("no dr");
         return 0;
 
     }
@@ -2920,15 +2933,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public PaymentScheme getPaymentScheme() {
-        System.err.println("GEtting Paymen");
-        System.out.println("paymentScheme = " + paymentScheme);
         return paymentScheme;
     }
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
-        System.err.println("Setting Pay");
         this.paymentScheme = paymentScheme;
-        System.out.println("paymentScheme = " + paymentScheme);
     }
 
     public StockHistoryFacade getStockHistoryFacade() {
