@@ -23,6 +23,9 @@
                         <p:column headerText="Membership Card No" sortBy="#{fm.family.membershipCardNo}" filterBy="#{fm.family.membershipCardNo}" filterMatchMode="contains">
                             <p:outputLabel value="#{fm.family.membershipCardNo}" />
                         </p:column>
+                         <p:column headerText="Membership Card No" sortBy="#{fm.family.membershipCardNo}" filterBy="#{fm.family.membershipCardNo}" filterMatchMode="contains">
+                             <p:outputLabel value="#{fm.relationToChh.id}" />
+                        </p:column>
                         <p:column headerText="Name" sortBy="#{fm.patient.person.nameWithTitle}" filterBy="#{fm.patient.person.nameWithTitle}" filterMatchMode="contains">
                             <p:outputLabel value="#{fm.patient.person.nameWithTitle}" />
                         </p:column>

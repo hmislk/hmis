@@ -30,8 +30,16 @@
                                 <h:outputText styleClass="fa-solid fa-people-group" />
                                 <p:outputLabel value="Add Family" class="m-2"/>
                                 <div style="float: right;">
-                                    <p:commandButton value="Save Family" action="#{patientController.saveFamily()}" ajax="false" class="ui-button-warning mx-1" icon="fas fa-save"></p:commandButton>
-                                    <p:commandButton value="Save &amp; Clear for a new Family" action="#{patientController.saveAndClearForNewFamilyMembership() }" class="ui-button-danger" icon="fas fa-eraser" ajax="false"></p:commandButton>
+                                    <p:commandButton 
+                                        rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
+                                        value="Save Family" 
+                                        action="#{patientController.saveFamily()}" 
+                                        ajax="false" class="ui-button-warning mx-1" 
+                                        icon="fas fa-save"></p:commandButton>
+                                    <p:commandButton 
+                                        rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
+                                        value="Save &amp; Clear for a new Family" 
+                                        action="#{patientController.saveAndClearForNewFamilyMembership() }" class="ui-button-danger" icon="fas fa-eraser" ajax="false"></p:commandButton>
                                 </div>
                             </f:facet>
                             <div class="row">
@@ -57,7 +65,9 @@
                                     </p:panel>
                                 </div>
                                 <div class="col-6">
-                                    <p:panel header="Add Family Members" >
+                                    <p:panel 
+                                        rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
+                                        header="Add Family Members" >
 
                                         <common:patient_details
                                             id="ccPatientDetails"
@@ -167,16 +177,28 @@
                                 </p:column>
                                 <p:column headerText="Actions" >
                                     <p:commandButton ajax="false" value="Profile"
+                                                     rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
                                                      action="#{patientController.navigateToManageIndividualMembership()}"
                                                      class="ui-button-warning mx-1" icon="pi pi-user">
                                         <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}"></f:setPropertyActionListener>
                                     </p:commandButton>
 
 
-                                    <p:commandButton ajax="false" value="Edit" action="patient"   class="ui-button-warning mx-1" icon="fa-solid fa-pen">
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Edit"
+                                        action="patient" 
+
+                                        rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
+                                        class="ui-button-warning mx-1" icon="fa-solid fa-pen">
                                         <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" value="Remove" class="ui-button-danger mx-1" icon="fas fa-trash" action="#{patientController.removeFamilyMember()}" >
+                                    <p:commandButton 
+                                        rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
+                                        ajax="false" value="Remove" 
+                                        class="ui-button-danger mx-1" 
+                                        icon="fas fa-trash"
+                                        action="#{patientController.removeFamilyMember()}" >
                                         <f:setPropertyActionListener value="#{fm}" target="#{patientController.removingFamilyMember}" ></f:setPropertyActionListener>
                                     </p:commandButton>
                                 </p:column>

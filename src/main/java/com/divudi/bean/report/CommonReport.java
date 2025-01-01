@@ -6076,7 +6076,6 @@ public class CommonReport implements Serializable {
     public List<BillItem> fetchDirectPurchaseBillItems(Bill b) {
         Map m = new HashMap();
         String sql;
-
         sql = "Select b From BillItem b where "
                 + " b.retired=false "
                 + " and b.bill.billType=:btp "
@@ -6093,8 +6092,7 @@ public class CommonReport implements Serializable {
             m.put("pm", paymentMethod);
         }
 
-        sql += " group by b.bill.billClassType "
-                + " order by b.bill.billClassType , b.insId ";
+        sql +=  " order by b.bill.createdAt , b.id ";
 
         m.put("frm", getFromDate());
         m.put("to", getToDate());

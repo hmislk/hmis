@@ -4,6 +4,7 @@
  */
 package com.divudi.entity.lab;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillItem;
@@ -35,7 +36,7 @@ import javax.persistence.Temporal;
  * @author Buddhika
  */
 @Entity
-public class PatientInvestigation implements Serializable {
+public class PatientInvestigation implements Serializable, RetirableEntity {
 
     private static final long serialVersionUID = 1L;
     @Id

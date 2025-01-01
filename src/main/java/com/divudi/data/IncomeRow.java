@@ -21,6 +21,7 @@ public class IncomeRow implements Serializable {
 
     private String uuid;
     private Long counter;
+    String rowType;
 
     private Category category;
     private Bill bill;
@@ -145,8 +146,6 @@ public class IncomeRow implements Serializable {
 
     private long duration;
 
-    private String rowType;
-
     private UUID id;
 
     // Constructor to generate a new UUID when an object is created
@@ -154,6 +153,37 @@ public class IncomeRow implements Serializable {
         this.id = UUID.randomUUID();
     }
 
+    public IncomeRow(Bill bill) {
+        this();
+        this.bill = bill;
+        rowType = "Bill";
+    }
+
+    public IncomeRow(SessionInstance sessionInstance) {
+        this();
+        this.sessionInstance = sessionInstance;
+    }
+
+    public IncomeRow(BillItem billItem, boolean withBill) {
+        this();
+        this.billItem = billItem;
+        if (withBill) {
+            rowType = "BillItemWithBill";
+            this.bill = billItem.getBill();
+        }else{
+            rowType = "BillItem";
+        }
+    }
+
+    public IncomeRow(Payment payment) {
+        this();
+        this.payment = payment;
+    }
+
+    public IncomeRow(BillFee billFee) {
+        this();
+        this.billFee = billFee;
+    }
 
     // Getter for UUID (optional, depending on use case)
     public UUID getId() {
@@ -187,13 +217,6 @@ public class IncomeRow implements Serializable {
     public String toString() {
         return "ReportTemplateRow{id=" + getId() + '}';
     }
-
-    
-    public IncomeRow(SessionInstance sessionInstance) {
-        this.sessionInstance = sessionInstance;
-    }
-
-    
 
     public void setFeeName(String feeName) {
         this.feeName = feeName;
@@ -944,19 +967,11 @@ public class IncomeRow implements Serializable {
         this.bill = bill;
     }
 
-    public IncomeRow(Bill bill) {
-        this.bill = bill;
-    }
-
     public Payment getPayment() {
         return payment;
     }
 
     public void setPayment(Payment payment) {
-        this.payment = payment;
-    }
-
-    public IncomeRow(Payment payment) {
         this.payment = payment;
     }
 
@@ -992,10 +1007,6 @@ public class IncomeRow implements Serializable {
         this.billItem = billItem;
     }
 
-    public IncomeRow(BillItem billItem) {
-        this.billItem = billItem;
-    }
-
     public Institution getSite() {
         return site;
     }
@@ -1017,10 +1028,6 @@ public class IncomeRow implements Serializable {
     }
 
     public void setBillFee(BillFee billFee) {
-        this.billFee = billFee;
-    }
-
-    public IncomeRow(BillFee billFee) {
         this.billFee = billFee;
     }
 
@@ -1092,8 +1099,6 @@ public class IncomeRow implements Serializable {
         this.selected = selected;
     }
 
-    
-
     public AgentHistory getAgentHistory() {
         return agentHistory;
     }
@@ -1101,7 +1106,6 @@ public class IncomeRow implements Serializable {
     public void setAgentHistory(AgentHistory agentHistory) {
         this.agentHistory = agentHistory;
     }
-
 
     public BillType getBillType() {
         return billType;

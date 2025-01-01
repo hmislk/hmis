@@ -5,6 +5,7 @@
  */
 package com.divudi.entity.pharmacy;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
@@ -21,7 +22,7 @@ import javax.persistence.Temporal;
  * @author safrin
  */
 @Entity
-public class UserStock implements Serializable {
+public class UserStock implements Serializable, RetirableEntity  {
 
     @ManyToOne
     private UserStockContainer userStockContainer;

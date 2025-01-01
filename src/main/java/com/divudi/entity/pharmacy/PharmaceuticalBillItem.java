@@ -4,10 +4,12 @@
  */
 package com.divudi.entity.pharmacy;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.bean.common.TimeUtils;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
+import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -26,7 +28,7 @@ import javax.persistence.Transient;
  * @author Buddhika
  */
 @Entity
-public class PharmaceuticalBillItem implements Serializable {
+public class PharmaceuticalBillItem implements Serializable, RetirableEntity  {
 
     @OneToOne(mappedBy = "pbItem")
     private StockHistory stockHistory;
@@ -108,6 +110,19 @@ public class PharmaceuticalBillItem implements Serializable {
     private boolean transThisIsStockOut;
     @Transient
     private boolean transThisIsStockIn;
+    
+     private boolean retired;
+
+    @ManyToOne
+    private WebUser retirer;
+
+    @ManyToOne
+    private WebUser currentHolder;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date retiredAt;
+
+    private String retireComments;
 
     public String getSerialNo() {
         return serialNo;
@@ -683,6 +698,46 @@ public class PharmaceuticalBillItem implements Serializable {
 
     public void setRetailPackValue(double retailPackValue) {
         this.retailPackValue = retailPackValue;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public WebUser getCurrentHolder() {
+        return currentHolder;
+    }
+
+    public void setCurrentHolder(WebUser currentHolder) {
+        this.currentHolder = currentHolder;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
     }
     
     

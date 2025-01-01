@@ -13,6 +13,32 @@
             <ui:define name="subcontent">
 
                 <h:form >
+
+                    <div class='row' >
+                        <div class="col p-1" >
+                            <p:commandButton 
+                                value="Delete All Patient Investigation Related Data" 
+                                action="#{dataAdministrationController.retireAllPatientInvestigationRelatedData}" 
+                                ajax="false">
+                            </p:commandButton>
+                        </div>
+                        <div class="col p-1" >
+                            <p:commandButton 
+                                value="Delete All Bill Related Data" 
+                                action="#{dataAdministrationController.retireAllBillRelatedData}" 
+                                ajax="false">
+                            </p:commandButton>
+                        </div>
+                        <div class="col p-1" >
+                            <p:commandButton 
+                                value="Delete All Pharmacy Related Data" 
+                                action="#{dataAdministrationController.retireAllPharmacyRelatedData}" 
+                                ajax="false">
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+
                     <p:panelGrid columns="1" >
                         <f:facet name="header" >
                             <h:outputLabel value="Single Run Functions" ></h:outputLabel>
@@ -156,7 +182,7 @@
                                        value="Randomly Reset Agent Balances to Rs. 50,000.00 and Rs. 30,000.00"  
                                        onclick="if (!confirm('Really want to do that?'))
                                                    return false"/>
-                        
+
                     </p:panelGrid>
                 </h:form>
 
