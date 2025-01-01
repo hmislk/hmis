@@ -576,9 +576,6 @@
                                     </p:column>
                                     <p:column headerText="Patient Name" width="5rem">
                                         <h:outputText value="#{bill.patient.person.name}"/>
-                                        <f:facet name="footer">
-                                            <h:outputText value="Sub Total" style="font-weight: bold;" />
-                                        </f:facet>
                                     </p:column>
                                     <p:column headerText="Gross Amt" width="5rem">
                                         <h:outputText value="#{bill.patientEncounter.finalBill.grantTotal}">
@@ -611,6 +608,59 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column footerText=""/>
+                                            <p:column footerText=""/>
+                                            <p:column footerText=""/>
+                                            <p:column footerText=""/>
+                                            <p:column footerText=""/>
+                                            <p:column footerText=""/>
+                                            <p:column footerText="Sub Total: " class="text-right" style="font-weight: bold;"/>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{reportsController.calculateIpGrossAmountSubTotalByBills(entry.value)}" style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{reportsController.calculateIpDiscountSubTotalByBills(entry.value)}" style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{reportsController.calculateIpNetAmountSubTotalByBills(entry.value)}" style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{reportsController.calculateIpPatientShareSubTotalByBills(entry.value)}" style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{reportsController.calculateIpSponsorShareSubTotalByBills(entry.value)}" style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{reportsController.calculateIpDueAmountSubTotalByBills(entry.value)}" style="font-weight: bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
                                 </p:subTable>
                             </p:dataTable>
                         </p:panel>
