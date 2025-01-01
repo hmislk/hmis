@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.dataStructure.ChannelFee;
 import com.divudi.entity.channel.SessionInstance;
 import java.io.Serializable;
@@ -23,7 +24,7 @@ import javax.persistence.Transient;
  * @author www.divudi.com
  */
 @Entity
-public class BillSession implements Serializable {
+public class BillSession implements Serializable, RetirableEntity  {
 
     static final long serialVersionUID = 1L;
     @Id
