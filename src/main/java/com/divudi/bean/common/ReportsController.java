@@ -1832,17 +1832,31 @@ public class ReportsController implements Serializable {
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
 
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        if (visitType == null || visitType.equalsIgnoreCase("OP")) {
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+        }
 
-        opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-        opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-        opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+        if (visitType == null || visitType.equalsIgnoreCase("IP")) {
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+        }
+
+        if (visitType == null) {
+            opdBts.add(BillTypeAtomic.CC_BILL);
+            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
+            opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        }
 
         System.out.println("bill items");
 
@@ -1869,7 +1883,7 @@ public class ReportsController implements Serializable {
 
             final Date billItemDate = billItem.getBill().getCreatedAt();
 
-            if (billItemDate == null) {
+            if (billItemDate == null || billItem.getItem() == null) {
                 continue;
             }
 
@@ -1885,7 +1899,8 @@ public class ReportsController implements Serializable {
                 Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap7to7.containsKey(weekOfMonth) ? weeklyBillItemMap7to7.get(weekOfMonth) : new HashMap<>();
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0);
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null ?
+                                billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
 
                 weeklyBillItemMap7to7.put(weekOfMonth, billItemMap);
             } else if (hourOfDay < 13) {
@@ -1893,7 +1908,8 @@ public class ReportsController implements Serializable {
                 Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap7to1.containsKey(weekOfMonth) ? weeklyBillItemMap7to1.get(weekOfMonth) : new HashMap<>();
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0);
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null ?
+                                billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
 
                 weeklyBillItemMap7to1.put(weekOfMonth, billItemMap);
             } else {
@@ -1901,7 +1917,8 @@ public class ReportsController implements Serializable {
                 Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap1to7.containsKey(weekOfMonth) ? weeklyBillItemMap1to7.get(weekOfMonth) : new HashMap<>();
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0);
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null ?
+                                billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
 
                 weeklyBillItemMap1to7.put(weekOfMonth, billItemMap);
             }
@@ -1977,7 +1994,7 @@ public class ReportsController implements Serializable {
 
             final Date billItemDate = billItem.getBill().getCreatedAt();
 
-            if (billItemDate == null) {
+            if (billItemDate == null || billItem.getItem() == null) {
                 continue;
             }
 
@@ -1990,15 +2007,18 @@ public class ReportsController implements Serializable {
             if (hourOfDay >= 19 || hourOfDay < 7) {
                 // Between 7 PM to 7 AM
                 billItemMap7to7.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(weekOfMonth, billItemMap7to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0);
+                        .put(weekOfMonth, billItemMap7to7.get(billItem.getItem().getName()) != null ?
+                                billItemMap7to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
             } else if (hourOfDay < 13) {
                 // Between 7 AM to 1 PM
                 billItemMap7to1.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(weekOfMonth, billItemMap7to1.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0);
+                        .put(weekOfMonth, billItemMap7to1.get(billItem.getItem().getName()) != null ?
+                                billItemMap7to1.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
             } else {
                 // Between 1 PM to 7 PM
                 billItemMap1to7.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(weekOfMonth, billItemMap1to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0);
+                        .put(weekOfMonth, billItemMap1to7.get(billItem.getItem().getName()) != null ?
+                                billItemMap1to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
             }
         }
 
@@ -2067,12 +2087,12 @@ public class ReportsController implements Serializable {
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
 
-        if (visitType != null) {
-            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP")) {
-                jpql += "AND bill.ipOpOrCc = :type ";
-                parameters.put("type", visitType);
-            }
-        }
+//        if (visitType != null) {
+//            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP")) {
+//                jpql += "AND bill.ipOpOrCc = :type ";
+//                parameters.put("type", visitType);
+//            }
+//        }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
             jpql += "AND ((bill.billPackege.name) like :itemName ) ";
