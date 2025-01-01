@@ -1,4 +1,4 @@
-name: COOP-DEV Deployment Pipeline
+name: COOP-DEV Build & Deployment Pipeline
 
 on:
   push:
@@ -26,6 +26,15 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+
+      - name: Update JDBC Data Sources in persistence.xml
+        run: |
+          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coop</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coopaudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+
+      - name: Verify JDBC Data Sources in persistence.xml
+        run: |
+          grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
 
       - name: Build with Maven
         run: mvn clean package -DskipTests
@@ -55,24 +64,25 @@ jobs:
 
       - name: Deploy to Payara
         env:
-          SERVER_IP: ${{ secrets.SERVER_IP }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          PAYARA_ADMIN_PASS: ${{ secrets.PAYARA_ADMIN_PASS }}
+          SERVER_IP: ${{ secrets.DEV_SERVER_IP }}
+          SERVER_USER: ${{ secrets.DEV_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+          PAYARA_ADMIN_PASS: ${{ secrets.DEV_PAYARA_ADMIN_PASS }}
         run: |
           # Add SSH private key to the SSH agent
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
           # Variables
-          WAR_NAME="coop-dev.war"
+          WAR_NAME="coop.war"
           WAR_DIR="/home/appuser/app/latest"
-          APP_NAME="coop-dev"
+          APP_NAME="coop"
+          SUBDOMAIN="dev"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             sudo mkdir -p $WAR_DIR
-            sudo chown -R appuser:appuser /home/appuser/app
+            sudo chown -R appuser:appuser /home/appuser/app/latest
             sudo su - appuser
             cd $WAR_DIR
 
@@ -99,7 +109,7 @@ jobs:
           # Deploy the WAR using asadmin
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             sudo su - appuser
-            echo 'AS_ADMIN_PASSWORD=${{ secrets.PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.DEV_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
@@ -108,8 +118,8 @@ jobs:
           # Validate if the application is running
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             sudo su - appuser
-            echo 'AS_ADMIN_PASSWORD=${{ secrets.PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
-            if /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q 'coop-dev'; then
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.DEV_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            if /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
               echo 'Application is running.'
             else
               echo 'Application failed to start.'
@@ -119,12 +129,12 @@ jobs:
 
           # Check if the application is reachable
           for i in {1..5}; do
-            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://coop-dev.carecode.org/coop-dev/faces/index1.xhtml)
+            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://$SUBDOMAIN.carecode.org/$APP_NAME/faces/index1.xhtml)
             if [ "$RESPONSE_CODE" == "200" ]; then
               echo "Application is reachable and healthy."
               break
             elif [ "$i" == "5" ]; then
-              echo "Application is not reachable or unhealthy at https://coop-dev.carecode.org/coop-dev (HTTP $RESPONSE_CODE)"
+              echo "Application is not reachable or unhealthy at https://$SUBDOMAIN.carecode.org/$APP_NAME (HTTP $RESPONSE_CODE)"
               break
             fi
             sleep 10
