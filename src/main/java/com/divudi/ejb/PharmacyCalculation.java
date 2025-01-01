@@ -882,8 +882,6 @@ public class PharmacyCalculation implements Serializable {
     }
 
     public void calculateRetailSaleValueAndFreeValueAtPurchaseRate(Bill b) {
-        
-        
         double sale = 0.0;
         double free = 0.0;
 
