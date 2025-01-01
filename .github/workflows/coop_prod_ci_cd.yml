@@ -1,15 +1,13 @@
-name: COOP-PROD Deployment Pipeline
+name: COOP-PROD Build & Deployment Pipeline
 
 on:
   push:
     branches:
       - coop-prod
-  # workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout Code
@@ -29,6 +27,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Update JDBC Data Sources in persistence.xml
+        run: |
+          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coop</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coopaudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+
+      - name: Verify JDBC Data Sources in persistence.xml
+        run: |
+          grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
+
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
@@ -44,7 +51,6 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    # if: github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout Code
@@ -73,11 +79,12 @@ jobs:
           WAR_NAME="coop.war"
           WAR_DIR="/home/appuser/app/latest"
           APP_NAME="coop"
+          SUBDOMAIN="coop"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             sudo mkdir -p $WAR_DIR
-            sudo chown -R appuser:appuser /home/appuser/app
+            sudo chown -R appuser:appuser /home/appuser/app/latest
             sudo su - appuser
             cd $WAR_DIR
 
@@ -124,12 +131,12 @@ jobs:
 
           # Check if the application is reachable
           for i in {1..5}; do
-            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://$APP_NAME.carecode.org/$APP_NAME/faces/index1.xhtml)
+            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://$SUBDOMAIN.carecode.org/$APP_NAME/faces/index1.xhtml)
             if [ "$RESPONSE_CODE" == "200" ]; then
               echo "Application is reachable and healthy."
               break
             elif [ "$i" == "5" ]; then
-              echo "Application is not reachable or unhealthy at https://$APP_NAME.carecode.org/$APP_NAME (HTTP $RESPONSE_CODE)"
+              echo "Application is not reachable or unhealthy at https://$SUBDOMAIN.carecode.org/$APP_NAME (HTTP $RESPONSE_CODE)"
               break
             fi
             sleep 10
