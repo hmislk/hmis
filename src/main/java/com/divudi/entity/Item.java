@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.ItemBarcodeGenerationStrategy;
@@ -56,7 +57,7 @@ import javax.persistence.Transient;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "DTYPE")
-public class Item implements Serializable, Comparable<Item> {
+public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
 
     @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     List<InvestigationItem> reportItems;

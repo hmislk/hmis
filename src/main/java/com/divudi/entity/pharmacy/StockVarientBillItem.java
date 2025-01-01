@@ -4,6 +4,7 @@
  */
 package com.divudi.entity.pharmacy;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
@@ -22,7 +23,7 @@ import javax.persistence.Temporal;
  */
 @Entity
 
-public class StockVarientBillItem implements Serializable {
+public class StockVarientBillItem implements Serializable, RetirableEntity  {
 
      @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

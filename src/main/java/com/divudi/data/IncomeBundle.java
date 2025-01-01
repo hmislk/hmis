@@ -110,6 +110,16 @@ public class IncomeBundle implements Serializable {
 
     private boolean patientDepositsAreConsideredInHandingover = true;
 
+    private Double quantity;
+    private Double freeQuantity;
+    private Double quantityPlusFreeQuantity;
+    private Double quantityValueAtPurchaseRate;
+    private Double freeQuantityValueAtPurchaseRate;
+    private Double quantityPlusFreeQuantityValueAtPurchaseRate;
+    private Double quantityValueAtRetailSaleRate;
+    private Double freeQuantityValueAtRetailSaleRate;
+    private Double quantityPlusFreeQuantityValueAtRetailSaleRate;
+
     public IncomeBundle() {
         this.id = UUID.randomUUID();
         this.rows = new ArrayList<>();
@@ -210,6 +220,16 @@ public class IncomeBundle implements Serializable {
                     if (obj instanceof Bill) {
                         Bill bill = (Bill) obj;
                         IncomeRow ir = new IncomeRow(bill);
+
+                        rows.add(ir);
+                    }
+                }
+            } else if (firstElement instanceof BillItem) {
+                // Process list as Bills
+                for (Object obj : entries) {
+                    if (obj instanceof BillItem) {
+                        BillItem billItem = (BillItem) obj;
+                        IncomeRow ir = new IncomeRow(billItem, true);
                         rows.add(ir);
                     }
                 }
@@ -225,6 +245,48 @@ public class IncomeBundle implements Serializable {
         }
     }
 
+    public void generateProcurementDetailsForBillItems() {
+        // Reset all values before starting calculations
+        quantity = 0.0;
+        freeQuantity = 0.0;
+        quantityPlusFreeQuantity = 0.0;
+        quantityValueAtPurchaseRate = 0.0;
+        freeQuantityValueAtPurchaseRate = 0.0;
+        quantityPlusFreeQuantityValueAtPurchaseRate = 0.0;
+        quantityValueAtRetailSaleRate = 0.0;
+        freeQuantityValueAtRetailSaleRate = 0.0;
+        quantityPlusFreeQuantityValueAtRetailSaleRate = 0.0;
+
+        for (IncomeRow r : getRows()) {
+            BillItem bi = r.getBillItem();
+            if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+
+            double qty = bi.getPharmaceuticalBillItem().getQty();
+            double freeQty = bi.getPharmaceuticalBillItem().getFreeQty();
+            double purchaseRate = bi.getPharmaceuticalBillItem().getPurchaseRate();
+            double retailRate = bi.getPharmaceuticalBillItem().getRetailRate();
+
+            // Add current row's quantities to totals
+            quantity += qty;
+            freeQuantity += freeQty;
+            quantityPlusFreeQuantity += qty + freeQty;
+
+            // Calculate and add values at purchase rate
+            quantityValueAtPurchaseRate += qty * purchaseRate;
+            freeQuantityValueAtPurchaseRate += freeQty * purchaseRate;
+            quantityPlusFreeQuantityValueAtPurchaseRate += (qty + freeQty) * purchaseRate;
+
+            // Calculate and add values at retail rate
+            quantityValueAtRetailSaleRate += qty * retailRate;
+            freeQuantityValueAtRetailSaleRate += freeQty * retailRate;
+            quantityPlusFreeQuantityValueAtRetailSaleRate += (qty + freeQty) * retailRate;
+        }
+    }
+
+    
+    
     public void generatePaymentDetailsForBills() {
         for (IncomeRow r : getRows()) {
             Bill b = r.getBill();
@@ -965,6 +1027,78 @@ public class IncomeBundle implements Serializable {
 
     public void setSummaryRow(IncomeRow summaryRow) {
         this.summaryRow = summaryRow;
+    }
+
+    public Double getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Double quantity) {
+        this.quantity = quantity;
+    }
+
+    public Double getFreeQuantity() {
+        return freeQuantity;
+    }
+
+    public void setFreeQuantity(Double freeQuantity) {
+        this.freeQuantity = freeQuantity;
+    }
+
+    public Double getQuantityPlusFreeQuantity() {
+        return quantityPlusFreeQuantity;
+    }
+
+    public void setQuantityPlusFreeQuantity(Double quantityPlusFreeQuantity) {
+        this.quantityPlusFreeQuantity = quantityPlusFreeQuantity;
+    }
+
+    public Double getQuantityValueAtPurchaseRate() {
+        return quantityValueAtPurchaseRate;
+    }
+
+    public void setQuantityValueAtPurchaseRate(Double quantityValueAtPurchaseRate) {
+        this.quantityValueAtPurchaseRate = quantityValueAtPurchaseRate;
+    }
+
+    public Double getFreeQuantityValueAtPurchaseRate() {
+        return freeQuantityValueAtPurchaseRate;
+    }
+
+    public void setFreeQuantityValueAtPurchaseRate(Double freeQuantityValueAtPurchaseRate) {
+        this.freeQuantityValueAtPurchaseRate = freeQuantityValueAtPurchaseRate;
+    }
+
+    public Double getQuantityPlusFreeQuantityValueAtPurchaseRate() {
+        return quantityPlusFreeQuantityValueAtPurchaseRate;
+    }
+
+    public void setQuantityPlusFreeQuantityValueAtPurchaseRate(Double quantityPlusFreeQuantityValueAtPurchaseRate) {
+        this.quantityPlusFreeQuantityValueAtPurchaseRate = quantityPlusFreeQuantityValueAtPurchaseRate;
+    }
+
+    public Double getQuantityValueAtRetailSaleRate() {
+        return quantityValueAtRetailSaleRate;
+    }
+
+    public void setQuantityValueAtRetailSaleRate(Double quantityValueAtRetailSaleRate) {
+        this.quantityValueAtRetailSaleRate = quantityValueAtRetailSaleRate;
+    }
+
+    public Double getFreeQuantityValueAtRetailSaleRate() {
+        return freeQuantityValueAtRetailSaleRate;
+    }
+
+    public void setFreeQuantityValueAtRetailSaleRate(Double freeQuantityValueAtRetailSaleRate) {
+        this.freeQuantityValueAtRetailSaleRate = freeQuantityValueAtRetailSaleRate;
+    }
+
+    public Double getQuantityPlusFreeQuantityValueAtRetailSaleRate() {
+        return quantityPlusFreeQuantityValueAtRetailSaleRate;
+    }
+
+    public void setQuantityPlusFreeQuantityValueAtRetailSaleRate(Double quantityPlusFreeQuantityValueAtRetailSaleRate) {
+        this.quantityPlusFreeQuantityValueAtRetailSaleRate = quantityPlusFreeQuantityValueAtRetailSaleRate;
     }
 
 }
