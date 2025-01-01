@@ -1,87 +1,128 @@
-/* Styles specific to the receipt composite component */
+/* General Container */
 .receipt-container {
-    font-family: monospace;
-    font-size: 10px;
+    font-family: "Courier New", "Liberation Mono", monospace;
+    font-size: 12px;
+    line-height: 1.4;
     width: 12cm;
-    height: auto;
+    height: 14cm;
+    margin: auto;
     padding: 10px;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    border: 1px solid #000;
 }
 
-.receipt-header {
+/* Header */
+.hospital-name {
     text-align: center;
-    font-size: 14px;
     font-weight: bold;
-    margin-bottom: 10px;
+    font-size: 16px; /* Larger font for hospital name */
+    text-transform: uppercase;
 }
 
-hr {
-    border: none;
-    border-top: 1px dashed black;
-    margin: 5px 0;
+.hospital-details {
+    text-align: center;
+    font-size: 12px; /* Smaller font for address, phone, and email */
 }
 
-.bill-details, .payment-summary, .footer {
-    margin-bottom: 10px;
+/* Line Separator */
+.separator {
+    border-top: 1px solid #000;
+    margin: 10px 0;
 }
 
-.key-value {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-}
-
-.key-value span:first-child {
-    font-weight: bold;
-}
-
-.key-value span:last-child {
-    text-align: right;
-}
-
-/* Table styles */
-table {
+/* Patient and Bill Info Table */
+.info-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
-table th, table td {
+.info-table td {
+    font-size: 12px;
     padding: 5px;
+}
+
+.info-table .label {
+    font-weight: bold;
     text-align: left;
 }
 
-table th:nth-child(3),
-table th:nth-child(4),
-table th:nth-child(5),
-table td:nth-child(3),
-table td:nth-child(4),
-table td:nth-child(5) {
+.info-table .value {
+    text-align: left;
+}
+
+.info-table .spacer {
+    width: 10px; /* Adds space between the two columns */
+}
+
+/* Item Table */
+.receipt-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.receipt-table th,
+.receipt-table td {
+    text-align: left;
+    padding: 5px;
+    border-bottom: 1px solid #000;
+}
+
+.receipt-table th {
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Total Section Table */
+.total-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+.total-table td {
+    padding: 5px;
+}
+
+.total-table .label {
+    font-weight: bold;
+    text-align: left;
+}
+
+.total-table .value {
     text-align: right;
+    font-weight: bold;
 }
 
-.payment-summary {
-    display: flex;
-    flex-direction: column;
+/* Footer */
+.receipt-footer {
+    text-align: center;
+    font-size: 12px;
+    margin-top: 20px;
+    font-style: italic;
 }
 
-.footer {
-    margin-top: auto;
-}
-
-/* Print-specific styles */
+/* Print Styles */
 @media print {
     .receipt-container {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: auto;
+        border: none;
+        width: 12cm;
+        height: 14cm;
     }
 
-    hr {
-        border-top: 1px dashed black;
+    .hospital-name {
+        font-size: 14px;
+    }
+
+    .receipt-table th,
+    .receipt-table td {
+        border-bottom: 1px solid #000;
+    }
+
+    .separator {
+        margin: 5px 0;
     }
 }
