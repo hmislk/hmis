@@ -332,10 +332,14 @@
                         <h:outputText  class="mx-4" value="Ordered Items" />  
                     </f:facet>
 
+                     <p:column headerText="No" width="2em">  
+                        <h:outputLabel  value="#{i+1}">
+                        </h:outputLabel>
+                    </p:column> 
+                    
                     <p:column headerText="Item Name"  styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                         <h:outputLabel id="item" value="#{ph.item.name} - #{ph.item.code}" style="width:100%">
                         </h:outputLabel>
-
                     </p:column>  
 
                     <p:column headerText="Qty" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                     
