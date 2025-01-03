@@ -1449,13 +1449,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //    }
     @Override
     public PaymentMethod getPaymentMethod() {
-        System.out.println("get paymentMethod = " + paymentMethod);
         return paymentMethod;
     }
 
     @Override
     public void setPaymentMethod(PaymentMethod paymentMethod) {
-        System.out.println("setPaymentMethod = " + paymentMethod);
         this.paymentMethod = paymentMethod;
     }
 
