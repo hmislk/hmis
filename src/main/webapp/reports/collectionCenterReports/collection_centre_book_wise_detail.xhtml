@@ -137,7 +137,7 @@
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </h:outputText>
                         </p:column>
-                        <p:column headerText="Bill Value" width="5rem">
+                        <p:column headerText="Bill Value" width="5rem" style="text-align: right;">
                             <h:outputText value="#{c.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
