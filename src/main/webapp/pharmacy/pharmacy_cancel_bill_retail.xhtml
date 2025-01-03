@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
@@ -12,7 +13,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" class="" >
+                    <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}"  >
                         <p:panel>
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between align-items-center">
@@ -100,15 +101,24 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
-                        <p:commandButton value="Reprint" ajax="false" class="ui-button-info m-1" icon="fas fa-print">
+                        <p:commandButton 
+                            value="Print Cancellation Bill" 
+                            ajax="false" 
+                            class="ui-button-info m-1" 
+                            icon="fas fa-print">
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:commandButton action="/pharmacy/pharmacy_search_sale_bill?faces-redirect=true"  
-                                         value="Search Sale Bill" class="ui-button-warning m-1" icon="fas fa-arrow-left">
+                        <p:commandButton 
+                            action="/pharmacy/pharmacy_search_sale_bill?faces-redirect=true"  
+                            value="Search Sale Bill" 
+                            class="ui-button-warning m-1" 
+                            icon="fas fa-arrow-left">
                         </p:commandButton>
-                        <p:commandButton action="/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true" 
-                                         class="ui-button-warning m-1" icon="fas fa-arrow-left"
-                                         value="Search Sale Pre Bill">
+                        <p:commandButton
+                            action="/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true" 
+                            class="ui-button-warning m-1" 
+                            icon="fas fa-arrow-left"
+                            value="Search Sale Pre Bill">
                         </p:commandButton>
 
 <!--                        <pharmacy:saleBill id="gpBillPreview" bill="#{pharmacyBillSearch.bill.cancelledBill}" />-->
@@ -147,6 +157,12 @@
                             </h:panelGroup>
 
                         </h:panelGroup>
+
+
+                        <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
+                            <phi:sale_bill_cancellation_five_five_custom_3 bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                        </h:panelGroup>
+
                     </h:panelGroup>
 
 
