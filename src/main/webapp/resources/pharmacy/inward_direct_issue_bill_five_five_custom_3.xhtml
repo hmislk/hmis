@@ -99,6 +99,7 @@
                             <th>No</th>
                             <th>Item Name</th>
                             <th>Rate</th>
+                            <th>Service Charge</th>
                             <th>Qty</th>
                             <th style="text-align: right">Value</th>
                         </tr>
@@ -114,13 +115,19 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
+
                                 <td>
                                     <h:outputLabel value="#{item.qty}">
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputLabel>
                                 </td>
+                                <td>
+                                    <h:outputLabel value="#{item.marginValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
                                 <td style="text-align: right">
-                                    <h:outputLabel value="#{item.grossValue}">
+                                    <h:outputLabel value="#{item.netValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -143,25 +150,23 @@
                         </td>
                     </tr>
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}" >
-                        <tr>
-                            <td >Discount:</td>
-                            <td  style="text-align: right;">
-                                <h:outputLabel value="#{cc.attrs.bill.discount ne 0.0 ?'#{-cc.attrs.bill.discount}' : '0.0'}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td >Net Total:</td>
-                            <td style="text-align: right;">
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td >Service Fee</td>
+                        <td  style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.margin}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td >Net Total:</td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
 
-                    </h:panelGroup>
 
                     <tr>
                         <td >No of Items:</td>
