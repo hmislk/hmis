@@ -97,16 +97,10 @@
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th colspan="3">Item Name</th>
+                            <th colspan="3">Item</th>
                             <th style="text-align: right">Qty</th>
-                        </tr>
-                        <tr>
-                            <th></th>
-
                             <th style="text-align: right">Rate</th>
-                            <th style="text-align: right">Item Value</th>
-                            <th style="text-align: right">Service Fee</th>
-                            <th style="text-align: right">Total Value</th>
+                            <th style="text-align: right">Value</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -119,23 +113,8 @@
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputLabel>
                                 </td>
-                            </tr>
-                            <tr>
-                                <th></th>
-
                                 <td  style="text-align: right">
-                                    <h:outputLabel value="#{item.rate}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-
-                                <td style="text-align: right">
-                                    <h:outputLabel value="#{item.grossValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                                <td style="text-align: right">
-                                    <h:outputLabel value="#{item.marginValue}">
+                                    <h:outputLabel value="#{item.netValue / item.qty }">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -144,7 +123,6 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
-
                             </tr>
                         </ui:repeat>
                     </tbody>
@@ -157,31 +135,12 @@
                 <table class="total-table">
                     <tr>
                         <td >Total:</td>
-                        <td  style="text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td >Service Fee:</td>
-                        <td  style="text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.margin}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td >Net Total:</td>
                         <td style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
                     </tr>
-
-
                     <tr>
                         <td >No of Items:</td>
                         <td >
