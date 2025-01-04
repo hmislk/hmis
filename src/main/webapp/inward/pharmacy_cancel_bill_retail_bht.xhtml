@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
       xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
@@ -13,11 +14,11 @@
             <ui:define name="content">
                 <h:form>
 
-                    <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
-                        <p:panel>
+                    <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" >
+                        <p:panel class="m-1">
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between">
-                                    <div><h:outputText value="Cancellation" class="mt-2"/></div>
+                                    <div><h:outputText value="Pharmacy Direct Issue to BHT Cancellation" class="mt-2"/></div>
                                     <div class="d-flex gap-2">
                                         <p:inputText placeholder="Enter Comments to Cancel Bill" value="#{pharmacyBillSearch.bill.comments}" style=" width: 400px;"/> 
                                         <p:commandButton 
@@ -31,6 +32,22 @@
                             </f:facet>
                             <div class="row">
                                 <div class="col-md-6">
+                                    <p:panel class="w-100 m-1">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                            <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <p:panelGrid columns="2">
+                                            <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyBillSearch.bill.deptId}" ></h:outputLabel>
+                                            <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                    <common:admission_details admission="#{pharmacyBillSearch.bill.patientEncounter}" ></common:admission_details>
+                                    <common:patient_details_view patient="#{pharmacyBillSearch.bill.patientEncounter.patient}" />
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-list-alt"></h:outputText>
@@ -39,13 +56,10 @@
                                         <p:panelGrid columns="2">
                                             <h:outputLabel value="Bill No :" ></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyBillSearch.bill.deptId}" ></h:outputLabel>
-                                            <h:outputLabel value="Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{pharmacyBillSearch.bill.total}" ></h:outputLabel>
-                                            <h:outputLabel value="Discount :" ></h:outputLabel>
-                                            <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" ><f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
                                             <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
                                         </p:panelGrid>
                                     </p:panel>
                                 </div>
@@ -95,7 +109,6 @@
 
                                 <h:panelGroup  rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                     <pharmacy:issueBill bill="#{pharmacyBillSearch.bill.cancelledBill}" cancelled="true" />
-<!--                                <phi:saleBill_prabodha bill="#{pharmacyBillSearch.bill.cancelledBill}"></phi:saleBill_prabodha>-->
                                 </h:panelGroup>
 
                                 <h:panelGroup  rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
