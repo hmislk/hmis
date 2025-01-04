@@ -199,7 +199,7 @@
                                         </p:selectOneMenu>
                                         <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
                                     </div>
- 
+
                                     <h:panelGroup   id="gpBillPreview" class="mt-2"> 
 
                                         <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
@@ -208,7 +208,12 @@
 
                                         <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                                             <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></phi:saleBill_five_five>
-                                        </h:panelGroup>                            
+                                        </h:panelGroup>        
+
+                                        <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
+                                            <phi:inward_direct_issue_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill}"/>
+                                        </h:panelGroup>
+
                                     </h:panelGroup>  
                                 </p:panel>
                             </div>
