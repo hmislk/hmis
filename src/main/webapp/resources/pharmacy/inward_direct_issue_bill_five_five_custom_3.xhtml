@@ -97,31 +97,44 @@
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Item Name</th>
-                            <th>Rate</th>
-                            <th>Service Charge</th>
-                            <th>Qty</th>
-                            <th style="text-align: right">Value</th>
+                            <th colspan="3">Item Name</th>
+                            <th style="text-align: right">Qty</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+
+                            <th style="text-align: right">Rate</th>
+                            <th style="text-align: right">Item Value</th>
+                            <th style="text-align: right">Service Fee</th>
+                            <th style="text-align: right">Total Value</th>
                         </tr>
                     </thead>
                     <tbody>
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="item" varStatus="s">
                             <tr>
-                                <!-- Display the item number across all items -->
-                                <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                <td>#{item.item.name}</td>
-                                <td>
+                                <td>#{s.index +1}</td>
+                                <td colspan="3">#{item.item.name}</td>
+                                <td style="text-align: right">
+                                    <h:outputLabel value="#{item.qty}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th></th>
+
+                                <td  style="text-align: right">
                                     <h:outputLabel value="#{item.rate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
 
-                                <td>
-                                    <h:outputLabel value="#{item.qty}">
-                                        <f:convertNumber integerOnly="true" />
+                                <td style="text-align: right">
+                                    <h:outputLabel value="#{item.grossValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
-                                <td>
+                                <td style="text-align: right">
                                     <h:outputLabel value="#{item.marginValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
@@ -131,6 +144,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
+
                             </tr>
                         </ui:repeat>
                     </tbody>
@@ -151,7 +165,7 @@
                     </tr>
 
                     <tr>
-                        <td >Service Fee</td>
+                        <td >Service Fee:</td>
                         <td  style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.margin}">
                                 <f:convertNumber pattern="#,##0.00" />
