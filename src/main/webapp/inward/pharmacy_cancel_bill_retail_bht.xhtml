@@ -9,6 +9,10 @@
       xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
       xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
+    <h:head >
+        <h:outputStylesheet library="css" name="ohmis.css" ></h:outputStylesheet>
+    </h:head>
+
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -64,9 +68,13 @@
                                     </p:panel>
                                 </div>
                                 <div class="col-md-6">
-                                    <p:panel header="Bill Item Details">
-                                        <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip" >
-                                            <p:column width="5%">
+                                    <p:panel header="Item Details">
+                                        <p:dataTable 
+                                            rowIndexVar="rowIndex"
+                                            styleClass="condensed-table"
+                                            value="#{pharmacyBillSearch.bill.billItems}"
+                                            var="bip">
+                                            <p:column width="1em">
                                                 <f:facet name="header" >No</f:facet>
                                                     #{rowIndex+1}
                                             </p:column>
@@ -74,9 +82,22 @@
                                                 <f:facet name="header">Item</f:facet>
                                                     #{bip.item.name}
                                             </p:column>
-                                            <p:column width="20%" style="text-align: right;">
+                                            <p:column  styleClass="text-end" width="5em" >
+                                                <f:facet name="header">Qty</f:facet>
+                                                <h:outputLabel value="#{bip.qty}">
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column styleClass="text-end" width="5em" >
+                                                <f:facet name="header">Rate</f:facet>
+                                                <h:outputLabel value="#{bip.netValue/bip.qty}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column styleClass="text-end" width="5em" >
                                                 <f:facet name="header">Value</f:facet>
-                                                    #{bip.netValue}
+                                                <h:outputLabel value="#{bip.netValue}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
                                             </p:column>
                                         </p:dataTable>
                                     </p:panel>
@@ -113,7 +134,11 @@
 
                                 <h:panelGroup  rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                                     <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill.cancelledBill}"></phi:saleBill_five_five>
-                                </h:panelGroup>                            
+                                </h:panelGroup> 
+
+                                <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
+                                    <phi:inward_direct_issue_cancellation_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                                </h:panelGroup>
 
                             </h:panelGroup>
 
