@@ -117,7 +117,6 @@ public class Person implements Serializable, RetirableEntity  {
     private Item religion;
 
     @ManyToOne
-    @Deprecated
     private MembershipScheme membershipScheme;
 
     @Transient
