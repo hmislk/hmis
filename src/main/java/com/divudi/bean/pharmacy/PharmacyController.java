@@ -883,8 +883,9 @@ public class PharmacyController implements Serializable {
     public String navigateBackToGeneratedGrnDetailedRportTable() {
         return "/reports/inventoryReports/grn_report?faces-redirect=true";
     }
+ 
+    public void generateGrnReportTable() {
 
-    public void generateGRNReportTable() {
         bills = null;
         totalCreditPurchaseValue = 0.0;
         totalCashPurchaseValue = 0.0;
