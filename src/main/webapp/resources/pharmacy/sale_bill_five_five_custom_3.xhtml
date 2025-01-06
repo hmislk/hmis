@@ -40,7 +40,6 @@
                 <table class="info-table">
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
-
                             <td style="padding: 2px;">Name :</td>
                             <td style="padding: 2px;" >
                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
@@ -62,29 +61,24 @@
                     <tr>
                         <td  style="padding: 2px;">Bill Date:</td>
                         <td  style="padding: 2px;">
-
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
                                 <f:convertDateTime pattern="yyyy-MM-dd" />
                             </h:outputLabel>
                         </td>
-
                         <td style="padding: 2px;" class="spacer"></td>
                         <td style="padding: 2px;">Bill Time:</td>
                         <td style="padding: 2px;">
-
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
                                 <f:convertDateTime pattern="HH:mm a" />
                             </h:outputLabel>
                         </td>
                     </tr>
                     <tr>
-
                         <td style="padding: 2px;">Bill No:</td>
                         <td style="padding: 2px;">#{cc.attrs.bill.deptId}</td>
                         <td style="padding: 2px;" class="spacer"></td>
                         <td style="padding: 2px;" ><h:outputLabel value="BHT No : " rendered="#{cc.attrs.bill.patientEncounter ne null}"/></td>
                         <td style="padding: 2px;" ><h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" rendered="#{cc.attrs.bill.patientEncounter ne null}"/></td>
-
                     </tr>
                 </table>
 
@@ -146,14 +140,11 @@
                         <tr>
                             <td >Discount:</td>
                             <td  style="text-align: right;">
-
                                 <h:outputLabel  value="#{-cc.attrs.bill.discount}">
-
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>
-
                         <tr>
                             <td >Net Total:</td>
                             <td style="text-align: right;">
@@ -222,11 +213,9 @@
                     </table> 
                 </h:panelGroup>
 
-
-                    </h:panelGroup>
+            </div>
 
         </cc:implementation>
 
     </h:body>
 </html>
-
