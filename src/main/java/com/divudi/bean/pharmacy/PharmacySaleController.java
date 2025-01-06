@@ -2069,10 +2069,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void settleBillWithPay() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         editingQty = null;
 
         if (sessionController.getApplicationPreference().isCheckPaymentSchemeValidation()) {

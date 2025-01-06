@@ -347,7 +347,7 @@
                         <p:column headerText="Visit Type">
                             <h:outputText value="#{row.bill.ipOpOrCc}"/>
                         </p:column>
-                        <p:column headerText="Invoice No">
+                        <p:column headerText="Invoice No" width="13rem">
                             <h:outputText value="#{row.bill.deptId}" rendered="#{row.bill.patientEncounter eq null}"/>
                             <h:outputText value="#{row.bill.patientEncounter.finalBill.deptId}"
                                           rendered="#{row.bill.patientEncounter ne null}"/>
@@ -417,7 +417,7 @@
                         <p:column headerText="Visit Type">
                             <h:outputText value="#{row.billItem.bill.ipOpOrCc}"/>
                         </p:column>
-                        <p:column headerText="Invoice No">
+                        <p:column headerText="Invoice No" width="13rem">
                             <h:outputText value="#{row.billItem.bill.deptId}"
                                           rendered="#{row.billItem.patientEncounter eq null}"/>
                             <h:outputText value="#{row.billItem.bill.patientEncounter.finalBill.deptId}"
