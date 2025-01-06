@@ -511,6 +511,8 @@ public class TransferReceiveController implements Serializable {
         getReceivedBill().setFromStaff(getIssuedBill().getToStaff());
         getReceivedBill().setFromInstitution(getIssuedBill().getInstitution());
         getReceivedBill().setFromDepartment(getIssuedBill().getDepartment());
+        getReceivedBill().setToInstitution(sessionController.getInstitution());
+        getReceivedBill().setToDepartment(sessionController.getDepartment());
 
         if (getReceivedBill().getId() == null) {
             getBillFacade().create(getReceivedBill());

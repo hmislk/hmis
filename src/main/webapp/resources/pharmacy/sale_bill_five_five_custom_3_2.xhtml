@@ -45,7 +45,7 @@
                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
                             </td>
                             <td style="padding: 2px;" class="spacer"></td>
-                            <h:panelGroup rendered="#{cc.attrs.bill.patient.person.ageAsShortString ne null}" >
+                            <h:panelGroup rendered="#{cc.attrs.bill.patient.age ne null}" >
                                 <td  style="padding: 2px;">Age/Sex :</td>
                                 <td style="padding: 2px;" >
                                     <h:outputLabel value="#{cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
@@ -53,7 +53,7 @@
                             </h:panelGroup>
                         </tr>
                     </h:panelGroup>
-                    
+                     
                     <h:panelGroup rendered="false" >
                     #{pharmacySaleController.printBill.patient.person.sex.shortLabel}
                 </h:panelGroup>

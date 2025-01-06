@@ -13,24 +13,18 @@
     </h:head>
 
     <h:body>
-        <!-- Composite Component Interface -->
         <cc:interface>
-            <!-- Attributes passed to the component -->
-            <cc:attribute name="bill" required="true" />
-            <cc:attribute name="duplicate" required="false" />
+            <cc:attribute name="bill" required="true" type="com.divudi.entity.Bill"/>
         </cc:interface>
 
         <!-- Composite Component Implementation -->
         <cc:implementation>
             <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
-
-
             <div class="receipt-container">
                 <!-- Header Section -->
                 <div class="hospital-name">
                     <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
-                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                    <h:outputLabel value="*Cancellation Bill" /> 
                 </div>
 
                 <!-- Separator Line -->
@@ -45,7 +39,7 @@
                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
                             </td>
                             <td style="padding: 2px;" class="spacer"></td>
-                            <h:panelGroup rendered="#{cc.attrs.bill.patient.person.ageAsShortString ne null}" >
+                            <h:panelGroup rendered="#{cc.attrs.bill.patient.age ne null}" >
                                 <td  style="padding: 2px;">Age/Sex :</td>
                                 <td style="padding: 2px;" >
                                     <h:outputLabel value="#{cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
@@ -53,10 +47,42 @@
                             </h:panelGroup>
                         </tr>
                     </h:panelGroup>
-                    
-                    <h:panelGroup rendered="false" >
-                    #{pharmacySaleController.printBill.patient.person.sex.shortLabel}
-                </h:panelGroup>
+
+                    <tr>
+                        <td colspan="5">
+                            <h:outputLabel value="Original Bill Details" ></h:outputLabel>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td  style="padding: 2px;">Bill Date:</td>
+                        <td  style="padding: 2px;">
+                            <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}" >
+                                <f:convertDateTime pattern="yyyy-MM-dd" />
+                            </h:outputLabel>
+                        </td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px;">Bill Time:</td>
+                        <td style="padding: 2px;">
+                            <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}" >
+                                <f:convertDateTime pattern="HH:mm a" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px;">Bill No:</td>
+                        <td style="padding: 2px;">#{cc.attrs.bill.billedBill.deptId}</td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px;" ><h:outputLabel value="BHT No : " rendered="#{cc.attrs.bill.patientEncounter ne null}"/></td>
+                        <td style="padding: 2px;" ><h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" rendered="#{cc.attrs.bill.patientEncounter ne null}"/></td>
+                    </tr>
+
+
+                    <tr>
+                        <td colspan="5">
+                            <h:outputLabel value="Cancellation Details" ></h:outputLabel>
+                        </td>
+                    </tr>
 
                     <tr>
                         <td  style="padding: 2px;">Bill Date:</td>

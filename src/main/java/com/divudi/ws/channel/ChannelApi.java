@@ -1086,6 +1086,11 @@ public class ChannelApi {
         }
 
         Institution creditCompany = channelService.findCreditCompany(paymentChannel, InstitutionType.Agency);
+        
+        if(creditCompany == null){
+            JSONObject response = commonFunctionToErrorResponse("No channeling comapany still registered in the system.");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
         System.out.println(creditCompany.getName());
         List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany, BillClassType.BilledBill);
         System.out.println(billList.size());

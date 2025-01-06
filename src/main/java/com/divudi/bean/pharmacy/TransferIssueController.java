@@ -635,9 +635,13 @@ public class TransferIssueController implements Serializable {
         }
 
         getIssuedBill().setInstitution(getSessionController().getInstitution());
-        getIssuedBill().setDepartment(getIssuedBill().getFromDepartment());
-//
-        getIssuedBill().setToInstitution(getIssuedBill().getToDepartment().getInstitution());
+        getIssuedBill().setDepartment(getSessionController().getDepartment());
+
+        getIssuedBill().setFromInstitution(getSessionController().getInstitution());
+        getIssuedBill().setFromDepartment(getSessionController().getDepartment());
+        
+        getIssuedBill().setToInstitution(getRequestedBill().getFromInstitution());
+        getIssuedBill().setToDepartment(getRequestedBill().getFromDepartment());
 
         getIssuedBill().setCreater(getSessionController().getLoggedUser());
         getIssuedBill().setCreatedAt(Calendar.getInstance().getTime());

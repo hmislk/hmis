@@ -155,6 +155,14 @@ public class PharmacyBillSearch implements Serializable {
     @Inject
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
 
+    public String navigateToCancelPharmacyDirectIssueToInpatients(){
+        if(bill==null){
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        return "/inward/pharmacy_cancel_bill_retail_bht?faces-redirect=true";
+    }
+    
     public String navigatePharmacyReprintPo() {
         return "pharmacy_reprint_po?faces-redirect=true";
     }

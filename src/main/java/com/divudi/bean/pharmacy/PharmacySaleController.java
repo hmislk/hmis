@@ -1449,13 +1449,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //    }
     @Override
     public PaymentMethod getPaymentMethod() {
-        System.out.println("get paymentMethod = " + paymentMethod);
         return paymentMethod;
     }
 
     @Override
     public void setPaymentMethod(PaymentMethod paymentMethod) {
-        System.out.println("setPaymentMethod = " + paymentMethod);
         this.paymentMethod = paymentMethod;
     }
 
@@ -2069,10 +2067,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void settleBillWithPay() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         editingQty = null;
 
         if (sessionController.getApplicationPreference().isCheckPaymentSchemeValidation()) {
