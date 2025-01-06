@@ -85,7 +85,10 @@
 
                             <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper'}"> 
                                 <ph:saleBill_Header bill="#{pharmacyBillSearch.bill}"></ph:saleBill_Header>
-                            </h:panelGroup>  
+                            </h:panelGroup>
+                            <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
+                                <ph:sale_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                            </h:panelGroup>
 
                         </h:panelGroup>
                     </p:panel>
