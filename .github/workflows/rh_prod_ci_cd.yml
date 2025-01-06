@@ -1,9 +1,9 @@
-name: COOP-PROD Build & Deployment Pipeline
+name: RH-PROD Build & Deployment Pipeline
 
 on:
   push:
     branches:
-      - coop-prod
+      - ruhunu-prod
 
 jobs:
   build:
@@ -29,9 +29,9 @@ jobs:
 
       - name: Update JDBC Data Sources in persistence.xml
         run: |
-          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coop</jta-data-source>|' src/main/resources/META-INF/persistence.xml
-          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coopaudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
-
+          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunu</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunuAudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+      
       - name: Verify JDBC Data Sources in persistence.xml
         run: |
           grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
@@ -55,8 +55,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-        with:
-          ref: 'coop-prod'
 
       - name: Download Build Artifact
         uses: actions/download-artifact@v3
@@ -66,20 +64,20 @@ jobs:
 
       - name: Deploy to Payara
         env:
-          SERVER_IP: ${{ secrets.COOP_PROD_SERVER_IP }}
-          SERVER_USER: ${{ secrets.COOP_PROD_SERVER_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.COOP_PROD_SSH_PRIVATE_KEY }}
-          PAYARA_ADMIN_PASS: ${{ secrets.COOP_PROD_PAYARA_ADMIN_PASS }}
+          SERVER_IP: ${{ secrets.RUHUNU_PROD_SERVER_IP }}
+          SERVER_USER: ${{ secrets.RUHUNU_PROD_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.RUHUNU_PROD_SSH_PRIVATE_KEY }}
+          PAYARA_ADMIN_PASS: ${{ secrets.RUHUNU_PROD_PAYARA_ADMIN_PASS }}
         run: |
           # Add SSH private key to the SSH agent
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
           # Variables
-          WAR_NAME="coop.war"
+          WAR_NAME="rh.war"
           WAR_DIR="/home/appuser/app/latest"
-          APP_NAME="coop"
-          SUBDOMAIN="coop"
+          APP_NAME="rh"
+          SUBDOMAIN="rh"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
@@ -111,7 +109,7 @@ jobs:
           # Deploy the WAR using asadmin
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             sudo su - appuser
-            echo 'AS_ADMIN_PASSWORD=${{ secrets.COOP_PROD_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.DEV_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
@@ -120,7 +118,7 @@ jobs:
           # Validate if the application is running
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             sudo su - appuser
-            echo 'AS_ADMIN_PASSWORD=${{ secrets.COOP_PROD_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.DEV_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
             if /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
               echo 'Application is running.'
             else
