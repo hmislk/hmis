@@ -1920,12 +1920,6 @@ public class ReportsController implements Serializable {
                         .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null
                                 ? billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
 
-                weeklyBillItemMap1to7.put(weekOfMonth, billItemMap);
-            }
-        }
-
-        setWeeklyDailyBillItemMap7to7(weeklyBillItemMap7to7);
-        setWeeklyDailyBillItemMap7to1(weeklyBillItemMap7to1);
         setWeeklyDailyBillItemMap1to7(weeklyBillItemMap1to7);
     }
 
