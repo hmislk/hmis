@@ -336,6 +336,35 @@
                                 <p:column headerText="Bill No">
                                     <h:outputText value="#{b.deptId}" />
                                 </p:column>
+                                <p:column headerText="Bill No">
+                                    <h:outputText value="#{b.institution.name}" />
+                                </p:column>
+                                <p:column headerText="Bill No">
+                                    <h:outputText value="#{b.department.site.name}" />
+                                </p:column>
+                                <p:column headerText="Bill No">
+                                    <h:outputText value="#{b.department.name}" />
+                                </p:column> 
+                                
+                                <p:column headerText="fromInstitution No">
+                                    <h:outputText value="#{b.fromInstitution.name}" />
+                                </p:column>
+                                <p:column headerText="fromDepartment No">
+                                    <h:outputText value="#{b.fromDepartment.site.name}" />
+                                </p:column>
+                                <p:column headerText="fromDepartment No">
+                                    <h:outputText value="#{b.fromDepartment.name}" />
+                                </p:column>
+                                
+                                <p:column headerText="toInstitution No">
+                                    <h:outputText value="#{b.toInstitution.name}" />
+                                </p:column>
+                                <p:column headerText="toDepartment No">
+                                    <h:outputText value="#{b.toDepartment.site.name}" />
+                                </p:column>
+                                <p:column headerText="toDepartment No">
+                                    <h:outputText value="#{b.toDepartment.name}" />
+                                </p:column>
                                 <p:column headerText="Date">
                                     <h:outputText value="#{b.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
