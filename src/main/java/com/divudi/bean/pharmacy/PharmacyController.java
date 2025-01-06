@@ -791,6 +791,7 @@ public class PharmacyController implements Serializable {
         return reportName.trim();
     }
 
+    @Deprecated
     public void generateGRNReportTableByBillItem(List<BillType> bt) {
         bills = null;
         totalCreditPurchaseValue = 0.0;
@@ -884,7 +885,7 @@ public class PharmacyController implements Serializable {
     }    
 
     
-    public void generateGRNReportTable() {
+    public void generateGrnReportTable() {
         bills = null;
         totalCreditPurchaseValue = 0.0;
         totalCashPurchaseValue = 0.0;
@@ -893,10 +894,8 @@ public class PharmacyController implements Serializable {
         List<BillType> bt = new ArrayList<>();
         if ("detailReport".equals(reportType)) {
             bt.add(BillType.PharmacyGrnBill);
-            generateGRNReportTableByBillItem(bt);
         } else if ("returnReport".equals(reportType)) {
             bt.add(BillType.PharmacyGrnReturn);
-            generateGRNReportTableByBillItem(bt);
         } else if ("summeryReport".equals(reportType)) {
             bt.add(BillType.PharmacyGrnBill);
             bt.add(BillType.PharmacyGrnReturn);
@@ -936,8 +935,12 @@ public class PharmacyController implements Serializable {
             tmp.put("pm", paymentMethod);
         }
 
-        if (fromInstitution != null) {
+        if (fromInstitution != null && "detailReport".equals(reportType)) {
             sql += " AND b.fromInstitution = :supplier";
+            tmp.put("supplier", fromInstitution);
+        }
+        if (fromInstitution != null && "returnReport".equals(reportType)) {
+            sql += " AND b.toInstitution = :supplier";
             tmp.put("supplier", fromInstitution);
         }
 
@@ -1026,8 +1029,8 @@ public class PharmacyController implements Serializable {
             JsfUtil.addErrorMessage(e, " Something Went Worng!");
         }
         totalPurchase = 0.0;
-        for (Bill i : bills) {
-            totalPurchase += i.getPaidAmount();
+        for (Bill b : bills) {
+            totalPurchase += b.getStockBill().getStockValueAtPurchaseRates();
         }
 
     }
