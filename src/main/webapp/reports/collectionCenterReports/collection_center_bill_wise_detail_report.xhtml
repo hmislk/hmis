@@ -297,7 +297,9 @@
                                             <td>#{entry.value[0].bill.patient.phn}</td>
                                             <td>#{entry.value[0].bill.patient.person.name}</td>
                                             <td>
-                                                #{entry.value[0].bill.createdAt}
+                                                <h:outputLabel value="#{entry.value[0].bill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                                </h:outputLabel>
                                             </td>
                                             <td>#{entry.key}</td>
                                             <td>
@@ -306,32 +308,32 @@
                                                     <thead>
                                                         <tr>
                                                             <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Service Name</th>
-                                                            <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Hos Fee.</th>
-                                                            <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Staff Fee.</th>
-                                                            <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">CC Fee.</th>
-                                                            <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Net Amount</th>
+                                                            <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: center">Hos Fee.</th>
+                                                            <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: center">Staff Fee.</th>
+                                                            <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: center">CC Fee.</th>
+                                                            <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: center">Net Amount</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <ui:repeat value="#{entry.value}" var="bi">
                                                             <tr style="border-bottom: 1px solid #d9d9d9;">
                                                                 <td>#{bi.item.name}</td>
-                                                                <td>
+                                                                <td style="text-align: right">
                                                                     <h:outputText value="#{bi.hospitalFee}">
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputText>
                                                                 </td>
-                                                                <td>
+                                                                <td style="text-align: right">
                                                                     <h:outputText value="#{bi.staffFee}">
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputText>
                                                                 </td>
-                                                                <td>
+                                                                <td style="text-align: right">
                                                                     <h:outputText value="#{bi.collectingCentreFee}">
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputText>
                                                                 </td>
-                                                                <td>
+                                                                <td style="text-align: right">
                                                                     <h:outputText value="#{bi.netValue}">
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputText>
@@ -342,22 +344,22 @@
                                                     <tfoot>
                                                         <tr>
                                                             <td style="font-weight: bold;">Total</td>
-                                                            <td>
+                                                            <td style="text-align: right">
                                                                 <h:outputText value="#{entry.value[0].bill.totalHospitalFee}" style="font-weight: bold;">
                                                                     <f:convertNumber pattern="#,##0.00" />
                                                                 </h:outputText>
                                                             </td>
-                                                            <td>
+                                                            <td style="text-align: right">
                                                                 <h:outputText value="#{entry.value[0].bill.totalStaffFee}" style="font-weight: bold;">
                                                                     <f:convertNumber pattern="#,##0.00" />
                                                                 </h:outputText>
                                                             </td>
-                                                            <td>
+                                                            <td style="text-align: right">
                                                                 <h:outputText value="#{entry.value[0].bill.totalCenterFee}" style="font-weight: bold;">
                                                                     <f:convertNumber pattern="#,##0.00" />
                                                                 </h:outputText>
                                                             </td>
-                                                            <td>
+                                                            <td style="text-align: right">
                                                                 <h:outputText value="#{entry.value[0].bill.netTotal}" style="font-weight: bold;">
                                                                     <f:convertNumber pattern="#,##0.00" />
                                                                 </h:outputText>
