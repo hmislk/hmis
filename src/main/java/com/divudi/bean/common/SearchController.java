@@ -368,6 +368,14 @@ public class SearchController implements Serializable {
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Navigators">
+    public String navigateToMyDepartmentAllCashierSummary() {
+        department = sessionController.getDepartment();
+        institution = sessionController.getInstitution();
+        site = sessionController.getDepartment().getSite();
+        webUser=null;
+        return "/cashier/my_department_all_cashier_summary?faces-redirect=true";
+    }
+
     public String navigateToUserDrawerDashboard() {
         Drawer d = drawerController.getUsersDrawer(drawer.getDrawerUser());
         drawerController.setCurrent(d);
@@ -4265,7 +4273,7 @@ public class SearchController implements Serializable {
 
         sql += " order by bi.id desc";
 
-        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
+        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -17385,7 +17393,7 @@ public class SearchController implements Serializable {
         }
 
         // </editor-fold>  
-    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
+        // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
         public Item getItm() {
             return itm;
         }
@@ -18146,5 +18154,4 @@ public class SearchController implements Serializable {
     }
 
     // </editor-fold>  
-    
 }

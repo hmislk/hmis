@@ -56,6 +56,8 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
 import com.divudi.entity.BillSession;
+import com.divudi.entity.Family;
+import com.divudi.entity.FamilyMember;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.PatientDepositHistory;
@@ -89,6 +91,8 @@ import com.divudi.facade.CashTransactionFacade;
 import com.divudi.facade.CashTransactionHistoryFacade;
 import com.divudi.facade.DrawerEntryFacade;
 import com.divudi.facade.DrawerFacade;
+import com.divudi.facade.FamilyFacade;
+import com.divudi.facade.FamilyMemberFacade;
 import com.divudi.facade.PatientDepositFacade;
 import com.divudi.facade.PatientDepositHistoryFacade;
 import com.divudi.facade.PatientEncounterFacade;
@@ -168,6 +172,10 @@ public class DataAdministrationController implements Serializable {
     BillFacade billFacade;
     @EJB
     PatientFacade patientFacade;
+    @EJB
+    FamilyMemberFacade familyMemberFacade;
+    @EJB
+    FamilyFacade familyFacade;
     @EJB
     PatientDepositFacade patientDepositFacade;
     @EJB
@@ -490,6 +498,61 @@ public class DataAdministrationController implements Serializable {
         System.out.println(progressMessage);
     }
 
+    public void retireAllMembershipData() {
+        progress = 0;
+        progressMessage = "Starting retirement process...";
+        System.out.println(progressMessage);
+        String jpql = "Select f from Family f where f.retired=:ret";
+        Map params = new HashMap();
+        params.put("ret", false);
+        List<Family> families;
+
+        Date retiredAt = new Date(); // Common timestamp for all retire operations
+        WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
+        String uuid = CommonFunctions.generateUuid();
+
+        families = familyFacade.findByJpql(jpql, params);
+        for (Family f : families) {
+            f.setRetired(true);
+            f.setRetirer(retirer);
+            f.setRetiredAt(retiredAt);
+            f.setRetireComments(uuid);
+            familyFacade.edit(f);
+        }
+
+        jpql = "Select p from Patient p where p.retired=:ret and p.person.membershipScheme is not null";
+        params = new HashMap();
+        params.put("ret", false);
+        List<Patient> patients = patientFacade.findByJpql(jpql, params);
+        for (Patient f : patients) {
+            f.setRetired(true);
+            f.setRetirer(retirer);
+            f.setRetiredAt(retiredAt);
+            f.setRetireComments(uuid);
+            if (f.getPerson() != null) {
+                f.getPerson().setRetired(true);
+                f.getPerson().setRetirer(retirer);
+                f.getPerson().setRetiredAt(retiredAt);
+                f.getPerson().setRetireComments(uuid);
+            }
+            patientFacade.edit(f);
+        }
+
+        List<FamilyMember> familyMembers;
+        jpql = "Select fm from FamilyMember fm where fm.retired=:ret";
+        params = new HashMap();
+        params.put("ret", false);
+        familyMembers = patientFacade.findByJpql(jpql, params);
+        for (FamilyMember f : familyMembers) {
+            f.setRetired(true);
+            f.setRetirer(retirer);
+            f.setRetiredAt(retiredAt);
+            f.setRetireComments(uuid);
+            familyMemberFacade.edit(f);
+        }
+
+    }
+
     public void retireAllPatientInvestigationRelatedData() {
         progress = 0;
         progressMessage = "Starting retirement process...";
@@ -565,7 +628,7 @@ public class DataAdministrationController implements Serializable {
                 retirable.setRetirer(retirer);
                 retirable.setRetireComments(uuid);
                 facade.edit(entity); // Use the specific facade passed as a parameter
-            }else{
+            } else {
                 System.out.println("Entity that does not implement retirable");
                 System.out.println("entity = " + entity);
             }
