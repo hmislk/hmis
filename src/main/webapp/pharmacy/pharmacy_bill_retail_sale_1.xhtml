@@ -692,7 +692,9 @@
                             </h:panelGroup>                            
 
                             <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
-                                <phi:saleBill_Header bill="#{pharmacySaleController.printBill}"></phi:saleBill_Header>
+
+                                <phi:saleBill_Header bill="#{pharmacySaleController1.printBill}"></phi:saleBill_Header>
+
                             </h:panelGroup>  
                             <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
                                 <phi:sale_bill_five_five_custom_3 bill="#{pharmacySaleController1.printBill}"/>
