@@ -7,6 +7,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.membership.MembershipScheme;
@@ -36,7 +37,7 @@ import org.joda.time.PeriodType;
  * Consultant (Health Informatics)
  */
 @Entity
-public class Person implements Serializable {
+public class Person implements Serializable, RetirableEntity  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -328,10 +329,12 @@ public class Person implements Serializable {
         this.sex = sex;
     }
 
+    @Override
     public String getRetireComments() {
         return retireComments;
     }
 
+    @Override
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
@@ -415,26 +418,32 @@ public class Person implements Serializable {
         this.zoneCode = zoneCode;
     }
 
+    @Override
     public boolean isRetired() {
         return retired;
     }
 
+    @Override
     public void setRetired(boolean retired) {
         this.retired = retired;
     }
 
+    @Override
     public Date getRetiredAt() {
         return retiredAt;
     }
 
+    @Override
     public void setRetiredAt(Date retiredAt) {
         this.retiredAt = retiredAt;
     }
 
+    @Override
     public WebUser getRetirer() {
         return retirer;
     }
 
+    @Override
     public void setRetirer(WebUser retirer) {
         this.retirer = retirer;
     }
