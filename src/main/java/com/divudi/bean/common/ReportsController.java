@@ -1899,8 +1899,8 @@ public class ReportsController implements Serializable {
                 Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap7to7.containsKey(weekOfMonth) ? weeklyBillItemMap7to7.get(weekOfMonth) : new HashMap<>();
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null
-                                ? billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null ?
+                                billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
 
                 weeklyBillItemMap7to7.put(weekOfMonth, billItemMap);
             } else if (hourOfDay < 13) {
@@ -1908,8 +1908,8 @@ public class ReportsController implements Serializable {
                 Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap7to1.containsKey(weekOfMonth) ? weeklyBillItemMap7to1.get(weekOfMonth) : new HashMap<>();
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null
-                                ? billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null ?
+                                billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
 
                 weeklyBillItemMap7to1.put(weekOfMonth, billItemMap);
             } else {
@@ -1917,8 +1917,8 @@ public class ReportsController implements Serializable {
                 Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap1to7.containsKey(weekOfMonth) ? weeklyBillItemMap1to7.get(weekOfMonth) : new HashMap<>();
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null
-                                ? billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null ?
+                                billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
 
                 weeklyBillItemMap1to7.put(weekOfMonth, billItemMap);
             }
@@ -2007,18 +2007,18 @@ public class ReportsController implements Serializable {
             if (hourOfDay >= 19 || hourOfDay < 7) {
                 // Between 7 PM to 7 AM
                 billItemMap7to7.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(weekOfMonth, billItemMap7to7.get(billItem.getItem().getName()) != null
-                                ? billItemMap7to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
+                        .put(weekOfMonth, billItemMap7to7.get(billItem.getItem().getName()) != null ?
+                                billItemMap7to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
             } else if (hourOfDay < 13) {
                 // Between 7 AM to 1 PM
                 billItemMap7to1.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(weekOfMonth, billItemMap7to1.get(billItem.getItem().getName()) != null
-                                ? billItemMap7to1.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
+                        .put(weekOfMonth, billItemMap7to1.get(billItem.getItem().getName()) != null ?
+                                billItemMap7to1.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
             } else {
                 // Between 1 PM to 7 PM
                 billItemMap1to7.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(weekOfMonth, billItemMap1to7.get(billItem.getItem().getName()) != null
-                                ? billItemMap1to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
+                        .put(weekOfMonth, billItemMap1to7.get(billItem.getItem().getName()) != null ?
+                                billItemMap1to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
             }
         }
 
@@ -2093,6 +2093,7 @@ public class ReportsController implements Serializable {
 //                parameters.put("type", visitType);
 //            }
 //        }
+
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
             jpql += "AND ((bill.billPackege.name) like :itemName ) ";
             parameters.put("itemName", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
@@ -4710,84 +4711,5 @@ public class ReportsController implements Serializable {
         }
 
         return balance;
-    }
-
-    public Double calculateIpGrossAmountNetTotal() {
-        double grossAmountNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            grossAmountNetTotal += calculateIpGrossAmountSubTotalByBills(bills);
-        }
-
-        return grossAmountNetTotal;
-    }
-
-    public Double calculateIpDiscountNetTotal() {
-        double discountNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            discountNetTotal += calculateIpDiscountSubTotalByBills(bills);
-        }
-
-        return discountNetTotal;
-    }
-    
-    public Double calculateIpNetAmountNetTotal() {
-        double netAmountNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            netAmountNetTotal += calculateIpNetAmountSubTotalByBills(bills);
-        }
-
-        return netAmountNetTotal;
-    }
-    
-    public Double calculateIpPatientShareNetTotal() {
-        double patientShareNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            patientShareNetTotal += calculateIpPatientShareSubTotalByBills(bills);
-        }
-
-        return patientShareNetTotal;
-    }
-    
-    public Double calculateIpSponsorShareNetTotal() {
-        double sponsorShareNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            sponsorShareNetTotal += calculateIpSponsorShareSubTotalByBills(bills);
-
-        }
-
-        return sponsorShareNetTotal;
-    }
-    
-    public Double calculateIpDueAmountNetTotal() {
-        double dueAmountNetTotal = 0.0;
-        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
-
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            dueAmountNetTotal += calculateIpDueAmountSubTotalByBills(bills);
-        }
-
-        return dueAmountNetTotal;
     }
 }
