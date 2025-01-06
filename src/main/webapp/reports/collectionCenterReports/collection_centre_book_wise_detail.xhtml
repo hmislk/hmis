@@ -112,13 +112,7 @@
                                      class="w-100 m-2"
                                      value="#{reportsController.bundle.reportTemplateRows}"
                                      var="c"
-                                     paginator="true"
-                                     paginatorAlwaysVisible="false"
-                                     paginatorPosition="bottom"
-                                     rows="10"
-                                     rowIndexVar="b"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,20">
+                                     rowIndexVar="b">
                             <p:column 
                                 headerText="Bill No" 
                                 width="5rem" 
@@ -172,6 +166,11 @@
                                 <h:outputText value="#{c.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportsController.bundle.grossTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
                             </p:column>
                         </p:dataTable>
                     </p:panel>
