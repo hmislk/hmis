@@ -337,7 +337,6 @@ public class ReportsController implements Serializable {
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to1;
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap1to7;
 
-
     private boolean showChart;
 
     public String getDischargedStatus() {
@@ -403,7 +402,6 @@ public class ReportsController implements Serializable {
     public void setSelectedDateType(String selectedDateType) {
         this.selectedDateType = selectedDateType;
     }
-
 
     public Investigation getInvestigation() {
         return investigation;
@@ -1854,6 +1852,7 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
         }
 
+
         if (visitType == null) {
             opdBts.add(BillTypeAtomic.CC_BILL);
             opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
@@ -1901,8 +1900,10 @@ public class ReportsController implements Serializable {
                 Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap7to7.containsKey(weekOfMonth) ? weeklyBillItemMap7to7.get(weekOfMonth) : new HashMap<>();
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+
                         .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null ?
                                 billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
+
 
                 weeklyBillItemMap7to7.put(weekOfMonth, billItemMap);
             } else if (hourOfDay < 13) {
@@ -1910,8 +1911,10 @@ public class ReportsController implements Serializable {
                 Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap7to1.containsKey(weekOfMonth) ? weeklyBillItemMap7to1.get(weekOfMonth) : new HashMap<>();
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+
                         .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null ?
                                 billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
+
 
                 weeklyBillItemMap7to1.put(weekOfMonth, billItemMap);
             } else {
@@ -1919,8 +1922,10 @@ public class ReportsController implements Serializable {
                 Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap1to7.containsKey(weekOfMonth) ? weeklyBillItemMap1to7.get(weekOfMonth) : new HashMap<>();
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
+
                         .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null ?
                                 billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
+
 
                 weeklyBillItemMap1to7.put(weekOfMonth, billItemMap);
             }
@@ -2021,6 +2026,7 @@ public class ReportsController implements Serializable {
                 billItemMap1to7.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
                         .put(weekOfMonth, billItemMap1to7.get(billItem.getItem().getName()) != null ?
                                 billItemMap1to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
+
             }
         }
 
@@ -2644,7 +2650,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-                                                                    boolean onlyDueBills) {
+            boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -3167,7 +3173,6 @@ public class ReportsController implements Serializable {
 //                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
 //                + "WHERE bill.billTypeAtomic IN :bts "
 //                + "AND bill.createdAt BETWEEN :fd AND :td ";
-
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
                 + "FROM PatientInvestigation pi "
                 + "JOIN pi.billItem billItem "
@@ -3374,14 +3379,14 @@ public class ReportsController implements Serializable {
 //            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
             opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
         } else if (visitType.equalsIgnoreCase("OP")) {
-            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         }
@@ -3581,7 +3586,7 @@ public class ReportsController implements Serializable {
         Double balance = 0.0;
 
         for (Bill bill : bills) {
-            balance += bill.getBalance();
+            balance += bill.getNetTotal() - bill.getSettledAmountBySponsor() - bill.getSettledAmountByPatient();
         }
 
         return balance;
@@ -3672,7 +3677,6 @@ public class ReportsController implements Serializable {
 
         return discount;
     }
-
 
     public Double calculateNetAmountNetTotal() {
         double netAmountNetTotal = 0.0;
@@ -4030,9 +4034,7 @@ public class ReportsController implements Serializable {
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=Collection_Center_Report.xlsx");
 
-        try (XSSFWorkbook workbook = new XSSFWorkbook();
-             OutputStream out = response.getOutputStream()) {
-
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
 
             XSSFSheet sheet = workbook.createSheet("Report");
             int rowIndex = 0;
@@ -4304,8 +4306,8 @@ public class ReportsController implements Serializable {
     }
 
     private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
-                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
-                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+            List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+            int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
         document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
         document.add(com.itextpdf.text.Chunk.NEWLINE);
 
@@ -4408,8 +4410,7 @@ public class ReportsController implements Serializable {
         }
     }
 
-    private void populateDataRows(Sheet sheet, int rowIndex, List<String> itemList, List<Integer> daysOfWeek, Map
-            <Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap, int week) {
+    private void populateDataRows(Sheet sheet, int rowIndex, List<String> itemList, List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap, int week) {
         for (String item : itemList) {
             Row dataRow = sheet.createRow(rowIndex++);
             int colIndex = 0;
@@ -4433,8 +4434,7 @@ public class ReportsController implements Serializable {
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=Collecting_Center_Monthly_Report.xlsx");
 
-        try (XSSFWorkbook workbook = new XSSFWorkbook();
-             OutputStream out = response.getOutputStream()) {
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
 
             XSSFSheet sheet = workbook.createSheet("Monthly Report");
             int rowIndex = 0;
@@ -4660,4 +4660,145 @@ public class ReportsController implements Serializable {
             e.printStackTrace();
         }
     }
+
+    public Double calculateIpGrossAmountSubTotalByBills(List<Bill> bills) {
+        Double billTotal = 0.0;
+
+        for (Bill bill : bills) {
+            billTotal += bill.getPatientEncounter().getFinalBill().getGrantTotal();
+        }
+
+        return billTotal;
+    }
+
+    public Double calculateIpDiscountSubTotalByBills(List<Bill> bills) {
+        Double discount = 0.0;
+
+        for (Bill bill : bills) {
+            discount += bill.getPatientEncounter().getFinalBill().getDiscount();
+        }
+
+        return discount;
+    }
+
+    public Double calculateIpNetAmountSubTotalByBills(List<Bill> bills) {
+        Double netTotal = 0.0;
+
+        for (Bill bill : bills) {
+            netTotal += bill.getPatientEncounter().getFinalBill().getNetTotal();
+        }
+
+        return netTotal;
+    }
+
+    public Double calculateIpPatientShareSubTotalByBills(List<Bill> bills) {
+        Double settledAmountByPatient = 0.0;
+
+        for (Bill bill : bills) {
+            settledAmountByPatient += bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient();
+        }
+
+        return settledAmountByPatient;
+    }
+
+    public Double calculateIpSponsorShareSubTotalByBills(List<Bill> bills) {
+        Double settledAmountBySponsor = 0.0;
+
+        for (Bill bill : bills) {
+            settledAmountBySponsor += bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor();
+        }
+
+        return settledAmountBySponsor;
+    }
+
+    public Double calculateIpDueAmountSubTotalByBills(List<Bill> bills) {
+        Double balance = 0.0;
+
+        for (Bill bill : bills) {
+            balance += bill.getPatientEncounter().getFinalBill().getNetTotal() - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor() - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient();
+        }
+
+        return balance;
+    }
+
+
+    public Double calculateIpGrossAmountNetTotal() {
+        double grossAmountNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            grossAmountNetTotal += calculateIpGrossAmountSubTotalByBills(bills);
+        }
+
+        return grossAmountNetTotal;
+    }
+
+    public Double calculateIpDiscountNetTotal() {
+        double discountNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            discountNetTotal += calculateIpDiscountSubTotalByBills(bills);
+        }
+
+        return discountNetTotal;
+    }
+
+    public Double calculateIpNetAmountNetTotal() {
+        double netAmountNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            netAmountNetTotal += calculateIpNetAmountSubTotalByBills(bills);
+        }
+
+        return netAmountNetTotal;
+    }
+
+    public Double calculateIpPatientShareNetTotal() {
+        double patientShareNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            patientShareNetTotal += calculateIpPatientShareSubTotalByBills(bills);
+        }
+
+        return patientShareNetTotal;
+    }
+
+    public Double calculateIpSponsorShareNetTotal() {
+        double sponsorShareNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            sponsorShareNetTotal += calculateIpSponsorShareSubTotalByBills(bills);
+
+        }
+
+        return sponsorShareNetTotal;
+    }
+
+    public Double calculateIpDueAmountNetTotal() {
+        double dueAmountNetTotal = 0.0;
+        Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+            List<Bill> bills = entry.getValue();
+
+            dueAmountNetTotal += calculateIpDueAmountSubTotalByBills(bills);
+        }
+
+        return dueAmountNetTotal;
+    }
+
 }
