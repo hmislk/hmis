@@ -2832,7 +2832,7 @@ public class ReportsController implements Serializable {
         opdBts.add(BillTypeAtomic.CC_BILL);
         opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
-        opdBts.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
+//        opdBts.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
 
         bundle.setName("Bills");
         bundle.setBundleType("billList");
