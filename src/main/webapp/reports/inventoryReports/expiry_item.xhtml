@@ -224,7 +224,12 @@
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center">
-                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"  value="Process" >
+                            <p:commandButton 
+                                class="ui-button-warning mx-1" 
+                                icon="fas fa-cogs" 
+                                ajax="false"  
+                                value="Process"
+                                action="#{pharmacyReportController.processExpiryItemReport()}">
                             </p:commandButton>
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
@@ -239,7 +244,8 @@
 
                             <h5>Expiry Item Report</h5>
 
-                            <p:dataTable id="tbl1" value="" 
+                            <p:dataTable id="tbl1" 
+                                         value="#{pharmacyReportController.stocks}" 
                                          var="f" 
                                          rowIndexVar="n" 
                                          paginator="true" 
@@ -249,64 +255,66 @@
                                          rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                                 <p:column headerText=" Item name wise" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.department.name}" />
                                     <f:facet name="footer">
                                         <h:outputText value="Total" />
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Parenct Category Code" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.item.category.parentCategory.code}" />
                                 </p:column>
                                 <p:column headerText="Parent Category Name" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.item.category.parentCategory.name}" />
                                 </p:column>
                                 <p:column headerText="Item Category Code" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.item.category.id}" />
                                 </p:column>
                                 <p:column headerText="Item Category Name" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.item.category.name}" />
                                 </p:column>
                                 <p:column headerText="Item Code" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.item.code}" />
                                 </p:column>
                                 <p:column headerText="Item Name" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.item.name}" />
                                 </p:column>
                                 <p:column headerText="Base UOM" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.item.measurementUnit.name}" />
                                 </p:column>
                                 <p:column headerText="Secondary UOM" width="10em">
                                     <h:outputText value="" />
                                 </p:column>
                                 <p:column headerText="Item Type" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.item.category.name}" />
                                 </p:column>
                                 <p:column headerText="Batch No" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.id}" />
                                 </p:column>
                                 <p:column headerText="Batch Date" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.item.createdAt}" />
                                 </p:column>
                                 <p:column headerText="Expiry Date" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.dateOfExpire}" />
                                 </p:column>
                                 <p:column headerText="Supplier" width="10em">
                                     <h:outputText value="" />
                                 </p:column>
-                                <p:column headerText="Shelf life rema- ining(Days)" width="10em">
-                                    <h:outputText value="" />
+                                <p:column headerText="Shelf life remaining (Days)" width="10em">
+                                    <h:outputText 
+                                        value="#{pharmacyReportController.calculateDaysRemaining(f.itemBatch.dateOfExpire)}"
+                                        style="#{pharmacyReportController.calculateDaysRemaining(f.itemBatch.dateOfExpire) &lt; 0 ? 'color:red;' : 'color:green;'}" />
                                 </p:column>
                                 <p:column headerText="Rate" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.purcahseRate}" />
                                 </p:column>
                                 <p:column headerText="MRP" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.retailsaleRate}" />
                                 </p:column>
                                 <p:column headerText="Qty" width="10em">
                                     <h:outputText value="" />
                                 </p:column>
                                 <p:column headerText="Item Value" width="10em">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{f.itemBatch.purcahseRate}" />
                                 </p:column>
                                 <p:column headerText="Batch wise total" width="10em">
                                     <h:outputText value="" />
@@ -323,6 +331,7 @@
 
                             </p:dataTable>
 
+
                         </div>
 
                     </p:panel>
@@ -334,4 +343,5 @@
         </ui:composition>
 
     </h:body>
+
 </html>

@@ -99,6 +99,8 @@ import javax.persistence.TemporalType;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import org.hl7.fhir.r5.model.Bundle;
+import java.time.temporal.ChronoUnit;
+
 
 /**
  *
@@ -2172,7 +2174,7 @@ public class PharmacyReportController implements Serializable {
         m.put("td", toDate);
 
         jpql = "select s"
-                + " from StockHistory s "
+                + " from Stock s "
                 + " where s.itemBatch.dateOfExpire between :fd and :td ";
         if (institution != null) {
             jpql += " and s.institution=:ins ";
@@ -2193,10 +2195,21 @@ public class PharmacyReportController implements Serializable {
             m.put("itm", item);
         }
 
-        jpql += " order by s.createdAt ";
-        stocks = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        jpql += " order by s.id ";
+        stocks = stockFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
-
+    
+public long calculateDaysRemaining(Date dateOfExpire) {
+    if (dateOfExpire == null) {
+        return 0; // Default behavior for null dates
+    }
+    // Convert Date to LocalDate
+    LocalDate today = LocalDate.now();
+    LocalDate expiryDate = dateOfExpire.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    
+    // Calculate the difference in days
+    return ChronoUnit.DAYS.between(today, expiryDate);
+}
     public void processLabTestWiseCountReport() {
         String jpql = "select new com.divudi.data.TestWiseCountReport("
                 + "bi.item.name, "

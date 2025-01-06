@@ -9,14 +9,14 @@
 
     <h:head>
         <!-- Include the custom CSS for styling -->
-        <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
+        <h:outputStylesheet library="css" name="inward_direct_issue_bill_five_five_custom_3.css" />
     </h:head>
 
     <h:body>
         <!-- Composite Component Interface -->
         <cc:interface>
             <!-- Attributes passed to the component -->
-            <cc:attribute name="bill" required="true" />
+            <cc:attribute name="bill" required="true"  type="com.divudi.entity.Bill" />
             <cc:attribute name="duplicate" required="false" />
         </cc:interface>
 
@@ -48,6 +48,19 @@
                             <td >Patient Age/Sex:</td>
                             <td >
                                 <h:outputLabel value="#{cc.attrs.bill.patient.age}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter ne null}" >
+                        <tr>
+                            <td >BHT:</td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}"/>
+                            </td>
+                            <td class="spacer"></td>
+                            <td >Room No:</td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.name}"/>
                             </td>
                         </tr>
                     </h:panelGroup>
