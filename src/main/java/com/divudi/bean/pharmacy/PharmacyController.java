@@ -891,17 +891,17 @@ public class PharmacyController implements Serializable {
         List<BillType> bt = new ArrayList<>();
         List<BillTypeAtomic> bta = new ArrayList<>();
         if ("detailReport".equals(reportType)) {
-            bt.add(BillType.PharmacyGrnBill);
+//            bt.add(BillType.PharmacyGrnBill);
             bta.add(BillTypeAtomic.PHARMACY_GRN);
         } else if ("returnReport".equals(reportType)) {
-            bt.add(BillType.PharmacyGrnReturn);
+//            bt.add(BillType.PharmacyGrnReturn);
             bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
         } else if ("cancellationReport".equals(reportType)) {
-            bt.add(BillType.PharmacyGrnBill);
+//            bt.add(BillType.PharmacyGrnBill);
             bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
         } else if ("summeryReport".equals(reportType)) {
-            bt.add(BillType.PharmacyGrnBill);
-            bt.add(BillType.PharmacyGrnReturn);
+//            bt.add(BillType.PharmacyGrnBill);
+//            bt.add(BillType.PharmacyGrnReturn);
             bta.add(BillTypeAtomic.PHARMACY_GRN);
             bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
             bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
@@ -910,16 +910,16 @@ public class PharmacyController implements Serializable {
 
         bills = new ArrayList<>();
 
-        String sql = "SELECT b FROM Bill b WHERE type(b) = :bill"
-                + " and b.retired = false"
-                + " and b.billType In :btp"
+        String sql = "SELECT b FROM Bill b "
+                + " WHERE b.retired = false"
+//                + " and b.billType In :btp"
                 + " and b.billTypeAtomic In :btas"
                 + " and b.createdAt between :fromDate and :toDate";
 
         Map<String, Object> tmp = new HashMap<>();
 
-        tmp.put("bill", BilledBill.class); // Use the actual Class object
-        tmp.put("btp", bt);
+//        tmp.put("bill", BilledBill.class); // Use the actual Class object
+//        tmp.put("btp", bt);
         tmp.put("btas", bta);
         tmp.put("fromDate", getFromDate());
         tmp.put("toDate", getToDate());
