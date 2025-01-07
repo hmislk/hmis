@@ -510,7 +510,7 @@ public class ChannelApi {
         }
 
         // Prepare the resultMap to hold doctor details
-        Map<String, Map<String, String>> resultMap = new HashMap<>();
+        List<Map<String, String>> resultMap = new ArrayList<>();
         List<SessionInstance> sessionInstances = channelService.findSessionInstance(hospitals, specialities, doctorList, date);
         // List<SessionInstance> sessionInstances = sessionInstanceController.findSessionInstance(hospital, speciality, doctorList, date, date);
         System.out.println(sessionInstances.size());
@@ -521,7 +521,7 @@ public class ChannelApi {
         SimpleDateFormat dayFormat = new SimpleDateFormat("E");
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
-        Long additionalProp1 = 1L;
+        //Long additionalProp1 = 1L;
         for (SessionInstance si : sessionInstances) {
 
             Map<String, String> doctorDetails = new HashMap<>();
@@ -536,8 +536,8 @@ public class ChannelApi {
             doctorDetails.put("DoctorNotes", si.getOriginatingSession().getSpecialNotice() == null ? "" : si.getOriginatingSession().getSpecialNotice());
             doctorDetails.put("DoctorNo", si.getStaff().getId().toString());
             doctorDetails.put("SessionStart", timeFormat.format(si.getOriginatingSession().getStartingTime()));
-            resultMap.put("Session" + additionalProp1.toString(), doctorDetails);
-            additionalProp1++;
+            resultMap.add(doctorDetails);
+            //additionalProp1++;
         }
 
         // Construct the response JSON
@@ -713,7 +713,7 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(json.toString()).build();
         }
         System.out.println(sessions);
-        Map<String, Object> sessionData = new HashMap<>();
+        List<Object> sessionData = new ArrayList<>();
         Long additionalProp = 1L;
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -730,7 +730,7 @@ public class ChannelApi {
             session.put("docName", s.getStaff().getPerson().getNameWithTitle());
             session.put("docNo", s.getStaff().getId());
             session.put("docForeignFee", fees != null ? fees.get("docForeignFee") : 0);
-            session.put("nextNo", s.getNextAvailableAppointmentNumber() != null ? s.getNextAvailableAppointmentNumber().intValue() : 1);
+            session.put("nextNo", channelService.nextAvailableAppoinmentNumberForSession(s).get("nextNumber"));
             session.put("hosId", s.getInstitution().getId().toString());
             session.put("remarks", s.getOriginatingSession().getSpecialNotice() == null ? "" : s.getOriginatingSession().getSpecialNotice());
             session.put("vatDocCharge", "N/A");
@@ -743,13 +743,13 @@ public class ChannelApi {
             session.put("vatDocForeignCharge", "N/A");
             session.put("specID", s.getStaff().getSpeciality().getId().toString());
             session.put("maxPatient", s.getMaxNo());
-            session.put("activePatient", s.getNextAvailableAppointmentNumber() != null ? s.getNextAvailableAppointmentNumber().intValue() - 1 : 0);
+            session.put("activePatient", channelService.nextAvailableAppoinmentNumberForSession(s).get("activePatients"));
             session.put("foreignAmount", s.getOriginatingSession().getTotalForForeigner());
             session.put("appDate", forDate.format(s.getSessionDate()));
             session.put("vatHosForeignCharge", "N/A");
             session.put("appDay", forDay.format(s.getSessionDate()));
 
-            sessionData.put("Session" + additionalProp, session);
+            sessionData.add(session);
             additionalProp++;
         }
 
@@ -1578,7 +1578,7 @@ public class ChannelApi {
 
         }
 
-        Map result = new HashMap();
+        List result = new ArrayList();
         int count = 1;
 
         for (Bill b : billListForResponse) {
@@ -1597,7 +1597,7 @@ public class ChannelApi {
             mapDetail.put("RefNo", b.getAgentRefNo());
             mapDetail.put("HosLocation", b.getToInstitution().getAddress());
             mapDetail.put("AppointmentNumber", Integer.parseInt(b.getSingleBillSession().getSerialNoStr()));
-            result.put("Appoinment" + (count++), mapDetail);
+            result.add(mapDetail);
         }
 
         Map response = new HashMap<>();
