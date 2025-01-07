@@ -7,6 +7,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.hr.ReportKeyWord;
@@ -29,6 +30,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.PatientRoomFacade;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,12 +60,12 @@ public class InwardReportControllerBht implements Serializable {
     PatientRoomFacade patientRoomFacade;
     @EJB
     BillFacade billFacade;
-      ////
+    @EJB
+    BillService billService;
+    ////
     @Inject
     CommonController commonController;
-    
-    
-    
+
     PatientEncounter patientEncounter;
     Bill bill;
     private AdmissionType admissionType;
@@ -77,11 +79,10 @@ public class InwardReportControllerBht implements Serializable {
     List<BillItem> creditPayment;
     List<Bill> paidbyPatientBillList;
     List<PatientRoom> patientRooms;
-    
-    ReportKeyWord reportKeyWord;
 
-    
-  
+    private List<BillItem> pharmacyIssueBillItemsToPatientEncounter;
+
+    ReportKeyWord reportKeyWord;
 
     double opdSrviceGross;
     double opdServiceMargin;
@@ -104,13 +105,21 @@ public class InwardReportControllerBht implements Serializable {
 
     Bill finalBill;
 
-    
-    
-    public String navigateToInpatientPharmacyItemList(){
+    public String navigateToInpatientPharmacyItemList() {
+        if (patientEncounter == null) {
+            return null;
+        }
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        pharmacyIssueBillItemsToPatientEncounter = billService.fetchBillItems(null, null, null, null, null, null, btas, patientEncounter);
+        System.out.println("pharmacyIssueBillItemsToPatientEncounter = " + pharmacyIssueBillItemsToPatientEncounter);
         return "/inward/reports/inpatient_pharmacy_item_list?faces-redirect=true";
     }
 
-    
     public Double[] fetchRoomValues() {
         HashMap hm = new HashMap();
         String sql = "SELECT"
@@ -883,7 +892,6 @@ public class InwardReportControllerBht implements Serializable {
         finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
         calTotal();
 
-        
     }
 
     public void calTotal() {
@@ -948,9 +956,9 @@ public class InwardReportControllerBht implements Serializable {
             sql = sql + " and pr.patientEncounter=:pe ";
             m.put("pe", getReportKeyWord().getPatientEncounter());
         }
-        
-        sql+=" order by pr.patientEncounter.bhtNo ";
-        
+
+        sql += " order by pr.patientEncounter.bhtNo ";
+
         m.put("fd", getReportKeyWord().getFromDate());
         m.put("td", getReportKeyWord().getToDate());
 
@@ -1176,8 +1184,8 @@ public class InwardReportControllerBht implements Serializable {
     }
 
     public ReportKeyWord getReportKeyWord() {
-        if (reportKeyWord==null) {
-            reportKeyWord=new ReportKeyWord();
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
         }
         return reportKeyWord;
     }
@@ -1192,6 +1200,14 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setPatientRooms(List<PatientRoom> patientRooms) {
         this.patientRooms = patientRooms;
+    }
+
+    public List<BillItem> getPharmacyIssueBillItemsToPatientEncounter() {
+        return pharmacyIssueBillItemsToPatientEncounter;
+    }
+
+    public void setPharmacyIssueBillItemsToPatientEncounter(List<BillItem> pharmacyIssueBillItemsToPatientEncounter) {
+        this.pharmacyIssueBillItemsToPatientEncounter = pharmacyIssueBillItemsToPatientEncounter;
     }
 
     //DATA STRUCTURE

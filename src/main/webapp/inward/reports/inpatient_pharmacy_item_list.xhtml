@@ -35,7 +35,84 @@
                         </div>
                     </div>
                     <div class="col-9" >
-                      
+
+
+                        <p:dataTable 
+                            id="tbl" 
+                            rowIndexVar="rowIndex" 
+                            value="#{inwardReportControllerBht.pharmacyIssueBillItemsToPatientEncounter}"  
+                            var="bip" 
+                            rendered="#{(webUserController.hasPrivilege('ShowInwardFee'))}">
+
+                            <p:column width="5%">
+                                <f:facet name="header">
+                                    <h:outputLabel value="No"/>
+                                </f:facet>
+                                <h:outputLabel value="#{rowIndex+1}"/>
+                            </p:column>
+
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Item Name"/>
+                                </f:facet>
+                                <h:outputLabel value="#{bip.item.name}"/>
+                            </p:column>
+
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="QTY"/>
+                                </f:facet>
+                                <p:outputLabel value="#{bip.qty}">
+                                    <f:convertNumber pattern="#0" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Gross Value"/>
+                                </f:facet>
+                                <h:outputLabel value="#{bip.grossValue}">
+                                    <f:convertNumber pattern="#0.00" />
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Matrix Value"/>
+                                </f:facet>
+                                <h:outputLabel value="#{bip.marginValue}">
+                                    <f:convertNumber pattern="#0.00" />
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Net Value"/>
+                                </f:facet>
+                                <h:outputLabel value="#{bip.grossValue + bip.marginValue}">
+                                    <f:convertNumber pattern="#0.00" />
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column  style="text-align: right;" colspan="4">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column  style="text-align: right;" colspan="2">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+                        </p:dataTable>
 
 
 
