@@ -55,6 +55,7 @@ public class Stock implements Serializable, RetirableEntity {
     private Date retiredAt;
 
     private String retireComments;
+    private String stockLocator;
 
     @ManyToOne
     Stock parentStock;
@@ -218,6 +219,14 @@ public class Stock implements Serializable, RetirableEntity {
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public String getStockLocator() {
+        return stockLocator;
+    }
+
+    public void setStockLocator(String stockLocator) {
+        this.stockLocator = stockLocator;
     }
 
 }
