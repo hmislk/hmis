@@ -474,8 +474,9 @@
                                 <h5>Non Moving</h5>                                                     
                                 <h5>Pharmacy Movement Report</h5>
 
-                                <p:dataTable id="tbl3" value="" 
-                                             var="f" 
+                                <p:dataTable id="tbl3" 
+                                             value="#{pharmacyReportController.items}" 
+                                             var="no" 
                                              rowIndexVar="n" 
                                              paginator="true" 
                                              rows="10" 
@@ -484,19 +485,16 @@
                                              rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                                     <p:column headerText="Sl No." width="10em">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{n+1}" />
                                     </p:column>
                                     <p:column headerText="Item Code" width="10em">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{no.code}" />
                                     </p:column>
                                     <p:column headerText="Item Name " width="10em">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{no.name}" />
                                     </p:column>
                                     <p:column headerText="Drug Form" width="10em">
-                                        <h:outputText value="" />
-                                    </p:column>
-                                    <p:column headerText="Supplier(Last Purchase)" width="15em">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{no.category}" />
                                     </p:column>
 
                                 </p:dataTable>
