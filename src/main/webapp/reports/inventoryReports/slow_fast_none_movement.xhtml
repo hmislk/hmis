@@ -340,9 +340,6 @@
                                     <p:column headerText="Drug Form" width="10em">
                                         <h:outputText value="#{f.item.category.name}" />
                                     </p:column>
-                                    <p:column headerText="Supplier(Last Purchase)" width="15em">
-                                        <h:outputText value="#{f.item.forInstitution.name}" />
-                                    </p:column>
                                     <p:column headerText="Quantity" width="10em">
                                         <h:outputText value="#{f.qty}" >
                                             <f:convertNumber pattern="#,###" />
@@ -399,8 +396,9 @@
                                 <h5>Slow Moving</h5>                                                     
                                 <h5>Pharmacy Movement Report</h5>
 
-                                <p:dataTable id="tbl2" value="" 
-                                             var="f" 
+                                <p:dataTable id="tbl2" 
+                                             value="#{pharmacyReportController.sortType eq 'byvalue' ? pharmacyReportController.movementRecords : pharmacyReportController.movementRecordsQty }"
+                                             var="s" 
                                              rowIndexVar="n" 
                                              paginator="true" 
                                              rows="10" 
@@ -409,34 +407,41 @@
                                              rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                                     <p:column headerText="Sl No." width="10em">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{n+1}" />
                                     </p:column>
                                     <p:column headerText="Item Code" width="10em">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{s.item.code}" />
                                     </p:column>
                                     <p:column headerText="Item Name " width="10em">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{s.item.name}" />
                                     </p:column>
                                     <p:column headerText="Drug Form" width="10em">
-                                        <h:outputText value="" />
-                                    </p:column>
-                                    <p:column headerText="Supplier(Last Purchase)" width="15em">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{s.item.category}" />
                                     </p:column>
                                     <p:column headerText="Quantity" width="10em">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{s.qty}" >
+                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Cost Value" width="10em">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{s.purchaseValue}" >
+                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Sale Value" width="10em">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{s.retailsaleValue}" >
+                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Value of QIH" width="10em">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{s.stockQty}" >
+                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="QIH" width="10em">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{s.stockOnHand}" >
+                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
 
                                 </p:dataTable>
