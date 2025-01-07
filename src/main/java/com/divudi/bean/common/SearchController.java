@@ -14236,9 +14236,9 @@ public class SearchController implements Serializable {
             parameters.put("pm", paymentMethod);
         }
 
-        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().isEmpty()) {
-            jpql += "AND ((bill.toStaff.person.name) like :toStaffName ) ";
-            parameters.put("toStaffName", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        if (staff != null) {
+            jpql += "AND ((bill.toStaff.person.name) = :staffName ) ";
+            parameters.put("staffName", staff.getPerson().getName());
         }
 
         jpql += "AND p.createdAt BETWEEN :fd AND :td ";
@@ -14346,9 +14346,9 @@ public class SearchController implements Serializable {
             parameters.put("wu", webUser);
         }
 
-        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().isEmpty()) {
-            jpql += "AND ((bill.toStaff.person.name) like :toStaffName ) ";
-            parameters.put("toStaffName", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        if (staff != null) {
+            jpql += "AND ((bill.toStaff.person.name) = :toStaffName ) ";
+            parameters.put("toStaffName", staff.getPerson().getName());
         }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
