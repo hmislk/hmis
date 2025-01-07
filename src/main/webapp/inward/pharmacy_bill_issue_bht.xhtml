@@ -247,7 +247,17 @@
                                         <p:rowEditor />  
                                     </p:column>  
 
-
+                                    <p:column headerText="Sale Rate">
+                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" >
+                                            
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Sale Total">
+                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate*bi.qty}" >
+                                           <f:convertNumber pattern="#,##0.00" ></f:convertNumber> 
+                                        </h:outputLabel>
+                                    </p:column>
 
                                     <p:column headerText="Expiry">
                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
