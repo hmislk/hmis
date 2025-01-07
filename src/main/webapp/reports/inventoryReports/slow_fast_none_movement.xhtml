@@ -116,6 +116,7 @@
 
                                 <!-- Component 1: Without Institution and Site -->
                                 <p:selectOneMenu
+                                    required="true"
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -131,6 +132,7 @@
 
                                 <!-- Component 2: With Site Only -->
                                 <p:selectOneMenu
+                                    required="true"
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -146,6 +148,7 @@
 
                                 <!-- Component 3: With Institution Only --> 
                                 <p:selectOneMenu
+                                    required="true"
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -161,6 +164,7 @@
 
                                 <!-- Component 4: With Both Institution and Site --> 
                                 <p:selectOneMenu
+                                    required="true"
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -229,9 +233,7 @@
                             <p:selectOneMenu 
                                 id="repType"
                                 value="#{pharmacyReportController.reportType}"
-                                required="true"
                                 class="w-100">
-                                <f:selectItem itemLabel="Select Type" ></f:selectItem>
                                 <f:selectItem itemLabel="Fast Movement" itemValue="fmovement" />
                                 <f:selectItem itemLabel="Slow Movement" itemValue="smovement" />
                                 <f:selectItem itemLabel="Non Movement" itemValue="nmovement" />
@@ -242,11 +244,13 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-sort ml-5" />
-                                <p:outputLabel value="Sort Type" class="mx-2" >
+                                <p:outputLabel value="Sort Type" for="sortType" class="mx-2" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="Select Type" ></f:selectItem>
+                            <p:selectOneMenu 
+                                id="sortType"
+                                value="#{pharmacyReportController.sortType}"
+                                class="w-100">
                                 <f:selectItem itemLabel="By Value" itemValue="byvalue" />
                                 <f:selectItem itemLabel="By Quantity" itemValue="byquantity" />
                                 <f:selectItems ></f:selectItems>
@@ -259,17 +263,20 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-receipt ml-5" />
-                                <p:outputLabel value="Bill Type" for="billType" class="mx-2" >
+                                <p:outputLabel value="Bill Type" for="billTypes" class="mx-2" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="billType"
-                                value="#{pharmacyReportController.billTypes}"
-                                class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{enumController.pharmacyBillTypes2}" var="pbt" ></f:selectItems>
-                                <f:selectItems></f:selectItems>
-                            </p:selectOneMenu>
+                            <p:selectCheckboxMenu 
+                                id="billTypes"
+                                class="w-100 mx-2" 
+                                value="#{pharmacyReportController.billTypes}" 
+                                label="Bill Types"  >
+                                <f:selectItems 
+                                    value="#{enumController.pharmacyBillTypes3}" 
+                                    var="pbt" 
+                                    itemLabel="#{pbt.label}" 
+                                    itemValue="#{pbt}" ></f:selectItems>
+                            </p:selectCheckboxMenu>
 
 
 
@@ -312,7 +319,7 @@
                                 <h5>Fast Moving</h5>                                                     
                                 <h5>Pharmacy Movement Report</h5>
                                 <p:dataTable id="tbl1" 
-                                             value="#{pharmacyReportController.movementRecords}"
+                                             value="#{pharmacyReportController.sortType eq 'byvalue' ? pharmacyReportController.movementRecords : pharmacyReportController.movementRecordsQty }"
                                              var="f" 
                                              rowIndexVar="n" 
                                              paginator="true" 
@@ -338,20 +345,28 @@
                                     </p:column>
                                     <p:column headerText="Quantity" width="10em">
                                         <h:outputText value="#{f.qty}" >
-                                        <f:convertNumber pattern="#,###" />
+                                            <f:convertNumber pattern="#,###" />
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Cost Value" width="10em">
-                                        <h:outputText value="#{f.purchaseValue}" />
+                                        <h:outputText value="#{f.purchaseValue}" >
+                                        <f:convertNumber pattern="#,###.00" />
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Sale Value" width="10em">
-                                        <h:outputText value="#{f.retailsaleValue}" />
+                                        <h:outputText value="#{f.retailsaleValue}" >
+                                        <f:convertNumber pattern="#,###.00" />
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Value of QIH" width="10em">
-                                        <h:outputText value="#{f.stockQty}" />
+                                        <h:outputText value="#{f.stockQty}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="QIH" width="10em">
-                                        <h:outputText value="#{f.stockOnHand}" />
+                                        <h:outputText value="#{f.stockOnHand}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
 
                                 </p:dataTable>

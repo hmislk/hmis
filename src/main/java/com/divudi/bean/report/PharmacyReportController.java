@@ -289,6 +289,7 @@ public class PharmacyReportController implements Serializable {
     double valueOfQOH;
     double qoh;
     List<Item> items;
+    private String sortType;
 
     //Constructor
     public PharmacyReportController() {
@@ -2287,9 +2288,30 @@ public class PharmacyReportController implements Serializable {
                 + " and bi.retired=false "
                 + " and bi.bill.department=:d "
                 + " and bi.bill.createdAt between :fd and :td "
-                + " and bi.bill.billType in :bt "
-                + " group by bi.item ";
+                + " and bi.bill.billType in :bt ";
+                
 
+        if (institution != null) {
+            sql += " and bi.bill.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            sql += " and bi.bill.department.site=:sit ";
+            m.put("sit", site);
+        }
+        if (category != null) {
+            sql += " and bi.item.category=:ctgry ";
+            m.put("ctgry", category);
+        }
+        if (amp != null) {
+            item = amp;
+            System.out.println("item = " + item);
+            sql += "and bi.item=:itm ";
+            m.put("itm", item);
+        }
+        
+        sql += " group by bi.item ";
+        
         if (!fast) {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) desc";
         } else {
@@ -2354,8 +2376,30 @@ public class PharmacyReportController implements Serializable {
                 + " and  bi.bill.department=:d "
                 + " and bi.bill.billType in :bt "
                 + " and type(bi.bill) in :bct "
-                + " and bi.bill.createdAt between :fd and :td "
-                + " group by bi.item ";
+                + " and bi.bill.createdAt between :fd and :td ";
+        
+        
+        if (institution != null) {
+            sql += " and bi.bill.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            sql += " and bi.bill.department.site=:sit ";
+            m.put("sit", site);
+        }
+        if (category != null) {
+            sql += " and bi.item.category=:ctgry ";
+            m.put("ctgry", category);
+        }
+        if (amp != null) {
+            item = amp;
+            System.out.println("item = " + item);
+            sql += "and bi.item=:itm ";
+            m.put("itm", item);
+        }
+        
+        sql += " group by bi.item ";
+        
 
         if (!fast) {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) desc";
@@ -2410,10 +2454,26 @@ public class PharmacyReportController implements Serializable {
         m.put("bts", Arrays.asList(billTypes));
          m.put("fd", fromDate);
         m.put("td", toDate);
-        if (category != null) {
-            sql += " AND bi.item.category=:cat ";
-            m.put("cat", category);
+        
+        if (institution != null) {
+            sql += " and bi.bill.institution=:ins ";
+            m.put("ins", institution);
         }
+        if (site != null) {
+            sql += " and bi.bill.department.site=:sit ";
+            m.put("sit", site);
+        }
+        if (category != null) {
+            sql += " and bi.item.category=:ctgry ";
+            m.put("ctgry", category);
+        }
+        if (amp != null) {
+            item = amp;
+            System.out.println("item = " + item);
+            sql += "and bi.item=:itm ";
+            m.put("itm", item);
+        }
+        
         sql += " GROUP BY bi.item";
 
         //System.out.println("sql = " + sql);
@@ -3097,6 +3157,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setItems(List<Item> items) {
         this.items = items;
+    }
+
+    public String getSortType() {
+        return sortType;
+    }
+
+    public void setSortType(String sortType) {
+        this.sortType = sortType;
     }
 
 }
