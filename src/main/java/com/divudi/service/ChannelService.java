@@ -338,7 +338,7 @@ public class ChannelService {
         hh.put("ss", session);
         List<BillSession> billSessionList = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
-        int nextNumber = 1;
+        int nextNumber = 0;
         int activePatientCount = 0;
 
         if (billSessionList != null && !billSessionList.isEmpty()) {
@@ -397,6 +397,37 @@ public class ChannelService {
 //        fee.getFeeType();
 //        fee.getName();
     }
+    
+     public Map getLocalFeesForDoctorAndInstitutionFromServiceSession(ServiceSession ss) {
+
+        String sql = "Select fee From ItemFee fee "
+                + " where fee.retired = false "
+                + " and fee.serviceSession = :ss ";
+
+        Map params = new HashMap<>();
+        params.put("ss", ss);
+
+        List<ItemFee> itemFeeList = itemFeeFacade.findAggregates(sql, params);
+
+        double docFee = 0;
+        double hosFee = 0;
+
+        for (ItemFee f : itemFeeList) {
+            if (f.getFeeType() == FeeType.OwnInstitution && f.getFee() > 0) {
+                hosFee = f.getFee();
+            } else if (f.getFeeType() == FeeType.Staff && f.getFee() > 0) {
+                docFee = f.getFee();
+            }
+        }
+
+        Map<String, Double> fees = new HashMap<>();
+
+        fees.put("docFee", docFee);
+        fees.put("hosFee", hosFee);
+
+        return fees;
+        
+     }
 
     public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
         saveOrUpdatePatientDetails(patient);

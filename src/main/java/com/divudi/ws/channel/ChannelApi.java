@@ -722,24 +722,25 @@ public class ChannelApi {
         for (SessionInstance s : sessions) {
             Map<String, Object> session = new HashMap<>();
 
-            Map fees = channelService.getForeignFeesForDoctorAndInstitutionFromServiceSession(s.getOriginatingSession());
+            Map foreignFees = channelService.getForeignFeesForDoctorAndInstitutionFromServiceSession(s.getOriginatingSession());
+            Map localFees = channelService.getLocalFeesForDoctorAndInstitutionFromServiceSession(s.getOriginatingSession());
 
             session.put("sessionID", s.getId().intValue());
             session.put("appTimeInterval", "N/A");
-            session.put("hosFee", s.getOriginatingSession().getChannelHosFee());
+            session.put("hosFee", localFees != null ? localFees.get("hosFee"):0);
             session.put("docName", s.getStaff().getPerson().getNameWithTitle());
             session.put("docNo", s.getStaff().getId());
-            session.put("docForeignFee", fees != null ? fees.get("docForeignFee") : 0);
+            session.put("docForeignFee", foreignFees != null ? foreignFees.get("docForeignFee") : 0);
             session.put("nextNo", channelService.nextAvailableAppoinmentNumberForSession(s).get("nextNumber"));
             session.put("hosId", s.getInstitution().getId().toString());
             session.put("remarks", s.getOriginatingSession().getSpecialNotice() == null ? "" : s.getOriginatingSession().getSpecialNotice());
             session.put("vatDocCharge", "N/A");
-            session.put("docFee", s.getOriginatingSession().getChannelStaffFee());
+            session.put("docFee", localFees != null ? localFees.get("docFee"):0);
             session.put("hosName", s.getInstitution().getName());
             session.put("startTime", forTime.format(s.getStartingTime()));
             session.put("vatHosCharge", "N/A");
             session.put("amount", s.getOriginatingSession().getTotal());
-            session.put("hosForeignFee", fees != null ? fees.get("hosForeignFee") : 0);
+            session.put("hosForeignFee", foreignFees != null ? foreignFees.get("hosForeignFee") : 0);
             session.put("vatDocForeignCharge", "N/A");
             session.put("specID", s.getStaff().getSpeciality().getId().toString());
             session.put("maxPatient", s.getMaxNo());
@@ -818,11 +819,12 @@ public class ChannelApi {
         SimpleDateFormat forDay = new SimpleDateFormat("E");
         
         Map hosAndDocForeignFees = channelService.getForeignFeesForDoctorAndInstitutionFromServiceSession(session.getOriginatingSession());
-
+        Map hosAndDocLocalFees = channelService.getLocalFeesForDoctorAndInstitutionFromServiceSession(session.getOriginatingSession());
+        
         Map<String, Object> sessionData = new HashMap<>();
         sessionData.put("sessionID", session.getId().intValue());
         sessionData.put("appTimeInterval", "N/A");
-        sessionData.put("hosFee", session.getOriginatingSession().getChannelHosFee());
+        sessionData.put("hosFee", hosAndDocLocalFees != null ? hosAndDocLocalFees.get("hosFee"):(Object)0);
         sessionData.put("docName", session.getStaff().getPerson().getNameWithTitle());
         sessionData.put("docNo", session.getStaff().getId().toString());
         sessionData.put("docForeignFee", hosAndDocForeignFees != null ? hosAndDocForeignFees.get("docForeignFee") : 0);
@@ -830,7 +832,7 @@ public class ChannelApi {
         sessionData.put("hosId", session.getInstitution().getId().toString());
         sessionData.put("remarks", remark);
         sessionData.put("vatDocCharge", "N/A");
-        sessionData.put("docFee", session.getOriginatingSession().getChannelStaffFee());
+        sessionData.put("docFee", hosAndDocLocalFees != null ? hosAndDocLocalFees.get("docFee"):(Object)0);
         sessionData.put("hosName", session.getInstitution().getName());
         sessionData.put("startTime", forTime.format(session.getSessionTime()));
         sessionData.put("vatHosCharge", "N/A");
