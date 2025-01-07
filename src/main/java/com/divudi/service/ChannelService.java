@@ -344,7 +344,9 @@ public class ChannelService {
         if (billSessionList != null && !billSessionList.isEmpty()) {
             for (BillSession bs : billSessionList) {
                 if (bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT) {
-                    activePatientCount++;
+                    if(!bs.getBill().isCancelled()){
+                        activePatientCount++;
+                    }
                 }
                 if(Integer.parseInt(bs.getBill().getSingleBillSession().getSerialNoStr()) > nextNumber){
                     nextNumber = Integer.parseInt(bs.getBill().getSingleBillSession().getSerialNoStr());

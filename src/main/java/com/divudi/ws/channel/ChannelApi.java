@@ -1168,7 +1168,7 @@ public class ChannelApi {
         Map<String, Object> apoinmentDetailsResponse = new HashMap<>();
         apoinmentDetailsResponse.put("refNo", clientsReferanceNo);
         apoinmentDetailsResponse.put("patientNo", Integer.parseInt(bill.getSingleBillSession().getSerialNoStr()));
-        apoinmentDetailsResponse.put("allPatientNo", session.getNextAvailableAppointmentNumber() != null ? session.getNextAvailableAppointmentNumber().intValue() - 1 : 0);
+        apoinmentDetailsResponse.put("allPatientNo", channelService.nextAvailableAppoinmentNumberForSession(session).get("nextNumber"));
         apoinmentDetailsResponse.put("showPno", "N/A");
         apoinmentDetailsResponse.put("showTime", "N/A");
         apoinmentDetailsResponse.put("chRoom", session.getRoomNo());
@@ -1242,12 +1242,12 @@ public class ChannelApi {
         Institution creditCompany = channelService.findCreditCompany(paymentChannel, InstitutionType.Agency);
         List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany, BillClassType.BilledBill);
 
-        Bill bill = billList.get(0);
-
-        if (bill == null || billList.isEmpty()) {
+        if (billList == null || billList.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("No bills with refNo : " + clientsReferanceNo);
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
+        
+         Bill bill = billList.get(0);
 
         if (billList.size() > 1) {
             for (Bill b : billList) {
@@ -1691,7 +1691,7 @@ public class ChannelApi {
         Map<String, Object> appoinment = new HashMap<>();
         appoinment.put("refNo", bill.getAgentRefNo());
         appoinment.put("patientNo", bill.getSingleBillSession().getSerialNo());
-        appoinment.put("allPatientNo", session.getNextAvailableAppointmentNumber() > 0 ? session.getNextAvailableAppointmentNumber().intValue() - 1 : 0);
+        appoinment.put("allPatientNo", channelService.nextAvailableAppoinmentNumberForSession(session).get("nextNumber"));
         appoinment.put("showPno", "");
         appoinment.put("showTime", "");
         appoinment.put("chRoom", bill.getSingleBillSession().getSessionInstance().getRoomNo());
@@ -1827,8 +1827,6 @@ public class ChannelApi {
                 }
             }
         }
-        System.out.println(billList.size());
-        System.out.println(billList.get(0).getAgentRefNo());
         
         if(bill.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT){
             JSONObject response = commonFunctionToErrorResponse("Temporary Bookings unable to cancel");
@@ -1875,7 +1873,7 @@ public class ChannelApi {
         Map<String, Object> appoinment = new HashMap<>();
         appoinment.put("refNo", bill.getAgentRefNo());
         appoinment.put("patientNo", bill.getSingleBillSession().getSerialNo());
-        appoinment.put("allPatientNo", session.getNextAvailableAppointmentNumber() > 0 ? session.getNextAvailableAppointmentNumber().intValue() - 1 : 0);
+        appoinment.put("allPatientNo", channelService.nextAvailableAppoinmentNumberForSession(session).get("nextNumber"));
         appoinment.put("showPno", "N/A");
         appoinment.put("showTime", "N/A");
         appoinment.put("chRoom", bill.getSingleBillSession().getSessionInstance().getRoomNo());
