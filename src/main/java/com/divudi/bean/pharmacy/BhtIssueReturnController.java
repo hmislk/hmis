@@ -66,6 +66,15 @@ public class BhtIssueReturnController implements Serializable {
     @EJB
     private BillItemFacade billItemFacade;
 
+    
+    public String navigateToReturnPharmacyDirectIssueToInpatients(){
+        if(bill==null){
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        return "/inward/pharmacy_bill_return_bht_issue?faces-redirect=true";
+    }
+    
     public Bill getBill() {
         return bill;
     }

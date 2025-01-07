@@ -560,6 +560,16 @@ public enum Privileges {
     ChangeCreditLimitInCC("Change Credit Limit in Collecting Centre"),
     ChangeCollectingCentre("Change Collecting Centre"),
     //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="User">
+    UserMenu("User Menu"),
+    ChangeMyPassword("Change My Password"),
+    ChangeMyTheme("Change My Theme"),
+    ChangePreferece("Change My Preference"),
+    ChangeMyApiKeys("Change My Api Keys"),
+    MyFinanacialTransactionManager("My Finanacial Transaction Manager"),
+    //</editor-fold>
+    
 
     //<editor-fold defaultstate="collapsed" desc="Admin">
     SearchGrand("Search Grand"),
@@ -575,7 +585,7 @@ public enum Privileges {
     Developers("Developers"),
     // Administration
     SearchAll("Search All"),
-    ChangePreferece("Change Preference"),
+
     SendBulkSMS("Send Bulk SMS"),
     SuperAdmin("Supper Admin"),
     EditData("Edit Data"),

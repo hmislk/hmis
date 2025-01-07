@@ -24,7 +24,7 @@
             </title>
         </ui:insert>
 
-        <h:outputStylesheet library="css" name="ohmis.css"/>
+
         <link rel="stylesheet" 
               href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"/>
         <h:panelGroup rendered="false" >
@@ -41,17 +41,17 @@
         <h:outputScript library="js" name="jsfcrud.js"/>
         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Application Timeout Configuration is Enabled', false )}" >
             <script type="text/javascript">
-            var timeoutInMinutes = #{configOptionApplicationController.getShortTextValueByKey('Application Timeout in Minutes', '15')};
-            var timeoutDuration = timeoutInMinutes * 60000; // Convert minutes to milliseconds
-            var timeoutPageUrl = '#{sessionController.logoutPageUrl}'; // Get the dynamic URL from the bean
+                var timeoutInMinutes = #{configOptionApplicationController.getShortTextValueByKey('Application Timeout in Minutes', '15')};
+                var timeoutDuration = timeoutInMinutes * 60000; // Convert minutes to milliseconds
+                var timeoutPageUrl = '#{sessionController.logoutPageUrl}'; // Get the dynamic URL from the bean
 
-            setTimeout(function () {
-                alert('Session has expired. You will now be redirected to the session timeout page.');
-                window.location.href = timeoutPageUrl; // Use the dynamically generated URL
-            }, timeoutDuration);
+                setTimeout(function () {
+                    alert('Session has expired. You will now be redirected to the session timeout page.');
+                    window.location.href = timeoutPageUrl; // Use the dynamically generated URL
+                }, timeoutDuration);
             </script>
         </h:panelGroup>
-
+        <h:outputStylesheet library="css" name="ohmis.css"/>
 
     </h:head>
     <h:body >

@@ -65,6 +65,42 @@
                         </tr>
                     </h:panelGroup>
 
+                    
+                    <tr>
+                        <td colspan="5">
+                            <h:outputText value="Original Bill Details" ></h:outputText>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td >Bill Date:</td>
+                        <td >
+                            <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}" >
+                                <f:convertDateTime pattern="yyyy-MM-dd" />
+                            </h:outputLabel>
+                        </td>
+                        <td class="spacer"></td>
+                        <td >Bill Time:</td>
+                        <td >
+                            <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}" >
+                                <f:convertDateTime pattern="HH:mm a" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td >Bill No:</td>
+                        <td >#{cc.attrs.bill.billedBill.deptId}</td>
+                        <td class="spacer"></td>
+                        <td >Department:</td>
+                        <td >Pharmacy</td>
+                    </tr>
+                    
+                    <tr>
+                        <td colspan="5">
+                            <h:outputText value="Cancellation Bill Details" ></h:outputText>
+                        </td>
+                    </tr>
+                    
                     <tr>
                         <td >Bill Date:</td>
                         <td >

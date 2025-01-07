@@ -2191,12 +2191,18 @@ public class PharmacyReportController implements Serializable {
         if (amp != null) {
             item = amp;
             System.out.println("item = " + item);
-            jpql += "and s.item=:itm ";
+            jpql += "and s.itemBatch.item=:itm ";
             m.put("itm", item);
         }
 
         jpql += " order by s.id ";
         stocks = stockFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        for (Stock ts : stocks) {
+            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+        }
     }
     
 public long calculateDaysRemaining(Date dateOfExpire) {
