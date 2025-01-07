@@ -826,7 +826,7 @@ public class ChannelApi {
         sessionData.put("docName", session.getStaff().getPerson().getNameWithTitle());
         sessionData.put("docNo", session.getStaff().getId().toString());
         sessionData.put("docForeignFee", hosAndDocForeignFees != null ? hosAndDocForeignFees.get("docForeignFee") : 0);
-        sessionData.put("nextNo", session.getNextAvailableAppointmentNumber() != null ? session.getNextAvailableAppointmentNumber().intValue() : 1);
+        sessionData.put("nextNo", channelService.nextAvailableAppoinmentNumberForSession(session).get("nextNumber"));
         sessionData.put("hosId", session.getInstitution().getId().toString());
         sessionData.put("remarks", remark);
         sessionData.put("vatDocCharge", "N/A");
@@ -839,7 +839,7 @@ public class ChannelApi {
         sessionData.put("vatDocForeignCharge", "N/A");
         sessionData.put("specID", session.getOriginatingSession().getStaff().getSpeciality().getId().toString());
         sessionData.put("maxPatient", session.getMaxNo());
-        sessionData.put("activePatient", session.getBookedPatientCount());
+        sessionData.put("activePatient", channelService.nextAvailableAppoinmentNumberForSession(session).get("activePatients"));
         sessionData.put("foreignAmount", session.getOriginatingSession().getTotalForForeigner());
         sessionData.put("appDate", forDate.format(session.getSessionDate()));
         sessionData.put("vatHosForeignCharge", "N/A");

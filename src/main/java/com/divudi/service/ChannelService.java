@@ -119,7 +119,6 @@ public class ChannelService {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
-
     @PermitAll //TODO: Fix this to appropriate roles .
     public void retireNonSettledOnlineBills() {
         String jpql = "select b "
@@ -153,8 +152,8 @@ public class ChannelService {
             b.getSingleBillItem().setRetired(true);
             b.getSingleBillItem().setRetireComments("Online Agent Payment NOT completed");
             billItemFacade.edit(b.getSingleBillItem());
-            if(b.getBillFees() != null){
-                for(BillFee bf : b.getBillFees()){
+            if (b.getBillFees() != null) {
+                for (BillFee bf : b.getBillFees()) {
                     bf.setRetired(true);
                     bf.setRetireComments("Online Agent Payment NOT completed");
                     billFeeFacade.edit(bf);
@@ -305,51 +304,102 @@ public class ChannelService {
             patientFacade.edit(p);
         }
     }
-    
-    public Map getForeignFeesForDoctorAndInstitutionFromServiceSession(ServiceSession ss){
-    
+
+    public Map nextAvailableAppoinmentNumberForSession(SessionInstance session) {
+        BillType[] billTypes = {
+            BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithPayment,
+            BillType.ChannelResheduleWithOutPayment,};
+
+        BillTypeAtomic[] billTypeAtomics = {
+            BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT,
+            BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT
+        };
+
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select bs "
+                + " From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.bill.billType in :bts"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionInstance=:ss "
+                + " order by bs.serialNo ";
+        HashMap<String, Object> hh = new HashMap<>();
+
+        Bill b = new Bill();
+        b.getBillTypeAtomic();
+        hh.put("bts", bts);
+        //hh.put("bta", Arrays.asList(billTypeAtomics));
+        hh.put("class", BilledBill.class);
+        hh.put("ss", session);
+        List<BillSession> billSessionList = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
+
+        int nextNumber = 1;
+        int activePatientCount = 0;
+
+        if (billSessionList != null && !billSessionList.isEmpty()) {
+            for (BillSession bs : billSessionList) {
+                if (bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT) {
+                    activePatientCount++;
+                }
+                if(Integer.parseInt(bs.getBill().getSingleBillSession().getSerialNoStr()) > nextNumber){
+                    nextNumber = Integer.parseInt(bs.getBill().getSingleBillSession().getSerialNoStr());
+                }
+            }
+        }
+
+        Map data = new HashMap();
+        data.put("nextNumber", ++nextNumber);
+        data.put("activePatients", activePatientCount);
+
+        return data;
+
+    }
+
+    public Map getForeignFeesForDoctorAndInstitutionFromServiceSession(ServiceSession ss) {
+
         String sql = "Select fee From ItemFee fee "
                 + " where fee.retired = false "
                 + " and fee.serviceSession = :ss ";
-        
+
         Map params = new HashMap<>();
         params.put("ss", ss);
-        
+
         List<ItemFee> itemFeeList = itemFeeFacade.findAggregates(sql, params);
-        
+
         double docForeignFee = 0;
         double hosForeignFee = 0;
-        
-        for(ItemFee f : itemFeeList){
-            if(f.getFeeType() == FeeType.OwnInstitution && f.getFee() > 0){
+
+        for (ItemFee f : itemFeeList) {
+            if (f.getFeeType() == FeeType.OwnInstitution && f.getFee() > 0) {
                 hosForeignFee = f.getFfee();
-            }else if(f.getFeeType() == FeeType.Staff && f.getFee() > 0){
+            } else if (f.getFeeType() == FeeType.Staff && f.getFee() > 0) {
                 docForeignFee = f.getFfee();
             }
         }
-        
+
         Map<String, Double> fees = new HashMap<>();
-        
+
         fees.put("docForeignFee", docForeignFee);
         fees.put("hosForeignFee", hosForeignFee);
-        
+
         return fees;
-        
+
 //        ItemFee fee = new ItemFee();
 //        fee.isRetired();
 //        fee.getServiceSession();
 //        fee.getFeeType();
 //        fee.getName();
-
-        
     }
 
-    
-    
     public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
         saveOrUpdatePatientDetails(patient);
         Bill savingTemporaryBill = createAgentInitialBookingBill(patient, session);
-        if(savingTemporaryBill == null){
+        if (savingTemporaryBill == null) {
             return null;
         }
         BillItem savingBillItemForSession = createSessionItem(savingTemporaryBill, refNo, session);
@@ -429,7 +479,6 @@ public class ChannelService {
 //                }
 //            }
 //        }
-
         calculateBillTotalsFromBillFees(savingTemporaryBill, savingBillFees);
 
         getBillFacade().edit(savingTemporaryBill);
@@ -599,8 +648,8 @@ public class ChannelService {
         billItemFacade.create(bi);
         return bi;
     }
-    
-    private List<BillSession> getAllBillSessionForSessionInstance(SessionInstance ss){
+
+    private List<BillSession> getAllBillSessionForSessionInstance(SessionInstance ss) {
         List<BillSession> allBillSessions = new ArrayList<>();
         BillType[] billTypes = {
             BillType.ChannelAgent,
@@ -628,16 +677,16 @@ public class ChannelService {
         hh.put("ss", ss);
         return getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
     }
-    
+
     public List getReleasedAppoinmentNumbersForApiBookings(SessionInstance ss) {
         long nextNumber = 1L;
-        
-        if(ss.getNextAvailableAppointmentNumber() != null){
+
+        if (ss.getNextAvailableAppointmentNumber() != null) {
             nextNumber = ss.getNextAvailableAppointmentNumber();
         }
-        
+
         List releasedNumberList = new ArrayList();
-        
+
         List<BillSession> allBillSessions = getAllBillSessionForSessionInstance(ss);
 
         List<Integer> reservedSerialNumbers = allBillSessions.stream()
@@ -649,7 +698,7 @@ public class ChannelService {
             for (Integer number : reservedSerialNumbers) {
                 if (i == number) {
                     isAssign = true;
-                    
+
                 }
             }
 
@@ -684,13 +733,12 @@ public class ChannelService {
 
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(session.getOriginatingSession().getReserveNumbers());
         Integer count = null;
-        
-        List<Integer> availableReleasedApoinmentNumbers = getReleasedAppoinmentNumbersForApiBookings(session); 
+
+        List<Integer> availableReleasedApoinmentNumbers = getReleasedAppoinmentNumbersForApiBookings(session);
         Random rand = new Random();
-        if(availableReleasedApoinmentNumbers != null && !availableReleasedApoinmentNumbers.isEmpty()){
+        if (availableReleasedApoinmentNumbers != null && !availableReleasedApoinmentNumbers.isEmpty()) {
             count = availableReleasedApoinmentNumbers.get(rand.nextInt(availableReleasedApoinmentNumbers.size()));
         }
-        
 
         if (forReservedNumbers) {
 //            // Pass the selectedReservedBookingNumber to the service method
@@ -699,7 +747,7 @@ public class ChannelService {
 //                count = serviceSessionBean.getNextNonReservedSerialNumber(session, reservedNumbers);
 //                JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
 //            }
-        } else if(count == null){
+        } else if (count == null) {
             count = serviceSessionBean.getNextNonReservedSerialNumber(session, reservedNumbers);
         }
 
@@ -811,7 +859,7 @@ public class ChannelService {
 
         BillSession bs = bill.getSingleBillSession();
         CancelledBill cb = createCancelBill1(bill);
-        
+
         BillItem cItem = cancelBillItems(bs.getBillItem(), cb);
         BillSession cbs = cancelBillSession(bs, cb, cItem);
         //  bill.getSingleBillSession().getBill().setCancelled(true);
@@ -1008,7 +1056,8 @@ public class ChannelService {
 
         return consultantFacade.findByJpql(jpql.toString(), m);
     }
-    public List<Speciality> findAllSpecilities(){
+
+    public List<Speciality> findAllSpecilities() {
         String jpql;
         Map params = new HashMap();
         jpql = " select c  "
@@ -1078,15 +1127,15 @@ public class ChannelService {
         // System.out.println(jpql.toString()+"\n"+sessionInstances.size()+"\n"+m.values());
         return sessionInstances;
     }
-    
+
     @EJB
     WebUserFacade webUserFacade;
     @Inject
     SecurityController securityController;
-    
+
     public WebUser checkUserCredentialForApi(String temUserName, String temPassword) {
-     
-        String temSQL; 
+
+        String temSQL;
         temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
         Map m = new HashMap();
 
@@ -1101,13 +1150,13 @@ public class ChannelService {
 
             return u;
         }
-      
+
         return null;
     }
-    
+
     @EJB
     ApiKeyFacade apiKeyFacade;
-    
+
     public List<ApiKey> listApiKeysForUser(WebUser user) {
         String j;
         j = "select a "
@@ -1121,8 +1170,8 @@ public class ChannelService {
         m.put("ed", new Date());
         return apiKeyFacade.findByJpql(j, m, TemporalType.DATE);
     }
-    
-     public ApiKey createNewApiKeyForApiResponse(WebUser user) {
+
+    public ApiKey createNewApiKeyForApiResponse(WebUser user) {
         UUID uuid = UUID.randomUUID();
         ApiKey newOne = new ApiKey();
         newOne.setWebUser(user);
@@ -1145,7 +1194,7 @@ public class ChannelService {
         if (sessionDate != null) {
             jpql.append(" and i.sessionDate > :sd ");
             m.put("sd", sessionDate);
-           // System.out.println(sessionDate);
+            // System.out.println(sessionDate);
         }
 //         
 //        if(fromDate != null){
