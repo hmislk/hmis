@@ -273,6 +273,7 @@ public class PharmacyReportController implements Serializable {
     private String dateRange;
 
     private List<PharmacyRow> rows;
+    private String billType;
 
     //Constructor
     public PharmacyReportController() {
@@ -2798,6 +2799,14 @@ public long calculateDaysRemaining(Date dateOfExpire) {
 
     public void setDateRange(String dateRange) {
         this.dateRange = dateRange;
+    }
+
+    public String getBillType() {
+        return billType;
+    }
+
+    public void setBillType(String billType) {
+        this.billType = billType;
     }
 
 }
