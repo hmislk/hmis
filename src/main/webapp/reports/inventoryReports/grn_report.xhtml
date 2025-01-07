@@ -167,15 +167,15 @@
                                 value="Export to Excel"
                                 action="#{pharmacyController.navigateToPrinteGeneratedGrnDetailedRportTable()}"
                                 rendered="#{pharmacyController.reportType eq 'detailReport'}"></p:commandButton>
-                            
-                                <p:commandButton 
+
+                            <p:commandButton 
                                 class="ui-button-success mx-1" 
                                 icon="fas fa-file-excel"
                                 ajax="false" 
                                 value="Export to Excel"
                                 action="#{pharmacyController.navigateToPrinteGeneratedGrnReturnReportTable()}"
                                 rendered="#{pharmacyController.reportType eq 'returnReport'}"></p:commandButton>
-                                
+
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
                                 <p:dataExporter type="xlsx" target="tbl3" fileName="grn_summery_report" />
                             </p:commandButton>
@@ -200,20 +200,20 @@
                         <h:panelGroup class="m-5" rendered="#{pharmacyController.reportType eq 'detailReport'}">
                             <h5>GRN Report</h5>
 
-                            
+
                             <p:dataTable id="tbl1" value="#{pharmacyController.bills}" 
                                          var="b" 
                                          rowKey="#{b.id}"
-                                rowIndexVar="n" 
-                                paginator="true" 
-                                rows="10" 
-                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
-                                rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
-                                
+                                         rowIndexVar="n" 
+                                         paginator="true" 
+                                         rows="10" 
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
 
                                 <!-- GRN No -->
-                                <p:column headerText="GRN No" width="5em" style="text-align: left;">
+                                <p:column headerText="GRN No" width="10em" style="text-align: left;">
                                     <p:commandLink ajax="false" value="#{b.deptId}" action="/pharmacy/pharmacy_grn">
                                         <f:setPropertyActionListener value="#{b}" target="#{grnController.grnBill}" />
                                         <f:setPropertyActionListener value="true" target="#{grnController.printPreview}" />
@@ -226,8 +226,16 @@
                                 </p:column>
 
                                 <!-- Invoice No -->
-                                <p:column headerText="Invoice No" width="6em" style="text-align: right;">
+                                <p:column headerText="Invoice No" width="6em" style="text-align: center;">
                                     <h:outputText value="#{b.invoiceNumber}" />
+
+                                </p:column>
+
+                                <!-- Created Date -->
+                                <p:column headerText="Created Date" width="8em">
+                                    <h:outputText value="#{b.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{pharmacyController.totalPurchase}">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -237,13 +245,6 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
-                                </p:column>
-
-                                <!-- Created Date -->
-                                <p:column headerText="Created Date" width="8em">
-                                    <h:outputText value="#{b.createdAt}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputText>
                                 </p:column>
 
                                 <!-- Approved Date -->
