@@ -276,9 +276,9 @@ public class StockController implements Serializable {
         m.put("s", d);
         m.put("n", qry.toUpperCase() + "%");
         if (qry.length() > 4) {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n ) i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         } else {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
         stockList = getStockFacade().findByJpql(sql, m, 20);
 //        itemsWithoutStocks = completeRetailSaleItems(qry);
