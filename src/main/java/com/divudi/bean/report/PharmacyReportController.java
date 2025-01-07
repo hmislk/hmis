@@ -2454,26 +2454,7 @@ public class PharmacyReportController implements Serializable {
         m.put("bts", Arrays.asList(billTypes));
          m.put("fd", fromDate);
         m.put("td", toDate);
-        
-        if (institution != null) {
-            sql += " and bi.bill.institution=:ins ";
-            m.put("ins", institution);
-        }
-        if (site != null) {
-            sql += " and bi.bill.department.site=:sit ";
-            m.put("sit", site);
-        }
-        if (category != null) {
-            sql += " and bi.item.category=:ctgry ";
-            m.put("ctgry", category);
-        }
-        if (amp != null) {
-            item = amp;
-            System.out.println("item = " + item);
-            sql += "and bi.item=:itm ";
-            m.put("itm", item);
-        }
-        
+                    
         sql += " GROUP BY bi.item";
 
         //System.out.println("sql = " + sql);
@@ -2486,9 +2467,23 @@ public class PharmacyReportController implements Serializable {
                 + " AND s.stock > 0 ";
         m = new HashMap();
         m.put("d", department);
-        if (category != null) {
-            sql += " AND s.itemBatch.item.category=:cat ";
-            m.put("cat", category);
+        if (institution != null) {
+            sql += " and s.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (department != null) {
+            sql += " and s.department=:dep ";
+            m.put("dep", department);
+        }
+        if (site != null) {
+            sql += " and s.department.site=:sit ";
+            m.put("sit", site);
+        }
+        if (amp != null) {
+            item = amp;
+            System.out.println("item = " + item);
+            sql += "and s.itemBatch.item=:itm ";
+            m.put("itm", item);
         }
         sql = sql + " GROUP BY s.itemBatch.item "
                 + " ORDER BY s.itemBatch.item.name";
