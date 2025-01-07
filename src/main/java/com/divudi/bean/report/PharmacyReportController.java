@@ -104,6 +104,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import org.hl7.fhir.r5.model.Bundle;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
+import com.divudi.facade.ItemFacade;
 
 /**
  *
@@ -133,6 +135,8 @@ public class PharmacyReportController implements Serializable {
     private StockFacade stockFacade;
     @EJB
     PharmacyBean pharmacyBean;
+    @EJB
+    ItemFacade itemFacade;
 
     @Inject
     private InstitutionController institutionController;
@@ -281,9 +285,10 @@ public class PharmacyReportController implements Serializable {
     BillType[] billTypes;
     List<StockReportRecord> movementRecords;
     List<StockReportRecord> movementRecordsQty;
-    
+
     double valueOfQOH;
     double qoh;
+    List<Item> items;
 
     //Constructor
     public PharmacyReportController() {
@@ -2228,6 +2233,20 @@ public class PharmacyReportController implements Serializable {
         return ChronoUnit.DAYS.between(today, expiryDate);
     }
 
+    public void processSlowFastNonMovementReport() {
+        switch (reportType) {
+            case "fmovement":
+                fillFastMoving();
+                break;
+            case "smovement":
+                fillSlowMoving();
+                break;
+            case "nmovement":
+                fillDepartmentNonmovingStocks();
+                break;
+        }
+    }
+
     public void fillFastMoving() {
         Date startTime = new Date();
 
@@ -2370,6 +2389,57 @@ public class PharmacyReportController implements Serializable {
             valueOfQOH = valueOfQOH + (strr.getStockQty());
             qoh = qoh + (strr.getStockOnHand());
         }
+    }
+    
+     public void fillDepartmentNonmovingStocks() {
+        Date startTime = new Date();
+
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+        Map m = new HashMap();
+        String sql;
+        sql = "SELECT bi.item "
+                + " FROM BillItem bi "
+                + " WHERE  "
+                + " bi.bill.department=:d "
+                + " AND bi.bill.billType in :bts "
+                + " AND bi.bill.billDate between :fd and :td ";
+        m.put("d", department);
+        m.put("bts", Arrays.asList(billTypes));
+         m.put("fd", fromDate);
+        m.put("td", toDate);
+        if (category != null) {
+            sql += " AND bi.item.category=:cat ";
+            m.put("cat", category);
+        }
+        sql += " GROUP BY bi.item";
+
+        //System.out.println("sql = " + sql);
+        //System.out.println("m = " + m);
+        Set<Item> bis = new HashSet<>(itemFacade.findByJpql(sql, m));
+
+        sql = "SELECT s.itemBatch.item "
+                + " FROM Stock s "
+                + " WHERE s.department=:d "
+                + " AND s.stock > 0 ";
+        m = new HashMap();
+        m.put("d", department);
+        if (category != null) {
+            sql += " AND s.itemBatch.item.category=:cat ";
+            m.put("cat", category);
+        }
+        sql = sql + " GROUP BY s.itemBatch.item "
+                + " ORDER BY s.itemBatch.item.name";
+
+        Set<Item> sis = new HashSet<>(itemFacade.findByJpql(sql, m));
+
+        sis.removeAll(bis);
+        items = new ArrayList<>(sis);
+
+        Collections.sort(items);
+
     }
 
     public void processLabTestWiseCountReport() {
@@ -2974,6 +3044,7 @@ public class PharmacyReportController implements Serializable {
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
     }
+
     public List<StockReportRecord> getMovementRecords() {
         return movementRecords;
     }
@@ -2981,13 +3052,15 @@ public class PharmacyReportController implements Serializable {
     public void setMovementRecords(List<StockReportRecord> movementRecords) {
         this.movementRecords = movementRecords;
     }
-        public List<StockReportRecord> getMovementRecordsQty() {
+
+    public List<StockReportRecord> getMovementRecordsQty() {
         return movementRecordsQty;
     }
 
     public void setMovementRecordsQty(List<StockReportRecord> movementRecordsQty) {
         this.movementRecordsQty = movementRecordsQty;
     }
+
     public PharmacyBean getPharmacyBean() {
         return pharmacyBean;
     }
@@ -2995,6 +3068,7 @@ public class PharmacyReportController implements Serializable {
     public void setPharmacyBean(PharmacyBean pharmacyBean) {
         this.pharmacyBean = pharmacyBean;
     }
+
     public double getValueOfQOH() {
         return valueOfQOH;
     }
@@ -3002,6 +3076,7 @@ public class PharmacyReportController implements Serializable {
     public void setValueOfQOH(double valueOfQOH) {
         this.valueOfQOH = valueOfQOH;
     }
+
     public double getQoh() {
         return qoh;
     }
@@ -3009,4 +3084,19 @@ public class PharmacyReportController implements Serializable {
     public void setQoh(double qoh) {
         this.qoh = qoh;
     }
+        public ItemFacade getItemFacade() {
+        return itemFacade;
+    }
+
+    public void setItemFacade(ItemFacade itemFacade) {
+        this.itemFacade = itemFacade;
+    }
+        public List<Item> getItems() {
+        return items;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
+    }
+
 }
