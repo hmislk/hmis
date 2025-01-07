@@ -219,14 +219,6 @@
                                         <f:setPropertyActionListener value="#{b}" target="#{grnController.grnBill}" />
                                         <f:setPropertyActionListener value="true" target="#{grnController.printPreview}" />
                                     </p:commandLink>
-                                    <br />
-                                    <p:commandLink ajax="false" value="#{b.cancelledBill.deptId}" action="/pharmacy/pharmacy_cancel_grn" rendered="#{b.cancelled}" style="color: red;">
-                                        <f:setPropertyActionListener value="#{b}" target="#{grnController.grnBill}" />
-                                    </p:commandLink>
-                                    <br />
-                                    <p:commandLink ajax="false" value="#{b.refundedBill.deptId}" action="/pharmacy/pharmacy_cancel_grn" style="color: orange;">
-                                        <f:setPropertyActionListener value="#{b}" target="#{grnController.grnBill}" />
-                                    </p:commandLink>
                                     <f:facet name="footer">
                                         <h:outputLabel value="Net Purchase Value" />
                                         <br />
