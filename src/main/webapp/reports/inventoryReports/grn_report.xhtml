@@ -171,7 +171,6 @@
                                 value="Export to Excel"
                                 action="#{pharmacyController.navigateToPrinteGeneratedGrnDetailedRportTable()}"
                                 rendered="#{pharmacyController.reportType eq 'detailReport'}"></p:commandButton>
-
                             <p:commandButton 
                                 class="ui-button-success mx-1" 
                                 icon="fas fa-file-excel"
@@ -186,7 +185,6 @@
                                 value="Export to Excel"
                                 action="#{pharmacyController.navigateToPrinteGeneratedGrnCancelReportTable()}"
                                 rendered="#{pharmacyController.reportType eq 'cancellationReport'}"></p:commandButton>
-
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
                                 <p:dataExporter type="xlsx" target="tbl3" fileName="grn_summery_report" />
                             </p:commandButton>
@@ -423,25 +421,25 @@
                                     <h:outputText value="#{r.referenceBill.invoiceNumber}" />
                                 </p:column>
                                 <p:column headerText="GRN Date" width="6em">
-                                    <h:outputLabel value="#{r.referenceBill.createdAt}"  >
+                                    <h:outputText value="#{r.referenceBill.createdAt}"  >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
+                                    </h:outputText>
                                 </p:column>
                                 <p:column headerText="Reference Institution" width="6em">
                                     <h:outputText value="#{r.referenceBill.referenceInstitution.name}" />
                                 </p:column>
                                 <p:column headerText="Created At" width="6em">
-                                    <h:outputLabel value="#{r.createdAt}" >
+                                    <h:outputText value="#{r.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
+                                    </h:outputText>
                                 </p:column>
                                 <p:column headerText="Approved At" width="6em">
-                                    <h:outputLabel value="#{r.referenceBill.createdAt}"  >
+                                    <h:outputText value="#{r.referenceBill.createdAt}"  >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
+                                    </h:outputText>
                                 </p:column>
                                 <p:column headerText="Supplier" width="6em">
-                                    <h:outputLabel value="#{r.toInstitution.name}"/>
+                                    <h:outputText value="#{r.toInstitution.name}"/>
                                 </p:column>
                                 <p:column headerText="Purchase Value" width="6em" style="text-align: right;">
                                     <h:outputText value="#{r.netTotal}" />
@@ -462,25 +460,25 @@
                                     <p:rowExpansion>
                                         <p:dataTable id="billItemsTable" value="#{r.billItems}" var="bi" rowKey="#{bi.id}" style="margin:0">
                                             <p:column headerText="Item Name" style="text-align: left;">
-                                                <h:outputLabel value="#{bi.item.name}" />
+                                                <h:outputText value="#{bi.item.name}" />
                                             </p:column>
                                             <p:column headerText="Qty" style="text-align: left;">
-                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.qty}" />
+                                                <h:outputText value="#{bi.pharmaceuticalBillItem.qty}" />
                                             </p:column>
                                             <p:column headerText="Free Qty" style="text-align: left;">
-                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.freeQty}" />
+                                                <h:outputText value="#{bi.pharmaceuticalBillItem.freeQty}" />
                                             </p:column>
                                             <p:column headerText="Item Rate" style="text-align: left;">
-                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}" />
+                                                <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate}" />
                                             </p:column>
                                             <p:column headerText="Item MRP" style="text-align: left;">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.retailRate}" />
                                             </p:column>
                                             <p:column headerText="Batch Code" style="text-align: left;">
-                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
+                                                <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
                                             </p:column>
                                             <p:column headerText="UOM" style="text-align: left;">
-                                                <h:outputLabel value="#{bi.item.measurementUnit.name}" />
+                                                <h:outputText value="#{bi.item.measurementUnit.name}" />
                                             </p:column>
                                         </p:dataTable>
                                     </p:rowExpansion>
