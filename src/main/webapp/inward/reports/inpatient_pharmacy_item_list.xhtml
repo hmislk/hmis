@@ -44,7 +44,30 @@
                             var="bip" 
                             rendered="#{(webUserController.hasPrivilege('ShowInwardFee'))}">
 
-                            <p:column width="5%">
+
+                            <f:facet name="header" >
+                                <h:outputLabel value="Name"/>
+                                <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.nameWithTitle}"/>
+                                <h:outputLabel value="Age"/>
+                                <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.age}"/>
+                                <h:outputLabel value="BHT"/>
+                                <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.bhtNo}"/>
+                                <h:outputLabel value="Room Number"/>
+                                <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.currentPatientRoom.name}"/>
+                                <h:outputLabel value="Date of Admissions"/>
+                                <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputLabel>
+                                <h:outputLabel value="Date of Discharge"/>
+                                <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputLabel>
+                                <h:outputLabel value="Date of Discharge"/>
+                                <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.phoneNumberStringTransient}"/>
+
+                            </f:facet>
+
+                            <p:column width="1em">
                                 <f:facet name="header">
                                     <h:outputLabel value="No"/>
                                 </f:facet>
@@ -69,18 +92,9 @@
 
                             <p:column style="text-align: right;">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Gross Value"/>
+                                    <h:outputLabel value="Rate"/>
                                 </f:facet>
-                                <h:outputLabel value="#{bip.grossValue}">
-                                    <f:convertNumber pattern="#0.00" />
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column style="text-align: right;">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Matrix Value"/>
-                                </f:facet>
-                                <h:outputLabel value="#{bip.marginValue}">
+                                <h:outputLabel value="#{bip.netValue / bip.qty}">
                                     <f:convertNumber pattern="#0.00" />
                                 </h:outputLabel>
                             </p:column>
@@ -89,29 +103,20 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Net Value"/>
                                 </f:facet>
-                                <h:outputLabel value="#{bip.grossValue + bip.marginValue}">
+                                <h:outputLabel value="#{bip.netValue}">
                                     <f:convertNumber pattern="#0.00" />
                                 </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{inwardReportControllerBht.pharmacyIssueBillItemsToPatientEncounter}">
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
                             </p:column>
 
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column  style="text-align: right;" colspan="4">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
-                                                <f:convertNumber pattern="#0.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column  style="text-align: right;" colspan="2">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}">
-                                                <f:convertNumber pattern="#0.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
+
+
+
+
                         </p:dataTable>
 
 
