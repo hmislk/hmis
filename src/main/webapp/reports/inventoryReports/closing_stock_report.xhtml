@@ -216,36 +216,7 @@
                                 ajax="false"  
                                 value="Process" 
                                 action="#{pharmacyReportController.processClosingStockReport()}" >
-                            </p:commandButton>
-
-                            <!-- Buttons for Item Wise -->
-                            <p:commandButton 
-                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
-                                class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
-                                <p:printer target="gpItemWise" />
-                            </p:commandButton>
-                            <p:commandButton 
-                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
-                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                                <p:dataExporter type="xlsx" target="itemWIse" fileName="Item Wise Report" />
-                            </p:commandButton>
-                            <p:commandButton 
-                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
-                                class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
-                                <p:dataExporter type="pdf" target="itemWise" fileName="Item Wise Report" />
-                            </p:commandButton>
-                            <!-- Buttons for Batch Wise -->
-                            <p:commandButton 
-                                rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
-                                class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
-                                <p:printer target="gpBatchWise" />
-                            </p:commandButton>
-                            
-                            <p:commandButton 
-                                rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
-                                class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
-                                <p:dataExporter type="pdf" target="batchWise" fileName="Batch Wise Report" />
-                            </p:commandButton>
+                            </p:commandButton>                                                      
                         </div>
 
                         
@@ -254,6 +225,17 @@
                             id="gpBatchWise" 
                             header="Report Data By Batch Wise" 
                             rendered="#{pharmacyReportController.reportType eq 'batchWise'}">
+                            <!-- Buttons for Batch Wise -->
+                            <p:commandButton 
+                                rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
+                                class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                                <p:printer target="gpBatchWise" />
+                            </p:commandButton>                           
+                            <p:commandButton 
+                                rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
+                                class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                                <p:dataExporter type="pdf" target="batchWise" fileName="Batch Wise Report" />
+                            </p:commandButton>
                             <p:commandButton 
                                 rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
                                 class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
@@ -350,6 +332,22 @@
                             id="gpItemWise" 
                             header="Report Data By Item Wise" 
                             rendered="#{pharmacyReportController.reportType eq 'itemWise'}">
+                            <!-- Buttons for Item Wise -->
+                            <p:commandButton 
+                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
+                                class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                                <p:printer target="itemWise" />
+                            </p:commandButton>
+                            <p:commandButton 
+                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
+                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                                <p:dataExporter type="xlsx" target="itemWIse" fileName="Item Wise Report" />
+                            </p:commandButton>
+                            <p:commandButton 
+                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
+                                class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                                <p:dataExporter type="pdf" target="itemWise" fileName="Item Wise Report" />
+                            </p:commandButton>
                             <p:dataTable 
                                 id="itemWise" 
                                 value="#{pharmacyReportController.rows}" 
