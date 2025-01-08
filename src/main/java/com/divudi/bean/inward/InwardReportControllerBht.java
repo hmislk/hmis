@@ -58,6 +58,11 @@ public class InwardReportControllerBht implements Serializable {
     PatientRoomFacade patientRoomFacade;
     @EJB
     BillFacade billFacade;
+      ////
+    @Inject
+    CommonController commonController;
+    
+    
     
     PatientEncounter patientEncounter;
     Bill bill;
@@ -75,9 +80,8 @@ public class InwardReportControllerBht implements Serializable {
     
     ReportKeyWord reportKeyWord;
 
-    ////
-    @Inject
-    CommonController commonController;
+    
+  
 
     double opdSrviceGross;
     double opdServiceMargin;
@@ -100,6 +104,13 @@ public class InwardReportControllerBht implements Serializable {
 
     Bill finalBill;
 
+    
+    
+    public String navigateToInpatientPharmacyItemList(){
+        return "/inward/reports/inpatient_pharmacy_item_list?faces-redirect=true";
+    }
+
+    
     public Double[] fetchRoomValues() {
         HashMap hm = new HashMap();
         String sql = "SELECT"
