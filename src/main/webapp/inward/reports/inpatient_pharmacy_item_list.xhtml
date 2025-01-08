@@ -44,6 +44,8 @@
 
 
                 </f:facet>
+
+
                 <div class="row" >
                     <div class="col-3" >
                         <div class="m-1" >
@@ -55,9 +57,147 @@
                     </div>
                     <div class="col-9" >
 
+                        <h:panelGroup id="tbl" >
+                            <table style="width: 100%; border-collapse: collapse; text-align: center;"  cellpadding="5">
+                                <!-- Header Information Rows -->
+                                <tr>
+                                    <td colspan="2" style="text-align: left;">
+                                        <h:outputText value="Name:" />
+                                    </td>
+                                    <td colspan="3" style="text-align: left;">
+                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.patient.person.nameWithTitle}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="text-align: left;">
+                                        <h:outputText value="Age:" />
+                                    </td>
+                                    <td colspan="3" style="text-align: left;">
+                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.patient.age}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="text-align: left;">
+                                        <h:outputText value="Gender:" />
+                                    </td>
+                                    <td colspan="3" style="text-align: left;">
+                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.patient.person.sex.label}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="text-align: left;">
+                                        <h:outputText value="Room Number:" />
+                                    </td>
+                                    <td colspan="3" style="text-align: left;">
+                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.currentPatientRoom.name}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="text-align: left;">
+                                        <h:outputText value="Date of Admission:" />
+                                    </td>
+                                    <td colspan="3" style="text-align: left;">
+                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="text-align: left;">
+                                        <h:outputText value="Date of Discharge:" />
+                                    </td>
+                                    <td colspan="3" style="text-align: left;">
+                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="text-align: left;">
+                                        <h:outputText value="BHT:" />
+                                    </td>
+                                    <td colspan="3" style="text-align: left;">
+                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.bhtNo}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="text-align: left;">
+                                        <h:outputText value="Phone Number:" />
+                                    </td>
+                                    <td colspan="3" style="text-align: left;">
+                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.patient.phoneNumberStringTransient}" />
+                                    </td>
+                                </tr>
+
+                                <!-- Column Headers -->
+                                <tr>
+                                    <th style="width: 5%; text-align: center;">
+                                        <h:outputText value="No" />
+                                    </th>
+                                    <th style="text-align: left;">
+                                        <h:outputText value="Item Name" />
+                                    </th>
+                                    <th style="width: 10%; text-align: right;">
+                                        <h:outputText value="QTY" />
+                                    </th>
+                                    <th style="width: 10%; text-align: right;">
+                                        <h:outputText value="Rate" />
+                                    </th>
+                                    <th style="width: 10%; text-align: right;">
+                                        <h:outputText value="Net Value" />
+                                    </th>
+                                </tr>
+
+                                <!-- Data Rows -->
+                                <ui:repeat var="bip" value="#{inwardReportControllerBht.pharmacyIssueBillItemsToPatientEncounter}" varStatus="status">
+                                    <tr>
+                                        <td style="text-align: center;">
+                                            <h:outputText value="#{status.index + 1}" />
+                                        </td>
+                                        <td style="text-align: left;">
+                                            <h:outputText value="#{bip.item.name}" />
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <h:outputText value="#{bip.qty}">
+                                                <f:convertNumber pattern="#0" />
+                                            </h:outputText>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <h:outputText value="#{bip.netValue / bip.qty}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputText>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <h:outputText value="#{bip.netValue}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+
+                                <!-- Footer Row -->
+                                <tr>
+                                    <td colspan="4" style="text-align: right; font-weight: bold;">
+                                        <h:outputText value="Total:" />
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <h:outputText value="#{inwardReportControllerBht.pharmacyIssueBillItemsToPatientEncounterNetTotal}">
+                                            <f:convertNumber pattern="#0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </table>
+                        </h:panelGroup>
+
+
+
+
+
+
+
 
                         <p:dataTable 
-                            id="tbl" 
+                            id="tbl1" 
                             rowIndexVar="rowIndex" 
                             value="#{inwardReportControllerBht.pharmacyIssueBillItemsToPatientEncounter}"  
                             var="bip">
@@ -116,7 +256,7 @@
                                 <h:outputLabel value="#{bip.item.name}" />
                             </p:column>
 
-                            <p:column>
+                            <p:column width="5em">
                                 <f:facet name="header">
                                     <h:outputLabel value="QTY" />
                                 </f:facet>
@@ -125,7 +265,7 @@
                                 </p:outputLabel>
                             </p:column>
 
-                            <p:column style="text-align: right;">
+                            <p:column width="5em" style="text-align: right;">
                                 <f:facet name="header">
                                     <h:outputLabel value="Rate" />
                                 </f:facet>
@@ -134,7 +274,7 @@
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column style="text-align: right;">
+                            <p:column width="5em" style="text-align: right;">
                                 <f:facet name="header">
                                     <h:outputLabel value="Net Value" />
                                 </f:facet>
