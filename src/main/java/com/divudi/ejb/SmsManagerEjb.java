@@ -268,7 +268,7 @@ public class SmsManagerEjb {
         return s;
     }
 
-    public String executePost(String targetURL, Map<String, String> parameters) {
+    public String executeGet(String targetURL, Map<String, String> parameters) {
         if (doNotSendAnySms) {
             return null;
         }
@@ -276,45 +276,101 @@ public class SmsManagerEjb {
         HttpURLConnection connection = null;
         StringBuilder urlParameters = new StringBuilder();
 
-        // Construct query parameters
-        if (parameters != null && !parameters.isEmpty()) {
-            try {
+        try {
+            // Build query string
+            if (parameters != null && !parameters.isEmpty()) {
                 for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                    urlParameters.append(URLEncoder.encode(entry.getKey(), "UTF-8"))
-                            .append("=")
-                            .append(URLEncoder.encode(entry.getValue(), "UTF-8"))
-                            .append("&");
+                    String key = URLEncoder.encode(entry.getKey(), "UTF-8");
+                    String value = URLEncoder.encode(entry.getValue(), "UTF-8");
+                    urlParameters.append(key).append("=").append(value).append("&");
                 }
                 // Remove trailing '&'
                 urlParameters.setLength(urlParameters.length() - 1);
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, "Encoding error", ex);
-                return null;
             }
-        }
 
-        try {
-            // Append parameters to URL
-            String fullURL = targetURL + "?" + urlParameters.toString();
-            URL url = new URL(fullURL);
+            // Combine target URL with query string
+            String fullURL = targetURL + (urlParameters.length() > 0 ? "?" + urlParameters.toString() : "");
+            System.out.println("Final URL: " + fullURL);
 
             // Open connection
+            URL url = new URL(fullURL);
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(5000);
             connection.setReadTimeout(5000);
 
+            // Log response code
+            int responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+
             // Read response
-            try (BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+            try (InputStream is = connection.getInputStream(); BufferedReader rd = new BufferedReader(new InputStreamReader(is))) {
                 StringBuilder response = new StringBuilder();
                 String line;
                 while ((line = rd.readLine()) != null) {
                     response.append(line).append('\n');
                 }
+                System.out.println("Response: " + response);
                 return response.toString().trim();
             }
+        } catch (UnsupportedEncodingException e) {
+            Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, "Encoding error", e);
+            return null;
         } catch (IOException e) {
             Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, "HTTP request failed", e);
+            return null;
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    public String executePost(String targetURL, Map<String, String> parameters) {
+        if (doNotSendAnySms) {
+            return null;
+        }
+        HttpURLConnection connection = null;
+        StringBuilder urlParameters = new StringBuilder();
+
+        if (parameters != null && !parameters.isEmpty()) {
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                try {
+                    urlParameters.append(URLEncoder.encode(entry.getKey(), "UTF-8"))
+                            .append("=")
+                            .append(URLEncoder.encode(entry.getValue(), "UTF-8"))
+                            .append("&");
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            urlParameters.setLength(urlParameters.length() - 1);
+            targetURL += "?" + urlParameters.toString();
+        }
+
+        try {
+            URL url = new URL(targetURL);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setDoOutput(true);
+
+            try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
+                wr.writeBytes(targetURL);
+                wr.flush();
+            }
+
+            InputStream is = connection.getInputStream();
+            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = rd.readLine()) != null) {
+                response.append(line).append('\r');
+            }
+            rd.close();
+            System.out.println("response = " + response);
+            return response.toString();
+        } catch (IOException e) {
+            System.out.println("e = " + e);
             return null;
         } finally {
             if (connection != null) {
@@ -421,6 +477,9 @@ public class SmsManagerEjb {
         String smsUserAliasParameter = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - User Alias parameter");
         String smsUserAlias = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - User Alias");
 
+        String smsAdditionalParameter1 = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Additional parameter 1");
+        String smsAdditionalParameter1Value = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Additional parameter 1 value");
+
         String smsPhoneNumberParameter = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Phone Number parameter");
         String smsMessageParameter = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Message parameter");
         String smsUrl = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - URL");
@@ -429,6 +488,9 @@ public class SmsManagerEjb {
         m.put(smsPasswordParameter, smsPassword);
         if (smsUserAliasParameter != null && !smsUserAliasParameter.trim().equals("")) {
             m.put(smsUserAliasParameter, smsUserAlias);
+        }
+        if (smsAdditionalParameter1 != null && !smsAdditionalParameter1.trim().equals("")) {
+            m.put(smsAdditionalParameter1, smsAdditionalParameter1Value);
         }
         m.put(smsPhoneNumberParameter, sms.getReceipientNumber());
         m.put(smsMessageParameter, sms.getSendingMessage());
