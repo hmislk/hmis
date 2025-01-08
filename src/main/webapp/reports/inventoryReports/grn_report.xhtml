@@ -159,6 +159,9 @@
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
                                 <p:printer target="tbl3" />
                             </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All" rendered="#{pharmacyController.reportType eq 'cancellationReport'}">
+                                <p:printer target="tbl4" />
+                            </p:commandButton>
 
 
                             <p:commandButton 
@@ -176,6 +179,13 @@
                                 value="Export to Excel"
                                 action="#{pharmacyController.navigateToPrinteGeneratedGrnReturnReportTable()}"
                                 rendered="#{pharmacyController.reportType eq 'returnReport'}"></p:commandButton>
+                            <p:commandButton 
+                                class="ui-button-success mx-1" 
+                                icon="fas fa-file-excel"
+                                ajax="false" 
+                                value="Export to Excel"
+                                action="#{pharmacyController.navigateToPrinteGeneratedGrnCancelReportTable()}"
+                                rendered="#{pharmacyController.reportType eq 'cancellationReport'}"></p:commandButton>
 
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
                                 <p:dataExporter type="xlsx" target="tbl3" fileName="grn_summery_report" />
@@ -190,6 +200,9 @@
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
                                 <p:dataExporter type="pdf" target="tbl3" fileName="grn_summery_report" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" rendered="#{pharmacyController.reportType eq 'cancellationReport'}">
+                                <p:dataExporter type="pdf" target="tbl4" fileName="grn_cancel_report" />
                             </p:commandButton>
 
 
@@ -562,29 +575,29 @@
 
                                 <p:column headerText="Purchase Details" width="50em" style="text-align: center;">
 
-                                    <p:dataTable id="cBillItemsTable" value="#{cb.billItems}" var="bi" rowKey="#{bi.id}" style="margin:0">
+                                    <p:dataTable id="cBillItemsTable" value="#{cb.billItems}" var="cbi" rowKey="#{bi.id}" style="margin:0">
                                         <p:column headerText="Item Name" style="text-align: left;">
-                                            <h:outputText value="#{bi.item.name}" />
+                                            <h:outputText value="#{cbi.item.name}" />
                                         </p:column>
 
 
                                         <p:column headerText="Qty" style="text-align: left;">
-                                            <h:outputText value="#{bi.pharmaceuticalBillItem.qty}" />
+                                            <h:outputText value="#{cbi.pharmaceuticalBillItem.qty}" />
                                         </p:column>
                                         <p:column headerText="Free Qty" style="text-align: left;">
-                                            <h:outputText value="#{bi.pharmaceuticalBillItem.freeQty}" />
+                                            <h:outputText value="#{cbi.pharmaceuticalBillItem.freeQty}" />
                                         </p:column>
                                         <p:column headerText="Item Rate" style="text-align: left;">
-                                            <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate}" />
+                                            <h:outputText value="#{cbi.pharmaceuticalBillItem.purchaseRate}" />
                                         </p:column>
                                         <p:column headerText="Item MRP" style="text-align: left;">
-                                            <h:outputText value="#{bi.pharmaceuticalBillItem.retailRate}" />
+                                            <h:outputText value="#{cbi.pharmaceuticalBillItem.retailRate}" />
                                         </p:column>
                                         <p:column headerText="Batch Code" style="text-align: left;">
-                                            <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
+                                            <h:outputText value="#{cbi.pharmaceuticalBillItem.itemBatch.batchNo}" />
                                         </p:column>
                                         <p:column headerText="UOM" style="text-align: left;">
-                                            <h:outputText value="#{bi.item.measurementUnit.name}" />
+                                            <h:outputText value="#{cbi.item.measurementUnit.name}" />
                                         </p:column>
                                     </p:dataTable>
 
