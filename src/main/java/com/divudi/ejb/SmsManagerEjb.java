@@ -102,29 +102,28 @@ public class SmsManagerEjb {
         cal.setTime(fromTime);
         cal.add(Calendar.MINUTE, 60);
         Date toTime = cal.getTime();
-        
+
         List<SessionInstance> upcomingSessions;
         Map<String, Object> m = new HashMap<>();
         Map<String, TemporalType> temporalTypes = new HashMap<>();
-        
+
         String jpql = "select i from SessionInstance i "
                 + "where i.retired=:ret "
                 + "and i.originatingSession.retired=:retos "
-                + "and i.sessionDate=:sessionDate "                
+                + "and i.sessionDate=:sessionDate "
                 + "and i.startingTime between :startingTime and :endingTime";
 
         m.put("ret", false);
         m.put("retos", false);
         m.put("sessionDate", new Date());
         temporalTypes.put("sessionDate", TemporalType.DATE);
-        
-        m.put("startingTime",fromTime1);
-        m.put("endingTime",toTime);
+
+        m.put("startingTime", fromTime1);
+        m.put("endingTime", toTime);
         temporalTypes.put("startingTime", TemporalType.TIME);
         temporalTypes.put("endingTime", TemporalType.TIME);
-        
+
         upcomingSessions = sessionInstanceFacade.findByJpql(jpql, m, temporalTypes);
-        
 
         for (SessionInstance s : upcomingSessions) {
             if (s.getBookedPatientCount() != null && !s.isCancelled() && s.getBookedPatientCount() > 0) {
@@ -273,45 +272,49 @@ public class SmsManagerEjb {
         if (doNotSendAnySms) {
             return null;
         }
+
         HttpURLConnection connection = null;
         StringBuilder urlParameters = new StringBuilder();
 
+        // Construct query parameters
         if (parameters != null && !parameters.isEmpty()) {
-            for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                try {
+            try {
+                for (Map.Entry<String, String> entry : parameters.entrySet()) {
                     urlParameters.append(URLEncoder.encode(entry.getKey(), "UTF-8"))
                             .append("=")
                             .append(URLEncoder.encode(entry.getValue(), "UTF-8"))
                             .append("&");
-                } catch (UnsupportedEncodingException ex) {
-                    Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                // Remove trailing '&'
+                urlParameters.setLength(urlParameters.length() - 1);
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, "Encoding error", ex);
+                return null;
             }
-            urlParameters.setLength(urlParameters.length() - 1);
-            targetURL += "?" + urlParameters.toString();
         }
 
         try {
-            URL url = new URL(targetURL);
+            // Append parameters to URL
+            String fullURL = targetURL + "?" + urlParameters.toString();
+            URL url = new URL(fullURL);
+
+            // Open connection
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
-            connection.setDoOutput(true);
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
 
-            try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
-                wr.writeBytes(targetURL);
-                wr.flush();
+            // Read response
+            try (BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = rd.readLine()) != null) {
+                    response.append(line).append('\n');
+                }
+                return response.toString().trim();
             }
-
-            InputStream is = connection.getInputStream();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = rd.readLine()) != null) {
-                response.append(line).append('\r');
-            }
-            rd.close();
-            return response.toString();
         } catch (IOException e) {
+            Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, "HTTP request failed", e);
             return null;
         } finally {
             if (connection != null) {
@@ -373,12 +376,12 @@ public class SmsManagerEjb {
             return sendSmsByOauth2(sms);
         } else if (sendSmsWithBasicAuthentication) {
             return sendSmsByBasicAuthentication(sms);
-        }else if (sendSmsViaESms){
+        } else if (sendSmsViaESms) {
             return sendSmsByESms(sms);
         }
         return false;
     }
-    
+
     public boolean sendSmsByESms(Sms sms) {
         if (doNotSendAnySms) {
             return false;
@@ -392,12 +395,12 @@ public class SmsManagerEjb {
         eSmsManager smsManager = new eSmsManager();
 
         boolean send = false; // smsManager.sendSms(smsUsername,smsPassword,smsUserAlias,sms.getReceipientNumber(),sms.getSendingMessage());
-        
-        if(send){
+
+        if (send) {
             sms.setSentSuccessfully(true);
             saveSms(sms);
             return send;
-        }else{
+        } else {
             sms.setSentSuccessfully(false);
             saveSms(sms);
             return send;
