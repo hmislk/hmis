@@ -546,3 +546,50 @@ th.align-right-header .ui-column-title {
     background-color: #00a88f !important;
     border-color: #007f6b !important;
 }
+
+/* Ensure the condensed table class applies specifically to this DataTable */
+.condensed-table.ui-datatable {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 1rem !important; /* Adjust font size */
+    line-height: 1 !important;
+    border-collapse: collapse !important;
+}
+
+/* Remove spacing and padding in headers and footers */
+.condensed-table.ui-datatable .ui-datatable-header,
+.condensed-table.ui-datatable .ui-datatable-footer {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Remove padding and spacing for table cells */
+.condensed-table.ui-datatable .ui-datatable-thead > tr > th,
+.condensed-table.ui-datatable .ui-datatable-tbody > tr > td {
+    padding: 0 !important;
+    margin: 0 !important;
+    text-align: left !important;
+    border: none !important;
+}
+
+/* Remove padding from the wrapper */
+.condensed-table.ui-datatable .ui-datatable-tablewrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Specific adjustments for labels inside cells */
+.condensed-table.ui-datatable .ui-datatable-tbody > tr > td label {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+}
+
+/* Ensure the table itself is tightly packed */
+.condensed-table.ui-datatable table {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    width: 100% !important;
+}
+

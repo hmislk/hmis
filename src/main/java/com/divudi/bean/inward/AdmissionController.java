@@ -1169,7 +1169,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         savePatient();
         savePatientAllergies();
         saveGuardian();
-        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+        boolean bhtCanBeEdited = configOptionApplicationController.getBooleanValueByKey("BHT Number can be edited at the time of admission");
+        if(bhtText==null||bhtText.trim().equals("")){
+            bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+        }else{
+            if(!bhtCanBeEdited){
+             bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+            }
+        }
+//        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         getCurrent().setBhtNo(getBhtText());
 
         //  getCurrent().setBhtNo(bhtText);
