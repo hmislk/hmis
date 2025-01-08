@@ -268,54 +268,41 @@ public class SmsManagerEjb {
         return s;
     }
 
-    public String executeGet(String targetURL, Map<String, String> parameters) {
+    public String executeJsonPost(String targetURL, JSONObject jsonPayload) {
         if (doNotSendAnySms) {
             return null;
         }
 
         HttpURLConnection connection = null;
-        StringBuilder urlParameters = new StringBuilder();
 
         try {
-            // Build query string
-            if (parameters != null && !parameters.isEmpty()) {
-                for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                    String key = URLEncoder.encode(entry.getKey(), "UTF-8");
-                    String value = URLEncoder.encode(entry.getValue(), "UTF-8");
-                    urlParameters.append(key).append("=").append(value).append("&");
-                }
-                // Remove trailing '&'
-                urlParameters.setLength(urlParameters.length() - 1);
-            }
-
-            // Combine target URL with query string
-            String fullURL = targetURL + (urlParameters.length() > 0 ? "?" + urlParameters.toString() : "");
-            System.out.println("Final URL: " + fullURL);
-
             // Open connection
-            URL url = new URL(fullURL);
+            URL url = new URL(targetURL);
             connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            connection.setDoOutput(true);
             connection.setConnectTimeout(5000);
             connection.setReadTimeout(5000);
 
-            // Log response code
+            // Write JSON payload to the request body
+            try (OutputStream os = connection.getOutputStream()) {
+                byte[] input = jsonPayload.toString().getBytes("UTF-8");
+                os.write(input, 0, input.length);
+            }
+
+            // Read response
             int responseCode = connection.getResponseCode();
             System.out.println("Response Code: " + responseCode);
 
-            // Read response
-            try (InputStream is = connection.getInputStream(); BufferedReader rd = new BufferedReader(new InputStreamReader(is))) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"))) {
                 StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = rd.readLine()) != null) {
-                    response.append(line).append('\n');
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
                 }
-                System.out.println("Response: " + response);
-                return response.toString().trim();
+                return response.toString();
             }
-        } catch (UnsupportedEncodingException e) {
-            Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, "Encoding error", e);
-            return null;
         } catch (IOException e) {
             Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, "HTTP request failed", e);
             return null;
@@ -367,10 +354,8 @@ public class SmsManagerEjb {
                 response.append(line).append('\r');
             }
             rd.close();
-            System.out.println("response = " + response);
             return response.toString();
         } catch (IOException e) {
-            System.out.println("e = " + e);
             return null;
         } finally {
             if (connection != null) {
@@ -427,11 +412,14 @@ public class SmsManagerEjb {
         }
         boolean sendSmsWithOAuth2 = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using OAuth 2.0 Supported SMS Gateway", false);
         boolean sendSmsWithBasicAuthentication = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using Basic Authentication Supported SMS Gateway", false);
+        boolean sendSmsWithBasicAuthenticationWithJson = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using Basic Authentication Supported SMS Gateway with JQON", false);
         boolean sendSmsViaESms = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using E -SMS Supported SMS Gateway", false);
         if (sendSmsWithOAuth2) {
             return sendSmsByOauth2(sms);
         } else if (sendSmsWithBasicAuthentication) {
             return sendSmsByBasicAuthentication(sms);
+        } else if (sendSmsWithBasicAuthenticationWithJson) {
+            return sendSmsWithJson(sms);
         } else if (sendSmsViaESms) {
             return sendSmsByESms(sms);
         }
@@ -460,6 +448,43 @@ public class SmsManagerEjb {
             sms.setSentSuccessfully(false);
             saveSms(sms);
             return send;
+        }
+    }
+
+    public boolean sendSmsWithJson(Sms sms) {
+        if (doNotSendAnySms) {
+            return false;
+        }
+
+        // Prepare JSON payload using JSONObject
+        JSONObject payload = new JSONObject();
+        payload.put("username", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Username"));
+        payload.put("password", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Password"));
+        payload.put("userAlias", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - User Alias"));
+        payload.put("number", sms.getReceipientNumber());
+        payload.put("message", sms.getSendingMessage());
+        payload.put("promo", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Additional parameter 1 value"));
+
+        String smsUrl = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - URL");
+
+        // Execute POST request with JSON payload
+        String response = executeJsonPost(smsUrl, payload);
+
+        if (response == null) {
+            sms.setSentSuccessfully(false);
+            sms.setReceivedMessage(response);
+            saveSms(sms);
+            return false;
+        } else if (response.toUpperCase().contains("OK")) {
+            sms.setSentSuccessfully(true);
+            sms.setReceivedMessage(response);
+            saveSms(sms);
+            return true;
+        } else {
+            sms.setSentSuccessfully(false);
+            sms.setReceivedMessage(response);
+            saveSms(sms);
+            return false;
         }
     }
 
