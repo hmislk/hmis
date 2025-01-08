@@ -168,7 +168,7 @@ public enum Privileges {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
-
+    
     PaymentBilling("Payment Billing"),
     PaymentBillSearch("Payment Bill Search"),
     PaymentBillReprint("Payment Bill Reprint"),
@@ -207,6 +207,7 @@ public enum Privileges {
     PharmacyPurchase("Pharmacy Purchase"),
     // Wholesale
     PharmacyPurchaseWh("Pharmacy Purchase Wholesale"),
+    PharmacyTokenManagement("Pharmacy Token Management"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Theatre">
