@@ -27,6 +27,7 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
@@ -421,7 +422,6 @@ public class BillService {
             double collectingCentreFeesCalculatedByBillFees = 0.0;
             double hospitalFeeCalculatedByBillFees = 0.0;
 
-
             // Fetch BillFees for the current BillItem
             List<BillFee> billFees = fetchBillFees(bi);
             for (BillFee bf : billFees) {
@@ -466,7 +466,6 @@ public class BillService {
         bill.setHospitalFee(billHospitalFee);
         bill.setProfessionalFee(billStaffFee);
         // Log the final bill totals
-
 
         // Persist the updated Bill
         billFacade.editAndCommit(bill);
@@ -573,12 +572,12 @@ public class BillService {
         return outputBundle;
     }
 
-    public List<Bill> fetchBills(Date fromDate, 
-            Date toDate, 
-            Institution institution, 
-            Institution site, 
-            Department department, 
-            WebUser webUser, 
+    public List<Bill> fetchBills(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
             List<BillTypeAtomic> billTypeAtomics) {
         String jpql;
         Map params = new HashMap();
@@ -613,14 +612,25 @@ public class BillService {
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
-    
-    public List<BillItem> fetchBillItems(Date fromDate, 
-            Date toDate, 
-            Institution institution, 
-            Institution site, 
-            Department department, 
-            WebUser webUser, 
+
+    public List<BillItem> fetchBillItems(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
             List<BillTypeAtomic> billTypeAtomics) {
+        return fetchBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null);
+    }
+
+    public List<BillItem> fetchBillItems(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            PatientEncounter patientEncounter) {
         String jpql;
         Map params = new HashMap();
 
@@ -629,13 +639,20 @@ public class BillService {
                 + " join bi.bill b"
                 + " where b.retired=:ret "
                 + " and bi.retired=:ret "
-                + " and b.billTypeAtomic in :billTypesAtomics "
-                + " and b.createdAt between :fromDate and :toDate ";
+                + " and b.billTypeAtomic in :billTypesAtomics ";
 
         params.put("ret", false);
         params.put("billTypesAtomics", billTypeAtomics);
-        params.put("fromDate", fromDate);
-        params.put("toDate", toDate);
+
+        if (fromDate != null) {
+            jpql += " and b.createdAt >= :fromDate ";
+            params.put("fromDate", fromDate);
+        }
+
+        if (toDate != null) {
+            jpql += " and b.createdAt <= :toDate ";
+            params.put("toDate", toDate);
+        }
 
         if (institution != null) {
             jpql += " and b.institution=:ins ";
@@ -652,11 +669,17 @@ public class BillService {
             params.put("dep", department);
         }
 
-        jpql += " order by b.createdAt, bi.id  ";
+        if (patientEncounter != null) {
+            jpql += " and b.patientEncounter=:patientEncounter ";
+            params.put("patientEncounter", patientEncounter);
+        }
+
+        jpql += " order by b.createdAt, bi.id ";
         System.out.println("jpql = " + jpql);
         System.out.println("params = " + params);
         List<BillItem> fetchedBillItems = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         System.out.println("fetchedBillItems = " + fetchedBillItems.size());
         return fetchedBillItems;
     }
+
 }
