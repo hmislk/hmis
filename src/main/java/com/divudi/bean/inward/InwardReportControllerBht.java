@@ -6,6 +6,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
@@ -81,6 +82,7 @@ public class InwardReportControllerBht implements Serializable {
     List<PatientRoom> patientRooms;
 
     private List<BillItem> pharmacyIssueBillItemsToPatientEncounter;
+    private double pharmacyIssueBillItemsToPatientEncounterNetTotal;
 
     ReportKeyWord reportKeyWord;
 
@@ -107,6 +109,7 @@ public class InwardReportControllerBht implements Serializable {
 
     public String navigateToInpatientPharmacyItemList() {
         if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
             return null;
         }
         List<BillTypeAtomic> btas = new ArrayList<>();
@@ -115,8 +118,13 @@ public class InwardReportControllerBht implements Serializable {
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        pharmacyIssueBillItemsToPatientEncounterNetTotal = 0.0;
         pharmacyIssueBillItemsToPatientEncounter = billService.fetchBillItems(null, null, null, null, null, null, btas, patientEncounter);
-        System.out.println("pharmacyIssueBillItemsToPatientEncounter = " + pharmacyIssueBillItemsToPatientEncounter);
+        if (pharmacyIssueBillItemsToPatientEncounter != null) {
+            for (BillItem bi : pharmacyIssueBillItemsToPatientEncounter) {
+                pharmacyIssueBillItemsToPatientEncounterNetTotal += bi.getNetValue();
+            }
+        }
         return "/inward/reports/inpatient_pharmacy_item_list?faces-redirect=true";
     }
 
@@ -1208,6 +1216,14 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setPharmacyIssueBillItemsToPatientEncounter(List<BillItem> pharmacyIssueBillItemsToPatientEncounter) {
         this.pharmacyIssueBillItemsToPatientEncounter = pharmacyIssueBillItemsToPatientEncounter;
+    }
+
+    public double getPharmacyIssueBillItemsToPatientEncounterNetTotal() {
+        return pharmacyIssueBillItemsToPatientEncounterNetTotal;
+    }
+
+    public void setPharmacyIssueBillItemsToPatientEncounterNetTotal(double pharmacyIssueBillItemsToPatientEncounterNetTotal) {
+        this.pharmacyIssueBillItemsToPatientEncounterNetTotal = pharmacyIssueBillItemsToPatientEncounterNetTotal;
     }
 
     //DATA STRUCTURE
