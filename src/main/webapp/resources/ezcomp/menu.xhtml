@@ -625,7 +625,7 @@
                         action="#{tokenController.navigateToTokenIndex()}" 
                         value="Token Management" 
                         icon="fa fa-file-medical" 
-                        rendered="true" />
+                        rendered="#{webUserController.hasPrivilege('PharmacyTokenManagement')}" />
                     <p:submenu label="Retail Transactions" icon="fas fa-cash-register" rendered="#{webUserController.hasPrivilege('PharmacyRetailTransactionMenue')}">
                         <p:menuitem  
                             ajax="false" 

@@ -410,7 +410,7 @@
                             <p:column headerText="Patient Name" width="5rem">
                                 <h:outputText value="#{row.billItem.bill.patient.person.name}"/>
                             </p:column>
-                            <p:column headerText="Hospital Fee" width="5rem" style="text-align: right">
+                            <p:column headerText="Hospital Fee" width="5rem">
                                 <h:outputText value="#{row.billItem.hospitalFee}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -420,7 +420,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Professional Fee" width="5rem" style="text-align: right">
+                            <p:column headerText="Professional Fee" width="5rem">
                                 <h:outputText value="#{row.billItem.staffFee}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -430,7 +430,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Net Amount" width="5rem" style="text-align: right">
+                            <p:column headerText="Net Amount" width="5rem">
                                 <h:outputText value="#{row.billItem.netValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -481,7 +481,7 @@
                             <p:column headerText="Test Name" width="5rem">
                                 <h:outputText value="#{row.billItem.item.name}"/>
                             </p:column>
-                            <p:column headerText="Hospital Fee" width="5rem" style="text-align: right">
+                            <p:column headerText="Hospital Fee" width="5rem">
                                 <h:outputText value="#{row.billItem.hospitalFee}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -491,7 +491,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Professional Fee" width="5rem" style="text-align: right">
+                            <p:column headerText="Professional Fee" width="5rem">
                                 <h:outputText value="#{row.billItem.staffFee}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -501,7 +501,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Net Amount" width="5rem" style="text-align: right">
+                            <p:column headerText="Net Amount" width="5rem">
                                 <h:outputText value="#{row.billItem.netValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>

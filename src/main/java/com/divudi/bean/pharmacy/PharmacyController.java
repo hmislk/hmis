@@ -791,6 +791,7 @@ public class PharmacyController implements Serializable {
         return reportName.trim();
     }
 
+    @Deprecated
     public void generateGRNReportTableByBillItem(List<BillType> bt) {
         bills = null;
         totalCreditPurchaseValue = 0.0;
@@ -883,37 +884,35 @@ public class PharmacyController implements Serializable {
     public String navigateBackToGeneratedGrnDetailedRportTable() {
         return "/reports/inventoryReports/grn_report?faces-redirect=true";
     }
- 
-    public void generateGrnReportTable() {
 
-        bills = null;
-        totalCreditPurchaseValue = 0.0;
-        totalCashPurchaseValue = 0.0;
-        totalPurchase = 0.0;
+    public void generateGrnReportTable() {
+        resetFields();
 
         List<BillType> bt = new ArrayList<>();
+        List<BillTypeAtomic> bta = new ArrayList<>();
         if ("detailReport".equals(reportType)) {
-            bt.add(BillType.PharmacyGrnBill);
-            generateGRNReportTableByBillItem(bt);
+            bta.add(BillTypeAtomic.PHARMACY_GRN);
         } else if ("returnReport".equals(reportType)) {
-            bt.add(BillType.PharmacyGrnReturn);
-            generateGRNReportTableByBillItem(bt);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+        } else if ("cancellationReport".equals(reportType)) {
+            bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
         } else if ("summeryReport".equals(reportType)) {
-            bt.add(BillType.PharmacyGrnBill);
-            bt.add(BillType.PharmacyGrnReturn);
+            bta.add(BillTypeAtomic.PHARMACY_GRN);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            
         }
 
         bills = new ArrayList<>();
 
-        String sql = "SELECT b FROM Bill b WHERE type(b) = :bill"
-                + " and b.retired = false"
-                + " and b.billType In :btp"
+        String sql = "SELECT b FROM Bill b "
+                + " WHERE b.retired = false"
+                + " and b.billTypeAtomic In :btas"
                 + " and b.createdAt between :fromDate and :toDate";
 
         Map<String, Object> tmp = new HashMap<>();
 
-        tmp.put("bill", BilledBill.class); // Use the actual Class object
-        tmp.put("btp", bt);
+        tmp.put("btas", bta);
         tmp.put("fromDate", getFromDate());
         tmp.put("toDate", getToDate());
 
@@ -941,7 +940,7 @@ public class PharmacyController implements Serializable {
             sql += " AND b.fromInstitution = :supplier";
             tmp.put("supplier", fromInstitution);
         }
-
+        
         sql += " order by b.id desc";
 
         try {
@@ -981,6 +980,9 @@ public class PharmacyController implements Serializable {
         departmentSummaries = null;
         issueDepartmentCategoryWiseItems = null;
         resultsList = null;
+        totalCreditPurchaseValue = 0.0;
+        totalCashPurchaseValue = 0.0;
+        totalPurchase = 0.0;
     }
 
     public void generateConsumptionReportTableByBill(BillType billType) {
