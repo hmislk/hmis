@@ -102,29 +102,28 @@ public class SmsManagerEjb {
         cal.setTime(fromTime);
         cal.add(Calendar.MINUTE, 60);
         Date toTime = cal.getTime();
-        
+
         List<SessionInstance> upcomingSessions;
         Map<String, Object> m = new HashMap<>();
         Map<String, TemporalType> temporalTypes = new HashMap<>();
-        
+
         String jpql = "select i from SessionInstance i "
                 + "where i.retired=:ret "
                 + "and i.originatingSession.retired=:retos "
-                + "and i.sessionDate=:sessionDate "                
+                + "and i.sessionDate=:sessionDate "
                 + "and i.startingTime between :startingTime and :endingTime";
 
         m.put("ret", false);
         m.put("retos", false);
         m.put("sessionDate", new Date());
         temporalTypes.put("sessionDate", TemporalType.DATE);
-        
-        m.put("startingTime",fromTime1);
-        m.put("endingTime",toTime);
+
+        m.put("startingTime", fromTime1);
+        m.put("endingTime", toTime);
         temporalTypes.put("startingTime", TemporalType.TIME);
         temporalTypes.put("endingTime", TemporalType.TIME);
-        
+
         upcomingSessions = sessionInstanceFacade.findByJpql(jpql, m, temporalTypes);
-        
 
         for (SessionInstance s : upcomingSessions) {
             if (s.getBookedPatientCount() != null && !s.isCancelled() && s.getBookedPatientCount() > 0) {
@@ -269,6 +268,63 @@ public class SmsManagerEjb {
         return s;
     }
 
+    public String executeGet(String targetURL, Map<String, String> parameters) {
+        System.out.println("executeGet");
+        if (doNotSendAnySms) {
+            return null;
+        }
+        HttpURLConnection connection = null;
+        StringBuilder urlParameters = new StringBuilder();
+
+        // Build URL query parameters
+        if (parameters != null && !parameters.isEmpty()) {
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                try {
+                    urlParameters.append(URLEncoder.encode(entry.getKey(), "UTF-8"))
+                            .append("=")
+                            .append(URLEncoder.encode(entry.getValue(), "UTF-8"))
+                            .append("&");
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            urlParameters.setLength(urlParameters.length() - 1); // Remove trailing '&'
+            targetURL += "?" + urlParameters.toString();
+        }
+
+        System.out.println("Final URL: " + targetURL);
+
+        try {
+            // Open connection
+            URL url = new URL(targetURL);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Debugging response code
+            int responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+
+            // Read response
+            InputStream is = connection.getInputStream();
+            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = rd.readLine()) != null) {
+                response.append(line).append('\r');
+            }
+            rd.close();
+            System.out.println("Response: " + response);
+            return response.toString();
+        } catch (IOException e) {
+            System.out.println("Exception: " + e.getMessage());
+            return null;
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
     public String executePost(String targetURL, Map<String, String> parameters) {
         if (doNotSendAnySms) {
             return null;
@@ -310,8 +366,10 @@ public class SmsManagerEjb {
                 response.append(line).append('\r');
             }
             rd.close();
+            System.out.println("response = " + response);
             return response.toString();
         } catch (IOException e) {
+            System.out.println("e = " + e);
             return null;
         } finally {
             if (connection != null) {
@@ -363,22 +421,26 @@ public class SmsManagerEjb {
     }
 
     public boolean sendSms(Sms sms) {
+        System.out.println("sendSms");
         if (doNotSendAnySms) {
             return false;
         }
         boolean sendSmsWithOAuth2 = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using OAuth 2.0 Supported SMS Gateway", false);
+        System.out.println("sendSmsWithOAuth2 = " + sendSmsWithOAuth2);
         boolean sendSmsWithBasicAuthentication = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using Basic Authentication Supported SMS Gateway", false);
+        System.out.println("sendSmsWithBasicAuthentication = " + sendSmsWithBasicAuthentication);
         boolean sendSmsViaESms = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using E -SMS Supported SMS Gateway", false);
+        System.out.println("sendSmsViaESms = " + sendSmsViaESms);
         if (sendSmsWithOAuth2) {
             return sendSmsByOauth2(sms);
         } else if (sendSmsWithBasicAuthentication) {
             return sendSmsByBasicAuthentication(sms);
-        }else if (sendSmsViaESms){
+        } else if (sendSmsViaESms) {
             return sendSmsByESms(sms);
         }
         return false;
     }
-    
+
     public boolean sendSmsByESms(Sms sms) {
         if (doNotSendAnySms) {
             return false;
@@ -392,12 +454,12 @@ public class SmsManagerEjb {
         eSmsManager smsManager = new eSmsManager();
 
         boolean send = false; // smsManager.sendSms(smsUsername,smsPassword,smsUserAlias,sms.getReceipientNumber(),sms.getSendingMessage());
-        
-        if(send){
+
+        if (send) {
             sms.setSentSuccessfully(true);
             saveSms(sms);
             return send;
-        }else{
+        } else {
             sms.setSentSuccessfully(false);
             saveSms(sms);
             return send;
@@ -405,6 +467,7 @@ public class SmsManagerEjb {
     }
 
     public boolean sendSmsByBasicAuthentication(Sms sms) {
+        System.out.println("sendSmsByBasicAuthentication = " );
         if (doNotSendAnySms) {
             return false;
         }
@@ -418,6 +481,9 @@ public class SmsManagerEjb {
         String smsUserAliasParameter = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - User Alias parameter");
         String smsUserAlias = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - User Alias");
 
+        String smsAdditionalParameter1 = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Additional parameter 1");
+        String smsAdditionalParameter1Value = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Additional parameter 1 value");
+
         String smsPhoneNumberParameter = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Phone Number parameter");
         String smsMessageParameter = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Message parameter");
         String smsUrl = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - URL");
@@ -427,10 +493,15 @@ public class SmsManagerEjb {
         if (smsUserAliasParameter != null && !smsUserAliasParameter.trim().equals("")) {
             m.put(smsUserAliasParameter, smsUserAlias);
         }
+        if (smsAdditionalParameter1 != null && !smsAdditionalParameter1.trim().equals("")) {
+            m.put(smsAdditionalParameter1, smsAdditionalParameter1Value);
+        }
         m.put(smsPhoneNumberParameter, sms.getReceipientNumber());
         m.put(smsMessageParameter, sms.getSendingMessage());
+        System.out.println("m = " + m);
+        System.out.println("smsUrl = " + smsUrl);
 
-        String res = executePost(smsUrl, m);
+        String res = executeGet(smsUrl, m);
 
         if (res == null) {
             sms.setSentSuccessfully(false);
