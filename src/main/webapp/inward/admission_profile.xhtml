@@ -425,6 +425,19 @@
 
                             </div>
                         </p:panel>
+                        <p:panel header="Reports" class="m-1">
+                            <div class="d-grid gap-3">
+                                <p:commandButton 
+                                    value="Pharmacy Issue Summary" 
+                                    action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemList}" 
+                                    icon="fa fa-prescription-bottle-alt"
+                                    class="w-100">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{inwardReportControllerBht.patientEncounter}" />
+                                </p:commandButton>
+                            </div>
+                        </p:panel>
                     </div>
                 </div>
             </p:panel>
