@@ -2424,9 +2424,12 @@ public class PharmacyBillSearch implements Serializable {
             CancelledBill cb = pharmacyCreateCancelBill();
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.GRNCAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.GRNCAN));
+            cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
 
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
+            }else{
+                getBillFacade().edit(cb);
             }
 
             //to create payments for cancel bill
