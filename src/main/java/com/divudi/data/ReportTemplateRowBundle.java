@@ -1144,7 +1144,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBillItem().getBill() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBillItem().getBill().getDiscount());
+                Double amount = safeDouble(row.getBillItem().getDiscount());
                 discount += amount;
             }
         }
