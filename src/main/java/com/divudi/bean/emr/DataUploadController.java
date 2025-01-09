@@ -4637,6 +4637,17 @@ public class DataUploadController implements Serializable {
         return true;
     }
 
+    public boolean isRowEmpty(Row row) {
+        if (row != null) {
+            for (Cell cell : row) {
+                if (cell != null && cell.getCellType() != CellType.BLANK) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private List<Institution> readSuppliersFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -4653,6 +4664,10 @@ public class DataUploadController implements Serializable {
             Row row = rowIterator.next();
             
             if(row == null || isRowEmpty(row)){
+                continue;
+            }
+
+            if (isRowEmpty(row)) {
                 continue;
             }
 
