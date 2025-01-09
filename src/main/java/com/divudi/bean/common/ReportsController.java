@@ -58,6 +58,7 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.List;
+import java.text.SimpleDateFormat;
 
 /**
  * @author safrin
@@ -4055,6 +4056,8 @@ public class ReportsController implements Serializable {
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=Collection_Center_Report.xlsx");
 
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
 
             XSSFSheet sheet = workbook.createSheet("Report");
@@ -4091,7 +4094,8 @@ public class ReportsController implements Serializable {
                 row.createCell(1).setCellValue(firstItem.getBill().getReferenceNumber());
                 row.createCell(2).setCellValue(firstItem.getBill().getPatient().getPhn());
                 row.createCell(3).setCellValue(firstItem.getBill().getPatient().getPerson().getName());
-                row.createCell(4).setCellValue(firstItem.getBill().getCreatedAt().toString());
+                String formattedDate = sdf.format(firstItem.getBill().getCreatedAt());
+                row.createCell(4).setCellValue(formattedDate);
                 row.createCell(5).setCellValue(entry.getKey());
 
                 Row detailHeaderRow = sheet.createRow(rowIndex++);
