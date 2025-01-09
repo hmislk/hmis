@@ -4623,15 +4623,13 @@ public class DataUploadController implements Serializable {
 
         return agencyList;
     }
-    
-    public boolean isRowEmpty(Row row){
-        if(row == null){
-            return true;
-        }
-        
-        for(Cell cell : row){
-            if(cell != null && cell.getCellType()!= CellType.BLANK){
-                return false;
+
+    public boolean isRowEmpty(Row row) {
+        if (row != null) {
+            for (Cell cell : row) {
+                if (cell != null && cell.getCellType() != CellType.BLANK) {
+                    return false;
+                }
             }
         }
         return true;
@@ -4651,8 +4649,8 @@ public class DataUploadController implements Serializable {
         }
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
-            
-            if(row == null || isRowEmpty(row)){
+
+            if (isRowEmpty(row)) {
                 continue;
             }
 
