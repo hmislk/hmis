@@ -3184,8 +3184,8 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            sql += " and  ((b.department.name) like :dep )";
-            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            sql += " and  ((b.department.name) like :searchDep )";
+            m.put("searchDep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
@@ -10382,7 +10382,7 @@ public class SearchController implements Serializable {
         }
 
         if (department != null) {
-            params.put("dep", department);
+            params.put("dept", department);
             jpql.append(" and b.department = :dept ");
         }
 
@@ -10523,7 +10523,7 @@ public class SearchController implements Serializable {
         }
 
         if (department != null) {
-            params.put("dep", department);
+            params.put("dept", department);
             jpql.append(" and b.department = :dept ");
         }
 

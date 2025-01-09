@@ -846,39 +846,35 @@ public class PharmacyController implements Serializable {
 //        calculateTotals(bills);
 //        calculateTotalsForBillItems(billItems);
     }
-
-    public String navigateToPrinteGeneratedGrnDetailedRportTable() {
+    
+    public void fetchBillItemDetailsToPrint(){
         if (bills == null) {
             JsfUtil.addErrorMessage("No Bills");
-            return null;
+            return ;
         }
         if (bills.isEmpty()) {
             JsfUtil.addErrorMessage("Bill List Empty");
-            return null;
+            return ;
         }
         for (Bill b : bills) {
             if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
                 b.setBillItems(billService.fetchBillItems(b));
             }
         }
+    }
+
+    public String navigateToPrinteGeneratedGrnDetailedRportTable() {
+        fetchBillItemDetailsToPrint();
         return "/reports/inventoryReports/grn_report_detail_print?faces-redirect=true";
     }
 
     public String navigateToPrinteGeneratedGrnReturnReportTable() {
-        if (bills == null) {
-            JsfUtil.addErrorMessage("No Bills");
-            return null;
-        }
-        if (bills.isEmpty()) {
-            JsfUtil.addErrorMessage("Bill List Empty");
-            return null;
-        }
-        for (Bill b : bills) {
-            if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
-                b.setBillItems(billService.fetchBillItems(b));
-            }
-        }
+        fetchBillItemDetailsToPrint();
         return "/reports/inventoryReports/grn_report_return_print?faces-redirect=true";
+    }
+    public String navigateToPrinteGeneratedGrnCancelReportTable() {
+        fetchBillItemDetailsToPrint();
+        return "/reports/inventoryReports/grn_report_cancel_print?faces-redirect=true";
     }
 
     public String navigateBackToGeneratedGrnDetailedRportTable() {
