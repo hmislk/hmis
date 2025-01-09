@@ -59,7 +59,7 @@
                                 ajax="false"
                                 value="Patient Lookup"
                                 icon="fa fa-search"
-                                class="ui-button-warning " 
+                                class="ui-button-warning mx-1" 
                                 action="#{patientController.navigateToSearchPatients()}" 
                                 >
                             </p:commandButton>
@@ -67,7 +67,7 @@
                                 ajax="false"
                                 icon="fa fa-user"
                                 value="Patient Profile"
-                                class="ui-button-warning mx-1" 
+                                class="ui-button-success mx-1" 
                                 action="#{patientController.navigateToOpdPatientProfile()}" 
                                 >
                                 <f:setPropertyActionListener 
@@ -77,7 +77,7 @@
                             <p:commandButton
                                 ajax="false"
                                 icon="fa-solid fa-address-card"
-                                class="ui-button-secondary " 
+                                class="ui-button-info mx-1" 
                                 value="Inpatient Dashboard"
                                 action="#{admissionController.navigateToAdmissionProfilePage}" 
                                 >
@@ -90,7 +90,7 @@
                     <h:form>
 
                         <div class="row w-100 ">
-                            <div class="col-6">
+                            <div class="col-4">
                                 <p:panel>
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fas fa-id-card-alt" />
@@ -141,7 +141,7 @@
                                     </p:tabView>
                                 </p:panel>
                             </div>
-                            <div class="col-6">
+                            <div class="col-8">
                                 <p:panel>
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fas fa-door-open" />
@@ -149,14 +149,26 @@
                                     </f:facet>
                                     <p:tabView class="mt-3" >
                                         <p:tab title="New Room Details">
-                                            <h:panelGrid columns="2">
+                                            <h:panelGrid columns="4">
                                                 <h:outputLabel value="Type Room Number or Facility"/>
                                                 <p:autoComplete forceSelection="true"
                                                                 id="cmbDoc" value="#{roomChangeController.newRoomFacilityCharge}" 
                                                                 completeMethod="#{roomFacilityChargeController.completeRoom}"
                                                                 var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" size="30"   
-                                                                class="m-2" >
+                                                                class="my-2 mx-5" >
                                                 </p:autoComplete>
+
+                                                <p:commandButton  value="Change"  
+                                                                  icon="fas fa-arrow-right-arrow-left"
+                                                                  class="ui-button-success mx-3"
+                                                                  action="#{roomChangeController.change()}"
+                                                                  ajax="false" />
+
+                                                <p:commandButton  value="Add New Room"  
+                                                                  icon="fas fa-plus"
+                                                                  class="ui-button-warning"
+                                                                  action="#{roomChangeController.addNewRoom()}"
+                                                                  ajax="false"   disabled="#{roomChangeController.patientRoom.size() ne 0}"  />
 
                                                 <h:outputLabel value="Change At"/>                          
                                                 <p:datePicker  id="changeTimeStamp" 
@@ -165,18 +177,8 @@
                                                                showButtonBar="true"
                                                                timeInput="true"
                                                                size="30" 
-                                                               pattern="dd MMM yyyy HH:mm:ss" class="m-2" >                                                               
+                                                               pattern="dd MMM yyyy HH:mm:ss" class="my-2 mx-5" >                                                               
                                                 </p:datePicker>
-                                                <p:commandButton  value="Change"  
-                                                                  icon="fas fa-arrow-right-arrow-left"
-                                                                  class="ui-button-success "
-                                                                  action="#{roomChangeController.change()}"
-                                                                  ajax="false" />
-                                                <p:commandButton  value="Add New Room"  
-                                                                  icon="fas fa-plus"
-                                                                  class="ui-button-warning m-2"
-                                                                  action="#{roomChangeController.addNewRoom()}"
-                                                                  ajax="false"   disabled="#{roomChangeController.patientRoom.size() ne 0}"  />
 
                                             </h:panelGrid>                                    
                                         </p:tab>
@@ -190,7 +192,7 @@
                                                                 value="#{rm.admittedAt}" 
                                                                 pattern="dd MMM yyyy HH:mm:ss" class="w-100" />     
                                                 </p:column>
-                                                <p:column headerText="Admitted By" width="75px;">
+                                                <p:column headerText="Admitted By" width="100px;">
                                                     <h:outputLabel value="#{rm.addmittedBy.webUserPerson.name}"  /><br/>
                                                     <h:outputLabel value="Deleted By #{rm.retirer.webUserPerson.name} " style="color: red;" rendered="#{rm.retired eq true}" />
                                                 </p:column>
@@ -200,7 +202,7 @@
                                                                 value="#{rm.dischargedAt}" 
                                                                 pattern="dd MMM yyyy HH:mm:ss" class="w-100" />   
                                                 </p:column>
-                                                <p:column headerText="Discharge By" width="75px;">
+                                                <p:column headerText="Discharge By" width="100px;">
                                                     #{rm.dischargedBy.webUserPerson.name}
                                                 </p:column>
                                                 <p:column headerText="Room" width="150px;">
