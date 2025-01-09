@@ -9,11 +9,14 @@
     <ui:define name="subcontent">
         <h:form  >
 
+            <p:commandButton value="Download" ajax="false" >
+                <p:dataExporter fileName="amps" target="tblamps" type="xlsx" ></p:dataExporter>
+            </p:commandButton>
+            
             <p:dataTable 
                 id="tblamps"
                 value="#{pharmacyController.amps}" 
                 var="i"
-                selection="#{pharmacyController.ampsSelected}"
                 rowKey="#{i.id}"
                 rows="5"
                 paginator="true" 
@@ -23,35 +26,14 @@
                 rowsPerPageTemplate="5,10,1000,{ShowAll|'All'}"
                 >
                 <f:facet name="header">
-
-
-                    <div class="d-flex align-items-center justify-content-between">
-                        <h:outputText value="AMPs" />
-                        <div class="d-flex justify-content-end align-items-center">
-                            <h:commandButton
-                                class="btn btn-success mx-2"
-                                value="Download">
-                                <p:dataExporter type="xlsx" target="tblamps" fileName="vtm_list"/> 
-                            </h:commandButton>
-                            <h:commandButton 
-                                class="btn btn-danger"
-                                value="Remove Selected" 
-                                action="#{pharmacyController.deleteMultipleAmps()}"
-                                onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                            return false;"  
-                                />
-                        </div>
-                    </div> 
+                    <h:outputText value="AMP List" ></h:outputText>
                 </f:facet>
                 <p:column 
-                    selectionMode="multiple" width="50" >
-                </p:column>
-                <p:column 
-                    headerText="ID" 
+                    headerText="Category" 
                     sortBy="#{i.id}"
                     filterBy="#{i.id}"
                     filterMatchMode="contains">
-                    <h:outputText value="#{i.id}" ></h:outputText>
+                    <h:outputText value="#{i.category.name}" ></h:outputText>
                 </p:column>
                 <p:column 
                     headerText="AMP Name" 
@@ -75,22 +57,42 @@
                     <h:outputText value="#{i.barcode}" ></h:outputText>
                 </p:column>
                 <p:column 
+                    headerText="VTM" 
+                    sortBy="#{i.vmp.vtm.name}"
+                    filterBy="#{i.vmp.vtm.name}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.vmp.vtm.name}" ></h:outputText>
+                </p:column>
+                <p:column 
                     headerText="VMP" 
                     sortBy="#{i.vmp.name}"
                     filterBy="#{i.vmp.name}"
                     filterMatchMode="contains">
                     <h:outputText value="#{i.vmp.name}" ></h:outputText>
                 </p:column>
-                <p:column headerText="Actions" exportable="false">
-                    <h:commandButton 
-                        class="btn btn-warning text-white"
-                        value="Delete" 
-                        action="#{pharmacyController.deleteSingleAmp()}" >
-                        <f:setPropertyActionListener 
-                            value="#{i}" 
-                            target="#{pharmacyController.amp}" ></f:setPropertyActionListener>
-                    </h:commandButton>
+                <p:column 
+                    headerText="Strength" 
+                    sortBy="#{i.dblValue}"
+                    filterBy="#{i.dblValue}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.dblValue}" ></h:outputText>
                 </p:column>
+                <p:column 
+                    headerText="Strength Unit" 
+                    sortBy="#{i.strengthUnit.name}"
+                    filterBy="#{i.strengthUnit.name}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.measurementUnit.name}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="Issue Unit" 
+                    sortBy="#{i.vmp.issueUnit.name}"
+                    filterBy="#{i.vmp.issueUnit.name}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.vmp.issueUnit.name}" ></h:outputText>
+                </p:column>
+
+
             </p:dataTable>
 
         </h:form>

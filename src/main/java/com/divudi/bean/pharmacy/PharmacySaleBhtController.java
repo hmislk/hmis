@@ -740,7 +740,11 @@ public class PharmacySaleBhtController implements Serializable {
         }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE;
         BillType bt = BillType.PharmacyBhtPre;
-        settleBhtIssue(bt, bta, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment());
+        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
+            settleBhtIssue(bt, bta, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment());
+        } else {
+            settleBhtIssue(bt, bta, getPatientEncounter().getDepartment());
+        }
     }
 
     public void settlePharmacyBhtIssueAccept() {
@@ -784,14 +788,18 @@ public class PharmacySaleBhtController implements Serializable {
             return true;
         }
 
-        if (getPatientEncounter().getCurrentPatientRoom() == null) {
-            JsfUtil.addErrorMessage("Please Select Patient Room");
-            return true;
-        }
+        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
 
-        if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
-            JsfUtil.addErrorMessage("Please Set Room");
-            return true;
+            if (getPatientEncounter().getCurrentPatientRoom() == null) {
+                JsfUtil.addErrorMessage("Please Select Patient Room");
+                return true;
+            }
+
+            if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+                JsfUtil.addErrorMessage("Please Set Room");
+                return true;
+            }
+
         }
 
         if (getPatientEncounter().isDischarged()) {
