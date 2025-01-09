@@ -241,7 +241,7 @@
                                 <p:column headerText="Invoice No" width="6em" style="text-align: center;">
                                     <h:outputText value="#{b.invoiceNumber}" />
                                     <h:outputText value="#{b.referenceBill.invoiceNumber}" />
-                                    
+
                                 </p:column>
 
                                 <!-- Created Date -->
@@ -444,7 +444,9 @@
                                     <h:outputText value="#{r.toInstitution.name}"/>
                                 </p:column>
                                 <p:column headerText="Purchase Value" width="6em" style="text-align: right;">
-                                    <h:outputText value="#{r.netTotal}" />
+                                    <h:outputText value="#{r.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
 
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyController.totalPurchase}" >
@@ -453,10 +455,12 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Sale Value" width="6em" style="text-align: right;">
-                                    <h:outputText value="#{r.saleValue}" />
+                                    <h:outputText value="#{r.saleValue}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyController.totalSaleValue}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </f:facet>
                                 </p:column>

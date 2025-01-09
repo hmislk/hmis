@@ -889,12 +889,18 @@ public class PharmacyController implements Serializable {
         List<BillTypeAtomic> bta = new ArrayList<>();
         if ("returnReport".equals(reportType)) {
             bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         } else if ("cancellationReport".equals(reportType)) {
             bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
         } else if ("summeryReport".equals(reportType) || "detailReport".equals(reportType)) {
             bta.add(BillTypeAtomic.PHARMACY_GRN);
             bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
             bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
 
         }
 
@@ -1398,7 +1404,7 @@ public class PharmacyController implements Serializable {
         totalCreditSaleValue = 0.0;
         totalCashPurchaseValue = 0.0;
         totalCashSaleValue = 0.0;
-        
+
         double totalCardPurchaseValue = 0.0, totalCardSaleValue = 0.0;
         double totalChequePurchaseValue = 0.0, totalChequeSaleValue = 0.0;
         double totalSlipPurchaseValue = 0.0, totalSlipSaleValue = 0.0;
@@ -1479,11 +1485,11 @@ public class PharmacyController implements Serializable {
         totalSaleValue = 0.0;
         totalCreditSaleValue = 0.0;
         totalCashSaleValue = 0.0;
-        
+
         String1Value1 credit = new String1Value1();
         String1Value1 cash = new String1Value1();
         String1Value1 cashAndCredit = new String1Value1();
-        
+
         cash.setString("Final Cash Total");
         credit.setString("Final Credit Total");
         cashAndCredit.setString("Final Cash and Credit Total");
@@ -1504,7 +1510,7 @@ public class PharmacyController implements Serializable {
 
         cash.setValue(totalCashPurchaseValue);
         cash.setValue2(totalCashSaleValue);
-     
+
         cashAndCredit.setValue(totalPurchase);
         cashAndCredit.setValue2(totalSaleValue);
 
@@ -1514,6 +1520,7 @@ public class PharmacyController implements Serializable {
 
         return data;
     }
+
     public List<String1Value1> calculateTotalsForBillItems(List<BillItem> billItemList) {
         data = new ArrayList<>();
 
