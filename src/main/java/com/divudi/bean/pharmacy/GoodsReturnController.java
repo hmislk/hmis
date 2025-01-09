@@ -238,6 +238,11 @@ public class GoodsReturnController implements Serializable {
                 getBillItemFacade().edit(i);
                 getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
             }
+
+            double invertReturnQty = i.getPharmaceuticalBillItem().getQty();
+            i.getPharmaceuticalBillItem().setQty(0 - Math.abs(invertReturnQty));
+            getBillItemFacade().edit(i);
+
             saveBillFee(i, p);
             getReturnBill().getBillItems().add(i);
 
@@ -274,7 +279,7 @@ public class GoodsReturnController implements Serializable {
 
         return false;
     }
-    
+
     public void removeItem(BillItem bi) {
         getBillItems().remove(bi.getSearialNo());
         calTotal();
@@ -295,6 +300,20 @@ public class GoodsReturnController implements Serializable {
             return;
         }
 
+        boolean hasItemQty = false;
+
+        for (BillItem rbi : billItems) {
+            if (rbi.getPharmaceuticalBillItem().getQty() > 0.0) {
+                hasItemQty = true;
+                break; // Exit the loop as soon as we find a quantity
+            }
+        }
+
+        if (!hasItemQty) {
+            JsfUtil.addErrorMessage("Items for this GRN Already Returned so you can't Return ");
+            return; // Exit the method immediately if no positive quantity is found
+        }
+        
         saveReturnBill();
         Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
 //        saveComponent();
