@@ -2264,6 +2264,46 @@ public class PharmacyReportController implements Serializable {
 
     }
 
+    public Map<Item, BillItem> findLastPurchaseSupplier() {
+        // Define JPQL query to fetch the latest BillItem per Item
+        String jpql = "SELECT bi FROM BillItem bi WHERE bi.bill.retired = false "
+                + "AND bi.bill.billTypeAtomic IN :bta "
+                + "AND bi.item IN :items "
+                + "AND bi.bill.createdAt = ("
+                + "  SELECT MAX(subBi.bill.createdAt) "
+                + "  FROM BillItem subBi "
+                + "  WHERE subBi.item = bi.item "
+                + "  AND subBi.bill.retired = false "
+                + "  AND subBi.bill.billTypeAtomic IN :bta "
+                + ")";
+
+// Define the list of BillTypeAtomic values
+        List<BillTypeAtomic> btaList = Arrays.asList(BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+
+// Prepare the parameter map
+        Map<String, Object> n = new HashMap<>();
+        n.put("bta", btaList);
+
+// Collect items from movementRecords
+        List<Item> items = movementRecords.stream()
+                .map(StockReportRecord::getItem)
+                .collect(Collectors.toList());
+        n.put("items", items);
+
+// Execute the query
+        List<BillItem> bit = getBillItemFacade().findByJpql(jpql, n);
+
+// Map BillItems by Item, resolving duplicate keys by keeping the first entry
+        Map<Item, BillItem> itemBillMap = bit.stream()
+                .collect(Collectors.toMap(
+                        BillItem::getItem, // Key mapper
+                        b -> b, // Value mapper
+                        (existing, replacement) -> existing // If duplicates, keep the first entry
+                ));
+        return itemBillMap;
+
+    }
+
     public void fillMoving(boolean fast) {
         String sql;
         Map m = new HashMap();
@@ -2289,7 +2329,6 @@ public class PharmacyReportController implements Serializable {
                 + " and bi.bill.department=:d "
                 + " and bi.bill.createdAt between :fd and :td "
                 + " and bi.bill.billType in :bt ";
-                
 
         if (institution != null) {
             sql += " and bi.bill.institution=:ins ";
@@ -2309,9 +2348,9 @@ public class PharmacyReportController implements Serializable {
             sql += "and bi.item=:itm ";
             m.put("itm", item);
         }
-        
+
         sql += " group by bi.item ";
-        
+
         if (!fast) {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) desc";
         } else {
@@ -2334,6 +2373,15 @@ public class PharmacyReportController implements Serializable {
             r.setStockQty(getPharmacyBean().getStockByPurchaseValue(r.getItem(), department));
             r.setStockOnHand(getPharmacyBean().getStockWithoutPurchaseValue(r.getItem(), department));
             movementRecords.add(r);
+        }
+
+        Map<Item, BillItem> itemBillMap = findLastPurchaseSupplier();
+// Update movementRecords with the last purchase supplier
+        for (StockReportRecord srr : movementRecords) {
+            BillItem correspondingBillItem = itemBillMap.get(srr.getItem());
+            if (correspondingBillItem != null) {
+                srr.setLastPurchaseSupplier(correspondingBillItem.getBill().getFromInstitution());
+            }
         }
 
         stockPurchaseValue = 0.0;
@@ -2377,8 +2425,7 @@ public class PharmacyReportController implements Serializable {
                 + " and bi.bill.billType in :bt "
                 + " and type(bi.bill) in :bct "
                 + " and bi.bill.createdAt between :fd and :td ";
-        
-        
+
         if (institution != null) {
             sql += " and bi.bill.institution=:ins ";
             m.put("ins", institution);
@@ -2397,9 +2444,8 @@ public class PharmacyReportController implements Serializable {
             sql += "and bi.item=:itm ";
             m.put("itm", item);
         }
-        
+
         sql += " group by bi.item ";
-        
 
         if (!fast) {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) desc";
@@ -2434,8 +2480,8 @@ public class PharmacyReportController implements Serializable {
             qoh = qoh + (strr.getStockOnHand());
         }
     }
-    
-     public void fillDepartmentNonmovingStocks() {
+
+    public void fillDepartmentNonmovingStocks() {
         Date startTime = new Date();
 
         if (department == null) {
@@ -2452,9 +2498,9 @@ public class PharmacyReportController implements Serializable {
                 + " AND bi.bill.billDate between :fd and :td ";
         m.put("d", department);
         m.put("bts", Arrays.asList(billTypes));
-         m.put("fd", fromDate);
+        m.put("fd", fromDate);
         m.put("td", toDate);
-                    
+
         sql += " GROUP BY bi.item";
 
         //System.out.println("sql = " + sql);
@@ -3139,14 +3185,16 @@ public class PharmacyReportController implements Serializable {
     public void setQoh(double qoh) {
         this.qoh = qoh;
     }
-        public ItemFacade getItemFacade() {
+
+    public ItemFacade getItemFacade() {
         return itemFacade;
     }
 
     public void setItemFacade(ItemFacade itemFacade) {
         this.itemFacade = itemFacade;
     }
-        public List<Item> getItems() {
+
+    public List<Item> getItems() {
         return items;
     }
 
