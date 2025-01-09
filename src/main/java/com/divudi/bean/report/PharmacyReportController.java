@@ -29,10 +29,13 @@ import com.divudi.data.TestWiseCountReport;
 import com.divudi.data.dataStructure.BillAndItemDataRow;
 import com.divudi.data.dataStructure.ItemDetailsCell;
 import com.divudi.data.dataStructure.PharmacyStockRow;
+import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.data.lab.PatientInvestigationStatus;
+import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
@@ -42,6 +45,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientDepositHistory;
 import com.divudi.entity.Person;
+import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.Route;
 import com.divudi.entity.Service;
@@ -100,7 +104,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import org.hl7.fhir.r5.model.Bundle;
 import java.time.temporal.ChronoUnit;
-
+import java.util.HashSet;
+import com.divudi.facade.ItemFacade;
 
 /**
  *
@@ -128,6 +133,10 @@ public class PharmacyReportController implements Serializable {
     StockHistoryFacade facade;
     @EJB
     private StockFacade stockFacade;
+    @EJB
+    PharmacyBean pharmacyBean;
+    @EJB
+    ItemFacade itemFacade;
 
     @Inject
     private InstitutionController institutionController;
@@ -273,6 +282,14 @@ public class PharmacyReportController implements Serializable {
     private String dateRange;
 
     private List<PharmacyRow> rows;
+    BillType[] billTypes;
+    List<StockReportRecord> movementRecords;
+    List<StockReportRecord> movementRecordsQty;
+
+    double valueOfQOH;
+    double qoh;
+    List<Item> items;
+    private String sortType;
 
     //Constructor
     public PharmacyReportController() {
@@ -2177,7 +2194,7 @@ public class PharmacyReportController implements Serializable {
                 + " from Stock s "
                 + " where s.itemBatch.dateOfExpire between :fd and :td ";
         if (institution != null) {
-            jpql += " and s.institution=:ins ";
+            jpql += " and s.department.institution=:ins ";
             m.put("ins", institution);
         }
         if (department != null) {
@@ -2191,25 +2208,295 @@ public class PharmacyReportController implements Serializable {
         if (amp != null) {
             item = amp;
             System.out.println("item = " + item);
-            jpql += "and s.item=:itm ";
+            jpql += "and s.itemBatch.item=:itm ";
             m.put("itm", item);
         }
 
         jpql += " order by s.id ";
         stocks = stockFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        for (Stock ts : stocks) {
+            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+        }
+    }
+
+    public long calculateDaysRemaining(Date dateOfExpire) {
+        if (dateOfExpire == null) {
+            return 0; // Default behavior for null dates
+        }
+        // Convert Date to LocalDate
+        LocalDate today = LocalDate.now();
+        LocalDate expiryDate = dateOfExpire.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        // Calculate the difference in days
+        return ChronoUnit.DAYS.between(today, expiryDate);
+    }
+
+    public void processSlowFastNonMovementReport() {
+        switch (reportType) {
+            case "fmovement":
+                fillFastMoving();
+                break;
+            case "smovement":
+                fillSlowMoving();
+                break;
+            case "nmovement":
+                fillDepartmentNonmovingStocks();
+                break;
+        }
+    }
+
+    public void fillFastMoving() {
+        Date startTime = new Date();
+
+        fillMoving(true);
+        fillMovingQty(true);
+
+    }
+
+    public void fillSlowMoving() {
+        Date startTime = new Date();
+
+        fillMoving(false);
+        fillMovingQty(false);
+
+    }
+
+    public void fillMoving(boolean fast) {
+        String sql;
+        Map m = new HashMap();
+//        m.put("r", StockReportRecord.class);
+        m.put("d", department);
+//        m.put("t1", BillType.PharmacyTransferIssue);
+//        m.put("t2", BillType.PharmacyPre);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        List<BillType> bts = Arrays.asList(billTypes);
+        Class[] btsa = {PreBill.class, CancelledBill.class, RefundBill.class, BilledBill.class};
+        List<Class> bcts = Arrays.asList(btsa);
+        m.put("bt", bts);
+        m.put("bct", bcts);
+        BillItem bi = new BillItem();
+
+        sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
+                + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
+                + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty))  "
+                + "FROM BillItem bi where "
+                + " type(bi.bill) in :bct "
+                + " and bi.retired=false "
+                + " and bi.bill.department=:d "
+                + " and bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billType in :bt ";
+                
+
+        if (institution != null) {
+            sql += " and bi.bill.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            sql += " and bi.bill.department.site=:sit ";
+            m.put("sit", site);
+        }
+        if (category != null) {
+            sql += " and bi.item.category=:ctgry ";
+            m.put("ctgry", category);
+        }
+        if (amp != null) {
+            item = amp;
+            System.out.println("item = " + item);
+            sql += "and bi.item=:itm ";
+            m.put("itm", item);
+        }
+        
+        sql += " group by bi.item ";
+        
+        if (!fast) {
+            sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) desc";
+        } else {
+            sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) asc";
+        }
+        ////System.out.println("sql = " + sql);
+        ////System.out.println("m = " + m);
+        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+        movementRecords = new ArrayList<>();
+        if (objs == null) {
+            ////System.out.println("objs = " + objs);
+            return;
+        }
+        for (Object[] obj : objs) {
+            StockReportRecord r = new StockReportRecord();
+            r.setItem((Item) obj[0]);
+            r.setQty((Double) obj[1]);
+            r.setPurchaseValue((Double) obj[2]);
+            r.setRetailsaleValue((Double) obj[3]);
+            r.setStockQty(getPharmacyBean().getStockByPurchaseValue(r.getItem(), department));
+            r.setStockOnHand(getPharmacyBean().getStockWithoutPurchaseValue(r.getItem(), department));
+            movementRecords.add(r);
+        }
+
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        valueOfQOH = 0.0;
+        qoh = 0.0;
+
+        for (StockReportRecord strr : movementRecords) {
+            stockPurchaseValue = stockPurchaseValue + (strr.getPurchaseValue());
+            stockSaleValue = stockSaleValue + (strr.getRetailsaleValue());
+            valueOfQOH = valueOfQOH + (strr.getStockQty());
+            qoh = qoh + (strr.getStockOnHand());
+        }
+    }
+
+    public void fillMovingQty(boolean fast) {
+        String sql;
+        Map m = new HashMap();
+
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        m.put("d", department);
+//        m.put("t1", BillType.PharmacyTransferIssue);
+//        m.put("t2", BillType.PharmacyPre);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", bts);
+
+        Class[] btsa = {PreBill.class, CancelledBill.class, RefundBill.class, BilledBill.class};
+        List<Class> bcts = Arrays.asList(btsa);
+        m.put("bct", bcts);
+        BillItem bi = new BillItem();
+
+        sql = "select bi.item, "
+                + " abs(SUM(bi.pharmaceuticalBillItem.qty)), "
+                + " abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
+                + " SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty)"
+                + " FROM BillItem bi "
+                + " where bi.retired=false "
+                + " and  bi.bill.department=:d "
+                + " and bi.bill.billType in :bt "
+                + " and type(bi.bill) in :bct "
+                + " and bi.bill.createdAt between :fd and :td ";
+        
+        
+        if (institution != null) {
+            sql += " and bi.bill.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            sql += " and bi.bill.department.site=:sit ";
+            m.put("sit", site);
+        }
+        if (category != null) {
+            sql += " and bi.item.category=:ctgry ";
+            m.put("ctgry", category);
+        }
+        if (amp != null) {
+            item = amp;
+            System.out.println("item = " + item);
+            sql += "and bi.item=:itm ";
+            m.put("itm", item);
+        }
+        
+        sql += " group by bi.item ";
+        
+
+        if (!fast) {
+            sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) desc";
+        } else {
+            sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) asc";
+        }
+        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+        movementRecordsQty = new ArrayList<>();
+        if (objs == null) {
+            return;
+        }
+        for (Object[] obj : objs) {
+            StockReportRecord r = new StockReportRecord();
+            r.setItem((Item) obj[0]);
+            r.setQty((Double) obj[1]);
+            r.setPurchaseValue((Double) obj[2]);
+            r.setRetailsaleValue((Double) obj[3]);
+            r.setStockQty(getPharmacyBean().getStockByPurchaseValue(r.getItem(), department));
+            r.setStockOnHand(getPharmacyBean().getStockWithoutPurchaseValue(r.getItem(), department));
+            movementRecordsQty.add(r);
+        }
+
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        valueOfQOH = 0.0;
+        qoh = 0.0;
+
+        for (StockReportRecord strr : movementRecords) {
+            stockPurchaseValue = stockPurchaseValue + (strr.getPurchaseValue());
+            stockSaleValue = stockSaleValue + (strr.getRetailsaleValue());
+            valueOfQOH = valueOfQOH + (strr.getStockQty());
+            qoh = qoh + (strr.getStockOnHand());
+        }
     }
     
-public long calculateDaysRemaining(Date dateOfExpire) {
-    if (dateOfExpire == null) {
-        return 0; // Default behavior for null dates
+     public void fillDepartmentNonmovingStocks() {
+        Date startTime = new Date();
+
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+        Map m = new HashMap();
+        String sql;
+        sql = "SELECT bi.item "
+                + " FROM BillItem bi "
+                + " WHERE  "
+                + " bi.bill.department=:d "
+                + " AND bi.bill.billType in :bts "
+                + " AND bi.bill.billDate between :fd and :td ";
+        m.put("d", department);
+        m.put("bts", Arrays.asList(billTypes));
+         m.put("fd", fromDate);
+        m.put("td", toDate);
+                    
+        sql += " GROUP BY bi.item";
+
+        //System.out.println("sql = " + sql);
+        //System.out.println("m = " + m);
+        Set<Item> bis = new HashSet<>(itemFacade.findByJpql(sql, m));
+
+        sql = "SELECT s.itemBatch.item "
+                + " FROM Stock s "
+                + " WHERE s.department=:d "
+                + " AND s.stock > 0 ";
+        m = new HashMap();
+        m.put("d", department);
+        if (institution != null) {
+            sql += " and s.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (department != null) {
+            sql += " and s.department=:dep ";
+            m.put("dep", department);
+        }
+        if (site != null) {
+            sql += " and s.department.site=:sit ";
+            m.put("sit", site);
+        }
+        if (amp != null) {
+            item = amp;
+            System.out.println("item = " + item);
+            sql += "and s.itemBatch.item=:itm ";
+            m.put("itm", item);
+        }
+        sql = sql + " GROUP BY s.itemBatch.item "
+                + " ORDER BY s.itemBatch.item.name";
+
+        Set<Item> sis = new HashSet<>(itemFacade.findByJpql(sql, m));
+
+        sis.removeAll(bis);
+        items = new ArrayList<>(sis);
+
+        Collections.sort(items);
+
     }
-    // Convert Date to LocalDate
-    LocalDate today = LocalDate.now();
-    LocalDate expiryDate = dateOfExpire.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-    
-    // Calculate the difference in days
-    return ChronoUnit.DAYS.between(today, expiryDate);
-}
+
     public void processLabTestWiseCountReport() {
         String jpql = "select new com.divudi.data.TestWiseCountReport("
                 + "bi.item.name, "
@@ -2792,6 +3079,87 @@ public long calculateDaysRemaining(Date dateOfExpire) {
 
     public void setDateRange(String dateRange) {
         this.dateRange = dateRange;
+    }
+
+    public BillType[] getBillTypes() {
+        if (billTypes == null) {
+            billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyIssue, BillType.PharmacyPre, BillType.PharmacyWholesalePre};
+        }
+        return billTypes;
+    }
+
+    public void setBillTypes(BillType[] billTypes) {
+        this.billTypes = billTypes;
+    }
+
+    public BillItemFacade getBillItemFacade() {
+        return billItemFacade;
+    }
+
+    public void setBillItemFacade(BillItemFacade billItemFacade) {
+        this.billItemFacade = billItemFacade;
+    }
+
+    public List<StockReportRecord> getMovementRecords() {
+        return movementRecords;
+    }
+
+    public void setMovementRecords(List<StockReportRecord> movementRecords) {
+        this.movementRecords = movementRecords;
+    }
+
+    public List<StockReportRecord> getMovementRecordsQty() {
+        return movementRecordsQty;
+    }
+
+    public void setMovementRecordsQty(List<StockReportRecord> movementRecordsQty) {
+        this.movementRecordsQty = movementRecordsQty;
+    }
+
+    public PharmacyBean getPharmacyBean() {
+        return pharmacyBean;
+    }
+
+    public void setPharmacyBean(PharmacyBean pharmacyBean) {
+        this.pharmacyBean = pharmacyBean;
+    }
+
+    public double getValueOfQOH() {
+        return valueOfQOH;
+    }
+
+    public void setValueOfQOH(double valueOfQOH) {
+        this.valueOfQOH = valueOfQOH;
+    }
+
+    public double getQoh() {
+        return qoh;
+    }
+
+    public void setQoh(double qoh) {
+        this.qoh = qoh;
+    }
+        public ItemFacade getItemFacade() {
+        return itemFacade;
+    }
+
+    public void setItemFacade(ItemFacade itemFacade) {
+        this.itemFacade = itemFacade;
+    }
+        public List<Item> getItems() {
+        return items;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
+    }
+
+    public String getSortType() {
+        return sortType;
+    }
+
+    public void setSortType(String sortType) {
+        this.sortType = sortType;
     }
 
 }

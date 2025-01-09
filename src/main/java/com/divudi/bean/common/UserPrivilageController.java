@@ -502,15 +502,21 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CourierViewStatistics, "Courier View Statistics"), courierNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CourierViewBillReports, "Courier View Bill Reports"), courierNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CourierViewPaymentReports, "Courier View Payment Reports"), courierNode);
+        
+        // User Menu
+        TreeNode userNode = new DefaultTreeNode(new PrivilegeHolder(null, "User"), allNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.UserMenu, "User Menu"), userNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeMyPassword, "Change User Password"), userNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeMyTheme, "Change User Theme"), userNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangePreferece, "Change User Preferances"), userNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeMyApiKeys, "Change API Keys"), userNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.MyFinanacialTransactionManager, "User Financial Transaction Manager"), userNode);
 
         // Search Privileges
         TreeNode searchRootNode = new DefaultTreeNode(new PrivilegeHolder(null, "Search"), allNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.Search, "Search Menu"), searchRootNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.SearchGrand, "Grand Search"), searchRootNode);
 
-        // User Privileges
-        TreeNode userNode = new DefaultTreeNode(new PrivilegeHolder(null, "User"), allNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangePreferece, "Change Theme"), userNode);
 
         // Cash Transaction Privileges
         TreeNode cashTransactionNode = new DefaultTreeNode(new PrivilegeHolder(null, "Cash Transaction"), allNode);
@@ -526,7 +532,8 @@ public class UserPrivilageController implements Serializable {
         TreeNode PettyCashBillApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashBillApprove, "Petty Cash Bill Approval"), cashTransactionNode);
         TreeNode PettyCashBillCancellationApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashBillCancellationApprove, "Petty Cash Bill Cancellation Approval"), cashTransactionNode);
 
-        //Pharmacy
+        //Pharmacy 
+        TreeNode pharmacyTokenManagement = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyTokenManagement, "Pharmacy Token Management"), pharmacyNode);
         TreeNode retailTransaction = new DefaultTreeNode("Pharmacy Retail Transaction", pharmacyNode);
         TreeNode retailTransactionMenu = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyRetailTransactionMenue, "Pharmacy Retail Transaction Menu"), retailTransaction);
         TreeNode PharmacySale = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySale, "Pharmacy Sale"), retailTransaction);

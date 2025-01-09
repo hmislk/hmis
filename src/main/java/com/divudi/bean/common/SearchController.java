@@ -368,6 +368,14 @@ public class SearchController implements Serializable {
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Navigators">
+    public String navigateToMyDepartmentAllCashierSummary() {
+        department = sessionController.getDepartment();
+        institution = sessionController.getInstitution();
+        site = sessionController.getDepartment().getSite();
+        webUser=null;
+        return "/cashier/my_department_all_cashier_summary?faces-redirect=true";
+    }
+
     public String navigateToUserDrawerDashboard() {
         Drawer d = drawerController.getUsersDrawer(drawer.getDrawerUser());
         drawerController.setCurrent(d);
@@ -3176,8 +3184,8 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            sql += " and  ((b.department.name) like :dep )";
-            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            sql += " and  ((b.department.name) like :searchDep )";
+            m.put("searchDep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
@@ -10374,7 +10382,7 @@ public class SearchController implements Serializable {
         }
 
         if (department != null) {
-            params.put("dep", department);
+            params.put("dept", department);
             jpql.append(" and b.department = :dept ");
         }
 
@@ -10515,7 +10523,7 @@ public class SearchController implements Serializable {
         }
 
         if (department != null) {
-            params.put("dep", department);
+            params.put("dept", department);
             jpql.append(" and b.department = :dept ");
         }
 
@@ -17385,7 +17393,7 @@ public class SearchController implements Serializable {
         }
 
         // </editor-fold>  
-    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
+        // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
         public Item getItm() {
             return itm;
         }
@@ -18146,5 +18154,4 @@ public class SearchController implements Serializable {
     }
 
     // </editor-fold>  
-    
 }

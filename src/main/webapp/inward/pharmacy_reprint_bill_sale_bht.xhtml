@@ -32,13 +32,13 @@
                                         value="To Cancel" 
                                         class="ui-button-danger"
                                         icon="fa fa-ban"
-                                        action="pharmacy_cancel_bill_retail_bht"
+                                        action="#{pharmacyBillSearch.navigateToCancelPharmacyDirectIssueToInpatients}"
                                         disabled="#{pharmacyBillSearch.bill.cancelled}"  >                           
                                     </p:commandButton>
                                     <p:commandButton 
                                         ajax="false" 
                                         value="To Return Item" 
-                                        action="pharmacy_bill_return_bht_issue"   
+                                        action="#{bhtIssueReturnController.navigateToReturnPharmacyDirectIssueToInpatients()}"   
                                         icon="fa fa-undo"
                                         disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}"  >                                
                                         <f:setPropertyActionListener 
@@ -85,7 +85,7 @@
                         </div>
 
                         <div class="row mt-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <p:panel>
                                     <f:facet name="header" >
                                         <div class="d-flex justify-content-between">
@@ -177,7 +177,7 @@
                                     </p:dataTable>
                                 </p:panel>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-8">
                                 <p:panel >
                                     <f:facet name="header" >
                                         <div class="d-flex justify-content-between">
@@ -199,7 +199,7 @@
                                         </p:selectOneMenu>
                                         <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
                                     </div>
- 
+
                                     <h:panelGroup   id="gpBillPreview" class="mt-2"> 
 
                                         <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
@@ -208,7 +208,12 @@
 
                                         <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                                             <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></phi:saleBill_five_five>
-                                        </h:panelGroup>                            
+                                        </h:panelGroup>        
+
+                                        <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
+                                            <phi:inward_direct_issue_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill}"/>
+                                        </h:panelGroup>
+
                                     </h:panelGroup>  
                                 </p:panel>
                             </div>
