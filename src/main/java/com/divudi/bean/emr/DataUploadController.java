@@ -1736,8 +1736,8 @@ public class DataUploadController implements Serializable {
 //        JsfUtil.addSuccessMessage("FeeList Types Uploaded");
 //        return feeListTypes;
 //    }
-//    
-//    
+//
+//
 //
 //    private List<ItemFee> readFeeListItemFeesFromExcel(InputStream inputStream) throws IOException {
 //        List<ItemFee> itemFees = new ArrayList<>();
@@ -4623,19 +4623,6 @@ public class DataUploadController implements Serializable {
 
         return agencyList;
     }
-    
-    public boolean isRowEmpty(Row row){
-        if(row == null){
-            return true;
-        }
-        
-        for(Cell cell : row){
-            if(cell != null && cell.getCellType()!= CellType.BLANK){
-                return false;
-            }
-        }
-        return true;
-    }
 
     public boolean isRowEmpty(Row row) {
         if (row != null) {
@@ -4662,10 +4649,6 @@ public class DataUploadController implements Serializable {
         }
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
-            
-            if(row == null || isRowEmpty(row)){
-                continue;
-            }
 
             if (isRowEmpty(row)) {
                 continue;
