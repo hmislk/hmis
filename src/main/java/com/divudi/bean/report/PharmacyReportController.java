@@ -2467,6 +2467,15 @@ public class PharmacyReportController implements Serializable {
             r.setStockOnHand(getPharmacyBean().getStockWithoutPurchaseValue(r.getItem(), department));
             movementRecordsQty.add(r);
         }
+        
+                Map<Item, BillItem> itemBillMap = findLastPurchaseSupplier();
+// Update movementRecords with the last purchase supplier
+        for (StockReportRecord srr : movementRecordsQty) {
+            BillItem correspondingBillItem = itemBillMap.get(srr.getItem());
+            if (correspondingBillItem != null) {
+                srr.setLastPurchaseSupplier(correspondingBillItem.getBill().getFromInstitution());
+            }
+        }
 
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
