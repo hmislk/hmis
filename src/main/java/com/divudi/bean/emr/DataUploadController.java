@@ -524,6 +524,8 @@ public class DataUploadController implements Serializable {
                     amp.setCode(strCode);
                     amp.setBarcode(strBarcode);
                     amp.setMeasurementUnit(strengthUnit);
+                    amp.setIssueUnit(issueUnit);
+                    amp.setStrengthUnit(strengthUnit);
                     amp.setDblValue(strengthUnitsPerIssueUnit);
                     amp.setCategory(cat);
                     amp.setVmp(vmp);
