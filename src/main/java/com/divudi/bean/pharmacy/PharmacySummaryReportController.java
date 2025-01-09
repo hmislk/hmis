@@ -26,10 +26,17 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillClassType;
+import static com.divudi.data.BillClassType.BilledBill;
+import static com.divudi.data.BillClassType.CancelledBill;
+import static com.divudi.data.BillClassType.OtherBill;
+import static com.divudi.data.BillClassType.PreBill;
+import static com.divudi.data.BillClassType.RefundBill;
 
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.IncomeBundle;
 import com.divudi.data.IncomeRow;
+import com.divudi.data.ReportTemplateRow;
+import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Category;
 import com.divudi.entity.WebUser;
@@ -40,11 +47,14 @@ import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.model.file.UploadedFile;
 
 import org.primefaces.model.StreamedContent;
@@ -78,7 +88,7 @@ public class PharmacySummaryReportController implements Serializable {
     @EJB
     private DrawerFacade drawerFacade;
     @EJB
-    BillService billService;
+    private BillService billService;
 
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -137,6 +147,12 @@ public class PharmacySummaryReportController implements Serializable {
     // Date range
     private Date fromDate;
     private Date toDate;
+    
+    private List<Bill> bills;
+    
+    private double total;
+    private double discount;
+    private double netTotal;
 
     // Enum and category types
     private Category category;
@@ -175,6 +191,7 @@ public class PharmacySummaryReportController implements Serializable {
     private SearchKeyword searchKeyword;
     private ReportKeyWord reportKeyWord;
     private IncomeBundle bundle;
+    private ReportTemplateRowBundle bundleReport;
 
     private StreamedContent downloadingExcel;
     private UploadedFile file;
@@ -191,9 +208,172 @@ public class PharmacySummaryReportController implements Serializable {
     public String navigateToDailyStockBalanceReport() {
         return "/pharmacy/reports/summary_reports/daily_stock_balance_report?faces-redirect=true";
     }
+
+    public String navigateToBillTypeIncome() {
+        return "/pharmacy/reports/summary_reports/bill_type_income?faces-redirect=true";
+    }
+    
+    public String navigatToBillListByBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
+        listBills();
+        return "/pharmacy/reports/summary_reports/bills?faces-redirect=true";
+    }
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="Functions">
 
+    public void listBillTypes() {
+        bundleReport = new ReportTemplateRowBundle();
+        Map<String, Object> params = new HashMap<>();
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        StringBuilder jpql = new StringBuilder("select new com.divudi.data.ReportTemplateRow("
+                + "b.billType, b.billClassType, b.billTypeAtomic, count(b), sum(b.total), sum(b.discount), sum(b.netTotal))"
+                + " from Bill b where b.retired=:ret ");
+        params.put("ret", false);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+        btas.add(BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
+
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+
+        btas.add(BillTypeAtomic.PHARMACY_GRN);
+        btas.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+        btas.add(BillTypeAtomic.PHARMACY_GRN_PAYMENT);
+        btas.add(BillTypeAtomic.PHARMACY_GRN_PAYMENT_CANCELLED);
+
+        params.put("btas", btas);
+        jpql.append(" and b.billTypeAtomic in :btas ");
+
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dep", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        jpql.append(" group by b.billType, b.billClassType, b.billTypeAtomic ");
+
+        // System.out.println("jpql.toString() = " + jpql.toString());
+        // System.out.println("params = " + params);
+        // Execute the query
+        List<ReportTemplateRow> rows = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        bundleReport.setReportTemplateRows(rows);
+        bundleReport.calculateTotalByValues();
+
+    }
+
+    public void listBills() {
+        bills = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dep", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        if (billClassType != null) {
+            jpql.append(" and type(b)=:billClassType ");
+            switch (billClassType) {
+                case Bill:
+                    params.put("billClassType", com.divudi.entity.Bill.class);
+                    break;
+                case BilledBill:
+                    params.put("billClassType", com.divudi.entity.BilledBill.class);
+                    break;
+                case CancelledBill:
+                    params.put("billClassType", com.divudi.entity.CancelledBill.class);
+                    break;
+                case OtherBill:
+                    params.put("billClassType", com.divudi.entity.Bill.class);
+                    break;
+                case PreBill:
+                    params.put("billClassType", com.divudi.entity.PreBill.class);
+                    break;
+                case RefundBill:
+                    params.put("billClassType", com.divudi.entity.RefundBill.class);
+                    break;
+
+            }
+        }
+
+        if (billType != null) {
+            jpql.append(" and b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        if (billTypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        // Execute the query
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        if (bills != null) {
+            for (Bill bill : bills) {
+                if (bill != null) {
+                    total += bill.getTotal();
+                    netTotal += bill.getNetTotal();
+                    discount += bill.getDiscount();
+                }
+            }
+        }
+
+    }
+    
     public void resetAllFiltersExceptDateRange() {
         setInstitution(null);
         setDepartment(null);
@@ -1197,4 +1377,53 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
 // </editor-fold>  
+    public BillService getBillService() {
+        return billService;
+    }
+
+    public void setBillService(BillService billService) {
+        this.billService = billService;
+    }
+
+    public ReportTemplateRowBundle getBundleReport() {
+        return bundleReport;
+    }
+
+    public void setBundleReport(ReportTemplateRowBundle bundleReport) {
+        this.bundleReport = bundleReport;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
+    public double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(double discount) {
+        this.discount = discount;
+    }
+
+    public double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(double netTotal) {
+        this.netTotal = netTotal;
+    }
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+    
+    
 }
