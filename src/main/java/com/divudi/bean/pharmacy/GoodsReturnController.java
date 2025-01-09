@@ -302,20 +302,11 @@ public class GoodsReturnController implements Serializable {
             return;
         }
 
-        boolean hasItemQty = false;
-
-        for (BillItem rbi : billItems) {
-            if (rbi.getPharmaceuticalBillItem().getQty() > 0.0) {
-                hasItemQty = true;
-                break; // Exit the loop as soon as we find a quantity
-            }
-        }
-
-        if (!hasItemQty) {
+        if (!hasPositiveItemQuantity(billItems)) {
             JsfUtil.addErrorMessage("Items for This GRN Already Returned So You can't Return ");
-            return; // Exit the method immediately if no positive quantity is found
+            return;
         }
-        
+
         saveReturnBill();
         Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
 //        saveComponent();
@@ -329,6 +320,18 @@ public class GoodsReturnController implements Serializable {
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Returned");
 
+    }
+
+    private boolean hasPositiveItemQuantity(final List<BillItem> billItems) {
+        for (BillItem billItem : billItems) {
+            double itemQty = billItem.getPharmaceuticalBillItem().getQty();
+
+            if (itemQty > 0.0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void calTotal() {
@@ -385,7 +388,7 @@ public class GoodsReturnController implements Serializable {
 //                suggessions.add(item);
 //            }
 //
-//            
+//
 //            bi.setTmpSuggession(suggessions);
             bi.setTmpQty((double) (grnPh.getQtyInUnit() - netQty));
             bi.setTmpFreeQty((double) (grnPh.getFreeQtyInUnit() - netFreeQty));
