@@ -1852,7 +1852,6 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
         }
 
-
         if (visitType == null) {
             opdBts.add(BillTypeAtomic.CC_BILL);
             opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
@@ -1900,10 +1899,8 @@ public class ReportsController implements Serializable {
                 Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap7to7.containsKey(weekOfMonth) ? weeklyBillItemMap7to7.get(weekOfMonth) : new HashMap<>();
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-
-                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null ?
-                                billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
-
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null
+                                ? billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
 
                 weeklyBillItemMap7to7.put(weekOfMonth, billItemMap);
             } else if (hourOfDay < 13) {
@@ -1911,10 +1908,8 @@ public class ReportsController implements Serializable {
                 Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap7to1.containsKey(weekOfMonth) ? weeklyBillItemMap7to1.get(weekOfMonth) : new HashMap<>();
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-
-                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null ?
-                                billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
-
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null
+                                ? billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
 
                 weeklyBillItemMap7to1.put(weekOfMonth, billItemMap);
             } else {
@@ -1922,10 +1917,8 @@ public class ReportsController implements Serializable {
                 Map<String, Map<Integer, Double>> billItemMap = weeklyBillItemMap1to7.containsKey(weekOfMonth) ? weeklyBillItemMap1to7.get(weekOfMonth) : new HashMap<>();
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-
-                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null ?
-                                billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
-
+                        .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null
+                                ? billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
 
                 weeklyBillItemMap1to7.put(weekOfMonth, billItemMap);
             }
@@ -2014,18 +2007,18 @@ public class ReportsController implements Serializable {
             if (hourOfDay >= 19 || hourOfDay < 7) {
                 // Between 7 PM to 7 AM
                 billItemMap7to7.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(weekOfMonth, billItemMap7to7.get(billItem.getItem().getName()) != null ?
-                                billItemMap7to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
+                        .put(weekOfMonth, billItemMap7to7.get(billItem.getItem().getName()) != null
+                                ? billItemMap7to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
             } else if (hourOfDay < 13) {
                 // Between 7 AM to 1 PM
                 billItemMap7to1.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(weekOfMonth, billItemMap7to1.get(billItem.getItem().getName()) != null ?
-                                billItemMap7to1.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
+                        .put(weekOfMonth, billItemMap7to1.get(billItem.getItem().getName()) != null
+                                ? billItemMap7to1.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
             } else {
                 // Between 1 PM to 7 PM
                 billItemMap1to7.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
-                        .put(weekOfMonth, billItemMap1to7.get(billItem.getItem().getName()) != null ?
-                                billItemMap1to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
+                        .put(weekOfMonth, billItemMap1to7.get(billItem.getItem().getName()) != null
+                                ? billItemMap1to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
 
             }
         }
@@ -2101,7 +2094,6 @@ public class ReportsController implements Serializable {
 //                parameters.put("type", visitType);
 //            }
 //        }
-
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
             jpql += "AND ((bill.billPackege.name) like :itemName ) ";
             parameters.put("itemName", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
@@ -2650,7 +2642,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-                                                                    boolean onlyDueBills) {
+            boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -4102,6 +4094,13 @@ public class ReportsController implements Serializable {
                 row.createCell(4).setCellValue(firstItem.getBill().getCreatedAt().toString());
                 row.createCell(5).setCellValue(entry.getKey());
 
+                Row detailHeaderRow = sheet.createRow(rowIndex++);
+                detailHeaderRow.createCell(6).setCellValue("Service Name");
+                detailHeaderRow.createCell(7).setCellValue("Hos Fee.");
+                detailHeaderRow.createCell(8).setCellValue("Staff Fee.");
+                detailHeaderRow.createCell(9).setCellValue("CC Fee.");
+                detailHeaderRow.createCell(10).setCellValue("Net Amount");
+
                 for (BillItem bi : billItems) {
                     Row detailRow = sheet.createRow(rowIndex++);
                     detailRow.createCell(6).setCellValue(bi.getItem().getName());
@@ -4110,6 +4109,7 @@ public class ReportsController implements Serializable {
                     detailRow.createCell(9).setCellValue(bi.getCollectingCentreFee());
                     detailRow.createCell(10).setCellValue(bi.getNetValue());
                 }
+
             }
 
             workbook.write(out);
@@ -4335,8 +4335,8 @@ public class ReportsController implements Serializable {
     }
 
     private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
-                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
-                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+            List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+            int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
         document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
         document.add(com.itextpdf.text.Chunk.NEWLINE);
 
@@ -4749,7 +4749,6 @@ public class ReportsController implements Serializable {
 
         return balance;
     }
-
 
     public Double calculateIpGrossAmountNetTotal() {
         double grossAmountNetTotal = 0.0;
