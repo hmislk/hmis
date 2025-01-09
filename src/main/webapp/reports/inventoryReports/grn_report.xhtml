@@ -240,6 +240,8 @@
                                 <!-- Invoice No -->
                                 <p:column headerText="Invoice No" width="6em" style="text-align: center;">
                                     <h:outputText value="#{b.invoiceNumber}" />
+                                    <h:outputText value="#{b.referenceBill.invoiceNumber}" />
+                                    
                                 </p:column>
 
                                 <!-- Created Date -->
@@ -267,7 +269,7 @@
 
                                 <!-- Supplier Name -->
                                 <p:column headerText="Supplier Name" width="8em">
-                                    <h:outputText value="#{b.fromInstitution.name}" />
+                                    <h:outputText value="#{b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ? b.toInstitution.name : b.fromInstitution.name}" />
                                 </p:column>
 
                                 <!-- Institution -->
