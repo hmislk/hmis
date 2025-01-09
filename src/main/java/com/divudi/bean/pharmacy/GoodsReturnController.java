@@ -312,7 +312,7 @@ public class GoodsReturnController implements Serializable {
         }
 
         if (!hasItemQty) {
-            JsfUtil.addErrorMessage("Items for this GRN Already Returned so you can't Return ");
+            JsfUtil.addErrorMessage("Items for This GRN Already Returned So You can't Return ");
             return; // Exit the method immediately if no positive quantity is found
         }
         
