@@ -282,8 +282,8 @@ public class SmsManagerEjb {
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             connection.setDoOutput(true);
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(30000);
 
             // Write JSON payload to the request body
             try (OutputStream os = connection.getOutputStream()) {
