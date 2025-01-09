@@ -240,7 +240,9 @@ public class GoodsReturnController implements Serializable {
             }
 
             double invertReturnQty = i.getPharmaceuticalBillItem().getQty();
+            double invertReturnFreeQty = i.getPharmaceuticalBillItem().getFreeQty();
             i.getPharmaceuticalBillItem().setQty(0 - Math.abs(invertReturnQty));
+            i.getPharmaceuticalBillItem().setFreeQty(0 - Math.abs(invertReturnFreeQty));
             getBillItemFacade().edit(i);
 
             saveBillFee(i, p);
