@@ -2194,7 +2194,7 @@ public class PharmacyReportController implements Serializable {
                 + " from Stock s "
                 + " where s.itemBatch.dateOfExpire between :fd and :td ";
         if (institution != null) {
-            jpql += " and s.institution=:ins ";
+            jpql += " and s.department.institution=:ins ";
             m.put("ins", institution);
         }
         if (department != null) {
