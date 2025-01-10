@@ -291,7 +291,7 @@
                                 <f:facet name="header">
                                     <h:outputText value="Date"/>
                                 </f:facet>
-                                <p:outputLabel value="#{row.bill.billDate}">
+                                <p:outputLabel value="#{row.bill.createdAt}">
                                     <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </p:outputLabel>
