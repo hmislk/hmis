@@ -484,7 +484,7 @@
                                 <h5>Pharmacy Movement Report</h5>
 
                                 <p:dataTable id="tbl3" 
-                                             value="#{pharmacyReportController.items}" 
+                                             value="#{pharmacyReportController.itemLastSuppliers}" 
                                              var="no" 
                                              rowIndexVar="n" 
                                              paginator="true" 
@@ -497,16 +497,16 @@
                                         <h:outputText value="#{n+1}" />
                                     </p:column>
                                     <p:column headerText="Item Code">
-                                        <h:outputText value="#{no.code}" />
+                                        <h:outputText value="#{no.item.code}" />
                                     </p:column>
                                     <p:column headerText="Item Name">
-                                        <h:outputText value="#{no.name}" />
+                                        <h:outputText value="#{no.item.name}" />
                                     </p:column>
                                     <p:column headerText="Drug Form">
-                                        <h:outputText value="#{no.category.name}" />
+                                        <h:outputText value="#{no.item.category.name}" />
                                     </p:column>
                                     <p:column headerText="Supplier(Last Purchase)">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{no.lastSupplier.name}" />
                                     </p:column>
 
                                 </p:dataTable>
