@@ -60,7 +60,7 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
                             >
-                            <p:column headerText="Approve At"  >
+                            <p:column headerText="Approve At"  width="5em">
                                 
                                 <h:commandLink action="pharmacy_reprint_po" >
                                     <h:outputLabel value="#{p.createdAt}" >
@@ -77,12 +77,12 @@
                                     </h:outputLabel>
                                 </h:panelGroup>                   
                             </p:column> 
-                            <p:column headerText="Ordered Department" >
+                            <p:column headerText="Ordered Department" width="4em">
                                 <h:outputLabel value="#{p.fromDepartment.name}" >                                      
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Approve By" >
+                            <p:column headerText="Approve By" width="5em">
                                 <h:commandLink action="pharmacy_reprint_po" >
                                     <h:outputLabel value="#{p.creater.webUserPerson.name}" >                                      
                                     </h:outputLabel>
@@ -97,19 +97,19 @@
                                 </h:panelGroup>                  
                             </p:column>    
 
-                            <p:column headerText="Distributor">
+                            <p:column headerText="Distributor" width="5em">
                                 <h:commandLink action="pharmacy_reprint_po" >
                                     <h:outputLabel  value="#{p.toInstitution.name}"/>
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column headerText="PO Number" width="150px;">                   
+                            <p:column headerText="PO Number" width="5em">                   
                                 <h:commandLink action="pharmacy_reprint_po"  >    
                                     <h:outputLabel  value="#{p.deptId}"/>
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column>              
-                            <p:column headerText="PO Value" width="150px;">
+                            <p:column headerText="PO Value" width="5em">
                                 <h:commandLink action="pharmacy_reprint_po"  >   
                                     <h:outputLabel value="#{p.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -117,7 +117,7 @@
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column width="180px;">
+                            <p:column width="8em">
                                 <div class="row">
                                     <div class="d-flex gap-2 mb-1">
                                         <p:commandButton 
