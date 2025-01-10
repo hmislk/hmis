@@ -3700,10 +3700,12 @@ public class ReportsController implements Serializable {
             if (reportType.equalsIgnoreCase("detail")) {
                 opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
                 opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
                 opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
             } else if (reportType.equalsIgnoreCase("summary")) {
                 opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
                 opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
             }
         } else if (visitType.equalsIgnoreCase("OP")) {
             if (reportType.equalsIgnoreCase("detail")) {
@@ -3723,6 +3725,8 @@ public class ReportsController implements Serializable {
                 opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
                 opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
                 opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
             }
         }
 
