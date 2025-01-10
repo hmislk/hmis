@@ -524,6 +524,8 @@ public class DataUploadController implements Serializable {
                     amp.setCode(strCode);
                     amp.setBarcode(strBarcode);
                     amp.setMeasurementUnit(strengthUnit);
+                    amp.setIssueUnit(issueUnit);
+                    amp.setStrengthUnit(strengthUnit);
                     amp.setDblValue(strengthUnitsPerIssueUnit);
                     amp.setCategory(cat);
                     amp.setVmp(vmp);
@@ -1734,8 +1736,8 @@ public class DataUploadController implements Serializable {
 //        JsfUtil.addSuccessMessage("FeeList Types Uploaded");
 //        return feeListTypes;
 //    }
-//    
-//    
+//
+//
 //
 //    private List<ItemFee> readFeeListItemFeesFromExcel(InputStream inputStream) throws IOException {
 //        List<ItemFee> itemFees = new ArrayList<>();
@@ -4622,6 +4624,17 @@ public class DataUploadController implements Serializable {
         return agencyList;
     }
 
+    public boolean isRowEmpty(Row row) {
+        if (row != null) {
+            for (Cell cell : row) {
+                if (cell != null && cell.getCellType() != CellType.BLANK) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private List<Institution> readSuppliersFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -4636,6 +4649,10 @@ public class DataUploadController implements Serializable {
         }
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
+
+            if (isRowEmpty(row)) {
+                continue;
+            }
 
             supplier = null;
             String code = null;
