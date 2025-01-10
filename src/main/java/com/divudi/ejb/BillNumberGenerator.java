@@ -206,7 +206,8 @@ public class BillNumberGenerator {
             Calendar endOfYear = Calendar.getInstance();
             endOfYear.set(Calendar.MONTH, 11); // December
             endOfYear.set(Calendar.DAY_OF_MONTH, 31);
-
+            hm = new HashMap<>();
+             hm.put("bTpA", billTypeAtomic);
             hm.put("startOfYear", startOfYear.getTime());
             hm.put("endOfYear", endOfYear.getTime());
 
@@ -1504,7 +1505,7 @@ public class BillNumberGenerator {
                 = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for Departments Only", false);
         boolean separateBillNumberForBillTypesOnly
                 = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for Bill Types Only", false);
-        
+
         BillNumber billNumber;
         if (commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
             billNumber = fetchLastBillNumberSynchronized(null, null, null);
