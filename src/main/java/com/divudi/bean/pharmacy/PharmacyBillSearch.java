@@ -155,14 +155,14 @@ public class PharmacyBillSearch implements Serializable {
     @Inject
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
 
-    public String navigateToCancelPharmacyDirectIssueToInpatients(){
-        if(bill==null){
+    public String navigateToCancelPharmacyDirectIssueToInpatients() {
+        if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
         return "/inward/pharmacy_cancel_bill_retail_bht?faces-redirect=true";
     }
-    
+
     public String navigatePharmacyReprintPo() {
         return "pharmacy_reprint_po?faces-redirect=true";
     }
@@ -347,7 +347,7 @@ public class PharmacyBillSearch implements Serializable {
 
     private void createCancellationBill() {
         CancelledBill c = createCancelledBillInstance(getBill());
-        
+
         List<BillItem> billItems = savePreBillItems(c, sessionController.getLoggedUser(),
                 sessionController.getLoggedUser().getDepartment());
         c.setBillItems(billItems);
@@ -395,7 +395,7 @@ public class PharmacyBillSearch implements Serializable {
         c.setBillClassType(BillClassType.CancelledBill);
         c.setBillType(BillType.PharmacyIssue);
         c.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
-        
+
         if (c.getId() == null) {
             getBillFacade().create(c);
         }
@@ -1408,7 +1408,6 @@ public class PharmacyBillSearch implements Serializable {
             ph.invertValue(originalBillItem.getPharmaceuticalBillItem());
 
 //            getPharmaceuticalBillItemFacade().create(ph);
-
             newlyCreatedBillItemForCancelBill.setPharmaceuticalBillItem(ph);
 
             ph.setBillItem(newlyCreatedBillItemForCancelBill);
@@ -2112,22 +2111,40 @@ public class PharmacyBillSearch implements Serializable {
 
     }
 
-    public void pharmacyRetailCancelBillWithStockBht() {
+    public void cancelPharmacyDirectIssueToBht() {
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
             return;
         }
-
         if (getBill().getPatientEncounter().isPaymentFinalized()) {
             JsfUtil.addErrorMessage("This Bill Already Discharged");
             return;
         }
-
         if (getBill().getCheckedBy() != null) {
             JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
             return;
         }
+        if (getBill().checkActiveReturnBhtIssueBills()) {
+            JsfUtil.addErrorMessage("There some return Bill for this please cancel that bills first");
+            return;
+        }
+        if (checkDepartment(getBill())) {
+            return;
+        }
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        Bill newlyCreatedCancellationBill = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PHISSCAN);
+        newlyCreatedCancellationBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
+        newlyCreatedCancellationBill.setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        newlyCreatedCancellationBill.setDeptId(deptId);
+        
+        getBillFacade().edit(newlyCreatedCancellationBill);
 
-        CancelBillWithStockBht(BillNumberSuffix.PHISSCAN);
+        getBill().setCancelled(true);
+        getBill().setCancelledBill(newlyCreatedCancellationBill);
+        getBillFacade().edit(getBill());
+        JsfUtil.addSuccessMessage("Cancelled");
+
+        printPreview = true;
+
     }
 
     public void storeRetailCancelBillWithStockBht() {
@@ -2135,7 +2152,7 @@ public class PharmacyBillSearch implements Serializable {
             return;
         }
 
-        CancelBillWithStockBht(BillNumberSuffix.STTISSUECAN);
+        cancelDirectIssueToBht(BillNumberSuffix.STTISSUECAN);
     }
 
     public void cancelPreBillFees(List<BillItem> list) {
@@ -2157,7 +2174,7 @@ public class PharmacyBillSearch implements Serializable {
         }
     }
 
-    private void CancelBillWithStockBht(BillNumberSuffix billNumberSuffix) {
+    private void cancelDirectIssueToBht(BillNumberSuffix billNumberSuffix) {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -2178,6 +2195,7 @@ public class PharmacyBillSearch implements Serializable {
 
             Bill cb = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), billNumberSuffix);
             cb.setForwardReferenceBill(getBill().getForwardReferenceBill());
+            cb.setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             getBillFacade().edit(cb);
 
             //   cancelPreBillFees(cb.getBillItems());
@@ -2434,7 +2452,7 @@ public class PharmacyBillSearch implements Serializable {
 
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
-            }else{
+            } else {
                 getBillFacade().edit(cb);
             }
 
