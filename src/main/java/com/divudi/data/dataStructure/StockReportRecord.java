@@ -24,6 +24,7 @@ public class StockReportRecord {
     Double stockOnHand;
     Institution institution;
     Category category;
+    private Institution lastPurchaseSupplier;
 
     public Category getCategory() {
         return category;
@@ -114,6 +115,14 @@ public class StockReportRecord {
 
     public void setStockOnHand(Double stockOnHand) {
         this.stockOnHand = stockOnHand;
+    }
+
+    public Institution getLastPurchaseSupplier() {
+        return lastPurchaseSupplier;
+    }
+
+    public void setLastPurchaseSupplier(Institution lastPurchaseSupplier) {
+        this.lastPurchaseSupplier = lastPurchaseSupplier;
     }
     
     
