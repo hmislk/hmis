@@ -2335,7 +2335,7 @@ public class PharmacyReportController implements Serializable {
                 + " and bi.bill.billType in :bt ";
 
         if (institution != null) {
-            sql += " and bi.bill.institution=:ins ";
+            sql += " and bi.bill.department.institution=:ins ";
             m.put("ins", institution);
         }
         if (site != null) {
@@ -2423,7 +2423,7 @@ public class PharmacyReportController implements Serializable {
                 + " and bi.bill.createdAt between :fd and :td ";
 
         if (institution != null) {
-            sql += " and bi.bill.institution=:ins ";
+            sql += " and bi.bill.department.institution=:ins ";
             m.put("ins", institution);
         }
         if (site != null) {
@@ -2509,7 +2509,7 @@ public class PharmacyReportController implements Serializable {
         m = new HashMap();
         m.put("d", department);
         if (institution != null) {
-            jpql += " and s.institution=:ins ";
+            jpql += " and s.department.institution=:ins ";
             m.put("ins", institution);
         }
         if (department != null) {
