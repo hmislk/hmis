@@ -110,10 +110,7 @@ th.align-right-header .ui-column-title {
     height: 50px;
     width: 100px;
 }
-.printingOnly{
-    display: none!important;
 
-}
 
 .button-margin-adjusted {
     margin-left: 4px;
@@ -591,5 +588,20 @@ th.align-right-header .ui-column-title {
     border-collapse: collapse !important;
     border-spacing: 0 !important;
     width: 100% !important;
+}
+
+
+@media print {
+    .printingOnly{
+    display: block !important;
+
+}
+}
+
+@media screen {
+    .printingOnly{
+    display: none !important;
+
+}
 }
 
