@@ -158,72 +158,95 @@ public class BillNumberGenerator {
     }
 
     private BillNumber fetchLastBillNumberSynchronized(Institution institution, Department toDepartment, BillTypeAtomic billTypeAtomic) {
+        System.out.println("fetchLastBillNumberSynchronized");
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-
-        StringBuilder sqlBuilder = new StringBuilder("SELECT b FROM BillNumber b where b.retired=false and b.billTypeAtomic=:bTpA and b.billYear=:yr");
-        HashMap<String, Object> hm = new HashMap<>();
-        hm.put("bTpA", billTypeAtomic);
-        hm.put("yr", currentYear);
+        System.out.println("currentYear = " + currentYear);
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT b FROM BillNumber b where b.retired=false and b.billTypeAtomic=:bTpA and b.billYear=:yr");
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("bTpA", billTypeAtomic);
+        params.put("yr", currentYear);
 
         if (institution != null) {
-            sqlBuilder.append(" and b.institution=:ins");
-            hm.put("ins", institution);
+            jpqlBuilder.append(" and b.institution=:ins");
+            params.put("ins", institution);
         } else {
-            hm.put("ins", null);
+            jpqlBuilder.append(" and b.institution is null ");
         }
 
         if (toDepartment != null) {
-            sqlBuilder.append(" and b.toDepartment=:tDep");
-            hm.put("tDep", toDepartment);
+            jpqlBuilder.append(" and b.toDepartment=:tDep");
+            params.put("tDep", toDepartment);
         } else {
-            hm.put("tDep", null);
+            jpqlBuilder.append(" and b.toDepartment is null");
         }
 
-        String sql = sqlBuilder.toString();
-        BillNumber billNumber = billNumberFacade.findFreshByJpql(sql, hm);
-
+        String jpql = jpqlBuilder.toString();
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        BillNumber billNumber = billNumberFacade.findFreshByJpql(jpql, params);
+        System.out.println("billNumber = " + billNumber);
         if (billNumber == null) {
+            System.out.println("Generating new bill number  " + billNumber);
             billNumber = new BillNumber();
-            billNumber.setBillTypeAtomic(billTypeAtomic);
+//            billNumber.setBillTypeAtomic(billTypeAtomic);
+            System.out.println("billNumber.getBillTypeAtomic() = " + billNumber.getBillTypeAtomic());
+            System.out.println("going to save first time after setting bill type atomic");
+            billNumberFacade.create(billNumber);
+            System.out.println("billNumber.getBillTypeAtomic() = " + billNumber.getBillTypeAtomic());
+            System.out.println("billNumber = " + billNumber);
+            System.out.println("institution = " + institution);
+            System.out.println("going to save after setting Institution");
             billNumber.setInstitution(institution);
+            billNumberFacade.edit(billNumber);
+            System.out.println("billNumber = " + billNumber);
+            System.out.println("billNumber.getBillTypeAtomic() = " + billNumber.getBillTypeAtomic());
+            System.out.println("toDepartment = " + toDepartment);
+            System.out.println("going to save after setting Department");
             billNumber.setToDepartment(toDepartment);
+            billNumberFacade.edit(billNumber);
+            System.out.println("billNumber = " + billNumber);
+            System.out.println("billNumber.getBillTypeAtomic() = " + billNumber.getBillTypeAtomic());
+            System.out.println("currentYear = " + currentYear);
+            System.out.println("going to save after setting current Year");
             billNumber.setBillYear(currentYear);
+            billNumberFacade.edit(billNumber);
 
-            sqlBuilder = new StringBuilder("SELECT count(b) FROM Bill b where b.retired=false and b.billTypeAtomic=:bTpA and b.billDate BETWEEN :startOfYear AND :endOfYear");
+            jpqlBuilder = new StringBuilder("SELECT count(b) FROM Bill b where b.retired=false and b.billTypeAtomic=:bTpA and b.createdAt > :startOfYear ");
 
             if (institution != null) {
-                sqlBuilder.append(" and b.institution=:ins");
+                jpqlBuilder.append(" and b.institution=:ins");
             }
 
             if (toDepartment != null) {
-                sqlBuilder.append(" and b.toDepartment=:tDep");
+                jpqlBuilder.append(" and b.toDepartment=:tDep");
             }
 
-            sql = sqlBuilder.toString();
+            jpql = jpqlBuilder.toString();
 
             Calendar startOfYear = Calendar.getInstance();
             startOfYear.set(Calendar.DAY_OF_YEAR, 1);
-            Calendar endOfYear = Calendar.getInstance();
-            endOfYear.set(Calendar.MONTH, 11); // December
-            endOfYear.set(Calendar.DAY_OF_MONTH, 31);
-            hm = new HashMap<>();
-             hm.put("bTpA", billTypeAtomic);
-            hm.put("startOfYear", startOfYear.getTime());
-            hm.put("endOfYear", endOfYear.getTime());
-
-            Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+            params = new HashMap<>();
+            params.put("bTpA", billTypeAtomic);
+            params.put("startOfYear", startOfYear.getTime());
+            System.out.println("jpql = " + jpql);
+            System.out.println("params = " + params);
+            Long dd = getBillFacade().findAggregateLong(jpql, params, TemporalType.DATE);
             if (dd == null) {
                 dd = 0L;
             }
+            System.out.println("billNumber = " + billNumber);
+            System.out.println("going to save after Last Bill Number");
             billNumber.setLastBillNumber(dd);
-            billNumberFacade.createAndFlush(billNumber);
+            System.out.println("dd = " + dd);
+            System.out.println("billNumber = " + billNumber);
+            billNumberFacade.edit(billNumber);
         } else {
             Long newBillNumberLong = billNumber.getLastBillNumber();
             if (newBillNumberLong == null) {
                 newBillNumberLong = 0L;
             }
             billNumber.setLastBillNumber(newBillNumberLong);
-            billNumberFacade.editAndFlush(billNumber);
+            billNumberFacade.edit(billNumber);
         }
 
         return billNumber;

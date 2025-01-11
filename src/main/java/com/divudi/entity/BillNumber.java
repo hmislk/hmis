@@ -40,6 +40,7 @@ public class BillNumber implements Serializable, RetirableEntity {
     private Department toDepartment;
     @Enumerated(EnumType.STRING)
     private BillType billType;
+    @Enumerated(EnumType.STRING)
     private BillTypeAtomic billTypeAtomic;
     @Enumerated(EnumType.STRING)
     private BillClassType billClassType;
