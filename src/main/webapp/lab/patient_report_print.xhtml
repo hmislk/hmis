@@ -51,9 +51,23 @@
                                 </p:selectBooleanButton>
                             </div>
 
-                            <div class="d-flex justify-content-center mb-5">
+                            <div >
+
+                                <style>
+                                    @media print {
+                                        .labReport {
+                                            position: static !important;
+                                        }
+                                        #divReportM {
+                                            position: static !important;
+                                        }
+                                        /* Repeat for other elements as needed */
+                                    }
+
+                                </style>
+                                
                                 <h:panelGroup id="divPrint" >
-                                    
+
                                     <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}" >
                                         <div id="divReport"  class="labReport1" >
                                             <ez:common_report 
