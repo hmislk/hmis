@@ -2581,6 +2581,7 @@ public class PatientReportController implements Serializable {
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            r.setReportType(ReportType.GENARATE);
             r.setCreater(getSessionController().getLoggedUser());
             r.setItem(ix);
             if (r.getTransInvestigation() != null) {

@@ -72,6 +72,8 @@
                                         icon="pi pi-trash" 
                                         styleClass="ui-button-danger" 
                                         ajax="false"
+                                        onclick="if (!confirm('Are you Sure you want to Delete this Option?'))
+                                                return false;"
                                         action="#{configOptionController.deleteOption(option)}" 
                                         update=":optionTable"
                                         title="Delete Option">
