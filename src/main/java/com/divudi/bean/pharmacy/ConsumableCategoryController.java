@@ -60,7 +60,7 @@ public class ConsumableCategoryController implements Serializable {
             return;
         }
         persist(PersistAction.CREATE, "ConsumableCategoryCreated");
-        if (!JsfUtil.isValidationFailed()) {
+        if (JsfUtil.isValidationPassed()) {
             items = null;    // Invalidate list of items to trigger re-query.
         }
     }
@@ -74,7 +74,7 @@ public class ConsumableCategoryController implements Serializable {
 
     public void destroy() {
         persist(PersistAction.DELETE, "ConsumableCategoryDeleted");
-        if (!JsfUtil.isValidationFailed()) {
+        if (JsfUtil.isValidationPassed()) {
             selected = null; // Remove selection
             items = null;    // Invalidate list of items to trigger re-query.
         }
@@ -220,5 +220,5 @@ public class ConsumableCategoryController implements Serializable {
     /**
      *
      */
-   
+
 }

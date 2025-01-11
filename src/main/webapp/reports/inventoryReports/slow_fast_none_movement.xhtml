@@ -117,6 +117,7 @@
                                 <!-- Component 1: Without Institution and Site -->
                                 <p:selectOneMenu
                                     required="true"
+                                    requiredMessage="Department is Required"
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -133,6 +134,7 @@
                                 <!-- Component 2: With Site Only -->
                                 <p:selectOneMenu
                                     required="true"
+                                    requiredMessage="Department is Required"
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -149,6 +151,7 @@
                                 <!-- Component 3: With Institution Only --> 
                                 <p:selectOneMenu
                                     required="true"
+                                    requiredMessage="Department is Required"
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -165,6 +168,7 @@
                                 <!-- Component 4: With Both Institution and Site --> 
                                 <p:selectOneMenu
                                     required="true"
+                                    requiredMessage="Department is Required"
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -310,12 +314,20 @@
                                     icon="fas fa-file-excel" 
                                     ajax="false" 
                                     value="Download">
+                                    <p:dataExporter 
+                                        type="xlsx" 
+                                        fileName="Fast Movement Report" 
+                                        target="tbl1"  />
                                 </p:commandButton>
                                 <p:commandButton 
                                     class="ui-button-danger mx-1" 
                                     icon= "fas fa-file-pdf" 
                                     ajax="false" 
                                     value="PDF">
+                                    <p:dataExporter 
+                                        type="pdf" 
+                                        target="tbl1" 
+                                        fileName="Fast Movement Report" />
                                 </p:commandButton>
                                 <h5>Fast Moving</h5>                                                     
                                 <h5>Pharmacy Movement Report</h5>
@@ -351,22 +363,22 @@
                                     </p:column>
                                     <p:column headerText="Cost Value" >
                                         <h:outputText value="#{f.purchaseValue}" >
-                                        <f:convertNumber pattern="#,###.00" />
+                                            <f:convertNumber pattern="#,###.00" />
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Sale Value" >
                                         <h:outputText value="#{f.retailsaleValue}" >
-                                        <f:convertNumber pattern="#,###.00" />
+                                            <f:convertNumber pattern="#,###.00" />
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Value of QIH" >
                                         <h:outputText value="#{f.stockQty}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="QIH" >
                                         <h:outputText value="#{f.stockOnHand}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
 
@@ -391,12 +403,20 @@
                                     icon="fas fa-file-excel" 
                                     ajax="false" 
                                     value="Download">
+                                    <p:dataExporter 
+                                        type="xlsx" 
+                                        fileName="Slow Movement Report" 
+                                        target="tbl2"  />
                                 </p:commandButton>
                                 <p:commandButton 
                                     class="ui-button-danger mx-1" 
                                     icon= "fas fa-file-pdf" 
                                     ajax="false" 
                                     value="PDF">
+                                    <p:dataExporter 
+                                        type="pdf" 
+                                        target="tbl2" 
+                                        fileName="Slow Movement Report" />
                                 </p:commandButton>
                                 <h5>Slow Moving</h5>                                                     
                                 <h5>Pharmacy Movement Report</h5>
@@ -428,27 +448,27 @@
                                     </p:column>
                                     <p:column headerText="Quantity">
                                         <h:outputText value="#{s.qty}" >
-                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Cost Value" >
                                         <h:outputText value="#{s.purchaseValue}" >
-                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Sale Value" >
                                         <h:outputText value="#{s.retailsaleValue}" >
-                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Value of QIH" >
                                         <h:outputText value="#{s.stockQty}" >
-                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="QIH" >
                                         <h:outputText value="#{s.stockOnHand}" >
-                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
 
@@ -473,12 +493,20 @@
                                     icon="fas fa-file-excel" 
                                     ajax="false" 
                                     value="Download">
+                                    <p:dataExporter 
+                                        type="xlsx" 
+                                        fileName="Non Movement Report" 
+                                        target="tbl3"  />
                                 </p:commandButton>
                                 <p:commandButton 
                                     class="ui-button-danger mx-1" 
                                     icon= "fas fa-file-pdf" 
                                     ajax="false" 
                                     value="PDF">
+                                    <p:dataExporter 
+                                        type="pdf" 
+                                        target="tbl3" 
+                                        fileName="Non Movement Report" />
                                 </p:commandButton>
                                 <h5>Non Moving</h5>                                                     
                                 <h5>Pharmacy Movement Report</h5>

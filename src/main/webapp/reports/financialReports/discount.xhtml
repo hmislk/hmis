@@ -306,8 +306,7 @@
                                     ajax="false"
                                     style="width: 150px"
                                     value="Print">
-                                <p:printer target="#{reportsController.reportType eq 'summary' ?
-                                                                        'tblSummary' : 'tblDetail'}"/>
+                                <p:printer target="printPanel"/>
                             </p:commandButton>
                             <p:commandButton
                                     id="btnExcel" class="m-1 ui-button-success"
@@ -331,157 +330,161 @@
                         </div>
                     </div>
 
-                    <p:dataTable id="tblSummary"
-                                 value="#{reportsController.bundle.reportTemplateRows}"
-                                 var="row"
-                                 rendered="#{reportsController.reportType eq 'summary'}"
-                                 paginator="true"
-                                 rows="10"
-                                 paginatorPosition="bottom">
-                        <p:column headerText="Patient Name">
-                            <h:outputText value="#{row.bill.patient.person.name}"/>
-                        </p:column>
-                        <p:column headerText="MRN">
-                            <h:outputText value="#{row.bill.patient.phn}"/>
-                        </p:column>
-                        <p:column headerText="Visit Type">
-                            <h:outputText value="#{row.bill.ipOpOrCc}"/>
-                        </p:column>
-                        <p:column headerText="Admission Type" rendered="#{reportsController.visitType eq 'IP'}">
-                            <h:outputText value="#{row.bill.patientEncounter.admissionType.name}"/>
-                        </p:column>
-                        <p:column headerText="Invoice No" width="13rem">
-                            <h:outputText value="#{row.bill.deptId}" rendered="#{row.bill.patientEncounter eq null}"/>
-                            <h:outputText value="#{row.bill.patientEncounter.finalBill.deptId}"
-                                          rendered="#{row.bill.patientEncounter ne null}"/>
-                        </p:column>
-                        <p:column headerText="Invoice Date">
-                            <h:outputText value="#{row.bill.createdAt}" rendered="#{row.bill.patientEncounter eq null}">
-                                <f:convertDateTime
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                            </h:outputText>
-                            <h:outputText value="#{row.bill.patientEncounter.dateOfDischarge}"
-                                          rendered="#{row.bill.patientEncounter ne null}">
-                                <f:convertDateTime
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Gross Amount">
-                            <h:outputText value="#{row.bill.netTotal}"
-                                          rendered="#{reportsController.withProfessionalFee}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <h:outputText value="#{row.bill.netTotal - row.bill.professionalFee}"
-                                          rendered="#{not reportsController.withProfessionalFee}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Patient Amount">
-                            <h:outputText value="#{row.bill.paidAmount}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Discount">
-                            <h:outputText value="#{row.bill.discount}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText value="#{reportsController.bundle.discount}">
+                    <h:panelGroup id="printPanel">
+                        <p:dataTable id="tblSummary"
+                                     value="#{reportsController.bundle.reportTemplateRows}"
+                                     var="row"
+                                     rendered="#{reportsController.reportType eq 'summary'}"
+                                     paginator="true"
+                                     rows="10"
+                                     paginatorPosition="bottom">
+                            <p:column headerText="Patient Name">
+                                <h:outputText value="#{row.bill.patient.person.name}"/>
+                            </p:column>
+                            <p:column headerText="MRN">
+                                <h:outputText value="#{row.bill.patient.phn}"/>
+                            </p:column>
+                            <p:column headerText="Visit Type">
+                                <h:outputText value="#{row.bill.ipOpOrCc}"/>
+                            </p:column>
+                            <p:column headerText="Admission Type" rendered="#{reportsController.visitType eq 'IP'}">
+                                <h:outputText value="#{row.bill.patientEncounter.admissionType.name}"/>
+                            </p:column>
+                            <p:column headerText="Invoice No" width="13rem">
+                                <h:outputText value="#{row.bill.deptId}"
+                                              rendered="#{row.bill.patientEncounter eq null}"/>
+                                <h:outputText value="#{row.bill.patientEncounter.finalBill.deptId}"
+                                              rendered="#{row.bill.patientEncounter ne null}"/>
+                            </p:column>
+                            <p:column headerText="Invoice Date">
+                                <h:outputText value="#{row.bill.createdAt}"
+                                              rendered="#{row.bill.patientEncounter eq null}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                                <h:outputText value="#{row.bill.patientEncounter.dateOfDischarge}"
+                                              rendered="#{row.bill.patientEncounter ne null}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Gross Amount">
+                                <h:outputText value="#{row.bill.netTotal}"
+                                              rendered="#{reportsController.withProfessionalFee}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="Remarks">
-                            <h:outputText value="#{row.bill.comments}"/>
-                        </p:column>
-                        <p:column headerText="Sponsor Name">
-                            <h:outputText value="#{row.bill.creditCompany.name}"/>
-                        </p:column>
-                        <p:column headerText="Plan Name">
-                            <h:outputText value="#{row.bill.paymentScheme.name}"/>
-                        </p:column>
-                        <p:column headerText="Billed By">
-                            <h:outputText value="#{row.bill.creater.webUserPerson.name}"/>
-                        </p:column>
-                    </p:dataTable>
-                    <p:dataTable id="tblDetail"
-                                 value="#{reportsController.bundle.reportTemplateRows}"
-                                 var="row"
-                                 rendered="#{reportsController.reportType eq 'detail'}"
-                                 paginator="true"
-                                 rows="10"
-                                 paginatorPosition="bottom">
-                        <p:column headerText="Patient Name">
-                            <h:outputText value="#{row.billItem.bill.patient.person.name}"/>
-                        </p:column>
-                        <p:column headerText="MRN">
-                            <h:outputText value="#{row.billItem.bill.patient.phn}"/>
-                        </p:column>
-                        <p:column headerText="Visit Type">
-                            <h:outputText value="#{row.billItem.bill.ipOpOrCc}"/>
-                        </p:column>
-                        <p:column headerText="Admission Type" rendered="#{reportsController.visitType eq 'IP'}">
-                            <h:outputText value="#{row.billItem.patientEncounter.admissionType.name}"/>
-                        </p:column>
-                        <p:column headerText="Invoice No" width="13rem">
-                            <h:outputText value="#{row.billItem.bill.deptId}"
-                                          rendered="#{row.billItem.patientEncounter eq null}"/>
-                            <h:outputText value="#{row.billItem.bill.patientEncounter.finalBill.deptId}"
-                                          rendered="#{row.billItem.patientEncounter ne null}"/>
-                        </p:column>
-                        <p:column headerText="Invoice Date">
-                            <h:outputText value="#{row.billItem.bill.createdAt}"
-                                          rendered="#{row.billItem.patientEncounter eq null}">
-                                <f:convertDateTime
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                            </h:outputText>
-                            <h:outputText value="#{row.billItem.bill.patientEncounter.dateOfDischarge}"
-                                          rendered="#{row.billItem.patientEncounter ne null}">
-                                <f:convertDateTime
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Service name">
-                            <h:outputText value="#{row.billItem.item.name}"/>
-                        </p:column>
-                        <p:column headerText="Gross Amount">
-                            <h:outputText value="#{row.billItem.bill.netTotal}"
-                                          rendered="#{reportsController.withProfessionalFee}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <h:outputText value="#{row.billItem.bill.netTotal - row.billItem.bill.professionalFee}"
-                                          rendered="#{not reportsController.withProfessionalFee}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Patient Amount">
-                            <h:outputText value="#{row.billItem.bill.paidAmount}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Discount">
-                            <h:outputText value="#{row.billItem.discount}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText value="#{reportsController.bundle.discount}">
+                                <h:outputText value="#{row.bill.netTotal - row.bill.professionalFee}"
+                                              rendered="#{not reportsController.withProfessionalFee}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="Remarks">
-                            <h:outputText value="#{row.billItem.bill.comments}"/>
-                        </p:column>
-                        <p:column headerText="Sponsor Name">
-                            <h:outputText value="#{row.billItem.bill.creditCompany.name}"/>
-                        </p:column>
-                        <p:column headerText="Plan Name">
-                            <h:outputText value="#{row.billItem.bill.paymentScheme.name}"/>
-                        </p:column>
-                        <p:column headerText="Billed By">
-                            <h:outputText value="#{row.billItem.bill.creater.webUserPerson.name}"/>
-                        </p:column>
-                    </p:dataTable>
+                            </p:column>
+                            <p:column headerText="Patient Amount">
+                                <h:outputText value="#{row.bill.paidAmount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Discount">
+                                <h:outputText value="#{row.bill.discount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportsController.bundle.discount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Remarks">
+                                <h:outputText value="#{row.bill.comments}"/>
+                            </p:column>
+                            <p:column headerText="Sponsor Name">
+                                <h:outputText value="#{row.bill.creditCompany.name}"/>
+                            </p:column>
+                            <p:column headerText="Plan Name">
+                                <h:outputText value="#{row.bill.paymentScheme.name}"/>
+                            </p:column>
+                            <p:column headerText="Billed By">
+                                <h:outputText value="#{row.bill.creater.webUserPerson.name}"/>
+                            </p:column>
+                        </p:dataTable>
+                        <p:dataTable id="tblDetail"
+                                     value="#{reportsController.bundle.reportTemplateRows}"
+                                     var="row"
+                                     rendered="#{reportsController.reportType eq 'detail'}"
+                                     paginator="true"
+                                     rows="10"
+                                     paginatorPosition="bottom">
+                            <p:column headerText="Patient Name">
+                                <h:outputText value="#{row.billItem.bill.patient.person.name}"/>
+                            </p:column>
+                            <p:column headerText="MRN">
+                                <h:outputText value="#{row.billItem.bill.patient.phn}"/>
+                            </p:column>
+                            <p:column headerText="Visit Type">
+                                <h:outputText value="#{row.billItem.bill.ipOpOrCc}"/>
+                            </p:column>
+                            <p:column headerText="Admission Type" rendered="#{reportsController.visitType eq 'IP'}">
+                                <h:outputText value="#{row.billItem.patientEncounter.admissionType.name}"/>
+                            </p:column>
+                            <p:column headerText="Invoice No" width="13rem">
+                                <h:outputText value="#{row.billItem.bill.deptId}"
+                                              rendered="#{row.billItem.patientEncounter eq null}"/>
+                                <h:outputText value="#{row.billItem.bill.patientEncounter.finalBill.deptId}"
+                                              rendered="#{row.billItem.patientEncounter ne null}"/>
+                            </p:column>
+                            <p:column headerText="Invoice Date">
+                                <h:outputText value="#{row.billItem.bill.createdAt}"
+                                              rendered="#{row.billItem.patientEncounter eq null}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                                <h:outputText value="#{row.billItem.bill.patientEncounter.dateOfDischarge}"
+                                              rendered="#{row.billItem.patientEncounter ne null}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Service name">
+                                <h:outputText value="#{row.billItem.item.name}"/>
+                            </p:column>
+                            <p:column headerText="Gross Amount">
+                                <h:outputText value="#{row.billItem.bill.netTotal}"
+                                              rendered="#{reportsController.withProfessionalFee}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <h:outputText value="#{row.billItem.bill.netTotal - row.billItem.bill.professionalFee}"
+                                              rendered="#{not reportsController.withProfessionalFee}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Patient Amount">
+                                <h:outputText value="#{row.billItem.bill.paidAmount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Discount">
+                                <h:outputText value="#{row.billItem.discount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportsController.bundle.discount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Remarks">
+                                <h:outputText value="#{row.billItem.bill.comments}"/>
+                            </p:column>
+                            <p:column headerText="Sponsor Name">
+                                <h:outputText value="#{row.billItem.bill.creditCompany.name}"/>
+                            </p:column>
+                            <p:column headerText="Plan Name">
+                                <h:outputText value="#{row.billItem.bill.paymentScheme.name}"/>
+                            </p:column>
+                            <p:column headerText="Billed By">
+                                <h:outputText value="#{row.billItem.bill.creater.webUserPerson.name}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </h:panelGroup>
                 </p:panel>
             </h:form>
         </ui:define>
