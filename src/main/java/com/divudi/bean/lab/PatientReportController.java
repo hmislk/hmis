@@ -232,8 +232,6 @@ public class PatientReportController implements Serializable {
         }
     }
 
-    
-    
     public Upload loadUpload(PatientReport pr) {
         String jpql = "select u "
                 + " from Upload u "
@@ -277,7 +275,7 @@ public class PatientReportController implements Serializable {
         }
 
     }
-    
+
     public String navigateToPrintPatientReportForCourier(PatientReport pr) {
         if (pr == null) {
             JsfUtil.addErrorMessage("No Select Patient Report");
@@ -949,7 +947,7 @@ public class PatientReportController implements Serializable {
                         System.out.println("resultStr = " + resultObj);
                     } else if (resultObj instanceof Double) {
                         result = (double) resultObj;
-                        resultStr= result+"";
+                        resultStr = result + "";
                         System.out.println("result = " + result);
                     } else {
                         System.out.println("Else = ");
@@ -2742,14 +2740,17 @@ public class PatientReportController implements Serializable {
         currentPtIx = pi;
         PatientReport newlyCreatedReport = null;
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
-            createNewMicrobiologyReport(pi, ix);
+            newlyCreatedReport = createNewMicrobiologyReport(pi, ix);
         } else {
             newlyCreatedReport = createNewPatientReport(pi, ix);
+
         }
+
         if (newlyCreatedReport == null) {
             JsfUtil.addErrorMessage("Error");
             return null;
         }
+
         currentPatientReport = newlyCreatedReport;
         getCommonReportItemController().setCategory(ix.getReportFormat());
 
