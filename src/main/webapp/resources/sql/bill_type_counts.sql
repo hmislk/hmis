@@ -1,1 +1,3 @@
-SELECT 'arogya' AS DatabaseName, BillType, COUNT(*) AS Count FROM arogya.BILL WHERE createdAt >= '2024-04-01' AND createdAt < '2024-05-01' GROUP BY BillType
+SELECT `BILLCLASSTYPE`, `BILLTYPE`, `BILLTYPEATOMIC`, count(*) 
+FROM BILL 
+group by  `BILLCLASSTYPE`,`BILLTYPE`, `BILLTYPEATOMIC`
