@@ -1304,8 +1304,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         int passwordExpirationPeriod = passwordExpirationPeriodLong.intValue();
         boolean allowAdminForcedPasswordChange = configOptionApplicationController.getBooleanValueByKey("Allow admin to force password change", false);
 
-        System.out.println("userName = " + userName);
-        System.out.println("password = " + password);
+        //System.out.println("userName = " + userName);
+        //System.out.println("password = " + password);
 
         // Check if password matches the username
         if (preventMatchingPasswordWithUsername && password.equals(userName)) {

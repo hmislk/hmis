@@ -301,6 +301,113 @@
 
                                 </p:panel>
 
+                                <p:panel 
+                                    class="mb-2"
+                                    header="Pathology or Haematology Report"    
+                                    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'PathologyOrHaematology'}" >
+
+                                    <div class="d-flex justify-content-between">
+                                        <div class="d-flex gap-2">
+                                            <p:outputLabel value="Search a Template" class="mt-2"></p:outputLabel>
+                                            <p:autoComplete 
+                                                id="acTemplate" 
+                                                value="#{patientReportController.investigationItem}" 
+                                                completeMethod="#{investigationItemController.completeTemplate}"
+                                                disabled ="#{patientReportController.currentPatientReport.approved}"
+                                                var="ii" 
+                                                itemLabel="#{ii.name}" 
+                                                itemValue="#{ii}" >
+                                                <p:ajax event="itemSelect" process="@this" ></p:ajax>
+                                            </p:autoComplete>
+                                        </div>
+                                        <div >
+                                            <p:commandButton 
+                                                id="btnAddPathReport"
+                                                oncomplete="PF('dlgPath').show();" 
+                                                process="acTemplate btnAddPathReport" 
+                                                update="dlgPath" 
+                                                value="Add Template to Report" 
+                                                disabled ="#{patientReportController.currentPatientReport.approved}"
+                                                actionListener="#{patientReportController.toAddNewTemplate()}" >
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+
+                                    <p:dialog id="dlgPath" header="Pathology Report" widgetVar="dlgPath" modal="true" height="600" >
+
+                                        <h:panelGroup rendered="#{patientReportController.investigationItem eq null}" >
+                                            <p:outputLabel value="Please select a template first" ></p:outputLabel>
+                                            <p:commandButton 
+                                                id="btnCloseGlg1"
+                                                oncomplete="PF('dlgPath').hide();" 
+                                                process="@this dlgPath" 
+                                                update="reportEditor" 
+                                                value="Close">  
+                                            </p:commandButton>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{patientReportController.investigationItem ne null}" >
+
+                                            <table >
+                                                <tr style="padding-top: 3px; padding-bottom: 3px;">
+                                                    <th style="width: 150px;">
+                                                        <p:outputLabel value="Variable" ></p:outputLabel>
+                                                    </th>
+                                                    <th style="width: 500px;">
+                                                        <p:outputLabel value="Value" ></p:outputLabel>
+                                                    </th>
+                                                </tr>
+
+                                                <ui:repeat value="#{patientReportController.selectables}" var="sel" >
+                                                    <tr style="padding-top: 3px; padding-bottom: 3px;">
+                                                        <td style="width: 150px;">
+                                                            <p:outputLabel value="#{sel.name}" ></p:outputLabel>
+                                                        </td>
+                                                        <td style="width: 500px;">
+                                                            <h:panelGroup >
+                                                                <p:inputTextarea value="#{sel.selectedValue}" rendered="#{sel.inputText}" class="w-100" ></p:inputTextarea>
+                                                                <p:selectOneMenu  value="#{sel.selectedValue}" rendered="#{sel.selectOneMenu}" class="w-100" >
+                                                                    <f:selectItems value="#{sel.options}" ></f:selectItems>
+                                                                </p:selectOneMenu>
+                                                            </h:panelGroup>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+                                            </table>
+
+                                            <p:commandButton 
+                                                class="mt-3"
+                                                style="float: right;"
+                                                icon="fa fa-plus"
+                                                id="btnAddTemplateToReport"
+                                                oncomplete="PF('dlgPath').hide();" 
+                                                process="@this dlgPath" 
+                                                update="reportEditor divPrint" 
+                                                value="Add To Report" 
+                                                actionListener="#{patientReportController.addTemplateToReport()}" >
+                                            </p:commandButton>
+
+
+                                            <p:panel id="reportEditor" rendered="false" >
+                                                <h:panelGroup >
+                                                    <h1>A</h1>
+                                                    #{patientReportController.currentPatientReport}
+                                                    <h1>B</h1>
+                                                    <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}"
+                                                               var="e" >
+                                                        #{e.investigationItem.ixItemType}
+                                                    </ui:repeat>
+                                                    <h1>C</h1>
+                                                    #{patientReportController.currentPatientReport.templateItem.lobValue}
+                                                    <h1>D</h1>
+                                                    <h1>E</h1>
+                                                </h:panelGroup>
+                                            </p:panel>
+
+                                        </h:panelGroup>
+                                    </p:dialog>
+                                </p:panel>
+
                                 <p:panel header="Report Details"  >
                                     <p:panelGrid columns="2" >
                                         <p:outputLabel for="sampleIDs" value="sampleIDs" ></p:outputLabel>
@@ -346,10 +453,8 @@
                                         <p:outputLabel value="Ordered Time" ></p:outputLabel>
                                         <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
 
-
                                         <p:outputLabel value="Sampelled Time" ></p:outputLabel>
                                         <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
-
 
                                         <p:outputLabel value="Received to Lab At" ></p:outputLabel>
                                         <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.receivedAt}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
@@ -379,140 +484,61 @@
                                     </p:panelGrid>
                                 </p:panel>
 
-                                <p:panel header="Report"    
-                                         rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'PathologyOrHaematology'}" >
-
-                                    <h:panelGrid columns="4" >
-                                        <p:outputLabel value="Search a Template" ></p:outputLabel>
-                                        <p:autoComplete id="acTemplate" 
-                                                        value="#{patientReportController.investigationItem}" 
-                                                        completeMethod="#{investigationItemController.completeTemplate}"
-                                                        var="ii" itemLabel="#{ii.name}" itemValue="#{ii}" >
-                                            <p:ajax event="itemSelect" process="@this" ></p:ajax>
-                                        </p:autoComplete>
-                                        <p:commandButton id="btnAddPathReport"
-                                                         oncomplete="PF('dlgPath').show();" 
-                                                         process="acTemplate btnAddPathReport" update="dlgPath" 
-                                                         value="Add Template to Report" actionListener="#{patientReportController.toAddNewTemplate()}" ></p:commandButton>
-                                        <p:commandButton value="Edit Selected Template" ajax="false" action="#{patientReportController.toEditTemplate()}" >
-                                        </p:commandButton>
-                                        <p:dialog id="dlgPath" header="Pathology Report" widgetVar="dlgPath" modal="true">
-                                            <h:panelGroup rendered="#{patientReportController.investigationItem eq null}" >
-                                                <p:outputLabel value="Please select a template first" ></p:outputLabel>
-                                                <p:commandButton id="btnCloseGlg1"
-                                                                 oncomplete="PF('dlgPath').hide();" 
-                                                                 process="@this dlgPath" update="reportEditor" 
-                                                                 value="Close"></p:commandButton>
-                                            </h:panelGroup>
-                                            <h:panelGroup rendered="#{patientReportController.investigationItem ne null}" >
-                                                <p:commandButton id="btnAddTemplateToReport"
-                                                                 oncomplete="PF('dlgPath').hide();" 
-                                                                 process="@this dlgPath" update="reportEditor" 
-                                                                 value="Add To Report" 
-                                                                 actionListener="#{patientReportController.addTemplateToReport()}" ></p:commandButton>
-                                                <table >
-                                                    <tr>
-                                                        <th>
-                                                            <p:outputLabel value="Variable" ></p:outputLabel>
-                                                        </th>
-                                                        <th>
-                                                            <p:outputLabel value="Value" ></p:outputLabel>
-                                                        </th>
-                                                    </tr>
-
-                                                    <ui:repeat value="#{patientReportController.selectables}" var="sel" >
-                                                        <tr>
-                                                            <td>
-                                                                <p:outputLabel value="#{sel.name}" ></p:outputLabel>
-                                                            </td>
-                                                            <td>
-                                                                <h:panelGroup >
-                                                                    <p:inputText value="#{sel.selectedValue}" rendered="#{sel.inputText}" ></p:inputText>
-                                                                    <p:selectOneMenu  value="#{sel.selectedValue}" rendered="#{sel.selectOneMenu}" >
-                                                                        <f:selectItems value="#{sel.options}" ></f:selectItems>
-                                                                    </p:selectOneMenu>
-                                                                </h:panelGroup>
-                                                            </td>
-                                                        </tr>
-                                                    </ui:repeat>
-                                                </table>
-                                            </h:panelGroup>
-
-
-
-
-
-                                        </p:dialog>
-
-                                    </h:panelGrid>
-                                    <p:panel id="reportEditor" >
-                                        <h:panelGroup rendered="false" >
-                                            <h1>A</h1>
-                                            #{patientReportController.currentPatientReport}
-                                            <h1>B</h1>
-                                            <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}"
-                                                       var="e" >
-                                                #{e.investigationItem.ixItemType}
-                                            </ui:repeat>
-                                            <h1>C</h1>
-                                            #{patientReportController.currentPatientReport.templateItem.lobValue}
-                                            <h1>D</h1>
-                                            <h1>E</h1>
-                                        </h:panelGroup>
-                                        <p:textEditor secure="false"  rendered="#{patientReportController.currentPatientReport.templateItem ne null}" 
-                                                      value="#{patientReportController.currentPatientReport.templateItem.lobValue}" widgetVar="editor" height="650" >
-
-                                        </p:textEditor>
-                                    </p:panel>
-
-                                </p:panel>
                             </div>
                             <div class="col-8 ">
                                 <div class="my-1 row w-100" >
                                     <div>
                                         <h:panelGrid columns="8" class="w-100">
                                             <h:panelGroup rendered="false" >
-                                                <p:commandButton value="To Print" 
-                                                                 icon="ui-icon-print" 
-                                                                 action="#{patientReportController.printPatientLabReport()}" 
-                                                                 rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }">
+                                                <p:commandButton 
+                                                    value="To Print" 
+                                                    icon="ui-icon-print" 
+                                                    action="#{patientReportController.printPatientLabReport()}" 
+                                                    rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }">
                                                     <p:printer target="divPrint" />
                                                 </p:commandButton>
 
                                             </h:panelGroup>
-                                            <p:commandButton value="To Print" ajax="false" 
-                                                             rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
-                                                             icon="fa-solid fa-print"
-                                                             class="mx-1 ui-button-info"
-                                                             onclick="#{patientReportController.printPatientLabReport()}"
-                                                             disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" >
+                                            <p:commandButton 
+                                                value="To Print" 
+                                                ajax="false" 
+                                                rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
+                                                icon="fa-solid fa-print"
+                                                class="mx-1 ui-button-info"
+                                                onclick="#{patientReportController.printPatientLabReport()}"
+                                                disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" >
                                                 <f:setPropertyActionListener target="#{patientReportController.showBackground}" value="false"/>
                                                 <p:printer target="divPrint" />
                                             </p:commandButton>
-                                            <p:commandButton value="To Print" ajax="false" 
-                                                             rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
-                                                             onclick="#{patientReportController.printPatientLabReport()}"
-                                                             icon="fa-solid fa-print"
-                                                             class="mx-1 ui-button-info"
-                                                             disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission or patientReportController.currentPtIx.billItem.bill.backwardReferenceBill.balance ne 0}" >
+                                            <p:commandButton 
+                                                value="To Print" 
+                                                ajax="false" 
+                                                rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
+                                                onclick="#{patientReportController.printPatientLabReport()}"
+                                                icon="fa-solid fa-print"
+                                                class="mx-1 ui-button-info"
+                                                disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission or patientReportController.currentPtIx.billItem.bill.backwardReferenceBill.balance ne 0}" >
                                                 <f:setPropertyActionListener target="#{patientReportController.showBackground}" value="false"/>
                                                 <p:printer target="divPrint" />
                                             </p:commandButton>
 
-                                            <p:commandButton  ajax="false" 
-                                                              rendered="false"
-                                                              value="Process" 
-                                                              icon="fa-solid fa-file-pdf"
-                                                              class="ui-button-danger"
-                                                              ></p:commandButton>
+                                            <p:commandButton  
+                                                ajax="false" 
+                                                rendered="false"
+                                                value="Process" 
+                                                icon="fa-solid fa-file-pdf"
+                                                class="ui-button-danger"
+                                                >
+                                            </p:commandButton>
 
-                                            <p:commandButton  ajax="false" 
-                                                              value="PDF" 
-                                                              icon="fa-solid fa-file-pdf"
-                                                              class="mx-1 ui-button-danger"
-                                                              action="#{patientReportController.createPDFAndSaveAsaFile()}" 
-                                                              rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission)}" />
-
+                                            <p:commandButton  
+                                                ajax="false" 
+                                                value="PDF" 
+                                                icon="fa-solid fa-file-pdf"
+                                                class="mx-1 ui-button-danger"
+                                                action="#{patientReportController.createPDFAndSaveAsaFile()}" 
+                                                rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission)}" >
+                                            </p:commandButton>
 
                                             <h:panelGrid columns="2">
                                                 <h:outputLabel value="Show Background" class="mx-1" style="font-weight: bold; font-size: 20px;"></h:outputLabel>
@@ -544,11 +570,9 @@
 
                                 </style>
 
-
                                 <h:panelGroup  id="divPrint" >
 
-
-
+                                    <!--HtmlTemplate-->
                                     <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'HtmlTemplate'}"  >
                                         <div id="divReport"  class="labReport" >
                                             <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
@@ -561,6 +585,7 @@
                                         </div>
                                     </h:panelGroup>
 
+                                    <!--General-->
                                     <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'General'}"  >
                                         <div id="divReport"  class="labReport"  >
                                             <ez:common_report 
@@ -671,6 +696,7 @@
                                         </div>
                                     </h:panelGroup>
 
+                                    <!--Microbiology-->
                                     <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
                                         <div id="divReportM"  class="labReport"   >
                                             <ez:common_report showBackground="#{patientReportController.showBackground}" commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
@@ -789,11 +815,37 @@
                                         </div>
                                     </h:panelGroup>
 
+                                    <!--PathologyOrHaematology-->
+                                    <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'PathologyOrHaematology'}"  >
+                                        <div id="divReportM"  class="labReport"   >
+                                            <ez:common_report 
+                                                showBackground="#{patientReportController.showBackground}" 
+                                                commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
+                                                patientReport="#{patientReportController.currentPatientReport}">
+                                            </ez:common_report>
+
+                                            <div style="position: absolute; top: #{configOptionApplicationController.getShortTextValueByKey('Pathology or Haematology Lab Report Height')}%; width: 97%; font-family:Cambria, Georgia, serif; font-size: 14px; height: 70%; vertical-align: top;" >
+                                                <div id="ixName" class="d-flex justify-content-center">
+                                                    <h:outputLabel 
+                                                        value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}" 
+                                                        style="font-weight: bold; font-size: 21px!important;">
+                                                    </h:outputLabel>
+                                                </div>
+                                                <div class="mt-3" style="font-size: 16px; margin-left:7%; margin-right: 5%; ">
+                                                    <h:outputLabel value="#{fn:replace(patientReportController.currentPatientReport.templateItem.lobValue,'\\n','&lt;br/&gt;')}" style="text-align: left;"  escape="false" />
+                                                </div>
+
+                                                <div style=" clear: left; padding-top: 2%; text-align: center;">
+                                                    <h:outputLabel value="--- End of Report ---" style="font-size: 16px; font-weight: bold; "></h:outputLabel>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
                                 </h:panelGroup>
 
                             </div>
                         </div>
-
 
                     </p:panel>
 
@@ -862,7 +914,6 @@
 
                                 </tr>
 
-
                             </ui:repeat>
 
                         </table>
@@ -871,10 +922,7 @@
 
                 </h:form>
 
-
             </ui:define>
-
-
 
         </ui:composition>
 
