@@ -14,8 +14,8 @@
 
                 <p:panel header="Report Template Availability">
 
-                    <p:commandButton ajax="false" 
-                                     value="List Report Template Availability"  
+                    <p:commandButton ajax="false"
+                                     value="List Report Template Availability"
                                      action="#{investigationMonthSummeryOwnControllerSession.createInvestigationExistTable}"
                                      styleClass="noPrintButton" style="float: right;" />
 
@@ -24,13 +24,14 @@
                     </p:commandButton>
 
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+
                     </p:commandButton>
 
 
 
-                    <p:dataTable id="tbl" 
-                                 value="#{investigationMonthSummeryOwnControllerSession.items}" 
-                                 var="c" 
+                    <p:dataTable id="tbl"
+                                 value="#{investigationMonthSummeryOwnControllerSession.items}"
+                                 var="c"
                                  rowIndexVar="i"
                                  rows="10"
                                  paginator="true" paginatorPosition="both"
@@ -42,8 +43,8 @@
                             <h:outputLabel value="Investigation Exist Report"/>
                         </f:facet>
 
-                        <p:column headerText="ID" 
-                                  sortBy="#{c.investigation.id}" 
+                        <p:column headerText="ID"
+                                  sortBy="#{c.investigation.id}"
                                   filterBy="#{c.investigation.id}"
                                   filterMatchMode="contains">
                             <f:facet name="header">
@@ -54,8 +55,8 @@
 
                         </p:column>
 
-                        <p:column headerText="Name" 
-                                  sortBy="#{c.investigation.name}" 
+                        <p:column headerText="Name"
+                                  sortBy="#{c.investigation.name}"
                                   filterBy="#{c.investigation.name}"
                                   filterMatchMode="contains">
                             <f:facet name="header">
@@ -65,8 +66,8 @@
                             <h:outputLabel value="#{c.investigation.name}"  />
 
                         </p:column>
-                        <p:column headerText="Department" 
-                                  sortBy="#{c.investigation.name}" 
+                        <p:column headerText="Department"
+                                  sortBy="#{c.investigation.name}"
                                   filterBy="#{c.investigation.name}"
                                   filterMatchMode="contains">
                             <f:facet name="header">
@@ -76,8 +77,8 @@
                             <h:outputLabel value="#{c.investigation.department.name}"  />
 
                         </p:column>
-                        <p:column headerText="Template Available" 
-                                  sortBy="#{c.b}" 
+                        <p:column headerText="Template Available"
+                                  sortBy="#{c.b}"
                                   filterBy="#{c.b}"
                                   filterMatchMode="contains" style="text-align: center;">
                             <h:outputLabel value="Available" rendered="#{c.b eq 'true'}" style="color: green;"/>
@@ -87,7 +88,7 @@
 
                     </p:dataTable>
 
-                </p:panel>        
+                </p:panel>
             </h:form>
         </h:panelGroup>
     </ui:define>

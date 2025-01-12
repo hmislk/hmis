@@ -106,6 +106,8 @@ public class WebUserController implements Serializable {
     private DrawerController drawerController;
     @Inject
     StaffImageController staffImageController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      * Class Variables
@@ -294,11 +296,12 @@ public class WebUserController implements Serializable {
         if (grantAllPrivilegesToAllUsersForTesting) {
             return true;
         }
-        if (skipDevelopersPrivilege) {
+        if (configOptionApplicationController.getBooleanValueByKey("Disabling Developers Privileges in the System", true)) {
             if (privilege.equalsIgnoreCase("Developers")) {
                 return false;
             }
         }
+        
         if (getSessionController().getLoggedUser() == null) {
             return hasPri;
         }
