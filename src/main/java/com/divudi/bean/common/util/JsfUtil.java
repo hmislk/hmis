@@ -1,16 +1,16 @@
 package com.divudi.bean.common.util;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.model.SelectItem;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class JsfUtil {
-    
+
     public static SelectItem[] getSelectItems(List<?> entities, boolean selectOne) {
         int size = selectOne ? entities.size() + 1 : entities.size();
         SelectItem[] items = new SelectItem[size];
@@ -24,16 +24,7 @@ public class JsfUtil {
         }
         return items;
     }
-    
-    public static void ensureAddErrorMessage(Exception ex, String defaultMsg) {
-        String msg = ex.getLocalizedMessage();
-        if (msg != null && msg.length() > 0) {
-            addErrorMessage(msg);
-        } else {
-            addErrorMessage(defaultMsg);
-        }
-    }
-    
+
     public static void addErrorMessages(List<String> messages) {
         for (String message : messages) {
             addErrorMessage(message);
@@ -49,36 +40,32 @@ public class JsfUtil {
         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
         FacesContext.getCurrentInstance().addMessage("successInfo", facesMsg);
     }
-    
+
     public static String getRequestParameter(String key) {
         return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(key);
     }
-    
+
     public static Object getObjectFromRequestParameter(String requestParameterName, Converter converter, UIComponent component) {
         String theId = JsfUtil.getRequestParameter(requestParameterName);
         return converter.getAsObject(FacesContext.getCurrentInstance(), component, theId);
     }
-    
 
     public static <T> List<T> setToList(Set<T> set) {
         return new ArrayList<T>(set);
     }
-    
+
     public static String getAsConvertedString(Object object, Converter converter) {
         return converter.getAsString(FacesContext.getCurrentInstance(), null, object);
     }
-    
 
     public static void addErrorMessage(Exception ex, String defaultMsg) {
         String msg = ex.getLocalizedMessage();
-        if (msg != null && msg.length() > 0) {
+        if (msg != null && !msg.isEmpty()) {
             addErrorMessage(msg);
         } else {
             addErrorMessage(defaultMsg);
         }
     }
-
-   
 
     public static enum PersistAction {
         CREATE,
@@ -86,10 +73,7 @@ public class JsfUtil {
         UPDATE
     }
 
-    public static boolean isValidationFailed() {
-        return FacesContext.getCurrentInstance().isValidationFailed();
+    public static boolean isValidationPassed() {
+        return !FacesContext.getCurrentInstance().isValidationFailed();
     }
-    
-    
-    
 }

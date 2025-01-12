@@ -372,7 +372,7 @@ public class SearchController implements Serializable {
         department = sessionController.getDepartment();
         institution = sessionController.getInstitution();
         site = sessionController.getDepartment().getSite();
-        webUser=null;
+        webUser = null;
         return "/cashier/my_department_all_cashier_summary?faces-redirect=true";
     }
 
@@ -17168,6 +17168,12 @@ public class SearchController implements Serializable {
 
         parameters.put("bfr", true);
         parameters.put("br", true);
+
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN);
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+
+        jpql += "AND bill.billTypeAtomic in :btas ";
+        parameters.put("btas", btas);
 
         if (institution != null) {
             jpql += "AND bill.department.institution = :ins ";
