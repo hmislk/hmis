@@ -596,20 +596,11 @@ public class PatientReportController implements Serializable {
             String toBeReplaced;
 
             toBeReplaced = patternStart + s.getFullText() + patternEnd;
-
+            
             finalText = finalText.replace(toBeReplaced, s.getSelectedValue());
         }
-
+        
         currentPatientReport.getTemplateItem().setLobValue(finalText);
-    }
-
-    public String toEditTemplate() {
-        if (investigationItem == null) {
-            JsfUtil.addErrorMessage("Select a template first");
-            return "";
-        }
-        investigationItemController.setCurrent(investigationItem);
-        return "/lab/investigation_item_value_path";
     }
 
     public void toAddNewTemplate() {
