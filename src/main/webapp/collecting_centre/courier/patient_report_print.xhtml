@@ -29,15 +29,18 @@
                                         >
                                         <p:printer target="divPrint" />
                                     </p:commandButton>
+                                    
                                     <p:commandButton 
                                         value="Download PDF*" 
                                         ajax="false" 
+                                        rendered="false"
                                         icon="pi pi-file-pdf" 
                                         class="ui-button-info"
                                         style="background-color: #17a2b8; border-color: #17a2b8;" 
                                         onclick="PrimeFaces.monitorDownload(start, stop);">
                                         <p:fileDownload value="#{patientReportController.reportAsPdf}" />
                                     </p:commandButton>
+                                    
                                     <p:commandButton    
                                         value="Back to Report Search" 
                                         action="/collecting_centre/courier/generate_barcode_p_cup?faces-redirect=true" 
@@ -319,7 +322,6 @@
                                     
                                 </h:panelGroup>
                             </div>
-
 
                         </h:panelGroup>
 
