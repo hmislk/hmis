@@ -372,7 +372,7 @@ public class SearchController implements Serializable {
         department = sessionController.getDepartment();
         institution = sessionController.getInstitution();
         site = sessionController.getDepartment().getSite();
-        webUser=null;
+        webUser = null;
         return "/cashier/my_department_all_cashier_summary?faces-redirect=true";
     }
 
@@ -3184,8 +3184,8 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            sql += " and  ((b.department.name) like :dep )";
-            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            sql += " and  ((b.department.name) like :searchDep )";
+            m.put("searchDep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
@@ -10382,7 +10382,7 @@ public class SearchController implements Serializable {
         }
 
         if (department != null) {
-            params.put("dep", department);
+            params.put("dept", department);
             jpql.append(" and b.department = :dept ");
         }
 
@@ -10523,7 +10523,7 @@ public class SearchController implements Serializable {
         }
 
         if (department != null) {
-            params.put("dep", department);
+            params.put("dept", department);
             jpql.append(" and b.department = :dept ");
         }
 
@@ -13132,14 +13132,17 @@ public class SearchController implements Serializable {
         if (reportType.trim().equalsIgnoreCase("bills")) {
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
             // System.out.println("bills");
             bundle.setName("Staff Welfare Bills");
             bundle.setBundleType("billList");
@@ -13157,6 +13160,10 @@ public class SearchController implements Serializable {
             opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
 
             // System.out.println("bill items");
             bundle.setName("Staff Welfare Bill Items");
@@ -14236,9 +14243,9 @@ public class SearchController implements Serializable {
             parameters.put("pm", paymentMethod);
         }
 
-        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().isEmpty()) {
-            jpql += "AND ((bill.toStaff.person.name) like :toStaffName ) ";
-            parameters.put("toStaffName", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        if (staff != null) {
+            jpql += "AND ((bill.toStaff.person.name) = :staffName ) ";
+            parameters.put("staffName", staff.getPerson().getName());
         }
 
         jpql += "AND p.createdAt BETWEEN :fd AND :td ";
@@ -14346,9 +14353,9 @@ public class SearchController implements Serializable {
             parameters.put("wu", webUser);
         }
 
-        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().isEmpty()) {
-            jpql += "AND ((bill.toStaff.person.name) like :toStaffName ) ";
-            parameters.put("toStaffName", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        if (staff != null) {
+            jpql += "AND ((bill.toStaff.person.name) = :toStaffName ) ";
+            parameters.put("toStaffName", staff.getPerson().getName());
         }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
@@ -17161,6 +17168,12 @@ public class SearchController implements Serializable {
 
         parameters.put("bfr", true);
         parameters.put("br", true);
+
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN);
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+
+        jpql += "AND bill.billTypeAtomic in :btas ";
+        parameters.put("btas", btas);
 
         if (institution != null) {
             jpql += "AND bill.department.institution = :ins ";

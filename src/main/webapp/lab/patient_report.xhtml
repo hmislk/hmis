@@ -276,14 +276,14 @@
                                                         <td >
 
                                                             <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
-                                                                <p:inputTextarea rendered="true" id="txtMicMemoVal" queryDelay="0"   minQueryLength="1"  style="min-width: 200px; "  
+                                                                <p:inputTextarea rendered="true" id="txtMicMemoVal" queryDelay="0" class="w-100 mt-1"  minQueryLength="1" 
                                                                                  completeMethod="#{investigationItemValueController.completeValues}" disabled="#{patientReportController.currentPatientReport.approved}"
                                                                                  value="#{pvm.lobValue}" >
                                                                     <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                                 </p:inputTextarea>
                                                             </h:panelGroup>
                                                             <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Varchar'}">
-                                                                <p:selectOneMenu id="cmbMicStrVal" value="#{pvm.strValue}" editable="true"  style="min-width: 300px!important;" disabled="#{patientReportController.currentPatientReport.approved}">
+                                                                <p:selectOneMenu id="cmbMicStrVal" class="mt-1" value="#{pvm.strValue}" editable="true"  style="min-width: 300px!important;" disabled="#{patientReportController.currentPatientReport.approved}">
                                                                     <f:selectItem itemLabel="SENSITIVE" itemValue="SENSITIVE" ></f:selectItem>
                                                                     <f:selectItem itemLabel="RESISTANT" itemValue="Resistant" ></f:selectItem>
                                                                     <f:selectItem itemLabel="INTERMEDIATE" itemValue="Intermediate" ></f:selectItem>
@@ -678,12 +678,12 @@
                                             <div style="position: absolute; top: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Height')}%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 14px; height: 70%; vertical-align: top;" >
                                                 <div id="ixName" >
                                                     <h:outputLabel value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}" 
-                                                                   style="font-weight: bold;font-size: 18px!important; "/>
+                                                                   style="font-weight: bold;font-size: 21px!important; "/>
                                                 </div>
-                                                <div id="labelsAndValues" style="left:5%; width: 90%; display: inline-block; vertical-align: top; " >
+                                                <div id="labelsAndValues" style="left:5%; margin-top: 10px; width: 90%; display: inline-block; vertical-align: top; " >
                                                     <div style="vertical-align: top; width: 100%; padding: 1px;margin: auto;display: inline-block;">
                                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
-                                                            <h:panelGroup style="display: inline-block; clear: left; float: left; width: 100%; vertical-align: top;" layout="block"  rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired ne true and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.riTop lt 50 }" >
+                                                            <h:panelGroup style="display: inline-block; clear: left; float: left; width: 100%; vertical-align: top; font-size: 16px;" layout="block"  rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired ne true and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.riTop lt 50 }" >
                                                                 <div style="display: inline-block; float: left; width: 1%; clear: left; " ></div>
                                                                 <div style="display: inline-block; top: 0px; float: left; width: 20%; text-align: left; padding-top: 0.1%; padding-bottom: 0.1%; ">
                                                                     <h:outputLabel value="#{prv.investigationItem.name}"   escape="false"/>
@@ -699,36 +699,49 @@
                                                     <div style="vertical-align: top; text-align: left;  padding-top: 0%; padding-bottom: 0%; clear: left;">
                                                         <h:outputLabel value="Antibiotic Sensitivity Test" 
                                                                        rendered="#{patientReportController.currentPatientReport.transHasAbst}"
-                                                                       style="font-size: 110%; font-weight: bold; padding-left: 18px;"></h:outputLabel>
+                                                                       style="font-size: 135%; margin-top: 10px; font-weight: bold;"></h:outputLabel>
                                                     </div>
-                                                    <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
-                                                                var="prv" >
-                                                        <h:panelGroup 
-                                                            rendered="#{prv.investigationItem.ixItemType eq 'Antibiotic' and prv.investigationItem.retired ne true and prv.strValue ne '' and prv.strValue ne null  }" >
-                                                            <div style="float: left;width: 5%; clear: left;" ></div>
-                                                            <div style=" float: left; text-align: left; width: 40%;padding-left: 1px; padding-right: 1px; padding-top: 0px; vertical-align: top;">
-                                                                <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
-                                                            </div>
-                                                            <div style="float: left;width: 5%;  " ></div>
-                                                            <div style=" text-align: left; float:left;width: 40%;padding-left: 1px; padding-right: 1px; padding-top: 0px; vertical-align: top;">
-                                                                <h:outputLabel value="#{prv.strValue}" escape="false"
-                                                                               style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: uppercase;" />
-                                                            </div>
+                                                    <div>
+                                                        <ui:repeat  
+                                                            value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
+                                                            var="prv" >
+                                                            <h:panelGroup 
+                                                                style="font-size: 16px;"
+                                                                rendered="#{prv.investigationItem.ixItemType eq 'Antibiotic' and prv.investigationItem.retired ne true and prv.strValue ne '' and prv.strValue ne null  }" >
+                                                                <div style="float: left;width: 5%; clear: left;" ></div>
+                                                                <div style=" float: left; text-align: left; width: 40%; padding-left: 1px; padding-right: 1px; padding-top: 3px; vertical-align: top;">
+                                                                    <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
+                                                                </div>
+                                                                <div style="float: left;width: 2%;  " ></div>
+                                                                <div style=" text-align: left; float:left;width: 40%;padding-left: 1px; padding-right: 1px; padding-top: 3px; vertical-align: top;">
+                                                                    <h:outputLabel value="#{prv.strValue}" escape="false"
+                                                                                   style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: uppercase;" />
+                                                                </div>
 
+                                                            </h:panelGroup>
+                                                        </ui:repeat>
+                                                    </div>
+
+                                                    <div style="vertical-align: top; text-align: left; padding-top: 3px; clear: left;">
+                                                        <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientReportItemValues.size()gt 0}">
+                                                            <hr/>
                                                         </h:panelGroup>
-                                                    </ui:repeat>
-                                                    <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
-                                                        <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired ne true and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.riTop gt 50 }" >
-                                                            <div style="float: left;width: 5%; " ></div>
-                                                            <div style=" float: left; text-align: left; width: 20%;padding-left: 1px; padding-right: 1px; padding-top: 1px; vertical-align: top;">
-                                                                <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
-                                                            </div>
-                                                            <div style="float: left;width: 5%;  " ></div>
-                                                            <div style=" text-align: left; float:left;width: 60%;padding-left: 1px; padding-right: 1px; padding-top: 1px; vertical-align: top;">
-                                                                <h:outputLabel value="#{fn:replace(prv.lobValue,'\\n','&lt;br/&gt;')}"    escape="false" />
-                                                            </div>
-                                                        </h:panelGroup>
-                                                    </ui:repeat>
+                                                    </div>
+
+                                                    <div style="vertical-align: top; text-align: left; font-size: 16px;  padding-top: 0%; padding-bottom: 0%; clear: left;">
+                                                        <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                            <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired ne true and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.riTop gt 50 }" >
+                                                                <div style="float: left;width: 5%; " ></div>
+                                                                <div style=" float: left; text-align: left; width: 20%;padding-left: 1px; padding-right: 1px; padding-top: 1px; vertical-align: top;">
+                                                                    <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
+                                                                </div>
+                                                                <div style="float: left;width: 5%;  " ></div>
+                                                                <div style=" text-align: left; float:left;width: 60%;padding-left: 1px; padding-right: 1px; padding-top: 1px; vertical-align: top;">
+                                                                    <h:outputLabel value="#{fn:replace(prv.lobValue,'\\n','&lt;br/&gt;')}"    escape="false" />
+                                                                </div>
+                                                            </h:panelGroup>
+                                                        </ui:repeat>
+                                                    </div>
 
                                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                                         <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
@@ -742,8 +755,8 @@
                                                     </ui:repeat>
 
                                                 </div>
-                                                <div style="clear: left;padding-top: 1%;">
-                                                    <h:outputLabel value="--- End of Report ---" style="font-size: 14px; font-weight: bold; "></h:outputLabel>
+                                                <div style="clear: left;padding-top: 2%;">
+                                                    <h:outputLabel value="--- End of Report ---" style="font-size: 16px; font-weight: bold; "></h:outputLabel>
                                                 </div>
                                             </div>
                                         </div>

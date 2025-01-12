@@ -117,6 +117,7 @@
                                 <!-- Component 1: Without Institution and Site -->
                                 <p:selectOneMenu
                                     required="true"
+                                    requiredMessage="Department is Required"
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -133,6 +134,7 @@
                                 <!-- Component 2: With Site Only -->
                                 <p:selectOneMenu
                                     required="true"
+                                    requiredMessage="Department is Required"
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -149,6 +151,7 @@
                                 <!-- Component 3: With Institution Only --> 
                                 <p:selectOneMenu
                                     required="true"
+                                    requiredMessage="Department is Required"
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -165,6 +168,7 @@
                                 <!-- Component 4: With Both Institution and Site --> 
                                 <p:selectOneMenu
                                     required="true"
+                                    requiredMessage="Department is Required"
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -303,18 +307,27 @@
                                     icon="fas fa-print" 
                                     ajax="false" 
                                     value="Print All">
+                                    <p:printer target="tbl1" />
                                 </p:commandButton>
                                 <p:commandButton 
                                     class="ui-button-success mx-1" 
                                     icon="fas fa-file-excel" 
                                     ajax="false" 
                                     value="Download">
+                                    <p:dataExporter 
+                                        type="xlsx" 
+                                        fileName="Fast Movement Report" 
+                                        target="tbl1"  />
                                 </p:commandButton>
                                 <p:commandButton 
                                     class="ui-button-danger mx-1" 
                                     icon= "fas fa-file-pdf" 
                                     ajax="false" 
                                     value="PDF">
+                                    <p:dataExporter 
+                                        type="pdf" 
+                                        target="tbl1" 
+                                        fileName="Fast Movement Report" />
                                 </p:commandButton>
                                 <h5>Fast Moving</h5>                                                     
                                 <h5>Pharmacy Movement Report</h5>
@@ -328,41 +341,44 @@
                                              currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
                                              rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-                                    <p:column headerText="Sl No." width="10em">
+                                    <p:column headerText="Sl No.">
                                         <h:outputText value="#{n+1}" />
                                     </p:column>
-                                    <p:column headerText="Item Code" width="10em">
+                                    <p:column headerText="Item Code" >
                                         <h:outputText value="#{f.item.code}" />
                                     </p:column>
-                                    <p:column headerText="Item Name " width="10em">
+                                    <p:column headerText="Item Name " >
                                         <h:outputText value="#{f.item.name}" />
                                     </p:column>
-                                    <p:column headerText="Drug Form" width="10em">
+                                    <p:column headerText="Drug Form" >
                                         <h:outputText value="#{f.item.category.name}" />
                                     </p:column>
-                                    <p:column headerText="Quantity" width="10em">
+                                    <p:column headerText="Supplier(Last Purchase)">
+                                        <h:outputText value="#{f.lastPurchaseSupplier.name}" />
+                                    </p:column>
+                                    <p:column headerText="Quantity" >
                                         <h:outputText value="#{f.qty}" >
                                             <f:convertNumber pattern="#,###" />
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Cost Value" width="10em">
+                                    <p:column headerText="Cost Value" >
                                         <h:outputText value="#{f.purchaseValue}" >
-                                        <f:convertNumber pattern="#,###.00" />
+                                            <f:convertNumber pattern="#,###.00" />
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Sale Value" width="10em">
+                                    <p:column headerText="Sale Value" >
                                         <h:outputText value="#{f.retailsaleValue}" >
-                                        <f:convertNumber pattern="#,###.00" />
+                                            <f:convertNumber pattern="#,###.00" />
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Value of QIH" width="10em">
+                                    <p:column headerText="Value of QIH" >
                                         <h:outputText value="#{f.stockQty}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="QIH" width="10em">
+                                    <p:column headerText="QIH" >
                                         <h:outputText value="#{f.stockOnHand}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
 
@@ -380,18 +396,27 @@
                                     icon="fas fa-print" 
                                     ajax="false" 
                                     value="Print All">
+                                    <p:printer target="tbl2" />
                                 </p:commandButton>
                                 <p:commandButton 
                                     class="ui-button-success mx-1" 
                                     icon="fas fa-file-excel" 
                                     ajax="false" 
                                     value="Download">
+                                    <p:dataExporter 
+                                        type="xlsx" 
+                                        fileName="Slow Movement Report" 
+                                        target="tbl2"  />
                                 </p:commandButton>
                                 <p:commandButton 
                                     class="ui-button-danger mx-1" 
                                     icon= "fas fa-file-pdf" 
                                     ajax="false" 
                                     value="PDF">
+                                    <p:dataExporter 
+                                        type="pdf" 
+                                        target="tbl2" 
+                                        fileName="Slow Movement Report" />
                                 </p:commandButton>
                                 <h5>Slow Moving</h5>                                                     
                                 <h5>Pharmacy Movement Report</h5>
@@ -406,41 +431,44 @@
                                              currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
                                              rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-                                    <p:column headerText="Sl No." width="10em">
+                                    <p:column headerText="Sl No.">
                                         <h:outputText value="#{n+1}" />
                                     </p:column>
-                                    <p:column headerText="Item Code" width="10em">
+                                    <p:column headerText="Item Code">
                                         <h:outputText value="#{s.item.code}" />
                                     </p:column>
-                                    <p:column headerText="Item Name " width="10em">
+                                    <p:column headerText="Item Name ">
                                         <h:outputText value="#{s.item.name}" />
                                     </p:column>
-                                    <p:column headerText="Drug Form" width="10em">
+                                    <p:column headerText="Drug Form">
                                         <h:outputText value="#{s.item.category.name}" />
                                     </p:column>
-                                    <p:column headerText="Quantity" width="10em">
+                                    <p:column headerText="Supplier(Last Purchase)">
+                                        <h:outputText value="#{s.lastPurchaseSupplier.name}" />
+                                    </p:column>
+                                    <p:column headerText="Quantity">
                                         <h:outputText value="#{s.qty}" >
-                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Cost Value" width="10em">
+                                    <p:column headerText="Cost Value" >
                                         <h:outputText value="#{s.purchaseValue}" >
-                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Sale Value" width="10em">
+                                    <p:column headerText="Sale Value" >
                                         <h:outputText value="#{s.retailsaleValue}" >
-                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Value of QIH" width="10em">
+                                    <p:column headerText="Value of QIH" >
                                         <h:outputText value="#{s.stockQty}" >
-                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="QIH" width="10em">
+                                    <p:column headerText="QIH" >
                                         <h:outputText value="#{s.stockOnHand}" >
-                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
 
@@ -458,24 +486,33 @@
                                     icon="fas fa-print" 
                                     ajax="false" 
                                     value="Print All">
+                                    <p:printer target="tbl3" />
                                 </p:commandButton>
                                 <p:commandButton 
                                     class="ui-button-success mx-1" 
                                     icon="fas fa-file-excel" 
                                     ajax="false" 
                                     value="Download">
+                                    <p:dataExporter 
+                                        type="xlsx" 
+                                        fileName="Non Movement Report" 
+                                        target="tbl3"  />
                                 </p:commandButton>
                                 <p:commandButton 
                                     class="ui-button-danger mx-1" 
                                     icon= "fas fa-file-pdf" 
                                     ajax="false" 
                                     value="PDF">
+                                    <p:dataExporter 
+                                        type="pdf" 
+                                        target="tbl3" 
+                                        fileName="Non Movement Report" />
                                 </p:commandButton>
                                 <h5>Non Moving</h5>                                                     
                                 <h5>Pharmacy Movement Report</h5>
 
                                 <p:dataTable id="tbl3" 
-                                             value="#{pharmacyReportController.items}" 
+                                             value="#{pharmacyReportController.itemLastSuppliers}" 
                                              var="no" 
                                              rowIndexVar="n" 
                                              paginator="true" 
@@ -484,17 +521,20 @@
                                              currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
                                              rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-                                    <p:column headerText="Sl No." width="10em">
+                                    <p:column headerText="Sl No.">
                                         <h:outputText value="#{n+1}" />
                                     </p:column>
-                                    <p:column headerText="Item Code" width="10em">
-                                        <h:outputText value="#{no.code}" />
+                                    <p:column headerText="Item Code">
+                                        <h:outputText value="#{no.item.code}" />
                                     </p:column>
-                                    <p:column headerText="Item Name " width="10em">
-                                        <h:outputText value="#{no.name}" />
+                                    <p:column headerText="Item Name">
+                                        <h:outputText value="#{no.item.name}" />
                                     </p:column>
-                                    <p:column headerText="Drug Form" width="10em">
-                                        <h:outputText value="#{no.category.name}" />
+                                    <p:column headerText="Drug Form">
+                                        <h:outputText value="#{no.item.category.name}" />
+                                    </p:column>
+                                    <p:column headerText="Supplier(Last Purchase)">
+                                        <h:outputText value="#{no.lastSupplier.name}" />
                                     </p:column>
 
                                 </p:dataTable>

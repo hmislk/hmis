@@ -28,6 +28,7 @@ import com.divudi.data.Sex;
 import com.divudi.data.TestWiseCountReport;
 import com.divudi.data.dataStructure.BillAndItemDataRow;
 import com.divudi.data.dataStructure.ItemDetailsCell;
+import com.divudi.data.dataStructure.ItemLastSupplier;
 import com.divudi.data.dataStructure.PharmacyStockRow;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.data.lab.PatientInvestigationStatus;
@@ -289,6 +290,8 @@ public class PharmacyReportController implements Serializable {
     double valueOfQOH;
     double qoh;
     List<Item> items;
+
+    private List<ItemLastSupplier> itemLastSuppliers;
     private String sortType;
 
     //Constructor
@@ -2194,7 +2197,7 @@ public class PharmacyReportController implements Serializable {
                 + " from Stock s "
                 + " where s.itemBatch.dateOfExpire between :fd and :td ";
         if (institution != null) {
-            jpql += " and s.institution=:ins ";
+            jpql += " and s.department.institution=:ins ";
             m.put("ins", institution);
         }
         if (department != null) {
@@ -2249,19 +2252,60 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void fillFastMoving() {
-        Date startTime = new Date();
-
         fillMoving(true);
         fillMovingQty(true);
 
     }
 
     public void fillSlowMoving() {
-        Date startTime = new Date();
-
         fillMoving(false);
         fillMovingQty(false);
 
+    }
+
+    public Institution findLastPurchaseSupplier(Item item, Institution ins, Department dept) {
+        String jpql = "SELECT bi "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill.retired = false "
+                + " AND bi.bill.billTypeAtomic IN :bta "
+                + " AND bi.item = :item ";
+
+        if (ins != null) {
+            jpql += " AND bi.bill.institution = :institution ";
+        }
+        if (dept != null) {
+            jpql += " AND bi.bill.department = :department ";
+        }
+
+        jpql += " ORDER BY bi.id DESC";
+
+        List<BillTypeAtomic> btaList = Arrays.asList(
+                BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
+        );
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("bta", btaList);
+        parameters.put("item", item);
+
+        if (ins != null) {
+            parameters.put("institution", ins);
+        }
+        if (dept != null) {
+            parameters.put("department", dept);
+        }
+
+        BillItem bit = getBillItemFacade().findFirstByJpql(jpql, parameters);
+        if (bit == null || bit.getBill() == null || bit.getBill().getBillTypeAtomic() == null) {
+            return null;
+        }
+
+        switch (bit.getBill().getBillTypeAtomic()) {
+            case PHARMACY_GRN:
+            case PHARMACY_DIRECT_PURCHASE:
+                return bit.getBill().getFromInstitution();
+            default:
+                return null;
+        }
     }
 
     public void fillMoving(boolean fast) {
@@ -2289,10 +2333,9 @@ public class PharmacyReportController implements Serializable {
                 + " and bi.bill.department=:d "
                 + " and bi.bill.createdAt between :fd and :td "
                 + " and bi.bill.billType in :bt ";
-                
 
         if (institution != null) {
-            sql += " and bi.bill.institution=:ins ";
+            sql += " and bi.bill.department.institution=:ins ";
             m.put("ins", institution);
         }
         if (site != null) {
@@ -2309,9 +2352,9 @@ public class PharmacyReportController implements Serializable {
             sql += "and bi.item=:itm ";
             m.put("itm", item);
         }
-        
+
         sql += " group by bi.item ";
-        
+
         if (!fast) {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) desc";
         } else {
@@ -2329,6 +2372,7 @@ public class PharmacyReportController implements Serializable {
             StockReportRecord r = new StockReportRecord();
             r.setItem((Item) obj[0]);
             r.setQty((Double) obj[1]);
+            r.setLastPurchaseSupplier(findLastPurchaseSupplier(r.getItem(), institution, department));
             r.setPurchaseValue((Double) obj[2]);
             r.setRetailsaleValue((Double) obj[3]);
             r.setStockQty(getPharmacyBean().getStockByPurchaseValue(r.getItem(), department));
@@ -2377,10 +2421,9 @@ public class PharmacyReportController implements Serializable {
                 + " and bi.bill.billType in :bt "
                 + " and type(bi.bill) in :bct "
                 + " and bi.bill.createdAt between :fd and :td ";
-        
-        
+
         if (institution != null) {
-            sql += " and bi.bill.institution=:ins ";
+            sql += " and bi.bill.department.institution=:ins ";
             m.put("ins", institution);
         }
         if (site != null) {
@@ -2397,9 +2440,8 @@ public class PharmacyReportController implements Serializable {
             sql += "and bi.item=:itm ";
             m.put("itm", item);
         }
-        
+
         sql += " group by bi.item ";
-        
 
         if (!fast) {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) desc";
@@ -2415,6 +2457,7 @@ public class PharmacyReportController implements Serializable {
             StockReportRecord r = new StockReportRecord();
             r.setItem((Item) obj[0]);
             r.setQty((Double) obj[1]);
+            r.setLastPurchaseSupplier(findLastPurchaseSupplier(r.getItem(), institution, department));
             r.setPurchaseValue((Double) obj[2]);
             r.setRetailsaleValue((Double) obj[3]);
             r.setStockQty(getPharmacyBean().getStockByPurchaseValue(r.getItem(), department));
@@ -2434,17 +2477,15 @@ public class PharmacyReportController implements Serializable {
             qoh = qoh + (strr.getStockOnHand());
         }
     }
-    
-     public void fillDepartmentNonmovingStocks() {
-        Date startTime = new Date();
 
+    public void fillDepartmentNonmovingStocks() {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
-        String sql;
-        sql = "SELECT bi.item "
+        String jpql;
+        jpql = "SELECT bi.item "
                 + " FROM BillItem bi "
                 + " WHERE  "
                 + " bi.bill.department=:d "
@@ -2452,46 +2493,51 @@ public class PharmacyReportController implements Serializable {
                 + " AND bi.bill.billDate between :fd and :td ";
         m.put("d", department);
         m.put("bts", Arrays.asList(billTypes));
-         m.put("fd", fromDate);
+        m.put("fd", fromDate);
         m.put("td", toDate);
-                    
-        sql += " GROUP BY bi.item";
+
+        jpql += " GROUP BY bi.item";
 
         //System.out.println("sql = " + sql);
         //System.out.println("m = " + m);
-        Set<Item> bis = new HashSet<>(itemFacade.findByJpql(sql, m));
+        Set<Item> bis = new HashSet<>(itemFacade.findByJpql(jpql, m));
 
-        sql = "SELECT s.itemBatch.item "
+        jpql = "SELECT s.itemBatch.item "
                 + " FROM Stock s "
                 + " WHERE s.department=:d "
                 + " AND s.stock > 0 ";
         m = new HashMap();
         m.put("d", department);
         if (institution != null) {
-            sql += " and s.institution=:ins ";
+            jpql += " and s.department.institution=:ins ";
             m.put("ins", institution);
         }
         if (department != null) {
-            sql += " and s.department=:dep ";
+            jpql += " and s.department=:dep ";
             m.put("dep", department);
         }
         if (site != null) {
-            sql += " and s.department.site=:sit ";
+            jpql += " and s.department.site=:sit ";
             m.put("sit", site);
         }
         if (amp != null) {
             item = amp;
             System.out.println("item = " + item);
-            sql += "and s.itemBatch.item=:itm ";
+            jpql += "and s.itemBatch.item=:itm ";
             m.put("itm", item);
         }
-        sql = sql + " GROUP BY s.itemBatch.item "
+        jpql = jpql + " GROUP BY s.itemBatch.item "
                 + " ORDER BY s.itemBatch.item.name";
 
-        Set<Item> sis = new HashSet<>(itemFacade.findByJpql(sql, m));
+        Set<Item> sis = new HashSet<>(itemFacade.findByJpql(jpql, m));
 
         sis.removeAll(bis);
         items = new ArrayList<>(sis);
+        itemLastSuppliers = new ArrayList<>();
+        for (Item item : items) {
+            ItemLastSupplier ils = new ItemLastSupplier(item, findLastPurchaseSupplier(item, institution, department));
+            itemLastSuppliers.add(ils);
+        }
 
         Collections.sort(items);
 
@@ -3139,14 +3185,16 @@ public class PharmacyReportController implements Serializable {
     public void setQoh(double qoh) {
         this.qoh = qoh;
     }
-        public ItemFacade getItemFacade() {
+
+    public ItemFacade getItemFacade() {
         return itemFacade;
     }
 
     public void setItemFacade(ItemFacade itemFacade) {
         this.itemFacade = itemFacade;
     }
-        public List<Item> getItems() {
+
+    public List<Item> getItems() {
         return items;
     }
 
@@ -3162,4 +3210,14 @@ public class PharmacyReportController implements Serializable {
         this.sortType = sortType;
     }
 
+    public List<ItemLastSupplier> getItemLastSuppliers() {
+        return itemLastSuppliers;
+    }
+
+    public void setItemLastSuppliers(List<ItemLastSupplier> itemLastSuppliers) {
+        this.itemLastSuppliers = itemLastSuppliers;
+    }
+
+    
+    
 }

@@ -791,6 +791,7 @@ public class PharmacyController implements Serializable {
         return reportName.trim();
     }
 
+    @Deprecated
     public void generateGRNReportTableByBillItem(List<BillType> bt) {
         bills = null;
         totalCreditPurchaseValue = 0.0;
@@ -846,74 +847,74 @@ public class PharmacyController implements Serializable {
 //        calculateTotalsForBillItems(billItems);
     }
 
-    public String navigateToPrinteGeneratedGrnDetailedRportTable() {
+    public void fetchBillItemDetailsToPrint() {
         if (bills == null) {
             JsfUtil.addErrorMessage("No Bills");
-            return null;
+            return;
         }
         if (bills.isEmpty()) {
             JsfUtil.addErrorMessage("Bill List Empty");
-            return null;
+            return;
         }
         for (Bill b : bills) {
             if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
                 b.setBillItems(billService.fetchBillItems(b));
             }
         }
+    }
+
+    public String navigateToPrinteGeneratedGrnDetailedRportTable() {
+        fetchBillItemDetailsToPrint();
         return "/reports/inventoryReports/grn_report_detail_print?faces-redirect=true";
     }
 
     public String navigateToPrinteGeneratedGrnReturnReportTable() {
-        if (bills == null) {
-            JsfUtil.addErrorMessage("No Bills");
-            return null;
-        }
-        if (bills.isEmpty()) {
-            JsfUtil.addErrorMessage("Bill List Empty");
-            return null;
-        }
-        for (Bill b : bills) {
-            if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
-                b.setBillItems(billService.fetchBillItems(b));
-            }
-        }
+        fetchBillItemDetailsToPrint();
         return "/reports/inventoryReports/grn_report_return_print?faces-redirect=true";
+    }
+
+    public String navigateToPrinteGeneratedGrnCancelReportTable() {
+        fetchBillItemDetailsToPrint();
+        return "/reports/inventoryReports/grn_report_cancel_print?faces-redirect=true";
     }
 
     public String navigateBackToGeneratedGrnDetailedRportTable() {
         return "/reports/inventoryReports/grn_report?faces-redirect=true";
     }
- 
-    public void generateGrnReportTable() {
 
-        bills = null;
-        totalCreditPurchaseValue = 0.0;
-        totalCashPurchaseValue = 0.0;
-        totalPurchase = 0.0;
+    public void generateGrnReportTable() {
+        resetFields();
 
         List<BillType> bt = new ArrayList<>();
-        if ("detailReport".equals(reportType)) {
-            bt.add(BillType.PharmacyGrnBill);
-            generateGRNReportTableByBillItem(bt);
-        } else if ("returnReport".equals(reportType)) {
-            bt.add(BillType.PharmacyGrnReturn);
-            generateGRNReportTableByBillItem(bt);
-        } else if ("summeryReport".equals(reportType)) {
-            bt.add(BillType.PharmacyGrnBill);
-            bt.add(BillType.PharmacyGrnReturn);
+        List<BillTypeAtomic> bta = new ArrayList<>();
+        if ("returnReport".equals(reportType)) {
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        } else if ("cancellationReport".equals(reportType)) {
+            bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+        } else if ("summeryReport".equals(reportType) || "detailReport".equals(reportType)) {
+            bta.add(BillTypeAtomic.PHARMACY_GRN);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+
         }
 
         bills = new ArrayList<>();
 
-        String sql = "SELECT b FROM Bill b WHERE type(b) = :bill"
-                + " and b.retired = false"
-                + " and b.billType In :btp"
+        String sql = "SELECT b FROM Bill b "
+                + " WHERE b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.billTypeAtomic In :btas"
                 + " and b.createdAt between :fromDate and :toDate";
 
         Map<String, Object> tmp = new HashMap<>();
 
-        tmp.put("bill", BilledBill.class); // Use the actual Class object
-        tmp.put("btp", bt);
+        tmp.put("btas", bta);
         tmp.put("fromDate", getFromDate());
         tmp.put("toDate", getToDate());
 
@@ -981,6 +982,9 @@ public class PharmacyController implements Serializable {
         departmentSummaries = null;
         issueDepartmentCategoryWiseItems = null;
         resultsList = null;
+        totalCreditPurchaseValue = 0.0;
+        totalCashPurchaseValue = 0.0;
+        totalPurchase = 0.0;
     }
 
     public void generateConsumptionReportTableByBill(BillType billType) {
@@ -1393,6 +1397,89 @@ public class PharmacyController implements Serializable {
     }
 
     public List<String1Value1> calculateTotals(List<Bill> billList) {
+        data = new ArrayList<>();
+        totalPurchase = 0.0;
+        totalSaleValue = 0.0;
+        totalCreditPurchaseValue = 0.0;
+        totalCreditSaleValue = 0.0;
+        totalCashPurchaseValue = 0.0;
+        totalCashSaleValue = 0.0;
+
+        double totalCardPurchaseValue = 0.0, totalCardSaleValue = 0.0;
+        double totalChequePurchaseValue = 0.0, totalChequeSaleValue = 0.0;
+        double totalSlipPurchaseValue = 0.0, totalSlipSaleValue = 0.0;
+        double totalEwalletPurchaseValue = 0.0, totalEwalletSaleValue = 0.0;
+        double totalNonePurchaseValue = 0.0, totalNoneSaleValue = 0.0;
+        double totalOtherPurchaseValue = 0.0, totalOtherSaleValue = 0.0;
+
+        for (Bill bill : billList) {
+            double netTotal = bill.getNetTotal();
+            double saleValue = bill.getSaleValue();
+
+            switch (bill.getPaymentMethod()) {
+                case Credit:
+                    totalCreditPurchaseValue += netTotal;
+                    totalCreditSaleValue += saleValue;
+                    break;
+                case Cash:
+                    totalCashPurchaseValue += netTotal;
+                    totalCashSaleValue += saleValue;
+                    break;
+                case Card:
+                    totalCardPurchaseValue += netTotal;
+                    totalCardSaleValue += saleValue;
+                    break;
+                case Cheque:
+                    totalChequePurchaseValue += netTotal;
+                    totalChequeSaleValue += saleValue;
+                    break;
+                case Slip:
+                    totalSlipPurchaseValue += netTotal;
+                    totalSlipSaleValue += saleValue;
+                    break;
+                case ewallet:
+                    totalEwalletPurchaseValue += netTotal;
+                    totalEwalletSaleValue += saleValue;
+                    break;
+                case None:
+                    totalNonePurchaseValue += netTotal;
+                    totalNoneSaleValue += saleValue;
+                    break;
+                default:
+                    totalOtherPurchaseValue += netTotal;
+                    totalOtherSaleValue += saleValue;
+                    break;
+            }
+
+            totalPurchase += netTotal;
+            totalSaleValue += saleValue;
+        }
+
+        addIfNotZero(data, "Final Cash Total", totalCashPurchaseValue, totalCashSaleValue);
+        addIfNotZero(data, "Final Credit Total", totalCreditPurchaseValue, totalCreditSaleValue);
+        addIfNotZero(data, "Final Card Total", totalCardPurchaseValue, totalCardSaleValue);
+        addIfNotZero(data, "Final Cheque Total", totalChequePurchaseValue, totalChequeSaleValue);
+        addIfNotZero(data, "Final Slip Total", totalSlipPurchaseValue, totalSlipSaleValue);
+        addIfNotZero(data, "Final eWallet Total", totalEwalletPurchaseValue, totalEwalletSaleValue);
+        addIfNotZero(data, "Final None Total", totalNonePurchaseValue, totalNoneSaleValue);
+        addIfNotZero(data, "Final Other Total", totalOtherPurchaseValue, totalOtherSaleValue);
+        addIfNotZero(data, "Final Net Total", totalPurchase, totalSaleValue);
+
+        return data;
+    }
+
+    private void addIfNotZero(List<String1Value1> data, String label, double value, double value2) {
+        if (value != 0 || value2 != 0) {
+            String1Value1 entry = new String1Value1();
+            entry.setString(label);
+            entry.setValue(value);
+            entry.setValue2(value2);
+            data.add(entry);
+        }
+    }
+
+    @Deprecated
+    public List<String1Value1> calculateTotalsOld(List<Bill> billList) {
         data = new ArrayList<>();
 
         totalSaleValue = 0.0;
