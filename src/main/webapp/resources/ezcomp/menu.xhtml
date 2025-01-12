@@ -1681,6 +1681,11 @@
                 </f:facet>
 
             </p:menubar>
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Displaying the message provided to system users',false)}" style="background-color: #{configOptionApplicationController.getColorValueByKey('Message background color')}">
+                <div class="d-flex justify-content-center" style="background-color: #{configOptionApplicationController.getColorValueByKey('Message background color')}; font-weight: 700; font-size: 18px;">
+                    <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Message to system users')}"></h:outputText>
+                </div>
+            </h:panelGroup>
         </h:form>
     </cc:implementation>
 </html>
