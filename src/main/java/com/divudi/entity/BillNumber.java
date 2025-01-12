@@ -8,6 +8,7 @@ package com.divudi.entity;
 import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -39,6 +40,8 @@ public class BillNumber implements Serializable, RetirableEntity {
     private Department toDepartment;
     @Enumerated(EnumType.STRING)
     private BillType billType;
+    @Enumerated(EnumType.STRING)
+    private BillTypeAtomic billTypeAtomic;
     @Enumerated(EnumType.STRING)
     private BillClassType billClassType;
     private Integer billYear;
@@ -136,6 +139,8 @@ public class BillNumber implements Serializable, RetirableEntity {
         this.id = id;
     }
 
+    
+    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -177,6 +182,14 @@ public class BillNumber implements Serializable, RetirableEntity {
     @Override
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
     }
 
 }
