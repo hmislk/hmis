@@ -313,6 +313,7 @@
                                                 id="acTemplate" 
                                                 value="#{patientReportController.investigationItem}" 
                                                 completeMethod="#{investigationItemController.completeTemplate}"
+                                                disabled ="#{patientReportController.currentPatientReport.approved}"
                                                 var="ii" 
                                                 itemLabel="#{ii.name}" 
                                                 itemValue="#{ii}" >
@@ -326,6 +327,7 @@
                                                 process="acTemplate btnAddPathReport" 
                                                 update="dlgPath" 
                                                 value="Add Template to Report" 
+                                                disabled ="#{patientReportController.currentPatientReport.approved}"
                                                 actionListener="#{patientReportController.toAddNewTemplate()}" >
                                             </p:commandButton>
                                         </div>
@@ -380,35 +382,30 @@
                                                 id="btnAddTemplateToReport"
                                                 oncomplete="PF('dlgPath').hide();" 
                                                 process="@this dlgPath" 
-                                                update="reportEditor" 
+                                                update="reportEditor divPrint" 
                                                 value="Add To Report" 
                                                 actionListener="#{patientReportController.addTemplateToReport()}" >
                                             </p:commandButton>
 
-                                        </h:panelGroup>
 
+                                            <p:panel id="reportEditor" rendered="false" >
+                                                <h:panelGroup >
+                                                    <h1>A</h1>
+                                                    #{patientReportController.currentPatientReport}
+                                                    <h1>B</h1>
+                                                    <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}"
+                                                               var="e" >
+                                                        #{e.investigationItem.ixItemType}
+                                                    </ui:repeat>
+                                                    <h1>C</h1>
+                                                    #{patientReportController.currentPatientReport.templateItem.lobValue}
+                                                    <h1>D</h1>
+                                                    <h1>E</h1>
+                                                </h:panelGroup>
+                                            </p:panel>
+
+                                        </h:panelGroup>
                                     </p:dialog>
-
-                                    <p:panel id="reportEditor" rendered="false" >
-                                        <h:panelGroup >
-                                            <h1>A</h1>
-                                            #{patientReportController.currentPatientReport}
-                                            <h1>B</h1>
-                                            <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}"
-                                                       var="e" >
-                                                #{e.investigationItem.ixItemType}
-                                            </ui:repeat>
-                                            <h1>C</h1>
-                                            #{patientReportController.currentPatientReport.templateItem.lobValue}
-                                            <h1>D</h1>
-                                            <h1>E</h1>
-                                        </h:panelGroup>
-                                        <p:textEditor secure="false"  rendered="#{patientReportController.currentPatientReport.templateItem ne null}" 
-                                                      value="#{patientReportController.currentPatientReport.templateItem.lobValue}" widgetVar="editor" height="650" >
-
-                                        </p:textEditor>
-                                    </p:panel>
-
                                 </p:panel>
 
                                 <p:panel header="Report Details"  >
