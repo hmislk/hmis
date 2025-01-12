@@ -80,9 +80,6 @@
                                 <h:outputText value="Qty" />
                             </th>
                             <th  style="text-align: left;">
-                                <h:outputText value="#{bi.pharmaceuticalBillItem.freeQty}" />
-                            </th>
-                            <th  style="text-align: left;">
                                 <h:outputText value="Free Qty" />
                             </th>
                             <th  style="text-align: left;">
@@ -108,6 +105,7 @@
                                 </td>
                                 <td  rowspan="#{b.billItems.size() + 1}">
                                     <h:outputText value="#{b.invoiceNumber}" ></h:outputText>
+                                    <h:outputText value="#{b.referenceBill.invoiceNumber}" ></h:outputText>
                                 </td>
                                 <td  rowspan="#{b.billItems.size() + 1}">
                                     <h:outputText value="#{b.createdAt}" >
@@ -120,7 +118,7 @@
                                     </h:outputText>
                                 </td>
                                 <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.fromInstitution.name}" />
+                                    <h:outputText value="#{b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ? b.toInstitution.name : b.fromInstitution.name}" />
                                 </td>
                                 <td  rowspan="#{b.billItems.size() + 1}">
                                     <h:outputText value="#{b.institution.name}" />
