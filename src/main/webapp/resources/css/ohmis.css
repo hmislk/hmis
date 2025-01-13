@@ -593,15 +593,39 @@ th.align-right-header .ui-column-title {
 
 @media print {
     .printingOnly{
-    display: block !important;
+        display: block !important;
 
-}
+    }
 }
 
 @media screen {
     .printingOnly{
-    display: none !important;
+        display: none !important;
 
+    }
 }
+
+
+
+/* Adjust the size of the autocomplete dropdown panel */
+.ui-autocomplete.minimized-spacing .ui-autocomplete-panel {
+    max-height: 150px; /* Set a maximum height */
+    overflow-y: auto; /* Enable scrolling for large content */
+    padding: 0; /* Minimize padding inside the panel */
+    margin: 0; /* Remove extra margins */
+    border: 1px solid #ddd; /* Optional: Add a subtle border */
+}
+
+/* Minimize spacing for individual dropdown items */
+.ui-autocomplete.minimized-spacing .ui-autocomplete-item {
+    padding: 4px 8px; /* Reduce padding for items */
+    margin: 0; /* Remove margins */
+    line-height: 1.2; /* Compact line height */
+}
+
+/* Adjust hover effect for dropdown items */
+.ui-autocomplete.minimized-spacing .ui-autocomplete-item:hover {
+    background-color: #f5f5f5; /* Subtle hover effect */
+    color: #000; /* Optional: Change text color */
 }
 
