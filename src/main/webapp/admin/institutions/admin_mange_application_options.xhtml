@@ -36,33 +36,49 @@
                                 sortBy="#{option.optionKey}" 
                                 filterBy="#{option.optionKey}"
                                 filterFunction="#{configOptionController.filterByCustom}">
-                                #{option.optionKey}
+                                <h:outputText value="#{option.optionKey}"/>
                             </p:column>
 
                             <p:column 
+                                rendered="#{webUserController.hasPrivilege('Developers')}"
                                 headerText="Type" 
                                 width="10em" 
                                 sortBy="#{option.valueType}" 
                                 filterBy="#{option.valueType}"
                                 filterFunction="#{configOptionController.filterByCustom}"
                                 style="padding: 7px;">
-                                #{option.valueType}
+                                <h:outputText value="#{option.optionValue}"/>
                             </p:column>
 
-                            <p:column headerText="Value" style="padding: 7px;">
-                                <div class="d-flex gap-5">
-                                    <h:outputText value="#{option.optionValue}"/>
-                                    <h:panelGroup rendered="#{configOptionController.option.valueType eq 'COLOR'}">
-                                        <div style="width: 50px; height: 30px; background-color: #{option.optionValue};"></div>
+                            <p:column
+                                headerText="Value" 
+                                class="text-center"
+                                sortBy="#{option.optionValue}" 
+                                filterBy="#{option.optionValue}"
+                                style="padding: 7px;"
+                                >
+
+                                <h:panelGroup>
+                                    <h:panelGroup rendered="#{option.optionValue eq 'true'}" >
+                                        <i class="fa fa-check text-success m-1" ></i>
+                                        <h:outputText value="Yes" class="text-success"/>
                                     </h:panelGroup>
-                                </div>
+                                    <h:panelGroup rendered="#{option.optionValue eq 'false'}">
+                                        <i class="fa fa-times text-danger m-1" ></i>
+                                        <h:outputText value="No" class="text-danger"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{option.optionValue ne 'true' and option.optionValue ne 'false'}">
+                                        <h:outputText value="#{option.optionValue}" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
                             </p:column >
 
-                            <p:column headerText="Actions" width="7em" style="padding: 7px;">
-                                <div class="d-flex gap-2">
+                            <p:column width="14em" style="padding: 7px;" >
+                                <div class="text-center w-100">
                                     <p:commandButton 
                                         icon="pi pi-pencil" 
-                                        styleClass="ui-button-success" 
+                                        styleClass="ui-button-success mx-1" 
                                         oncomplete="PF('optionEditDialog').show()" 
                                         update=":editForm"
                                         title="Edit Option">
@@ -70,10 +86,10 @@
                                     </p:commandButton>
                                     <p:commandButton 
                                         icon="pi pi-trash" 
-                                        styleClass="ui-button-danger" 
+                                        styleClass="ui-button-danger mx-1" 
                                         ajax="false"
                                         onclick="if (!confirm('Are you Sure you want to Delete this Option?'))
-                                                return false;"
+                                                    return false;"
                                         action="#{configOptionController.deleteOption(option)}" 
                                         update=":optionTable"
                                         title="Delete Option">
