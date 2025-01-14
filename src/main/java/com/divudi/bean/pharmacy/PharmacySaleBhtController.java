@@ -1398,7 +1398,6 @@ public class PharmacySaleBhtController implements Serializable {
 
         double marginRate;
         double marginValue;
-
         double quantity;
         double grossValue;
         double netValue;
@@ -1408,11 +1407,10 @@ public class PharmacySaleBhtController implements Serializable {
             System.out.println("Patient encounter is null. Exiting method.");
             return;
         }
-        if (getPatientEncounter().getCurrentPatientRoom() != null) {
-            if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
-                dept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
-                System.out.println("Department from RoomFacilityCharge: " + dept);
-            }
+        if (getPatientEncounter().getCurrentPatientRoom() != null
+                && getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+            dept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+            System.out.println("Department from RoomFacilityCharge: " + dept);
         }
         if (dept == null) {
             dept = getPatientEncounter().getDepartment();
@@ -1440,16 +1438,17 @@ public class PharmacySaleBhtController implements Serializable {
         System.out.println("PriceMatrix fetched: " + priceMatrix);
 
         if (priceMatrix != null) {
-            System.out.println("PriceMatrix Margin: " + priceMatrix.getMargin());
-            marginPercentage = (bi.getGrossValue() * priceMatrix.getMargin()) / 100;
+            System.out.println("PriceMatrix Margin Rate: " + priceMatrix.getMargin());
+            marginPercentage = priceMatrix.getMargin() / 100; // Normalize margin rate
         } else {
+            System.out.println("PriceMatrix is null. Setting marginPercentage to 0.");
             marginPercentage = 0.0;
         }
 
         marginRate = marginPercentage * originalRate;
         marginValue = marginRate * quantity;
         grossValue = originalRate * quantity;
-        netValue = (originalRate + marginRate) * quantity;
+        netValue = grossValue + marginValue;
 
         System.out.println("Margin Percentage: " + marginPercentage);
         System.out.println("Margin Rate: " + marginRate);
@@ -1457,22 +1456,23 @@ public class PharmacySaleBhtController implements Serializable {
         System.out.println("Gross Value: " + grossValue);
         System.out.println("Net Value: " + netValue);
 
-        bi.setNetValue(bi.getGrossValue() + bi.getMarginValue());
-        bi.setAdjustedValue(bi.getNetValue());
-
+        // Update BillItem
         bi.setRate(originalRate);
-        bi.setNetRate(bi.getRate() + bi.getMarginRate());
-
         bi.setGrossValue(grossValue);
-        bi.setNetValue(netValue);
         bi.setMarginValue(marginValue);
-        bi.setDiscount(0);
+        bi.setNetValue(netValue);
+        bi.setMarginRate(marginRate);
+        bi.setNetRate(originalRate + marginRate);
+        bi.setAdjustedValue(netValue); // Assuming AdjustedValue is the same as NetValue here
+        bi.setDiscount(0); // Explicitly set to 0 for clarity
 
         System.out.println("Final BillItem Values -> "
-                + " NetValue: " + bi.getNetValue()
-                + ", AdjustedValue: " + bi.getAdjustedValue()
+                + " Rate: " + bi.getRate()
                 + ", GrossValue: " + bi.getGrossValue()
                 + ", MarginValue: " + bi.getMarginValue()
+                + ", NetValue: " + bi.getNetValue()
+                + ", NetRate: " + bi.getNetRate()
+                + ", AdjustedValue: " + bi.getAdjustedValue()
                 + ", Discount: " + bi.getDiscount());
 
         System.out.println("===== calculateRates() End =====");

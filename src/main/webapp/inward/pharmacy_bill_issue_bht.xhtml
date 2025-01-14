@@ -282,17 +282,7 @@
                                         </p:cellEditor> 
                                     </p:column>
                                     <p:column headerText="Rate"  width="8em"  class="text-end">  
-                                        <h:outputText value="#{bi.rate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </p:column> 
-                                    <p:column headerText="Margin Rate"  width="8em"  class="text-end">  
-                                        <h:outputText value="#{bi.marginRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </p:column> 
-                                     <p:column headerText="Gross Value"  width="8em"  class="text-end">  
-                                         <h:outputText value="#{bi.grossValue}" >
+                                        <h:outputText value="#{bi.netRate}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </p:column> 
