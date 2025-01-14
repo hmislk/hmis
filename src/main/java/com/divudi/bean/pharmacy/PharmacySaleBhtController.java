@@ -1126,10 +1126,12 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     private void calTotal() {
-        // Start debugging
-        System.out.println("===== calTotal() Start =====");
 
-        // Reset total
+// Start debugging
+        // Start debugging
+        // Start debugging
+        // Start debugging
+                // Reset total
         getPreBill().setTotal(0);
 
         // Local counters
@@ -1141,9 +1143,7 @@ public class PharmacySaleBhtController implements Serializable {
 
         // Optional: see how many BillItems we're about to process
         if (getPreBill().getBillItems() != null) {
-            System.out.println("Number of BillItems: " + getPreBill().getBillItems().size());
         } else {
-            System.out.println("No BillItems found (getBillItems() is null).");
             return; // Possibly return here if no items
         }
 
@@ -1151,17 +1151,11 @@ public class PharmacySaleBhtController implements Serializable {
 
             // Check if retired
             if (b.isRetired()) {
-                System.out.println("Skipping retired BillItem with current serialNo: " + b.getSearialNo());
                 continue;
             }
 
             // Set serial number
             b.setSearialNo(index++);
-            System.out.println("Processing BillItem - index: " + b.getSearialNo()
-                    + ", netValue: " + b.getNetValue()
-                    + ", grossValue: " + b.getGrossValue()
-                    + ", discount: " + b.getDiscount()
-                    + ", marginValue: " + b.getMarginValue());
 
             // Accumulate totals
             netTot += b.getNetValue();
@@ -1172,13 +1166,8 @@ public class PharmacySaleBhtController implements Serializable {
             // Add the netValue to the Bill's total
             getPreBill().setTotal(getPreBill().getTotal() + b.getNetValue());
         }
-
         // Show intermediate totals
-        System.out.println("Intermediate Totals -> "
-                + " netTot: " + netTot
-                + ", discount: " + discount
-                + ", grossTot: " + grossTot
-                + ", marginTotal: " + marginTotal);
+        // Show intermediate totals
 
         // Now set values back on the Bill
         getPreBill().setNetTotal(netTot);
@@ -1186,15 +1175,9 @@ public class PharmacySaleBhtController implements Serializable {
         getPreBill().setGrantTotal(grossTot);
         getPreBill().setDiscount(discount);
         getPreBill().setMargin(marginTotal);
-
         // Final debug
-        System.out.println("Final Bill Totals -> "
-                + " netTotal: " + getPreBill().getNetTotal()
-                + ", total: " + getPreBill().getTotal()
-                + ", discount: " + getPreBill().getDiscount()
-                + ", margin: " + getPreBill().getMargin());
+        // Final debug
 
-        System.out.println("===== calTotal() End =====");
     }
 
     @EJB
@@ -1377,18 +1360,13 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void calculateRates(BillItem bi) {
-        System.out.println("===== calculateRates() Start =====");
-
         if (bi == null) {
-            System.out.println("BillItem is null. Exiting method.");
             return;
         }
         if (bi.getPharmaceuticalBillItem() == null) {
-            System.out.println("PharmaceuticalBillItem is null. Exiting method.");
             return;
         }
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
-            System.out.println("Stock is null in PharmaceuticalBillItem. Exiting method.");
             return;
         }
 
@@ -1404,30 +1382,22 @@ public class PharmacySaleBhtController implements Serializable {
 
         Department dept = null;
         if (getPatientEncounter() == null) {
-            System.out.println("Patient encounter is null. Exiting method.");
             return;
         }
         if (getPatientEncounter().getCurrentPatientRoom() != null
                 && getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
             dept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
-            System.out.println("Department from RoomFacilityCharge: " + dept);
         }
         if (dept == null) {
             dept = getPatientEncounter().getDepartment();
-            System.out.println("Department from Patient Encounter: " + dept);
         }
         if (dept == null) {
             dept = sessionController.getDepartment();
-            System.out.println("Department from Session Controller: " + dept);
         }
 
         quantity = bi.getQty();
         originalRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
         estimatedValueBeforeAddingMarginToCalculateMatrix = originalRate * quantity;
-
-        System.out.println("Quantity: " + quantity);
-        System.out.println("Original Rate: " + originalRate);
-        System.out.println("Estimated Value Before Margin: " + estimatedValueBeforeAddingMarginToCalculateMatrix);
 
         PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(
                 bi,
@@ -1435,13 +1405,9 @@ public class PharmacySaleBhtController implements Serializable {
                 dept,
                 getPatientEncounter().getPaymentMethod()
         );
-        System.out.println("PriceMatrix fetched: " + priceMatrix);
-
         if (priceMatrix != null) {
-            System.out.println("PriceMatrix Margin Rate: " + priceMatrix.getMargin());
             marginPercentage = priceMatrix.getMargin() / 100; // Normalize margin rate
         } else {
-            System.out.println("PriceMatrix is null. Setting marginPercentage to 0.");
             marginPercentage = 0.0;
         }
 
@@ -1450,11 +1416,6 @@ public class PharmacySaleBhtController implements Serializable {
         grossValue = originalRate * quantity;
         netValue = grossValue + marginValue;
 
-        System.out.println("Margin Percentage: " + marginPercentage);
-        System.out.println("Margin Rate: " + marginRate);
-        System.out.println("Margin Value: " + marginValue);
-        System.out.println("Gross Value: " + grossValue);
-        System.out.println("Net Value: " + netValue);
 
         // Update BillItem
         bi.setRate(originalRate);
@@ -1466,16 +1427,6 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setAdjustedValue(netValue); // Assuming AdjustedValue is the same as NetValue here
         bi.setDiscount(0); // Explicitly set to 0 for clarity
 
-        System.out.println("Final BillItem Values -> "
-                + " Rate: " + bi.getRate()
-                + ", GrossValue: " + bi.getGrossValue()
-                + ", MarginValue: " + bi.getMarginValue()
-                + ", NetValue: " + bi.getNetValue()
-                + ", NetRate: " + bi.getNetRate()
-                + ", AdjustedValue: " + bi.getAdjustedValue()
-                + ", Discount: " + bi.getDiscount());
-
-        System.out.println("===== calculateRates() End =====");
     }
 
     public List<Stock> completeAvailableStocksSelectedPharmacy(String qry) {

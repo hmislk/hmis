@@ -51,7 +51,6 @@ public class PriceMatrixController implements Serializable {
     PaymentSchemeDiscountFacade paymentSchemeDiscountFacade;
 
     public PriceMatrix fetchInwardMargin(BillItem billItem, double serviceValue, Department department, PaymentMethod paymentMethod) {
-        System.out.println("fetchInwardMargin");
         PriceMatrix inwardPriceAdjustment;
         Category category;
         if (billItem.getItem() instanceof Investigation) {
@@ -59,16 +58,11 @@ public class PriceMatrixController implements Serializable {
         } else {
             category = billItem.getItem().getCategory();
         }
-        System.out.println("category = " + category);
-        System.out.println("serviceValue = " + serviceValue);
-        System.out.println("department = " + department);
-        System.out.println("paymentMethod = " + paymentMethod);
         if (sessionController.getApplicationPreference() != null && sessionController.getApplicationPreference().isPaymentMethodAllowedInInwardMatrix()) {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod);
         } else {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);
         }
-        System.out.println("inwardPriceAdjustment = " + inwardPriceAdjustment);
         if (inwardPriceAdjustment == null && category != null) {
             if (sessionController.getApplicationPreference().isPaymentMethodAllowedInInwardMatrix()) {
                 inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory(), paymentMethod);
@@ -76,8 +70,6 @@ public class PriceMatrixController implements Serializable {
                 inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory());
             }
         }
-        System.out.println("inwardPriceAdjustment = " + inwardPriceAdjustment);
-
 //        if (inwardPriceAdjustment == null) {
 //            return null;
 //        }
@@ -354,11 +346,6 @@ public class PriceMatrixController implements Serializable {
     }
 
     public PaymentSchemeDiscount getPaymentSchemeDiscount(PaymentMethod paymentMethod, PaymentScheme paymentScheme, Department department, Item item) {
-        System.out.println("getPaymentSchemeDiscount");
-        System.out.println("paymentMethod = " + paymentMethod);
-        System.out.println("paymentScheme = " + paymentScheme);
-        System.out.println("department = " + department);
-        System.out.println("item = " + item);
         PaymentSchemeDiscount paymentSchemeDiscount = null;
         Category category = null;
 
@@ -368,8 +355,6 @@ public class PriceMatrixController implements Serializable {
 
         //Get Discount From Item        
         paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, paymentMethod, item);
-        System.out.println("paymentSchemeDiscount = " + paymentSchemeDiscount);
-
         //Get Discount From Category        
         if (paymentSchemeDiscount == null) {
             paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, paymentMethod, category);
@@ -385,8 +370,6 @@ public class PriceMatrixController implements Serializable {
         if (paymentSchemeDiscount == null) {
             paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, paymentMethod, department);
         }
-        System.out.println("paymentSchemeDiscount = " + paymentSchemeDiscount);
-
         return paymentSchemeDiscount;
     }
 
@@ -439,7 +422,6 @@ public class PriceMatrixController implements Serializable {
     }
 
     public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentScheme paymentScheme, PaymentMethod paymentMethod, Category category) {
-        System.out.println("fetchPaymentSchemeDiscount = ");
         String sql;
         HashMap hm = new HashMap();
         hm.put("p", paymentMethod);
@@ -450,8 +432,6 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentScheme=:m "
                 + " and i.paymentMethod=:p"
                 + " and i.category=:cat ";
-        System.out.println("hm = " + hm);
-        System.out.println("sql = " + sql);
         return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
 
     }
