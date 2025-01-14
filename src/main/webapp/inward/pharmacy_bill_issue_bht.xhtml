@@ -13,6 +13,7 @@
     <ui:define name="content">
         <h:form id="bill" >
 
+
             <h:panelGroup rendered="#{pharmacySaleBhtController.patientEncounter eq null}" class="row">
                 <p:panel>                
                     <f:facet name="header">
@@ -47,6 +48,7 @@
 
             <h:panelGroup  rendered="#{pharmacySaleBhtController.patientEncounter ne null}">
                 <p:panel rendered="#{!pharmacySaleBhtController.billPreview}">
+                    <p:defaultCommand  target="btnAdd" />  
                     <f:facet name="header">
                         <div class="d-flex justify-content-between align-items-center">
                             <!-- Left-aligned content -->
@@ -166,58 +168,65 @@
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <!--Can not display price here. The price includes a service charge. After adding, price is visible-->
-<!--                                            <p:column headerText="Price" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputLabel value="#{i.itemBatch.retailsaleRate}">
-                                                </h:outputLabel>
-                                            </p:column>-->
-                                            <p:ajax event="focus" process="acStock" ></p:ajax>
-                                            <p:ajax event="itemSelect"   
-                                                    listener="#{pharmacySaleBhtController.handleSelect}"  
-                                                    update="focusQty" ></p:ajax>
+                                            <p:ajax
+                                                event="itemSelect"   
+                                                listener="#{pharmacySaleBhtController.handleSelect}"  
+                                                update="txtRate focusQty txtValue" ></p:ajax>
+                                            <p:ajax
+                                                event="blur"
+                                                listener="#{pharmacySaleBhtController.handleSelect}"
+                                                update="txtRate txtValue"
+                                                process="acStock"
+                                                />
+
                                         </p:autoComplete>
                                     </div>
-                                    <div class="col-12 col-md-2">
+                                    <div class="col-12 col-md-2 text-end">
                                         <p:outputLabel
                                             id="lblQty"
                                             value="Quantity" 
-                                            styleClass="form-label"></p:outputLabel>
+                                            styleClass="form-label text-end"></p:outputLabel>
                                         <p:inputText 
-                                            class="w-100 form-control"
+                                            class="w-100 form-control text-end"
                                             autocomplete="off"  
                                             accesskey="q"
                                             id="txtQty" 
                                             value="#{pharmacySaleBhtController.qty}" >
                                             <p:ajax event="keyup"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
                                             <p:ajax event="blur"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
+                                            <p:ajax
+                                                event="keyup"  
+                                                process="txtQty"
+                                                listener="#{pharmacySaleBhtController.handleSelect}"  
+                                                update="txtRate txtValue" ></p:ajax>
                                         </p:inputText>
                                     </div>
-                                    <div class="col-12 col-md-2">
+                                    <div class="col-12 col-md-2 text-end">
                                         <p:outputLabel
                                             id="lblRate"
                                             value="Rate" 
-                                            styleClass="form-label"></p:outputLabel>
+                                            styleClass="form-label text-end"></p:outputLabel>
                                         <p:inputText 
-                                            class="w-100 form-control"
+                                            class="w-100 form-control text-end"
                                             autocomplete="off"  
                                             accesskey="q"
                                             disabled="true"
                                             id="txtRate" 
-                                            value="#{pharmacySaleBhtController.qty}" >
+                                            value="#{pharmacySaleBhtController.billItem.rate + pharmacySaleBhtController.billItem.marginRate}" >
                                         </p:inputText>
                                     </div>
-                                    <div class="col-12 col-md-2">
+                                    <div class="col-12 col-md-2 text-end">
                                         <p:outputLabel
                                             id="lblValue"
                                             value="Value" 
                                             styleClass="form-label"></p:outputLabel>
                                         <p:inputText 
-                                            class="w-100 form-control"
+                                            class="w-100 form-control text-end"
                                             autocomplete="off"  
                                             accesskey="q"
                                             disabled="true"
                                             id="txtValue" 
-                                            value="#{pharmacySaleBhtController.qty}" >
+                                            value="#{pharmacySaleBhtController.billItem.netValue}" >
                                         </p:inputText>
                                     </div>
                                     <div class="col-12 col-md-2">
@@ -240,80 +249,76 @@
                             </p:panel>
 
                             <p:panel header="Bill Items" id="pBis" class="my-1">
-                                <p:dataTable id="tblBillItem" value="#{pharmacySaleBhtController.preBill.billItems}"
-                                             var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
-
-                                    <p:ajax event="rowEdit" listener="#{pharmacySaleBhtController.onEdit}"/>  
-                                    <p:ajax event="rowEditCancel" listener="#{pharmacySaleBhtController.onEdit}"/> 
-
-
-                                    <p:column headerText="Item" style="width: 30%">
+                                <p:messages id="msgs" ></p:messages>
+                                <p:dataTable 
+                                    id="tblBillItem" 
+                                    value="#{pharmacySaleBhtController.preBill.billItems}"
+                                    var="bi" 
+                                    rowIndexVar="s" 
+                                    editable="true" 
+                                    sortBy="#{bi.searialNo}" >
+                                    <p:ajax event="rowEdit" listener="#{pharmacySaleBhtController.onEdit}" update=":bill:msgs"/>  
+                                    <p:ajax event="rowEditCancel" listener="#{pharmacySaleBhtController.onEdit}" update=":bill:msgs"/> 
+                                    <p:column headerText="Item" width="2em">
+                                        <h:outputText value="#{s+1}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Item" style="min-width: 20em;" >
                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" >
                                             &nbsp;<p:tag rendered="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'Expired ': 
                                                                      commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'Expired Soon':''}"
                                                          severity="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'warning':''}" />
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Quantity">
+                                    <p:column headerText="Quantity"  width="8em"  class="text-end">
                                         <p:cellEditor>  
                                             <f:facet name="output">  
-                                                <h:outputText value="#{bi.qty}" >
-                                                    <f:convertNumber integerOnly="true" />
+                                                <h:outputText value="#{bi.qty}" class="mx-1" >
                                                 </h:outputText>
                                             </f:facet>  
                                             <f:facet name="input">  
-                                                <p:inputText autocomplete="off" id="ipTblQty" value="#{bi.qty}"/>  
+                                                <p:inputText autocomplete="off" id="ipTblQty" value="#{bi.qty}"  class="mx-1" />  
                                             </f:facet>  
                                         </p:cellEditor> 
                                     </p:column>
-                                    <p:column >  
-                                        <p:rowEditor />  
+                                    <p:column headerText="Rate"  width="8em"  class="text-end">  
+                                        <h:outputText value="#{bi.rate}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
                                     </p:column>  
-
-
-
-                                    <p:column headerText="Expiry">
+                                    <p:column headerText="Value"  width="8em"  class="text-end">  
+                                        <h:outputText value="#{bi.netValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>  
+                                    <p:column headerText="Expiry" width="8em" class="text-end">
                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
-
                                     </p:column>
-                                    <p:column headerText="Remove">
-                                        <p:commandButton class="ui-button-danger" icon="fas fa-trash" value="Remove" action="#{pharmacySaleBhtController.removeBillItem(bi)}" ajax="false"   >
+                                    <p:column headerText="Actions" width="10em" class="text-center">
+                                        <div class="row" >
+                                            <div class="col-4" >
 
-                                        </p:commandButton>
+                                            </div>
+                                            <div class="col-8" >
+                                                <p:commandButton 
+                                                    class="ui-button-danger mx-1"
+                                                    icon="fas fa-trash"
+                                                    value="Remove"
+                                                    action="#{pharmacySaleBhtController.removeBillItem(bi)}"
+                                                    ajax="false"   >
+                                                </p:commandButton>
+                                            </div>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Actions" width="10em" class="text-center">
+                                        <p:rowEditor class="mx-1"  />  
                                     </p:column>
 
                                 </p:dataTable>
                             </p:panel>
                         </div>
-
-
                     </div>
-                    <!--                                        <h:panelGrid columns="6" >
-                                                                <h:panelGrid columns="1" >
-                                                                    <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
-                                        
-                                                                    <style>
-                                                                        .ui-autocomplete-input {
-                                                                            width:350px!important;
-                                                                            display: block;
-                                                                        }
-                                                                        .ui-autocomplete{
-                                                                            display: block!important;
-                                                                        }
-                                                                    </style>
-                                                                    
-                                        
-                                                                </h:panelGrid>
-                                        
-                                                                <h:panelGrid columns="1" >
-                                                                    
-                                                                </h:panelGrid>
-                                        
-                                                               
-                                        
-                                                            </h:panelGrid>-->
                 </p:panel>
 
                 <h:panelGroup  rendered="#{pharmacySaleBhtController.billPreview}" >
@@ -330,7 +335,7 @@
 
                                         <h:panelGrid columns="7">
                                             <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;"   ></p:commandButton>
-                                            <p:defaultCommand  target="btnPrint" />  
+
                                             <p:commandButton accesskey="p" id="btnPrint" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}" icon="fa-solid fa-print" class="ui-button-info w-100" value="Print" ajax="false" action="#" >
                                                 <p:printer target="gpBillPreview" ></p:printer>
                                             </p:commandButton>
