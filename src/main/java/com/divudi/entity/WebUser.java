@@ -77,6 +77,7 @@ public class WebUser implements Serializable {
     //Activation properties
     @JsonIgnore
     boolean activated;
+    private boolean needToResetPassword=false;
     @JsonIgnore
     @ManyToOne
     WebUser activator;
@@ -103,6 +104,9 @@ public class WebUser implements Serializable {
     String code;
     @Enumerated(EnumType.STRING)
     private LoginPage loginPage;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date lastPasswordResetAt;
 
     public Staff getStaff() {
         return staff;
@@ -177,7 +181,6 @@ public class WebUser implements Serializable {
                 "arya"
         );
 
-        
         if (validThemes.contains(primeTheme)) {
             return primeTheme;
         } else {
@@ -365,6 +368,25 @@ public class WebUser implements Serializable {
         this.loginPage = loginPage;
     }
 
-  
+    public Date getLastPasswordResetAt() {
+        if (lastPasswordResetAt == null) {
+            lastPasswordResetAt = new Date();
+        }
+        return lastPasswordResetAt;
+    }
+
+    public void setLastPasswordResetAt(Date lastPasswordResetAt) {
+        this.lastPasswordResetAt = lastPasswordResetAt;
+    }
+
+    public boolean isNeedToResetPassword() {
+        return needToResetPassword;
+    }
+
+    public void setNeedToResetPassword(boolean needToResetPassword) {
+        this.needToResetPassword = needToResetPassword;
+    }
+    
+    
 
 }

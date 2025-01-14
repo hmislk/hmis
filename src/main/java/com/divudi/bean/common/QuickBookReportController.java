@@ -1642,6 +1642,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld5(proBillCount.toString());
 
             qbfs.add(qbf);
+            grantTot += proFeeValue;
         }
 
         return qbfs;

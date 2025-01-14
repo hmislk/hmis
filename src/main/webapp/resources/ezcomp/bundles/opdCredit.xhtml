@@ -65,7 +65,17 @@
                     <f:facet name="header">
                         <h:outputText value="Bill No" />
                     </f:facet>
-                    <h:outputText value="#{row.bill}" />
+                    <h:outputText value="#{row.bill.deptId}" />
+                    <p:commandButton 
+                        value="Admin" 
+                        icon="fa fa-shield-alt" 
+                        class="m-1 ui-button-danger" 
+                        style="width: 100px;"
+                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                        ajax="false" 
+                        rendered="#{webUserController.hasPrivilege('Developers')}">
+                        <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                    </p:commandButton>
                 </p:column>
 
                 <p:column>

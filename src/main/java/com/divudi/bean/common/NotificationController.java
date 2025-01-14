@@ -88,7 +88,7 @@ public class NotificationController implements Serializable {
         }
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
-             case INWARD_PHARMACY_REQUEST:
+             case REQUEST_MEDICINE_INWARD:
                  createInwardBHTIssueFromPharmacyRequestNotifications(bill);
                 break;
             case PHARMACY_TRANSFER_REQUEST:

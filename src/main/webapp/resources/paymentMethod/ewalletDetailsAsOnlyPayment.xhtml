@@ -16,14 +16,14 @@
     <cc:implementation>
         <h:panelGrid columns="2" class="w-100">
             <p:outputLabel value="Bank / Institution" ></p:outputLabel>
-            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.ewallet.institution}" >
+            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.ewallet.institution}" class="w-100" >
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
             </p:selectOneMenu>
             <p:outputLabel value="Reference No." ></p:outputLabel>
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.referenceNo}"  class="" placeholder="Enter e-wallet Referance No"/>
+            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.referenceNo}"  class="w-100" placeholder="Enter e-wallet Referance No"/>
             <p:outputLabel value="Comments" ></p:outputLabel>
-            <p:inputTextarea value="#{cc.attrs.paymentMethodData.ewallet.comment}" id="memo" class="" placeholder="Enter e-wallet Comment"/>
+            <p:inputTextarea value="#{cc.attrs.paymentMethodData.ewallet.comment}" id="memo" class="w-100" placeholder="Enter e-wallet Comment"/>
         </h:panelGrid>
     </cc:implementation>
 </html>

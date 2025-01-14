@@ -13,6 +13,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.PaymentType;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -38,6 +39,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.RefundBillFacade;
 import com.divudi.service.BillService;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -85,6 +87,8 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     InstitutionFacade institutionFacade;
     @EJB
     DrawerFacade drawerFacade;
+    @EJB
+    PaymentService paymentService;
 
     @Inject
     private BillBeanController billBean;
@@ -331,6 +335,18 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
+        if (paymentMethod == null) {
+            JsfUtil.addErrorMessage("Please select a payment method.");
+            return true;
+        }
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            JsfUtil.addErrorMessage("Multiple Payment Methods are NOT allowed.");
+            return true;
+        }
+        if (paymentMethod.getPaymentType() == PaymentType.CREDIT) {
+            JsfUtil.addErrorMessage("Credit Payment Methods are NOT allowed.");
+            return true;
+        }
 
 //        if (checkPaid(origianlBill)) {
 //            JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
@@ -460,13 +476,13 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             agencyDepositCanellationStarted = false;
             return;
         }
-        System.out.println("origianlBil.isCancelled() = " + origianlBil.isCancelled());
-        if (origianlBil.isCancelled()) {
-            JsfUtil.addErrorMessage("Already Cancelled");
-            printPreview = false;
-            agencyDepositCanellationStarted = false;
-            return;
-        }
+//        System.out.println("origianlBil.isCancelled() = " + origianlBil.isCancelled());
+//        if (origianlBil.isCancelled()) {
+//            JsfUtil.addErrorMessage("Already Cancelled");
+//            printPreview = false;
+//            agencyDepositCanellationStarted = false;
+//            return;
+//        }
 
 //        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
         cancelledBill = generateCancelBillForCcDepositBill(origianlBil);
@@ -477,8 +493,8 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         origianlBil.setCancelledBill(cancelledBill);
         getBillFacade().editAndCommit(origianlBil);
 
-        List<Payment> cancellationPayments = billService.createPayment(cancelledBill, paymentMethod, paymentMethodData);
-
+        List<Payment> cancellationPayments=paymentService.createPayment(cancelledBill, getPaymentMethodData());
+        
 //        drawerController.updateDrawerForOuts(cancellationPayments);
         agentAndCcApplicationController.updateCcBalance(
                 cancelledBill.getFromInstitution(),

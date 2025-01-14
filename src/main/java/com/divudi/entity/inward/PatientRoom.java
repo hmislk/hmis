@@ -4,6 +4,7 @@
  */
 package com.divudi.entity.inward;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
@@ -24,7 +25,7 @@ import javax.persistence.Transient;
  */
 @Entity
 @Inheritance
-public class PatientRoom implements Serializable {
+public class PatientRoom implements Serializable, RetirableEntity {
 
     @OneToOne(mappedBy = "previousRoom")
     private PatientRoom nextRoom;

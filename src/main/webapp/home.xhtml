@@ -5,13 +5,9 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
     <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
-
-
     <ui:define name="content">
-       
         <div class="row" >
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
-
                 <!-- Cashier Drawer -->
                 <h:panelGroup rendered="#{ui.icon eq 'Cashier_Drawer'}" layout="block" class="col-1">
                     <h:form>

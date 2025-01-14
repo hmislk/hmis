@@ -5465,6 +5465,39 @@ public class CommonReport implements Serializable {
 
     }
 
+    public void createPharmacyGrnDetailTable() {
+        String jpql = "select bi from BillItem bi "
+                + "where bi.retired = false "
+                + "and bi.bill.billType in :btList "
+                + "and bi.bill.createdAt between :fromDate and :toDate";
+
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillType> bt = Arrays.asList(BillType.PharmacyGrnBill, BillType.PharmacyGrnReturn);
+
+        parameters.put("btList", bt);
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+
+        if (department != null) {
+            jpql += " and bi.bill.department = :dept";
+            parameters.put("dept", department);
+        }
+
+        if (institution != null) {
+            jpql += " and bi.bill.fromInstitution = :supplier";
+            parameters.put("supplier", institution);
+        }
+
+        
+        jpql += " order by bi.bill.id";
+
+        try {
+            billItems = getBillItemFac().findByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void createGrnDetailTableByDealorStore() {
         Date startTime = new Date();
 
@@ -5671,7 +5704,7 @@ public class CommonReport implements Serializable {
         String reportName = "OPD Referral Summary by Bill - From " + formattedFromDate + " to " + formattedToDate;
         bundle.setName(reportName);
     }
-    
+
     public void fillChannellingReferralBillSummary() {
         // Map to hold query parameters
         Map<String, Object> m = new HashMap<>();
@@ -5727,7 +5760,7 @@ public class CommonReport implements Serializable {
         String reportName = "Channelling Referral Summary by Bill - From " + formattedFromDate + " to " + formattedToDate;
         bundle.setName(reportName);
     }
-    
+
     public void fillInpatientReferralBillSummary() {
         // Map to hold query parameters
         Map<String, Object> m = new HashMap<>();
@@ -6043,7 +6076,6 @@ public class CommonReport implements Serializable {
     public List<BillItem> fetchDirectPurchaseBillItems(Bill b) {
         Map m = new HashMap();
         String sql;
-
         sql = "Select b From BillItem b where "
                 + " b.retired=false "
                 + " and b.bill.billType=:btp "
@@ -6060,8 +6092,7 @@ public class CommonReport implements Serializable {
             m.put("pm", paymentMethod);
         }
 
-        sql += " group by b.bill.billClassType "
-                + " order by b.bill.billClassType , b.insId ";
+        sql +=  " order by b.bill.createdAt , b.id ";
 
         m.put("frm", getFromDate());
         m.put("to", getToDate());

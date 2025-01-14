@@ -298,6 +298,17 @@
                                         </p:selectBooleanCheckbox>
                                     </div>
                                 </div>
+                                
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Report Upload Allowed" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectBooleanCheckbox 
+                                            itemLabel="Upload Allowed" 
+                                            value="#{investigationController.current.canUploadPatinrtReport}" >
+                                        </p:selectBooleanCheckbox>
+                                    </div>
+                                </div>
 
                                 <div class="row mt-2">
                                     <div class="col-md-3"><h:outputText value="Master Item Reference" ></h:outputText></div>
@@ -536,6 +547,15 @@
                                         ajax="false" 
                                         action="#{investigationController.navigateToEditFormatMultiple()}" 
                                         value="Manage Format - All Items" >
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton                                                 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        icon="fas fa-file-export export-icon"
+                                        action="#{investigationController.navigateExportReoirtFormat()}" 
+                                        value="Export Format" >
+                                        <f:setPropertyActionListener value="#{investigationController.current}" target="#{labReportExportImportController.current}"/>
                                     </p:commandButton>
 
                                     <p:commandButton                                                 

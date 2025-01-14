@@ -12,6 +12,9 @@ import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CalculationType;
 import com.divudi.data.CreditDuration;
+import com.divudi.data.CssFontStyle;
+import com.divudi.data.CssTextAlign;
+import com.divudi.data.CssTextDecoration;
 import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.Dashboard;
 import com.divudi.data.DepartmentListMethod;
@@ -70,11 +73,13 @@ import javax.inject.Named;
 @SessionScoped
 public class EnumController implements Serializable {
 
-    private PaymentScheme paymentScheme;
-    private List<Class<? extends Enum<?>>> enumList;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    
+    private PaymentScheme paymentScheme;
+    private List<Class<? extends Enum<?>>> enumList;
     List<PaymentMethod> paymentMethodsForOpdBilling;
+    private List<PaymentMethod> paymentMethodsForPharmacyPurchase;
     List<PaymentMethod> paymentMethodsForChanneling;
     List<PaymentMethod> paymentMethodsForChannelSettling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
@@ -87,9 +92,9 @@ public class EnumController implements Serializable {
     SessionNumberType[] sessionNumberTypes;
     private List<PatientInvestigationStatus> patientInvestigationStatuses;
     private List<PaymentMethod> paymentTypeOfPaymentMethods;
-    
+
     private List<PatientInvestigationStatus> availableStatusforCancel;
-        
+
     @PostConstruct
     public void init() {
         enumList = new ArrayList<>();
@@ -105,10 +110,22 @@ public class EnumController implements Serializable {
         }
         return paymentMethodsForOpdBilling;
     }
-
+    
     public List<PaymentMethod> getPaymentMethodsForPackageBilling() {
         if (paymentMethodsForOpdBilling == null) {
             fillPaymentMethodsForPackageBilling();
+        }
+        return paymentMethodsForOpdBilling;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPackageBillingWIthoutMultiple() {
+        if (paymentMethodsForOpdBilling == null) {
+            fillPaymentMethodsForPackageBilling();
+        }
+        try {
+            paymentMethodsForOpdBilling.remove(PaymentMethod.MultiplePaymentMethods);
+        } catch (Exception e) {
+
         }
         return paymentMethodsForOpdBilling;
     }
@@ -134,6 +151,16 @@ public class EnumController implements Serializable {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
             if (include) {
                 paymentMethodsForOpdBilling.add(pm);
+            }
+        }
+    }
+    
+    public void fillPaymentMethodsFoPharmacyPurchase() {
+        paymentMethodsForPharmacyPurchase = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Pharmacy Purchase", true);
+            if (include) {
+                paymentMethodsForPharmacyPurchase.add(pm);
             }
         }
     }
@@ -204,7 +231,7 @@ public class EnumController implements Serializable {
             }
         }
     }
-   
+
     public List<PaymentMethod> getPaymentTypeOfPaymentMethods(PaymentType paymentType) {
         paymentTypeOfPaymentMethods = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.asList()) {
@@ -755,8 +782,16 @@ public class EnumController implements Serializable {
             PaymentMethod.ewallet};
         return p;
     }
-
     
+     public PaymentMethod[] getPaymentMethodsForIwardDeposit() {
+        PaymentMethod[] p = {PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.ewallet,
+            PaymentMethod.PatientDeposit};
+        return p;
+    }
 
     public PaymentMethod[] getPaymentMethodsForIou() {
         PaymentMethod[] p = {PaymentMethod.Cash,
@@ -981,13 +1016,14 @@ public class EnumController implements Serializable {
     }
 
     public List<PaymentMethod> getPaymentMethodsForMultiplePaymentMethod() {
-        List <PaymentMethod> p = new ArrayList<>();
+        List<PaymentMethod> p = new ArrayList<>();
         p.add(PaymentMethod.Cash);
         p.add(PaymentMethod.Card);
         p.add(PaymentMethod.Cheque);
         p.add(PaymentMethod.Slip);
         p.add(PaymentMethod.OnlineSettlement);
         p.add(PaymentMethod.Staff_Welfare);
+        p.add(PaymentMethod.PatientDeposit);
         paymentMethodsForMultiplePaymentMethod = p;
         return paymentMethodsForMultiplePaymentMethod;
     }
@@ -1010,4 +1046,65 @@ public class EnumController implements Serializable {
         this.availableStatusforCancel = availableStatusforCancel;
     }
 
+    public List<PaymentMethod> getPaymentMethodsForPharmacyPurchase() {
+        if (paymentMethodsForPharmacyPurchase == null) {
+            fillPaymentMethodsFoPharmacyPurchase();
+        }
+        return paymentMethodsForPharmacyPurchase;
+    }
+    
+    public InvestigationItemType getInvestigationItemType(String name) {
+        for (InvestigationItemType type : InvestigationItemType.values()) {
+            if (type.toString().equalsIgnoreCase(name.trim())) {
+                return type;
+            }
+        }
+        return null;
+    }
+    
+    public InvestigationItemValueType getInvestigationItemValueType(String name) {
+        for (InvestigationItemValueType type : InvestigationItemValueType.values()) {
+            if (type.toString().equalsIgnoreCase(name)) {
+                return type;
+            }
+        }
+        return null;
+    }
+    
+    public CssVerticalAlign getCssVerticalAlign(String name) {
+        for (CssVerticalAlign verAlign : CssVerticalAlign.values()) {
+            if (verAlign.toString().equalsIgnoreCase(name)) {
+                return verAlign;
+            }
+        }
+        return null; 
+    }
+    
+    public CssTextDecoration getCssTextDecoration(String name) {
+        for (CssTextDecoration txDeco : CssTextDecoration.values()) {
+            if (txDeco.toString().equalsIgnoreCase(name)) {
+                return txDeco;
+            }
+        }
+        return null; 
+    }
+    
+    public CssFontStyle getCssFontStyle(String name) {
+        for (CssFontStyle fontstyle : CssFontStyle.values()) {
+            if (fontstyle.toString().equalsIgnoreCase(name)) {
+                return fontstyle;
+            }
+        }
+        return null; 
+    }
+    
+    public CssTextAlign getCssTextAlign(String name) {
+        for (CssTextAlign txetAlign : CssTextAlign.values()) {
+            if (txetAlign.toString().equalsIgnoreCase(name)) {
+                return txetAlign;
+            }
+        }
+        return null; 
+    }
+    
 }

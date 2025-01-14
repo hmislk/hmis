@@ -127,6 +127,9 @@ public class PharmacyPurchaseController implements Serializable {
     private double billItemsTotalQty;
 
     private PaymentMethodData paymentMethodData;
+    private Institution site;
+    private Institution toInstitution;
+    private PaymentMethod paymentMethod;
 
     public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
         Date startTime = new Date();
@@ -246,7 +249,7 @@ public class PharmacyPurchaseController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = new Date();
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -465,6 +468,10 @@ public class PharmacyPurchaseController implements Serializable {
             JsfUtil.addErrorMessage("Please Fill Invoice Date");
             return;
         }
+        if (getBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            JsfUtil.addErrorMessage("MultiplePayments Not Allowed.");
+            return;
+        }
 
         //Need to Add History
         String msg = errorCheck();
@@ -477,7 +484,7 @@ public class PharmacyPurchaseController implements Serializable {
         //   saveBillComponent();
 
 //        Payment p = createPayment(getBill());
-        List<Payment> ps = paymentService.createPayment(getBill(), getBill().getPaymentMethod(), paymentMethodData, sessionController.getDepartment(), sessionController.getLoggedUser());
+        List<Payment> ps = paymentService.createPayment(getBill(), getPaymentMethodData());
 
         billItemsTotalQty = 0;
         for (BillItem i : getBillItems()) {
@@ -628,6 +635,7 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public void addItem() {
+        System.out.println("add item = ");
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
@@ -667,6 +675,8 @@ public class PharmacyPurchaseController implements Serializable {
             getCurrentBillItem().getPharmaceuticalBillItem().setFreeQty(getCurrentBillItem().getPharmaceuticalBillItem().getFreeQtyPacks() * getCurrentBillItem().getItem().getDblValue());
             getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRatePack() / getCurrentBillItem().getItem().getDblValue());
         }
+        
+        System.out.println("getBillItems().size() = " + getBillItems().size());
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(currentBillItem);
@@ -678,8 +688,11 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void saveBill() {
 
-        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyPurchaseBill, BillClassType.BilledBill, BillNumberSuffix.PHPUR));
-        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyPurchaseBill, BillClassType.BilledBill, BillNumberSuffix.PHPUR));
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+ 
+        getBill().setDeptId(deptId);
+        getBill().setInsId(deptId);
+        getBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
 
         getBill().setInstitution(getSessionController().getInstitution());
         getBill().setDepartment(getSessionController().getDepartment());
@@ -951,6 +964,30 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void setWarningMessage(String warningMessage) {
         this.warningMessage = warningMessage;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Institution getToInstitution() {
+        return toInstitution;
+    }
+
+    public void setToInstitution(Institution toInstitution) {
+        this.toInstitution = toInstitution;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     

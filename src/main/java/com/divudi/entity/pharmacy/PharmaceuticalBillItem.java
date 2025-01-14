@@ -59,6 +59,12 @@ public class PharmaceuticalBillItem implements Serializable {
 
     private double retailRate;
     private double retailRatePack;
+    
+    private double purchaseValue;
+    private double purchaseRatePackValue;
+
+    private double retailValue;
+    private double retailPackValue;
 
     private double wholesaleRate;
     private double wholesaleRatePack;
@@ -646,6 +652,39 @@ public class PharmaceuticalBillItem implements Serializable {
     public void setLastPurchaseRatePack(double lastPurchaseRatePack) {
         this.lastPurchaseRatePack = lastPurchaseRatePack;
     }
+
+    public double getPurchaseValue() {
+        return purchaseValue;
+    }
+
+    public void setPurchaseValue(double purchaseValue) {
+        this.purchaseValue = purchaseValue;
+    }
+
+    public double getPurchaseRatePackValue() {
+        return purchaseRatePackValue;
+    }
+
+    public void setPurchaseRatePackValue(double purchaseRatePackValue) {
+        this.purchaseRatePackValue = purchaseRatePackValue;
+    }
+
+    public double getRetailValue() {
+        return retailValue;
+    }
+
+    public void setRetailValue(double retailValue) {
+        this.retailValue = retailValue;
+    }
+
+    public double getRetailPackValue() {
+        return retailPackValue;
+    }
+
+    public void setRetailPackValue(double retailPackValue) {
+        this.retailPackValue = retailPackValue;
+    }
+    
     
     
 

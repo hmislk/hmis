@@ -30,7 +30,8 @@ public enum ReportTemplateType {
     ITEM_SUMMARY_BY_BILL("Item Summary by Bill"),
     TO_DEPARTMENT_SUMMARY_BY_BILL_FEE("To Department Summary by Bill Fee"),
     TO_DEPARTMENT_SUMMARY_BY_BILL_ITEM("To Department Summary by Bill Item"),
-    TO_DEPARTMENT_SUMMARY_BY_BILL("To Department Summary by Bill");
+    TO_DEPARTMENT_SUMMARY_BY_BILL("To Department Summary by Bill"),
+    ANNUAL_AND_DAILY_SUMMARY_RECORD_LIST("Annual and Daily Summary Record List");
 
     ;
 

@@ -15,17 +15,15 @@
 
         <p:dataTable
             value="#{financialTransactionController.selectedBundle.getPaymentRows(financialTransactionController.selectedPaymentMethod)}" var="cardPayment" >
+            <p:column  
+                headerText="Select to Handover"
+                width="3em"       >
+                <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForHandover}" >
+                    <p:ajax process="checkCardSelected" update="@all" listener="#{financialTransactionController.updateForPaymentHandoverSelectionAtCreate()}"></p:ajax>
+                </p:selectBooleanCheckbox>
+            </p:column>
             <p:column  headerText="Bill Number">
                 <h:outputText value="#{cardPayment.payment.bill.deptId}" ></h:outputText>
-            </p:column>
-            <p:column  headerText="Company">
-                <h:outputText value="#{cardPayment.payment.creditCompany.name}" ></h:outputText>
-            </p:column>
-            <p:column  headerText="Policy Number">
-                <h:outputText value="#{cardPayment.payment.policyNo}" ></h:outputText>
-            </p:column>
-            <p:column  headerText="Comments">
-                <h:outputText value="#{cardPayment.payment.comments}" ></h:outputText>
             </p:column>
             <p:column  headerText="Bank">
                 <h:outputText value="#{cardPayment.payment.bank.name}" ></h:outputText>
@@ -35,16 +33,16 @@
                 <h:outputText value="#{cardPayment.payment.chequeRefNo}" ></h:outputText>
                 <h:outputText value="#{cardPayment.payment.referenceNo}" ></h:outputText>
             </p:column>
+            <p:column  headerText="Comments">
+                <h:outputText value="#{cardPayment.payment.comments}" ></h:outputText>
+            </p:column>
+
             <p:column headerText="Value">
                 <h:outputText value="#{cardPayment.payment.paidValue}" >
                     <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
                 </h:outputText>
             </p:column>
-            <p:column  headerText="Select to Handover">
-                <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForHandover}" >
-                    <p:ajax process="checkCardSelected" update="@all" listener="#{financialTransactionController.updateForPaymentHandoverSelectionAtCreate()}"></p:ajax>
-                </p:selectBooleanCheckbox>
-            </p:column>
+
         </p:dataTable>
 
     </cc:implementation>

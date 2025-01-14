@@ -8,7 +8,7 @@
 
     <h:body>
 
-        <ui:composition template="./index.xhtml">
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
 
             <ui:define name="subcontent">
 
@@ -34,21 +34,17 @@
                                      class="form-control"></p:inputTextarea>
 
 
-                    <p:outputLabel value="Presentation Type" class="form-label"></p:outputLabel>
+                    <p:outputLabel value="Mapping Type" class="form-label"></p:outputLabel>
                     <p:selectOneMenu 
                         filter="true"
                         filterMatchMode="contains"
-                        value="#{designComponentController.currentDataEntryItem.componentPresentationType}" class="form-control">
-                        <f:selectItems value="#{designComponentController.componentPresentationTypes}"/>
+                        value="#{designComponentController.currentDataEntryItem.componentMappingType}" 
+                        class="form-control">
+                        <f:selectItems value="#{designComponentController.componentMappingTypes}" var="mapping"
+                                       itemLabel="#{mapping.label}" itemValue="#{mapping}"/>
                     </p:selectOneMenu>
 
-                    <p:outputLabel value="Data Type" class="form-label"></p:outputLabel>
-                    <p:selectOneMenu 
-                        filter="true"
-                        filterMatchMode="contains"
-                        value="#{designComponentController.currentDataEntryItem.componentDataType}" class="form-control">
-                        <f:selectItems value="#{designComponentController.componentDataTypes}"/>
-                    </p:selectOneMenu>
+
 
                     <p:commandButton ajax="false" value="Save" action="#{designComponentController.saveDataEntryComponentOfForm()}" >
                     </p:commandButton>
@@ -56,7 +52,7 @@
 
                 </h:form>
 
-               
+
 
 
             </ui:define>

@@ -1,6 +1,7 @@
 package com.divudi.entity.web;
 
 import com.divudi.data.web.ComponentDataType;
+import com.divudi.data.web.ComponentMappingType;
 import com.divudi.data.web.ComponentPresentationType;
 import com.divudi.data.web.TemplateComponentType;
 import java.io.Serializable;
@@ -24,7 +25,7 @@ public class DesignComponent implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
     private String name;
     private String code;
     private String codeSystem;
@@ -38,15 +39,19 @@ public class DesignComponent implements Serializable {
     private TemplateComponentType type;
     @ManyToOne
     private DesignComponent parent;
-    
+
     @ManyToOne
     private DesignComponent dataEntryForm;
-    
+
     @Enumerated(EnumType.STRING)
     private ComponentPresentationType componentPresentationType;
-    
+
     @Enumerated(EnumType.STRING)
     private ComponentDataType componentDataType;
+
+    @Enumerated(EnumType.STRING)
+    private ComponentMappingType componentMappingType;
+    
     
 
     public Long getId() {
@@ -56,7 +61,6 @@ public class DesignComponent implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
 
     @Override
     public int hashCode() {
@@ -170,7 +174,13 @@ public class DesignComponent implements Serializable {
     public void setEditHtml(String editHtml) {
         this.editHtml = editHtml;
     }
-    
-    
-    
+
+    public ComponentMappingType getComponentMappingType() {
+        return componentMappingType;
+    }
+
+    public void setComponentMappingType(ComponentMappingType componentMappingType) {
+        this.componentMappingType = componentMappingType;
+    }
+
 }

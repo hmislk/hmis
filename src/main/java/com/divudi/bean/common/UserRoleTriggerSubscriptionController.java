@@ -69,7 +69,7 @@ public class UserRoleTriggerSubscriptionController implements Serializable {
             ts.setOrderNumber(newOrder);
             ts.setDepartment(department);
             ts.setCreatedAt(new Date());
-            ts.setCreater(sessionController.loggedUser);
+            ts.setCreater(sessionController.getLoggedUser());
             save(ts);
             JsfUtil.addSuccessMessage("Save Success ");
             fillUserRoleSubscription();
@@ -201,7 +201,7 @@ public class UserRoleTriggerSubscriptionController implements Serializable {
             current.setRetired(true);
             Date d = new Date();
             current.setRetiredAt(d);
-            current.setRetirer(sessionController.loggedUser);
+            current.setRetirer(sessionController.getLoggedUser());
             save(current);
             JsfUtil.addSuccessMessage("Removed Successfully");
         } else {

@@ -151,7 +151,6 @@
                                             class="mx-2" 
                                             id="startTime" 
                                             showTime="true"
-                                            showButtonBar="true"
                                             timeInput="true"
                                             value="#{inwardTimedItemController.current.fromTime}" 
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
@@ -187,14 +186,17 @@
                             #{ti.item.name}
                         </p:column>
                         <p:column headerText="Start Time">
-                            <p:calendar navigator="true"  
-                                        value="#{ti.fromTime}" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />                                      
+                            <p:datePicker showTime="true"
+                                          timeInput="true" 
+                                          value="#{ti.fromTime}" 
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />       
+
                         </p:column>                               
                         <p:column headerText="Stopped Time">
-                            <p:calendar navigator="true"  
-                                        value="#{ti.toTime}" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />  
+                            <p:datePicker showTime="true"
+                                          timeInput="true"  
+                                          value="#{ti.toTime}" 
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />  
                         </p:column>
                         <p:column headerText="Total" styleClass="averageNumericColumn">
                             <h:outputLabel  value="#{ti.serviceValue}">

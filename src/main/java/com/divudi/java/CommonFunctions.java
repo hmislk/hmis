@@ -41,6 +41,13 @@ import java.util.UUID;
  */
 public class CommonFunctions {
 
+    public static String getDigitsOnlyByRemovingWhitespacesAndNonDigitCharacters(String membershipNumber) {
+        if (membershipNumber == null) {
+            return null;
+        }
+        return membershipNumber.replaceAll("[^\\d]", "");
+    }
+
     private SessionController sessionController;
 
     private static final String[] units = {"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"};
@@ -449,7 +456,7 @@ public class CommonFunctions {
             return "";
         }
         String code;
-        code = name.replaceAll(" ", "_");
+        code = name.trim().replaceAll("\\s+", "_");
         code = code.toLowerCase();
         return code;
     }
@@ -1033,6 +1040,16 @@ public class CommonFunctions {
 
             return null;
         }
+    }
+
+    public static Date fetchDateOfBirthFromAge(Integer ageInt) {
+        if (ageInt == null) {
+            return null;
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date()); // Sets the calendar to the current date
+        cal.add(Calendar.YEAR, -ageInt); // Subtracts the age from the current year to get the birth year
+        return cal.getTime(); // Returns the computed date
     }
 
     public static String convertDoubleToString(Double value) {

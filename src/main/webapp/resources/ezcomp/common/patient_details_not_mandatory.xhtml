@@ -22,7 +22,6 @@
             <p:growl id="msg"/>
             <f:facet name="header">
                 <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
-                    <!-- Left aligned content -->
                     <h:panelGroup id="headerFacet">
                         <h:outputText value="Select a Patient" rendered="#{cc.attrs.controller.patient eq null}"></h:outputText>
                         <h:outputText styleClass="fas fa-user" />
@@ -91,7 +90,6 @@
                     </h:panelGroup>
                 </h:panelGroup>
             </f:facet>
-
             <h:panelGroup id="selectPatient" >
                 <h:panelGroup rendered="#{patientController.quickSearchPatientList ne null and not empty patientController.quickSearchPatientList}">
                     <p:dataTable id="tblPatients" value="#{patientController.quickSearchPatientList}" var="ps">
@@ -109,7 +107,7 @@
                                 action="#{patientController.selectQuickOneFromQuickSearchPatient(cc.attrs.controller)}" 
                                 id="btnSelectPt"
                                 process="btnSelectPt tblPatients"
-                                update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId}"
+                                update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}"
                                 value="select">
                                 <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                             </p:commandButton>
@@ -117,9 +115,7 @@
                     </p:dataTable>
                 </h:panelGroup>
             </h:panelGroup>
-
             <h:panelGroup id="editPatient" >
-
                 <h:panelGroup rendered="#{cc.attrs.controller.patientDetailsEditable}" >
                     <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
                         <h:panelGroup class="mb-1 w-100" id="panelPatient" >
@@ -302,7 +298,6 @@
                 </h:panelGroup>
             </h:panelGroup>
             <h:panelGroup id="viewPatient" >
-
                 <h:panelGroup  rendered="#{not cc.attrs.controller.patientDetailsEditable}"  >
                     <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
                         <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{cc.attrs.controller.patient ne null}" >
@@ -351,9 +346,7 @@
                         </h:panelGrid>
                     </h:panelGroup>
                 </h:panelGroup>
-
             </h:panelGroup>
-
         </p:panel>
     </cc:implementation>
 </html>

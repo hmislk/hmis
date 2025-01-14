@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/admin/institutions/admin_institutions_index.xhtml">
+
+            <ui:define name="admin">
+                <p:panel  >
+                    <f:facet name="header" >
+                        <h:form >
+                            <p:growl />
+                            <i class="fa fa-signature"/>
+                            <p:outputLabel value="Add Staff Signature (By URL)" class="mx-2 mt-2" ></p:outputLabel>
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Back" 
+                                action="#{webUserController.backToManageSignatureType()}"
+                                style="float: right;"
+                                icon="fa fa-arrow-left">
+                            </p:commandButton>
+                        </h:form>
+                    </f:facet>
+
+                    <div class="row">
+
+                        <div class="col-6">
+                            <p:panel header="Add New Signature" >
+                                <h:form enctype="multipart/form-data" >
+
+                                    <div class="d-flex">
+                                        <div class="col-5">
+                                            <h:outputLabel value="User" ></h:outputLabel>
+                                        </div>
+                                        <div class="col-7">
+                                            <h:outputLabel class="w-100" value="#{staffController.current.person.nameWithTitle}"/> 
+                                        </div>
+                                    </div>
+
+                                    <h:panelGroup id="url" rendered="#{staffController.current.signatureUrl ne null}">
+                                        <div class="d-flex mt-2">
+                                            <div class="col-5"><h:outputLabel value="Current Signature URL"/></div>
+                                            <div class="col-7">
+                                                <h:outputLabel 
+                                                    class="w-100"
+                                                    value="#{staffController.current.signatureUrl}">
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <div class="d-flex mt-2">
+                                        <div class="col-5"><h:outputLabel value="New Signature URL"/></div>
+                                        <div class="col-7">
+                                            <p:inputTextarea 
+                                                class="w-100"
+                                                value="#{staffController.signatureUrl}">
+                                            </p:inputTextarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-6"></div>
+                                        <div class="col-6 d-flex justify-content-end">
+                                            <h:form >
+                                                <p:commandButton 
+                                                    ajax="false" 
+                                                    style="float: right;"
+                                                    value="Upload URL Signature"
+                                                    class="ui-button-success mt-2"
+                                                    icon="fas fa-upload"
+                                                    action="#{staffController.saveSignatureUrl()}">
+                                                </p:commandButton>
+                                            </h:form>
+                                        </div>
+                                    </div>
+                                </h:form>
+                            </p:panel>
+                        </div>
+
+                        <div class="col-6">
+                            <h:form >
+                                <p:panel class="w-100">
+                                    <f:facet name="header" >
+                                        <div class="row">
+                                            <div class="col-6 d-flex align-items-center">
+                                                <p:outputLabel value="Current URL Signature" ></p:outputLabel>
+                                            </div>
+                                            <div class="col-6  d-flex align-items-center justify-content-end">
+                                                <h:form >
+                            <p:growl />
+                                                <p:commandButton 
+                                                    ajax="false" id="btnSave2" 
+                                                    value="Remove" 
+                                                    class="m-1 ui-button-danger w-50" 
+                                                    icon="fa-solid fa-trash" 
+                                                    action="#{staffController.removeSignatureUrl()}"/>
+                                                </h:form>
+                                            </div>
+                                        </div>
+                                    </f:facet>
+                                    <div class="w-100">
+                                        <p:graphicImage 
+                                            cache="false" 
+                                            value="#{staffController.current.signatureUrl}" 
+                                            class="w-100">
+                                        </p:graphicImage>
+                                    </div>
+                                </p:panel>
+                            </h:form>
+                        </div>
+                    </div>
+                </p:panel>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

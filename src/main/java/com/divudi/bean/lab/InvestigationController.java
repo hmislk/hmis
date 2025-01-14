@@ -482,6 +482,23 @@ public class InvestigationController implements Serializable {
         return investigationItemController.toEditInvestigationFormat();
     }
     
+    public String navigateExportReoirtFormat() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please select investigation");
+            return "";
+        }
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save investigation first.");
+            return "";
+        }
+        if (current.getReportedAs() == null) {
+            current.setReportedAs(current);
+        }
+        investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
+        investigationItemController.listInvestigationItem();
+        return "/admin/lims/export?faces-redirect=true";
+    }
+    
     public String navigateToEditFormatSinglePastData() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
@@ -548,10 +565,10 @@ public class InvestigationController implements Serializable {
     }
 
     public String navigateToEditPathologyFormat() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("Please select investigation");
-            return "";
-        }
+//        if (current == null) {
+//            JsfUtil.addErrorMessage("Please select investigation");
+//            return "";
+//        }
         return "/admin/lims/pathology_format?faces-redirect=true";
     }
 

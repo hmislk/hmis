@@ -80,6 +80,12 @@
                                     </f:facet>                              
                                     #{b.referenceBill.deptId}
                                 </p:column> 
+                                <p:column >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Invoice No"/>                                  
+                                    </f:facet>                              
+                                    #{b.referenceBill.invoiceNumber}
+                                </p:column> 
                                 <p:column headerText="GRN Amount">
                                     <p:outputLabel value="#{b.referenceBill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />

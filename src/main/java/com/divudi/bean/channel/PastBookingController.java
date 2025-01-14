@@ -2729,4 +2729,9 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         this.dates = dates;
     }
 
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
+
 }

@@ -9,7 +9,9 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ClinicalFindingValueController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 
@@ -41,7 +43,9 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.clinical.ClinicalFindingValueType;
+import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.facade.ClinicalFindingValueFacade;
@@ -88,6 +92,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     CommonFunctionsController commonFunctionsController;
     @Inject
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private CommonController commonController;
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -147,10 +155,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Doctor referringDoctorForSearch;
     private Institution institutionForSearch;
     private AdmissionStatus admissionStatusForSearch;
+    private Admission perantAddmission;
     private boolean patientDetailsEditable;
     private List<ClinicalFindingValue> patientAllergies;
     private ClinicalFindingValue currentPatientAllergy;
     private Institution lastCreditCompany;
+    private Department loggedDepartment;
+    private Institution site;
+
+    private PaymentMethod paymentMethod;
 
     public void addPatientAllergy() {
         if (currentPatientAllergy == null) {
@@ -235,6 +248,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (encounterCreditCompany.getInstitution() != null) {
             encounterCreditCompany.setPatientEncounter(current);
             encounterCreditCompanies.add(encounterCreditCompany);
+            current.setCreditLimit(current.getCreditLimit() + encounterCreditCompany.getCreditLimit());
             encounterCreditCompany = new EncounterCreditCompany();
         }
 
@@ -351,6 +365,23 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return lst;
     }
 
+    public List<Bill> getCreditPaymentBillsBht(Institution institution) {
+        String sql;
+        HashMap hash = new HashMap();
+
+        sql = "select b from Bill b "
+                + " where b.retired=false "
+                + " and b.creditCompany=:ins"
+                + " and b.billTypeAtomic=:bta ";
+
+        hash.put("ins", institution);
+        hash.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        //     hash.put("pm", PaymentMethod.Credit);
+        List<Bill> lst = getBillFacade().findByJpql(sql, hash);
+        System.out.println("lst = " + lst);
+        return lst;
+    }
+
 //    public List<Admission> completePatientPaymentDue(String qry) {
 //        String sql = "Select b.patientEncounter From "
 //                + " BilledBill b where"
@@ -438,6 +469,18 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 //         roomChangeController.recreate();
         roomChangeController.createGuardianRoom();
         return "/inward/inward_room_change_guardian?faces-redirect=true";
+    }
+
+    public String navigateToAddBabyAdmission() {
+        parentAdmission = current;
+        Admission ad = new Admission();
+        if (ad.getDateOfAdmission() == null) {
+            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+        }
+        setCurrent(ad);
+        current.setParentEncounter(parentAdmission);
+        setPrintPreview(false);
+        return "/inward/inward_admission_child?faces-redirect=true";
     }
 
 //    // Services & Items Submenu Methods
@@ -559,6 +602,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             j += "  and c.institution=:ins ";
             m.put("ins", institutionForSearch);
         }
+
+        if (loggedDepartment != null) {
+            j += "  and c.department=:dept ";
+            m.put("dept", loggedDepartment);
+        }
+
+        if (parentAdmission != null) {
+            j += "  and c.parentEncounter=:pent ";
+            m.put("pent", parentAdmission);
+        }
+
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
     }
 
@@ -689,11 +743,21 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         referringDoctorForSearch = null;
         institutionForSearch = null;
         admissionStatusForSearch = null;
+        parentAdmission = null;
     }
 
     public String navigateToListAdmissions() {
         institutionForSearch = sessionController.getLoggedUser().getInstitution();
+        if (configOptionApplicationController.getBooleanValueByKey("Restirct Inward Admission Search to Logged Department of the User")) {
+            loggedDepartment = sessionController.getLoggedUser().getDepartment();
+        }
         clearSearchValues();
+        return "/inward/inpatient_search?faces-redirect=true;";
+    }
+
+    public String navigateToListChildAdmissions() {
+        perantAddmission = current;
+        searchAdmissions();
         return "/inward/inpatient_search?faces-redirect=true;";
     }
 
@@ -959,6 +1023,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 return true;
             }
         }
+        
         if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
             if (getPatientRoom().getRoomFacilityCharge() == null) {
                 JsfUtil.addErrorMessage("Select Room ");
@@ -981,8 +1046,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
-            if (getInwardBean().isRoomFilled(getPatientRoom().getRoomFacilityCharge().getRoom())) {
-                JsfUtil.addErrorMessage("Select Empty Room");
+            if (getPatientRoom() != null) {
+                if (getInwardBean().isRoomFilled(getPatientRoom().getRoomFacilityCharge().getRoom())) {
+                    JsfUtil.addErrorMessage("Select Empty Room");
+                    return true;
+                }
+            } else {
+                JsfUtil.addErrorMessage("Room is Empty");
                 return true;
             }
         }
@@ -991,10 +1061,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Please Select Referring Doctor");
             return true;
         }
+
         if (getCurrent().getPatient() == null) {
             JsfUtil.addErrorMessage("Select Patient");
             return true;
         }
+
         if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getApplicationPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
             if (getCurrent().getComments() == null || getCurrent().getComments().isEmpty()) {
                 JsfUtil.addErrorMessage("Please Add Reference No");
@@ -1105,7 +1177,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         savePatient();
         savePatientAllergies();
         saveGuardian();
-        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+        boolean bhtCanBeEdited = configOptionApplicationController.getBooleanValueByKey("BHT Number can be edited at the time of admission");
+        if (bhtText == null || bhtText.trim().equals("")) {
+            bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+        } else {
+            if (!bhtCanBeEdited) {
+                bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+            }
+        }
+//        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         getCurrent().setBhtNo(getBhtText());
 
         //  getCurrent().setBhtNo(bhtText);
@@ -1121,7 +1201,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addSuccessMessage("Patient Admitted Succesfully");
         }
 
-        if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
+        if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
             PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
         }
@@ -1639,6 +1719,45 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setLastCreditCompany(Institution lastCreditCompany) {
         this.lastCreditCompany = lastCreditCompany;
+    }
+
+    @Override
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    @Override
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
+
+    public Department getLoggedDepartment() {
+        return loggedDepartment;
+    }
+
+    public void setLoggedDepartment(Department loggedDepartment) {
+        this.loggedDepartment = loggedDepartment;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Admission getPerantAddmission() {
+        return perantAddmission;
+    }
+
+    public void setPerantAddmission(Admission perantAddmission) {
+        this.perantAddmission = perantAddmission;
     }
 
     /**

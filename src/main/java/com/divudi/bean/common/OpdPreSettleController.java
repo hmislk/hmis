@@ -656,7 +656,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 paymentFacade.create(p);
                 ps.add(p);
             }
-            
+
         } else {
             Payment p = new Payment();
             p.setBill(bill);
@@ -1758,9 +1758,23 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     public Payment createPaymentForCancellationsAndRefunds(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
-        double valueToSet = 0 - Math.abs(bill.getNetTotal());
-        p.setPaidValue(valueToSet);
-        setPaymentMethodData(p, pm);
+
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+        if (p.getBill().getBillType() == BillType.PaymentBill) {
+            p.setPaidValue(bill.getNetTotal());
+        } else {
+            double valueToSet = 0 - Math.abs(bill.getNetTotal());
+            p.setPaidValue(valueToSet);
+        }
+
+        if (p.getId() == null) {
+            getPaymentFacade().create(p);
+        }
+        getPaymentFacade().edit(p);
         return p;
     }
 

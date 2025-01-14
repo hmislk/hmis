@@ -7,7 +7,6 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
     <h:body>
@@ -19,7 +18,6 @@
                             <f:facet name="header">
                                 <h:outputText value="Batch Bill Cancellation" class="mt-5"/>
                                 <h:panelGrid columns="3" style="float: right" class="w-50">
-<!--                                    <p:inputText placeholder="Enter Comments to Cancel Bill" value="#{billPackageController.comment}" style="float: right" class="p-2 w-100"/>-->
                                     <p:selectOneMenu
                                         id="commentsMenu"
                                         value="#{billPackageController.comment}"

@@ -162,8 +162,8 @@ public class PharmacyCalculation implements Serializable {
         //System.err.println("GETTING TOTAL QTY " + value);
         return value;
     }
-    
-     public double getTotalQtyWithFreeQty(BillItem b, BillType billType, Bill bill) {
+
+    public double getTotalQtyWithFreeQty(BillItem b, BillType billType, Bill bill) {
         String sql = "Select sum(p.pharmaceuticalBillItem.qty+p.pharmaceuticalBillItem.freeQty) from BillItem p where"
                 + "  type(p.bill)=:class and p.creater is not null and"
                 + " p.referanceBillItem=:bt and p.bill.billType=:btp";
@@ -178,7 +178,7 @@ public class PharmacyCalculation implements Serializable {
         //System.err.println("GETTING TOTAL QTY " + value);
         return value;
     }
-    
+
     public double getTotalFreeQty(BillItem b, BillType billType, Bill bill) {
         String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"
                 + "  type(p.bill)=:class and p.creater is not null and"
@@ -209,7 +209,7 @@ public class PharmacyCalculation implements Serializable {
         //System.err.println("GETTING TOTAL QTY " + value);
         return value;
     }
-    
+
     public double getTotalFreeQty(BillItem b, BillType billType) {
         String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"
                 + "  p.creater is not null and"
@@ -240,6 +240,26 @@ public class PharmacyCalculation implements Serializable {
         return value;
     }
 
+    public double getBilledIssuedByRequestedItemBatch(BillItem b, BillType billType, ItemBatch batch) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+                + "  p.creater is not null and type(p.bill)=:class and "
+                + " p.referanceBillItem=:bt and p.bill.billType=:btp "
+                + " and p.pharmaceuticalBillItem.itemBatch = :batch";
+
+        BillItem bb = new BillItem();
+        bb.getPharmaceuticalBillItem().getItemBatch();
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("batch", batch);
+        hm.put("class", BilledBill.class);
+        hm.put("btp", billType);
+
+        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+
+        return value;
+    }
+
     public double getBilledInwardPharmacyRequest(BillItem b, BillType billType) {
         String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
                 + "  p.creater is not null and type(p.bill)=:class and "
@@ -262,6 +282,23 @@ public class PharmacyCalculation implements Serializable {
 
         HashMap hm = new HashMap();
         hm.put("bt", b);
+        hm.put("class", CancelledBill.class);
+        hm.put("btp", billType);
+
+        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+
+        return value;
+    }
+    
+    public double getCancelledIssuedByRequestedItemBatch(BillItem b, BillType billType, ItemBatch batch) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+                + "  p.creater is not null and type(p.bill)=:class and "
+                + " p.referanceBillItem.referanceBillItem=:bt and p.bill.billType=:btp "
+                + " and p.pharmaceuticalBillItem.itemBatch = :batch ";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("batch", batch);
         hm.put("class", CancelledBill.class);
         hm.put("btp", billType);
 
@@ -343,7 +380,7 @@ public class PharmacyCalculation implements Serializable {
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
 
     }
-    
+
     public double getReturnedTotalQtyWithFreeQty(BillItem b, BillType billType, Bill bill) {
         String sql = "Select sum(p.pharmaceuticalBillItem.qty+p.pharmaceuticalBillItem.freeQty) from BillItem p where"
                 + "  type(p.bill)=:class and p.bill.creater is not null and"
@@ -357,7 +394,7 @@ public class PharmacyCalculation implements Serializable {
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
 
     }
-    
+
     public double getReturnedTotalFreeQty(BillItem b, BillType billType, Bill bill) {
         String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"
                 + "  type(p.bill)=:class and p.bill.creater is not null and"
@@ -384,7 +421,7 @@ public class PharmacyCalculation implements Serializable {
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
 
     }
-    
+
     public double getReturnedTotalFreeQty(BillItem b, BillType billType) {
         String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"
                 + "  p.bill.creater is not null and"
@@ -417,7 +454,7 @@ public class PharmacyCalculation implements Serializable {
 
         return (Math.abs(recieveNet) - Math.abs(retuernedNet));
     }
-    
+
     public double calFreeQty(PharmaceuticalBillItem po) {
 
         double billed = getTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnBill, new BilledBill());
@@ -442,26 +479,21 @@ public class PharmacyCalculation implements Serializable {
 
         double grns = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill);
         double grnReturn = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn);
-        
 
         double netQty = grns - grnReturn;
 
-
         return netQty;
     }
-    
+
     public double calFreeQtyInTwoSql(PharmaceuticalBillItem po) {
 
         double grnsFree = getTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnBill);
         double grnReturnFree = getReturnedTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn);
-        
 
         double netFreeQty = grnsFree - grnReturnFree;
 
-
         return netFreeQty;
     }
-
 
     public double calQty2(BillItem bil) {
 
@@ -558,7 +590,7 @@ public class PharmacyCalculation implements Serializable {
         return remainsFree;
 
     }
-    
+
     public double getRemainingFreeQty(PharmaceuticalBillItem ph) {
 
         String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id = " + ph.getBillItem().getReferanceBillItem().getId();
@@ -869,7 +901,7 @@ public class PharmacyCalculation implements Serializable {
     public boolean checkItemBatch(List<BillItem> list) {
 
         for (BillItem i : list) {
-            if (i.getPharmaceuticalBillItem().getQty() != 0.0 ) {
+            if (i.getPharmaceuticalBillItem().getQty() != 0.0) {
                 if (i.getPharmaceuticalBillItem().getDoe() == null || i.getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
                     return true;
                 }
@@ -878,7 +910,6 @@ public class PharmacyCalculation implements Serializable {
                 }
 
             }
-            
 
         }
         return false;

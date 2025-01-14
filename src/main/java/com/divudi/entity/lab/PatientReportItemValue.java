@@ -4,16 +4,20 @@
  */
 package com.divudi.entity.lab;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
 /**
@@ -21,7 +25,7 @@ import javax.persistence.Transient;
  * @author Buddhika
  */
 @Entity
-public class PatientReportItemValue implements Serializable {
+public class PatientReportItemValue implements Serializable, RetirableEntity {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -51,12 +55,20 @@ public class PatientReportItemValue implements Serializable {
     @Transient
     private String displayValue;
     
-    
+    //Retairing properties 
+    private boolean retired;
+    @ManyToOne
+    private WebUser retirer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date retiredAt;
+    private String retireComments;
 
     public String getStrValue() {
         return strValue;
     }
 
+    
+    
     public void setStrValue(String strValue) {
         this.strValue = strValue;
     }
@@ -175,33 +187,33 @@ public class PatientReportItemValue implements Serializable {
 
         String value = "";
         String formatString = this.investigationItem.formatString;
-//        System.out.println("Format string: " + formatString);
+        System.out.println("Format string: " + formatString);
 
-//        System.out.println("this.investigationItem.ixItemValueType = " + this.investigationItem.ixItemValueType);
+        System.out.println("this.investigationItem.ixItemValueType = " + this.investigationItem.ixItemValueType);
 
         switch (this.investigationItem.ixItemValueType) {
             case Double:
             case Long:
                 if (this.doubleValue != null) {
-//                    System.out.println("Double value before formatting: " + this.doubleValue);
+                    System.out.println("Double value before formatting: " + this.doubleValue);
                     if (formatString != null) {
                         DecimalFormat decimalFormat = new DecimalFormat(formatString);
                         value = decimalFormat.format(this.doubleValue);
                     } else {
                         value = Double.toString(this.doubleValue);
                     }
-//                    System.out.println("Double value after formatting: " + value);
+                    System.out.println("Double value after formatting: " + value);
                 } else {
-//                    System.out.println("Double value is null");
+                    System.out.println("Double value is null");
                 }
                 break;
             case Varchar:
                 value = this.strValue;
-//                System.out.println("Varchar value: " + value);
+                System.out.println("Varchar value: " + value);
                 break;
             case Memo:
                 value = this.lobValue;
-//                System.out.println("Memo value: " + value);
+                System.out.println("Memo value: " + value);
                 break;
             default:
                 value = this.investigationItem.ixItemValueType.toString();
@@ -209,7 +221,7 @@ public class PatientReportItemValue implements Serializable {
                 break;
         }
 
-//        System.out.println("Final value: " + value);
+        System.out.println("Final value: " + value);
         return value;
     }
 
@@ -237,6 +249,38 @@ public class PatientReportItemValue implements Serializable {
 
     public void setCodeSystemCode(String codeSystemCode) {
         this.codeSystemCode = codeSystemCode;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
     }
 
 }

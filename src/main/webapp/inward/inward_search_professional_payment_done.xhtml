@@ -8,8 +8,8 @@
       >
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/payments/pay_index.xhtml">
+            <ui:define name="admin">
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
@@ -125,7 +125,7 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Action">
-                                        <p:commandButton ajax="false" value="View Bill" action="inward_reprint_staff_payment"  >
+                                        <p:commandButton ajax="false" value="View Bill" icon="fas fa-eye"  action="inward_reprint_staff_payment"  >
                                             <f:setPropertyActionListener value="#{bi.bill}" target="#{inwardSearch.bill}"/>
                                         </p:commandButton>
                                     </p:column>

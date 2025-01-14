@@ -9,6 +9,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.InstitutionType;
@@ -66,6 +67,40 @@ public class DealerController implements Serializable {
 
         return institutionList;
     }
+    
+    public List<Institution> findAllDealors() {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select c from Institution c where c.retired=false and "
+                + " c.institutionType =:t order by c.name";
+        //////// // System.out.println(sql);
+        m.put("t", InstitutionType.Dealer);
+        institutionList = getEjbFacade().findByJpql(sql, m);
+        //////// // System.out.println("suggestions = " + suggestions);
+
+        return institutionList;
+    }
+    
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    
+    public void generateCodeForDealor(){
+        String prefix = configOptionApplicationController.getLongTextValueByKey("Prefix for supplier code generation", "Prefix/");
+        List<Institution> allDealors = findAllDealors();
+        
+        long number = allDealors.size();
+        String formattedNumber = String.format("%04d", number);
+        
+        for(Institution i: allDealors){
+            if(i.getInstitutionCode().equalsIgnoreCase(prefix+formattedNumber)){
+                number++;
+                formattedNumber = String.format("%04d", number);
+            }
+        }
+        current.setInstitutionCode(prefix+formattedNumber);
+    }
 
     public void prepareAdd() {
         current = new Institution();
@@ -77,6 +112,15 @@ public class DealerController implements Serializable {
     }
 
     public void saveSelected() {
+        if(current.getName() == null || current.getName().isEmpty()){
+            JsfUtil.addErrorMessage("Please add name of the supplier.");
+            return;
+        }
+        
+        if(current.getInstitutionCode() == null || current.getInstitutionCode().isEmpty()){
+            JsfUtil.addErrorMessage("Please add code of the supplier.");
+            return;
+        }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);

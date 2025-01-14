@@ -17,7 +17,7 @@
 
 
 
-            <p:panel header="Manage Pharmecy Distributor" >
+            <p:panel header="Manage Pharmecy Supplier" >
                 <div class="row">
                     <div class="col-5">
                         <p:commandButton id="btnAdd" value="Add" action="#{dealerController.prepareAdd()}" 
@@ -44,11 +44,13 @@
                         </p:selectOneListbox>
                     </div>
                     <div class="col-7">
-                        <p:panel header="Importer Details">
+                        <p:panel header="Supplier Details">
 
                             <h:panelGrid id="gpDetail" columns="2" class="w-100">
                                 <h:outputText id="lblName" value="Name" ></h:outputText>
                                 <p:inputText autocomplete="off" id="txtName" value="#{dealerController.current.name}" class="w-100" ></p:inputText>
+                                <h:outputText id="lblInsCode" value="Institution Code" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtInsCode" value="#{dealerController.current.code}" class="w-100" ></p:inputText>
                                 <h:outputText id="lblCode" value="Code" ></h:outputText>
                                 <p:inputText autocomplete="off" id="txtCode" value="#{dealerController.current.institutionCode}" class="w-100" ></p:inputText>
                                 <h:outputText  value="Adress" ></h:outputText>
@@ -58,6 +60,16 @@
                                 <h:outputText  value="Fax" ></h:outputText>
                                 <p:inputText autocomplete="off"  value="#{dealerController.current.fax}" class="w-100" ></p:inputText>
                             </h:panelGrid>
+
+
+                            <p:commandButton id="generateCode" value="Generate Code" 
+                                             action="#{dealerController.generateCodeForDealor()}" 
+                                             process="generateCode gpDetail" 
+                                             update="gpDetail" 
+                                             class=" m-1 ui-button-success w-25"
+                                             icon="fas fa-save">
+
+                            </p:commandButton>
 
                             <p:commandButton id="btnSave" value="Save" 
                                              action="#{dealerController.saveSelected()}" 

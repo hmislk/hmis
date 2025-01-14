@@ -3020,4 +3020,9 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
         this.currentToken = currentToken;
     }
 
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
+
 }

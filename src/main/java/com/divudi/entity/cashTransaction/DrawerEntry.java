@@ -1,5 +1,6 @@
 package com.divudi.entity.cashTransaction;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Payment;
@@ -21,7 +22,7 @@ import javax.persistence.Temporal;
  * 
  */
 @Entity
-public class DrawerEntry implements Serializable {
+public class DrawerEntry implements Serializable, RetirableEntity  {
 
     private static final long serialVersionUID = 1L;
     @Id

@@ -286,8 +286,8 @@
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </p:outputLabel>
                                 </p:column>
-                                
-                                 <p:column  
+
+                                <p:column  
                                     rendered="#{searchController.reportType eq 'Site'}" 
                                     headerText="Card Before" 
                                     style="text-align: right; width:6em;">
@@ -310,6 +310,33 @@
                                     headerText="Card After" 
                                     style="text-align: right; width:6em;" >
                                     <p:outputLabel value="#{cb.fromSiteCardBalanceAfter}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+                                
+                                <p:column  
+                                    rendered="#{searchController.reportType eq 'Site'}" 
+                                    headerText="SLIP Before" 
+                                    style="text-align: right; width:6em;">
+                                    <p:outputLabel value="#{cb.fromSiteSlipBalanceBefore}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column 
+                                    rendered="#{searchController.reportType eq 'Site'}" 
+                                    headerText="Slip" 
+                                    style="text-align: right; width:6em;" >
+                                    <p:outputLabel value="#{cb.slipValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column 
+                                    rendered="#{searchController.reportType eq 'Site'}" 
+                                    headerText="Slip After" 
+                                    style="text-align: right; width:6em;" >
+                                    <p:outputLabel value="#{cb.fromSiteSlipBalanceAfter}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </p:outputLabel>
                                 </p:column>

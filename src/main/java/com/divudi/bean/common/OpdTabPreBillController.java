@@ -2180,4 +2180,9 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         this.selectedOpdItemDepartment = selectedOpdItemDepartment;
     }
 
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
+
 }

@@ -179,12 +179,12 @@
                                         <p:outputLabel value="#{b.patientEncounter.patient.person.name}"/>                               
                                     </p:column>
                                     <p:column headerText="Value">
-                                        <p:outputLabel value="#{b.patientEncounter.creditUsedAmount}">  
+                                        <p:outputLabel value="#{b.netValue}">  
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </p:column>
                                     <p:column headerText="Paid">
-                                        <p:outputLabel value="#{b.patientEncounter.creditPaidAmount}">
+                                        <p:outputLabel value="#{b.bill.paidAmount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </p:column>

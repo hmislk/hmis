@@ -150,7 +150,7 @@
                     <p:dataTable id="tbl" styleClass="noBorder normalFont"
                                  value="#{reportsController.bundle.reportTemplateRows}" var="i" rowIndexVar="in">
                         <f:facet name="header">
-                            <h:outputLabel value="Inward Discharge Details "/>
+                            <h:outputLabel value="Debtor Balance Report" style="font-weight: bold; margin-bottom: 10px;"/>
                             <h:panelGrid columns="4">
                                 <h:outputLabel value="From  "/>
                                 <h:outputLabel value="#{reportsController.fromDate}">
@@ -259,9 +259,9 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column headerText="Paid BY PATIENT" styleClass="averageNumericColumn">
+                        <p:column headerText="Paid By Patient" styleClass="averageNumericColumn">
                             <f:facet name="header">
-                                <h:outputLabel value="Paid BY PATIENT"/>
+                                <h:outputLabel value="Paid By Patient"/>
                             </f:facet>
                             <h:outputLabel value="#{i.bill.patientEncounter.finalBill.settledAmountByPatient}"
                                            rendered="#{reportsController.visitType eq 'IP'}">

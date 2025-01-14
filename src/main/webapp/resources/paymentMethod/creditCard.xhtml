@@ -18,6 +18,7 @@
             <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="" layout="block"  >
                 <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}" style="width: 7em!important;" class="w-100" id="txtVal" >
                     <p:ajax process="@this" ></p:ajax>
+                    <f:convertNumber pattern="#,##0.00" />
                 </p:inputText>
             </h:panelGroup>
 

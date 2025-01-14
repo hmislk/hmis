@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
@@ -46,7 +47,13 @@ import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.entity.Payment;
+import com.divudi.entity.cashTransaction.Drawer;
+import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
+import com.divudi.service.DrawerService;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -93,6 +100,8 @@ public class InwardSearch implements Serializable {
      * JSF Controllers
      */
     @Inject
+    DrawerController drawerController;
+    @Inject
     private BillBeanController billBean;
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -108,6 +117,12 @@ public class InwardSearch implements Serializable {
     SearchController searchController;
     @EJB
     PersonFacade personFacade;
+    @EJB
+    private PaymentFacade paymentFacade;
+    @EJB
+    PaymentService paymentService;
+    @EJB
+    DrawerService drawerService;
     /**
      * Properties
      */
@@ -990,7 +1005,8 @@ public class InwardSearch implements Serializable {
 
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
-
+//        cb.setBillType(BillType.InwardProfessional);
+        cb.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
         return cb;
     }
 
@@ -1179,21 +1195,58 @@ public class InwardSearch implements Serializable {
 
         return false;
     }
+    
+    public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
+        List<Payment> pays = new ArrayList<>();
+        Payment p = new Payment();
+        p.setBill(bill);
+        setPaymentMethodData(p, pm);
+        pays.add(p);
+        return pays;
+    }
 
+    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+
+        p.setPaidValue(p.getBill().getNetTotal());
+
+        if (p.getId() == null) {
+            paymentFacade.create(p);
+        }
+
+    }
+    
     public void cancelPaymentBill() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
                 return;
             }
+            if (paymentMethod == PaymentMethod.Cash) {
+            Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
+            double drawerBalance = userDrawer.getCashInHandValue();
+            double paymentAmount = getBill().getNetTotal();
+
+            if (drawerBalance < paymentAmount) {
+                JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                return;
+            }
+        }
             CancelledBill cb = createCancelBill();
             //Copy & paste
-
+            
             getBillFacade().create(cb);
             cancelBillItemsPayment(cb);
             cancelPaymentItems(bill);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
+            List<Payment> cancelPayment = createPayment(cb, cb.getPaymentMethod());
+            drawerController.updateDrawerForIns(cancelPayment);
             JsfUtil.addSuccessMessage("Cancelled");
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());

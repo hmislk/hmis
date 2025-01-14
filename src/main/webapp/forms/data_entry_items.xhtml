@@ -7,7 +7,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="./index.xhtml">
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
 
 
             <ui:define name="subcontent">
@@ -23,14 +23,8 @@
                         <p:column headerText="Code">
                             <h:outputText value="#{i.code}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Description">
-                            <h:outputText value="#{i.description}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Code">
-                            <h:outputText value="#{i.componentDataType}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Code">
-                            <h:outputText value="#{i.componentPresentationType}" ></h:outputText>
+                        <p:column headerText="Mapping Type">
+                            <h:outputText value="#{i.componentMappingType}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Actions">
                             <p:commandButton ajax="false" 

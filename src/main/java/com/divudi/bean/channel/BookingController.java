@@ -4703,4 +4703,9 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         this.remainAmount = remainAmount;
     }
 
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
+
 }

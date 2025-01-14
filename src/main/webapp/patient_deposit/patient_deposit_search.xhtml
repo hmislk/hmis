@@ -118,8 +118,13 @@
                                     <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Action" >
-                                    <p:commandButton icon="fas fa-eye" class="ui-button-info" action="/patient_deposit/view/patient_deposit_bill_reprint?faces-redirect=true" title="View Bill">
+                                <p:column headerText="Action" style="width: 50px;">
+                                    <p:commandButton 
+                                        icon="fas fa-eye" 
+                                        ajax="false"
+                                        class="ui-button-info" 
+                                        action="/patient_deposit/view/patient_deposit_bill_reprint?faces-redirect=true" 
+                                        title="View Bill">
                                          <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
                                     </p:commandButton>
                                 </p:column>

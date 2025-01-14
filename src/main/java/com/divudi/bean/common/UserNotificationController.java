@@ -349,7 +349,7 @@ public class UserNotificationController implements Serializable {
         Map m = new HashMap();
         m.put("ret", false);
         m.put("wu", sessionController.getLoggedUser());
-        items = getFacade().findByJpql(jpql, m);
+        items = getFacade().findByJpql(jpql, m, 20);
         return items;
     }
 
@@ -391,7 +391,7 @@ public class UserNotificationController implements Serializable {
         Bill bill = un.getNotification().getBill();
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
-            case INWARD_PHARMACY_REQUEST:
+            case REQUEST_MEDICINE_INWARD:
                 pharmacySaleBhtController.setBhtRequestBill(bill);
                 return pharmacySaleBhtController.navigateToIssueMedicinesDirectlyForBhtRequest();
 

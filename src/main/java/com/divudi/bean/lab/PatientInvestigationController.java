@@ -1281,7 +1281,7 @@ public class PatientInvestigationController implements Serializable {
         return "/lab/sent_to_lab?faces-redirect=true";
     }
 
-//  Navigation Lab sampling at lab for barcode generate page
+    //  Navigation Lab sampling at lab for barcode generate page
     public String navigateToGenerateBarcodesForLab() {
         return "/lab/generate_barcodes_for_lab?faces-redirect=true";
     }
@@ -1562,6 +1562,7 @@ public class PatientInvestigationController implements Serializable {
         // Update PatientInvestigations and store associated Bills by unique ID to avoid duplicates
         for (PatientInvestigation tptix : samplePtixs.values()) {
             tptix.setSampleSent(true);
+            tptix.setSampleTransportedToLabByStaff(sampleTransportedToLabByStaff);
             tptix.setSampleSentAt(new Date());
             tptix.setSampleSentBy(sessionController.getLoggedUser());
             tptix.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
@@ -2303,7 +2304,7 @@ public class PatientInvestigationController implements Serializable {
 
         if (investigationName != null && !investigationName.trim().isEmpty()) {
             jpql += " AND r.patientInvestigation.billItem.item.name like :investigation ";
-            params.put("investigation", "%"+ investigationName.trim() + "%");
+            params.put("investigation", "%" + investigationName.trim() + "%");
         }
 
         if (department != null) {
@@ -2460,7 +2461,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void searchPatientReportsInBillingDepartment() {
-        
+
         StringBuilder jpql = new StringBuilder();
         Map<String, Object> params = new HashMap<>();
 
@@ -2753,7 +2754,7 @@ public class PatientInvestigationController implements Serializable {
 
         if (investigationName != null && !investigationName.trim().isEmpty()) {
             jpql += " AND i.billItem.item.name like :investigation ";
-            params.put("investigation", "%"+ investigationName.trim() + "%");
+            params.put("investigation", "%" + investigationName.trim() + "%");
         }
 
         if (department != null) {
@@ -3110,15 +3111,13 @@ public class PatientInvestigationController implements Serializable {
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-        
-        
+
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
-        
-        
+
         // Starting from BillItem and joining to PatientInvestigation if needed
         jpql = "SELECT DISTINCT b "
                 + " FROM BillItem b "
@@ -3402,7 +3401,7 @@ public class PatientInvestigationController implements Serializable {
 
         if (investigationName != null && !investigationName.trim().isEmpty()) {
             jpql += " AND i.billItem.item.name like :investigation ";
-            params.put("investigation", "%"+ investigationName.trim() + "%");
+            params.put("investigation", "%" + investigationName.trim() + "%");
         }
 
         if (department != null) {
@@ -3578,6 +3577,21 @@ public class PatientInvestigationController implements Serializable {
         params.put("patientInvestigation", patientInvestigation);
         List<PatientSample> patientSamples = patientSampleFacade.findByJpql(jpql, params);
         return patientSamples;
+    }
+
+    public String getPatientSamplesByInvestigationAsString(PatientInvestigation patientInvestigation) {
+        List<PatientSample> patientSamples = getPatientSamplesByInvestigation(patientInvestigation);
+
+        if (patientSamples == null || patientSamples.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (PatientSample ps : patientSamples) {
+            sb.append(ps.getSampleId()).append(" ");
+        }
+
+        return sb.toString();
     }
 
     public List<PatientInvestigation> getPatientInvestigationsBySample(PatientSample patientSample) {
@@ -4135,6 +4149,38 @@ public class PatientInvestigationController implements Serializable {
         }
 
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
+    }
+
+    private List<PatientReportItemValue> column1AntibioticList;
+    private List<PatientReportItemValue> column2AntibioticList;
+
+    public List<PatientReportItemValue> findAntibioticForMicrobiologyReport(List<PatientReportItemValue> ptivList) {
+        List<PatientReportItemValue> antibioticItems = new ArrayList<>();
+        column1AntibioticList = new ArrayList<>();
+        column2AntibioticList = new ArrayList<>();
+
+        for (PatientReportItemValue ptiv : ptivList) {
+            if (ptiv.getInvestigationItem().getIxItemType() == InvestigationItemType.Antibiotic && !ptiv.getInvestigationItem().isRetired()) {
+                if (ptiv.getStrValue() != null) {
+                    if (!"".equals(ptiv.getStrValue())) {
+                        antibioticItems.add(ptiv);
+                    }
+                }
+            }
+        }
+        
+        for (int i = 0; i < antibioticItems.size(); i++) {
+            if (i % 2 == 0) {
+                column1AntibioticList.add(antibioticItems.get(i));
+            } else {
+                column2AntibioticList.add(antibioticItems.get(i));
+            }
+        }
+
+//        System.out.println("Antibiotic = " + antibioticItems.size());
+//        System.out.println("Column 1 = " + column1AntibioticList.size());
+//        System.out.println("Column 2 = " + column2AntibioticList.size());
+        return antibioticItems;
     }
 
     public void markSelectedAsReceived() {
@@ -4920,6 +4966,22 @@ public class PatientInvestigationController implements Serializable {
 
     public void setInvestigationName(String investigationName) {
         this.investigationName = investigationName;
+    }
+
+    public List<PatientReportItemValue> getColumn1AntibioticList() {
+        return column1AntibioticList;
+    }
+
+    public void setColumn1AntibioticList(List<PatientReportItemValue> column1AntibioticList) {
+        this.column1AntibioticList = column1AntibioticList;
+    }
+
+    public List<PatientReportItemValue> getColumn2AntibioticList() {
+        return column2AntibioticList;
+    }
+
+    public void setColumn2AntibioticList(List<PatientReportItemValue> column2AntibioticList) {
+        this.column2AntibioticList = column2AntibioticList;
     }
 
     /**

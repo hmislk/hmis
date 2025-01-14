@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:h="http://xmlns.jcp.org/jsf/html">
 
 
@@ -15,8 +16,13 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('MembershipAdministration')}">
+                    <na:not_authorize />
+                </h:panelGroup>
 
-                <p:panel header="Membership Administration" >
+                <p:panel 
+                     rendered="#{webUserController.hasPrivilege('MembershipAdministration')}"
+                    header="Membership Administration" >
 
                     <div class="row">
                         <div class="col-md-3">
@@ -59,7 +65,7 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton action="#{pharmacyUpdateBulkController.makeAllPharmaceuticalsToAllowDiscount()}" 
                                                              value="Make All Pharmacy Items Discountable" onclick="if (!confirm('Are you sure?'))
-                                                                             return false"
+                                                                         return false"
                                                              ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>
 
                                         </div>

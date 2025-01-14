@@ -94,7 +94,7 @@
                                 filterBy="#{payment.createdAt}" 
                                 filterMatchMode="contains">
                                 <p:outputLabel value="#{payment.createdAt}" >
-                                    <f:convertDateTime pattern="" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
 

@@ -56,6 +56,21 @@
                             </h:panelGroup>
                             <p:selectBooleanCheckbox class="w-100" value="#{creditCompanyDueController.withOutDueUpdate}" />
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control"
+                                value="#{creditCompanyDueController.institutionOfDepartment}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions"/>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                               itemValue="#{ins}"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
                         </h:panelGrid>
 
                         <p:commandButton 
@@ -64,7 +79,7 @@
                             ajax="false" 
                             value="Process" 
                             icon="fas fa-cogs" 
-                            action="#{creditCompanyDueController.createInwardCreditDue()}">
+                            action="#{creditCompanyDueController.createInwardCreditDueWithAdditionalFilters()}">
                         </p:commandButton>
 
                         <p:commandButton 
@@ -82,18 +97,18 @@
                             icon="fas fa-file-excel" 
                             ajax="false" 
                             value="Excel"
-                            actionListener="#{creditCompanyDueController.createInwardCreditDue()}">
+                            actionListener="#{creditCompanyDueController.createInwardCreditDueWithAdditionalFilters()}">
                             <p:dataExporter target="lst" fileName="Due Search (Credit Company)" type="xlsx"/>
                         </p:commandButton>
 
-                        <p:commandButton 
-                            class="ui-button-danger my-4 mx-2"
-                            style="width: 150px"
-                            icon= "fas fa-file-pdf" 
-                            ajax="false" 
-                            value="PDF"
-                            actionListener="#{creditCompanyDueController.createInwardCreditDue()}">
-                            <p:dataExporter type="pdf" target="lst"  fileName="Due Search (Credit Company)" ></p:dataExporter>
+                        <p:commandButton
+                                class="ui-button-danger my-4 mx-2"
+                                style="width: 150px"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                value="PDF"
+                                actionListener="#{creditCompanyDueController.createInwardCreditDueWithAdditionalFilters()}">
+                            <p:dataExporter target="lst" fileName="Due Search (Credit Company)" type="pdf"/>
                         </p:commandButton>
 
                         <p:dataTable id="lst" value="#{creditCompanyDueController.institutionEncounters}" var="i">
@@ -140,7 +155,7 @@
                                     </h:outputLabel>                                
                                 </p:column>
                                 <p:column>                               
-                                    <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
+                                    <h:outputLabel value="#{b.patient.person.nameWithTitle}" />
                                 </p:column>
                                 <p:column style="text-align: right;">                                
                                     <h:outputLabel value="#{b.finalBill.netTotal}" >

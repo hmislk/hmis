@@ -10,12 +10,11 @@
     <ui:define name="content">
         <h:form>
             <p:panel rendered="#{!transferRequestController.printPreview}">
-                <h:panelGroup  class="row" rendered="#{transferRequestController.toDepartment eq null}"> 
+                <h:panelGroup  class="row" rendered="#{transferRequestController.toDepartment eq null or transferRequestController.toDepartment  eq sessionController.loggedUser.department}"> 
                     <p:panel >
                         <f:facet name="header">
                             <h:outputLabel styleClass="fas fa-building" />
                             <h:outputLabel value="Select Department" class="mx-4" />
-                            <h:outputLabel value="#{transferRequestController.toDepartment.name}" class="mx-4" />
                         </f:facet>
                         <div class="row" >
                             <div class="col-12" >
@@ -25,14 +24,17 @@
                                                  forceSelection="true" size="30" inputStyleClass="w-100" class="mx-2"
                                                  completeMethod="#{departmentController.completeDept}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"
                                                  > 
-                                    <p:ajax process="@this"></p:ajax>
+                                    <p:ajax process="@this" update="btn"></p:ajax>
                                 </p:autoComplete>
+                                <h:panelGroup id="btn">
+                                    <p:commandButton
+                                        id="btnSelect"
+                                        ajax="false"
+                                        value="Select"
+                                        action="#{transferRequestController.processTransferRequest}"
+                                        />
+                                </h:panelGroup>
 
-                                <p:commandButton
-                                    id="btnSelect"
-                                    ajax="false"
-                                    value="Select"
-                                    />
                             </div>
                         </div>
                     </p:panel>
@@ -40,7 +42,7 @@
 
 
 
-                <p:panel rendered="#{transferRequestController.toDepartment ne null }">
+                <p:panel rendered="#{transferRequestController.toDepartment ne null and transferRequestController.toDepartment  ne sessionController.loggedUser.department}">
                     <f:facet name="header" > 
                         <div class="d-flex align-items-center justify-content-between">
                             <div>

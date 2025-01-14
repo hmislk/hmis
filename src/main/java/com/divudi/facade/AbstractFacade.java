@@ -377,6 +377,38 @@ public abstract class AbstractFacade<T> {
         return qry.getResultList();
     }
 
+    private List<Long> executeLongJpqlQuery(String jpql, Map<String, Object> parameters, TemporalType tt) {
+        Query qry = getEntityManager().createQuery(jpql);
+
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+
+            if (paramValue instanceof Date) {
+                qry.setParameter(paramName, (Date) paramValue, tt);
+            } else {
+                qry.setParameter(paramName, paramValue);
+            }
+        }
+
+        List<Long> resultList;
+        try {
+            resultList = qry.getResultList();
+        } catch (Exception e) {
+            resultList = new ArrayList<>();
+        }
+
+        return resultList;
+    }
+
+    public List<Long> findLongValuesByJpql(String jpql, Map<String, Object> parameters) {
+        return executeLongJpqlQuery(jpql, parameters, TemporalType.DATE);
+    }
+
+    public List<Long> findLongValuesByJpql(String jpql, Map<String, Object> parameters, TemporalType tt) {
+        return executeLongJpqlQuery(jpql, parameters, tt);
+    }
+
     public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters) {
         Query qry = getEntityManager().createQuery(jpql);
         Set<Map.Entry<String, Object>> entries = parameters.entrySet();
@@ -1280,19 +1312,20 @@ public abstract class AbstractFacade<T> {
         Query qry = getEntityManager().createQuery(jpql);
         Set s = parameters.entrySet();
         Iterator it = s.iterator();
-
         while (it.hasNext()) {
             Map.Entry m = (Map.Entry) it.next();
-            Date pVal = (Date) m.getValue();
             String pPara = (String) m.getKey();
-            qry.setParameter(pPara, pVal, TemporalType.DATE);
-//            //////// // System.out.println("Parameter " + pPara + "\tVal" + pVal);
+            if (m.getValue() instanceof Date) {
+                Date pVal = (Date) m.getValue();
+                Date pDate = (Date) pVal;
+                qry.setParameter(pPara, pDate, TemporalType.DATE);
+            } else {
+                qry.setParameter(pPara, m.getValue());
+            }
         }
-
         try {
             return (Double) qry.getSingleResult();
         } catch (Exception e) {
-//            //////// // System.out.println(e.getMessage());
             return 0.0;
         }
     }

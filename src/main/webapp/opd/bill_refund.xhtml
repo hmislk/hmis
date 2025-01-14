@@ -64,7 +64,7 @@
                                     <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"  
                                                        rendered="#{billSearch.bill.billType eq 'OpdBill'}">
                                         <f:selectItem itemLabel="Select paymentMethod"/>
-                                        <f:selectItems value="#{enumController.paymentMethodsForOpdBilling}"/>
+                                        <f:selectItems value="#{billSearch.paymentMethods}"/>
                                     </p:selectOneMenu>
 
                                     <p:selectOneMenu   id="cmbPs2" value="#{billSearch.paymentMethod}"  
@@ -160,6 +160,7 @@
                                                     <td >
                                                         <p:inputText 
                                                             id="txtRefVal" 
+                                                            onfocus="this.select();"
                                                             value="#{bf.feeValue}" 
                                                             disabled="#{configOptionApplicationController.getBooleanValueByKey('OPD - User Must not be able to Edit the Refund Amount',false)}" >
                                                             <p:ajax 
@@ -182,41 +183,6 @@
                                 </p:panel>
 
 
-                                <p:dataTable id="dtF" rowIndexVar="rowIndex" value="#{billSearch.billItems}" var="b" 
-                                             rowKey="#{b.id}" selection="#{billSearch.refundingItems}"  >
-
-
-
-                                    <p:column id="colSelect"   selectionMode="multiple"    >
-                                    </p:column>
-
-                                    <p:column >
-                                        <f:facet name="header">No</f:facet>
-                                        <h:outputLabel value="#{rowIndex+1}" />
-                                    </p:column>
-
-                                    <p:column >
-                                        <f:facet name="header">ID</f:facet>
-                                        <h:outputLabel value="#{b.id}"/>
-                                    </p:column>
-
-                                    <p:column >
-                                        <f:facet name="header">ID</f:facet>
-                                        <h:outputLabel value="#{b.id}"/>
-                                    </p:column>
-
-                                    <p:column >
-                                        <f:facet name="header">Item Name</f:facet>
-                                        <h:outputLabel value="#{b.item.name}"/>
-                                    </p:column>
-                                    <p:column >
-                                        <f:facet name="header">Fee Value</f:facet>
-                                        <h:outputLabel value="#{b.netValue}"/>
-                                    </p:column >
-                                    <p:column headerText="Refunded" >
-                                        <h:outputLabel  value="#{b.refunded}" />
-                                    </p:column>
-                                </p:dataTable>
                             </p:panel>
                         </h:panelGroup>
 

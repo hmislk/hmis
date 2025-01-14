@@ -5,8 +5,10 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -39,14 +41,18 @@ public class BillNumber implements Serializable {
     @Enumerated(EnumType.STRING)
     private BillType billType;
     @Enumerated(EnumType.STRING)
+    private BillTypeAtomic billTypeAtomic;
+    @Enumerated(EnumType.STRING)
     private BillClassType billClassType;
     private Integer billYear;
-      //Retairing properties
+    //Retairing properties
     boolean retired;
     @ManyToOne
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
+    private String retireComments;
+
 
     public boolean isRetired() {
         return retired;
@@ -71,8 +77,6 @@ public class BillNumber implements Serializable {
     public void setRetiredAt(Date retiredAt) {
         this.retiredAt = retiredAt;
     }
-    
-    
 
     public Long getLastBillNumber() {
         return lastBillNumber;
@@ -129,9 +133,9 @@ public class BillNumber implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    
 
+    
+    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -163,6 +167,22 @@ public class BillNumber implements Serializable {
 
     public void setBillYear(Integer billYear) {
         this.billYear = billYear;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
     }
 
 }

@@ -153,9 +153,12 @@ public class PurchaseOrderController implements Serializable {
             JsfUtil.addErrorMessage("Please add item quantities for the bill");
             return "";
         }
-
-        getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
-        getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
+        
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+ 
+        getAprovedBill().setDeptId(deptId);
+        getAprovedBill().setInsId(deptId);
+        
         getAprovedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
         billFacade.edit(getAprovedBill());
         notificationController.createNotification(getAprovedBill());
@@ -163,8 +166,7 @@ public class PurchaseOrderController implements Serializable {
         getRequestedBill().setReferenceBill(getAprovedBill());
         getBillFacade().edit(getRequestedBill());
         
-
-//        clearList();
+//      clearList();
         printPreview = true;
         return "";
 

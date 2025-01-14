@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -132,7 +133,7 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("Item is Already Added");
             return true;
         }
-        
+
         if (getBillItems().size() >= 50) {
             JsfUtil.addErrorMessage("You Can Only Add 50 Items For this Request.");
             return true;
@@ -259,7 +260,7 @@ public class TransferRequestController implements Serializable {
         }
 
         saveBill();
-        if(transerRequestBillPre != null){
+        if (transerRequestBillPre != null) {
             transerRequestBillPre.setForwardReferenceBill(getBill());
             getBill().setReferenceBill(transerRequestBillPre);
             getBillFacade().edit(getTranserRequestBillPre());
@@ -393,13 +394,13 @@ public class TransferRequestController implements Serializable {
         }
         billItems = new ArrayList<>();
         billItems.addAll(getTranserRequestBillPre().getBillItems());
-        for(BillItem bi:billItems){
+        for (BillItem bi : billItems) {
             bi.setTmpQty(bi.getQty());
         }
         setToDepartment(getTranserRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request_save?faces-redirect=true";
     }
-    
+
     public String navigateToApproveRequest() {
         recreate();
         if (transerRequestBillPre == null) {
@@ -408,7 +409,7 @@ public class TransferRequestController implements Serializable {
         }
         billItems = new ArrayList<>();
         billItems.addAll(getTranserRequestBillPre().getBillItems());
-        for(BillItem bi:billItems){
+        for (BillItem bi : billItems) {
             bi.setTmpQty(bi.getQty());
         }
         setToDepartment(getTranserRequestBillPre().getToDepartment());
@@ -454,6 +455,18 @@ public class TransferRequestController implements Serializable {
         getTranserRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
         getBillFacade().edit(getTranserRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
+    }
+
+    public String processTransferRequest() {
+        if (toDepartment == null) {
+            JsfUtil.addErrorMessage("Please Select a Department");
+            return "";
+        }
+        if (Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("Cannot Make a Request with the Same Department");
+            return "";
+        }
+        return "/pharmacy/pharmacy_transfer_request";
     }
 
     public void remove(BillItem billItem) {

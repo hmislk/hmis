@@ -1,5 +1,6 @@
 package com.divudi.entity.cashTransaction;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
@@ -18,7 +19,7 @@ import javax.persistence.Temporal;
  * @author Lawan Chaamindu
  */
 @Entity
-public class CashBook implements Serializable {
+public class CashBook implements Serializable, RetirableEntity  {
 
     private static final long serialVersionUID = 1L;
     @Id

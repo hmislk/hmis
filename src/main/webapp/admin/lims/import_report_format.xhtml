@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/lims/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="subcontent">
+        <h:panelGroup >
+
+            <p:growl />
+
+            <p:panel >
+                <f:facet name="header">
+                    <h:form >
+                        <h:outputText value="Upload Lab Report Format" class="mt-2"/>
+
+                        <p:commandButton 
+                            class="ui-button-info" 
+                            ajax="false" 
+                            style="float: right;"
+                            action="#{labReportExportImportController.makeNull()}"
+                            icon="fa fa-plus"
+                            value="New Format Upload" >
+                        </p:commandButton>
+                    </h:form>
+                </f:facet>
+                <h:form  enctype="multipart/form-data" >
+                    <div class="row ">
+                        <div class="col-1">
+                            <p:outputLabel value="Investigation" class="mt-2"/>
+                        </div>
+                        <div class="col-4">
+                            <p:autoComplete 
+                                widgetVar="aPt" 
+                                id="acPt" 
+                                forceSelection="true" 
+                                converter="ixcon"
+                                value="#{labReportExportImportController.current}" 
+                                completeMethod="#{investigationController.completeInvestigationsOfCurrentInstitution}" 
+                                var="apt" 
+                                placeholder="Select Investigation"
+                                itemLabel="#{apt.name}" 
+                                itemValue="#{apt}"
+                                maxResults="25" 
+                                inputStyleClass="form-control"
+                                class="w-100 mb-2">
+                                <p:column headerText="Code" style="padding: 6px; width: 10em;">
+                                    <h:outputLabel value="#{apt.code}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Name" style="padding: 6px;" >
+                                    <h:outputLabel value="#{apt.name}" ></h:outputLabel>
+                                </p:column>
+                            </p:autoComplete> 
+
+                        </div>
+
+                        <div class="col-5">
+                            <p:fileUpload 
+                                id="filee"
+                                value="#{labReportExportImportController.file}"
+                                mode="simple"
+                                skinSimple="true"
+                                label="Choose File">
+                            </p:fileUpload>
+
+                        </div>
+                        <div class="col-2">
+                            <p:commandButton 
+                                class="w-100 ui-button-warning" 
+                                ajax="false" 
+                                action="#{labReportExportImportController.importFormat()}"
+                                icon="fa fa-download"
+                                value="Format Upload" >
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </h:form>
+
+                <div class="mt-3">
+                    <p:panel rendered="#{labReportExportImportController.uploadedSuccessItems ne null}">
+                        <f:facet name="header">
+                            <h:outputText value="Successfully Upload Items" class="mt-2"/>
+                        </f:facet>
+
+                        <div class="row mb-1" style="font-weight: 700; font-size: 16px;">
+                            <div class="col-3"><p:outputLabel value="Item Name" ></p:outputLabel></div>
+                            <div class="col-1"><p:outputLabel value="Item Type" ></p:outputLabel></div>
+                            <div class="col-1"><p:outputLabel value="Item Value Type" ></p:outputLabel></div>
+                            <div class="col-1"><p:outputLabel value="Retired" ></p:outputLabel></div>
+                        </div>
+                        <ui:repeat value="#{labReportExportImportController.uploadedSuccessItems}" var="ii">
+                            <div class="row mb-1">
+                                <div class="col-3"><p:outputLabel value="#{ii.name}" ></p:outputLabel></div>
+                                <div class="col-1"><p:outputLabel value="#{ii.ixItemType}" ></p:outputLabel></div>
+                                <div class="col-1"><p:outputLabel value="#{ii.ixItemValueType}" ></p:outputLabel></div>
+                                <div class="col-1"><p:outputLabel value="#{ii.retired}" ></p:outputLabel></div>
+                            </div>
+
+                        </ui:repeat>
+
+                    </p:panel>
+                </div>
+
+            </p:panel>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

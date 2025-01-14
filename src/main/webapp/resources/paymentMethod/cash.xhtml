@@ -20,6 +20,7 @@
                 value="#{cc.attrs.paymentMethodData.cash.totalValue}" 
                 id="txtVal">
                 <p:ajax process="@this" ></p:ajax>
+                <f:convertNumber pattern="#,##0.00" />
             </p:inputText>
                     </div>
     </cc:implementation>

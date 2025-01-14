@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.EncounterType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.SymanticType;
@@ -39,7 +40,7 @@ import javax.persistence.Transient;
  */
 @Entity
 @Inheritance
-public class PatientEncounter implements Serializable {
+public class PatientEncounter implements Serializable, RetirableEntity {
 //    @OneToMany(mappedBy = "patientEncounter",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
 //     List<PatientRoom> patientRooms;
 

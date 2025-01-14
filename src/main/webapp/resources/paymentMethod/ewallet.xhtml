@@ -16,7 +16,9 @@
     <cc:implementation>
         <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="col" layout="block">
         </h:panelGroup>
-        <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.totalValue}"  id="txtVal" class="w-25 mb-1" style="margin-left: 12px;"/>
+        <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.totalValue}"  id="txtVal" class="w-25 mb-1" style="margin-left: 12px;">
+            <f:convertNumber pattern="#,##0.00" />
+        </p:inputText>
         <div class="d-flex gap-2">
 
             <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.no}" id="refno" class="" placeholder="e-wallet No"/>                                

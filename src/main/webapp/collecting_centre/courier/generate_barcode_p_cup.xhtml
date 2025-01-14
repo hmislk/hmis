@@ -282,23 +282,21 @@
                                                         <p:commandLink 
                                                             id="cmdOldReportPrint1" 
                                                             ajax="false" 
-                                                            action="/collecting_centre/courier/patient_report_print?faces-redirect=true" 
+                                                            action="#{patientReportController.navigateToPrintPatientReportForCourier(dpr)}"
                                                             disabled="#{!dpr.approved}" 
                                                             rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
                                                             <p:graphicImage library="image" style="height: 25px; width: 25px;" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
-                                                            <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}">
-                                                            </f:setPropertyActionListener>
                                                         </p:commandLink>
+                                                        
                                                         <p:commandLink 
                                                             id="cmdOldReportPrint2" 
                                                             ajax="false" 
-                                                            action="/collecting_centre/courier/patient_report_print?faces-redirect=true" 
+                                                            action="#{patientReportController.navigateToPrintPatientReportForCourier(dpr)}"
                                                             disabled="#{!dpr.approved or dpr.patientInvestigation.billItem.bill.backwardReferenceBill.balance ne 0}" 
                                                             rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
                                                             <p:graphicImage style="height: 25px; width: 25px;" library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
-                                                            <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}">
-                                                            </f:setPropertyActionListener>
                                                         </p:commandLink>
+                                                        
                                                         <p:graphicImage 
                                                             rendered="false"
                                                             id="imgPrinted" 

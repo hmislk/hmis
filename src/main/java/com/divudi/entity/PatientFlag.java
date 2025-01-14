@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.entity.lab.InvestigationItemValueFlag;
 import java.io.Serializable;
 import java.util.Date;
@@ -19,7 +20,7 @@ import javax.persistence.Temporal;
  * @author Buddhika
  */
 @Entity
-public class PatientFlag implements Serializable {
+public class PatientFlag implements Serializable, RetirableEntity {
 
      static final long serialVersionUID = 1L;
     @Id

@@ -154,23 +154,38 @@
                     <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
                 </h:outputText>
 
-                <p:graphicImage 
-                    rendered="#{myCli.reportItemType eq 'AutherizedSignature' and myCli.retired eq false and cc.attrs.patientReport.approveUser.staff.id ne null }"    
-                    cache="false"
-                    value="#{staffImageController.signatureFromPatientReport}" 
-                    style="width: #{myCli.wtPix};overflow: visible; display: block;" 
-                    height="#{myCli.htPix}" 
-                    width="#{myCli.wtPix}">
-                </p:graphicImage>
+                <h:panelGroup rendered="#{myCli.reportItemType eq 'AutherizedSignature' and myCli.retired eq false and cc.attrs.patientReport.approveUser.staff.id ne null }" >
 
-                <h:panelGroup rendered="#{myCli.ixItemType eq 'Barcode' and myCli.retired ne true }"  
-                              >
+                    <h:panelGroup rendered="#{cc.attrs.patientReport.approveUser.staff.signatureUrl eq null}">
+                        <p:graphicImage 
+                            cache="false"
+                            value="#{staffImageController.signatureFromPatientReport}" 
+                            style="width: #{myCli.wtPix};overflow: visible; display: block;" 
+                            height="#{myCli.htPix}" 
+                            width="#{myCli.wtPix}">
+                        </p:graphicImage>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{cc.attrs.patientReport.approveUser.staff.signatureUrl ne null}">
+                        <p:graphicImage
+                            cache="false"
+                            value="#{cc.attrs.patientReport.approveUser.staff.signatureUrl}" 
+                            style="width: #{myCli.wtPix};overflow: visible; display: block;" 
+                            height="#{myCli.htPix}" 
+                            width="#{myCli.wtPix}">
+                        </p:graphicImage>
+                    </h:panelGroup>
+
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'Barcode' and myCli.retired ne true }">
                     <p:barcode 
                         value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" 
                         cache="false"
                         type="code128" height="#{myCli.htPix}" width="#{myCli.wtPix}" />
-
+                    
                 </h:panelGroup>
+                
                 <h:panelGroup rendered="#{myCli.ixItemType eq 'BarcodeVertical' and myCli.retired ne true }"  
                               >
                     <div style="height: #{myCli.htPix}px; width:#{myCli.wtPix}px; right: 0px; position: absolute; overflow: hidden; " >

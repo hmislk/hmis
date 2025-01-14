@@ -25,4 +25,19 @@ public enum Sex {
     public String getShortLabel() {
         return shortLabel;
     }
+
+    public static Sex getByLabelOrShortLabel(String input) {
+        if (input != null) {
+            for (Sex sex : Sex.values()) {
+                if (sex.label.equalsIgnoreCase(input) || sex.shortLabel.equalsIgnoreCase(input)) {
+                    return sex;
+                }
+            }
+            if (input.toLowerCase().contains("f")) {
+                return Sex.Female;
+            }
+        }
+        return Sex.Male; // Default return value if no exact match or "f" found
+    }
+
 }

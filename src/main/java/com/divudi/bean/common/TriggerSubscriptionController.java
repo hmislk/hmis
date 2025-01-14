@@ -92,7 +92,7 @@ public class TriggerSubscriptionController implements Serializable {
             ts.setOrderNumber(newOrder);
             ts.setDepartment(department);
             ts.setCreatedAt(d);
-            ts.setCreater(sessionController.loggedUser);
+            ts.setCreater(sessionController.getLoggedUser());
             save(ts);
             JsfUtil.addSuccessMessage("Save Success");
             fillDepartmentSubscription();
@@ -246,7 +246,7 @@ public class TriggerSubscriptionController implements Serializable {
             current.setRetired(true);
             Date d = new Date();
             current.setRetiredAt(d);
-            current.setRetirer(sessionController.loggedUser);
+            current.setRetirer(sessionController.getLoggedUser());
             save(current);
             JsfUtil.addSuccessMessage("Removed Successfully");
         } else {

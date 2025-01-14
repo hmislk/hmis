@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
@@ -31,7 +32,7 @@ import org.joda.time.PeriodType;
  * @author buddhika
  */
 @Entity
-public class Patient implements Serializable {
+public class Patient implements Serializable, RetirableEntity {
 
     static final long serialVersionUID = 1L;
     @Id
@@ -115,10 +116,9 @@ public class Patient implements Serializable {
     @Transient
     Bill bill;
 
-            
     @Transient
     private String phoneNumberStringTransient;
-    
+
     @Transient
     private String mobileNumberStringTransient;
 
@@ -349,8 +349,6 @@ public class Patient implements Serializable {
         this.person = person;
     }
 
-    
-    
     public Integer getPinNo() {
         return pinNo;
     }
@@ -567,6 +565,9 @@ public class Patient implements Serializable {
     }
 
     public Double getCreditLimit() {
+        if (creditLimit == null) {
+            creditLimit = 0.0;
+        }
         return creditLimit;
     }
 
@@ -589,7 +590,7 @@ public class Patient implements Serializable {
         phoneNumberStringTransient = this.getPerson().getPhone();
         return phoneNumberStringTransient;
     }
-    
+
     public String getMobileNumberStringTransient() {
         if (this.getPerson() == null) {
             return null;
@@ -605,13 +606,12 @@ public class Patient implements Serializable {
                 return;
             }
             this.getPerson().setPhone(phoneNumberStringTransient);
-            this.patientPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(phoneNumberStringTransient);  
+            this.patientPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(phoneNumberStringTransient);
             this.phoneNumberStringTransient = phoneNumberStringTransient;
         } catch (Exception e) {
         }
     }
-    
-    
+
     @Transient
     public void setMobileNumberStringTransient(String mobileNumberStringTransient) {
         try {
@@ -619,12 +619,11 @@ public class Patient implements Serializable {
                 return;
             }
             this.getPerson().setMobile(mobileNumberStringTransient);
-            this.patientMobileNumber = CommonFunctions.removeSpecialCharsInPhonenumber(mobileNumberStringTransient);  
+            this.patientMobileNumber = CommonFunctions.removeSpecialCharsInPhonenumber(mobileNumberStringTransient);
             this.mobileNumberStringTransient = mobileNumberStringTransient;
         } catch (Exception e) {
         }
     }
-    
 
     public Long getPatientPhoneNumber() {
         return patientPhoneNumber;
@@ -641,7 +640,5 @@ public class Patient implements Serializable {
     public void setPatientMobileNumber(Long patientMobileNumber) {
         this.patientMobileNumber = patientMobileNumber;
     }
-    
-    
 
 }

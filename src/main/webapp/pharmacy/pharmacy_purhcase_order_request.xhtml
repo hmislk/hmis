@@ -349,17 +349,18 @@
                                 </div>
                                 <div class="institutionContact" >
                                     <div class="d-flex gap-2 justify-content-center">
-                                        <h:outputLabel value="Telephone : "/>
-                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.institution.phone}"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.institution.address}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.institution.address}"/>
+                                        <h:outputLabel value="Telephone : " rendered="#{!empty purchaseOrderRequestController.currentBill.creater.institution.phone or !empty purchaseOrderRequestController.currentBill.creater.department.telephone1}" />
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.institution.phone}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.institution.phone}"/>
                                         <h:outputLabel value="/" style="width: 15px; text-align: center" rendered="#{purchaseOrderRequestController.currentBill.creater.department.telephone1}"/>
-                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.department.telephone1}"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.department.telephone1}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.department.telephone1}"/>
                                     </div>
                                     <div >
-                                        <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{purchaseOrderRequestController.currentBill.creater.institution.fax}"/>                                                 
+                                        <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{purchaseOrderRequestController.currentBill.creater.institution.fax}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.institution.fax}"/>                                                 
                                     </div>
                                     <div >
-                                        <h:outputLabel value="Email : "/>
-                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.department.email}"/>                                                 
+                                        <h:outputLabel value="Email : &nbsp;" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.department.email}"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.department.email}" rendered="#{!empty purchaseOrderRequestController.currentBill.creater.department.email}"/>                                                 
                                     </div>
                                 </div>
 
@@ -378,6 +379,9 @@
                                         <h:outputLabel value="Supplier" />
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.name}" />
+                                        <h:outputLabel value="Supplier Code" />
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.code}" />
                                         <h:outputLabel value="Supplier Phone" />
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.phone}" />
@@ -432,18 +436,28 @@
 
                                         </ui:repeat>
                                     </tbody>
+                                    <tfoot>
+                                        <tr style="border: 1px solid black; font-weight: bold;">
+                                            <td colspan="5" style="text-align: right; border: 1px solid black;">Net Total &nbsp;</td>
+                                            <td style="text-align: right; border: 1px solid black;">
+                                                <h:outputText value="#{purchaseOrderRequestController.currentBill.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
 
                                 <br/>
 
                                 <div class="purchase-order">
                                     <div>
-                                        <h:outputLabel value="Order Initiated by"/>
+                                        <h:outputLabel value="Order Initiated By"/>
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.webUserPerson.name}"/>
                                     </div>
                                     <div>
-                                        <h:outputLabel value="Order Finalized by"/>
+                                        <h:outputLabel value="Order Finalized By"/>
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         #{purchaseOrderRequestController.currentBill.checkedBy}
                                     </div>
@@ -451,6 +465,13 @@
                                         <h:outputLabel value="Order Finalized At"/>
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.checkeAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputLabel>
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="Printed At"/>
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{sessionController.currentDate}">
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                         </h:outputLabel>
                                     </div>

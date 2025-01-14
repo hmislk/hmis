@@ -13,26 +13,56 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
-                            <h:outputLabel value="OPD CREDIT"/>
+                            <h:outputLabel value="OPD CREDIT DUE"/>
                         </f:facet>
                         <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{creditCompanyDueController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            <p:calendar 
+                                class="w-100 mx-4" 
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                value="#{creditCompanyDueController.fromDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 <f:ajax event="dateSelect" execute="toDate @this"  render="lst"/>
                             </p:calendar>
+                            
                             <h:outputLabel value="To Date"/>
-                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{creditCompanyDueController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            <p:calendar 
+                                class="w-100 mx-4" 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{creditCompanyDueController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
                             </p:calendar>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process Due" action="#{creditCompanyDueController.createOpdCreditDue}" />
-                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print" >
+                            <p:commandButton 
+                                class="ui-button-warning" 
+                                icon="fas fa-cogs" 
+                                ajax="false" 
+                                value="Process Due" 
+                                action="#{creditCompanyDueController.createOpdCreditDue}" >
+                            </p:commandButton>
+                            
+                            <p:commandButton 
+                                class="ui-button-info mx-2" 
+                                icon="fas fa-print" 
+                                ajax="false" 
+                                value="Print" >
                                 <p:printer target="panIx" />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
-                                <p:dataExporter type="xlsx" target="lst" fileName="Service_Summery"   />
+                            
+                            <p:commandButton 
+                                class="ui-button-success" 
+                                icon="fas fa-file-excel" 
+                                actionListener="#{creditCompanyDueController.downloadExcel}" 
+                                value="Download Excel" 
+                                ajax="false" >
                             </p:commandButton>
+                            
                         </h:panelGrid>
 
                         <p:panel id="panIx" styleClass="noBorder summeryBorder" >

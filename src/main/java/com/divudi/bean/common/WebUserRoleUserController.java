@@ -129,7 +129,7 @@ public class WebUserRoleUserController implements Serializable {
                 ru.setWebUserRole(current.getWebUserRole());
                 ru.setWebUser(current.getWebUser());
                 ru.setCreatedAt(new Date());
-                ru.setCreater(sessionController.loggedUser);
+                ru.setCreater(sessionController.getLoggedUser());
                 save(ru);
                 JsfUtil.addSuccessMessage("Save Success ");
 
@@ -224,7 +224,7 @@ public class WebUserRoleUserController implements Serializable {
             current.setRetired(true);
             Date d = new Date();
             current.setRetiredAt(d);
-            current.setRetirer(sessionController.loggedUser);
+            current.setRetirer(sessionController.getLoggedUser());
             save(current);
             JsfUtil.addSuccessMessage("Removed Successfully");
         } else {

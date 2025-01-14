@@ -17,24 +17,25 @@
                         <h:form >
                             <i class="fa fa-signature"/>
                             <p:outputLabel value="Add Staff Signature" class="mx-2 mt-2" ></p:outputLabel>
-                            <p:commandButton ajax="false" value="Back" 
-                                             action="#{webUserController.backToViewUsers()}"
-                                             style="float: right;"
-                                             icon="fa fa-arrow-left"
-                                             >
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Back" 
+                                action="#{webUserController.backToManageSignatureType()}"
+                                style="float: right;"
+                                icon="fa fa-arrow-left"
+                                >
                             </p:commandButton>
                         </h:form>
                     </f:facet>
-                    
+
                     <div class="row">
-                        
+
                         <div class="col-6">
                             <p:panel header="Add New Signature" >
                                 <h:form enctype="multipart/form-data" >
                                     <div class="row my-1">
                                         <div class="col-6 d-flex align-items-center">
-                                            <h:outputLabel value="Name" >
-                                            </h:outputLabel>
+                                            <h:outputLabel value="Name" ></h:outputLabel>
                                         </div>
                                         <div class="col-6 d-flex justify-content-end">
                                             <autocomplete:completeStaff value="#{staffController.current}"/>
@@ -52,7 +53,7 @@
                                                 value="Save" 
                                                 icon="fas fa-save"
                                                 class="my-1 ui-button-warning w-50 float-right"
-                                                action="#{staffImageController.saveSignature()}"/>
+                                                action="#{staffImageController.uploadSignature()}"/>
                                             <p:defaultCommand target="btnSave"/>
                                         </div>
                                     </div>
@@ -79,7 +80,10 @@
                                         </div>
                                     </f:facet>
                                     <div class="w-100">
-                                        <p:graphicImage cache="false" value="#{staffImageController.signatureFromStaffController}" class="w-100">
+                                        <p:graphicImage 
+                                            cache="false" 
+                                            value="#{staffImageController.signatureFromStaffController}" 
+                                            class="w-100">
                                         </p:graphicImage>
                                     </div>
                                 </p:panel>

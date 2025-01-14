@@ -465,15 +465,29 @@
                                 </f:facet>
                                 <div class="row">
                                     <div class="col-md-3">
+                                        <p:outputLabel value="External Doctor"></p:outputLabel>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <p:inputText
+                                            autocomplete="off" 
+                                            id="txtNewPtName" 
+                                            placeholder="Enter the Name of the External Doctor"
+                                            value="#{collectingCentreBillController.externalDoctor}"
+                                            class="form-control" >
+                                        </p:inputText>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
                                         <h:panelGroup>
                                             <p:outputLabel value="Referring Doctor"></p:outputLabel>
-                                            <p:commandLink rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Users to Add Referring Doctors to the System in Collecting Centre Billing')}" id="btnAddNewDoc" 
-                                                           type="button"  
-                                                           value="&nbsp;(+)" 
-                                                           oncomplete="PF('dlg').show();" 
-                                                           actionListener="#{doctorController.prepareAdd}" 
-                                                           process="btnAddNewDoc" 
-                                                           update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
+                                            <p:commandLink 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Users to Add Referring Doctors to the System in Collecting Centre Billing')}" id="btnAddNewDoc" 
+                                                type="button"  
+                                                value="&nbsp;(+)" 
+                                                oncomplete="PF('dlg').show();" 
+                                                actionListener="#{doctorController.prepareAdd}" 
+                                                process="btnAddNewDoc" 
+                                                update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
 
                                             <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false">  
                                                 <p:growl id="msgs" ></p:growl>
@@ -508,23 +522,33 @@
                                         </h:panelGroup>
                                     </div>
                                     <div class="col-md-9">
-                                        <p:autoComplete  forceSelection="true" id="cmbDoc" 
-                                                         minQueryLength="4"
-                                                         class="w-100 mb-1" inputStyleClass="w-100"
-                                                         placeholder="Type at least 4 letters to search"
-                                                         value="#{collectingCentreBillController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" >
+                                        <p:autoComplete  
+                                            forceSelection="true" id="cmbDoc" 
+                                            minQueryLength="4"
+                                            class="w-100 mb-1" 
+                                            inputStyleClass="w-100"
+                                            placeholder="Type at least 4 letters to search"
+                                            value="#{collectingCentreBillController.referredBy}" 
+                                            completeMethod="#{doctorController.completeDoctor}" 
+                                            var="ix" 
+                                            itemLabel="#{ix.person.name}" 
+                                            itemValue="#{ix}" >
                                         </p:autoComplete>
                                     </div>
                                     <div class="col-md-3">
                                         <p:outputLabel value="Referring Institution"></p:outputLabel>
                                     </div>
                                     <div class="col-md-9">
-                                        <p:autoComplete forceSelection="true" id="cmdIns" 
-                                                        minQueryLength="4"
-                                                        placeholder="Type at least 4 letters to search"
-                                                        value="#{collectingCentreBillController.referredByInstitution}" 
-                                                        completeMethod="#{institutionController.completeIns}" var="refi" 
-                                                        itemLabel="#{refi.name}" itemValue="#{refi}" class="mb-1 w-100" inputStyleClass="w-100">
+                                        <p:autoComplete 
+                                            forceSelection="true" id="cmdIns" 
+                                            minQueryLength="4"
+                                            placeholder="Type at least 4 letters to search"
+                                            value="#{collectingCentreBillController.referredByInstitution}" 
+                                            completeMethod="#{institutionController.completeIns}" var="refi" 
+                                            itemLabel="#{refi.name}" 
+                                            itemValue="#{refi}" 
+                                            class="mb-1 w-100" 
+                                            inputStyleClass="w-100">
                                             <p:column headerText="Name">
                                                 #{refi.name}
                                             </p:column>

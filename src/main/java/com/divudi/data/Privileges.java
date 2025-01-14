@@ -28,6 +28,7 @@ public enum Privileges {
     //<editor-fold defaultstate="collapsed" desc="OPD">
     // Submenu Privileges
     OpdBilling("OPD Billing"),
+    OpdOrdering("OPD Ordering without Financial Details"),
     OpdCollectingCentreBillingMenu("OPD Collecting Centre Billing Menu"),
     OpdCollectingCentreBilling("OPD Collecting Centre Billing"),
     OpdCollectingCentreBillSearch("OPD Collecting Centre Bill Search"),
@@ -67,6 +68,7 @@ public enum Privileges {
     InwardBillingInterimBillSearch("Inward Interim Bill Search"),
     InwardSearch("Inward Search"),
     InwardSearchServiceBill("Inward Search Service Bill"),
+    InwardSearchServiceBillUnrestrictedAccess("Inward Search Service Bill Without Restricted"),
     InwardSearchProfessionalBill("Inward Search Professional Bill"),
     InwardSearchFinalBill("Inward Search Final Bill"),
     InwardReport("Inward Report"),
@@ -166,7 +168,7 @@ public enum Privileges {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
-
+    
     PaymentBilling("Payment Billing"),
     PaymentBillSearch("Payment Bill Search"),
     PaymentBillReprint("Payment Bill Reprint"),
@@ -205,6 +207,7 @@ public enum Privileges {
     PharmacyPurchase("Pharmacy Purchase"),
     // Wholesale
     PharmacyPurchaseWh("Pharmacy Purchase Wholesale"),
+    PharmacyTokenManagement("Pharmacy Token Management"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Theatre">
@@ -358,6 +361,7 @@ public enum Privileges {
     //<editor-fold defaultstate="collapsed" desc="Memberships">
     MemberShip("Membership"),
     MemberShipAdd("Membership Add"),
+    MemberShipSearch("Membership Search"),
     MemberShipEdit("Membership Edit"),
     MembershipReports("Membership Reports"),
     MembershipDiscountManagement("Membership Discount Management"),
@@ -557,6 +561,16 @@ public enum Privileges {
     ChangeCreditLimitInCC("Change Credit Limit in Collecting Centre"),
     ChangeCollectingCentre("Change Collecting Centre"),
     //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="User">
+    UserMenu("User Menu"),
+    ChangeMyPassword("Change My Password"),
+    ChangeMyTheme("Change My Theme"),
+    ChangePreferece("Change My Preference"),
+    ChangeMyApiKeys("Change My Api Keys"),
+    MyFinanacialTransactionManager("My Finanacial Transaction Manager"),
+    //</editor-fold>
+    
 
     //<editor-fold defaultstate="collapsed" desc="Admin">
     SearchGrand("Search Grand"),
@@ -572,7 +586,7 @@ public enum Privileges {
     Developers("Developers"),
     // Administration
     SearchAll("Search All"),
-    ChangePreferece("Change Preference"),
+
     SendBulkSMS("Send Bulk SMS"),
     SuperAdmin("Supper Admin"),
     EditData("Edit Data"),
@@ -620,6 +634,7 @@ public enum Privileges {
             case OpdCancel:
             case OpdReturn:
             case OpdBilling:
+            case OpdOrdering:
             case OpdReprint:
             case OpdBillSearch:
             case OpdPreBilling:

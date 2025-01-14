@@ -228,33 +228,50 @@
                             </p:tab>
                             <p:tab title="SMS Messaging">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton class="w-100 m-2 p-2" 
-                                                     ajax="false" 
-                                                     value="Check SMS" 
-                                                     action="/admin/lims/check_sms" />
+                                    <p:commandButton 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Check SMS" 
+                                        action="/admin/lims/check_sms" >
+                                    </p:commandButton>
                                 </div>
                             </p:tab>
                             <p:tab title="Lab Setup">
-
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSetUp')}">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton class="w-100 m-2 p-2" 
-                                                         ajax="false" 
-                                                         value="Report Samples" 
-                                                         actionListener="#{investigationController.listAllIxs}" 
-                                                         action="/lab/report_samples" />
+                                        <p:commandButton 
+                                            class="w-100 ui-button-warning" 
+                                            ajax="false" 
+                                            icon="fa fa-download"
+                                            value="Lab Report Format Upload" 
+                                            actionListener="#{labReportExportImportController.makeNull()}" 
+                                            action="/admin/lims/import_report_format?faces-redirect=true" >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            class="w-100" 
+                                            ajax="false" 
+                                            value="Report Samples" 
+                                            actionListener="#{investigationController.listAllIxs}" 
+                                            action="/lab/report_samples" >
+                                        </p:commandButton>
                                         <p:commandButton 
                                             class="w-100" 
                                             ajax="false"
                                             value="To Export" 
-                                            action="#{investigationController.navigateToAddInvestigationForLabForExport}" 
-                                            >
+                                            action="#{investigationController.navigateToAddInvestigationForLabForExport}"  >
                                         </p:commandButton>
-                                        <p:commandButton class="w-100 m-2 p-2" 
-                                                         ajax="false" 
-                                                         value="Upload Investigations" 
-                                                         action="#{investigationItemController.toUploadJsonToCreateAnInvestigation()}" />
-                                        <p:commandButton class="w-100 m-2 p-2" ajax="false" value="Developer" action="/lab/setup" />
+                                        <p:commandButton 
+                                            class="w-100" 
+                                            ajax="false" 
+                                            value="Upload Investigations" 
+                                            action="#{investigationItemController.toUploadJsonToCreateAnInvestigation()}" >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            class="w-100" 
+                                            ajax="false" 
+                                            value="Developer" 
+                                            action="/lab/setup" >
+                                        </p:commandButton>
                                     </div>
                                 </h:panelGroup>
 

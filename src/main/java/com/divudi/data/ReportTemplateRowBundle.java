@@ -19,11 +19,7 @@ import static com.divudi.data.PaymentMethod.Voucher;
 import static com.divudi.data.PaymentMethod.YouOweMe;
 import static com.divudi.data.PaymentMethod.ewallet;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.ReportTemplate;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
+import com.divudi.entity.*;
 import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
 
@@ -59,6 +55,8 @@ public class ReportTemplateRowBundle implements Serializable {
     List<DenominationTransaction> denominationTransactions;
     private ReportTemplate reportTemplate;
     private List<ReportTemplateRow> reportTemplateRows;
+    private Map<String, List<BillItem>> groupedBillItems;
+    private Map<Institution, List<Bill>> groupedBillItemsByInstitution;
 
     private Double grossTotal;
     private Double discount;
@@ -619,6 +617,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 prows.add(r);
             }
         }
+        prows.sort(Comparator.comparing(r -> r.getPayment().getId()));
         return prows;
     }
 
@@ -1072,6 +1071,20 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public void calculateTotalByReferenceBills(final boolean isOutpatient) {
+        total = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(isOutpatient ? row.getBillItem().getReferenceBill().getNetTotal() :
+                        row.getBillItem().getPatientEncounter().getFinalBill().getNetTotal());
+                total += amount;
+            }
+        }
+    }
+
     public void calculateTotalSettledAmountByPatients(final boolean isOutpatient) {
         settledAmountByPatientsTotal = 0.0;
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
@@ -1124,6 +1137,32 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public void calculateTotalDiscountByBillItems() {
+        discount = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem().getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBillItem().getDiscount());
+                discount += amount;
+            }
+        }
+    }
+
+    public void calculateTotalDiscountByBills() {
+        discount = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBill().getDiscount());
+                discount += amount;
+            }
+        }
+    }
+
     public void calculateTotalCCFee() {
         ccTotal = 0.0;
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
@@ -1131,7 +1170,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBill().getCollctingCentreFee());
+                Double amount = safeDouble(row.getBill().getTotalCenterFee());
                 ccTotal += amount;
             }
         }
@@ -1147,6 +1186,48 @@ public class ReportTemplateRowBundle implements Serializable {
                 }
                 Double amount = safeDouble(row.getBillItem().getBill().getNetTotal());
                 total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalByBillItemsNetTotal() {
+        total = 0.0;
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBillItem().getNetValue());
+                total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalHospitalFeeByBillItems() {
+        hospitalTotal = 0.0;
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBillItem().getBill().getTotalHospitalFee());
+                hospitalTotal += amount;
+            }
+        }
+    }
+
+    public void calculateTotalStaffFeeByBillItems() {
+        staffTotal = 0.0;
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillItem() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getBillItem().getBill().getTotalStaffFee());
+                staffTotal += amount;
             }
         }
     }
@@ -1721,6 +1802,22 @@ public class ReportTemplateRowBundle implements Serializable {
         } else {
             System.out.println("No reportTemplateRows to process.");
         }
+    }
+
+    public Map<String, List<BillItem>> getGroupedBillItems() {
+        return groupedBillItems;
+    }
+
+    public void setGroupedBillItems(Map<String, List<BillItem>> groupedBillItems) {
+        this.groupedBillItems = groupedBillItems;
+    }
+
+    public Map<Institution, List<Bill>> getGroupedBillItemsByInstitution() {
+        return groupedBillItemsByInstitution;
+    }
+
+    public void setGroupedBillItemsByInstitution(Map<Institution, List<Bill>> groupedBillItemsByInstitution) {
+        this.groupedBillItemsByInstitution = groupedBillItemsByInstitution;
     }
 
     private void resetTotalsAndFlags() {

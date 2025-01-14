@@ -4,12 +4,16 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.RetirableEntity;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
 /**
@@ -17,7 +21,7 @@ import javax.persistence.Transient;
  * @author Buddhika
  */
 @Entity
-public class BillEntry implements Serializable {
+public class BillEntry implements Serializable, RetirableEntity  {
 
     static final long serialVersionUID = 1L;
     @Id
@@ -40,10 +44,21 @@ public class BillEntry implements Serializable {
     Double totVat;
     @Transient
     Bill bill;
+     private boolean retired;
+
+    @ManyToOne
+    private WebUser retirer;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date retiredAt;
+
+    private String retireComments;
 
     public Bill getBill() {
         return bill;
     }
+    
+    
 
     public void setBill(Bill bill) {
         this.bill = bill;
@@ -163,5 +178,37 @@ public class BillEntry implements Serializable {
 
     public void setTotCreditCard(Double totCreditCard) {
         this.totCreditCard = totCreditCard;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
     }
 }

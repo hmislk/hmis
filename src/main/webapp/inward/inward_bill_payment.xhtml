@@ -164,25 +164,31 @@
                                             autoWidth="false"  
                                             id="cmbPs" 
                                             value="#{inwardPaymentController.current.paymentMethod}"  >
-                                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
-                                            <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                            <f:selectItems value="#{enumController.paymentMethodsForIwardDeposit}"  />
+                                            <p:ajax process="cmbPs" update="paymentDetails" event="change" listener="#{inwardPaymentController.listnerForPaymentMethodChange()}" />
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
                                 <div class="row ">
                                     <div class="col-md-2"></div>
                                     <div class="col-md-8">
-                                        <h:panelGroup>
-                                            <h:panelGroup id="creditCard" style="display: #{inwardPaymentController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                        <h:panelGroup id="paymentDetails">
+                                            <h:panelGroup id="creditCard" rendered="#{inwardPaymentController.current.paymentMethod eq 'Card'}">
                                                 <pa:creditCard paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="cheque" style="display: #{inwardPaymentController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                            <h:panelGroup id="cheque" rendered="#{inwardPaymentController.current.paymentMethod eq 'Cheque'}" >
                                                 <pa:cheque paymentMethodData="#{inwardPaymentController.paymentMethodData}" valueRequired="false"/>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="slip" style="display: #{inwardPaymentController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                            <h:panelGroup id="slip" rendered="#{inwardPaymentController.current.paymentMethod eq 'Slip'}" >
                                                 <pa:slip paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                             <h:panelGroup 
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="patientDeposit"  rendered="#{inwardPaymentController.current.paymentMethod eq 'PatientDeposit'}" >
+                                                <pa:patient_deposit paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
                                             </h:panelGroup>
                                         </h:panelGroup>
                                     </div>

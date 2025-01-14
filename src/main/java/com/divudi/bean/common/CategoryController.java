@@ -68,7 +68,7 @@ public class CategoryController implements Serializable {
         fillFeeItemListTypes();
         return "/admin/pricing/fee_list_types?faces-redirect=true";
     }
-    
+
     public String navigateToManageCategories() {
         return "/admin/items/category.xhtml?faces-redirect=true";
     }
@@ -235,8 +235,6 @@ public class CategoryController implements Serializable {
         suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
         return suggestions;
     }
-    
-    
 
     public List<Category> completeInvestigationCategory(String query) {
         List<Category> suggestions;
@@ -447,6 +445,22 @@ public class CategoryController implements Serializable {
 
         c = getFacade().findByJpql(sql, temMap, TemporalType.DATE);
 
+        if (c == null) {
+            c = new ArrayList<>();
+        }
+        return c;
+    }
+
+    public List<Category> fetchAllPharmaceuticalCategories() {
+        List<Category> c;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "select c from Category c"
+                + "  where c.retired=false"
+                + " and (type(c)= :parm ) "
+                + " order by c.name";
+        params.put("parm", PharmaceuticalItemCategory.class);
+        c = getFacade().findByJpql(jpql, params, TemporalType.DATE);
         if (c == null) {
             c = new ArrayList<>();
         }
@@ -701,7 +715,7 @@ public class CategoryController implements Serializable {
     }
 
     public List<Category> getServiceCategories() {
-        if(serviceCategories==null){
+        if (serviceCategories == null) {
             serviceCategories = findServiceCategories();
         }
         return serviceCategories;

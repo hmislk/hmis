@@ -33,6 +33,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 
 /**
  *
@@ -66,6 +67,15 @@ public class BhtIssueReturnController implements Serializable {
     @EJB
     private BillItemFacade billItemFacade;
 
+    
+    public String navigateToReturnPharmacyDirectIssueToInpatients(){
+        if(bill==null){
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        return "/inward/pharmacy_bill_return_bht_issue?faces-redirect=true";
+    }
+    
     public Bill getBill() {
         return bill;
     }
@@ -142,6 +152,7 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().copy(getBill());
 
         getReturnBill().setBillType(getBill().getBillType());
+        getReturnBill().setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
         getReturnBill().setBilledBill(getBill());
 
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
@@ -155,7 +166,8 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setDepartment(getSessionController().getDepartment());
         getReturnBill().setInstitution(getSessionController().getInstitution());
 
-        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.RefundBill, BillNumberSuffix.PHISSRET));
+        String departmentId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        getReturnBill().setInsId(departmentId);
         getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.RefundBill, BillNumberSuffix.PHISSRET));
 
         //   getReturnBill().setInsId(getBill().getInsId());

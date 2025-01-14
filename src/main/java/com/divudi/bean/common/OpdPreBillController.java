@@ -2225,4 +2225,9 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         this.selectedOpdItemDepartment = selectedOpdItemDepartment;
     }
 
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
+
 }

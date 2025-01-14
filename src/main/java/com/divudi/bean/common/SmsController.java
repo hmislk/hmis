@@ -88,13 +88,27 @@ public class SmsController implements Serializable {
         if (doNotSendAnySms) {
             return false;
         }
-        Sms s = new Sms();
-        s.setReceipientNumber(number);
-        s.setSendingMessage(message);
-        return smsManager.sendSms(s);
+        selectedSms = new Sms();
+        selectedSms.setReceipientNumber(number);
+        selectedSms.setSendingMessage(message);
+        return smsManager.sendSms(selectedSms);
     }
 
     public void sendSms() {
+        if (doNotSendAnySms) {
+            return;
+        }
+        Sms s = new Sms();
+        s.setReceipientNumber(smsNumber);
+        s.setSendingMessage(smsMessage);
+        save(s);
+        boolean b = smsManager.sendSms(s);
+        selectedSms = s;
+    }
+    
+    public void sendSmsFromWeb() {
+        System.out.println("sendSmsFromWeb");
+        System.out.println("doNotSendAnySms = " + doNotSendAnySms);
         if (doNotSendAnySms) {
             return;
         }

@@ -18,6 +18,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.TokenFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.PaymentMethod;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -63,6 +64,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
     // </editor-fold> 
     // <editor-fold defaultstate="collapsed" desc="Class variables">
     private Token currentToken;
+
+    private PaymentMethod paymentMethod;
 
     private Token removeingToken;
 
@@ -557,6 +560,21 @@ public class TokenController implements Serializable, ControllerWithPatient {
 
     public void setCurrentTokensCounterWise(List<Token> currentTokensCounterWise) {
         this.currentTokensCounterWise = currentTokensCounterWise;
+    }
+
+    @Override
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    @Override
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
     }
 
 }

@@ -9,6 +9,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PharmacyItemData;
 import com.divudi.ejb.BillNumberGenerator;
@@ -224,6 +225,7 @@ public class PurchaseReturnController implements Serializable {
     private void saveComponent(Payment p) {
         for (BillItem i : getBillItems()) {
             i.getPharmaceuticalBillItem().setQtyInUnit((double) (double) (0 - i.getQty()));
+            i.getPharmaceuticalBillItem().setFreeQtyInUnit(0 - i.getPharmaceuticalBillItem().getFreeQty());
 
             if (i.getPharmaceuticalBillItem().getQtyInUnit() == 0.0) {
                 continue;
@@ -296,7 +298,7 @@ public class PurchaseReturnController implements Serializable {
         saveComponent(p);
 
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
-
+        returnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         getBillFacade().edit(getReturnBill());
 
         printPreview = true;

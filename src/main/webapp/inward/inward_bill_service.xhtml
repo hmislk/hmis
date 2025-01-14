@@ -523,7 +523,17 @@
                                         value="To Print Labels" 
                                         class="ui-button-info" 
                                         ajax="false" 
-                                        action="#{billBhtController.navigateToPrintLabelsForInvestigations}" icon="fa-solid fa-print" >
+                                        action="#{billBhtController.navigateToPrintLabelsForInvestigations}" icon="fa-solid fa-print"
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Use Sample Management for Inward Service and Investigations')}"
+                                        >
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="To Manage Samples" 
+                                        class="ui-button-warning" 
+                                        ajax="false" 
+                                        action="#{billBhtController.navigateToSampleManegmentFromInward}" icon="fa-solid fa-cogs" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Sample Management for Inward Service and Investigations')}"
+                                        >
                                     </p:commandButton>
                                 </div>
 

@@ -23,7 +23,7 @@
                             </p:commandButton>                         
                         </f:facet>
 
-                        <p:commandButton value="Cancel" ajax="false" action="pharmacy_cancel_purchase" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                        <p:commandButton value="Cancel" ajax="false" action="pharmacy_cancel_purchase?faces-redirect=true;" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
                              
                         </p:commandButton>     
                         <p:commandButton  value="Return" ajax="false" action="pharmacy_return_purchase" disabled="#{pharmacyBillSearch.bill.cancelled}" >

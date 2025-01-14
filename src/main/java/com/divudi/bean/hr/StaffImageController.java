@@ -38,17 +38,19 @@ import org.primefaces.model.file.UploadedFile;
 @RequestScoped
 public class StaffImageController implements Serializable {
 
-    StreamedContent scCircular;
-    StreamedContent scCircularById;
-    private UploadedFile file;
     @EJB
     StaffFacade staffFacade;
+
     @Inject
     StaffController staffController;
     @Inject
-    private PatientReportController patientReportController;
 
+    private PatientReportController patientReportController;
+    StreamedContent scCircular;
+    StreamedContent scCircularById;
+    private UploadedFile file;
     private static final long serialVersionUID = 1L;
+    private String viewImageType;
 
     public StaffFacade getStaffFacade() {
         return staffFacade;
@@ -74,7 +76,7 @@ public class StaffImageController implements Serializable {
         this.file = file;
     }
 
-    public String saveSignature() {
+    public String uploadSignature() {
         InputStream in;
         if (file == null || "".equals(file.getFileName())) {
             return "";
@@ -87,8 +89,7 @@ public class StaffImageController implements Serializable {
             JsfUtil.addErrorMessage("Please select staff member");
             return "";
         }
-        //////System.out.println("file name is not null");
-        //////System.out.println(file.getFileName());
+        
         try {
             in = getFile().getInputStream();
             File f = new File(getStaffController().getCurrent().toString() + getStaffController().getCurrent().getFileType());
@@ -286,4 +287,11 @@ public class StaffImageController implements Serializable {
         return patientReportController;
     }
 
+    public String getViewImageType() {
+        return viewImageType;
+    }
+
+    public void setViewImageType(String viewImageType) {
+        this.viewImageType = viewImageType;
+    }
 }

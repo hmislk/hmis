@@ -151,7 +151,9 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     boolean withOutNotice;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date dateWithOutNotice;
-
+    @Lob
+    private String signatureUrl;
+    
     @Enumerated
     private StaffWelfarePeriod staffWelfarePeriod;
 
@@ -764,6 +766,14 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
 
     public void setCurrentCreditValue(double currentCreditValue) {
         this.currentCreditValue = currentCreditValue;
+    }
+
+    public String getSignatureUrl() {
+        return signatureUrl;
+    }
+
+    public void setSignatureUrl(String signatureUrl) {
+        this.signatureUrl = signatureUrl;
     }
 
 }

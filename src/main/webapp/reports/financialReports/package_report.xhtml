@@ -15,8 +15,6 @@
             <h:form class="w-100">
                 <p:panel header="Package Report" class="w-100">
                     <h:panelGrid columns="8" class="w-100 ">
-
-
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
                             <h:outputLabel value="From" for="fromDate" class="mx-3"/>
@@ -59,7 +57,6 @@
                                         itemValue="#{item}">
                         </p:autoComplete>
 
-
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
                             <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
@@ -75,7 +72,7 @@
                             <p:ajax process="cmbIns" update="cmbDept"/>
                         </p:selectOneMenu>
 
-                        <p:spacer></p:spacer>
+                        <p:spacer />
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
@@ -92,7 +89,7 @@
                             <p:ajax process="siteMenu" update="cmbDept"/>
                         </p:selectOneMenu>
 
-                        <p:spacer></p:spacer>
+                        <p:spacer />
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
@@ -182,8 +179,7 @@
                                 class="w-100"
                                 value="#{reportsController.searchKeyword.itemName}"/>
 
-                        <p:spacer width="20"></p:spacer>
-
+                        <p:spacer width="20" />
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputLabel value="Invoice Number"/>
@@ -193,10 +189,10 @@
                                 class="w-100"
                                 value="#{reportsController.searchKeyword.billNo}"/>
 
-                        <p:spacer width="20"></p:spacer>
+                        <p:spacer width="20" />
 
                         <h:panelGroup layout="block" styleClass="form-group">
-                            <i class="fas fa-stethoscope"></i>
+                            <i class="fas fa-stethoscope" />
                             <h:outputLabel value="Visit Type" for="visitType" class="mx-3"/>
                         </h:panelGroup>
                         <p:selectOneMenu id="visitType" class="w-100" value="#{reportsController.visitType}">
@@ -222,6 +218,7 @@
                             icon="fas fa-print"
                             ajax="false"
                             value="Print">
+                        <p:printer target="tbl"/>
                     </p:commandButton>
 
                     <p:commandButton
@@ -230,6 +227,9 @@
                             icon="fas fa-file-excel"
                             ajax="false"
                             value="Excel">
+                        <p:dataExporter type="xlsx"
+                                        target="tbl"
+                                        fileName="package_report.xlsx"/>
                     </p:commandButton>
 
                     <p:commandButton
@@ -238,15 +238,215 @@
                             icon="fas fa-file-pdf"
                             ajax="false"
                             value="PDF">
+                        <p:dataExporter type="pdf"
+                                        target="tbl"
+                                        fileName="package_report.xlsx"/>
                     </p:commandButton>
 
                     <h:panelGroup id="printPanel">
-                        <ez:packageBillItems bundle="#{reportsController.bundle}"/>
+                        <p:dataTable id="tbl"
+                                     class="w-100 m-2"
+                                     value="#{reportsController.bundle.reportTemplateRows}"
+                                     var="row"
+                                     paginator="true"
+                                     paginatorAlwaysVisible="false"
+                                     rows="10"
+                                     paginatorPosition="bottom"
+                                     rowIndexVar="n"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,20"
+                                     rowKey="#{row.id}">
+                            <p:column style="width: 5em;">
+                                <f:facet name="header">
+                                    <h:outputText value="MRN"/>
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.patient.phn}"/>
+                            </p:column>
+                            <p:column style="width: 10em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Patient Name"/>
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.patient.person.name}"/>
+                            </p:column>
+                            <p:column style="width: 8em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Invoice No"/>
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.deptId}"/>
+                            </p:column>
+                            <p:column style="width: 10em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Invoice Date"/>
+                                </f:facet>
+                                <p:outputLabel value="#{row.billItem.bill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="width: 10em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Approved Date"/>
+                                </f:facet>
+                                <p:outputLabel value="#{row.billItem.patientInvestigation.approveAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="width: 8em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Service Code"/>
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.item.code}"/>
+                            </p:column>
+                            <p:column style="width: 10em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Service Name"/>
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.item.name}"/>
+                            </p:column>
+                            <p:column style="width: 10em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Package Name"/>
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.billPackege.name}"/>
+                            </p:column>
+                            <p:column style="width: 10em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Package Order Date"/>
+                                </f:facet>
+                                <p:outputLabel value="#{row.billItem.bill.billDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="width: 10em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Service Processed Date"/>
+                                </f:facet>
+                                <p:outputLabel value="#{row.billItem.patientInvestigation.performedAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="width: 5em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Quantity"/>
+                                </f:facet>
+                                <p:outputLabel value="#{row.billItem.qty}">
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="width: 5em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Unit Rate"/>
+                                </f:facet>
+                                <p:outputLabel value="#{row.billItem.rate}">
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="width: 10em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Professional Fee"/>
+                                </f:facet>
+                                <p:outputLabel value="#{row.billItem.staffFee}">
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="width: 10em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Total Amount"/>
+                                </f:facet>
+                                <p:outputLabel value="#{row.billItem.netValue}">
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="width: 10em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Admission Date"/>
+                                </f:facet>
+                                <p:outputLabel
+                                        value="#{row.billItem.bill.ipOpOrCc == 'IP' ? row.billItem.bill.patientEncounter.dateOfAdmission : 'N/A'}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="width: 10em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Discharge Date and Time"/>
+                                </f:facet>
+                                <p:outputLabel
+                                        value="#{row.billItem.bill.ipOpOrCc == 'IP' ? row.billItem.bill.patientEncounter.dateOfDischarge : 'N/A'}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="width: 8em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Visit Type"/>
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.ipOpOrCc}"/>
+                            </p:column>
+                            <p:column style="width: 8em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Visit No"/>
+                                </f:facet>
+                                <h:outputText
+                                        value="#{row.billItem.bill.ipOpOrCc == 'IP' ? row.billItem.bill.patientEncounter.bhtNo : 'N/A'}"/>
+                            </p:column>
+                            <p:column style="width: 8em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Sponsor"/>
+                                </f:facet>
+                                <h:outputText
+                                        value="#{row.billItem.bill.creditCompany.name ne null ? row.billItem.bill.creditCompany.name : 'N/A'}"/>
+                            </p:column>
+                            <p:column style="width: 8em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Plan Name"/>
+                                </f:facet>
+                                <h:outputText
+                                        value="#{row.billItem.bill.ipOpOrCc == 'IP' ? row.billItem.bill.patientEncounter.admissionType.name : 'N/A'}"/>
+                            </p:column>
+                            <p:column style="width: 8em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Ref Dept"/>
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.referringDepartment.name}"/>
+                            </p:column>
+                            <p:column style="width: 8em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Ref Dr"/>
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.referredBy.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column style="width: 8em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Invoice Status"/>
+                                </f:facet>
+<!--                                <h:outputText value="#{row.billItem.bill.paid? 'Paid':''}"/>-->
+                                <h:outputText value="#{row.billItem.bill.balance le 0 ? 'Paid':''}"/>
+                            </p:column>
+                            <p:column style="width: 8em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Charge Class"/>
+                                </f:facet>
+                                <h:outputText
+                                        value="#{row.billItem.bill.department.name}"/>
+                            </p:column>
+                            <p:column style="width: 10em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Package Net. Amount"/>
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.netTotal}"/>
+                            </p:column>
+                            <p:column style="width: 5em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Bed No"/>
+                                </f:facet>
+                                <h:outputText
+                                        value="#{row.billItem.bill.ipOpOrCc == 'IP' ? row.billItem.bill.patientEncounter.currentPatientRoom.name : 'N/A'}"/>
+                            </p:column>
+                            <p:column style="width: 8em;">
+                                <f:facet name="header">
+                                    <h:outputText value="Invoice Type"/>
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.billType}"/>
+                            </p:column>
+                        </p:dataTable>
                     </h:panelGroup>
                 </p:panel>
             </h:form>
         </ui:define>
     </ui:composition>
-
 </h:body>
 </html>

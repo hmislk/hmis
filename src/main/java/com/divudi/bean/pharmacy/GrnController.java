@@ -629,9 +629,11 @@ public class GrnController implements Serializable {
             getGrnBill().getBillItems().add(i);
         }
 
-        getGrnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN));
-        getGrnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN));
-
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_GRN);
+ 
+        getGrnBill().setDeptId(deptId);
+        getGrnBill().setInsId(deptId);
+        
         getGrnBill().setToInstitution(getApproveBill().getFromInstitution());
         getGrnBill().setToDepartment(getApproveBill().getFromDepartment());
 
@@ -745,6 +747,14 @@ public class GrnController implements Serializable {
         //  getPharmacyBillBean().editBill(, , getSessionController());
         printPreview = true;
 
+    }
+    
+    public double calFreeQuantityPurchaseValue(Bill b){
+       double freeTotal = 0.0;
+       for(BillItem bi : b.getBillItems()){
+           freeTotal = freeTotal + (bi.getPharmaceuticalBillItem().getFreeQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
+       }
+       return freeTotal;
     }
 
     private void updateBalanceForGrn(Bill grn) {
@@ -881,8 +891,6 @@ public class GrnController implements Serializable {
         getGrnBill().setReferenceInstitution(getReferenceInstitution());
         getGrnBill().setDepartment(getSessionController().getDepartment());
         getGrnBill().setInstitution(getSessionController().getInstitution());
-        //   getGrnBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
-        //   getGrnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getGrnBill(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
         getGrnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
         if (getCurrentGrnBillPre() != null) {
 

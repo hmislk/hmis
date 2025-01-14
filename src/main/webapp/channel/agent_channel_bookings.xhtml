@@ -46,10 +46,30 @@
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                         />
 
-                                    <p:spacer width="50" ></p:spacer>
-                                    <p:spacer width="50" ></p:spacer>
-                                    <p:spacer width="50" ></p:spacer>
-
+                                    <p:spacer ></p:spacer>
+                                    
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <i class="fa-solid fa-user-secret"></i> <!-- FontAwesome building icon -->
+                                        <h:outputLabel value="Agent" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:autoComplete 
+                                        id="creditCom" 
+                                        forceSelection="true" 
+                                        value="#{searchController.creditCompany}"  
+                                        completeMethod="#{institutionController.completeAgency}" 
+                                        onfocus="this.select()" 
+                                        var="ix" 
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        itemLabel="#{ix.name}" 
+                                        itemValue="#{ix}" 
+                                        maxResults="10"                                
+                                        >
+                                        <f:ajax  event="itemSelect" execute="creditCom"  />
+                                        <p:column headerText="Code" style="padding: 5px; width: 150px;">#{ix.institutionCode}</p:column>
+                                        <p:column headerText="Agency Name" style="padding: 5px;">#{ix.name}</p:column>
+                                    </p:autoComplete>
+                                    
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -274,6 +294,14 @@
                                 </h:outputText>
                                 <br/>
                                 <h:outputText value="#{b.toDepartment.name}">
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Agent" />
+                                </f:facet>
+                                <h:outputText value="#{b.creditCompany.name}">
                                 </h:outputText>
                             </p:column>
 
