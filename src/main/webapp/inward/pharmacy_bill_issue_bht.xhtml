@@ -62,7 +62,6 @@
                                     value="Settle" 
                                     ajax="false"
                                     action="#{pharmacySaleBhtController.settlePharmacyBhtIssue()}" 
-                                    actionListener="#{pharmacySaleBhtController.calculateAllRates()}"  
                                     class="ui-button-success mx-2"
                                     icon ="fa-solid fa-check">
                                 </p:commandButton>
@@ -92,7 +91,7 @@
                                     action="#{bhtSummeryController.navigateToInpatientProfile()}" >
                                     <f:setPropertyActionListener 
                                         value="#{pharmacySaleBhtController.patientEncounter}" 
-                                        target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                        target="#{bhtSummeryController.patientEncounter}" ></f:setPropertyActionListener>
                                 </p:commandButton>
                             </div>
                         </div>
@@ -213,6 +212,7 @@
                                             disabled="true"
                                             id="txtRate" 
                                             value="#{pharmacySaleBhtController.billItem.rate + pharmacySaleBhtController.billItem.marginRate}" >
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </p:inputText>
                                     </div>
                                     <div class="col-12 col-md-2 text-end">
@@ -227,6 +227,7 @@
                                             disabled="true"
                                             id="txtValue" 
                                             value="#{pharmacySaleBhtController.billItem.netValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </p:inputText>
                                     </div>
                                     <div class="col-12 col-md-2">
@@ -284,11 +285,26 @@
                                         <h:outputText value="#{bi.rate}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                    </p:column>  
+                                    </p:column> 
+                                    <p:column headerText="Margin Rate"  width="8em"  class="text-end">  
+                                        <h:outputText value="#{bi.marginRate}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column> 
+                                     <p:column headerText="Gross Value"  width="8em"  class="text-end">  
+                                         <h:outputText value="#{bi.grossValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column> 
                                     <p:column headerText="Value"  width="8em"  class="text-end">  
                                         <h:outputText value="#{bi.netValue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{pharmacySaleBhtController.preBill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </f:facet>
                                     </p:column>  
                                     <p:column headerText="Expiry" width="8em" class="text-end">
                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
@@ -374,16 +390,16 @@
                                             <p:commandButton 
                                                 style="float: right;"
                                                 ajax="false"
+                                                value="Inpatient Profile"
                                                 icon="fa fa-id-card"
                                                 class="ui-button-secondary " 
                                                 action="#{bhtSummeryController.navigateToInpatientProfile()}" 
                                                 >
                                                 <f:setPropertyActionListener 
-                                                    value="#{pharmacySaleBhtController.patientEncounter}" 
-                                                    target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                                    value="#{pharmacySaleBhtController.printBill.patientEncounter}" 
+                                                    target="#{bhtSummeryController.patientEncounter}" ></f:setPropertyActionListener>
                                             </p:commandButton>
                                         </h:panelGrid>
-
                                     </div>
                                 </div>
                             </div>

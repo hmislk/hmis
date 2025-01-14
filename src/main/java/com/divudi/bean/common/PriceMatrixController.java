@@ -51,7 +51,7 @@ public class PriceMatrixController implements Serializable {
     PaymentSchemeDiscountFacade paymentSchemeDiscountFacade;
 
     public PriceMatrix fetchInwardMargin(BillItem billItem, double serviceValue, Department department, PaymentMethod paymentMethod) {
-
+        System.out.println("fetchInwardMargin");
         PriceMatrix inwardPriceAdjustment;
         Category category;
         if (billItem.getItem() instanceof Investigation) {
@@ -59,13 +59,16 @@ public class PriceMatrixController implements Serializable {
         } else {
             category = billItem.getItem().getCategory();
         }
-
+        System.out.println("category = " + category);
+        System.out.println("serviceValue = " + serviceValue);
+        System.out.println("department = " + department);
+        System.out.println("paymentMethod = " + paymentMethod);
         if (sessionController.getApplicationPreference() != null && sessionController.getApplicationPreference().isPaymentMethodAllowedInInwardMatrix()) {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod);
         } else {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);
         }
-
+        System.out.println("inwardPriceAdjustment = " + inwardPriceAdjustment);
         if (inwardPriceAdjustment == null && category != null) {
             if (sessionController.getApplicationPreference().isPaymentMethodAllowedInInwardMatrix()) {
                 inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory(), paymentMethod);
@@ -73,11 +76,11 @@ public class PriceMatrixController implements Serializable {
                 inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory());
             }
         }
+        System.out.println("inwardPriceAdjustment = " + inwardPriceAdjustment);
 
-        if (inwardPriceAdjustment == null) {
-            return null;
-        }
-
+//        if (inwardPriceAdjustment == null) {
+//            return null;
+//        }
         return inwardPriceAdjustment;
 
     }
@@ -366,7 +369,7 @@ public class PriceMatrixController implements Serializable {
         //Get Discount From Item        
         paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, paymentMethod, item);
         System.out.println("paymentSchemeDiscount = " + paymentSchemeDiscount);
-        
+
         //Get Discount From Category        
         if (paymentSchemeDiscount == null) {
             paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, paymentMethod, category);
