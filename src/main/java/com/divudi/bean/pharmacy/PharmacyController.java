@@ -1637,7 +1637,7 @@ public class PharmacyController implements Serializable {
         }
     }
 
-    private void additionalCommonFilltersForBillEntity(StringBuilder sql, Map<String, Object> parameters ) {
+    private void additionalCommonFilltersForBillEntity(StringBuilder sql, Map<String, Object> parameters) {
         addFilter(sql, parameters, "b.fromInstitution", "fIns", fromInstitution);
         addFilter(sql, parameters, "b.fromDepartment.site", "fSite", fromSite);
         addFilter(sql, parameters, "b.fromDepartment", "fDept", fromDepartment);
