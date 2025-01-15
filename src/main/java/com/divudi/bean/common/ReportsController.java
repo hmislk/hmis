@@ -59,6 +59,7 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
+import java.util.stream.Collectors;
 
 /**
  * @author safrin
@@ -1428,6 +1429,10 @@ public class ReportsController implements Serializable {
         this.selectedBillSession = selectedBillSession;
     }
 
+    public Date getCurrentDate() {
+        return new Date();
+    }
+
     public List<String> getTelephoneNumbers() {
         return telephoneNumbers;
     }
@@ -2300,7 +2305,7 @@ public class ReportsController implements Serializable {
             final Calendar cal = Calendar.getInstance();
             cal.setTime(bill.getCreatedAt());
 
-            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
 
             if (!yearMonths.contains(yearMonth)) {
                 yearMonths.add(yearMonth);
@@ -2339,7 +2344,7 @@ public class ReportsController implements Serializable {
             final Calendar cal = Calendar.getInstance();
             cal.setTime(bill.getCreatedAt());
 
-            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
 
             if (!yearMonths.contains(yearMonth)) {
                 yearMonths.add(yearMonth);
@@ -2508,7 +2513,7 @@ public class ReportsController implements Serializable {
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
+        parameters.put("td", CommonFunctions.getEndOfDay(toDate));
 
         jpql += "GROUP BY bill";
 
@@ -2643,7 +2648,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-            boolean onlyDueBills) {
+                                                                    boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -2888,6 +2893,12 @@ public class ReportsController implements Serializable {
 
     public void generateCollectionCenterBillWiseDetailReport() {
         System.out.println("generateCollectionCenterBillWiseDetailReport = " + this);
+
+        if (collectingCentre == null) {
+            JsfUtil.addErrorMessage("Please select an Agent");
+            return;
+        }
+
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -2927,7 +2938,17 @@ public class ReportsController implements Serializable {
             }
         }
 
-        bundle.setGroupedBillItems(billItemMap);
+        Map<String, List<BillItem>> sortedBillItemMap = billItemMap.entrySet()
+                .stream()
+                .sorted(Comparator.comparing(entry -> entry.getValue().get(0).getBill().getCreatedAt()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        bundle.setGroupedBillItems(sortedBillItemMap);
     }
 
     public ReportTemplateRowBundle generateCollectingCenterBillWiseBillItems(List<BillTypeAtomic> bts) {
@@ -4344,8 +4365,8 @@ public class ReportsController implements Serializable {
     }
 
     private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
-            List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
-            int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
         document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
         document.add(com.itextpdf.text.Chunk.NEWLINE);
 
