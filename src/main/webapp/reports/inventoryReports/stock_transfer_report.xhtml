@@ -71,7 +71,7 @@
                             <p:selectOneMenu 
                                 id="phmFromSite"
                                 class="w-100"
-                                value="#{pharmacyController.site}"
+                                value="#{pharmacyController.fromSite}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
@@ -91,7 +91,7 @@
                                 value="#{pharmacyController.fromDepartment}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems  value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.institution, pharmacyController.site)}" 
+                                <f:selectItems  value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.fromInstitution , pharmacyController.fromSite)}" 
                                                 var="dept" 
                                                 itemLabel="#{dept.name}" 
                                                 itemValue="#{dept}" ></f:selectItems>
@@ -154,7 +154,7 @@
                                 value="#{pharmacyController.toDepartment}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems  value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.institution, pharmacyController.site)}" 
+                                <f:selectItems  value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.toInstitution, pharmacyController.toSite)}" 
                                                 var="dept" 
                                                 itemLabel="#{dept.name}" 
                                                 itemValue="#{dept}" ></f:selectItems>

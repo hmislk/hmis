@@ -1002,24 +1002,34 @@ public class PharmacyController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("toDate", getToDate());
 
-        if (institution != null) {
-            sql += " and b.institution = :fIns";
-            tmp.put("fIns", institution);
+        if (fromInstitution != null) {
+            sql += " and b.fromInstitution = :fIns";
+            tmp.put("fIns", fromInstitution);
         }
 
-        if (site != null) {
-            sql += " and b.department.site = :site";
-            tmp.put("site", site);
+        if (FromSite != null) {
+            sql += " and b.fromDepartment.site = :fSite";
+            tmp.put("fSite", FromSite);
         }
 
-        if (dept != null) {
-            sql += " and b.department = :dept";
-            tmp.put("dept", dept);
+        if (fromDepartment != null) {
+            sql += " and b.fromDepartment = :fDept";
+            tmp.put("fDept", fromDepartment);
+        }
+
+        if (toInstitution != null) {
+            sql += " and b.toInstitution = :tIns";
+            tmp.put("tIns", toInstitution);
+        }
+
+        if (toSite != null) {
+            sql += " and b.toDepartment.site = :tSite";
+            tmp.put("tSite", toSite);
         }
 
         if (toDepartment != null) {
-            sql += " AND b.toDepartment = :toDept";
-            tmp.put("toDept", toDepartment);
+            sql += " and b.toDepartment = :tDept";
+            tmp.put("tDept", toDepartment);
         }
 
         sql += " order by b.id desc";
