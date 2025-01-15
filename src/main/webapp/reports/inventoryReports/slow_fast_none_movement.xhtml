@@ -336,6 +336,7 @@
                                              var="f" 
                                              rowIndexVar="n" 
                                              paginator="true" 
+                                             paginatorPosition="bottom"
                                              rows="10" 
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
@@ -378,7 +379,7 @@
                                     </p:column>
                                     <p:column headerText="QIH" >
                                         <h:outputText value="#{f.stockOnHand}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,###" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
 
@@ -426,6 +427,7 @@
                                              var="s" 
                                              rowIndexVar="n" 
                                              paginator="true" 
+                                             paginatorPosition="bottom"
                                              rows="10" 
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
@@ -516,6 +518,7 @@
                                              var="no" 
                                              rowIndexVar="n" 
                                              paginator="true" 
+                                             paginatorPosition="bottom"
                                              rows="10" 
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
