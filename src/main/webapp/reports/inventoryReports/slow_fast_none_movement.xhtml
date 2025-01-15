@@ -117,7 +117,7 @@
                                 <!-- Component 1: Without Institution and Site -->
                                 <p:selectOneMenu
                                     required="true"
-                                    requiredMessage="Department is Required"
+                                    requiredMessage="Please select a Department"
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -134,7 +134,7 @@
                                 <!-- Component 2: With Site Only -->
                                 <p:selectOneMenu
                                     required="true"
-                                    requiredMessage="Department is Required"
+                                    requiredMessage="Please select a Department"
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -151,7 +151,7 @@
                                 <!-- Component 3: With Institution Only --> 
                                 <p:selectOneMenu
                                     required="true"
-                                    requiredMessage="Department is Required"
+                                    requiredMessage="Please select a Department"
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -168,7 +168,7 @@
                                 <!-- Component 4: With Both Institution and Site --> 
                                 <p:selectOneMenu
                                     required="true"
-                                    requiredMessage="Department is Required"
+                                    requiredMessage="Please select a Department"
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
