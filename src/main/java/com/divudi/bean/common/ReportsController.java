@@ -1428,6 +1428,10 @@ public class ReportsController implements Serializable {
         this.selectedBillSession = selectedBillSession;
     }
 
+    public Date getCurrentDate() {
+        return new Date();
+    }
+
     public List<String> getTelephoneNumbers() {
         return telephoneNumbers;
     }
@@ -2888,6 +2892,12 @@ public class ReportsController implements Serializable {
 
     public void generateCollectionCenterBillWiseDetailReport() {
         System.out.println("generateCollectionCenterBillWiseDetailReport = " + this);
+
+        if (collectingCentre == null) {
+            JsfUtil.addErrorMessage("Please select an Agent");
+            return;
+        }
+
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
