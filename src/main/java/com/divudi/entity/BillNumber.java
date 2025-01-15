@@ -8,6 +8,7 @@ package com.divudi.entity;
 import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -24,7 +25,7 @@ import javax.persistence.Temporal;
  * @author safrin
  */
 @Entity
-public class BillNumber implements Serializable, RetirableEntity {
+public class BillNumber implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -40,6 +41,8 @@ public class BillNumber implements Serializable, RetirableEntity {
     @Enumerated(EnumType.STRING)
     private BillType billType;
     @Enumerated(EnumType.STRING)
+    private BillTypeAtomic billTypeAtomic;
+    @Enumerated(EnumType.STRING)
     private BillClassType billClassType;
     private Integer billYear;
     //Retairing properties
@@ -50,32 +53,27 @@ public class BillNumber implements Serializable, RetirableEntity {
     Date retiredAt;
     private String retireComments;
 
-    @Override
+
     public boolean isRetired() {
         return retired;
     }
 
-    @Override
     public void setRetired(boolean retired) {
         this.retired = retired;
     }
 
-    @Override
     public WebUser getRetirer() {
         return retirer;
     }
 
-    @Override
     public void setRetirer(WebUser retirer) {
         this.retirer = retirer;
     }
 
-    @Override
     public Date getRetiredAt() {
         return retiredAt;
     }
 
-    @Override
     public void setRetiredAt(Date retiredAt) {
         this.retiredAt = retiredAt;
     }
@@ -136,6 +134,8 @@ public class BillNumber implements Serializable, RetirableEntity {
         this.id = id;
     }
 
+    
+    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -169,14 +169,20 @@ public class BillNumber implements Serializable, RetirableEntity {
         this.billYear = billYear;
     }
 
-    @Override
     public String getRetireComments() {
         return retireComments;
     }
 
-    @Override
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
     }
 
 }

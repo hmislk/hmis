@@ -382,6 +382,14 @@ public enum BillTypeAtomic {
             case OtherBill:
                 return null;
             case PreBill:
+                 switch (billType) {
+                    case PharmacyBhtPre:
+                        return BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
+                    case PharmacyWholeSale:
+                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED;
+                    case PharmacyPurchaseBill:
+                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
+                }
                 return null;
             case RefundBill:
                 switch (billType) {

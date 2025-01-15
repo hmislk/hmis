@@ -65,7 +65,7 @@ public class RelationController implements Serializable {
 
     public void create() {
         persist(PersistAction.CREATE, "Saved");
-        if (!JsfUtil.isValidationFailed()) {
+        if (JsfUtil.isValidationPassed()) {
             items = null;    // Invalidate list of items to trigger re-query.
         }
     }
@@ -76,7 +76,7 @@ public class RelationController implements Serializable {
 
     public void destroy() {
         persist(PersistAction.DELETE, "Deleted");
-        if (!JsfUtil.isValidationFailed()) {
+        if (JsfUtil.isValidationPassed()) {
             selected = null; // Remove selection
             items = null;    // Invalidate list of items to trigger re-query.
         }

@@ -18,6 +18,7 @@
                         <div class="col-12 col-md-4 col-lg-2 p-1" >
                             <p:commandButton 
                                 class="w-100"
+                                disabled="true"
                                 value="Delete All Memberships" 
                                 action="#{dataAdministrationController.retireAllMembershipData()}" 
                                 ajax="false">
@@ -88,7 +89,7 @@
                         <div class="col-12 col-md-4 col-lg-2 p-1">
                             <p:commandButton 
                                 ajax="false"
-                                disabled="true"
+                                disabled="false"
                                 action="#{billController.addMissingBillTypeAtomics}"
                                 class="w-100 m-1"
                                 value="Add Bill Type Atomics"/>

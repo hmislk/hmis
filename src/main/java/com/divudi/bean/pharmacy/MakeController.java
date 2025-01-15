@@ -70,7 +70,7 @@ public class MakeController implements Serializable {
 
     public void create() {
         persist(PersistAction.CREATE, "Saved Successfully");
-        if (!JsfUtil.isValidationFailed()) {
+        if (JsfUtil.isValidationPassed()) {
             items = null;    // Invalidate list of items to trigger re-query.
         }
     }
@@ -81,7 +81,7 @@ public class MakeController implements Serializable {
 
     public void destroy() {
         persist(PersistAction.DELETE, "Deleted Successfully");
-        if (!JsfUtil.isValidationFailed()) {
+        if (JsfUtil.isValidationPassed()) {
             selected = null; // Remove selection
             items = null;    // Invalidate list of items to trigger re-query.
         }

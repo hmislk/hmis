@@ -754,7 +754,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         clearSearchValues();
         return "/inward/inpatient_search?faces-redirect=true;";
     }
-    
+
     public String navigateToListChildAdmissions() {
         perantAddmission = current;
         searchAdmissions();
@@ -1023,7 +1023,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 return true;
             }
         }
-        if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom() != null) {
+        
+        if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
             if (getPatientRoom().getRoomFacilityCharge() == null) {
                 JsfUtil.addErrorMessage("Select Room ");
                 return true;
@@ -1044,9 +1045,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
 
-        if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom() != null) {
-            if (getInwardBean().isRoomFilled(getPatientRoom().getRoomFacilityCharge().getRoom())) {
-                JsfUtil.addErrorMessage("Select Empty Room");
+        if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
+            if (getPatientRoom() != null) {
+                if (getInwardBean().isRoomFilled(getPatientRoom().getRoomFacilityCharge().getRoom())) {
+                    JsfUtil.addErrorMessage("Select Empty Room");
+                    return true;
+                }
+            } else {
+                JsfUtil.addErrorMessage("Room is Empty");
                 return true;
             }
         }
@@ -1055,10 +1061,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Please Select Referring Doctor");
             return true;
         }
+
         if (getCurrent().getPatient() == null) {
             JsfUtil.addErrorMessage("Select Patient");
             return true;
         }
+
         if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getApplicationPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
             if (getCurrent().getComments() == null || getCurrent().getComments().isEmpty()) {
                 JsfUtil.addErrorMessage("Please Add Reference No");
@@ -1170,11 +1178,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         savePatientAllergies();
         saveGuardian();
         boolean bhtCanBeEdited = configOptionApplicationController.getBooleanValueByKey("BHT Number can be edited at the time of admission");
-        if(bhtText==null||bhtText.trim().equals("")){
+        if (bhtText == null || bhtText.trim().equals("")) {
             bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
-        }else{
-            if(!bhtCanBeEdited){
-             bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+        } else {
+            if (!bhtCanBeEdited) {
+                bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
             }
         }
 //        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());

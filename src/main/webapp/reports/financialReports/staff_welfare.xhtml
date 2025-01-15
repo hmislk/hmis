@@ -166,8 +166,23 @@
                             <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
                             <h:outputLabel value="Staff" class="mx-3"/>
                         </h:panelGroup>
-                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.staffName}"
-                                     class="my-1 w-100"/>
+                        <p:autoComplete
+                                completeMethod="#{staffController.completeStaff}"
+                                value="#{searchController.staff}"
+                                var="mys"
+                                class="w-100"
+                                maxResults="10"
+                                inputStyleClass="w-100"
+                                itemLabel="#{mys.person.name}"
+                                panelStyleClass="custom-dropdown-panel"
+                                itemValue="#{mys}">
+                            <p:column headerText="Name" style="padding: 6px; width: 250px;">
+                                <h:outputText value="#{mys.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Code" style="padding: 6px; width: 20px;">
+                                <h:outputText value="#{mys.code}"/>
+                            </p:column>
+                        </p:autoComplete>
 
                         <p:spacer/>
 
@@ -276,7 +291,7 @@
                                 <f:facet name="header">
                                     <h:outputText value="Date"/>
                                 </f:facet>
-                                <p:outputLabel value="#{row.bill.billDate}">
+                                <p:outputLabel value="#{row.bill.createdAt}">
                                     <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </p:outputLabel>
@@ -285,7 +300,7 @@
                                 <f:facet name="header">
                                     <h:outputText value="Total Amount"/>
                                 </f:facet>
-                                <h:outputText value="#{row.bill.billTotal}">
+                                <h:outputText value="#{row.bill.total}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>

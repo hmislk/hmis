@@ -2300,7 +2300,7 @@ public class ReportsController implements Serializable {
             final Calendar cal = Calendar.getInstance();
             cal.setTime(bill.getCreatedAt());
 
-            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
 
             if (!yearMonths.contains(yearMonth)) {
                 yearMonths.add(yearMonth);
@@ -2339,7 +2339,7 @@ public class ReportsController implements Serializable {
             final Calendar cal = Calendar.getInstance();
             cal.setTime(bill.getCreatedAt());
 
-            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
 
             if (!yearMonths.contains(yearMonth)) {
                 yearMonths.add(yearMonth);
@@ -2508,7 +2508,7 @@ public class ReportsController implements Serializable {
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
+        parameters.put("td", CommonFunctions.getEndOfDay(toDate));
 
         jpql += "GROUP BY bill";
 
@@ -2643,7 +2643,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-            boolean onlyDueBills) {
+                                                                    boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -3700,10 +3700,12 @@ public class ReportsController implements Serializable {
             if (reportType.equalsIgnoreCase("detail")) {
                 opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
                 opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
                 opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
             } else if (reportType.equalsIgnoreCase("summary")) {
                 opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
                 opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
             }
         } else if (visitType.equalsIgnoreCase("OP")) {
             if (reportType.equalsIgnoreCase("detail")) {
@@ -3715,13 +3717,16 @@ public class ReportsController implements Serializable {
                 opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
                 opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
                 opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
             } else if (reportType.equalsIgnoreCase("summary")) {
                 opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
                 opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
                 opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
                 opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
             }
         }
 
@@ -4339,8 +4344,8 @@ public class ReportsController implements Serializable {
     }
 
     private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
-            List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
-            int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
         document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
         document.add(com.itextpdf.text.Chunk.NEWLINE);
 
