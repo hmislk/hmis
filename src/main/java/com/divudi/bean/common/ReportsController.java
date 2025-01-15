@@ -59,6 +59,7 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
+import java.util.stream.Collectors;
 
 /**
  * @author safrin
@@ -1426,6 +1427,10 @@ public class ReportsController implements Serializable {
 
     public void setSelectedBillSession(BillSession selectedBillSession) {
         this.selectedBillSession = selectedBillSession;
+    }
+
+    public Date getCurrentDate() {
+        return new Date();
     }
 
     public List<String> getTelephoneNumbers() {
@@ -2888,6 +2893,12 @@ public class ReportsController implements Serializable {
 
     public void generateCollectionCenterBillWiseDetailReport() {
         System.out.println("generateCollectionCenterBillWiseDetailReport = " + this);
+
+        if (collectingCentre == null) {
+            JsfUtil.addErrorMessage("Please select an Agent");
+            return;
+        }
+
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -2927,7 +2938,17 @@ public class ReportsController implements Serializable {
             }
         }
 
-        bundle.setGroupedBillItems(billItemMap);
+        Map<String, List<BillItem>> sortedBillItemMap = billItemMap.entrySet()
+                .stream()
+                .sorted(Comparator.comparing(entry -> entry.getValue().get(0).getBill().getCreatedAt()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        bundle.setGroupedBillItems(sortedBillItemMap);
     }
 
     public ReportTemplateRowBundle generateCollectingCenterBillWiseBillItems(List<BillTypeAtomic> bts) {
