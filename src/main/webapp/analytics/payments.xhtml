@@ -80,12 +80,45 @@
                             scrollable="true"
                             scrollWidth="100%">
 
+                             <p:column 
+                                headerText="Payment ID"
+                                sortBy="#{payment.id}" 
+                                filterBy="#{payment.id}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.id}" />
+                            </p:column>
+                            
+                            
+                            <p:column 
+                                headerText="Bill ID"
+                                sortBy="#{payment.bill.id}" 
+                                filterBy="#{payment.bill.id}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.bill.id}" />
+                            </p:column>
+                            
                             <p:column 
                                 headerText="Bill No"
                                 sortBy="#{payment.bill.deptId}" 
                                 filterBy="#{payment.bill.deptId}" 
                                 filterMatchMode="contains">
                                 <p:outputLabel value="#{payment.bill.deptId}" />
+                            </p:column>
+                            
+                            <p:column 
+                                headerText="Payment Creator"
+                                sortBy="#{payment.creater.webUserPerson.nameWithTitle}" 
+                                filterBy="#{payment.creater.webUserPerson.nameWithTitle}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.creater.webUserPerson.nameWithTitle}" />
+                            </p:column>
+                            
+                             <p:column 
+                                headerText="CUrrent Holder"
+                                sortBy="#{payment.currentHolder.webUserPerson.nameWithTitle}" 
+                                filterBy="#{payment.currentHolder.webUserPerson.nameWithTitle}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.currentHolder.webUserPerson.nameWithTitle}" />
                             </p:column>
 
                             <p:column 
