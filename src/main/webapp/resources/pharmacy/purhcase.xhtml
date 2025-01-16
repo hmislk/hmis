@@ -145,7 +145,7 @@
 
                         </p:row>
                         
-                        <p:row rendered="#{cc.attrs.bill.expenseTotal ne null and cc.attrs.bill.expenseTotal > 0}">
+                        <p:row rendered="#{cc.attrs.bill.expenseTotal ne null and cc.attrs.bill.expenseTotal != 0}">
                             <p:column colspan="6" footerText="Expense Total"/>
                             <p:column footerText="#{0-cc.attrs.bill.total}" >
                                 <f:facet name="footer">
