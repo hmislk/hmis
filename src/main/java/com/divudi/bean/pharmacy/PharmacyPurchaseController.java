@@ -290,6 +290,8 @@ public class PharmacyPurchaseController implements Serializable {
         currentBillItem = null;
         bill = null;
         billItems = null;
+        billExpenses = null;
+        currentExpense = null;
         warningMessage=null;
     }
 
