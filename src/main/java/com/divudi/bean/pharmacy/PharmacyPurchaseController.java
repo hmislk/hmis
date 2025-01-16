@@ -588,7 +588,7 @@ public class PharmacyPurchaseController implements Serializable {
                 totalForExpenses += expense.getNetValue();
             }
             
-            getBill().setExpenseTotal(totalForExpenses);
+            getBill().setExpenseTotal(-totalForExpenses);
             getBill().setNetTotal(getBill().getNetTotal()-totalForExpenses);
         }
 
