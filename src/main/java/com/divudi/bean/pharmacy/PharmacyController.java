@@ -744,7 +744,7 @@ public class PharmacyController implements Serializable {
     private List<DepartmentCategoryWiseItems> resultsList;
 
     private String transferType;
-    private Institution FromSite;
+    private Institution fromSite;
     private Institution toSite;
 
     public void clearItemHistory() {
@@ -1585,16 +1585,154 @@ public class PharmacyController implements Serializable {
         }
 
         if ("summeryReport".equals(reportType)) {
-            generateConsumptionReportTableAsSummary(bt);
+            generateReportAsSummary(bt);
 
         } else if ("detailReport".equals(reportType)) {
-            generateConsumptionReportTableByBillItems(bt);
+            generateReportByBillItems(bt);
 
         } else if ("byBill".equals(reportType)) {
-            generateConsumptionReportTableByBill(bt);
+            generateReportByBill(bt);
 
         }
 
+    }
+
+    public void generateReportByBill(BillType billType) {
+        bills = new ArrayList<>();
+
+        // SQL query construction
+        StringBuilder sql = new StringBuilder("SELECT b FROM Bill b WHERE b.retired = false")
+                .append(" and b.billType = :btp")
+                .append(" and b.createdAt between :fromDate and :toDate");
+
+        // Parameters for query execution
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("btp", billType);
+        parameters.put("fromDate", getFromDate());
+        parameters.put("toDate", getToDate());
+
+        // Add filters dynamically
+        additionalCommonFilltersForBillEntity(sql, parameters);
+        // Finalize the query with ordering
+        sql.append(" order by b.id desc");
+
+        // Execute the query and handle exceptions
+        try {
+            bills = getBillFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error occurred while generating the consumption report.");
+            return;
+        }
+
+        // Calculate the total purchase using Streams
+        totalPurchase = bills.stream()
+                .mapToDouble(b -> b.getStockBill().getStockValueAtPurchaseRates())
+                .sum();
+    }
+
+    private void addFilter(StringBuilder sql, Map<String, Object> parameters, String sqlField, String paramKey, Object value) {
+        if (value != null) {
+            sql.append(" and ").append(sqlField).append(" = :").append(paramKey);
+            parameters.put(paramKey, value);
+        }
+    }
+
+    private void additionalCommonFilltersForBillEntity(StringBuilder sql, Map<String, Object> parameters) {
+        addFilter(sql, parameters, "b.fromInstitution", "fIns", fromInstitution);
+        addFilter(sql, parameters, "b.fromDepartment.site", "fSite", fromSite);
+        addFilter(sql, parameters, "b.fromDepartment", "fDept", fromDepartment);
+        addFilter(sql, parameters, "b.toInstitution", "tIns", toInstitution);
+        addFilter(sql, parameters, "b.toDepartment.site", "tSite", toSite);
+        addFilter(sql, parameters, "b.toDepartment", "tDept", toDepartment);
+    }
+
+    public void generateReportByBillItems(BillType billType) {
+        billItems = new ArrayList<>();
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder sql = new StringBuilder();
+
+        // Constructing the base query
+        sql.append("SELECT bi FROM BillItem bi WHERE bi.retired = false ")
+                .append("AND bi.bill.retired = false ")
+                .append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ")
+                .append("AND bi.bill.billType = :billType ");
+
+        // Adding mandatory parameters
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+        parameters.put("billType", billType);
+
+        // Dynamically adding optional filters
+        addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
+        addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
+        addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
+        addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
+        addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
+        addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
+        addFilter(sql, parameters, "bi.item", "item", item);
+
+        // Adding the ordering clause
+        sql.append(" ORDER BY bi.id DESC");
+
+        // Executing the query
+        try {
+            billItems = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
+            e.printStackTrace();
+        }
+
+        // Calculating total purchase
+        totalPurchase = billItems.stream()
+                .mapToDouble(i -> i.getQty() * i.getPharmaceuticalBillItem().getPurchaseRate())
+                .sum();
+    }
+
+    public void generateReportAsSummary(BillType billType) {
+        // Prepare SQL query with dynamic filtering
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT b.department.name, SUM(b.netTotal) ")
+                .append("FROM Bill b ")
+                .append("WHERE b.retired = false ")
+                .append("AND b.billType = :billType ")
+                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+        // Prepare parameters
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("billType", billType);
+        parameters.put("fromDate", getFromDate());
+        parameters.put("toDate", getToDate());
+
+        // Add optional filters
+        additionalCommonFilltersForBillEntity(sql, parameters);
+
+        // Group by department and order by total in descending order
+        sql.append(" GROUP BY b.department.name ORDER BY SUM(b.netTotal) DESC");
+
+        try {
+            // Execute the query and fetch summarized data
+            List<Object[]> results = getBillFacade().findObjectsArrayByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+
+            // Process results into a summary list
+            departmentSummaries = new ArrayList<>();
+            double grandTotal = 0;
+
+            for (Object[] result : results) {
+                String departmentName = (String) result[0]; // Extract department name
+                Double netTotal = (Double) result[1];       // Extract net total
+                grandTotal += netTotal;                     // Accumulate the grand total
+
+                // Add summary data
+                departmentSummaries.add(new PharmacySummery(departmentName, netTotal));
+            }
+
+            // Add grand total
+            departmentSummaries.add(new PharmacySummery("Total", grandTotal));
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Something Went Wrong!");
+        }
     }
 
     public void deleteSelectedPharmaceuticalLight() {
@@ -3974,11 +4112,11 @@ public class PharmacyController implements Serializable {
     }
 
     public Institution getFromSite() {
-        return FromSite;
+        return fromSite;
     }
 
-    public void setFromSite(Institution FromSite) {
-        this.FromSite = FromSite;
+    public void setFromSite(Institution fromSite) {
+        this.fromSite = fromSite;
     }
 
     public Institution getToSite() {
