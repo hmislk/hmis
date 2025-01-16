@@ -130,6 +130,32 @@ public class PharmacyPurchaseController implements Serializable {
     private Institution site;
     private Institution toInstitution;
     private PaymentMethod paymentMethod;
+    
+    private BillItem currentExpense;
+    private List<BillItem> billExpenses;
+
+    public List<BillItem> getBillExpenses() {
+        if(billExpenses == null){
+            billExpenses = new ArrayList<>();
+        }
+        return billExpenses;
+    }
+
+    public void setBillExpenses(List<BillItem> billExpenses) {
+        this.billExpenses = billExpenses;
+    }
+
+    public BillItem getCurrentExpense() {
+        if(currentExpense == null){
+            currentExpense = new BillItem();
+        }
+        return currentExpense;
+    }
+
+    public void setCurrentExpense(BillItem currentExpense) {
+        this.currentExpense = currentExpense;
+    }
+    
 
     public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
         Date startTime = new Date();
@@ -446,6 +472,31 @@ public class PharmacyPurchaseController implements Serializable {
         }
 
     }
+    
+    
+    public void addExpense() {
+        if (getBill().getId() == null) {
+            getBillFacade().create(getBill());
+        }
+        if (getCurrentExpense().getItem() == null) {
+            JsfUtil.addErrorMessage("Expense ?");
+            return;
+        }
+        if (currentExpense.getQty() == null || currentExpense.getQty().equals(0.0)) {
+            currentExpense.setQty(1.0);
+        }
+        if (currentExpense.getNetRate() == 0.0) {
+            currentExpense.setNetRate(currentExpense.getRate());
+        }
+
+        currentExpense.setNetValue(currentExpense.getNetRate() * currentExpense.getQty());
+        currentExpense.setGrossValue(currentExpense.getRate() * currentExpense.getQty());
+
+        getCurrentExpense().setSearialNo(getBillExpenses().size());
+        getBillExpenses().add(currentExpense);
+        currentExpense = null;
+
+    }
 
     public void settle() {
 
@@ -527,6 +578,20 @@ public class PharmacyPurchaseController implements Serializable {
             JsfUtil.addErrorMessage("Please Add Item Quantities To Bill");
             return;
         }
+        
+        //check and calculate expenses separately
+        if(billExpenses != null && !billExpenses.isEmpty()){
+            getBill().setBillExpenses(billExpenses);
+            
+            double totalForExpenses = 0;
+            for(BillItem expense : getBillExpenses()){
+                totalForExpenses += expense.getNetValue();
+            }
+            
+            getBill().setExpenseTotal(totalForExpenses);
+            getBill().setNetTotal(getBill().getNetTotal()-totalForExpenses);
+        }
+
         getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
 
         getBillFacade().edit(getBill());
