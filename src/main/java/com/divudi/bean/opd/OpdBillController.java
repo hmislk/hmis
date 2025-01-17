@@ -2171,32 +2171,51 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setCreditCompany(creditCompany);
         newBatchBill.setComments(comment);
         newBatchBill.setIpOpOrCc("OP");
-        newBatchBill.setInsId(
-                getBillNumberGenerator().institutionBillNumberGenerator(
-                        getSessionController().getInstitution(),
-                        BillType.OpdBathcBill,
-                        BillClassType.BilledBill,
-                        BillNumberSuffix.NONE));
-
-        String deptId;
-
         boolean billNumberByYear;
-
+        String insId;
         billNumberByYear = configOptionApplicationController.getBooleanValueByKey("Bill Numbers are based on Year.", false);
 
         if (billNumberByYear) {
-            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
+            insId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
                     getSessionController().getInstitution(),
                     getSessionController().getDepartment(),
                     BillType.OpdBathcBill,
                     BillClassType.BilledBill);
         } else {
-            deptId = getBillNumberGenerator().departmentBillNumberGenerator(
+            insId = getBillNumberGenerator().departmentBillNumberGenerator(
                     getSessionController().getInstitution(),
                     getSessionController().getDepartment(),
                     BillType.OpdBathcBill,
                     BillClassType.BilledBill);
         }
+
+        newBatchBill.setInsId(insId);
+
+//        newBatchBill.setInsId(
+//                getBillNumberGenerator().institutionBillNumberGenerator(
+//                        getSessionController().getInstitution(),
+//                        BillType.OpdBathcBill,
+//                        BillClassType.BilledBill,
+//                        BillNumberSuffix.NONE));
+        String deptId;
+
+//        boolean billNumberByYear;
+//
+//        billNumberByYear = configOptionApplicationController.getBooleanValueByKey("Bill Numbers are based on Year.", false);
+//        if (billNumberByYear) {
+//            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
+//                    getSessionController().getInstitution(),
+//                    getSessionController().getDepartment(),
+//                    BillType.OpdBathcBill,
+//                    BillClassType.BilledBill);
+//        } else {
+//            deptId = getBillNumberGenerator().departmentBillNumberGenerator(
+//                    getSessionController().getInstitution(),
+//                    getSessionController().getDepartment(),
+//                    BillType.OpdBathcBill,
+//                    BillClassType.BilledBill);
+//        }
+        deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
 
         newBatchBill.setDeptId(deptId);
         newBatchBill.setGrantTotal(total);

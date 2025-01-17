@@ -335,9 +335,7 @@
                                      value="#{reportsController.bundle.reportTemplateRows}"
                                      var="row"
                                      rendered="#{reportsController.reportType eq 'summary'}"
-                                     paginator="true"
-                                     rows="10"
-                                     paginatorPosition="bottom">
+                                     rows="10">
                             <p:column headerText="Patient Name">
                                 <h:outputText value="#{row.bill.patient.person.name}"/>
                             </p:column>
@@ -410,9 +408,7 @@
                                      value="#{reportsController.bundle.reportTemplateRows}"
                                      var="row"
                                      rendered="#{reportsController.reportType eq 'detail'}"
-                                     paginator="true"
-                                     rows="10"
-                                     paginatorPosition="bottom">
+                                     rows="10">
                             <p:column headerText="Patient Name">
                                 <h:outputText value="#{row.billItem.bill.patient.person.name}"/>
                             </p:column>
