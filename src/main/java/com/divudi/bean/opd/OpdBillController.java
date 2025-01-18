@@ -2182,41 +2182,24 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     BillType.OpdBathcBill,
                     BillClassType.BilledBill);
         } else {
-            insId = getBillNumberGenerator().departmentBillNumberGenerator(
-                    getSessionController().getInstitution(),
+            insId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
                     getSessionController().getDepartment(),
-                    BillType.OpdBathcBill,
-                    BillClassType.BilledBill);
+                    BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         }
 
         newBatchBill.setInsId(insId);
 
-//        newBatchBill.setInsId(
-//                getBillNumberGenerator().institutionBillNumberGenerator(
-//                        getSessionController().getInstitution(),
-//                        BillType.OpdBathcBill,
-//                        BillClassType.BilledBill,
-//                        BillNumberSuffix.NONE));
         String deptId;
 
-//        boolean billNumberByYear;
-//
-//        billNumberByYear = configOptionApplicationController.getBooleanValueByKey("Bill Numbers are based on Year.", false);
-//        if (billNumberByYear) {
-//            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
-//                    getSessionController().getInstitution(),
-//                    getSessionController().getDepartment(),
-//                    BillType.OpdBathcBill,
-//                    BillClassType.BilledBill);
-//        } else {
-//            deptId = getBillNumberGenerator().departmentBillNumberGenerator(
-//                    getSessionController().getInstitution(),
-//                    getSessionController().getDepartment(),
-//                    BillType.OpdBathcBill,
-//                    BillClassType.BilledBill);
-//        }
-        deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
-
+        if (billNumberByYear) {
+            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
+                    getSessionController().getInstitution(),
+                    getSessionController().getDepartment(),
+                    BillType.OpdBathcBill,
+                    BillClassType.BilledBill);
+        } else {
+            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        }
         newBatchBill.setDeptId(deptId);
         newBatchBill.setGrantTotal(total);
         newBatchBill.setTotal(total);
