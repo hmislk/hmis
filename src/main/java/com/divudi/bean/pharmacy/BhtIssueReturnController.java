@@ -33,6 +33,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 
 /**
  *
@@ -151,6 +152,7 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().copy(getBill());
 
         getReturnBill().setBillType(getBill().getBillType());
+        getReturnBill().setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
         getReturnBill().setBilledBill(getBill());
 
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
