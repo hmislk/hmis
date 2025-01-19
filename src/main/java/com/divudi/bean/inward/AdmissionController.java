@@ -45,6 +45,10 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.clinical.ClinicalFindingValueType;
+import static com.divudi.data.inward.AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
+import static com.divudi.data.inward.AdmissionStatus.ANY_STATUS;
+import static com.divudi.data.inward.AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
+import static com.divudi.data.inward.AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED;
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import com.divudi.entity.clinical.ClinicalFindingValue;
@@ -615,6 +619,88 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
     }
+    
+    public void searchAdmissionsWithoutRoom() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select date");
+            return;
+        }
+
+        String j;
+        HashMap m = new HashMap();
+        j = "select c from Admission c "
+                + " where c.retired=:ret "
+                + " AND c.currentPatientRoom IS NULL ";
+        m.put("ret", false);
+        j += " and c.dateOfAdmission between :fd and :td ";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        if (patientNameForSearch != null && !patientNameForSearch.trim().equals("")) {
+            j += " and c.patient.person.name like :name ";
+            m.put("name", "%" + patientNameForSearch + "%");
+        }
+        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().equals("")) {
+            j += "  and c.bhtNo like :bht ";
+            m.put("bht", "%" + bhtNumberForSearch + "%");
+        }
+
+        if (patientNumberForSearch != null && !patientNumberForSearch.trim().equals("")) {
+            j += " and (c.patient.code =:phn or c.patient.phn =:phn)";
+            m.put("phn", patientNumberForSearch);
+        }
+
+        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().equals("")) {
+            j += " and (c.patient.person.phone =:phone or c.patient.person.mobile =:phone)";
+            m.put("phone", patientPhoneNumberForSearch);
+        }
+
+        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().equals("")) {
+            j += " and c.patient.person.nic =:nic";
+            m.put("nic", patientIdentityNumberForSearch);
+        }
+
+        if (admissionStatusForSearch != null) {
+            if (null != admissionStatusForSearch) {
+                switch (admissionStatusForSearch) {
+                    case ADMITTED_BUT_NOT_DISCHARGED:
+                        j += "  and c.discharged=:dis ";
+                        m.put("dis", false);
+                        break;
+                    case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                        m.put("dis", true);
+                        m.put("bf", false);
+                        break;
+                    case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                        m.put("dis", true);
+                        m.put("bf", true);
+                        break;
+                    case ANY_STATUS:
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        if (institutionForSearch != null) {
+            j += "  and c.institution=:ins ";
+            m.put("ins", institutionForSearch);
+        }
+
+        if (loggedDepartment != null) {
+            j += "  and c.department=:dept ";
+            m.put("dept", loggedDepartment);
+        }
+
+        if (parentAdmission != null) {
+            j += "  and c.parentEncounter=:pent ";
+            m.put("pent", parentAdmission);
+        }
+
+        items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
+    }
 
     public String navigateToAdmissionProfilePage() {
         if (current == null) {
@@ -753,6 +839,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         clearSearchValues();
         return "/inward/inpatient_search?faces-redirect=true;";
+    }
+    
+    public String navigateToListAdmissionsWithoutRoom() {
+        institutionForSearch = sessionController.getLoggedUser().getInstitution();
+        if (configOptionApplicationController.getBooleanValueByKey("Restirct Inward Admission Search to Logged Department of the User")) {
+            loggedDepartment = sessionController.getLoggedUser().getDepartment();
+        }
+        clearSearchValues();
+        return "/inward/inpatient_search_without_room?faces-redirect=true;";
     }
 
     public String navigateToListChildAdmissions() {
