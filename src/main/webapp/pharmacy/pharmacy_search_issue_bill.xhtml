@@ -153,8 +153,6 @@
                                     </p:column>    
 
                                     <p:column headerText="Billed By" >
-                                        <h:outputLabel value="#{bill.referenceBill.creater.webUserPerson.name}" />                                      
-                                        <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled By " />
                                             <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
