@@ -207,7 +207,7 @@
                             ajax="false" 
                             value="Process" 
                             icon="fas fa-cogs" 
-                            action="#{creditCompanyDueController.createInwardCashDue()}">
+                            action="#{creditCompanyDueController.createInwardCashDueData()}">
                         </p:commandButton>
 
                         <p:commandButton 
@@ -274,7 +274,7 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Paid By Patient" style="text-align: right;">
-                                <h:outputLabel value="#{p.finalBill.paidAmount}">
+                                <h:outputLabel value="#{p.finalBill.settledAmountByPatient}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
@@ -295,10 +295,9 @@
                                 </f:facet>
                             </p:column>
 
-
                             <p:column headerText="Due"  style="text-align: right;" >
 
-                                <h:outputLabel value="#{(p.finalBill.netTotal-(p.finalBill.paidAmount+p.paidByCreditCompany)) gt 0? (p.finalBill.netTotal-(p.finalBill.paidAmount+p.paidByCreditCompany)):0.00}">
+                                <h:outputLabel value="#{(p.finalBill.netTotal-(p.finalBill.settledAmountByPatient+p.paidByCreditCompany)) gt 0? (p.finalBill.netTotal-(p.finalBill.settledAmountByPatient+p.paidByCreditCompany)):0.00}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
