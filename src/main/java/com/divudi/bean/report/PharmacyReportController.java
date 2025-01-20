@@ -2176,6 +2176,9 @@ public class PharmacyReportController implements Serializable {
                 fromDate = convertToDate(today.minusMonths(12));
                 toDate = convertToDate(today);
                 break;
+            case "shortexpiry":
+                fromDate = convertToDate(today.plusMonths(3));
+                toDate = convertToDate(today);
         }
         // System.out.println("Updated From Date: " + fromDate);
         // System.out.println("Updated To Date: " + toDate);
