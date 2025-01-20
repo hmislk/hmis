@@ -148,7 +148,7 @@
                 rows="10"
                 paginatorPosition="bottom"
                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
-                rowsPerPageTemplate="5,10,20"
+                rowsPerPageTemplate="20,50,100"
                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
                 widgetVar="agentHistoryTable" 
                 sortMode="multiple"
@@ -161,9 +161,6 @@
                     filterBy="#{agentHx.bill.deptId}"
                     style="background-color: #{reportController.getTableRowColor(agentHx)}"
                     filterMatchMode="contains">
-                    #{agentHx.bill.billTypeAtomic}
-                    #{agentHx.bill.billTypeAtomic eq null}
-                    #{reportController.getTableRowColor(agentHx)}
                     <p:commandLink 
                         value="#{agentHx.bill.deptId}" 
                         ajax="false"
@@ -177,6 +174,7 @@
                 <p:column  
                     width="4em" 
                     headerText="Actions"
+                    exportable="false"
                     style="background-color: #{reportController.getTableRowColor(agentHx)}"
                     rendered="#{webUserController.hasPrivilege('Developers')}">
                     <p:commandButton 
