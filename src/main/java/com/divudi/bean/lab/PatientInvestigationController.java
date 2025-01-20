@@ -5354,8 +5354,7 @@ public class PatientInvestigationController implements Serializable {
             }
 
             for (InvestigationItem ixi : ixis) {
-                if ((ixi.getIxItemType() != InvestigationItemType.Value) || (ixi.getIxItemType() != InvestigationItemType.Template)) {
-                } else {
+                if ((ixi.getIxItemType() == InvestigationItemType.Value) || (ixi.getIxItemType() == InvestigationItemType.Template)) {
                     if (ixi.getTube() == null) {
                         if (ixi.getItem() != null) {
                             if (ixi.getItem() instanceof Investigation) {
@@ -5386,7 +5385,7 @@ public class PatientInvestigationController implements Serializable {
                         m.put("sc", ixi.getSampleComponent());
                     }
                     PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
-                    System.out.println("pts = " + pts);
+                    
                     if (pts == null) {
                         pts = new PatientSample();
                         pts.setTube(ixi.getTube());

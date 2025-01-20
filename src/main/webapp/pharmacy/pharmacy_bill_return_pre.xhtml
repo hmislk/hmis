@@ -102,9 +102,15 @@
                     <p:printer target="gpBillPreview2" ></p:printer>
                 </p:commandButton>
                 <p:panel   id="gpBillPreview1">
+                    <h:panelGroup id="gpBillPreviewFiveFiveCustom3Return" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
+                        <ph:sale_bill_five_five_custom_3_Return bill="#{preReturnController.returnBill}"/>
+                            </h:panelGroup>
                     <ph:returnBill bill="#{preReturnController.returnBill}"/>                
                 </p:panel>
                 <p:panel   id="gpBillPreview2">
+                     <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
+                                <ph:sale_bill_five_five_custom_3 bill="#{preReturnController.bill}"/>
+                            </h:panelGroup>
                     <ph:saleBill  bill="#{preReturnController.bill}"/>                
                 </p:panel>
             </p:panel>

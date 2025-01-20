@@ -856,6 +856,19 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/inward/inward_admission?faces-redirect=true;";
 
     }
+    
+    public String navigateToConvertNonBhtToBht(Admission nonBhtAd) {
+        Admission ad = new Admission();
+        if (ad.getDateOfAdmission() == null) {
+            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+        }
+        ad.setPatient(nonBhtAd.getPatient());
+        admissionController.setCurrentNonBht(nonBhtAd);
+        admissionController.setCurrent(ad);
+        admissionController.setPrintPreview(false);
+        return "/inward/convert_inward_admission?faces-redirect=true;";
+
+    }
 
     public String navigateToInwardAppointmentFromPatientProfile() {
         if (current == null) {
