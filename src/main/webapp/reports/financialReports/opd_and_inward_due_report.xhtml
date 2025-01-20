@@ -175,6 +175,7 @@
                             <p:selectOneMenu class="w-100" value="#{reportsController.visitType}">
                                 <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
                                 <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                                <p:ajax update="statusMenu"/>
                             </p:selectOneMenu>
 
                             <p:spacer/>
@@ -207,7 +208,11 @@
                                 <h:outputText value="&#xf0ae;" styleClass="fa mr-2"/>
                                 <h:outputLabel value="Status" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{reportsController.dischargedStatus}" filter="true" class="w-100 ">
+                            <p:selectOneMenu value="#{reportsController.dischargedStatus}" 
+                                             filter="true" 
+                                             class="w-100 "
+                                             id="statusMenu"
+                                             disabled="#{reportsController.visitType ne 'IP'}">
                                 <f:selectItem itemLabel="All" itemValue="#{null}" />
                                 <f:selectItem itemLabel="Not Discharged" itemValue="notDischarged" />
                                 <f:selectItem itemLabel="Discharged" itemValue="discharged" />
