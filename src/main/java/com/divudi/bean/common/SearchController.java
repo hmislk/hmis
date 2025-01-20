@@ -13555,7 +13555,7 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> pharmacyCancellations = new ArrayList<>();
         pharmacyCancellations.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
         pharmacyCancellations.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
-        ReportTemplateRowBundle pharmacyServiceCancellations = generateTotalPaymentColumnByDepartment(pharmacyCancellations, nonCreditPaymentMethods);
+        ReportTemplateRowBundle pharmacyServiceCancellations = generatePaymentMethodColumnsByBills(pharmacyCancellations, nonCreditPaymentMethods);
         pharmacyServiceCancellations.setBundleType("pharmacyServiceCancellations");
         pharmacyServiceCancellations.setName("Pharmacy Service Cancellations");
         bundle.getBundles().add(pharmacyServiceCancellations);
@@ -13567,7 +13567,7 @@ public class SearchController implements Serializable {
         pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
         pharmacyRefunds.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
         
-        ReportTemplateRowBundle pharmacyServiceRefunds = generateTotalPaymentColumnByDepartment(pharmacyRefunds, nonCreditPaymentMethods);
+        ReportTemplateRowBundle pharmacyServiceRefunds = generatePaymentMethodColumnsByBills(pharmacyRefunds, nonCreditPaymentMethods);
         pharmacyServiceRefunds.setBundleType("pharmacyServiceRefunds");
         pharmacyServiceRefunds.setName("Pharmacy Service Refunds");
         bundle.getBundles().add(pharmacyServiceRefunds);
