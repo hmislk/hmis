@@ -2404,20 +2404,24 @@ public class FinancialTransactionController implements Serializable {
             shiftPayments.stream()
                     .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.USER_COLLECTED));
         }
+        System.out.println("shiftPayments = " + shiftPayments);
 
         List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(startBill, null, sessionController.getLoggedUser());
         if (shiftFloats != null) {
             shiftFloats.stream()
                     .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.FLOATS));
         }
+        System.out.println("shiftFloats = " + shiftFloats);
 
-        List<Payment> othersPayments = fetchAllPaymentInMyHold(sessionController.getLoggedUser());
+        List<Payment> othersPayments = fetchAllPaymentInMyHold(startBill, sessionController.getLoggedUser());
         if (othersPayments != null) {
             othersPayments.stream()
                     .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.OTHER_USERS_COLLECTED_AND_HANDED_OVER));
         }
+        System.out.println("othersPayments = " + othersPayments);
 
         List<Payment> bankPayments = fetchBankPayments(startBill, null, sessionController.getLoggedUser());
+        System.out.println("bankPayments = " + bankPayments);
 
         Set<Payment> uniquePaymentSet = new HashSet<>();
         if (shiftPayments != null) {
@@ -2527,7 +2531,7 @@ public class FinancialTransactionController implements Serializable {
                     .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.FLOATS));
         }
 
-        List<Payment> othersPayments = fetchAllPaymentInMyHold(sessionController.getLoggedUser());
+        List<Payment> othersPayments = fetchAllPaymentInMyHold(startBill, sessionController.getLoggedUser());
         if (othersPayments != null) {
             othersPayments.stream()
                     .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.OTHER_USERS_COLLECTED_AND_HANDED_OVER));
@@ -2580,7 +2584,7 @@ public class FinancialTransactionController implements Serializable {
 //        bundle.aggregateTotalsFromAllChildBundles();
         bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
         bundle.sortByDateInstitutionSiteDepartmentType();
-        
+
         bundle.setPatientDepositsAreConsideredInHandingover(getPatientDepositsAreConsideredInHandingover());
         bundle.calculateTotalsByChildBundlesForHandover();
         return "/cashier/handover_start_all?faces-redirect=true";
@@ -2599,7 +2603,7 @@ public class FinancialTransactionController implements Serializable {
 
         List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(fromDate, toDate, sessionController.getLoggedUser());
         List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(fromDate, toDate, sessionController.getLoggedUser());
-        List<Payment> othersPayments = fetchAllPaymentInMyHold(sessionController.getLoggedUser());
+        List<Payment> othersPayments = fetchAllPaymentInMyHold(fromDate, toDate, sessionController.getLoggedUser());
 
         Set<Payment> uniquePaymentSet = new HashSet<>();
         if (shiftPayments != null) {
@@ -2654,7 +2658,7 @@ public class FinancialTransactionController implements Serializable {
                     .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.FLOATS));
         }
 
-        List<Payment> othersPayments = fetchAllPaymentInMyHold(sessionController.getLoggedUser());
+        List<Payment> othersPayments = fetchAllPaymentInMyHold(startBill, sessionController.getLoggedUser());
         if (othersPayments != null) {
             othersPayments.stream()
                     .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.OTHER_USERS_COLLECTED_AND_HANDED_OVER));
@@ -3648,7 +3652,7 @@ public class FinancialTransactionController implements Serializable {
         return myFloats;
     }
 
-    public List<Payment> fetchAllPaymentInMyHold(WebUser wu) {
+    public List<Payment> fetchAllPaymentInMyHold(Bill shiftStartBill, WebUser wu) {
         WebUser paymentUser = wu;
         StringBuilder jpqlBuilder = new StringBuilder("SELECT p ")
                 .append("FROM Payment p ")
@@ -3666,8 +3670,60 @@ public class FinancialTransactionController implements Serializable {
         params.put("can", false);
         params.put("hs", false);
         String jpql = jpqlBuilder.toString();
-        List<Payment> othersPayments = paymentFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        return othersPayments;
+        List<Payment> initialOtherPayments = paymentFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<Payment> finalOtherPayments = new ArrayList<>();
+        if (initialOtherPayments != null) {
+            for (Payment p : initialOtherPayments) {
+                if (p.getBill() == null) {
+                    continue;
+                }
+                if (p.getBill().getBillTypeAtomic() != null && p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
+                    if (p.getId() > shiftStartBill.getId()) {
+                        finalOtherPayments.add(p);
+                    }
+                } else {
+                    finalOtherPayments.add(p);
+                }
+            }
+        }
+        return finalOtherPayments;
+    }
+    
+    public List<Payment> fetchAllPaymentInMyHold(Date paramFromDate, Date paramToDate, WebUser wu) {
+        WebUser paymentUser = wu;
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT p ")
+                .append("FROM Payment p ")
+                .append("JOIN p.bill b ")
+                .append("WHERE p.retired=:pret ")
+                .append("AND p.currentHolder=:cr ")
+                .append("AND p.retired=:bret ")
+                .append("AND p.cancelled=:can ")
+                .append("AND p.handingOverStarted=:hs ")
+                .append("ORDER BY p.createdAt, b.department, p.creater");
+        Map<String, Object> params = new HashMap<>();
+        params.put("cr", paymentUser);
+        params.put("pret", false);
+        params.put("bret", false);
+        params.put("can", false);
+        params.put("hs", false);
+        String jpql = jpqlBuilder.toString();
+        List<Payment> initialOtherPayments = paymentFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<Payment> finalOtherPayments = new ArrayList<>();
+        if (initialOtherPayments != null) {
+            for (Payment p : initialOtherPayments) {
+                if (p.getBill() == null) {
+                    continue;
+                }
+                if (p.getBill().getBillTypeAtomic() != null && p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
+                    if (p.getCreatedAt().getTime() > paramFromDate.getTime() && p.getCreatedAt().getTime() < paramToDate.getTime()) {
+                        finalOtherPayments.add(p);
+                    }
+                } else {
+                    finalOtherPayments.add(p);
+                }
+            }
+        }
+        return finalOtherPayments;
     }
 
     public ReportTemplateRowBundle generatePaymentBundleForHandovers(
