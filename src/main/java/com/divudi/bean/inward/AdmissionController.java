@@ -130,6 +130,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ///////////////////////
     List<Admission> selectedItems;
     private Admission current;
+    private Admission currentNonBht;
     private List<EncounterCreditCompany> encounterCreditCompanies;
     private EncounterCreditCompany encounterCreditCompany;
     private Admission parentAdmission;
@@ -715,6 +716,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         bhtSummeryController.setPatientEncounter(current);
         return bhtSummeryController.navigateToInpatientProfile();
     }
+    
 
     public List<Admission> completeAdmission(String query) {
         List<Admission> suggestions;
@@ -1324,6 +1326,73 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // Need to create EncounterCredit
         printPreview = true;
     }
+    
+    public void saveConvertSelected() {
+        if (errorCheck()) {
+            return;
+        }
+        savePatient();
+        savePatientAllergies();
+        saveGuardian();
+        boolean bhtCanBeEdited = configOptionApplicationController.getBooleanValueByKey("BHT Number can be edited at the time of admission");
+        if (bhtText == null || bhtText.trim().equals("")) {
+            bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+        } else {
+            if (!bhtCanBeEdited) {
+                bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+            }
+        }
+//        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+        getCurrent().setBhtNo(getBhtText());
+
+        //  getCurrent().setBhtNo(bhtText);
+        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            getFacade().edit(getCurrent());
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            getCurrent().setCreatedAt(new Date());
+            getCurrent().setCreater(getSessionController().getLoggedUser());
+            getCurrent().setInstitution(sessionController.getInstitution());
+            getCurrent().setDepartment(sessionController.getDepartment());
+            getFacade().create(getCurrent());
+            JsfUtil.addSuccessMessage("Patient Admitted Succesfully");
+        }
+
+        if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
+            PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
+            getCurrent().setCurrentPatientRoom(currentPatientRoom);
+        }
+
+        getFacade().edit(getCurrent());
+
+        double appointmentFee = 0;
+        if (getAppointmentBill() != null) {
+            appointmentFee = getAppointmentBill().getTotal();
+            updateAppointment();
+            updateAppointmentBill();
+        }
+
+        if (appointmentFee != 0) {
+            getInwardPaymentController().getCurrent().setPaymentMethod(getCurrent().getPaymentMethod());
+            getInwardPaymentController().getCurrent().setPatientEncounter(current);
+            getInwardPaymentController().getCurrent().setTotal(appointmentFee);
+            getInwardPaymentController().pay();
+            getInwardPaymentController().makeNull();
+        }
+
+        saveEncounterCreditCompanies(current);
+        
+        getCurrentNonBht().setParentEncounter(current);
+        getCurrentNonBht().setDischarged(true);
+        getCurrentNonBht().setDateOfDischarge(new Date());
+        getCurrentNonBht().setConvertedToBht(true);
+        getFacade().edit(currentNonBht);
+        currentNonBht = null;
+
+        // Save EncounterCreditCompanies
+        // Need to create EncounterCredit
+        printPreview = true;
+    }
 
     public void saveEncounterCreditCompanies(PatientEncounter current) {
         if (!encounterCreditCompanies.isEmpty() && current != null) {
@@ -1853,6 +1922,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setPerantAddmission(Admission perantAddmission) {
         this.perantAddmission = perantAddmission;
+    }
+
+    public Admission getCurrentNonBht() {
+        return currentNonBht;
+    }
+
+    public void setCurrentNonBht(Admission currentNonBht) {
+        this.currentNonBht = currentNonBht;
     }
 
     /**
