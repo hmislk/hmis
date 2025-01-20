@@ -384,8 +384,6 @@ public class CollectingCentreController implements Serializable {
             m.put("ins", institution);
         }
 
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 

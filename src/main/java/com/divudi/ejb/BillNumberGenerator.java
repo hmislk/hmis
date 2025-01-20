@@ -1418,7 +1418,6 @@ public class BillNumberGenerator {
             String s = billSuffixTemplate.replace("{{department_code}}", detpCode)
                     .replace("{{to_department_code}}", toDeptCode)
                     .replace("{{ins_code}}", insCode);
-            System.out.println(s);
 
             StringBuilder result = new StringBuilder();
             result.append(s);
@@ -1427,7 +1426,6 @@ public class BillNumberGenerator {
 //
 //        billNumber.setLastBillNumber(dd);
 //        billNumberFacade.editAndFlush(billNumber);
-            System.out.println("result.toString() = " + result.toString());
 
             return result.toString();
         } else {
@@ -1449,7 +1447,6 @@ public class BillNumberGenerator {
 //
 //        billNumber.setLastBillNumber(dd);
 //        billNumberFacade.editAndFlush(billNumber);
-            System.out.println("result.toString() = " + result.toString());
 
             return result.toString();
         }
@@ -1597,7 +1594,6 @@ public class BillNumberGenerator {
             String insCode = dep.getInstitution().getInstitutionCode();
             String s = billSuffixTemplate.replace("{{department_code}}", detpCode)
                     .replace("{{ins_code}}", insCode);
-            System.out.println(s);
 
             StringBuilder result = new StringBuilder();
             result.append(s);
@@ -1609,11 +1605,10 @@ public class BillNumberGenerator {
 
             // Append formatted 6-digit bill number
             result.append("/");
-            result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
-
+            result.append(String.format("%06d", dd));
 //        billNumber.setLastBillNumber(dd);
 //        billNumberFacade.editAndFlush(billNumber);
-            System.out.println("result.toString() = " + result.toString());
+            // Ensure bill number is always six digits
 
             return result.toString();
 

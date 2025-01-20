@@ -108,6 +108,7 @@ public class InwardReportControllerBht implements Serializable {
     Bill finalBill;
 
     public String navigateToInpatientPharmacyItemList() {
+        System.out.println("navigateToInpatientPharmacyItemList");
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No encounter");
             return null;
@@ -122,7 +123,18 @@ public class InwardReportControllerBht implements Serializable {
         pharmacyIssueBillItemsToPatientEncounter = billService.fetchBillItems(null, null, null, null, null, null, btas, patientEncounter);
         if (pharmacyIssueBillItemsToPatientEncounter != null) {
             for (BillItem bi : pharmacyIssueBillItemsToPatientEncounter) {
-                pharmacyIssueBillItemsToPatientEncounterNetTotal += bi.getNetValue();
+                switch (bi.getBill().getBillTypeAtomic()) {
+                    case PHARMACY_DIRECT_ISSUE_CANCELLED:
+                    case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
+                    case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
+                        pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
+                        break;
+                    case PHARMACY_DIRECT_ISSUE:
+                    case DIRECT_ISSUE_INWARD_MEDICINE:
+                        pharmacyIssueBillItemsToPatientEncounterNetTotal += Math.abs(bi.getNetValue());
+                        break;
+                }
+
             }
         }
         return "/inward/reports/inpatient_pharmacy_item_list?faces-redirect=true";

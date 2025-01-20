@@ -57,6 +57,7 @@
                                 <f:selectItem itemLabel="Within 3 Months" itemValue="within3months" />
                                 <f:selectItem itemLabel="Within 6 Months" itemValue="within6months" />
                                 <f:selectItem itemLabel="Within 12 Months" itemValue="within12months" />
+                                <f:selectItem itemLabel="Short Expiry" itemValue="shortexpiry" />
                                 <p:ajax 
                                     event="change" 
                                     listener="#{pharmacyReportController.updateDateRange}" 
@@ -315,27 +316,20 @@
                                         value="#{pharmacyReportController.calculateDaysRemaining(f.itemBatch.dateOfExpire)}"
                                         style="#{pharmacyReportController.calculateDaysRemaining(f.itemBatch.dateOfExpire) &lt; 0 ? 'color:red;' : 'color:green;'}" />
                                 </p:column>
-                                <p:column headerText="Quantity" width="10em">
-                                    <h:outputText value="#{f.stock}" />
-                                </p:column>
-                                <p:column headerText="Batch wise total" width="10em">
-                                    <h:outputText value="" />
-                                </p:column>
-                                <p:column headerText="Batch wise Qty" width="10em">
-                                    <h:outputText value="" />
-                                </p:column>
-                                <p:column headerText="Item wise total" width="10em">
-                                    <h:outputText value="" />
-                                </p:column>
-                                <p:column headerText="Item wise Qty" width="10em">
-                                    <h:outputText value="" />
-                                </p:column>
-                                <p:column headerText="Puchase Rate" width="10em">
+                                <p:column headerText="Rate" width="10em">
                                     <h:outputText value="#{f.itemBatch.purcahseRate}" >
                                      <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputText>
                                 </p:column>
-                                <p:column headerText="Purchase Value" width="10em">
+                                <p:column headerText="MRP" width="10em">
+                                    <h:outputLabel value="#{f.itemBatch.retailsaleRate}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Quantity" width="10em">
+                                    <h:outputText value="#{f.stock}" />
+                                </p:column>
+                                <p:column headerText="Item Value" width="10em">
                                     <h:outputLabel value="#{f.itemBatch.purcahseRate * f.stock}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -345,11 +339,15 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Retail Rate(MRP)" width="10em">
-                                    <h:outputLabel value="#{f.itemBatch.retailsaleRate}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>
+                                <p:column headerText="Item wise total" width="10em">
+                                    <h:outputText value="" />
                                 </p:column>
+                                <p:column headerText="Item wise Qty" width="10em">
+                                    <h:outputText value="" />
+                                </p:column>
+                                
+                                
+<!--                               Do not remove 
                                 <p:column headerText="Retail Rate Value" width="10em">
                                     <h:outputLabel value="#{f.itemBatch.retailsaleRate * f.stock}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -359,9 +357,7 @@
                                             <f:convertNumber parent="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </f:facet>
-                                </p:column>   
-                                
-
+                                </p:column>   -->                            
                             </p:dataTable>
 
 
