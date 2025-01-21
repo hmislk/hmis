@@ -1068,49 +1068,67 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
 
     }
-    
+
     @EJB
     private ClinicalFindingValueFacade clinicalFindingValueFacade;
-    
+
     private List<ClinicalFindingValue> allergyListOfPatient;
-    
-    public void fillAllergyListForPatient(Patient patient){
-        if(patient == null){
+
+    public void fillAllergyListForPatient(Patient patient) {
+        if (patient == null) {
             return;
         }
-        
-        if(false){
+
+        if (false) {
             ClinicalFindingValue c = new ClinicalFindingValue();
             c.getPatient();
             c.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
             c.isRetired();
         }
-        
+
         String jpql = "Select clinicalValue from ClinicalFindingValue clinicalValue "
                 + " where clinicalValue.patient = :patient "
                 + " and clinicalValue.clinicalFindingValueType = :type "
                 + " and clinicalValue.retired = :retireStatus";
-        
+
         Map paramsForAllergySearch = new HashMap();
         paramsForAllergySearch.put("patient", patient);
         paramsForAllergySearch.put("type", ClinicalFindingValueType.PatientAllergy);
         paramsForAllergySearch.put("retireStatus", false);
-        
+
         allergyListOfPatient = clinicalFindingValueFacade.findByJpql(jpql, paramsForAllergySearch);
-        
+
     }
-    
-    public boolean checkAllergyForPatient(Bill bill, Patient patient, BillItem item){
-        
+
+    public boolean checkAllergyForPatient(Patient patient, BillItem item) {
+
         fillAllergyListForPatient(patient);
-        if(allergyListOfPatient == null || allergyListOfPatient.isEmpty()){
-           return false;
+        if (allergyListOfPatient == null || allergyListOfPatient.isEmpty()) {
+            return false;
         }
-        
-        for(ClinicalFindingValue c :allergyListOfPatient){
-            if(c.getItemValue().getName().equalsIgnoreCase(item.getPharmaceuticalBillItem().getItemBatch().getItem().getName()) ){
+
+        for (ClinicalFindingValue c : allergyListOfPatient) {
+            if (c.getItemValue().getName().equalsIgnoreCase(item.getPharmaceuticalBillItem().getItemBatch().getItem().getName())) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    public boolean checkAllergyForPatient(Patient patient, List<BillItem> items) {
+
+        fillAllergyListForPatient(patient);
+        if (allergyListOfPatient == null || allergyListOfPatient.isEmpty()) {
+            return false;
+        }
+
+        for (ClinicalFindingValue c : allergyListOfPatient) {
+            for (BillItem item : items) {
+                if (c.getItemValue().getName().equalsIgnoreCase(item.getPharmaceuticalBillItem().getItemBatch().getItem().getName())) {
+                    return true;
+                }
+            }
+
         }
         return false;
     }
@@ -1229,12 +1247,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return addedQty;
         }
-        if(patient != null && getBillItem() != null){
+        if (patient != null && getBillItem() != null) {
             fillAllergyListForPatient(patient);
             boolean allergy = checkAllergyForPatient(bill, patient, billItem);
-            
-            if(allergy){
-                JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName()+" is allergy to the patient according to EMR data.");
+
+            if (allergy) {
+                JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName() + " is allergy to the patient according to EMR data.");
                 return addedQty;
             }
         }
