@@ -4679,6 +4679,18 @@ public class ReportsController implements Serializable {
                 }
             }
 
+            PdfPCell totalCell = new PdfPCell(new Phrase("Total"));
+            totalCell.setColspan(2);
+            totalCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(totalCell);
+
+            for (YearMonth yearMonth : yearMonths) {
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth) /
+                        calculateRouteWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth) /
+                        calculateRouteWiseBillCount(yearMonth)))));
+            }
+
             document.add(table);
             document.close();
             context.responseComplete();
@@ -4736,6 +4748,20 @@ public class ReportsController implements Serializable {
                         row.createCell(cellIndex++).setCellValue(0.0);
                     }
                 }
+            }
+
+            Row totalRow = sheet.createRow(rowIndex++);
+            totalRow.createCell(0).setCellValue("Total");
+            totalRow.createCell(1).setCellValue("");
+
+            cellIndex = 2;
+            for (YearMonth yearMonth : yearMonths) {
+                totalRow.createCell(cellIndex++).setCellValue(
+                        String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth) /
+                                calculateRouteWiseBillCount(yearMonth)));
+                totalRow.createCell(cellIndex++).setCellValue(
+                        String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth) /
+                                calculateRouteWiseBillCount(yearMonth)));
             }
 
             workbook.write(out);
