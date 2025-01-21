@@ -2648,7 +2648,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-                                                                    boolean onlyDueBills) {
+            boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -4358,8 +4358,8 @@ public class ReportsController implements Serializable {
     }
 
     private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
-                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
-                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+            List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+            int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
         document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
         document.add(com.itextpdf.text.Chunk.NEWLINE);
 
@@ -4850,6 +4850,99 @@ public class ReportsController implements Serializable {
         }
 
         return dueAmountNetTotal;
+    }
+
+    public void exportOpdAndInwardDueReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Opd_And_Inward_Due_Report.xlsx");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("IP");
+            int rowIndex = 0;
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            headerRow.createCell(0).setCellValue("Sr.No");
+            headerRow.createCell(1).setCellValue("BHT No");
+            headerRow.createCell(2).setCellValue("Invoice Date");
+            headerRow.createCell(3).setCellValue("Invoice No");
+            headerRow.createCell(4).setCellValue("Customer Reference No");
+            headerRow.createCell(5).setCellValue("MRNO");
+            headerRow.createCell(6).setCellValue("Patient Name");
+            headerRow.createCell(7).setCellValue("Gross Amt");
+            headerRow.createCell(8).setCellValue("Disc Amt");
+            headerRow.createCell(9).setCellValue("Net Amt");
+            headerRow.createCell(10).setCellValue("Patient Share");
+            headerRow.createCell(11).setCellValue("Sponsor Share");
+            headerRow.createCell(12).setCellValue("Due Amt");
+
+            for (Map.Entry<String, List<BillItem>> entry : bundle.getGroupedBillItems().entrySet()) {
+                List<BillItem> billItems = entry.getValue();
+
+                if (billItems == null || billItems.isEmpty()) {
+                    Row emptyRow = sheet.createRow(rowIndex++);
+                    emptyRow.createCell(0).setCellValue("N/A");
+                    emptyRow.createCell(1).setCellValue("N/A");
+                    emptyRow.createCell(2).setCellValue("N/A");
+                    emptyRow.createCell(3).setCellValue("N/A");
+                    emptyRow.createCell(4).setCellValue("N/A");
+                    emptyRow.createCell(5).setCellValue("N/A");
+                    emptyRow.createCell(6).setCellValue("N/A");
+                    emptyRow.createCell(7).setCellValue("N/A");
+                    emptyRow.createCell(8).setCellValue("N/A");
+                    emptyRow.createCell(9).setCellValue("N/A");
+                    emptyRow.createCell(10).setCellValue("N/A");
+                    emptyRow.createCell(11).setCellValue("N/A");
+                    emptyRow.createCell(12).setCellValue("N/A");
+                    continue;
+                }
+
+                BillItem firstItem = billItems.get(0);
+                Row row = sheet.createRow(rowIndex++);
+
+//                row.createCell(0).setCellValue(firstItem.getBill().getPatientEncounter().getBhtNo());
+                row.createCell(1).setCellValue(firstItem.getBill().getPatientEncounter().getBhtNo());
+                String formattedDate = sdf.format(firstItem.getBill().getPatientEncounter().getFinalBill().getCreatedAt());
+                row.createCell(2).setCellValue(formattedDate);
+                row.createCell(3).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getDeptId());
+                row.createCell(4).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getReferenceNumber());
+                row.createCell(5).setCellValue(firstItem.getBill().getPatient().getPhn());
+                row.createCell(5).setCellValue(firstItem.getBill().getPatient().getPerson().getName());
+                row.createCell(5).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getGrantTotal());
+                row.createCell(5).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getDiscount());
+                row.createCell(5).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getNetTotal());
+                row.createCell(5).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient());
+                row.createCell(5).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor());
+                row.createCell(5).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getBalance());
+
+                Row detailHeaderRow = sheet.createRow(rowIndex++);
+                detailHeaderRow.createCell(5).setCellValue("Sub Total");
+                detailHeaderRow.createCell(6).setCellValue("Hos Fee.");
+                detailHeaderRow.createCell(7).setCellValue("Staff Fee.");
+                detailHeaderRow.createCell(8).setCellValue("CC Fee.");
+                detailHeaderRow.createCell(9).setCellValue("Net Amount");
+
+                for (BillItem bi : billItems) {
+                    Row detailRow = sheet.createRow(rowIndex++);
+                    detailRow.createCell(6).setCellValue(bi.getItem().getName());
+                    detailRow.createCell(7).setCellValue(bi.getHospitalFee());
+                    detailRow.createCell(8).setCellValue(bi.getStaffFee());
+                    detailRow.createCell(9).setCellValue(bi.getCollectingCentreFee());
+                    detailRow.createCell(10).setCellValue(bi.getNetValue());
+                }
+
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

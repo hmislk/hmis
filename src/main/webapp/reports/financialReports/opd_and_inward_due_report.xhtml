@@ -254,8 +254,9 @@
                             icon="fas fa-file-excel"
                             ajax="false"
                             value="Excel"
-                            rendered="#{reportsController.visitType eq 'IP'}">
-                            <p:dataExporter target="tblExport1" fileName="Due Search (Credit Company)" type="xlsx"/>
+                            rendered="#{reportsController.visitType eq 'IP'}"
+                            action="#{reportsController.exportOpdAndInwardDueReportToExcel()}">
+<!--                            <p:dataExporter target="tblExport1" fileName="Due Search (Credit Company)" type="xlsx"/>-->
                         </p:commandButton>
 
                         <p:commandButton
