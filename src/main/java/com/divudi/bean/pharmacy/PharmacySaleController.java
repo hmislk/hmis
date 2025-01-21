@@ -1249,7 +1249,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
         if (patient != null && getBillItem() != null) {
             fillAllergyListForPatient(patient);
-            boolean allergy = checkAllergyForPatient(bill, patient, billItem);
+            boolean allergy = checkAllergyForPatient(patient, billItem);
 
             if (allergy) {
                 JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName() + " is allergy to the patient according to EMR data.");
