@@ -870,6 +870,19 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     }
 
+    public String navigateToConvertNonBhtToBht(Admission nonBhtAd) {
+        Admission ad = new Admission();
+        if (ad.getDateOfAdmission() == null) {
+            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+        }
+        ad.setPatient(nonBhtAd.getPatient());
+        admissionController.setCurrentNonBht(nonBhtAd);
+        admissionController.setCurrent(ad);
+        admissionController.setPrintPreview(false);
+        return "/inward/convert_inward_admission?faces-redirect=true;";
+
+    }
+
     public String navigateToInwardAppointmentFromPatientProfile() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -2134,7 +2147,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //        currentFamily = new Family();
 //        return "/membership/add_family";
 //    }
-
     public String navigateToAddNewFamilyMembership() {
         currentFamily = new Family();
         return "/membership/family_membership_new?faces-redirect=true";
@@ -2438,7 +2450,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //        currentFamily = new Family();
 //        return navigateToAddNewFamilyMembership();
 //    }
-
     public String saveAndClearForNewIndividual() {
         if (currentFamily == null) {
             JsfUtil.addErrorMessage("No Membership is Selected to Save or Update");
@@ -2462,11 +2473,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //        currentFamily = new Family();
 //        return toFamily();
 //    }
-
 //    public String toFamily() {
 //        return "/membership/add_family?faces-redirect=true;";
 //    }
-
     public String toNewPatient() {
         prepareAdd();
         return "/membership/patient?faces-redirect=true;";
@@ -2475,7 +2484,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void clearPatientToAddNewMemberToFamily() {
         current = new Patient();
     }
-    
+
     public void addNewMemberToFamily() {
         if (currentFamily == null) {
             JsfUtil.addErrorMessage("No Family Selected.");
@@ -2493,11 +2502,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Name for the Member to add to family.");
             return;
         }
-        if(currentFamily.getMembershipScheme()==null){
+        if (currentFamily.getMembershipScheme() == null) {
             JsfUtil.addErrorMessage("No Membership Scheme for the family.");
             return;
         }
-        if(currentRelation==null){
+        if (currentRelation == null) {
             JsfUtil.addErrorMessage("No relationship.");
             return;
         }
@@ -2839,6 +2848,23 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String savePatientAndThenNavigateToPatientProfile() {
         saveSelectedPatient();
         return toViewPatient();
+    }
+
+    public String deletePatient() {
+        if (current != null) {
+            current.setRetired(true);
+            current.setRetiredAt(new Date());
+            current.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Deleted Successfull");
+        } else {
+            JsfUtil.addSuccessMessage("Nothing to Delete");
+        }
+        recreateModel();
+        getItems();
+        current = null;
+        getCurrent();
+        return navigateToSearchPatients();
     }
 
     public void delete() {
