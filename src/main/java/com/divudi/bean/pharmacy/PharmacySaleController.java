@@ -1115,22 +1115,22 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return false;
     }
 
-    public boolean checkAllergyForPatient(Patient patient, List<BillItem> items) {
+    public String checkAllergyForPatient(Patient patient, List<BillItem> items) {
 
         fillAllergyListForPatient(patient);
         if (allergyListOfPatient == null || allergyListOfPatient.isEmpty()) {
-            return false;
+            return "";
         }
 
         for (ClinicalFindingValue c : allergyListOfPatient) {
             for (BillItem item : items) {
                 if (c.getItemValue().getName().equalsIgnoreCase(item.getPharmaceuticalBillItem().getItemBatch().getItem().getName())) {
-                    return true;
+                    return item.getPharmaceuticalBillItem().getItemBatch().getItem().getName()+" is allergy to this patient according to EMR data";
                 }
             }
 
         }
-        return false;
+        return "";
     }
 
     public void addBillItem() {
@@ -2164,6 +2164,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         if (getPatient() == null) {
             JsfUtil.addErrorMessage("Please Select a Patient");
+            return;
+        }
+        
+        if(!checkAllergyForPatient(patient, getPreBill().getBillItems()).isEmpty()){
+            JsfUtil.addErrorMessage(checkAllergyForPatient(patient, getPreBill().getBillItems()));
             return;
         }
 
