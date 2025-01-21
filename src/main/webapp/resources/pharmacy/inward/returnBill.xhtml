@@ -71,15 +71,15 @@
 
                     </tr>
 
-
-                    <tr>
+                    
+                    <tr>    
                         <td style="width: 15% ;text-align: left;" >
                             <h:outputLabel value="Inv.No" ></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.deptId}" >
+                            <h:outputLabel value="#{cc.attrs.bill.invoiceNumber eq null ? cc.attrs.bill.deptId : cc.attrs.bill.invoiceNumber}">
                             </h:outputLabel>
                         </td>
                         <td style="width: 10%" >
@@ -96,6 +96,31 @@
                         </td>
 
                     </tr>
+                    
+                    <h:panelGroup rendered="#{cc.attrs.bill.invoiceNumber ne null}">
+                        
+                        <tr>
+                            <td style="width: 15% ;text-align: left;" >
+                                <h:outputLabel value="Bill No" ></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 30%;" >
+                                <h:outputLabel value="#{cc.attrs.bill.deptId}"  >
+                                </h:outputLabel>
+                            </td>
+                            <td style="width: 10%" >
+
+                            </td>
+                            <td style="width: 15% ;text-align: left;" >
+                                <!--<h:outputLabel value="To Unit" ></h:outputLabel>-->
+                            </td>
+                            <td style="width: 30%;" >
+                                <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"  >
+                                </h:outputLabel>
+                            </td>
+
+                        </tr>
+                    </h:panelGroup>
                     
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>

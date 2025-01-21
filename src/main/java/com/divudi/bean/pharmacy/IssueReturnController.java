@@ -103,6 +103,9 @@ public class IssueReturnController implements Serializable {
         
         getBillFacade().edit(getReturnBill());
         
+        getBill().setRefundedBill(getReturnBill());
+        getBill().setRefunded(true);
+        getBill().getRefundBills().add(getReturnBill()) ;
         getBill().getReturnBhtIssueBills().add(getReturnBill());
         getBillFacade().edit(getBill());
 

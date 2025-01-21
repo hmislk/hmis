@@ -772,6 +772,19 @@ public class ReportTemplateRowBundle implements Serializable {
 
     }
 
+    public void calculateTotalsByAddingRowTotals() {
+        total =0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            // Aggregate values from each row and update transaction flags
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if(row.getTotal()!=null){
+                    total += row.getTotal();
+                }
+            }
+        }
+
+    }
+
     public void calculateTotalsWithCredit() {
         System.out.println("calculateTotals = ");
         resetTotalsAndFlags();
@@ -1078,8 +1091,8 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBillItem() == null) {
                     continue;
                 }
-                Double amount = safeDouble(isOutpatient ? row.getBillItem().getReferenceBill().getNetTotal() :
-                        row.getBillItem().getPatientEncounter().getFinalBill().getNetTotal());
+                Double amount = safeDouble(isOutpatient ? row.getBillItem().getReferenceBill().getNetTotal()
+                        : row.getBillItem().getPatientEncounter().getFinalBill().getNetTotal());
                 total += amount;
             }
         }

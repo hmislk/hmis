@@ -167,6 +167,8 @@ public class ReportTemplateRow implements Serializable {
         this.institution = institution;
     }
 
+    
+    
     public ReportTemplateRow(Institution institution, Long itemCount, Double itemHospitalFee, Double itemCollectingCentreFee, Double itemProfessionalFee, Double itemNetTotal) {
         this.itemCount = itemCount;
         this.itemHospitalFee = itemHospitalFee;
@@ -231,8 +233,8 @@ public class ReportTemplateRow implements Serializable {
         this.sessionInstance = sessionInstance;
     }
 
-    public ReportTemplateRow(Department department, Double rowValue) {
-        this.rowValue = rowValue;
+    public ReportTemplateRow(Department department, Double total) {
+        this.total = total;
         this.department = department;
     }
 

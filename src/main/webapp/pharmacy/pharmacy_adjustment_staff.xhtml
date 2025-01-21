@@ -15,7 +15,7 @@
                     <p:panel>
                         <f:facet name="header">
                             <h:outputText styleClass="fa-solid fa-person-shelter"></h:outputText>
-                            <h:outputLabel value="Staff Stock Adjustment" class="mx-4"></h:outputLabel>
+                            <h:outputLabel value="Staff Stock Adjustment*" class="mx-4"></h:outputLabel>
                         </f:facet>
 
                         <div class="row">
@@ -23,12 +23,12 @@
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
-                                        <h:outputLabel value="Item Details" class="mx-4"></h:outputLabel>
+                                        <h:outputLabel value="Item  &amp; Staff Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
 
                                     <div class="row">
                                         <div class="col-md-3">
-                                            <h:outputLabel value="Item" ></h:outputLabel>
+                                            <h:outputLabel value="Select Item &amp; Staff" ></h:outputLabel>
                                         </div>
                                         <div class="col-md-6">
                                             <p:autoComplete   
@@ -50,8 +50,8 @@
                                                                             commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}" ></h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Code"  style="padding: 3px;" >
-                                                <h:outputText value="#{i.itemBatch.item.code}" ></h:outputText>
-                                            </p:column>
+                                                    <h:outputText value="#{i.itemBatch.item.code}" ></h:outputText>
+                                                </p:column>
                                                 <p:column headerText="Rate">
                                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -97,7 +97,7 @@
                                             action="#{pharmacyAdjustmentController.adjustStaffStock()}" 
                                             class="w-1000 my-2 ui-button-warning" 
                                             icon="fa-solid fa-sliders">
-                                            
+
                                         </p:commandButton>
                                     </div>
                                 </p:panel>
@@ -109,25 +109,13 @@
                                         <h:outputLabel value="Item Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
                                     <div>
-                                        <div class="row">
-                                            <div class="col-md-3">
-                                                <h:outputLabel value="Stock ID"/>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <h:outputLabel value=":"/>
-                                            </div>
-                                            <div class="col-md-7">
-                                                <h:outputLabel value="#{pharmacyAdjustmentController.stock.id}" ></h:outputLabel>
-                                            </div>
-                                        </div>
- 
-                                        <div class="row">
-                                            <div class="col-md-3"><h:outputLabel value="Item ID"/></div>
+                                         <div class="row">
+                                            <div class="col-md-3"><h:outputLabel value="Staff Name"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.item.id}" ></h:outputLabel></div>
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.staff.person.nameWithTitle}" ></h:outputLabel></div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-md-3"><h:outputLabel value="Name"/></div>
+                                            <div class="col-md-3"><h:outputLabel value="Item Name"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.item.name}" ></h:outputLabel></div>
                                         </div>
@@ -136,14 +124,7 @@
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.item.code}" ></h:outputLabel></div>
                                         </div>
-                                        <div class="row">
-                                            <div class="col-md-3"> <h:outputLabel value="Retail Sale Rate"/></div>
-                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.retailsaleRate}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel></div>
-                                        </div>
-                                        <div class="row">
+                                         <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Stocks"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.stock}" >
@@ -163,14 +144,22 @@
                                                         severity="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'warning':''}" />
                                                 </h:outputLabel></div>
                                         </div>
+                                        <div class="row">
+                                            <div class="col-md-3"> <h:outputLabel value="Retail Sale Rate"/></div>
+                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.retailsaleRate}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel></div>
+                                        </div>
+                                       
                                     </div>
 
                                 </p:panel>
                             </div>
                         </div>
                     </p:panel>
-                    
-                    
+
+
                 </h:form>
             </ui:define>
         </ui:composition>
