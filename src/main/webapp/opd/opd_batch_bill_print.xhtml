@@ -149,6 +149,11 @@
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperBatchBill'}" >
                                                 <prints:five_five_paper_with_headings_badge_bill_with_bill_items billController="#{opdBillController}" payments="#{opdBillController.payments}" duplicate="#{opdBillController.duplicatePrint}"/>                        
                                             </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom3'}" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="ffb" >
+                                                    <prints:five_five_custom_3 bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.bills.size()}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
                                         </ui:repeat>
                                     </h:panelGroup>
 
