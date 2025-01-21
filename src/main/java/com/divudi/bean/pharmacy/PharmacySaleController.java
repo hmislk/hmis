@@ -30,6 +30,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.TokenType;
+import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
@@ -54,6 +55,7 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.Token;
+import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -64,6 +66,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillFeePaymentFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.ClinicalFindingValueFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
@@ -1065,6 +1068,52 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
 
     }
+    
+    @EJB
+    private ClinicalFindingValueFacade clinicalFindingValueFacade;
+    
+    private List<ClinicalFindingValue> allergyListOfPatient;
+    
+    public void fillAllergyListForPatient(Patient patient){
+        if(patient == null){
+            return;
+        }
+        
+        if(false){
+            ClinicalFindingValue c = new ClinicalFindingValue();
+            c.getPatient();
+            c.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
+            c.isRetired();
+        }
+        
+        String jpql = "Select clinicalValue from ClinicalFindingValue clinicalValue "
+                + " where clinicalValue.patient = :patient "
+                + " and clinicalValue.clinicalFindingValueType = :type "
+                + " and clinicalValue.retired = :retireStatus";
+        
+        Map paramsForAllergySearch = new HashMap();
+        paramsForAllergySearch.put("patient", patient);
+        paramsForAllergySearch.put("type", ClinicalFindingValueType.PatientAllergy);
+        paramsForAllergySearch.put("retireStatus", false);
+        
+        allergyListOfPatient = clinicalFindingValueFacade.findByJpql(jpql, paramsForAllergySearch);
+        
+    }
+    
+    public boolean checkAllergyForPatient(Bill bill, Patient patient, BillItem item){
+        
+        fillAllergyListForPatient(patient);
+        if(allergyListOfPatient == null || allergyListOfPatient.isEmpty()){
+           return false;
+        }
+        
+        for(ClinicalFindingValue c :allergyListOfPatient){
+            if(c.getItemValue().getName().equalsIgnoreCase(item.getPharmaceuticalBillItem().getItemBatch().getItem().getName()) ){
+                return true;
+            }
+        }
+        return false;
+    }
 
     public void addBillItem() {
         if (configOptionApplicationController.getBooleanValueByKey("Add quantity from multiple batches in pharmacy retail billing")) {
@@ -1179,6 +1228,15 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return addedQty;
+        }
+        if(patient != null && getBillItem() != null){
+            fillAllergyListForPatient(patient);
+            boolean allergy = checkAllergyForPatient(bill, patient, billItem);
+            
+            if(allergy){
+                JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName()+" is allergy to the patient according to EMR data.");
+                return addedQty;
+            }
         }
         addedQty = qty;
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
@@ -3147,6 +3205,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         }
         processBillItems();
+    }
+
+    public List<ClinicalFindingValue> getAllergyListOfPatient() {
+        return allergyListOfPatient;
+    }
+
+    public void setAllergyListOfPatient(List<ClinicalFindingValue> allergyListOfPatient) {
+        this.allergyListOfPatient = allergyListOfPatient;
     }
 
 }
