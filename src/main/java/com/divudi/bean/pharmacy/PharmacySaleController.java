@@ -1252,7 +1252,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             boolean allergy = checkAllergyForPatient(patient, billItem);
 
             if (allergy) {
-                JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName() + " is allergy to the patient according to EMR data.");
+                JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName() + " is allergy to this patient according to EMR data.");
                 return addedQty;
             }
         }
@@ -1322,6 +1322,16 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             errorMessage = "Please enter a Quantity";
             JsfUtil.addErrorMessage("Quentity Zero?");
             return;
+        }
+        
+        if (patient != null && getBillItem() != null) {
+            fillAllergyListForPatient(patient);
+            boolean allergy = checkAllergyForPatient(patient, billItem);
+
+            if (allergy) {
+                JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName() + " is allergy to this patient according to EMR data.");
+                return;
+            }
         }
 
         double requestedQty = getQty();
