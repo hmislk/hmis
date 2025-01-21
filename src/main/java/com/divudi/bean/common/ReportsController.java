@@ -4535,6 +4535,19 @@ public class ReportsController implements Serializable {
                 }
             }
 
+            Row totalRow = sheet.createRow(rowIndex++);
+            totalRow.createCell(0).setCellValue("Total");
+            totalRow.createCell(1).setCellValue("");
+            totalRow.createCell(2).setCellValue("");
+
+            dynamicColumnIndex = 3;
+            for (YearMonth yearMonth : yearMonths) {
+                totalRow.createCell(dynamicColumnIndex++).setCellValue(String.format("%.2f", getCollectionCenterWiseTotalSampleCount(yearMonth) /
+                        calculateCollectionCenterWiseBillCount(yearMonth)));
+                totalRow.createCell(dynamicColumnIndex++).setCellValue(String.format("%.2f", getCollectionCenterWiseTotalServiceAmount(yearMonth) /
+                        calculateCollectionCenterWiseBillCount(yearMonth)));
+            }
+
             workbook.write(out);
             context.responseComplete();
 
@@ -4593,6 +4606,18 @@ public class ReportsController implements Serializable {
                         table.addCell(new PdfPCell(new Phrase("0.0")));
                     }
                 }
+            }
+
+            PdfPCell totalCell = new PdfPCell(new Phrase("Total"));
+            totalCell.setColspan(3);
+            totalCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(totalCell);
+
+            for (YearMonth yearMonth : yearMonths) {
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", getCollectionCenterWiseTotalSampleCount(yearMonth) /
+                        calculateCollectionCenterWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", getCollectionCenterWiseTotalServiceAmount(yearMonth) /
+                        calculateCollectionCenterWiseBillCount(yearMonth)))));
             }
 
             document.add(table);
