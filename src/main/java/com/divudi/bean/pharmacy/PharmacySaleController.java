@@ -1125,7 +1125,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public String checkAllergyForPatient(Patient patient, List<BillItem> items) {
 
-        //fillAllergyListForPatient(patient);
+        fillAllergyListForPatient(patient);
         if (allergyListOfPatient == null || allergyListOfPatient.isEmpty()) {
             return "";
         }
