@@ -2966,12 +2966,12 @@ public class ReportsController implements Serializable {
         parameters.put("bts", bts);
 
         if (institution != null) {
-            jpql += "AND bill.department.institution = :ins ";
+            jpql += "AND bill.toInstitution = :ins ";
             parameters.put("ins", institution);
         }
 
         if (department != null) {
-            jpql += "AND bill.department = :dep ";
+            jpql += "AND bill.toDepartment = :dep ";
             parameters.put("dep", department);
         }
 
