@@ -4932,10 +4932,10 @@ public class ReportsController implements Serializable {
             headerRow.createCell(11).setCellValue("Sponsor Share");
             headerRow.createCell(12).setCellValue("Due Amt");
 
-            for (Map.Entry<String, List<BillItem>> entry : bundle.getGroupedBillItems().entrySet()) {
-                List<BillItem> billItems = entry.getValue();
+            for (Map.Entry<String, List<Bill>> entry : groupedBillItemsByInstitution.entrySet()) {
+                List<Bill> bills = entry.getValue();
 
-                if (billItems == null || billItems.isEmpty()) {
+                if (bills == null || bills.isEmpty()) {
                     Row emptyRow = sheet.createRow(rowIndex++);
                     emptyRow.createCell(0).setCellValue("N/A");
                     emptyRow.createCell(1).setCellValue("N/A");
@@ -4953,32 +4953,32 @@ public class ReportsController implements Serializable {
                     continue;
                 }
 
-                BillItem firstItem = billItems.get(0);
+                Bill bill = bills.get(0);
                 Row row = sheet.createRow(rowIndex++);
 
 //                row.createCell(0).setCellValue(#{n+1});
-                row.createCell(1).setCellValue(firstItem.getBill().getPatientEncounter().getBhtNo());
-                String formattedDate = sdf.format(firstItem.getBill().getPatientEncounter().getFinalBill().getCreatedAt());
+                row.createCell(1).setCellValue(bill.getPatientEncounter().getBhtNo());
+                String formattedDate = sdf.format(bill.getPatientEncounter().getFinalBill().getCreatedAt());
                 row.createCell(2).setCellValue(formattedDate);
-                row.createCell(3).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getDeptId());
-                row.createCell(4).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getReferenceNumber());
-                row.createCell(5).setCellValue(firstItem.getBill().getPatient().getPhn());
-                row.createCell(6).setCellValue(firstItem.getBill().getPatient().getPerson().getName());
-                row.createCell(7).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getGrantTotal());
-                row.createCell(8).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getDiscount());
-                row.createCell(9).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getNetTotal());
-                row.createCell(10).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient());
-                row.createCell(11).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor());
-                row.createCell(12).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getBalance());
+                row.createCell(3).setCellValue(bill.getPatientEncounter().getFinalBill().getDeptId());
+                row.createCell(4).setCellValue(bill.getPatientEncounter().getFinalBill().getReferenceNumber());
+                row.createCell(5).setCellValue(bill.getPatient().getPhn());
+                row.createCell(6).setCellValue(bill.getPatient().getPerson().getName());
+                row.createCell(7).setCellValue(bill.getPatientEncounter().getFinalBill().getGrantTotal());
+                row.createCell(8).setCellValue(bill.getPatientEncounter().getFinalBill().getDiscount());
+                row.createCell(9).setCellValue(bill.getPatientEncounter().getFinalBill().getNetTotal());
+                row.createCell(10).setCellValue(bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient());
+                row.createCell(11).setCellValue(bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor());
+                row.createCell(12).setCellValue(bill.getPatientEncounter().getFinalBill().getBalance());
 
                 Row detailHeaderRow = sheet.createRow(rowIndex++);
                 detailHeaderRow.createCell(6).setCellValue("Sub Total");
-                detailHeaderRow.createCell(7).setCellValue(String.format("%.2f", calculateIpGrossAmountSubTotalByBills(entry.value)));
-                detailHeaderRow.createCell(8).setCellValue(String.format("%.2f", calculateIpDiscountSubTotalByBills(entry.value)));
-                detailHeaderRow.createCell(9).setCellValue(String.format("%.2f", calculateIpNetAmountSubTotalByBills(entry.value)));
-                detailHeaderRow.createCell(10).setCellValue(String.format("%.2f", calculateIpPatientShareSubTotalByBills(entry.value)));
-                detailHeaderRow.createCell(11).setCellValue(String.format("%.2f", calculateIpSponsorShareSubTotalByBills(entry.value)));
-                detailHeaderRow.createCell(12).setCellValue(String.format("%.2f", calculateIpDueAmountSubTotalByBills(entry.value)));
+//                detailHeaderRow.createCell(7).setCellValue(String.format("%.2f", calculateIpGrossAmountSubTotalByBills(entry.value)));
+//                detailHeaderRow.createCell(8).setCellValue(String.format("%.2f", calculateIpDiscountSubTotalByBills(entry.value)));
+//                detailHeaderRow.createCell(9).setCellValue(String.format("%.2f", calculateIpNetAmountSubTotalByBills(entry.value)));
+//                detailHeaderRow.createCell(10).setCellValue(String.format("%.2f", calculateIpPatientShareSubTotalByBills(entry.value)));
+//                detailHeaderRow.createCell(11).setCellValue(String.format("%.2f", calculateIpSponsorShareSubTotalByBills(entry.value)));
+//                detailHeaderRow.createCell(12).setCellValue(String.format("%.2f", calculateIpDueAmountSubTotalByBills(entry.value)));
 
             }
 
