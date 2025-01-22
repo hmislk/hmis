@@ -60,6 +60,7 @@ import java.util.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
 import java.util.stream.Collectors;
+import java.text.DecimalFormat;
 
 /**
  * @author safrin
@@ -2648,7 +2649,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-                                                                    boolean onlyDueBills) {
+            boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -3514,8 +3515,11 @@ public class ReportsController implements Serializable {
             PdfPTable table = new PdfPTable(12);
             table.setWidthPercentage(100);
 
+            float[] columnWidths = {1.5f, 2.5f, 2.5f, 2.5f, 2.5f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f};
+            table.setWidths(columnWidths);
+
             String[] headers = {"S. No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -3523,6 +3527,10 @@ public class ReportsController implements Serializable {
             }
 
             int serialNumber = 1;
+
+            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+
             for (Map.Entry<Institution, List<Bill>> entrySet : getBundle().getGroupedBillItemsByInstitution().entrySet()) {
                 Institution institution = entrySet.getKey();
                 List<Bill> bills = entrySet.getValue();
@@ -3533,17 +3541,19 @@ public class ReportsController implements Serializable {
 
                 for (Bill bill : bills) {
                     table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(bill.getCreatedAt().toString(), normalFont)));
+                    String formattedDate = dateFormatter.format(bill.getCreatedAt());
+                    table.addCell(new PdfPCell(new Phrase(formattedDate, normalFont)));
                     table.addCell(new PdfPCell(new Phrase(bill.getDeptId(), normalFont)));
                     table.addCell(new PdfPCell(new Phrase(bill.getReferenceNumber(), normalFont)));
                     table.addCell(new PdfPCell(new Phrase(bill.getPatient().getPhn(), normalFont)));
                     table.addCell(new PdfPCell(new Phrase(bill.getPatient().getPerson().getName(), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getBillTotal()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getDiscount()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getNetTotal()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getSettledAmountByPatient()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getSettledAmountBySponsor()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getNetTotal() - bill.getSettledAmountBySponsor() - bill.getSettledAmountByPatient()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getBillTotal()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getDiscount()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getNetTotal()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getSettledAmountByPatient()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getSettledAmountBySponsor()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(
+                            bill.getNetTotal() - bill.getSettledAmountBySponsor() - bill.getSettledAmountByPatient()), normalFont)));
                 }
 
                 table.addCell(new PdfPCell(new Phrase("", normalFont)));
@@ -3552,12 +3562,12 @@ public class ReportsController implements Serializable {
                 table.addCell(new PdfPCell(new Phrase("", normalFont)));
                 table.addCell(new PdfPCell(new Phrase("", normalFont)));
                 table.addCell(new PdfPCell(new Phrase("Sub Total", boldFont)));
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateGrossAmountSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateDiscountSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateNetAmountSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculatePatientShareSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateSponsorShareSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateDueAmountSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateGrossAmountSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateDiscountSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateNetAmountSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculatePatientShareSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateSponsorShareSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateDueAmountSubTotalByBills(bills)), normalFont)));
             }
 
             table.addCell(new PdfPCell(new Phrase("", normalFont)));
@@ -3566,12 +3576,12 @@ public class ReportsController implements Serializable {
             table.addCell(new PdfPCell(new Phrase("", normalFont)));
             table.addCell(new PdfPCell(new Phrase("", normalFont)));
             table.addCell(new PdfPCell(new Phrase("Net Total", boldFont)));
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateGrossAmountNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateDiscountNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateNetAmountNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(calculatePatientShareNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateSponsorShareNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateDueAmountNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateGrossAmountNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateDiscountNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateNetAmountNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculatePatientShareNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateSponsorShareNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateDueAmountNetTotal()), normalFont)));
 
             document.add(table);
             document.close();
@@ -3630,9 +3640,9 @@ public class ReportsController implements Serializable {
                     dataRow.createCell(9).setCellValue(bill.getPatientEncounter().getFinalBill().getNetTotal());
                     dataRow.createCell(10).setCellValue(bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient());
                     dataRow.createCell(11).setCellValue(bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor());
-                    dataRow.createCell(12).setCellValue(bill.getPatientEncounter().getFinalBill().getNetTotal() -
-                            bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor() -
-                            bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient());
+                    dataRow.createCell(12).setCellValue(bill.getPatientEncounter().getFinalBill().getNetTotal()
+                            - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()
+                            - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient());
                 }
 
                 Row institutionTotalRow = sheet.createRow(rowIndex++);
@@ -3686,8 +3696,11 @@ public class ReportsController implements Serializable {
             PdfPTable table = new PdfPTable(13);
             table.setWidthPercentage(100);
 
+            float[] columnWidths = {1.5f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f};
+            table.setWidths(columnWidths);
+
             String[] headers = {"S. No", "BHT No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -3695,6 +3708,10 @@ public class ReportsController implements Serializable {
             }
 
             int serialNumber = 1;
+
+            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+
             for (Map.Entry<Institution, List<Bill>> entrySet : getBundle().getGroupedBillItemsByInstitution().entrySet()) {
                 Institution institution = entrySet.getKey();
                 List<Bill> bills = entrySet.getValue();
@@ -3706,19 +3723,20 @@ public class ReportsController implements Serializable {
                 for (Bill bill : bills) {
                     table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++), normalFont)));
                     table.addCell(new PdfPCell(new Phrase(bill.getPatientEncounter().getBhtNo(), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(bill.getPatientEncounter().getFinalBill().getCreatedAt().toString(), normalFont)));
+                    String formattedDate = dateFormatter.format(bill.getPatientEncounter().getFinalBill().getCreatedAt());
+                    table.addCell(new PdfPCell(new Phrase(formattedDate, normalFont)));
                     table.addCell(new PdfPCell(new Phrase(bill.getPatientEncounter().getFinalBill().getDeptId(), normalFont)));
                     table.addCell(new PdfPCell(new Phrase(bill.getPatientEncounter().getFinalBill().getReferenceNumber(), normalFont)));
                     table.addCell(new PdfPCell(new Phrase(bill.getPatient().getPhn(), normalFont)));
                     table.addCell(new PdfPCell(new Phrase(bill.getPatient().getPerson().getName(), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getPatientEncounter().getFinalBill().getGrantTotal()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getPatientEncounter().getFinalBill().getDiscount()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getPatientEncounter().getFinalBill().getNetTotal()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getPatientEncounter().getFinalBill().getNetTotal() -
-                            bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor() -
-                            bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getGrantTotal()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getDiscount()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getNetTotal()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getNetTotal()
+                            - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()
+                            - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient()), normalFont)));
                 }
 
                 table.addCell(new PdfPCell(new Phrase("", normalFont)));
@@ -3728,12 +3746,12 @@ public class ReportsController implements Serializable {
                 table.addCell(new PdfPCell(new Phrase("", normalFont)));
                 table.addCell(new PdfPCell(new Phrase("", normalFont)));
                 table.addCell(new PdfPCell(new Phrase("Sub Total", boldFont)));
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateIpGrossAmountSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateIpDiscountSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateIpNetAmountSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateIpPatientShareSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateIpSponsorShareSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateIpDueAmountSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpGrossAmountSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpDiscountSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpNetAmountSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpPatientShareSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpSponsorShareSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpDueAmountSubTotalByBills(bills)), normalFont)));
             }
 
             table.addCell(new PdfPCell(new Phrase("", normalFont)));
@@ -3743,12 +3761,12 @@ public class ReportsController implements Serializable {
             table.addCell(new PdfPCell(new Phrase("", normalFont)));
             table.addCell(new PdfPCell(new Phrase("", normalFont)));
             table.addCell(new PdfPCell(new Phrase("Net Total", boldFont)));
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateIpGrossAmountNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateIpDiscountNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateIpNetAmountNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateIpPatientShareNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateIpSponsorShareNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateIpDueAmountNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpGrossAmountNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpDiscountNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpNetAmountNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpPatientShareNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpSponsorShareNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpDueAmountNetTotal()), normalFont)));
 
             document.add(table);
             document.close();
@@ -4711,8 +4729,8 @@ public class ReportsController implements Serializable {
     }
 
     private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
-                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
-                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+            List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+            int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
         document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
         document.add(com.itextpdf.text.Chunk.NEWLINE);
 
@@ -4887,10 +4905,10 @@ public class ReportsController implements Serializable {
 
             dynamicColumnIndex = 3;
             for (YearMonth yearMonth : yearMonths) {
-                totalRow.createCell(dynamicColumnIndex++).setCellValue(String.format("%.2f", getCollectionCenterWiseTotalSampleCount(yearMonth) /
-                        calculateCollectionCenterWiseBillCount(yearMonth)));
-                totalRow.createCell(dynamicColumnIndex++).setCellValue(String.format("%.2f", getCollectionCenterWiseTotalServiceAmount(yearMonth) /
-                        calculateCollectionCenterWiseBillCount(yearMonth)));
+                totalRow.createCell(dynamicColumnIndex++).setCellValue(String.format("%.2f", getCollectionCenterWiseTotalSampleCount(yearMonth)
+                        / calculateCollectionCenterWiseBillCount(yearMonth)));
+                totalRow.createCell(dynamicColumnIndex++).setCellValue(String.format("%.2f", getCollectionCenterWiseTotalServiceAmount(yearMonth)
+                        / calculateCollectionCenterWiseBillCount(yearMonth)));
             }
 
             workbook.write(out);
@@ -4959,10 +4977,10 @@ public class ReportsController implements Serializable {
             table.addCell(totalCell);
 
             for (YearMonth yearMonth : yearMonths) {
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", getCollectionCenterWiseTotalSampleCount(yearMonth) /
-                        calculateCollectionCenterWiseBillCount(yearMonth)))));
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", getCollectionCenterWiseTotalServiceAmount(yearMonth) /
-                        calculateCollectionCenterWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", getCollectionCenterWiseTotalSampleCount(yearMonth)
+                        / calculateCollectionCenterWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", getCollectionCenterWiseTotalServiceAmount(yearMonth)
+                        / calculateCollectionCenterWiseBillCount(yearMonth)))));
             }
 
             document.add(table);
@@ -5030,10 +5048,10 @@ public class ReportsController implements Serializable {
             table.addCell(totalCell);
 
             for (YearMonth yearMonth : yearMonths) {
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth) /
-                        calculateRouteWiseBillCount(yearMonth)))));
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth) /
-                        calculateRouteWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth)
+                        / calculateRouteWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth)
+                        / calculateRouteWiseBillCount(yearMonth)))));
             }
 
             document.add(table);
@@ -5102,11 +5120,11 @@ public class ReportsController implements Serializable {
             cellIndex = 2;
             for (YearMonth yearMonth : yearMonths) {
                 totalRow.createCell(cellIndex++).setCellValue(
-                        String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth) /
-                                calculateRouteWiseBillCount(yearMonth)));
+                        String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth)
+                                / calculateRouteWiseBillCount(yearMonth)));
                 totalRow.createCell(cellIndex++).setCellValue(
-                        String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth) /
-                                calculateRouteWiseBillCount(yearMonth)));
+                        String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth)
+                                / calculateRouteWiseBillCount(yearMonth)));
             }
 
             workbook.write(out);
