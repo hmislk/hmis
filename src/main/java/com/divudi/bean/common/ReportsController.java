@@ -4534,10 +4534,10 @@ public class ReportsController implements Serializable {
 
             dynamicColumnIndex = 3;
             for (YearMonth yearMonth : yearMonths) {
-                totalRow.createCell(dynamicColumnIndex++).setCellValue(String.format("%.2f", getCollectionCenterWiseTotalSampleCount(yearMonth) /
-                        calculateCollectionCenterWiseBillCount(yearMonth)));
-                totalRow.createCell(dynamicColumnIndex++).setCellValue(String.format("%.2f", getCollectionCenterWiseTotalServiceAmount(yearMonth) /
-                        calculateCollectionCenterWiseBillCount(yearMonth)));
+                totalRow.createCell(dynamicColumnIndex++).setCellValue(String.format("%.2f", getCollectionCenterWiseTotalSampleCount(yearMonth)
+                        / calculateCollectionCenterWiseBillCount(yearMonth)));
+                totalRow.createCell(dynamicColumnIndex++).setCellValue(String.format("%.2f", getCollectionCenterWiseTotalServiceAmount(yearMonth)
+                        / calculateCollectionCenterWiseBillCount(yearMonth)));
             }
 
             workbook.write(out);
@@ -4606,10 +4606,10 @@ public class ReportsController implements Serializable {
             table.addCell(totalCell);
 
             for (YearMonth yearMonth : yearMonths) {
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", getCollectionCenterWiseTotalSampleCount(yearMonth) /
-                        calculateCollectionCenterWiseBillCount(yearMonth)))));
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", getCollectionCenterWiseTotalServiceAmount(yearMonth) /
-                        calculateCollectionCenterWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", getCollectionCenterWiseTotalSampleCount(yearMonth)
+                        / calculateCollectionCenterWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", getCollectionCenterWiseTotalServiceAmount(yearMonth)
+                        / calculateCollectionCenterWiseBillCount(yearMonth)))));
             }
 
             document.add(table);
@@ -4677,10 +4677,10 @@ public class ReportsController implements Serializable {
             table.addCell(totalCell);
 
             for (YearMonth yearMonth : yearMonths) {
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth) /
-                        calculateRouteWiseBillCount(yearMonth)))));
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth) /
-                        calculateRouteWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth)
+                        / calculateRouteWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth)
+                        / calculateRouteWiseBillCount(yearMonth)))));
             }
 
             document.add(table);
@@ -4749,11 +4749,11 @@ public class ReportsController implements Serializable {
             cellIndex = 2;
             for (YearMonth yearMonth : yearMonths) {
                 totalRow.createCell(cellIndex++).setCellValue(
-                        String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth) /
-                                calculateRouteWiseBillCount(yearMonth)));
+                        String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth)
+                                / calculateRouteWiseBillCount(yearMonth)));
                 totalRow.createCell(cellIndex++).setCellValue(
-                        String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth) /
-                                calculateRouteWiseBillCount(yearMonth)));
+                        String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth)
+                                / calculateRouteWiseBillCount(yearMonth)));
             }
 
             workbook.write(out);
@@ -4956,36 +4956,29 @@ public class ReportsController implements Serializable {
                 BillItem firstItem = billItems.get(0);
                 Row row = sheet.createRow(rowIndex++);
 
-//                row.createCell(0).setCellValue(firstItem.getBill().getPatientEncounter().getBhtNo());
+//                row.createCell(0).setCellValue(#{n+1});
                 row.createCell(1).setCellValue(firstItem.getBill().getPatientEncounter().getBhtNo());
                 String formattedDate = sdf.format(firstItem.getBill().getPatientEncounter().getFinalBill().getCreatedAt());
                 row.createCell(2).setCellValue(formattedDate);
                 row.createCell(3).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getDeptId());
                 row.createCell(4).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getReferenceNumber());
                 row.createCell(5).setCellValue(firstItem.getBill().getPatient().getPhn());
-                row.createCell(5).setCellValue(firstItem.getBill().getPatient().getPerson().getName());
-                row.createCell(5).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getGrantTotal());
-                row.createCell(5).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getDiscount());
-                row.createCell(5).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getNetTotal());
-                row.createCell(5).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient());
-                row.createCell(5).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor());
-                row.createCell(5).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getBalance());
+                row.createCell(6).setCellValue(firstItem.getBill().getPatient().getPerson().getName());
+                row.createCell(7).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getGrantTotal());
+                row.createCell(8).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getDiscount());
+                row.createCell(9).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getNetTotal());
+                row.createCell(10).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient());
+                row.createCell(11).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor());
+                row.createCell(12).setCellValue(firstItem.getBill().getPatientEncounter().getFinalBill().getBalance());
 
                 Row detailHeaderRow = sheet.createRow(rowIndex++);
-                detailHeaderRow.createCell(5).setCellValue("Sub Total");
-                detailHeaderRow.createCell(6).setCellValue("Hos Fee.");
-                detailHeaderRow.createCell(7).setCellValue("Staff Fee.");
-                detailHeaderRow.createCell(8).setCellValue("CC Fee.");
-                detailHeaderRow.createCell(9).setCellValue("Net Amount");
-
-                for (BillItem bi : billItems) {
-                    Row detailRow = sheet.createRow(rowIndex++);
-                    detailRow.createCell(6).setCellValue(bi.getItem().getName());
-                    detailRow.createCell(7).setCellValue(bi.getHospitalFee());
-                    detailRow.createCell(8).setCellValue(bi.getStaffFee());
-                    detailRow.createCell(9).setCellValue(bi.getCollectingCentreFee());
-                    detailRow.createCell(10).setCellValue(bi.getNetValue());
-                }
+                detailHeaderRow.createCell(6).setCellValue("Sub Total");
+                detailHeaderRow.createCell(7).setCellValue(String.format("%.2f", calculateIpGrossAmountSubTotalByBills(entry.value)));
+                detailHeaderRow.createCell(8).setCellValue(String.format("%.2f", calculateIpDiscountSubTotalByBills(entry.value)));
+                detailHeaderRow.createCell(9).setCellValue(String.format("%.2f", calculateIpNetAmountSubTotalByBills(entry.value)));
+                detailHeaderRow.createCell(10).setCellValue(String.format("%.2f", calculateIpPatientShareSubTotalByBills(entry.value)));
+                detailHeaderRow.createCell(11).setCellValue(String.format("%.2f", calculateIpSponsorShareSubTotalByBills(entry.value)));
+                detailHeaderRow.createCell(12).setCellValue(String.format("%.2f", calculateIpDueAmountSubTotalByBills(entry.value)));
 
             }
 
