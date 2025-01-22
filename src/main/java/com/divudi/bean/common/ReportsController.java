@@ -4496,6 +4496,13 @@ public class ReportsController implements Serializable {
                     detailsTable.addCell(String.valueOf(bi.getCollectingCentreFee()));
                     detailsTable.addCell(String.valueOf(bi.getNetValue()));
                 }
+
+                detailsTable.addCell("Total");
+                detailsTable.addCell(String.valueOf(firstItem.getBill().getTotalHospitalFee()));
+                detailsTable.addCell(String.valueOf(firstItem.getBill().getTotalStaffFee()));
+                detailsTable.addCell(String.valueOf(firstItem.getBill().getTotalCenterFee()));
+                detailsTable.addCell(String.valueOf(firstItem.getBill().getNetTotal()));
+
                 PdfPCell nestedCell = new PdfPCell(detailsTable);
                 nestedCell.setColspan(7);
                 table.addCell(nestedCell);
@@ -4574,6 +4581,12 @@ public class ReportsController implements Serializable {
                     detailRow.createCell(10).setCellValue(bi.getNetValue());
                 }
 
+                Row footerRow = sheet.createRow(rowIndex++);
+                footerRow.createCell(6).setCellValue("Total");
+                footerRow.createCell(7).setCellValue(billItems.get(0).getBill().getTotalHospitalFee());
+                footerRow.createCell(8).setCellValue(billItems.get(0).getBill().getTotalStaffFee());
+                footerRow.createCell(9).setCellValue(billItems.get(0).getBill().getTotalCenterFee());
+                footerRow.createCell(10).setCellValue(billItems.get(0).getBill().getNetTotal());
             }
 
             workbook.write(out);
