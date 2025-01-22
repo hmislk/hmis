@@ -61,6 +61,7 @@ import java.util.List;
 import java.text.SimpleDateFormat;
 import java.util.stream.Collectors;
 import java.text.DecimalFormat;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 
 /**
  * @author safrin
@@ -3426,6 +3427,11 @@ public class ReportsController implements Serializable {
             XSSFSheet sheet = workbook.createSheet("OPD and Inward Report");
             int rowIndex = 0;
 
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
             Row headerRow = sheet.createRow(rowIndex++);
             headerRow.createCell(0).setCellValue("S. No");
             headerRow.createCell(1).setCellValue("Invoice Date");
@@ -3451,7 +3457,8 @@ public class ReportsController implements Serializable {
                 for (Bill bill : bills) {
                     Row dataRow = sheet.createRow(rowIndex++);
                     dataRow.createCell(0).setCellValue(serialNumber++);
-                    dataRow.createCell(1).setCellValue(bill.getCreatedAt().toString());
+                    String formattedDate = dateFormatter.format(bill.getCreatedAt());
+                    dataRow.createCell(1).setCellValue(formattedDate);
                     dataRow.createCell(2).setCellValue(bill.getDeptId());
                     dataRow.createCell(3).setCellValue(bill.getReferenceNumber());
                     dataRow.createCell(4).setCellValue(bill.getPatient().getPhn());
@@ -3462,6 +3469,13 @@ public class ReportsController implements Serializable {
                     dataRow.createCell(9).setCellValue(bill.getSettledAmountByPatient());
                     dataRow.createCell(10).setCellValue(bill.getSettledAmountBySponsor());
                     dataRow.createCell(11).setCellValue(bill.getNetTotal() - bill.getSettledAmountBySponsor() - bill.getSettledAmountByPatient());
+
+                    dataRow.getCell(6).setCellStyle(amountStyle);
+                    dataRow.getCell(7).setCellStyle(amountStyle);
+                    dataRow.getCell(8).setCellStyle(amountStyle);
+                    dataRow.getCell(9).setCellStyle(amountStyle);
+                    dataRow.getCell(10).setCellStyle(amountStyle);
+                    dataRow.getCell(11).setCellStyle(amountStyle);
                 }
 
                 Row institutionTotalRow = sheet.createRow(rowIndex++);
@@ -3472,6 +3486,13 @@ public class ReportsController implements Serializable {
                 institutionTotalRow.createCell(9).setCellValue(calculatePatientShareSubTotalByBills(bills));
                 institutionTotalRow.createCell(10).setCellValue(calculateSponsorShareSubTotalByBills(bills));
                 institutionTotalRow.createCell(11).setCellValue(calculateDueAmountSubTotalByBills(bills));
+
+                institutionTotalRow.getCell(6).setCellStyle(amountStyle);
+                institutionTotalRow.getCell(7).setCellStyle(amountStyle);
+                institutionTotalRow.getCell(8).setCellStyle(amountStyle);
+                institutionTotalRow.getCell(9).setCellStyle(amountStyle);
+                institutionTotalRow.getCell(10).setCellStyle(amountStyle);
+                institutionTotalRow.getCell(11).setCellStyle(amountStyle);
             }
 
             Row footerRow = sheet.createRow(rowIndex++);
@@ -3482,6 +3503,13 @@ public class ReportsController implements Serializable {
             footerRow.createCell(9).setCellValue(calculatePatientShareNetTotal());
             footerRow.createCell(10).setCellValue(calculateSponsorShareNetTotal());
             footerRow.createCell(11).setCellValue(calculateDueAmountNetTotal());
+
+            footerRow.getCell(6).setCellStyle(amountStyle);
+            footerRow.getCell(7).setCellStyle(amountStyle);
+            footerRow.getCell(8).setCellStyle(amountStyle);
+            footerRow.getCell(9).setCellStyle(amountStyle);
+            footerRow.getCell(10).setCellStyle(amountStyle);
+            footerRow.getCell(11).setCellStyle(amountStyle);
 
             workbook.write(out);
             context.responseComplete();
@@ -3603,6 +3631,11 @@ public class ReportsController implements Serializable {
             XSSFSheet sheet = workbook.createSheet("OPD and Inward Report");
             int rowIndex = 0;
 
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
             Row headerRow = sheet.createRow(rowIndex++);
             headerRow.createCell(0).setCellValue("S. No");
             headerRow.createCell(1).setCellValue("BHT No");
@@ -3630,39 +3663,76 @@ public class ReportsController implements Serializable {
                     Row dataRow = sheet.createRow(rowIndex++);
                     dataRow.createCell(0).setCellValue(serialNumber++);
                     dataRow.createCell(1).setCellValue(bill.getPatientEncounter().getBhtNo());
-                    dataRow.createCell(2).setCellValue(bill.getPatientEncounter().getFinalBill().getCreatedAt().toString());
+                    String formattedDate = dateFormatter.format(bill.getPatientEncounter().getFinalBill().getCreatedAt());
+                    dataRow.createCell(2).setCellValue(formattedDate);
                     dataRow.createCell(3).setCellValue(bill.getPatientEncounter().getFinalBill().getDeptId());
                     dataRow.createCell(4).setCellValue(bill.getPatientEncounter().getFinalBill().getReferenceNumber());
                     dataRow.createCell(5).setCellValue(bill.getPatient().getPhn());
                     dataRow.createCell(6).setCellValue(bill.getPatient().getPerson().getName());
-                    dataRow.createCell(7).setCellValue(bill.getPatientEncounter().getFinalBill().getGrantTotal());
-                    dataRow.createCell(8).setCellValue(bill.getPatientEncounter().getFinalBill().getDiscount());
-                    dataRow.createCell(9).setCellValue(bill.getPatientEncounter().getFinalBill().getNetTotal());
-                    dataRow.createCell(10).setCellValue(bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient());
-                    dataRow.createCell(11).setCellValue(bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor());
-                    dataRow.createCell(12).setCellValue(bill.getPatientEncounter().getFinalBill().getNetTotal()
+                    Cell grossAmtCell = dataRow.createCell(7);
+                    grossAmtCell.setCellValue(bill.getPatientEncounter().getFinalBill().getGrantTotal());
+                    grossAmtCell.setCellStyle(amountStyle);
+                    Cell discAmtCell = dataRow.createCell(8);
+                    discAmtCell.setCellValue(bill.getPatientEncounter().getFinalBill().getDiscount());
+                    discAmtCell.setCellStyle(amountStyle);
+                    Cell netAmtCell = dataRow.createCell(9);
+                    netAmtCell.setCellValue(bill.getPatientEncounter().getFinalBill().getNetTotal());
+                    netAmtCell.setCellStyle(amountStyle);
+                    Cell patientShareCell = dataRow.createCell(10);
+                    patientShareCell.setCellValue(bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient());
+                    patientShareCell.setCellStyle(amountStyle);
+                    Cell sponsorShareCell = dataRow.createCell(11);
+                    sponsorShareCell.setCellValue(bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor());
+                    sponsorShareCell.setCellStyle(amountStyle);
+                    Cell dueAmtCell = dataRow.createCell(12);
+                    dueAmtCell.setCellValue(bill.getPatientEncounter().getFinalBill().getNetTotal()
                             - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()
                             - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient());
+                    dueAmtCell.setCellStyle(amountStyle);
                 }
 
                 Row institutionTotalRow = sheet.createRow(rowIndex++);
                 institutionTotalRow.createCell(6).setCellValue("Sub Total");
-                institutionTotalRow.createCell(7).setCellValue(calculateIpGrossAmountSubTotalByBills(bills));
-                institutionTotalRow.createCell(8).setCellValue(calculateIpDiscountSubTotalByBills(bills));
-                institutionTotalRow.createCell(9).setCellValue(calculateIpNetAmountSubTotalByBills(bills));
-                institutionTotalRow.createCell(10).setCellValue(calculateIpPatientShareSubTotalByBills(bills));
-                institutionTotalRow.createCell(11).setCellValue(calculateIpSponsorShareSubTotalByBills(bills));
-                institutionTotalRow.createCell(12).setCellValue(calculateIpDueAmountSubTotalByBills(bills));
+                Cell subTotalGrossAmtCell = institutionTotalRow.createCell(7);
+                subTotalGrossAmtCell.setCellValue(calculateIpGrossAmountSubTotalByBills(bills));
+                subTotalGrossAmtCell.setCellStyle(amountStyle);
+                Cell subTotalDiscAmtCell = institutionTotalRow.createCell(8);
+                subTotalDiscAmtCell.setCellValue(calculateIpDiscountSubTotalByBills(bills));
+                subTotalDiscAmtCell.setCellStyle(amountStyle);
+                Cell subTotalNetAmtCell = institutionTotalRow.createCell(9);
+                subTotalNetAmtCell.setCellValue(calculateIpNetAmountSubTotalByBills(bills));
+                subTotalNetAmtCell.setCellStyle(amountStyle);
+                Cell subTotalPatientShareCell = institutionTotalRow.createCell(10);
+                subTotalPatientShareCell.setCellValue(calculateIpPatientShareSubTotalByBills(bills));
+                subTotalPatientShareCell.setCellStyle(amountStyle);
+                Cell subTotalSponsorShareCell = institutionTotalRow.createCell(11);
+                subTotalSponsorShareCell.setCellValue(calculateIpSponsorShareSubTotalByBills(bills));
+                subTotalSponsorShareCell.setCellStyle(amountStyle);
+                Cell subTotalDueAmtCell = institutionTotalRow.createCell(12);
+                subTotalDueAmtCell.setCellValue(calculateIpDueAmountSubTotalByBills(bills));
+                subTotalDueAmtCell.setCellStyle(amountStyle);
             }
 
             Row footerRow = sheet.createRow(rowIndex++);
             footerRow.createCell(6).setCellValue("Net Total");
-            footerRow.createCell(7).setCellValue(calculateIpGrossAmountNetTotal());
-            footerRow.createCell(8).setCellValue(calculateIpDiscountNetTotal());
-            footerRow.createCell(9).setCellValue(calculateIpNetAmountNetTotal());
-            footerRow.createCell(10).setCellValue(calculateIpPatientShareNetTotal());
-            footerRow.createCell(11).setCellValue(calculateIpSponsorShareNetTotal());
-            footerRow.createCell(12).setCellValue(calculateIpDueAmountNetTotal());
+            Cell netTotalGrossAmtCell = footerRow.createCell(7);
+            netTotalGrossAmtCell.setCellValue(calculateIpGrossAmountNetTotal());
+            netTotalGrossAmtCell.setCellStyle(amountStyle);
+            Cell netTotalDiscAmtCell = footerRow.createCell(8);
+            netTotalDiscAmtCell.setCellValue(calculateIpDiscountNetTotal());
+            netTotalDiscAmtCell.setCellStyle(amountStyle);
+            Cell netTotalNetAmtCell = footerRow.createCell(9);
+            netTotalNetAmtCell.setCellValue(calculateIpNetAmountNetTotal());
+            netTotalNetAmtCell.setCellStyle(amountStyle);
+            Cell netTotalPatientShareCell = footerRow.createCell(10);
+            netTotalPatientShareCell.setCellValue(calculateIpPatientShareNetTotal());
+            netTotalPatientShareCell.setCellStyle(amountStyle);
+            Cell netTotalSponsorShareCell = footerRow.createCell(11);
+            netTotalSponsorShareCell.setCellValue(calculateIpSponsorShareNetTotal());
+            netTotalSponsorShareCell.setCellStyle(amountStyle);
+            Cell netTotalDueAmtCell = footerRow.createCell(12);
+            netTotalDueAmtCell.setCellValue(calculateIpDueAmountNetTotal());
+            netTotalDueAmtCell.setCellStyle(amountStyle);
 
             workbook.write(out);
             context.responseComplete();
