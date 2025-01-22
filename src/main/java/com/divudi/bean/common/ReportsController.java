@@ -3625,7 +3625,7 @@ public class ReportsController implements Serializable {
                     dataRow.createCell(4).setCellValue(bill.getPatientEncounter().getFinalBill().getReferenceNumber());
                     dataRow.createCell(5).setCellValue(bill.getPatient().getPhn());
                     dataRow.createCell(6).setCellValue(bill.getPatient().getPerson().getName());
-                    dataRow.createCell(7).setCellValue(bill.getPatientEncounter().getFinalBill().getBillTotal());
+                    dataRow.createCell(7).setCellValue(bill.getPatientEncounter().getFinalBill().getGrantTotal());
                     dataRow.createCell(8).setCellValue(bill.getPatientEncounter().getFinalBill().getDiscount());
                     dataRow.createCell(9).setCellValue(bill.getPatientEncounter().getFinalBill().getNetTotal());
                     dataRow.createCell(10).setCellValue(bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient());
@@ -3711,7 +3711,7 @@ public class ReportsController implements Serializable {
                     table.addCell(new PdfPCell(new Phrase(bill.getPatientEncounter().getFinalBill().getReferenceNumber(), normalFont)));
                     table.addCell(new PdfPCell(new Phrase(bill.getPatient().getPhn(), normalFont)));
                     table.addCell(new PdfPCell(new Phrase(bill.getPatient().getPerson().getName(), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getPatientEncounter().getFinalBill().getBillTotal()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getPatientEncounter().getFinalBill().getGrantTotal()), normalFont)));
                     table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getPatientEncounter().getFinalBill().getDiscount()), normalFont)));
                     table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getPatientEncounter().getFinalBill().getNetTotal()), normalFont)));
                     table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient()), normalFont)));
