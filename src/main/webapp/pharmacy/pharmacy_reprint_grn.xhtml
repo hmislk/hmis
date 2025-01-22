@@ -19,7 +19,7 @@
                             <div class="d-flex justify-content-between">
                                 <h:outputLabel value="GRN Reprint" class="mt-2"></h:outputLabel>
                                 <div class="d-flex gap-2">
-                                    
+
                                     <p:commandButton 
                                         class="ui-button-warning"
                                         icon="fa fa-print"
@@ -30,7 +30,7 @@
                                             value="#{pharmacyBillSearch.bill}" 
                                             target="#{transferIssueController.requestedBill}" ></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton 
                                         class="ui-button-info"
                                         icon="fa fa-print"
@@ -45,7 +45,7 @@
                                         icon="fa fa-ban"
                                         action="pharmacy_cancel_grn" 
                                         disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-                                    </p:commandButton>  
+                                    </p:commandButton>
                                 </div>
                             </div>              
                         </f:facet>

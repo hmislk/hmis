@@ -682,4 +682,67 @@ public class BillService {
         return fetchedBillItems;
     }
 
+    public List<BillItem> fetchBillItemsWithoutCancellationsAndReturns(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            PatientEncounter patientEncounter) {
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select bi "
+                + " from BillItem bi "
+                + " join bi.bill b"
+                + " where b.retired=:ret "
+                + " and b.cancelled=:bc "
+                + " and bi.refunded=:bir "
+                + " and bi.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics ";
+
+        params.put("ret", false);
+        params.put("bc", false);
+        params.put("bir", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+
+        if (fromDate != null) {
+            jpql += " and b.createdAt >= :fromDate ";
+            params.put("fromDate", fromDate);
+        }
+
+        if (toDate != null) {
+            jpql += " and b.createdAt <= :toDate ";
+            params.put("toDate", toDate);
+        }
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (patientEncounter != null) {
+            jpql += " and b.patientEncounter=:patientEncounter ";
+            params.put("patientEncounter", patientEncounter);
+        }
+
+        jpql += " order by b.createdAt, bi.id ";
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        List<BillItem> fetchedBillItems = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("fetchedBillItems = " + fetchedBillItems.size());
+        return fetchedBillItems;
+    }
+
 }
