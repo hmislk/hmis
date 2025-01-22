@@ -1183,7 +1183,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
         if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
             if (patient != null && getBillItem() != null) {
-                
+
                 boolean allergyStatus = pharmacyService.checkAllergyForPatient(patient, billItem);
                 //boolean allergyStatus = checkAllergyForPatient(patient, billItem);
 
@@ -2090,7 +2090,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
         return ps;
     }
-    
+
     @EJB
     private PharmacyService pharmacyService;
 
@@ -2128,14 +2128,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 return;
             }
         }
-        
-         if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
+
+        if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
             if (!pharmacyService.checkAllergyForPatient(patient, getPreBill().getBillItems()).isEmpty()) {
                 JsfUtil.addErrorMessage(pharmacyService.checkAllergyForPatient(patient, getPreBill().getBillItems()));
                 return;
             }
         }
-        
+
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
                 if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
