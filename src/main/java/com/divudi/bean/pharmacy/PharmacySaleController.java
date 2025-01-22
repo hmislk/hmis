@@ -30,7 +30,6 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.TokenType;
-import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
@@ -38,7 +37,6 @@ import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.ejb.PharmacyService;
 import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -56,7 +54,6 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.Token;
-import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -67,7 +64,6 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillFeePaymentFacade;
 import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ClinicalFindingValueFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
@@ -1133,9 +1129,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setDiscount(discountTotal);
         setNetTotal(getPreBill().getNetTotal());
     }
-    
-    @EJB
-    private PharmacyService pharmacyService;
 
     public double addBillItemSingleItem() {
         editingQty = null;
@@ -1187,19 +1180,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return addedQty;
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
-            if (patient != null && getBillItem() != null) {
-                
-                boolean allergyStatus = pharmacyService.checkAllergyForPatient(patient, billItem);
-                //boolean allergyStatus = checkAllergyForPatient(patient, billItem);
-
-                if (allergyStatus) {
-                    JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName() + " is allergy to this patient according to EMR data.");
-                    return addedQty;
-                }
-            }
-        }
-
         addedQty = qty;
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
         billItem.getPharmaceuticalBillItem().setStock(stock);
@@ -1266,17 +1246,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             errorMessage = "Please enter a Quantity";
             JsfUtil.addErrorMessage("Quentity Zero?");
             return;
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
-            if (patient != null && getBillItem() != null) {
-                boolean allergy = pharmacyService.checkAllergyForPatient(patient, billItem);
-
-                if (allergy) {
-                    JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName() + " is allergy to this patient according to EMR data.");
-                    return;
-                }
-            }
         }
 
         double requestedQty = getQty();
@@ -2117,18 +2086,20 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return;
         }
 
-        if (getPatient() == null) {
-            JsfUtil.addErrorMessage("Please Select a Patient");
-            return;
-        }
+        boolean patientRequiredForPharmacySale = configOptionApplicationController.getBooleanValueByKey(
+                "Patient is required in Pharmacy Retail Sale Bill for " + sessionController.getDepartment().getName(),
+                false
+        );
 
-        if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
-            if (!pharmacyService.checkAllergyForPatient(patient, getPreBill().getBillItems()).isEmpty()) {
-                JsfUtil.addErrorMessage(pharmacyService.checkAllergyForPatient(patient, getPreBill().getBillItems()));
+        if (patientRequiredForPharmacySale) {
+            if (getPatient() == null
+                    || getPatient().getPerson() == null
+                    || getPatient().getPerson().getName() == null
+                    || getPatient().getPerson().getName().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please Select a Patient");
                 return;
             }
         }
-
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
                 if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
