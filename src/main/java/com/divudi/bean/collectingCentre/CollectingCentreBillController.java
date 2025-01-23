@@ -273,9 +273,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         params.put("b", bill);
 
         AgentHistory history = agentHistoryFacade.findFirstByJpql(jpql, params);
-        System.out.println("history = " + history);
         double billingAfterCCBalance = history.getBalanceAfterTransaction();
-        System.out.println("Balance = " + billingAfterCCBalance);
         return billingAfterCCBalance;
     }
 
@@ -1548,9 +1546,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 }
 
             }
-            System.out.println("Total Center Fee = " + collectingcCenterFee);
-            System.out.println("Total Hospital Fee = " + hospitalFee);
-            System.out.println("Total Other Fee = " + otherFee);
             bi.setCollectingCentreFee(collectingcCenterFee);
             bi.setHospitalFee(hospitalFee);
             bi.setStaffFee(staffFee);
@@ -1561,9 +1556,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             bi.setVat(entryVat);
             bi.setVatPlusNetValue(entryVat + entryNet);
 
-            System.out.println("bi = " + bi.getGrossValue());
-            System.out.println("bi = " + bi.getNetValue());
-            System.out.println("bi = " + bi.getHospitalFee());
 
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();

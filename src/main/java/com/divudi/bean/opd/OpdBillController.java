@@ -2171,18 +2171,25 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setCreditCompany(creditCompany);
         newBatchBill.setComments(comment);
         newBatchBill.setIpOpOrCc("OP");
-        newBatchBill.setInsId(
-                getBillNumberGenerator().institutionBillNumberGenerator(
-                        getSessionController().getInstitution(),
-                        BillType.OpdBathcBill,
-                        BillClassType.BilledBill,
-                        BillNumberSuffix.NONE));
+        boolean billNumberByYear;
+        String insId;
+        billNumberByYear = configOptionApplicationController.getBooleanValueByKey("Bill Numbers are based on Year.", false);
+
+        if (billNumberByYear) {
+            insId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
+                    getSessionController().getInstitution(),
+                    getSessionController().getDepartment(),
+                    BillType.OpdBathcBill,
+                    BillClassType.BilledBill);
+        } else {
+            insId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
+                    getSessionController().getDepartment(),
+                    BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        }
+
+        newBatchBill.setInsId(insId);
 
         String deptId;
-
-        boolean billNumberByYear;
-
-        billNumberByYear = configOptionApplicationController.getBooleanValueByKey("Bill Numbers are based on Year.", false);
 
         if (billNumberByYear) {
             deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
@@ -2191,13 +2198,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     BillType.OpdBathcBill,
                     BillClassType.BilledBill);
         } else {
-            deptId = getBillNumberGenerator().departmentBillNumberGenerator(
-                    getSessionController().getInstitution(),
-                    getSessionController().getDepartment(),
-                    BillType.OpdBathcBill,
-                    BillClassType.BilledBill);
+            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         }
-
         newBatchBill.setDeptId(deptId);
         newBatchBill.setGrantTotal(total);
         newBatchBill.setTotal(total);

@@ -144,8 +144,22 @@
                             </p:column>
 
                         </p:row>
+                        
+                        <p:row rendered="#{cc.attrs.bill.expenseTotal ne null and cc.attrs.bill.expenseTotal != 0}">
+                            <p:column colspan="6" footerText="Expense Total"/>
+                            <p:column footerText="#{0-cc.attrs.bill.total}" >
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{0-cc.attrs.bill.expenseTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column colspan="2"></p:column>
+                            
+                        </p:row>
+                        
                         <p:row rendered="#{cc.attrs.bill.tax!=0}">
-                            <p:column colspan="9" footerText="Tax"/>
+                            <p:column colspan="6" footerText="Tax"/>
                             <p:column footerText="#{cc.attrs.bill.tax}">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{cc.attrs.bill.tax}">
@@ -153,10 +167,11 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
+                            <p:column colspan="2"></p:column>
 
                         </p:row>
                         <p:row rendered="#{cc.attrs.bill.discount!=0}">
-                            <p:column colspan="9" footerText="Discount"/>
+                            <p:column colspan="6" footerText="Discount"/>
                             <p:column footerText="#{0-cc.attrs.bill.discount}">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.discount}">
@@ -164,10 +179,11 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
+                            <p:column colspan="2"></p:column>
 
                         </p:row>
                         <p:row rendered="#{cc.attrs.bill.total!=cc.attrs.bill.netTotal}">
-                            <p:column colspan="9" footerText="Net Total"/>
+                            <p:column colspan="6" footerText="Net Total"/>
                             <p:column footerText="#{0-cc.attrs.bill.netTotal}">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.netTotal}">
@@ -175,6 +191,7 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
+                            <p:column colspan="2"></p:column>
 
                         </p:row>
                     </p:columnGroup>
