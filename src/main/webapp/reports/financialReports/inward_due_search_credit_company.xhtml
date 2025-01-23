@@ -183,12 +183,12 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column style="text-align: right;" rendered="#{!creditCompanyDueController.withOutDueUpdate}" >                              
-                                    <h:outputLabel value="#{b.finalBill.netTotal-(b.finalBill.paidAmount+b.paidByCreditCompany)}" >
+                                    <h:outputLabel value="#{b.finalBill.netTotal-(b.finalBill.settledAmountByPatient+b.paidByCreditCompany)}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column style="text-align: right;" rendered="#{creditCompanyDueController.withOutDueUpdate}" >                              
-                                    <h:outputLabel value="#{b.finalBill.netTotal-(b.transPaidByPatient+b.transPaidByCompany)}" >
+                                    <h:outputLabel value="#{b.finalBill.netTotal-(b.finalBill.settledAmountByPatient+b.transPaidByCompany)}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>

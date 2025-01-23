@@ -57,6 +57,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
+import com.divudi.entity.PatientDeposit;
 import com.divudi.java.CommonFunctions;
 import com.google.protobuf.Descriptors;
 import java.io.ByteArrayInputStream;
@@ -1420,7 +1421,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         saveBillItem();
         billFacade.edit(getBill());
         //TODO: Add Patient Balance History
-        patient.setRunningBalance(Math.abs(patient.getRunningBalance()) - Math.abs(getBill().getNetTotal()));
+        PatientDeposit corremtPatientDeposit = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
+        patient.setRunningBalance(Math.abs(corremtPatientDeposit.getBalance()) - Math.abs(getBill().getNetTotal()));
         getFacade().edit(patient);
 
         JsfUtil.addSuccessMessage("Bill Saved");
