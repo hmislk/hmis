@@ -500,7 +500,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentExpiryDate);
         getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
-       
+
         getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setToDepartment(null);
@@ -519,18 +519,17 @@ public class PharmacyAdjustmentController implements Serializable {
         billItem = null;
         BillItem tbi = getBillItem();
 
-        PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
-
+//        PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
         tbi.setPharmaceuticalBillItem(null);
-        ph.setStock(stock);
+        getBillItem().getPharmaceuticalBillItem().setStock(stock);
 
         tbi.setItem(getStock().getItemBatch().getItem());
         tbi.setQty((double) qty);
 
         //pharmaceutical Bill Item
-        ph.setDoe(getStock().getItemBatch().getDateOfExpire());
-        ph.setFreeQty(0.0f);
-        ph.setItemBatch(getStock().getItemBatch());
+        getBillItem().getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
+        getBillItem().getPharmaceuticalBillItem().setFreeQty(0.0f);
+        getBillItem().getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
 
         Stock fetchedStock = getStockFacade().find(stock.getId());
         double stockQty = fetchedStock.getStock();
@@ -538,7 +537,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         changingQty = qty - stockQty;
 
-        ph.setQty(changingQty);
+        getBillItem().getPharmaceuticalBillItem().setQty(changingQty);
 
         //Rates
         //Values
@@ -551,28 +550,14 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
         tbi.setCreatedAt(Calendar.getInstance().getTime());
         tbi.setCreater(getSessionController().getLoggedUser());
-
-        ph.setBillItem(null);
-
-        if (ph.getId() == null) {
-            getPharmaceuticalBillItemFacade().create(ph);
-        }
-
-        tbi.setPharmaceuticalBillItem(ph);
-
         if (tbi.getId() == null) {
+            getBillItemFacade().create(tbi);
+        } else {
             getBillItemFacade().edit(tbi);
         }
-
-        ph.setBillItem(tbi);
-        getPharmaceuticalBillItemFacade().edit(ph);
-
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
-
         getBillFacade().edit(getDeptAdjustmentPreBill());
-
-        return ph;
-
+        return getBillItem().getPharmaceuticalBillItem();
     }
 
     private PharmaceuticalBillItem saveDeptAdjustmentBillItems(Stock s) {
@@ -1107,19 +1092,13 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustStaffStock() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
-
         if (qty == null) {
             JsfUtil.addErrorMessage("Add Quantity..");
             return;
         }
-
         if ((comment == null) || (comment.trim().equals(""))) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;

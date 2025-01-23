@@ -1882,12 +1882,7 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND pi.billItem.bill.toDepartment = :department";
             params.put("department", getDepartment());
         }
-        
-        if (bills != null) {
-            jpql += " AND pi.billItem.bill IN :bills";
-            params.put("bills", getBills());
-        }
-        
+
         if (patientInvestigationStatus != null) {
             jpql += " AND pi.billItem.bill.status = :status";
             params.put("status", patientInvestigationStatus);
@@ -2309,7 +2304,7 @@ public class PatientInvestigationController implements Serializable {
 
         if (investigationName != null && !investigationName.trim().isEmpty()) {
             jpql += " AND r.patientInvestigation.billItem.item.name like :investigation ";
-            params.put("investigation", "%"+ investigationName.trim() + "%");
+            params.put("investigation", "%" + investigationName.trim() + "%");
         }
 
         if (department != null) {
@@ -2759,7 +2754,7 @@ public class PatientInvestigationController implements Serializable {
 
         if (investigationName != null && !investigationName.trim().isEmpty()) {
             jpql += " AND i.billItem.item.name like :investigation ";
-            params.put("investigation", "%"+ investigationName.trim() + "%");
+            params.put("investigation", "%" + investigationName.trim() + "%");
         }
 
         if (department != null) {
@@ -3117,13 +3112,11 @@ public class PatientInvestigationController implements Serializable {
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
 
-
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
-
 
         // Starting from BillItem and joining to PatientInvestigation if needed
         jpql = "SELECT DISTINCT b "
@@ -3408,7 +3401,7 @@ public class PatientInvestigationController implements Serializable {
 
         if (investigationName != null && !investigationName.trim().isEmpty()) {
             jpql += " AND i.billItem.item.name like :investigation ";
-            params.put("investigation", "%"+ investigationName.trim() + "%");
+            params.put("investigation", "%" + investigationName.trim() + "%");
         }
 
         if (department != null) {
@@ -4156,6 +4149,38 @@ public class PatientInvestigationController implements Serializable {
         }
 
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
+    }
+
+    private List<PatientReportItemValue> column1AntibioticList;
+    private List<PatientReportItemValue> column2AntibioticList;
+
+    public List<PatientReportItemValue> findAntibioticForMicrobiologyReport(List<PatientReportItemValue> ptivList) {
+        List<PatientReportItemValue> antibioticItems = new ArrayList<>();
+        column1AntibioticList = new ArrayList<>();
+        column2AntibioticList = new ArrayList<>();
+
+        for (PatientReportItemValue ptiv : ptivList) {
+            if (ptiv.getInvestigationItem().getIxItemType() == InvestigationItemType.Antibiotic && !ptiv.getInvestigationItem().isRetired()) {
+                if (ptiv.getStrValue() != null) {
+                    if (!"".equals(ptiv.getStrValue())) {
+                        antibioticItems.add(ptiv);
+                    }
+                }
+            }
+        }
+        
+        for (int i = 0; i < antibioticItems.size(); i++) {
+            if (i % 2 == 0) {
+                column1AntibioticList.add(antibioticItems.get(i));
+            } else {
+                column2AntibioticList.add(antibioticItems.get(i));
+            }
+        }
+
+//        System.out.println("Antibiotic = " + antibioticItems.size());
+//        System.out.println("Column 1 = " + column1AntibioticList.size());
+//        System.out.println("Column 2 = " + column2AntibioticList.size());
+        return antibioticItems;
     }
 
     public void markSelectedAsReceived() {
@@ -4943,6 +4968,22 @@ public class PatientInvestigationController implements Serializable {
         this.investigationName = investigationName;
     }
 
+    public List<PatientReportItemValue> getColumn1AntibioticList() {
+        return column1AntibioticList;
+    }
+
+    public void setColumn1AntibioticList(List<PatientReportItemValue> column1AntibioticList) {
+        this.column1AntibioticList = column1AntibioticList;
+    }
+
+    public List<PatientReportItemValue> getColumn2AntibioticList() {
+        return column2AntibioticList;
+    }
+
+    public void setColumn2AntibioticList(List<PatientReportItemValue> column2AntibioticList) {
+        this.column2AntibioticList = column2AntibioticList;
+    }
+
     /**
      *
      */
@@ -5270,7 +5311,7 @@ public class PatientInvestigationController implements Serializable {
         if (pis == null) {
             return null;
         }
-
+        
         for (PatientInvestigation ptix : pis) {
             Investigation ix = ptix.getInvestigation();
             if (ix.getReportedAs() != null) {
@@ -5291,9 +5332,9 @@ public class PatientInvestigationController implements Serializable {
             ejbFacade.edit(ptix);
 
             List<InvestigationItem> ixis = getIvestigationItemsForInvestigation(ix);
-
+            
             Item ixSampleComponant = itemController.addSampleComponent(ix);
-
+            
             if (ixis == null || ixis.isEmpty()) {
                 InvestigationItem ixi = new InvestigationItem();
                 ixi.setRiTop(46);
@@ -5313,8 +5354,7 @@ public class PatientInvestigationController implements Serializable {
             }
 
             for (InvestigationItem ixi : ixis) {
-
-                if (ixi.getIxItemType() == InvestigationItemType.Value) {
+                if ((ixi.getIxItemType() == InvestigationItemType.Value) || (ixi.getIxItemType() == InvestigationItemType.Template)) {
                     if (ixi.getTube() == null) {
                         if (ixi.getItem() != null) {
                             if (ixi.getItem() instanceof Investigation) {
@@ -5323,7 +5363,7 @@ public class PatientInvestigationController implements Serializable {
                             }
                         }
                     }
-                    ;
+                    
                     if (ixi.getTube() == null) {
                         InvestigationTube it = investigationTubeController.findAndCreateInvestigationTubeByName("Plain Tube");
                         ixi.setTube(it);
@@ -5332,7 +5372,7 @@ public class PatientInvestigationController implements Serializable {
                     if (ixi.getSampleComponent() == null) {
                         ixi.setSampleComponent(ixSampleComponant);
                     }
-
+                    
                     j = "select ps "
                             + " from PatientSample ps "
                             + " where ps.tube=:tube "
@@ -5345,7 +5385,7 @@ public class PatientInvestigationController implements Serializable {
                         m.put("sc", ixi.getSampleComponent());
                     }
                     PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
-                    //System.out.println("pts = " + pts);
+                    
                     if (pts == null) {
                         pts = new PatientSample();
                         pts.setTube(ixi.getTube());

@@ -59,6 +59,9 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
+import java.util.stream.Collectors;
+import java.text.DecimalFormat;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 
 /**
  * @author safrin
@@ -1428,6 +1431,10 @@ public class ReportsController implements Serializable {
         this.selectedBillSession = selectedBillSession;
     }
 
+    public Date getCurrentDate() {
+        return new Date();
+    }
+
     public List<String> getTelephoneNumbers() {
         return telephoneNumbers;
     }
@@ -2300,7 +2307,7 @@ public class ReportsController implements Serializable {
             final Calendar cal = Calendar.getInstance();
             cal.setTime(bill.getCreatedAt());
 
-            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
 
             if (!yearMonths.contains(yearMonth)) {
                 yearMonths.add(yearMonth);
@@ -2339,7 +2346,7 @@ public class ReportsController implements Serializable {
             final Calendar cal = Calendar.getInstance();
             cal.setTime(bill.getCreatedAt());
 
-            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
 
             if (!yearMonths.contains(yearMonth)) {
                 yearMonths.add(yearMonth);
@@ -2508,7 +2515,7 @@ public class ReportsController implements Serializable {
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
+        parameters.put("td", CommonFunctions.getEndOfDay(toDate));
 
         jpql += "GROUP BY bill";
 
@@ -2888,6 +2895,12 @@ public class ReportsController implements Serializable {
 
     public void generateCollectionCenterBillWiseDetailReport() {
         System.out.println("generateCollectionCenterBillWiseDetailReport = " + this);
+
+        if (collectingCentre == null) {
+            JsfUtil.addErrorMessage("Please select an Agent");
+            return;
+        }
+
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -2927,7 +2940,58 @@ public class ReportsController implements Serializable {
             }
         }
 
-        bundle.setGroupedBillItems(billItemMap);
+        Map<String, List<BillItem>> sortedBillItemMap = billItemMap.entrySet()
+                .stream()
+                .sorted(Comparator.comparing(entry -> entry.getValue().get(0).getBill().getCreatedAt()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        bundle.setGroupedBillItems(sortedBillItemMap);
+    }
+
+    // Added methods to calculate totals manually since total is not stored in db for old records correctly
+    public Double calculateTotalHospitalFeeByBillItems(final List<BillItem> billItems) {
+        double totalHospitalFee = 0;
+
+        for (BillItem billItem : billItems) {
+            totalHospitalFee += billItem.getHospitalFee();
+        }
+
+        return totalHospitalFee;
+    }
+
+    public Double calculateTotalStaffFeeByBillItems(final List<BillItem> billItems) {
+        double totalStaffFee = 0;
+
+        for (BillItem billItem : billItems) {
+            totalStaffFee += billItem.getStaffFee();
+        }
+
+        return totalStaffFee;
+    }
+
+    public Double calculateTotalCollectionCenterFeeByBillItems(final List<BillItem> billItems) {
+        double totalecectionCenterFee = 0;
+
+        for (BillItem billItem : billItems) {
+            totalecectionCenterFee += billItem.getCollectingCentreFee();
+        }
+
+        return totalecectionCenterFee;
+    }
+
+    public Double calculateTotalNetValueByBillItems(final List<BillItem> billItems) {
+        double totalNetValue = 0;
+
+        for (BillItem billItem : billItems) {
+            totalNetValue += billItem.getNetValue();
+        }
+
+        return totalNetValue;
     }
 
     public ReportTemplateRowBundle generateCollectingCenterBillWiseBillItems(List<BillTypeAtomic> bts) {
@@ -2945,12 +3009,12 @@ public class ReportsController implements Serializable {
         parameters.put("bts", bts);
 
         if (institution != null) {
-            jpql += "AND bill.department.institution = :ins ";
+            jpql += "AND bill.toInstitution = :ins ";
             parameters.put("ins", institution);
         }
 
         if (department != null) {
-            jpql += "AND bill.department = :dep ";
+            jpql += "AND bill.toDepartment = :dep ";
             parameters.put("dep", department);
         }
 
@@ -3251,7 +3315,7 @@ public class ReportsController implements Serializable {
         System.out.println("jpql = " + jpql);
         System.out.println("parameters = " + parameters);
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpqlWithoutCache(jpql, parameters, TemporalType.TIMESTAMP);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
@@ -3390,6 +3454,437 @@ public class ReportsController implements Serializable {
         bundle = generateOpdAndInwardDueBills(opdBts);
 
         groupBills();
+    }
+
+    public void exportOpdAndInwardOPToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=OPD_AND_INWARD.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("OPD and Inward Report");
+            int rowIndex = 0;
+
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            headerRow.createCell(0).setCellValue("S. No");
+            headerRow.createCell(1).setCellValue("Invoice Date");
+            headerRow.createCell(2).setCellValue("Invoice No");
+            headerRow.createCell(3).setCellValue("Customer Reference No");
+            headerRow.createCell(4).setCellValue("MRNO");
+            headerRow.createCell(5).setCellValue("Patient Name");
+            headerRow.createCell(6).setCellValue("Gross Amt");
+            headerRow.createCell(7).setCellValue("Disc Amt");
+            headerRow.createCell(8).setCellValue("Net Amt");
+            headerRow.createCell(9).setCellValue("Patient Share");
+            headerRow.createCell(10).setCellValue("Sponsor Share");
+            headerRow.createCell(11).setCellValue("Due Amt");
+
+            int serialNumber = 1;
+            for (Map.Entry<Institution, List<Bill>> entrySet : getBundle().getGroupedBillItemsByInstitution().entrySet()) {
+                Institution institution = entrySet.getKey();
+                List<Bill> bills = entrySet.getValue();
+
+                Row institutionRow = sheet.createRow(rowIndex++);
+                institutionRow.createCell(0).setCellValue(institution.getName());
+
+                for (Bill bill : bills) {
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    dataRow.createCell(0).setCellValue(serialNumber++);
+                    String formattedDate = dateFormatter.format(bill.getCreatedAt());
+                    dataRow.createCell(1).setCellValue(formattedDate);
+                    dataRow.createCell(2).setCellValue(bill.getDeptId());
+                    dataRow.createCell(3).setCellValue(bill.getReferenceNumber());
+                    dataRow.createCell(4).setCellValue(bill.getPatient().getPhn());
+                    dataRow.createCell(5).setCellValue(bill.getPatient().getPerson().getName());
+                    dataRow.createCell(6).setCellValue(bill.getBillTotal());
+                    dataRow.createCell(7).setCellValue(bill.getDiscount());
+                    dataRow.createCell(8).setCellValue(bill.getNetTotal());
+                    dataRow.createCell(9).setCellValue(bill.getSettledAmountByPatient());
+                    dataRow.createCell(10).setCellValue(bill.getSettledAmountBySponsor());
+                    dataRow.createCell(11).setCellValue(bill.getNetTotal() - bill.getSettledAmountBySponsor() - bill.getSettledAmountByPatient());
+
+                    dataRow.getCell(6).setCellStyle(amountStyle);
+                    dataRow.getCell(7).setCellStyle(amountStyle);
+                    dataRow.getCell(8).setCellStyle(amountStyle);
+                    dataRow.getCell(9).setCellStyle(amountStyle);
+                    dataRow.getCell(10).setCellStyle(amountStyle);
+                    dataRow.getCell(11).setCellStyle(amountStyle);
+                }
+
+                Row institutionTotalRow = sheet.createRow(rowIndex++);
+                institutionTotalRow.createCell(5).setCellValue("Sub Total");
+                institutionTotalRow.createCell(6).setCellValue(calculateGrossAmountSubTotalByBills(bills));
+                institutionTotalRow.createCell(7).setCellValue(calculateDiscountSubTotalByBills(bills));
+                institutionTotalRow.createCell(8).setCellValue(calculateNetAmountSubTotalByBills(bills));
+                institutionTotalRow.createCell(9).setCellValue(calculatePatientShareSubTotalByBills(bills));
+                institutionTotalRow.createCell(10).setCellValue(calculateSponsorShareSubTotalByBills(bills));
+                institutionTotalRow.createCell(11).setCellValue(calculateDueAmountSubTotalByBills(bills));
+
+                institutionTotalRow.getCell(6).setCellStyle(amountStyle);
+                institutionTotalRow.getCell(7).setCellStyle(amountStyle);
+                institutionTotalRow.getCell(8).setCellStyle(amountStyle);
+                institutionTotalRow.getCell(9).setCellStyle(amountStyle);
+                institutionTotalRow.getCell(10).setCellStyle(amountStyle);
+                institutionTotalRow.getCell(11).setCellStyle(amountStyle);
+            }
+
+            Row footerRow = sheet.createRow(rowIndex++);
+            footerRow.createCell(5).setCellValue("Net Total");
+            footerRow.createCell(6).setCellValue(calculateGrossAmountNetTotal());
+            footerRow.createCell(7).setCellValue(calculateDiscountNetTotal());
+            footerRow.createCell(8).setCellValue(calculateNetAmountNetTotal());
+            footerRow.createCell(9).setCellValue(calculatePatientShareNetTotal());
+            footerRow.createCell(10).setCellValue(calculateSponsorShareNetTotal());
+            footerRow.createCell(11).setCellValue(calculateDueAmountNetTotal());
+
+            footerRow.getCell(6).setCellStyle(amountStyle);
+            footerRow.getCell(7).setCellStyle(amountStyle);
+            footerRow.getCell(8).setCellStyle(amountStyle);
+            footerRow.getCell(9).setCellStyle(amountStyle);
+            footerRow.getCell(10).setCellStyle(amountStyle);
+            footerRow.getCell(11).setCellStyle(amountStyle);
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportOpdAndInwardOPToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=OPD_AND_INWARD.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("OPD and Inward Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            PdfPTable table = new PdfPTable(12);
+            table.setWidthPercentage(100);
+
+            float[] columnWidths = {1.5f, 2.5f, 2.5f, 2.5f, 2.5f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f};
+            table.setWidths(columnWidths);
+
+            String[] headers = {"S. No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
+                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            int serialNumber = 1;
+
+            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+
+            for (Map.Entry<Institution, List<Bill>> entrySet : getBundle().getGroupedBillItemsByInstitution().entrySet()) {
+                Institution institution = entrySet.getKey();
+                List<Bill> bills = entrySet.getValue();
+
+                PdfPCell institutionCell = new PdfPCell(new Phrase(institution.getName(), boldFont));
+                institutionCell.setColspan(12);
+                table.addCell(institutionCell);
+
+                for (Bill bill : bills) {
+                    table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++), normalFont)));
+                    String formattedDate = dateFormatter.format(bill.getCreatedAt());
+                    table.addCell(new PdfPCell(new Phrase(formattedDate, normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(bill.getDeptId(), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(bill.getReferenceNumber(), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(bill.getPatient().getPhn(), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(bill.getPatient().getPerson().getName(), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getBillTotal()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getDiscount()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getNetTotal()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getSettledAmountByPatient()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getSettledAmountBySponsor()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(
+                            bill.getNetTotal() - bill.getSettledAmountBySponsor() - bill.getSettledAmountByPatient()), normalFont)));
+                }
+
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("Sub Total", boldFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateGrossAmountSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateDiscountSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateNetAmountSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculatePatientShareSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateSponsorShareSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateDueAmountSubTotalByBills(bills)), normalFont)));
+            }
+
+            table.addCell(new PdfPCell(new Phrase("", normalFont)));
+            table.addCell(new PdfPCell(new Phrase("", normalFont)));
+            table.addCell(new PdfPCell(new Phrase("", normalFont)));
+            table.addCell(new PdfPCell(new Phrase("", normalFont)));
+            table.addCell(new PdfPCell(new Phrase("", normalFont)));
+            table.addCell(new PdfPCell(new Phrase("Net Total", boldFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateGrossAmountNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateDiscountNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateNetAmountNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculatePatientShareNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateSponsorShareNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateDueAmountNetTotal()), normalFont)));
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportOpdAndInwardIPToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=OPD_AND_INWARD.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("OPD and Inward Report");
+            int rowIndex = 0;
+
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            headerRow.createCell(0).setCellValue("S. No");
+            headerRow.createCell(1).setCellValue("BHT No");
+            headerRow.createCell(2).setCellValue("Invoice Date");
+            headerRow.createCell(3).setCellValue("Invoice No");
+            headerRow.createCell(4).setCellValue("Customer Reference No");
+            headerRow.createCell(5).setCellValue("MRNO");
+            headerRow.createCell(6).setCellValue("Patient Name");
+            headerRow.createCell(7).setCellValue("Gross Amt");
+            headerRow.createCell(8).setCellValue("Disc Amt");
+            headerRow.createCell(9).setCellValue("Net Amt");
+            headerRow.createCell(10).setCellValue("Patient Share");
+            headerRow.createCell(11).setCellValue("Sponsor Share");
+            headerRow.createCell(12).setCellValue("Due Amt");
+
+            int serialNumber = 1;
+            for (Map.Entry<Institution, List<Bill>> entrySet : getBundle().getGroupedBillItemsByInstitution().entrySet()) {
+                Institution institution = entrySet.getKey();
+                List<Bill> bills = entrySet.getValue();
+
+                Row institutionRow = sheet.createRow(rowIndex++);
+                institutionRow.createCell(0).setCellValue(institution.getName());
+
+                for (Bill bill : bills) {
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    dataRow.createCell(0).setCellValue(serialNumber++);
+                    dataRow.createCell(1).setCellValue(bill.getPatientEncounter().getBhtNo());
+                    String formattedDate = dateFormatter.format(bill.getPatientEncounter().getFinalBill().getCreatedAt());
+                    dataRow.createCell(2).setCellValue(formattedDate);
+                    dataRow.createCell(3).setCellValue(bill.getPatientEncounter().getFinalBill().getDeptId());
+                    dataRow.createCell(4).setCellValue(bill.getPatientEncounter().getFinalBill().getReferenceNumber());
+                    dataRow.createCell(5).setCellValue(bill.getPatient().getPhn());
+                    dataRow.createCell(6).setCellValue(bill.getPatient().getPerson().getName());
+                    Cell grossAmtCell = dataRow.createCell(7);
+                    grossAmtCell.setCellValue(bill.getPatientEncounter().getFinalBill().getGrantTotal());
+                    grossAmtCell.setCellStyle(amountStyle);
+                    Cell discAmtCell = dataRow.createCell(8);
+                    discAmtCell.setCellValue(bill.getPatientEncounter().getFinalBill().getDiscount());
+                    discAmtCell.setCellStyle(amountStyle);
+                    Cell netAmtCell = dataRow.createCell(9);
+                    netAmtCell.setCellValue(bill.getPatientEncounter().getFinalBill().getNetTotal());
+                    netAmtCell.setCellStyle(amountStyle);
+                    Cell patientShareCell = dataRow.createCell(10);
+                    patientShareCell.setCellValue(bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient());
+                    patientShareCell.setCellStyle(amountStyle);
+                    Cell sponsorShareCell = dataRow.createCell(11);
+                    sponsorShareCell.setCellValue(bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor());
+                    sponsorShareCell.setCellStyle(amountStyle);
+                    Cell dueAmtCell = dataRow.createCell(12);
+                    dueAmtCell.setCellValue(bill.getPatientEncounter().getFinalBill().getNetTotal()
+                            - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()
+                            - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient());
+                    dueAmtCell.setCellStyle(amountStyle);
+                }
+
+                Row institutionTotalRow = sheet.createRow(rowIndex++);
+                institutionTotalRow.createCell(6).setCellValue("Sub Total");
+                Cell subTotalGrossAmtCell = institutionTotalRow.createCell(7);
+                subTotalGrossAmtCell.setCellValue(calculateIpGrossAmountSubTotalByBills(bills));
+                subTotalGrossAmtCell.setCellStyle(amountStyle);
+                Cell subTotalDiscAmtCell = institutionTotalRow.createCell(8);
+                subTotalDiscAmtCell.setCellValue(calculateIpDiscountSubTotalByBills(bills));
+                subTotalDiscAmtCell.setCellStyle(amountStyle);
+                Cell subTotalNetAmtCell = institutionTotalRow.createCell(9);
+                subTotalNetAmtCell.setCellValue(calculateIpNetAmountSubTotalByBills(bills));
+                subTotalNetAmtCell.setCellStyle(amountStyle);
+                Cell subTotalPatientShareCell = institutionTotalRow.createCell(10);
+                subTotalPatientShareCell.setCellValue(calculateIpPatientShareSubTotalByBills(bills));
+                subTotalPatientShareCell.setCellStyle(amountStyle);
+                Cell subTotalSponsorShareCell = institutionTotalRow.createCell(11);
+                subTotalSponsorShareCell.setCellValue(calculateIpSponsorShareSubTotalByBills(bills));
+                subTotalSponsorShareCell.setCellStyle(amountStyle);
+                Cell subTotalDueAmtCell = institutionTotalRow.createCell(12);
+                subTotalDueAmtCell.setCellValue(calculateIpDueAmountSubTotalByBills(bills));
+                subTotalDueAmtCell.setCellStyle(amountStyle);
+            }
+
+            Row footerRow = sheet.createRow(rowIndex++);
+            footerRow.createCell(6).setCellValue("Net Total");
+            Cell netTotalGrossAmtCell = footerRow.createCell(7);
+            netTotalGrossAmtCell.setCellValue(calculateIpGrossAmountNetTotal());
+            netTotalGrossAmtCell.setCellStyle(amountStyle);
+            Cell netTotalDiscAmtCell = footerRow.createCell(8);
+            netTotalDiscAmtCell.setCellValue(calculateIpDiscountNetTotal());
+            netTotalDiscAmtCell.setCellStyle(amountStyle);
+            Cell netTotalNetAmtCell = footerRow.createCell(9);
+            netTotalNetAmtCell.setCellValue(calculateIpNetAmountNetTotal());
+            netTotalNetAmtCell.setCellStyle(amountStyle);
+            Cell netTotalPatientShareCell = footerRow.createCell(10);
+            netTotalPatientShareCell.setCellValue(calculateIpPatientShareNetTotal());
+            netTotalPatientShareCell.setCellStyle(amountStyle);
+            Cell netTotalSponsorShareCell = footerRow.createCell(11);
+            netTotalSponsorShareCell.setCellValue(calculateIpSponsorShareNetTotal());
+            netTotalSponsorShareCell.setCellStyle(amountStyle);
+            Cell netTotalDueAmtCell = footerRow.createCell(12);
+            netTotalDueAmtCell.setCellValue(calculateIpDueAmountNetTotal());
+            netTotalDueAmtCell.setCellStyle(amountStyle);
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportOpdAndInwardIPToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=OPD_AND_INWARD.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("OPD and Inward Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            PdfPTable table = new PdfPTable(13);
+            table.setWidthPercentage(100);
+
+            float[] columnWidths = {1.5f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f};
+            table.setWidths(columnWidths);
+
+            String[] headers = {"S. No", "BHT No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
+                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            int serialNumber = 1;
+
+            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+
+            for (Map.Entry<Institution, List<Bill>> entrySet : getBundle().getGroupedBillItemsByInstitution().entrySet()) {
+                Institution institution = entrySet.getKey();
+                List<Bill> bills = entrySet.getValue();
+
+                PdfPCell institutionCell = new PdfPCell(new Phrase(institution.getName(), boldFont));
+                institutionCell.setColspan(13);
+                table.addCell(institutionCell);
+
+                for (Bill bill : bills) {
+                    table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(bill.getPatientEncounter().getBhtNo(), normalFont)));
+                    String formattedDate = dateFormatter.format(bill.getPatientEncounter().getFinalBill().getCreatedAt());
+                    table.addCell(new PdfPCell(new Phrase(formattedDate, normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(bill.getPatientEncounter().getFinalBill().getDeptId(), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(bill.getPatientEncounter().getFinalBill().getReferenceNumber(), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(bill.getPatient().getPhn(), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(bill.getPatient().getPerson().getName(), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getGrantTotal()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getDiscount()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getNetTotal()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getNetTotal()
+                            - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()
+                            - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient()), normalFont)));
+                }
+
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("Sub Total", boldFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpGrossAmountSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpDiscountSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpNetAmountSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpPatientShareSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpSponsorShareSubTotalByBills(bills)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpDueAmountSubTotalByBills(bills)), normalFont)));
+            }
+
+            table.addCell(new PdfPCell(new Phrase("", normalFont)));
+            table.addCell(new PdfPCell(new Phrase("", normalFont)));
+            table.addCell(new PdfPCell(new Phrase("", normalFont)));
+            table.addCell(new PdfPCell(new Phrase("", normalFont)));
+            table.addCell(new PdfPCell(new Phrase("", normalFont)));
+            table.addCell(new PdfPCell(new Phrase("", normalFont)));
+            table.addCell(new PdfPCell(new Phrase("Net Total", boldFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpGrossAmountNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpDiscountNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpNetAmountNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpPatientShareNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpSponsorShareNetTotal()), normalFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpDueAmountNetTotal()), normalFont)));
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public ReportTemplateRowBundle generateOpdAndInwardDueBills(List<BillTypeAtomic> bts) {
@@ -3726,6 +4221,7 @@ public class ReportsController implements Serializable {
                 opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
                 opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
                 opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
                 opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
             }
         }
@@ -4041,6 +4537,13 @@ public class ReportsController implements Serializable {
                     detailsTable.addCell(String.valueOf(bi.getCollectingCentreFee()));
                     detailsTable.addCell(String.valueOf(bi.getNetValue()));
                 }
+
+                detailsTable.addCell("Total");
+                detailsTable.addCell(String.valueOf(calculateTotalHospitalFeeByBillItems(billItems)));
+                detailsTable.addCell(String.valueOf(calculateTotalStaffFeeByBillItems(billItems)));
+                detailsTable.addCell(String.valueOf(calculateTotalCollectionCenterFeeByBillItems(billItems)));
+                detailsTable.addCell(String.valueOf(calculateTotalNetValueByBillItems(billItems)));
+
                 PdfPCell nestedCell = new PdfPCell(detailsTable);
                 nestedCell.setColspan(7);
                 table.addCell(nestedCell);
@@ -4119,6 +4622,12 @@ public class ReportsController implements Serializable {
                     detailRow.createCell(10).setCellValue(bi.getNetValue());
                 }
 
+                Row footerRow = sheet.createRow(rowIndex++);
+                footerRow.createCell(6).setCellValue("Total");
+                footerRow.createCell(7).setCellValue(calculateTotalHospitalFeeByBillItems(billItems));
+                footerRow.createCell(8).setCellValue(calculateTotalStaffFeeByBillItems(billItems));
+                footerRow.createCell(9).setCellValue(calculateTotalCollectionCenterFeeByBillItems(billItems));
+                footerRow.createCell(10).setCellValue(calculateTotalNetValueByBillItems(billItems));
             }
 
             workbook.write(out);
@@ -4513,6 +5022,19 @@ public class ReportsController implements Serializable {
                 }
             }
 
+            Row totalRow = sheet.createRow(rowIndex++);
+            totalRow.createCell(0).setCellValue("Total");
+            totalRow.createCell(1).setCellValue("");
+            totalRow.createCell(2).setCellValue("");
+
+            dynamicColumnIndex = 3;
+            for (YearMonth yearMonth : yearMonths) {
+                totalRow.createCell(dynamicColumnIndex++).setCellValue(String.format("%.2f", getCollectionCenterWiseTotalSampleCount(yearMonth)
+                        / calculateCollectionCenterWiseBillCount(yearMonth)));
+                totalRow.createCell(dynamicColumnIndex++).setCellValue(String.format("%.2f", getCollectionCenterWiseTotalServiceAmount(yearMonth)
+                        / calculateCollectionCenterWiseBillCount(yearMonth)));
+            }
+
             workbook.write(out);
             context.responseComplete();
 
@@ -4571,6 +5093,18 @@ public class ReportsController implements Serializable {
                         table.addCell(new PdfPCell(new Phrase("0.0")));
                     }
                 }
+            }
+
+            PdfPCell totalCell = new PdfPCell(new Phrase("Total"));
+            totalCell.setColspan(3);
+            totalCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(totalCell);
+
+            for (YearMonth yearMonth : yearMonths) {
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", getCollectionCenterWiseTotalSampleCount(yearMonth)
+                        / calculateCollectionCenterWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", getCollectionCenterWiseTotalServiceAmount(yearMonth)
+                        / calculateCollectionCenterWiseBillCount(yearMonth)))));
             }
 
             document.add(table);
@@ -4632,6 +5166,18 @@ public class ReportsController implements Serializable {
                 }
             }
 
+            PdfPCell totalCell = new PdfPCell(new Phrase("Total"));
+            totalCell.setColspan(2);
+            totalCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(totalCell);
+
+            for (YearMonth yearMonth : yearMonths) {
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth)
+                        / calculateRouteWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth)
+                        / calculateRouteWiseBillCount(yearMonth)))));
+            }
+
             document.add(table);
             document.close();
             context.responseComplete();
@@ -4689,6 +5235,20 @@ public class ReportsController implements Serializable {
                         row.createCell(cellIndex++).setCellValue(0.0);
                     }
                 }
+            }
+
+            Row totalRow = sheet.createRow(rowIndex++);
+            totalRow.createCell(0).setCellValue("Total");
+            totalRow.createCell(1).setCellValue("");
+
+            cellIndex = 2;
+            for (YearMonth yearMonth : yearMonths) {
+                totalRow.createCell(cellIndex++).setCellValue(
+                        String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth)
+                                / calculateRouteWiseBillCount(yearMonth)));
+                totalRow.createCell(cellIndex++).setCellValue(
+                        String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth)
+                                / calculateRouteWiseBillCount(yearMonth)));
             }
 
             workbook.write(out);
