@@ -1195,7 +1195,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 //boolean allergyStatus = checkAllergyForPatient(patient, billItem);
 
                 if (allergyStatus) {
-                    JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName() + " is allergy to this patient according to EMR data.");
+                    JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName() + " should be allergy to this patient according to EMR data.");
                     return addedQty;
                 }
             }
