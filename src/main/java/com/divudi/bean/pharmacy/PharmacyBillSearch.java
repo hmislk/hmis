@@ -1511,13 +1511,11 @@ public class PharmacyBillSearch implements Serializable {
             ph.copy(nB.getPharmaceuticalBillItem());
             ph.invertValue(nB.getPharmaceuticalBillItem());
 
-            if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
-            }
-
             b.setPharmaceuticalBillItem(ph);
 
             if (b.getId() == null) {
+                getBillItemFacede().create(b);
+            }else{
                 getBillItemFacede().edit(b);
             }
 
@@ -2496,7 +2494,7 @@ public class PharmacyBillSearch implements Serializable {
             CancelledBill cb = pharmacyCreateCancelBill();
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTICAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTICAN));
-
+            cb.setBackwardReferenceBill(getBill().getBackwardReferenceBill());
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
@@ -2540,6 +2538,7 @@ public class PharmacyBillSearch implements Serializable {
             CancelledBill cb = pharmacyCreateCancelBill();
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTRCAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTRCAN));
+            cb.setBackwardReferenceBill(getBill().getBackwardReferenceBill());
 
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
