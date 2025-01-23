@@ -1089,13 +1089,20 @@
                                                     id="imgApproved" 
                                                     library="image" 
                                                     name="approved_icon.png" 
-                                                    style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" />
+                                                    style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" >
+                                                </p:graphicImage>
 
                                                 <p:graphicImage 
                                                     id="imgPrinted" 
                                                     library="image" 
                                                     name="print_ok.png" 
-                                                    style="height: 30px; width: 30px; #{dpr.printed ? '':'opacity: 0.1;'}" />
+                                                    style="height: 30px; width: 30px; #{dpr.printed ? '':'opacity: 0.1;'}" >
+                                                </p:graphicImage>
+
+                                                <!-- SMS Link -->
+                                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers') and dpr.approved}" >
+                                                    <a target="_blank" href="#{dpr.qrCodeContentsLink}" class="fa fa-link fa-xl mt-3"  title="SMS Link"></a>
+                                                </h:panelGroup>
 
                                                 <!-- Email CommandLink -->
                                                 <p:commandLink 

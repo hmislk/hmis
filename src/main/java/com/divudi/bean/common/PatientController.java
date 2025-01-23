@@ -2033,7 +2033,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return;
         } else if (quickSearchPatientList.size() == 1) {
             patientSearched = quickSearchPatientList.get(0);
-
             controller.setPatient(patientSearched);
             controller.setPatientDetailsEditable(false);
 //            controller.setPaymentMethod(null);
