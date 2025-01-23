@@ -1463,13 +1463,11 @@ public class PharmacyBillSearch implements Serializable {
             ph.copy(nB.getPharmaceuticalBillItem());
             ph.invertValue(nB.getPharmaceuticalBillItem());
 
-            if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
-            }
-
             b.setPharmaceuticalBillItem(ph);
 
             if (b.getId() == null) {
+                getBillItemFacede().create(b);
+            }else{
                 getBillItemFacede().edit(b);
             }
 
