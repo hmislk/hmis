@@ -2953,6 +2953,47 @@ public class ReportsController implements Serializable {
         bundle.setGroupedBillItems(sortedBillItemMap);
     }
 
+    // Added methods to calculate totals manually since total is not stored in db for old records correctly
+    public Double calculateTotalHospitalFeeByBillItems(final List<BillItem> billItems) {
+        double totalHospitalFee = 0;
+
+        for (BillItem billItem : billItems) {
+            totalHospitalFee += billItem.getHospitalFee();
+        }
+
+        return totalHospitalFee;
+    }
+
+    public Double calculateTotalStaffFeeByBillItems(final List<BillItem> billItems) {
+        double totalStaffFee = 0;
+
+        for (BillItem billItem : billItems) {
+            totalStaffFee += billItem.getStaffFee();
+        }
+
+        return totalStaffFee;
+    }
+
+    public Double calculateTotalCollectionCenterFeeByBillItems(final List<BillItem> billItems) {
+        double totalecectionCenterFee = 0;
+
+        for (BillItem billItem : billItems) {
+            totalecectionCenterFee += billItem.getCollectingCentreFee();
+        }
+
+        return totalecectionCenterFee;
+    }
+
+    public Double calculateTotalNetValueByBillItems(final List<BillItem> billItems) {
+        double totalNetValue = 0;
+
+        for (BillItem billItem : billItems) {
+            totalNetValue += billItem.getNetValue();
+        }
+
+        return totalNetValue;
+    }
+
     public ReportTemplateRowBundle generateCollectingCenterBillWiseBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
