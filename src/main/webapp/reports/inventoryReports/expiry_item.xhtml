@@ -12,6 +12,7 @@
                     <p:panel header="Expiry Item Report" >
 
                         <h:panelGrid columns="8" class="w-100">
+                            
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
@@ -65,8 +66,6 @@
                             </p:selectOneMenu>
 
 
-
-
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2" />
                                 <p:outputLabel value="Institution" for="phmIns" class="m-3" >
@@ -86,9 +85,7 @@
                                 <p:ajax process="phmIns" update="phmDept" />
                             </p:selectOneMenu>
 
-
                             <p:spacer width="20"></p:spacer>                            
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
@@ -104,9 +101,7 @@
                                 <p:ajax process="phmSite" update="phmDept" />
                             </p:selectOneMenu>
 
-
                             <p:spacer width="20"></p:spacer> 
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2" />
@@ -177,7 +172,6 @@
 
                             </h:panelGroup>
 
-
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-tags mr-2" />
                                 <p:outputLabel value="Item Category" for="phmCategory" class="m-3">
@@ -198,7 +192,6 @@
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-box mr-2" />
@@ -269,7 +262,8 @@
                                          value="#{pharmacyReportController.stocks}" 
                                          var="f" 
                                          rowIndexVar="n" 
-                                         paginator="true" 
+                                         paginator="true"
+                                         paginatorPosition="bottom"
                                          rows="10" 
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
@@ -326,10 +320,10 @@
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Quantity" width="10em">
+                                <p:column headerText="Quantity (Batch wise)" width="10em">
                                     <h:outputText value="#{f.stock}" />
                                 </p:column>
-                                <p:column headerText="Item Value" width="10em">
+                                <p:column headerText="Item Value (Batch wise total)" width="10em">
                                     <h:outputLabel value="#{f.itemBatch.purcahseRate * f.stock}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
