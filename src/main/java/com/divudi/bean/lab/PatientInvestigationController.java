@@ -1354,11 +1354,15 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void generateBarcodesForSelectedBill(Bill billForBarcode) {
-        //System.out.println("generateBarcodesForSelectedBill");
         selectedBillBarcodes = new ArrayList<>();
         billBarcodes = new ArrayList<>();
         if (billForBarcode == null) {
             JsfUtil.addErrorMessage("No Bills Seelcted");
+            return;
+        }
+
+        if (billForBarcode.isCancelled()) {
+            JsfUtil.addErrorMessage("This Bill is Already Cancel");
             return;
         }
 
@@ -1475,6 +1479,14 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
+
+        for (PatientSample ps : selectedPatientSamples) {
+            if (ps.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                return;
+            }
+        }
+
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
         Map<Long, PatientInvestigation> collectedPtixs = new HashMap<>();
@@ -1532,6 +1544,14 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
+        
+        for (PatientSample ps : selectedPatientSamples) {
+            if (ps.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                return;
+            }
+        }
+        
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
         Map<Long, PatientInvestigation> samplePtixs = new HashMap<>();
@@ -1590,6 +1610,14 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
+        
+        for (PatientSample ps : selectedPatientSamples) {
+            if (ps.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                return;
+            }
+        }
+        
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
         Map<Long, PatientInvestigation> receivedPtixs = new HashMap<>();
@@ -4168,7 +4196,7 @@ public class PatientInvestigationController implements Serializable {
                 }
             }
         }
-        
+
         for (int i = 0; i < antibioticItems.size(); i++) {
             if (i % 2 == 0) {
                 column1AntibioticList.add(antibioticItems.get(i));
@@ -5311,7 +5339,7 @@ public class PatientInvestigationController implements Serializable {
         if (pis == null) {
             return null;
         }
-        
+
         for (PatientInvestigation ptix : pis) {
             Investigation ix = ptix.getInvestigation();
             if (ix.getReportedAs() != null) {
@@ -5332,9 +5360,9 @@ public class PatientInvestigationController implements Serializable {
             ejbFacade.edit(ptix);
 
             List<InvestigationItem> ixis = getIvestigationItemsForInvestigation(ix);
-            
+
             Item ixSampleComponant = itemController.addSampleComponent(ix);
-            
+
             if (ixis == null || ixis.isEmpty()) {
                 InvestigationItem ixi = new InvestigationItem();
                 ixi.setRiTop(46);
@@ -5363,7 +5391,7 @@ public class PatientInvestigationController implements Serializable {
                             }
                         }
                     }
-                    
+
                     if (ixi.getTube() == null) {
                         InvestigationTube it = investigationTubeController.findAndCreateInvestigationTubeByName("Plain Tube");
                         ixi.setTube(it);
@@ -5372,7 +5400,7 @@ public class PatientInvestigationController implements Serializable {
                     if (ixi.getSampleComponent() == null) {
                         ixi.setSampleComponent(ixSampleComponant);
                     }
-                    
+
                     j = "select ps "
                             + " from PatientSample ps "
                             + " where ps.tube=:tube "
@@ -5385,7 +5413,7 @@ public class PatientInvestigationController implements Serializable {
                         m.put("sc", ixi.getSampleComponent());
                     }
                     PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
-                    
+
                     if (pts == null) {
                         pts = new PatientSample();
                         pts.setTube(ixi.getTube());
