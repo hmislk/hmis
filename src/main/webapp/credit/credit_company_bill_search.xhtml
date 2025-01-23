@@ -68,7 +68,7 @@
                                         id="billNo" 
                                         ajax="false" 
                                         value="#{bill.deptId}" 
-                                        action="credit_company_bill_reprint">
+                                        action="credit_company_bill_reprint?faces-redirect=true">
                                         <f:setPropertyActionListener value="#{bill}" target="#{creditCompanyBillSearch.bill}"/>
                                     </p:commandLink>
                                 </div>

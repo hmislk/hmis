@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
@@ -115,6 +116,9 @@ public class PharmacySaleBhtController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     BillNumberGenerator billNumberBean;
+
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -742,11 +746,31 @@ public class PharmacySaleBhtController implements Serializable {
         }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE;
         BillType bt = BillType.PharmacyBhtPre;
-        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
-            settleBhtIssue(bt, bta, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment());
+        Department matrixDept = null;
+        boolean matrixByAdmissionDepartment;
+        boolean matrixByIssuingDepartment;
+        matrixByAdmissionDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Inpatient Department for " + sessionController.getDepartment().getName(), true);
+        matrixByIssuingDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Issuing Department for " + sessionController.getDepartment().getName(), true);
+
+        if (matrixByAdmissionDepartment) {
+            if (getPatientEncounter() == null) {
+                matrixDept = getSessionController().getDepartment();
+            }
+            if (getPatientEncounter().getCurrentPatientRoom() == null) {
+                matrixDept = getSessionController().getDepartment();
+            }
+            if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+                matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+            }
+
+        } else if (matrixByIssuingDepartment) {
+            matrixDept = getSessionController().getDepartment();
         } else {
-            settleBhtIssue(bt, bta, getPatientEncounter().getDepartment());
+            matrixDept = getSessionController().getDepartment();
         }
+
+        settleBhtIssue(bt, bta, matrixDept);
+
     }
 
     public void settlePharmacyBhtIssueAccept() {
@@ -1131,7 +1155,7 @@ public class PharmacySaleBhtController implements Serializable {
         // Start debugging
         // Start debugging
         // Start debugging
-                // Reset total
+        // Reset total
         getPreBill().setTotal(0);
 
         // Local counters
@@ -1380,19 +1404,26 @@ public class PharmacySaleBhtController implements Serializable {
         double grossValue;
         double netValue;
 
-        Department dept = null;
-        if (getPatientEncounter() == null) {
-            return;
-        }
-        if (getPatientEncounter().getCurrentPatientRoom() != null
-                && getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
-            dept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
-        }
-        if (dept == null) {
-            dept = getPatientEncounter().getDepartment();
-        }
-        if (dept == null) {
-            dept = sessionController.getDepartment();
+        Department matrixDept=null;
+        boolean matrixByAdmissionDepartment;
+        boolean matrixByIssuingDepartment;
+        matrixByAdmissionDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Inpatient Department for " + sessionController.getDepartment().getName(), true);
+        matrixByIssuingDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Issuing Department for " + sessionController.getDepartment().getName(), true);
+        if (matrixByAdmissionDepartment) {
+            if (getPatientEncounter() == null) {
+                matrixDept = getSessionController().getDepartment();
+            }
+            if (getPatientEncounter().getCurrentPatientRoom() == null) {
+                matrixDept = getSessionController().getDepartment();
+            }
+            if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+                matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+            }
+
+        } else if (matrixByIssuingDepartment) {
+            matrixDept = getSessionController().getDepartment();
+        } else {
+            matrixDept = getSessionController().getDepartment();
         }
 
         quantity = bi.getQty();
@@ -1402,7 +1433,7 @@ public class PharmacySaleBhtController implements Serializable {
         PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(
                 bi,
                 estimatedValueBeforeAddingMarginToCalculateMatrix,
-                dept,
+                matrixDept,
                 getPatientEncounter().getPaymentMethod()
         );
         if (priceMatrix != null) {
@@ -1415,7 +1446,6 @@ public class PharmacySaleBhtController implements Serializable {
         marginValue = marginRate * quantity;
         grossValue = originalRate * quantity;
         netValue = grossValue + marginValue;
-
 
         // Update BillItem
         bi.setRate(originalRate);
