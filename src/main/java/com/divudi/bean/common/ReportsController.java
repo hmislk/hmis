@@ -2953,6 +2953,47 @@ public class ReportsController implements Serializable {
         bundle.setGroupedBillItems(sortedBillItemMap);
     }
 
+    // Added methods to calculate totals manually since total is not stored in db for old records correctly
+    public Double calculateTotalHospitalFeeByBillItems(final List<BillItem> billItems) {
+        double totalHospitalFee = 0;
+
+        for (BillItem billItem : billItems) {
+            totalHospitalFee += billItem.getHospitalFee();
+        }
+
+        return totalHospitalFee;
+    }
+
+    public Double calculateTotalStaffFeeByBillItems(final List<BillItem> billItems) {
+        double totalStaffFee = 0;
+
+        for (BillItem billItem : billItems) {
+            totalStaffFee += billItem.getStaffFee();
+        }
+
+        return totalStaffFee;
+    }
+
+    public Double calculateTotalCollectionCenterFeeByBillItems(final List<BillItem> billItems) {
+        double totalecectionCenterFee = 0;
+
+        for (BillItem billItem : billItems) {
+            totalecectionCenterFee += billItem.getCollectingCentreFee();
+        }
+
+        return totalecectionCenterFee;
+    }
+
+    public Double calculateTotalNetValueByBillItems(final List<BillItem> billItems) {
+        double totalNetValue = 0;
+
+        for (BillItem billItem : billItems) {
+            totalNetValue += billItem.getNetValue();
+        }
+
+        return totalNetValue;
+    }
+
     public ReportTemplateRowBundle generateCollectingCenterBillWiseBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
@@ -4498,10 +4539,10 @@ public class ReportsController implements Serializable {
                 }
 
                 detailsTable.addCell("Total");
-                detailsTable.addCell(String.valueOf(firstItem.getBill().getTotalHospitalFee()));
-                detailsTable.addCell(String.valueOf(firstItem.getBill().getTotalStaffFee()));
-                detailsTable.addCell(String.valueOf(firstItem.getBill().getTotalCenterFee()));
-                detailsTable.addCell(String.valueOf(firstItem.getBill().getNetTotal()));
+                detailsTable.addCell(String.valueOf(calculateTotalHospitalFeeByBillItems(billItems)));
+                detailsTable.addCell(String.valueOf(calculateTotalStaffFeeByBillItems(billItems)));
+                detailsTable.addCell(String.valueOf(calculateTotalCollectionCenterFeeByBillItems(billItems)));
+                detailsTable.addCell(String.valueOf(calculateTotalNetValueByBillItems(billItems)));
 
                 PdfPCell nestedCell = new PdfPCell(detailsTable);
                 nestedCell.setColspan(7);
@@ -4583,10 +4624,10 @@ public class ReportsController implements Serializable {
 
                 Row footerRow = sheet.createRow(rowIndex++);
                 footerRow.createCell(6).setCellValue("Total");
-                footerRow.createCell(7).setCellValue(billItems.get(0).getBill().getTotalHospitalFee());
-                footerRow.createCell(8).setCellValue(billItems.get(0).getBill().getTotalStaffFee());
-                footerRow.createCell(9).setCellValue(billItems.get(0).getBill().getTotalCenterFee());
-                footerRow.createCell(10).setCellValue(billItems.get(0).getBill().getNetTotal());
+                footerRow.createCell(7).setCellValue(calculateTotalHospitalFeeByBillItems(billItems));
+                footerRow.createCell(8).setCellValue(calculateTotalStaffFeeByBillItems(billItems));
+                footerRow.createCell(9).setCellValue(calculateTotalCollectionCenterFeeByBillItems(billItems));
+                footerRow.createCell(10).setCellValue(calculateTotalNetValueByBillItems(billItems));
             }
 
             workbook.write(out);
