@@ -139,7 +139,7 @@ public class InwardReportControllerBht implements Serializable {
 
             }
         }
-        department = null;
+        //department = null;
         return "/inward/reports/inpatient_pharmacy_item_list?faces-redirect=true";
     }
 
