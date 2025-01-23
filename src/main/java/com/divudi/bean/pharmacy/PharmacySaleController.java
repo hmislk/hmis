@@ -55,6 +55,7 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.Token;
+import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -170,6 +171,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     TokenFacade tokenFacade;
+    @EJB
+    private PharmacyService pharmacyService;
 /////////////////////////
     Item selectedAvailableAmp;
     Item selectedAlternative;
@@ -185,6 +188,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     Integer intQty;
     Stock stock;
     Stock replacableStock;
+    private List<ClinicalFindingValue> allergyListOfPatient;
 
     PaymentScheme paymentScheme;
 
@@ -1184,7 +1188,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
             if (patient != null && getBillItem() != null) {
 
-                boolean allergyStatus = pharmacyService.checkAllergyForPatient(patient, billItem);
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+                }
+                boolean allergyStatus = pharmacyService.isAllergyForPatient(patient, billItem, allergyListOfPatient);
                 //boolean allergyStatus = checkAllergyForPatient(patient, billItem);
 
                 if (allergyStatus) {
@@ -1264,10 +1271,13 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data.")) {
             if (patient != null && getBillItem() != null) {
-                boolean allergy = pharmacyService.checkAllergyForPatient(patient, billItem);
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+                }
+                boolean allergy = pharmacyService.isAllergyForPatient(patient, billItem, allergyListOfPatient);
 
                 if (allergy) {
-                    JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName() + " is allergy to this patient according to EMR data.");
+                    JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName() + " should be allergy to this patient according to EMR data.");
                     return;
                 }
             }
@@ -2091,9 +2101,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return ps;
     }
 
-    @EJB
-    private PharmacyService pharmacyService;
-
     public void settleBillWithPay() {
         editingQty = null;
 
@@ -2130,8 +2137,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
-            if (!pharmacyService.checkAllergyForPatient(patient, getPreBill().getBillItems()).isEmpty()) {
-                JsfUtil.addErrorMessage(pharmacyService.checkAllergyForPatient(patient, getPreBill().getBillItems()));
+            if (allergyListOfPatient == null) {
+                allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+            }
+            if (!pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient).isEmpty()) {
+                JsfUtil.addErrorMessage(pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient));
                 return;
             }
         }
@@ -2708,6 +2718,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         errorMessage = "";
         comment = null;
         token = null;
+
     }
 
     private void clearBillItem() {
@@ -2721,6 +2732,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         paymentMethod = PaymentMethod.Cash;
         paymentMethodData = null;
         setCashPaid(0.0);
+        allergyListOfPatient = null;
     }
 
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {

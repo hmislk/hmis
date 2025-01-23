@@ -45,11 +45,13 @@ public class PharmacyService {
 
     }
 
-    public boolean checkAllergyForPatient(Patient patient, BillItem billItem) {
+    public boolean isAllergyForPatient(Patient patient, BillItem billItem, List<ClinicalFindingValue> allergyListOfPatient) {
 
-        List<ClinicalFindingValue> allergyListOfPatient = getAllergyListForPatient(patient);
-
-        if (allergyListOfPatient == null || allergyListOfPatient.isEmpty()) {
+        if(allergyListOfPatient == null || allergyListOfPatient.isEmpty()){
+             allergyListOfPatient = getAllergyListForPatient(patient);
+        }
+        
+        if (allergyListOfPatient.isEmpty()) {
             return false;
         }
 
@@ -77,24 +79,40 @@ public class PharmacyService {
         return false;
     }
 
-    public String checkAllergyForPatient(Patient patient, List<BillItem> items) {
+    public String isAllergyForPatient(Patient patient, List<BillItem> items, List<ClinicalFindingValue> allergyLisForPatient) {
         
         boolean hasAllergicMedicines = false;
-        Item allergicItem;
-        String allergyMsg = "";
+        List<Item> allergyItems = new ArrayList<>();
+        StringBuilder allergyMsg = new StringBuilder();
+        
+        if(allergyLisForPatient == null || allergyLisForPatient.isEmpty()){
+            allergyLisForPatient = getAllergyListForPatient(patient);
+        }
+        
+        if(allergyLisForPatient.isEmpty()){
+            return "";
+        }
 
         for (BillItem billItem : items) {
-            boolean thisItemIsAllergy = checkAllergyForPatient(patient, billItem);
+            boolean thisItemIsAllergy = isAllergyForPatient(patient, billItem, allergyLisForPatient);
 
             if (thisItemIsAllergy) {
-                allergicItem = billItem.getItem();
+                allergyItems.add(billItem.getItem());
                 hasAllergicMedicines = true;
-                allergyMsg = "This patient has allergy of " + allergicItem.getName() + " according to EMR data";
             }
         }
 
         if (hasAllergicMedicines) {
-            return allergyMsg;
+            allergyMsg.append("This patient should be allergy of ");
+            
+            for(Item i : allergyItems){
+                allergyMsg.append(i.getName() +" , ");
+            }
+            
+            if(allergyMsg.length() >0){
+                allergyMsg.setLength(allergyMsg.length()-2);
+            }
+            return allergyMsg.toString();
         }
 
         return "";
