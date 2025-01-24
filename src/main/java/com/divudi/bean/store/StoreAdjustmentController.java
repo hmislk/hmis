@@ -105,6 +105,8 @@ public class StoreAdjustmentController implements Serializable {
         printPreview = false;
         clearBill();
         clearBillItem();
+        selectedItem = null;
+        selectedItemStock = null;
     }
 
     public Double getQty() {
@@ -239,18 +241,16 @@ public class StoreAdjustmentController implements Serializable {
         billItem = null;
         BillItem tbi = getBillItem();
 
-        PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
-
         tbi.setPharmaceuticalBillItem(null);
-        ph.setStock(stock);
+        getBillItem().getPharmaceuticalBillItem().setStock(stock);
 
         tbi.setItem(getStock().getItemBatch().getItem());
         tbi.setQty((double) qty);
 
         //pharmaceutical Bill Item
-        ph.setDoe(getStock().getItemBatch().getDateOfExpire());
-        ph.setFreeQty(0.0f);
-        ph.setItemBatch(getStock().getItemBatch());
+        getBillItem().getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
+        getBillItem().getPharmaceuticalBillItem().setFreeQty(0.0f);
+        getBillItem().getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
 
         Stock fetchedStock = getStockFacade().find(stock.getId());
         double stockQty = fetchedStock.getStock();
@@ -258,7 +258,7 @@ public class StoreAdjustmentController implements Serializable {
 
         changingQty = qty - stockQty;
 
-        ph.setQty(changingQty);
+        getBillItem().getPharmaceuticalBillItem().setQty(changingQty);
 
         //Rates
         //Values
@@ -272,26 +272,16 @@ public class StoreAdjustmentController implements Serializable {
         tbi.setCreatedAt(Calendar.getInstance().getTime());
         tbi.setCreater(getSessionController().getLoggedUser());
 
-        ph.setBillItem(null);
-
-        if (ph.getId() == null) {
-            getPharmaceuticalBillItemFacade().create(ph);
-        }
-
-        tbi.setPharmaceuticalBillItem(ph);
-
         if (tbi.getId() == null) {
             getBillItemFacade().create(tbi);
+        } else {
+            getBillItemFacade().edit(tbi);
         }
 
-        ph.setBillItem(tbi);
-        getPharmaceuticalBillItemFacade().edit(ph);
-
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
-
         getBillFacade().edit(getDeptAdjustmentPreBill());
 
-        return ph;
+        return getBillItem().getPharmaceuticalBillItem();
 
     }
 
@@ -388,6 +378,58 @@ public class StoreAdjustmentController implements Serializable {
 
         return false;
     }
+    
+//   Department Stock Adjustment
+    
+    private Item selectedItem;
+    private List<Stock> selectedItemStock;
+    
+    
+    public void fillselectedItemStocks() {
+        List<Stock> items = new ArrayList<>();
+        if (selectedItem == null) {
+            selectedItemStock = items;
+            return;
+        }
+        String sql;
+        Map m = new HashMap();
+        sql = "select i "
+                + " from Stock i "
+                + " where i.department=:d "
+                + " and i.itemBatch.item=:amp "
+                + " order by i.stock desc";
+        m.put("d", sessionController.getDepartment());
+        m.put("amp", selectedItem);
+
+        items = getStockFacade().findByJpql(sql, m);
+
+        if (items != null) {
+            selectedItemStock = items;
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     public void adjustDepartmentStock() {
 
@@ -397,8 +439,7 @@ public class StoreAdjustmentController implements Serializable {
 
         saveDeptAdjustmentBill();
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
-//        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
-//        getBillFacade().edit(getDeptAdjustmentPreBill());
+
         setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
         getStoreBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
 
@@ -631,6 +672,7 @@ public class StoreAdjustmentController implements Serializable {
   
     private List<Stock> stk;
 
+    
     public void fillSelectStock() {
         List<Stock> items = new ArrayList<>();
         if (stock == null) {
@@ -712,4 +754,20 @@ public class StoreAdjustmentController implements Serializable {
 //
 //        
 //    }
+
+    public Item getSelectedItem() {
+        return selectedItem;
+    }
+
+    public void setSelectedItem(Item selectedItem) {
+        this.selectedItem = selectedItem;
+    }
+
+    public List<Stock> getSelectedItemStock() {
+        return selectedItemStock;
+    }
+
+    public void setSelectedItemStock(List<Stock> selectedItemStock) {
+        this.selectedItemStock = selectedItemStock;
+    }
 }
