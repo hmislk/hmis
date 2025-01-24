@@ -357,12 +357,12 @@ public class StoreAdjustmentController implements Serializable {
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
+            getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);
         getPharmaceuticalBillItemFacade().edit(ph);
-//        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
+        
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
@@ -537,8 +537,7 @@ public class StoreAdjustmentController implements Serializable {
         getStock().getItemBatch().setRetailsaleRate(rsr);
         getItemBatchFacade().edit(getStock().getItemBatch());
         bill = billFacade.find(getDeptAdjustmentPreBill().getId());
-//        clearBill();
-//        clearBillItem();
+
         printPreview = true;
     }
 
