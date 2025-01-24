@@ -410,7 +410,7 @@ public class StoreAdjustmentController implements Serializable {
             selectedItemStock = items;
         }
     }
-    
+
     public List<Stock> completeStaffStocksInStore(String qry) {
         List<Stock> items;
         String sql;
@@ -476,7 +476,6 @@ public class StoreAdjustmentController implements Serializable {
         }
     }
 
-        
     
     
     
