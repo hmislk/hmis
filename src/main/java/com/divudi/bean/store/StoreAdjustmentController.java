@@ -455,7 +455,7 @@ public class StoreAdjustmentController implements Serializable {
             return;
         }
 
-        saveStaffStockAdjustmentBill();
+        saveAdjustmentBill(BillTypeAtomic.STORE_STAFF_STOCK_ADJUSTMENT);
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
         setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
         getStoreBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
@@ -465,28 +465,7 @@ public class StoreAdjustmentController implements Serializable {
 
     }
     
-    private void saveStaffStockAdjustmentBill() {
-        getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
-        getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
-        getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
-        getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
-        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StoreAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
-        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.StoreAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
-        getDeptAdjustmentPreBill().setBillType(BillType.StoreAdjustment);
-        getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        getDeptAdjustmentPreBill().setToDepartment(null);
-        getDeptAdjustmentPreBill().setToInstitution(null);
-        getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.STORE_STAFF_STOCK_ADJUSTMENT);
-        getDeptAdjustmentPreBill().setComments(comment);
-        if (getDeptAdjustmentPreBill().getId() == null) {
-            getBillFacade().create(getDeptAdjustmentPreBill());
-        } else {
-            getBillFacade().edit(getDeptAdjustmentPreBill());
-        }
-    }
+
 
     
     
