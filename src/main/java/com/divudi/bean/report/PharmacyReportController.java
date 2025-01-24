@@ -1932,12 +1932,14 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         } else if ("consumptionDoc".equals(documentType)) {
+            billTypes.add(BillType.PharmacyIssue);
+            
+        } else if ("transferIssueDoc".equals(documentType)) {
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);           
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
-        } else if ("transferIssueDoc".equals(documentType)) {
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
         } else if ("transferReceiveDoc".equals(documentType)) {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
@@ -2176,6 +2178,9 @@ public class PharmacyReportController implements Serializable {
                 fromDate = convertToDate(today.minusMonths(12));
                 toDate = convertToDate(today);
                 break;
+            case "shortexpiry":
+                fromDate = convertToDate(today);
+                toDate = convertToDate(today.plusMonths(3));
         }
         // System.out.println("Updated From Date: " + fromDate);
         // System.out.println("Updated To Date: " + toDate);

@@ -346,25 +346,25 @@
                                                 <tr>
                                                     <td style="font-weight: bold;">Total</td>
                                                     <td style="text-align: right">
-                                                        <h:outputText value="#{entry.value[0].bill.totalHospitalFee}"
+                                                        <h:outputText value="#{reportsController.calculateTotalHospitalFeeByBillItems(entry.value)}"
                                                                       style="font-weight: bold;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: right">
-                                                        <h:outputText value="#{entry.value[0].bill.totalStaffFee}"
+                                                        <h:outputText value="#{reportsController.calculateTotalStaffFeeByBillItems(entry.value)}"
                                                                       style="font-weight: bold;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: right">
-                                                        <h:outputText value="#{entry.value[0].bill.totalCenterFee}"
+                                                        <h:outputText value="#{reportsController.calculateTotalCollectionCenterFeeByBillItems(entry.value)}"
                                                                       style="font-weight: bold;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: right">
-                                                        <h:outputText value="#{entry.value[0].bill.netTotal}"
+                                                        <h:outputText value="#{reportsController.calculateTotalNetValueByBillItems(entry.value)}"
                                                                       style="font-weight: bold;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>

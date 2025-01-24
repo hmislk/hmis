@@ -16,59 +16,94 @@
                             <h:outputLabel value="CREDIT COMPANY PAYMENT BILL SEARCH "/>
                         </f:facet>   
 
-
                         <div class="row">
                             <div class="col-md-12">
-                                <h:panelGrid columns="5" >
-                                    <h:outputLabel value="From Date" class="mx-2"/>
-                                    <h:outputLabel/>
-                                    <h:outputLabel value="To Date" class="mx-2"/>
-                                    <h:outputLabel/><h:outputLabel/>
-                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="mx-2">      
-                                    </p:calendar>
-                                    <h:outputLabel/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="mx-2">                                                                              
-                                    </p:calendar>
-                                    <h:outputLabel/>
-                                    <p:commandButton 
-                                        id="btnSearch" 
-                                        ajax="false" 
-                                        value="Search" 
-                                        action="#{searchController.createCreditTable}" 
-                                        class="ui-button-warning mx-2 w-100"
-                                        icon="fas fa-search"/>
+                                <h:panelGrid columns="8" styleClass="w-100">
 
-                                    <p:spacer height="5"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="From Date" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:calendar 
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100"
+                                        id="fromDate" 
+                                        value="#{searchController.fromDate}" 
+                                        navigator="false" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                                    <h:outputLabel value="Bill No" class="mx-2"/>
-                                    <h:outputLabel value="Credit Company" class="mx-2"/>
-                                    <h:outputLabel value="Value" class="mx-2"/>
-                                    <h:outputLabel value="Bank" class="mx-2"/>
-                                    <h:outputLabel value="Check No" class="mx-2"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="mx-2"/>
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}" class="mx-2"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.netTotal}"  class="mx-2"/>   
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bank}" class="mx-2"/>
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="mx-2"/>
+                                    <p:spacer width="20"/>
 
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="To Date" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:calendar 
+                                        id="toDate" 
+                                        value="#{searchController.toDate}" 
+                                        navigator="false" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100"/>
+
+                                    <p:spacer width="20"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf543;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Bill No" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf81d;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Value" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+
+                                    <p:spacer width="20"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf1ad;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Credit Company" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}" class="w-100"/>
+
+                                    <p:spacer width="20"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Bank" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.bank}" class="w-100"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf53d;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Cheque No" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100"/>
+
+                                    <h:outputLabel/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel/>
+
+                                    <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                                                     action="#{searchController.createCreditTable}" 
+                                                     class="ui-button-warning my-4 w-100" icon="fas fa-search"/>
                                 </h:panelGrid>
-
                             </div>
-
                         </div>
 
-
-
-
-
-                        <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill" class="my-3">
+                        <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill">
                             <p:column headerText="Bill No">
                                 <div>
                                     <p:commandLink 
                                         id="billNo" 
                                         ajax="false" 
                                         value="#{bill.deptId}" 
-                                        action="credit_company_bill_reprint">
+                                        action="credit_company_bill_reprint?faces-redirect=true">
                                         <f:setPropertyActionListener value="#{bill}" target="#{creditCompanyBillSearch.bill}"/>
                                     </p:commandLink>
                                 </div>
@@ -77,7 +112,7 @@
                                 <h:outputLabel value="#{bill.fromInstitution.name}" />
                             </p:column>                          
 
-                            <p:column headerText="Billed at"  >
+                            <p:column headerText="Billed At"  >
                                 <h:outputLabel value="#{bill.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
@@ -89,7 +124,7 @@
                                     </h:outputLabel>
                                 </h:panelGroup>                               
                             </p:column>  
-                            <p:column headerText="Billed by" >                                
+                            <p:column headerText="Billed By" >                                
                                 <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                 </h:outputLabel>                                    
                                 <br/>

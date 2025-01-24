@@ -160,35 +160,35 @@
                                         value="Admit" 
                                         action="#{patientController.navigateToAdmitFromPatientProfile()}" 
                                         ajax="false" 
-                                        styleClass="mx-2 btn btn-secondary"
+                                        styleClass="mx-2"
                                         icon="fa fa-hospital">
                                     </p:commandButton>
                                     <p:commandButton 
                                         value="Collecting Centre Billing" 
                                         action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}" 
                                         ajax="false"
-                                        styleClass="mx-2 btn btn-secondary"
+                                        styleClass="mx-2"
                                         icon="fa fa-dollar-sign">
                                     </p:commandButton>
                                     <p:commandButton 
                                         value="OPD Bill for Cashier"
                                         action="#{patientController.navigateToBillingForCashierFromPatientProfile()}" 
                                         ajax="false" 
-                                        styleClass="mx-2 btn btn-secondary"
+                                        styleClass="mx-2"
                                         icon="fa fa-money-check-alt">
                                     </p:commandButton>
                                     <p:commandButton 
                                         value="OPD Packages" 
                                         action="#{patientController.navigateToOpdPackageBillFromOpdPatient()}" 
                                         ajax="false"
-                                        styleClass="mx-2 btn btn-secondary"
+                                        styleClass="mx-2"
                                         icon="fa fa-box">
                                     </p:commandButton>
                                     <p:commandButton 
                                         value="Accept Payments" 
                                         action="#{searchController.navigateToPatientAcceptPayment()}" 
                                         ajax="false" 
-                                        styleClass="mx-2 btn btn-secondary"
+                                        styleClass="mx-2"
                                         icon="fa fa-credit-card">
                                         <f:setPropertyActionListener value="#{patientController.current}" target="#{searchController.patient}"></f:setPropertyActionListener>
                                     </p:commandButton>
@@ -196,21 +196,21 @@
                                         value="Refunds"
                                         action="#{patientController.navigateToPatientRefundPayment}" 
                                         ajax="false" 
-                                        styleClass="mx-2 btn btn-secondary"
+                                        styleClass="mx-2"
                                         icon="fa fa-undo">
                                     </p:commandButton>
                                     <p:commandButton 
                                         value="Inward Appointments"
                                         action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
                                         ajax="false"
-                                        styleClass="mx-2 btn btn-secondary"
+                                        styleClass="mx-2"
                                         icon="fa fa-calendar-alt">
                                     </p:commandButton>
                                     <p:commandButton 
                                         value="Receive Deposits"
                                         action="#{patientDepositController.navigateToReciveDepositWithPatient(patientController.current)}"
                                         ajax="false"
-                                        styleClass="mx-2 btn btn-secondary"
+                                        styleClass="mx-2"
                                         icon="fa fa-coins">
                                     </p:commandButton>
                                     <p:commandButton 
@@ -218,10 +218,19 @@
                                         action="/patient_deposit/patient_deposit_history?faces-redirect=true"
                                         actionListener="#{patientDepositController.clearDataForPatientDepositHistory()}"
                                         ajax="false"
-                                        styleClass="mx-2 btn btn-secondary"
+                                        styleClass="mx-2"
                                         icon="fa fa-coins">
                                         <f:setPropertyActionListener target="#{patientController.current}" value="#{patientController.current}" />
                                     </p:commandButton>
+                                    <p:commandButton 
+                                        value="Delete Patient"
+                                        action="#{patientController.deletePatient()}"
+                                        ajax="false"
+                                        styleClass="mx-2 ui-button-danger"
+                                        icon="pi pi-trash"
+                                        onclick="return confirm('Are you sure you want to delete this patient?');">
+                                    </p:commandButton>
+
                                     <p:messages></p:messages>
                                 </div>
                             </div>  
