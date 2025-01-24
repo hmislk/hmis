@@ -7,7 +7,6 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.pharmacy.ConsumableCategoryController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -318,7 +317,7 @@ public class StoreAdjustmentController implements Serializable {
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
+            getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);
@@ -526,10 +525,9 @@ public class StoreAdjustmentController implements Serializable {
         savePrAdjustmentBillItems();
         getStock().getItemBatch().setPurcahseRate(pr);
         getItemBatchFacade().edit(getStock().getItemBatch());
+        
         deptAdjustmentPreBill = billFacade.find(getDeptAdjustmentPreBill().getId());
 
-//        clearBill();
-//        clearBillItem();
         printPreview = true;
     }
 
