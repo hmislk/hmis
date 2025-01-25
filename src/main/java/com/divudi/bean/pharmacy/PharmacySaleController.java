@@ -131,6 +131,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     PatientDepositController patientDepositController;
     @Inject
     CommonController commonController;
+    
 
     @Inject
     TokenController tokenController;
@@ -139,6 +140,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     @Inject
     PaymentSchemeController paymentSchemeController;
 ////////////////////////
+    @EJB
+    PharmacyService pharmacyService;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -171,8 +174,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     TokenFacade tokenFacade;
-    @EJB
-    private PharmacyService pharmacyService;
 /////////////////////////
     Item selectedAvailableAmp;
     Item selectedAlternative;
@@ -914,6 +915,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         calculateRates(billItem);
+        pharmacyService.addBillItemInstructions(billItem);
         if (stock != null && stock.getItemBatch() != null) {
             fillReplaceableStocksForAmp((Amp) stock.getItemBatch().getItem());
         }
@@ -1077,6 +1079,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         } else {
             addBillItemSingleItem();
         }
+        
         processBillItems();
         setActiveIndex(1);
     }
@@ -1221,6 +1224,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         UserStock us = saveUserStock(billItem);
         billItem.setTransUserStock(us);
+        
+        pharmacyService.addBillItemInstructions(billItem);
+        
         clearBillItem();
         getBillItem();
         return addedQty;
