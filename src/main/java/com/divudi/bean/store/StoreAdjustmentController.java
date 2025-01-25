@@ -132,6 +132,11 @@ public class StoreAdjustmentController implements Serializable {
         return "";
     }
 
+    public String navigateAdjustmentBillRePrint(Bill adjustmentbill) {
+        bill = getBillFacade().find(adjustmentbill.getId());
+        return "/store/store_reprint_adjustment?faces-redirect=true";
+    }
+
     public List<Item> completeRetailSaleItems(String qry) {
         Map m = new HashMap<>();
         List<Item> items;
@@ -216,29 +221,6 @@ public class StoreAdjustmentController implements Serializable {
         this.billItems = billItems;
     }
 
-    private void saveDeptAdjustmentBill() {
-        getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
-        getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
-        getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
-        getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
-        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StoreAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
-        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.StoreAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
-        getDeptAdjustmentPreBill().setBillType(BillType.StoreAdjustment);
-        getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        getDeptAdjustmentPreBill().setToDepartment(null);
-        getDeptAdjustmentPreBill().setToInstitution(null);
-        getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.STORE_DEPAERTMENT_STOCK_ADJUSTMENT);
-        getDeptAdjustmentPreBill().setComments(comment);
-        if (getDeptAdjustmentPreBill().getId() == null) {
-            getBillFacade().create(getDeptAdjustmentPreBill());
-        } else {
-            getBillFacade().edit(getDeptAdjustmentPreBill());
-        }
-    }
-    
     private void saveAdjustmentBill(BillTypeAtomic billTypeAtomic) {
         getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
@@ -315,7 +297,7 @@ public class StoreAdjustmentController implements Serializable {
 
         getBillItem().setItem(getStock().getItemBatch().getItem());
         getBillItem().setRate(pr);
-        
+
         getBillItem().getPharmaceuticalBillItem().setBillItem(null);
         ItemBatch ib = itemBatchFacade.find(getStock().getItemBatch().getId());
         getBillItem().getPharmaceuticalBillItem().setPurchaseRate(ib.getPurcahseRate());
@@ -334,7 +316,7 @@ public class StoreAdjustmentController implements Serializable {
         getBillItem().setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
         getBillItem().setCreatedAt(Calendar.getInstance().getTime());
         getBillItem().setCreater(getSessionController().getLoggedUser());
-        
+
         if (getBillItem().getId() == null) {
             getBillItemFacade().create(getBillItem());
         } else {
@@ -346,16 +328,16 @@ public class StoreAdjustmentController implements Serializable {
     }
 
     private void saveRetailSaleRateAdjustmentBillItems() {
-        billItem =  new BillItem();
-        
+        billItem = new BillItem();
+
         getBillItem().setItem(getStock().getItemBatch().getItem());
         getBillItem().setRate(rsr);
-        
+
         getBillItem().getPharmaceuticalBillItem().setBillItem(null);
         ItemBatch itemBatch = itemBatchFacade.find(getStock().getItemBatch().getId());
         getBillItem().getPharmaceuticalBillItem().setPurchaseRate(itemBatch.getPurcahseRate());
         getBillItem().getPharmaceuticalBillItem().setRetailRate(itemBatch.getRetailsaleRate());
-        
+
         //pharmaceutical Bill Item
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         //Rates
@@ -393,13 +375,11 @@ public class StoreAdjustmentController implements Serializable {
 
         return false;
     }
-    
+
 //   Department Stock Adjustment
-    
     private Item selectedItem;
     private List<Stock> selectedItemStock;
-    
-    
+
     public void fillselectedItemStocks() {
         List<Stock> items = new ArrayList<>();
         if (selectedItem == null) {
@@ -460,40 +440,17 @@ public class StoreAdjustmentController implements Serializable {
         setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
         getStoreBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
         printPreview = true;
-        
+
         JsfUtil.addSuccessMessage("Staff Stock Adjustment Successfully..");
 
     }
-    
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
     public void adjustDepartmentStock() {
 
         if (errorCheck()) {
             return;
         }
-        
+
         if (qty == null) {
             JsfUtil.addErrorMessage("Add Quantity..");
             return;
@@ -517,7 +474,7 @@ public class StoreAdjustmentController implements Serializable {
         savePurchaseRateAdjustmentBillItems();
         getStock().getItemBatch().setPurcahseRate(pr);
         getItemBatchFacade().edit(getStock().getItemBatch());
-        
+
         deptAdjustmentPreBill = billFacade.find(getDeptAdjustmentPreBill().getId());
 
         printPreview = true;
@@ -526,10 +483,10 @@ public class StoreAdjustmentController implements Serializable {
     public void adjustRetailRate() {
         saveAdjustmentBill(BillTypeAtomic.STORE_SALE_RATE_ADJUSTMENT);
         saveRetailSaleRateAdjustmentBillItems();
-        
+
         getStock().getItemBatch().setRetailsaleRate(rsr);
         getItemBatchFacade().edit(getStock().getItemBatch());
-        
+
         bill = billFacade.find(getDeptAdjustmentPreBill().getId());
 
         printPreview = true;
@@ -735,10 +692,9 @@ public class StoreAdjustmentController implements Serializable {
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
     }
-  
+
     private List<Stock> stk;
 
-    
     public void fillSelectStock() {
         List<Stock> items = new ArrayList<>();
         if (stock == null) {
@@ -804,7 +760,6 @@ public class StoreAdjustmentController implements Serializable {
 //    public void setStk(List<Stock> stk) {
 //        this.stk = stk;
 //    }
-
 //    public void fillSelectStock(){
 //        List<Stock> items = new ArrayList<>();
 //        
@@ -820,7 +775,6 @@ public class StoreAdjustmentController implements Serializable {
 //
 //        
 //    }
-
     public Item getSelectedItem() {
         return selectedItem;
     }
