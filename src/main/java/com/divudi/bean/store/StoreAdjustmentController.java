@@ -292,20 +292,25 @@ public class StoreAdjustmentController implements Serializable {
 
     }
 
-    private void savePurchaseRateAdjustmentBillItems() {
+    private PharmaceuticalBillItem savePurchaseRateAdjustmentBillItems() {
         billItem = new BillItem();
 
         getBillItem().setItem(getStock().getItemBatch().getItem());
         getBillItem().setRate(pr);
 
-        getBillItem().getPharmaceuticalBillItem().setBillItem(null);
+        getBillItem().setPharmaceuticalBillItem(null);
         ItemBatch ib = itemBatchFacade.find(getStock().getItemBatch().getId());
         getBillItem().getPharmaceuticalBillItem().setPurchaseRate(ib.getPurcahseRate());
         getBillItem().getPharmaceuticalBillItem().setRetailRate(ib.getRetailsaleRate());
 
         //pharmaceutical Bill Item
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
-        //Rates
+        
+        //Adjustment Rates
+        getBillItem().getPharmaceuticalBillItem().setBeforeAdjustmentValue(ib.getPurcahseRate());
+        getBillItem().getPharmaceuticalBillItem().setAfterAdjustmentValue(pr);
+        getBillItem().getPharmaceuticalBillItem().setItemBatch(ib);
+        
         //Values
         getBillItem().setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
         getBillItem().setNetValue(getStock().getStock() * getBillItem().getNetRate());
@@ -325,6 +330,8 @@ public class StoreAdjustmentController implements Serializable {
 
         getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
         getBillFacade().edit(getDeptAdjustmentPreBill());
+        System.out.println("Pharmaceutical BillItem = " + getBillItem().getPharmaceuticalBillItem());
+        return getBillItem().getPharmaceuticalBillItem();
     }
 
     private void saveRetailSaleRateAdjustmentBillItems() {
