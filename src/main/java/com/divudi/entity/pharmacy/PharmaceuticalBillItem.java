@@ -71,6 +71,15 @@ public class PharmaceuticalBillItem implements Serializable {
 
     private double lastPurchaseRate;
     private double lastPurchaseRatePack;
+    
+    private double beforeAdjustmentValue;
+    private double afterAdjustmentValue;
+    
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date beforeAdjustmentExpiry;
+    
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date afterAdjustmentExpiry;
 
     @ManyToOne
     private Stock stock;
@@ -683,6 +692,38 @@ public class PharmaceuticalBillItem implements Serializable {
 
     public void setRetailPackValue(double retailPackValue) {
         this.retailPackValue = retailPackValue;
+    }
+
+    public double getBeforeAdjustmentValue() {
+        return beforeAdjustmentValue;
+    }
+
+    public void setBeforeAdjustmentValue(double beforeAdjustmentValue) {
+        this.beforeAdjustmentValue = beforeAdjustmentValue;
+    }
+
+    public double getAfterAdjustmentValue() {
+        return afterAdjustmentValue;
+    }
+
+    public void setAfterAdjustmentValue(double afterAdjustmentValue) {
+        this.afterAdjustmentValue = afterAdjustmentValue;
+    }
+
+    public Date getBeforeAdjustmentExpiry() {
+        return beforeAdjustmentExpiry;
+    }
+
+    public void setBeforeAdjustmentExpiry(Date beforeAdjustmentExpiry) {
+        this.beforeAdjustmentExpiry = beforeAdjustmentExpiry;
+    }
+
+    public Date getAfterAdjustmentExpiry() {
+        return afterAdjustmentExpiry;
+    }
+
+    public void setAfterAdjustmentExpiry(Date afterAdjustmentExpiry) {
+        this.afterAdjustmentExpiry = afterAdjustmentExpiry;
     }
     
     

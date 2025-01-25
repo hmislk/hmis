@@ -78,6 +78,8 @@ public enum BillTypeAtomic {
     STORE_STAFF_STOCK_ADJUSTMENT("Store Staff Stock Adjustment", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND),
     STORE_PURCHASE_RATE_ADJUSTMENT("Store Purchase Rate Adjustment", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND),
     STORE_SALE_RATE_ADJUSTMENT("Store Sale Rate Adjustment", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND),
+    STORE_EXPIRY_DATE_ADJUSTMENT("Store Expiry Date Adjustment", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND),  
+
 // Direct Issue of store items to inward patients
     DIRECT_ISSUE_STORE_INWARD("Direct Issue of Store Items to Inward Patients", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     DIRECT_ISSUE_STORE_INWARD_CANCELLATION("Direct Issue of Store Items to Inward Patients Cancellation", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
