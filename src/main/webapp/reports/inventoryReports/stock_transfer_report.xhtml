@@ -134,7 +134,7 @@
                             <p:selectOneMenu 
                                 id="phmToSite"
                                 class="w-100"
-                                value="#{pharmacyController.site}"
+                                value="#{pharmacyController.toSite}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
@@ -214,7 +214,7 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu class="w-100" id="reportType"  value="#{pharmacyController.reportType}">
-                                <f:selectItem itemLabel="Summery" itemValue="summeryReport"/>
+                                <f:selectItem itemLabel="Summary" itemValue="summeryReport"/>
                                 <f:selectItem itemLabel="Detail" itemValue="detailReport"/>
                                 <f:selectItem itemLabel="Bill" itemValue="byBill"/>
                             </p:selectOneMenu>
@@ -286,7 +286,9 @@
                                     </h:outputText>                               
                                 </p:column>                          
                                 <p:column headerText="Good In Transist Amount">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{s.goodInTransistAmount}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:column>>
 
 
@@ -335,7 +337,7 @@
                                     <p:outputLabel value="#{i.pharmaceuticalBillItem.qty}" ><f:convertNumber pattern="#,##0"/></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Unit" width="4em" style="text-align: center;">
-                                    <h:outputText value="#{i.item.measurementUnit.name}" />
+                                    <h:outputText value="#{i.item.vmp.strengthUnit.name}" />
                                 </p:column>
                                 <p:column headerText="Cost rate" width="5em" style="text-align: right; padding-right: 10px;">
                                     <p:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate}" >
