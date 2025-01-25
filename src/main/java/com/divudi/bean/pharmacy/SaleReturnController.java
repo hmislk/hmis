@@ -88,6 +88,19 @@ public class SaleReturnController implements Serializable {
 
     PaymentMethodData paymentMethodData;
 
+    public String navigateToReturnItemsAndPaymentsForPharmacyRetailSale() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Please select a bill to return");
+            return null;
+        }
+        if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cancelled Bills CAN NOT BE returned");
+            return null;
+        }
+        
+        return "/pharmacy/pharmacy_bill_return_retail?faces-redirect=true";
+    }
+
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
             paymentMethodData = new PaymentMethodData();
@@ -107,6 +120,7 @@ public class SaleReturnController implements Serializable {
         makeNull();
         this.bill = bill;
         generateBillComponent();
+        returnPaymentMethod = bill.getPaymentMethod();
     }
 
     public Bill getReturnBill() {
@@ -507,7 +521,7 @@ public class SaleReturnController implements Serializable {
             //System.err.println("Refund " + rFund);
 //                //System.err.println("Cancelled "+rCacnelled);
 //                //System.err.println("Net "+(rBilled-rCacnelled));
-            tmp.setQtyInUnit((double) (Math.abs(i.getQty()) - Math.abs(rFund)));
+            tmp.setQty((double) (Math.abs(i.getQty()) - Math.abs(rFund)));
 
             bi.setPharmaceuticalBillItem(tmp);
 
