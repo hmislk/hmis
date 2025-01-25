@@ -258,8 +258,14 @@ public class StoreAdjustmentController implements Serializable {
         getBillItem().getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
         getBillItem().getPharmaceuticalBillItem().setFreeQty(0.0f);
         getBillItem().getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
-
+        
         Stock fetchedStock = getStockFacade().find(stock.getId());
+        
+        //Adjustment Rates
+        getBillItem().getPharmaceuticalBillItem().setBeforeAdjustmentValue(fetchedStock.getStock());
+        getBillItem().getPharmaceuticalBillItem().setAfterAdjustmentValue(qty);
+        getBillItem().getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
+
         double stockQty = fetchedStock.getStock();
         double changingQty;
 

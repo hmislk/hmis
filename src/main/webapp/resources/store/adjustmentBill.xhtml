@@ -53,8 +53,8 @@
         <div class="adjbill" >
             <div style="margin-left: 5%; margin-right: 5%;">
 
-                <div class="headingBill mb-4">
-                    <h:outputLabel value="Adjustment Note" style="text-decoration: underline;"/>                           
+                <div class="headingBill my-3">
+                    <h:outputLabel value="Department Stock Adjustment Note" style="text-decoration: underline;"/>                           
                 </div>
 
                 <h:panelGrid columns="4" style="min-width: 100%;">
@@ -76,9 +76,6 @@
                     </h:outputLabel>
                 </h:panelGrid>
 
-
-
-
                 <div >
                     <p:spacer height="15px"/>
 
@@ -89,45 +86,44 @@
                         var="bip" style="
                         text-align: center;">
 
-                        <p:column style="text-align: left!important; padding: 10px;"  >
+                        <p:column style="text-align: left!important; width: 6em; padding: 8px;"  >
+                            <f:facet name="header">
+                                <h:outputLabel value="Batch No" style="font-weight: bold!important; " />
+                            </f:facet>
+                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.batchNo}" rendered="#{bip.pharmaceuticalBillItem.itemBatch.batchNo ne null}"/>
+                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.id}" rendered="#{bip.pharmaceuticalBillItem.itemBatch.batchNo eq null}"/>
+                        </p:column>
+                        
+                        <p:column style="text-align: left!important; padding: 8px;"  >
                             <f:facet name="header">
                                 <h:outputLabel value="Item" style="font-weight: bold!important; " />
                             </f:facet>
                             <h:outputLabel value="#{bip.item.name}"/>
                         </p:column>
 
-                        <p:column style="width: 100px;text-align: right!important; padding: 10px;" >
-                            <f:facet name="header">
-                                <h:outputLabel value="Expiry" style="font-weight: bold!important;" />
-                            </f:facet>
-                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                            </h:outputLabel>
-                        </p:column>                                  
-
-                        <p:column style="text-align: right!important; padding: 10px;width: 100px;"> 
+                        <p:column style="text-align: right!important; width: 8em; padding: 8px;"> 
                             <f:facet name="header">                           
                                 <h:outputLabel value="Before Qty" style="font-weight: bold!important;" />
                             </f:facet>
-                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.stockHistory.stockQty}">
-                                <f:convertNumber integerOnly="true"/>
+                            <h:outputLabel  value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue}" >
+                                <f:convertNumber pattern="#00.00"/>
                             </h:outputLabel>
                         </p:column>                  
 
-                        <p:column style="text-align: right!important; padding: 10px; width: 100px;"> 
+                        <p:column style="text-align: right!important; width: 8em; padding: 8px;"> 
                             <f:facet name="header">                           
-                                <h:outputLabel value="QTY" style="font-weight: bold!important;" />
+                                <h:outputLabel value="After Qty" style="font-weight: bold!important;" />
                             </f:facet>
-                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
-                                <f:convertNumber integerOnly="true"/>
+                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.afterAdjustmentValue}" >
+                                <f:convertNumber pattern="#00.00"/>
                             </h:outputLabel>
-                        </p:column>                  
-
+                        </p:column>
+                        
                     </p:dataTable>
                 </div>
 
                 <div class="d-flex mt-4">
-                    <h:outputLabel value="Comment" class="col-4" ></h:outputLabel>
+                    <h:outputLabel value="Adjustment Comment" style="width: 50mm" ></h:outputLabel>
                     <h:outputLabel value="#{cc.attrs.bill.comments}" ></h:outputLabel>
                 </div>
 
