@@ -14,53 +14,78 @@
             <ui:define name="content">
                 <h:form>
 
+
                     <p:panel  >
                         <f:facet name="header" >
-                            <h:outputLabel value="Pharmacy Adjustment Reprint" ></h:outputLabel>
-                            <hr/>
-
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="Pharmacy Adjustment Reprint" ></h:outputLabel>
+                                <p:commandButton 
+                                    class="ui-button-info"
+                                    icon="fa fa-print"
+                                    ajax="false" 
+                                    value="Print">
+                                    <p:printer target="print"/>
+                                </p:commandButton>
+                            </div>
 
                         </f:facet>
 
 
+                        <h:panelGroup id="print">
+
+                            <h:panelGroup rendered="#{storeAdjustmentController.bill.billTypeAtomic eq 'STORE_DEPAERTMENT_STOCK_ADJUSTMENT'}">
+                                <div class="d-flex justify-content-center">
+                                    <st:adjustmentBill bill="#{storeAdjustmentController.bill}" />
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{storeAdjustmentController.bill.billTypeAtomic eq 'STORE_STAFF_STOCK_ADJUSTMENT'}">
+                                <div class="d-flex justify-content-center">
+                                    <st:adjustmentBill bill="#{storeAdjustmentController.bill}" />
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{storeAdjustmentController.bill.billTypeAtomic eq 'STORE_PURCHASE_RATE_ADJUSTMENT'}">
+                                <div class="d-flex justify-content-center">
+                                    <st:adjustmentBill_purchase_price bill="#{storeAdjustmentController.bill}" />
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{storeAdjustmentController.bill.billTypeAtomic eq 'STORE_SALE_RATE_ADJUSTMENT'}">
+                                <div class="d-flex justify-content-center">
+                                    <st:adjustmentBill_sale_price bill="#{storeAdjustmentController.bill}" />
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{storeAdjustmentController.bill.billTypeAtomic eq 'STORE_EXPIRY_DATE_ADJUSTMENT'}"></h:panelGroup>
+
+                            <h:panelGroup rendered="#{storeAdjustmentController.bill.billTypeAtomic eq '' or storeAdjustmentController.bill.billTypeAtomic eq null}">
+
+                                <h:panelGroup >
+                                    Reprint Qty Adjustment
+                                    <h:panelGroup>
+                                        <st:adjustmentBill bill="#{storeAdjustmentController.bill}" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <h:panelGroup >
+                                    Reprint Purchase Adjustment
+                                    <h:panelGroup>
+                                        <st:adjustmentBill_purchase_price bill="#{storeAdjustmentController.bill}" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <h:panelGroup >
+                                    Reprint Retail Rate Adjustment
+                                    <h:panelGroup>
+                                        <st:adjustmentBill_sale_price bill="#{storeAdjustmentController.bill}" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                            </h:panelGroup>
+                        </h:panelGroup>
+
                     </p:panel>
-
-
-
-
-                    <h:panelGroup >
-                        <p:commandButton value="Reprint Qty Adjust" ajax="false" >
-                            <p:printer target="gpBillPreview1" ></p:printer>
-                        </p:commandButton>
-                        <h:panelGroup id="gpBillPreview1" >
-                            <st:adjustmentBill bill="#{storeBillSearch.bill}" />
-
-                        </h:panelGroup>
-
-                    </h:panelGroup>
-                    
-                      <h:panelGroup >
-                        <p:commandButton value="Reprint Purchase Adjust" ajax="false" >
-                            <p:printer target="gpBillPreview2" ></p:printer>
-                        </p:commandButton>
-                        <h:panelGroup id="gpBillPreview2" >
-                            <st:adjustmentBill_purchase_price bill="#{storeBillSearch.bill}" />
-
-                        </h:panelGroup>
-
-                    </h:panelGroup>
-                    
-                      <h:panelGroup >
-                        <p:commandButton value="Reprint Retail Rate" ajax="false" >
-                            <p:printer target="gpBillPreview3" ></p:printer>
-                        </p:commandButton>
-                        <h:panelGroup id="gpBillPreview3" >
-                            <st:adjustmentBill_sale_price bill="#{storeBillSearch.bill}" />
-
-                        </h:panelGroup>
-
-                    </h:panelGroup>
-
 
                 </h:form>
             </ui:define>
