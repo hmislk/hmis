@@ -54,8 +54,8 @@
 
             <div style="margin-left: 5%; margin-right: 5%; margin-top: 3%;">
 
-                <div class="headingBill">
-                    <h:outputLabel value="Adjustment Note" style="text-decoration: underline;"/>                           
+                <div class="headingBill my-3">
+                    <h:outputLabel value="Sale Rate Adjustment Note" style="text-decoration: underline;"/>                           
                 </div>
 
                 <h:panelGrid columns="4" style="min-width: 100%;">
@@ -87,39 +87,46 @@
                         var="bip" 
                         style=" text-align: center;">     
                         
-                        <p:column style="text-align: left!important; padding: 10px; "  >
+                        <p:column style="text-align: left!important; width: 6em; padding: 8px;"  >
+                            <f:facet name="header">
+                                <h:outputLabel value="Batch No" style="font-weight: bold!important; " />
+                            </f:facet>
+                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.batchNo}" rendered="#{bip.pharmaceuticalBillItem.itemBatch.batchNo ne null}"/>
+                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.id}" rendered="#{bip.pharmaceuticalBillItem.itemBatch.batchNo eq null}"/>
+                        </p:column>
+                        
+                        <p:column style="text-align: left!important; padding: 8px;"  >
                             <f:facet name="header">
                                 <h:outputLabel value="Item" style="font-weight: bold!important; " />
                             </f:facet>
                             <h:outputLabel value="#{bip.item.name}"/>
                         </p:column>
-                        
-                        <p:column style="width: 130px;text-align: right!important; padding: 10px;"> 
+
+                        <p:column style="text-align: right!important; width: 8em; padding: 8px;"> 
                             <f:facet name="header">                           
-                                <h:outputLabel value="Before Retail Price" style="font-weight: bold!important;" />
+                                <h:outputLabel value="Before Rate" style="font-weight: bold!important;" />
                             </f:facet>
-                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}" >
+                            <h:outputLabel  value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue}" >
                                 <f:convertNumber pattern="#00.00"/>
                             </h:outputLabel>
                         </p:column>                  
 
-                        <p:column style="width: 130px;text-align: right!important; padding: 10px;"> 
+                        <p:column style="text-align: right!important; width: 8em; padding: 8px;"> 
                             <f:facet name="header">                           
-                                <h:outputLabel value="Now Retail Price" style="font-weight: bold!important;" />
+                                <h:outputLabel value="After Rate" style="font-weight: bold!important;" />
                             </f:facet>
-                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}">
+                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.afterAdjustmentValue}" >
                                 <f:convertNumber pattern="#00.00"/>
                             </h:outputLabel>
-                        </p:column>                  
+                        </p:column>                 
 
                     </p:dataTable>
                 </div>
 
-                <h:panelGrid columns="2" style="min-width: 100%;" class="mt-2">
-                    <h:outputLabel value="Comment" ></h:outputLabel>
-                    <h:outputLabel value="#{cc.attrs.bill.comments}" >
-                    </h:outputLabel>
-                </h:panelGrid>
+                <div class="d-flex mt-4">
+                    <h:outputLabel value="Adjustment Comment" style="width: 50mm" ></h:outputLabel>
+                    <h:outputLabel value="#{cc.attrs.bill.comments}" ></h:outputLabel>
+                </div>
                 
             </div>  
         </div>
