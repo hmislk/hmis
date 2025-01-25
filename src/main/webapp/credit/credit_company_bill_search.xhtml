@@ -13,7 +13,7 @@
                     <p:panel >
 
                         <f:facet name="header" >
-                            <h:outputLabel value="CREDIT COMPANY PAYMENT BILL SEARCH "/>
+                            <h:outputLabel value="Credit Company Payment Bill Search "/>
                         </f:facet>   
 
                         <div class="row">
@@ -89,30 +89,48 @@
                                     <h:outputLabel/>
                                     <h:outputLabel/>
 
-                                    <p:commandButton id="btnSearch" ajax="false" value="Search" 
-                                                     action="#{searchController.createCreditTable}" 
-                                                     class="ui-button-warning my-4 w-100" icon="fas fa-search"/>
+                                    <p:commandButton 
+                                        id="btnSearch"
+                                        ajax="false" 
+                                        value="Search" 
+                                        action="#{searchController.createCreditTable}" 
+                                        class="ui-button-warning my-4 w-100" 
+                                        icon="fas fa-search">
+                                    </p:commandButton>
                                 </h:panelGrid>
                             </div>
                         </div>
 
-                        <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill">
-                            <p:column headerText="Bill No">
-                                <div>
-                                    <p:commandLink 
-                                        id="billNo" 
-                                        ajax="false" 
-                                        value="#{bill.deptId}" 
-                                        action="credit_company_bill_reprint?faces-redirect=true">
-                                        <f:setPropertyActionListener value="#{bill}" target="#{creditCompanyBillSearch.bill}"/>
-                                    </p:commandLink>
-                                </div>
+                        <p:dataTable 
+                            rowIndexVar="i" 
+                            id="tblBills" 
+                            rows="20"
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="20, 50, 100" 
+                            value="#{searchController.bills}" 
+                            var="bill">
+
+                            <p:column headerText="No" styleClass="alignTop" style="padding: 10px; width: 3em">
+                                <h:outputLabel value="#{i+1}"/>
                             </p:column>
-                            <p:column headerText="Credit Company">                               
+                            
+                            <p:column headerText="Bill No" style="padding: 8px;">
+                                <p:commandLink 
+                                    id="billNo" 
+                                    ajax="false" 
+                                    value="#{bill.deptId}" 
+                                    action="credit_company_bill_reprint?faces-redirect=true">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{creditCompanyBillSearch.bill}"/>
+                                </p:commandLink>
+                            </p:column>
+                            
+                            <p:column headerText="Credit Company" style="padding: 8px;">                               
                                 <h:outputLabel value="#{bill.fromInstitution.name}" />
                             </p:column>                          
 
-                            <p:column headerText="Billed At"  >
+                            <p:column headerText="Billed At"  style="padding: 8px;" >
                                 <h:outputLabel value="#{bill.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
@@ -124,7 +142,8 @@
                                     </h:outputLabel>
                                 </h:panelGroup>                               
                             </p:column>  
-                            <p:column headerText="Billed By" >                                
+                            
+                            <p:column headerText="Billed By" style="padding: 8px;">                                
                                 <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                 </h:outputLabel>                                    
                                 <br/>
@@ -134,35 +153,37 @@
                                     </h:outputLabel>
                                 </h:panelGroup>                                
                             </p:column>    
-                            <p:column headerText="Payment Scheme"  >                             
-                                <h:outputLabel value="#{bill.paymentScheme.name}" >                                       
-                                </h:outputLabel>                                   
+                            
+                            <p:column headerText="Payment Scheme" style="padding: 8px;">                             
+                                <h:outputLabel value="#{bill.paymentScheme.name}" ></h:outputLabel>                                   
                             </p:column>
-                            <p:column headerText="Payment Method" >                              
-                                <h:outputLabel value="#{bill.paymentMethod}" >                                       
-                                </h:outputLabel>                                
+                            
+                            <p:column headerText="Payment Method"  style="padding: 8px;">                              
+                                <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>                                
                             </p:column>
-                            <p:column headerText="Net Value" styleClass="averageNumericColumn">                               
+                            
+                            <p:column headerText="Net Value" style="padding: 8px;" styleClass="averageNumericColumn">                               
                                 <h:outputLabel value="#{bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>                                    
                             </p:column>
-                            <p:column headerText="Bank" >                              
-                                <h:outputLabel value="#{bill.bank.name}" >                                        
-                                </h:outputLabel>                                   
+                            
+                            <p:column headerText="Bank"  style="padding: 8px;">                              
+                                <h:outputLabel value="#{bill.bank.name}" ></h:outputLabel>                                   
                             </p:column>
-                            <p:column headerText="Cheque No" >                                
-                                <h:outputLabel value="#{bill.chequeRefNo}" >                                       
-                                </h:outputLabel>                                  
+                            
+                            <p:column headerText="Cheque No" style="padding: 8px;" >                                
+                                <h:outputLabel value="#{bill.chequeRefNo}" ></h:outputLabel>                                  
                             </p:column>
-                            <p:column headerText="Cheque Date">                               
+                            
+                            <p:column headerText="Cheque Date" style="padding: 8px;">                               
                                 <h:outputLabel value="#{bill.chequeDate}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputLabel>                                   
-                            </p:column>                                                  
-                            <p:column headerText="Comments" >                             
-                                <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
-                                </h:outputLabel>
+                            </p:column>       
+                            
+                            <p:column headerText="Comments"  style="padding: 8px;">                             
+                                <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" ></h:outputLabel>
                             </p:column>
                         </p:dataTable>
 
