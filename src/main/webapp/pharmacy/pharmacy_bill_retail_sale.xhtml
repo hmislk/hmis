@@ -115,7 +115,7 @@
                                                             </h:outputLabel>
                                                         </p:column>
                                                         <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}"  ></p:ajax>
-                                                        <p:ajax event="itemSelect" listener="#{pharmacySaleController.handleSelect}" update="txtQty txtRate focusQty :#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" ></p:ajax>
+                                                        <p:ajax event="itemSelect" listener="#{pharmacySaleController.handleSelect}" update="txtQty txtRate focusQty txtItemInstructions :#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" ></p:ajax>
                                                         <p:ajax event="query" update=":#{p:resolveFirstComponentWithId('tabI',view).clientId}" process="acStock"></p:ajax>
                                                     </p:autoComplete>
                                                     <p:autoComplete 
@@ -163,7 +163,7 @@
                                                             </h:outputLabel>
                                                         </p:column>
                                                         <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}"  ></p:ajax>
-                                                        <p:ajax event="itemSelect" listener="#{pharmacySaleController.handleSelect}" update="txtQty txtRate focusQty :#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" ></p:ajax>
+                                                        <p:ajax event="itemSelect" listener="#{pharmacySaleController.handleSelect}" update="txtQty txtRate focusQty txtItemInstructions :#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" ></p:ajax>
                                                         <p:ajax event="query" update=":#{p:resolveFirstComponentWithId('tabI',view).clientId}" process="acStock"></p:ajax>
                                                     </p:autoComplete>
                                                 </h:panelGroup>
@@ -229,6 +229,13 @@
                                                         </p:inputText>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div class="row w-100 m-1 p-1 boder-1">
+                                            <div class="col-12" >
+                                                <h:panelGroup id="txtItemInstructions" >
+                                                    <h:outputText value="#{pharmacySaleController.billItem.instructions}" ></h:outputText>
+                                                </h:panelGroup>
                                             </div>
                                         </div>
                                         <p:focus id="focusQty" for="txtQty"></p:focus>

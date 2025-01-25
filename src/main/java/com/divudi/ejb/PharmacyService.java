@@ -5,6 +5,10 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.pharmacy.Amp;
+import com.divudi.entity.pharmacy.Ampp;
+import com.divudi.entity.pharmacy.Vmp;
+import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.facade.ClinicalFindingValueFacade;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,10 +51,10 @@ public class PharmacyService {
 
     public boolean isAllergyForPatient(Patient patient, BillItem billItem, List<ClinicalFindingValue> allergyListOfPatient) {
 
-        if(allergyListOfPatient == null || allergyListOfPatient.isEmpty()){
-             allergyListOfPatient = getAllergyListForPatient(patient);
+        if (allergyListOfPatient == null || allergyListOfPatient.isEmpty()) {
+            allergyListOfPatient = getAllergyListForPatient(patient);
         }
-        
+
         if (allergyListOfPatient.isEmpty()) {
             return false;
         }
@@ -80,16 +84,16 @@ public class PharmacyService {
     }
 
     public String isAllergyForPatient(Patient patient, List<BillItem> items, List<ClinicalFindingValue> allergyLisForPatient) {
-        
+
         boolean hasAllergicMedicines = false;
         List<Item> allergyItems = new ArrayList<>();
         StringBuilder allergyMsg = new StringBuilder();
-        
-        if(allergyLisForPatient == null || allergyLisForPatient.isEmpty()){
+
+        if (allergyLisForPatient == null || allergyLisForPatient.isEmpty()) {
             allergyLisForPatient = getAllergyListForPatient(patient);
         }
-        
-        if(allergyLisForPatient.isEmpty()){
+
+        if (allergyLisForPatient.isEmpty()) {
             return "";
         }
 
@@ -104,18 +108,62 @@ public class PharmacyService {
 
         if (hasAllergicMedicines) {
             allergyMsg.append("This patient should be allergy of ");
-            
-            for(Item i : allergyItems){
-                allergyMsg.append(i.getName() +" , ");
+
+            for (Item i : allergyItems) {
+                allergyMsg.append(i.getName() + " , ");
             }
-            
-            if(allergyMsg.length() >0){
-                allergyMsg.setLength(allergyMsg.length()-2);
+
+            if (allergyMsg.length() > 0) {
+                allergyMsg.setLength(allergyMsg.length() - 2);
             }
             return allergyMsg.toString();
         }
 
         return "";
+    }
+
+    public void addBillItemInstructions(BillItem billItem) {
+        if (billItem == null) {
+            return;
+        }
+        if (billItem.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        Item item = billItem.getItem();
+        if (item == null) {
+            return;
+        }
+        String instrcutions = item.getInstructions();
+        Amp amp = null;
+        Vmp vmp = null;
+        Vtm vtm = null;
+        if (instrcutions == null || instrcutions.trim().isEmpty()) {
+
+            if (item instanceof Ampp) {
+                Ampp ampp = (Ampp) item;
+                amp = ampp.getAmp();
+            } else if (item instanceof Amp) {
+                amp = (Amp) item;
+            }
+            if (amp != null) {
+                vmp = amp.getVmp();
+                if (vmp != null) {
+                    instrcutions = vmp.getInstructions();
+                }
+            }
+        }
+        if (instrcutions == null || instrcutions.trim().isEmpty()) {
+            if (vmp != null) {
+                if (vmp.getVtm() instanceof Vtm) {
+                    vtm = (Vtm) vmp.getVtm();
+                }
+                if (vtm != null) {
+                    instrcutions = vtm.getInstructions();
+                }
+            }
+
+        }
+        billItem.setInstructions(instrcutions);
     }
 
 }
