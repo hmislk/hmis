@@ -112,19 +112,20 @@
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Action" width="300px">
+                                    <p:column headerText="Actions" >
                                         <p:commandButton 
                                             ajax="false" 
                                             id="viewBill"
                                             icon="fas fa-file-invoice"
-
-                                            action="pharmacy_reprint_bill_sale">
+                                            value="View Bill"
+                                            class="m-1 ui-button-success"
+                                            action="pharmacy_reprint_bill_sale?faces-redirect=true">
                                             <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>   
                                         </p:commandButton>
                                         <p:tooltip for="viewBill" value="View Bill"  showDelay="0" hideDelay="0"></p:tooltip>
                                         <p:commandButton 
                                             ajax="false" 
-                                            class="mx-2"
+                                            class="m-1 ui-button-warning"
                                             value="Return Item and Cash"
                                             action="pharmacy_bill_return_retail?faces-redirect=true"
                                             disabled="#{bill.cancelled eq true}">
