@@ -64,6 +64,7 @@ import com.divudi.java.CommonFunctions;
 import com.divudi.light.pharmacy.PharmaceuticalItemLight;
 import com.divudi.service.BillService;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1602,7 +1603,8 @@ public class PharmacyController implements Serializable {
 
     public void generateReportByDepartmentWiseBill(BillType billType) {
         Map<String, Object> parameters = new HashMap<>();
-        String sql = "SELECT b.toDepartment, "
+        StringBuilder sql = new StringBuilder(
+                "SELECT b.toDepartment, "
                 + "b.department, "
                 + "b.deptId, "
                 + "b.createdAt, "
@@ -1614,19 +1616,21 @@ public class PharmacyController implements Serializable {
                 + "WHERE b.retired = false "
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate "
                 + "AND b.billType = :billType "
-                + "GROUP BY b.toDepartment, b";
+        );
 
         parameters.put("billType", billType);
         parameters.put("fromDate", fromDate);
         parameters.put("toDate", toDate);
 
-        additionalCommonFilltersForBillEntity(new StringBuilder(sql), parameters);
+        additionalCommonFilltersForBillEntity(sql, parameters);
+
+        sql.append(" GROUP BY b.toDepartment, b.department, b.deptId, b.createdAt, b.backwardReferenceBill, b.backwardReferenceBill.deptId, b");
 
         Map<Department, List<DepartmentWiseBill>> departmentWiseBillMap = new HashMap<>();
 
         try {
             List<Object[]> results = (List<Object[]>) getBillFacade()
-                    .findLightsByJpql(sql, parameters, TemporalType.TIMESTAMP);
+                    .findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
             departmentWiseBillList = new ArrayList<>();
             totalPurchase = 0;
@@ -1649,12 +1653,12 @@ public class PharmacyController implements Serializable {
 
                 departmentWiseBillList.add(departmentWiseBill);
                 totalPurchase += departmentWiseBill.getBill().getNetTotal();
-                departmentWiseBillList = departmentWiseBillMap.entrySet().stream()
-                        .sorted(Map.Entry.comparingByKey(Comparator.comparing(Department::getName)))
-                        .flatMap(entry -> entry.getValue().stream())
-                        .collect(Collectors.toList());
-
             }
+
+            departmentWiseBillList = departmentWiseBillMap.entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey(Comparator.comparing(Department::getName)))
+                    .flatMap(entry -> entry.getValue().stream())
+                    .collect(Collectors.toList());
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error occurred while generating the consumption report.");
@@ -1663,7 +1667,7 @@ public class PharmacyController implements Serializable {
 
     private void addFilter(StringBuilder sql, Map<String, Object> parameters, String sqlField, String paramKey, Object value) {
         if (value != null) {
-            sql.append(" and ").append(sqlField).append(" = :").append(paramKey);
+            sql.append(" AND ").append(sqlField).append(" = :").append(paramKey).append(" ");
             parameters.put(paramKey, value);
         }
     }
@@ -1721,45 +1725,40 @@ public class PharmacyController implements Serializable {
     }
 
     public void generateReportAsSummary(BillType billType) {
-        // Prepare SQL query with dynamic filtering
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT b.department.name, SUM(b.netTotal) ")
+        sql.append("SELECT b.department.name, SUM(b.netTotal), ")
+                .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.netTotal ELSE 0 END) ")
                 .append("FROM Bill b ")
                 .append("WHERE b.retired = false ")
                 .append("AND b.billType = :billType ")
                 .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
-        // Prepare parameters
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("billType", billType);
         parameters.put("fromDate", getFromDate());
         parameters.put("toDate", getToDate());
 
-        // Add optional filters
         additionalCommonFilltersForBillEntity(sql, parameters);
 
-        // Group by department and order by total in descending order
         sql.append(" GROUP BY b.department.name ORDER BY SUM(b.netTotal) DESC");
 
         try {
-            // Execute the query and fetch summarized data
             List<Object[]> results = getBillFacade().findObjectsArrayByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
-            // Process results into a summary list
             departmentSummaries = new ArrayList<>();
-            double grandTotal = 0;
+            double grandTotal = 0.0;
+            double goodInTransistTotal = 0.0;
 
             for (Object[] result : results) {
-                String departmentName = (String) result[0]; // Extract department name
-                Double netTotal = (Double) result[1];       // Extract net total
-                grandTotal += netTotal;                     // Accumulate the grand total
+                String departmentName = (String) result[0];
+                double netTotal = (double) result[1];
+                double goodInTransist = (double) result[2];
+                grandTotal += netTotal;
+                goodInTransistTotal += goodInTransist;
 
-                // Add summary data
-                departmentSummaries.add(new PharmacySummery(departmentName, netTotal));
+                departmentSummaries.add(new PharmacySummery(departmentName, netTotal, goodInTransist));
             }
-
-            // Add grand total
-            departmentSummaries.add(new PharmacySummery("Total", grandTotal));
+            departmentSummaries.add(new PharmacySummery("Total", grandTotal, goodInTransistTotal));
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Something Went Wrong!");
