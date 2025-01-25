@@ -99,7 +99,7 @@
 
                         <p:column style="text-align: right!important;"> 
                             <f:facet name="header">                           
-                                <h:outputLabel value="Before Purchase Price" style="font-weight: bold!important;" />
+                                <h:outputLabel value="Purchase Price Before" style="font-weight: bold!important;" />
                             </f:facet>
                             <h:outputLabel  value="#{bip.pharmaceuticalBillItem.purchaseRate}" >
                                 <f:convertNumber pattern="#00.00"/>
@@ -109,7 +109,7 @@
 
                         <p:column style="text-align: right!important;"> 
                             <f:facet name="header">                           
-                                <h:outputLabel value="Purchase Price" style="font-weight: bold!important;" />
+                                <h:outputLabel value="Purchase Price After" style="font-weight: bold!important;" />
                             </f:facet>
                             <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" >
                                 <f:convertNumber pattern="#00.00"/>
