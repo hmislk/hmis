@@ -62,7 +62,7 @@ public class AssetCategoryController implements Serializable {
 
     public void create() {
         persist(PersistAction.CREATE, "Asset Category Created");
-        if (!JsfUtil.isValidationFailed()) {
+        if (JsfUtil.isValidationPassed()) {
             items = null;    // Invalidate list of items to trigger re-query.
         }
     }
@@ -73,7 +73,7 @@ public class AssetCategoryController implements Serializable {
 
     public void destroy() {
         persist(PersistAction.DELETE, "Asset Category Deleted");
-        if (!JsfUtil.isValidationFailed()) {
+        if (JsfUtil.isValidationPassed()) {
             selected = null; // Remove selection
             items = null;    // Invalidate list of items to trigger re-query.
         }
@@ -138,8 +138,8 @@ public class AssetCategoryController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    
-    
+
+
     @FacesConverter(forClass = AssetCategory.class)
     public static class AssetCategoryControllerConverter implements Converter {
 

@@ -19,6 +19,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
@@ -106,8 +107,10 @@ public class InwardReportControllerBht implements Serializable {
     double paidbyPatientTotalValue;
 
     Bill finalBill;
+    private Department department;
 
     public String navigateToInpatientPharmacyItemList() {
+        System.out.println("navigateToInpatientPharmacyItemList");
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No encounter");
             return null;
@@ -119,12 +122,24 @@ public class InwardReportControllerBht implements Serializable {
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
         pharmacyIssueBillItemsToPatientEncounterNetTotal = 0.0;
-        pharmacyIssueBillItemsToPatientEncounter = billService.fetchBillItems(null, null, null, null, null, null, btas, patientEncounter);
+        pharmacyIssueBillItemsToPatientEncounter = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
         if (pharmacyIssueBillItemsToPatientEncounter != null) {
             for (BillItem bi : pharmacyIssueBillItemsToPatientEncounter) {
-                pharmacyIssueBillItemsToPatientEncounterNetTotal += bi.getNetValue();
+                switch (bi.getBill().getBillTypeAtomic()) {
+                    case PHARMACY_DIRECT_ISSUE_CANCELLED:
+                    case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
+                    case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
+                        pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
+                        break;
+                    case PHARMACY_DIRECT_ISSUE:
+                    case DIRECT_ISSUE_INWARD_MEDICINE:
+                        pharmacyIssueBillItemsToPatientEncounterNetTotal += Math.abs(bi.getNetValue());
+                        break;
+                }
+
             }
         }
+        //department = null;
         return "/inward/reports/inpatient_pharmacy_item_list?faces-redirect=true";
     }
 
@@ -1224,6 +1239,14 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setPharmacyIssueBillItemsToPatientEncounterNetTotal(double pharmacyIssueBillItemsToPatientEncounterNetTotal) {
         this.pharmacyIssueBillItemsToPatientEncounterNetTotal = pharmacyIssueBillItemsToPatientEncounterNetTotal;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     //DATA STRUCTURE

@@ -57,22 +57,26 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.DepartmentCategoryWiseItems;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.CategoryWithItem;
+import com.divudi.data.DepartmentWiseBill;
 import com.divudi.data.dataStructure.PharmacySummery;
 import com.divudi.data.table.String1Value1;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.pharmacy.PharmaceuticalItemLight;
 import com.divudi.service.BillService;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
@@ -744,8 +748,10 @@ public class PharmacyController implements Serializable {
     private List<DepartmentCategoryWiseItems> resultsList;
 
     private String transferType;
-    private Institution FromSite;
+    private Institution fromSite;
     private Institution toSite;
+
+    private List<DepartmentWiseBill> departmentWiseBillList;
 
     public void clearItemHistory() {
 
@@ -791,6 +797,7 @@ public class PharmacyController implements Serializable {
         return reportName.trim();
     }
 
+    @Deprecated
     public void generateGRNReportTableByBillItem(List<BillType> bt) {
         bills = null;
         totalCreditPurchaseValue = 0.0;
@@ -846,74 +853,74 @@ public class PharmacyController implements Serializable {
 //        calculateTotalsForBillItems(billItems);
     }
 
-    public String navigateToPrinteGeneratedGrnDetailedRportTable() {
+    public void fetchBillItemDetailsToPrint() {
         if (bills == null) {
             JsfUtil.addErrorMessage("No Bills");
-            return null;
+            return;
         }
         if (bills.isEmpty()) {
             JsfUtil.addErrorMessage("Bill List Empty");
-            return null;
+            return;
         }
         for (Bill b : bills) {
             if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
                 b.setBillItems(billService.fetchBillItems(b));
             }
         }
+    }
+
+    public String navigateToPrinteGeneratedGrnDetailedRportTable() {
+        fetchBillItemDetailsToPrint();
         return "/reports/inventoryReports/grn_report_detail_print?faces-redirect=true";
     }
 
     public String navigateToPrinteGeneratedGrnReturnReportTable() {
-        if (bills == null) {
-            JsfUtil.addErrorMessage("No Bills");
-            return null;
-        }
-        if (bills.isEmpty()) {
-            JsfUtil.addErrorMessage("Bill List Empty");
-            return null;
-        }
-        for (Bill b : bills) {
-            if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
-                b.setBillItems(billService.fetchBillItems(b));
-            }
-        }
+        fetchBillItemDetailsToPrint();
         return "/reports/inventoryReports/grn_report_return_print?faces-redirect=true";
+    }
+
+    public String navigateToPrinteGeneratedGrnCancelReportTable() {
+        fetchBillItemDetailsToPrint();
+        return "/reports/inventoryReports/grn_report_cancel_print?faces-redirect=true";
     }
 
     public String navigateBackToGeneratedGrnDetailedRportTable() {
         return "/reports/inventoryReports/grn_report?faces-redirect=true";
     }
- 
-    public void generateGrnReportTable() {
 
-        bills = null;
-        totalCreditPurchaseValue = 0.0;
-        totalCashPurchaseValue = 0.0;
-        totalPurchase = 0.0;
+    public void generateGrnReportTable() {
+        resetFields();
 
         List<BillType> bt = new ArrayList<>();
-        if ("detailReport".equals(reportType)) {
-            bt.add(BillType.PharmacyGrnBill);
-            generateGRNReportTableByBillItem(bt);
-        } else if ("returnReport".equals(reportType)) {
-            bt.add(BillType.PharmacyGrnReturn);
-            generateGRNReportTableByBillItem(bt);
-        } else if ("summeryReport".equals(reportType)) {
-            bt.add(BillType.PharmacyGrnBill);
-            bt.add(BillType.PharmacyGrnReturn);
+        List<BillTypeAtomic> bta = new ArrayList<>();
+        if ("returnReport".equals(reportType)) {
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        } else if ("cancellationReport".equals(reportType)) {
+            bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+        } else if ("summeryReport".equals(reportType) || "detailReport".equals(reportType)) {
+            bta.add(BillTypeAtomic.PHARMACY_GRN);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+
         }
 
         bills = new ArrayList<>();
 
-        String sql = "SELECT b FROM Bill b WHERE type(b) = :bill"
-                + " and b.retired = false"
-                + " and b.billType In :btp"
+        String sql = "SELECT b FROM Bill b "
+                + " WHERE b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.billTypeAtomic In :btas"
                 + " and b.createdAt between :fromDate and :toDate";
 
         Map<String, Object> tmp = new HashMap<>();
 
-        tmp.put("bill", BilledBill.class); // Use the actual Class object
-        tmp.put("btp", bt);
+        tmp.put("btas", bta);
         tmp.put("fromDate", getFromDate());
         tmp.put("toDate", getToDate());
 
@@ -981,6 +988,9 @@ public class PharmacyController implements Serializable {
         departmentSummaries = null;
         issueDepartmentCategoryWiseItems = null;
         resultsList = null;
+        totalCreditPurchaseValue = 0.0;
+        totalCashPurchaseValue = 0.0;
+        totalPurchase = 0.0;
     }
 
     public void generateConsumptionReportTableByBill(BillType billType) {
@@ -1351,9 +1361,7 @@ public class PharmacyController implements Serializable {
         totalSaleValue = 0.0;
 
         // Create a map to store net totals grouped by main and consumption departments
-        Map<String, Map<String, Double>> departmentTotals = new HashMap<>();
-
-        // Populate the map with department-wise data
+        Map<String, Map<String, Double>> departmentTotals = new HashMap<>();// Populate the map with department-wise data
         for (DepartmentCategoryWiseItems item : list) {
             String mainDepartmentName = item.getMainDepartment().getName();
             String consumptionDepartmentName = item.getConsumptionDepartment().getName();
@@ -1393,6 +1401,89 @@ public class PharmacyController implements Serializable {
     }
 
     public List<String1Value1> calculateTotals(List<Bill> billList) {
+        data = new ArrayList<>();
+        totalPurchase = 0.0;
+        totalSaleValue = 0.0;
+        totalCreditPurchaseValue = 0.0;
+        totalCreditSaleValue = 0.0;
+        totalCashPurchaseValue = 0.0;
+        totalCashSaleValue = 0.0;
+
+        double totalCardPurchaseValue = 0.0, totalCardSaleValue = 0.0;
+        double totalChequePurchaseValue = 0.0, totalChequeSaleValue = 0.0;
+        double totalSlipPurchaseValue = 0.0, totalSlipSaleValue = 0.0;
+        double totalEwalletPurchaseValue = 0.0, totalEwalletSaleValue = 0.0;
+        double totalNonePurchaseValue = 0.0, totalNoneSaleValue = 0.0;
+        double totalOtherPurchaseValue = 0.0, totalOtherSaleValue = 0.0;
+
+        for (Bill bill : billList) {
+            double netTotal = bill.getNetTotal();
+            double saleValue = bill.getSaleValue();
+
+            switch (bill.getPaymentMethod()) {
+                case Credit:
+                    totalCreditPurchaseValue += netTotal;
+                    totalCreditSaleValue += saleValue;
+                    break;
+                case Cash:
+                    totalCashPurchaseValue += netTotal;
+                    totalCashSaleValue += saleValue;
+                    break;
+                case Card:
+                    totalCardPurchaseValue += netTotal;
+                    totalCardSaleValue += saleValue;
+                    break;
+                case Cheque:
+                    totalChequePurchaseValue += netTotal;
+                    totalChequeSaleValue += saleValue;
+                    break;
+                case Slip:
+                    totalSlipPurchaseValue += netTotal;
+                    totalSlipSaleValue += saleValue;
+                    break;
+                case ewallet:
+                    totalEwalletPurchaseValue += netTotal;
+                    totalEwalletSaleValue += saleValue;
+                    break;
+                case None:
+                    totalNonePurchaseValue += netTotal;
+                    totalNoneSaleValue += saleValue;
+                    break;
+                default:
+                    totalOtherPurchaseValue += netTotal;
+                    totalOtherSaleValue += saleValue;
+                    break;
+            }
+
+            totalPurchase += netTotal;
+            totalSaleValue += saleValue;
+        }
+
+        addIfNotZero(data, "Final Cash Total", totalCashPurchaseValue, totalCashSaleValue);
+        addIfNotZero(data, "Final Credit Total", totalCreditPurchaseValue, totalCreditSaleValue);
+        addIfNotZero(data, "Final Card Total", totalCardPurchaseValue, totalCardSaleValue);
+        addIfNotZero(data, "Final Cheque Total", totalChequePurchaseValue, totalChequeSaleValue);
+        addIfNotZero(data, "Final Slip Total", totalSlipPurchaseValue, totalSlipSaleValue);
+        addIfNotZero(data, "Final eWallet Total", totalEwalletPurchaseValue, totalEwalletSaleValue);
+        addIfNotZero(data, "Final None Total", totalNonePurchaseValue, totalNoneSaleValue);
+        addIfNotZero(data, "Final Other Total", totalOtherPurchaseValue, totalOtherSaleValue);
+        addIfNotZero(data, "Final Net Total", totalPurchase, totalSaleValue);
+
+        return data;
+    }
+
+    private void addIfNotZero(List<String1Value1> data, String label, double value, double value2) {
+        if (value != 0 || value2 != 0) {
+            String1Value1 entry = new String1Value1();
+            entry.setString(label);
+            entry.setValue(value);
+            entry.setValue2(value2);
+            data.add(entry);
+        }
+    }
+
+    @Deprecated
+    public List<String1Value1> calculateTotalsOld(List<Bill> billList) {
         data = new ArrayList<>();
 
         totalSaleValue = 0.0;
@@ -1498,16 +1589,180 @@ public class PharmacyController implements Serializable {
         }
 
         if ("summeryReport".equals(reportType)) {
-            generateConsumptionReportTableAsSummary(bt);
+            generateReportAsSummary(bt);
 
         } else if ("detailReport".equals(reportType)) {
-            generateConsumptionReportTableByBillItems(bt);
+            generateReportByBillItems(bt);
 
         } else if ("byBill".equals(reportType)) {
-            generateConsumptionReportTableByBill(bt);
+            generateReportByDepartmentWiseBill(bt);
 
         }
 
+    }
+
+    public void generateReportByDepartmentWiseBill(BillType billType) {
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder sql = new StringBuilder(
+                "SELECT b.toDepartment, "
+                + "b.department, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.backwardReferenceBill, "
+                + "b.backwardReferenceBill.deptId, "
+                + "SUM(b.netTotal), "
+                + "b "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND b.billType = :billType "
+        );
+
+        parameters.put("billType", billType);
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+
+        additionalCommonFilltersForBillEntity(sql, parameters);
+
+        sql.append(" GROUP BY b.toDepartment, b.department, b.deptId, b.createdAt, b.backwardReferenceBill, b.backwardReferenceBill.deptId, b");
+
+        Map<Department, List<DepartmentWiseBill>> departmentWiseBillMap = new HashMap<>();
+
+        try {
+            List<Object[]> results = (List<Object[]>) getBillFacade()
+                    .findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+
+            departmentWiseBillList = new ArrayList<>();
+            totalPurchase = 0;
+
+            for (Object[] result : results) {
+                Department toDepartment = (Department) result[0];
+                DepartmentWiseBill departmentWiseBill = new DepartmentWiseBill(
+                        (Department) result[1],
+                        (String) result[2],
+                        (Date) result[3],
+                        (Bill) result[4],
+                        (String) result[5],
+                        (Double) result[6],
+                        (Bill) result[7]
+                );
+
+                departmentWiseBillMap
+                        .computeIfAbsent(toDepartment, k -> new ArrayList<>())
+                        .add(departmentWiseBill);
+
+                departmentWiseBillList.add(departmentWiseBill);
+                totalPurchase += departmentWiseBill.getBill().getNetTotal();
+            }
+
+            departmentWiseBillList = departmentWiseBillMap.entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey(Comparator.comparing(Department::getName)))
+                    .flatMap(entry -> entry.getValue().stream())
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error occurred while generating the consumption report.");
+        }
+    }
+
+    private void addFilter(StringBuilder sql, Map<String, Object> parameters, String sqlField, String paramKey, Object value) {
+        if (value != null) {
+            sql.append(" AND ").append(sqlField).append(" = :").append(paramKey).append(" ");
+            parameters.put(paramKey, value);
+        }
+    }
+
+    private void additionalCommonFilltersForBillEntity(StringBuilder sql, Map<String, Object> parameters) {
+        addFilter(sql, parameters, "b.fromInstitution", "fIns", fromInstitution);
+        addFilter(sql, parameters, "b.fromDepartment.site", "fSite", fromSite);
+        addFilter(sql, parameters, "b.fromDepartment", "fDept", fromDepartment);
+        addFilter(sql, parameters, "b.toInstitution", "tIns", toInstitution);
+        addFilter(sql, parameters, "b.toDepartment.site", "tSite", toSite);
+        addFilter(sql, parameters, "b.toDepartment", "tDept", toDepartment);
+    }
+
+    public void generateReportByBillItems(BillType billType) {
+        billItems = new ArrayList<>();
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder sql = new StringBuilder();
+
+        // Constructing the base query
+        sql.append("SELECT bi FROM BillItem bi WHERE bi.retired = false ")
+                .append("AND bi.bill.retired = false ")
+                .append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ")
+                .append("AND bi.bill.billType = :billType ");
+
+        // Adding mandatory parameters
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+        parameters.put("billType", billType);
+
+        // Dynamically adding optional filters
+        addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
+        addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
+        addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
+        addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
+        addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
+        addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
+        addFilter(sql, parameters, "bi.item", "item", item);
+
+        // Adding the ordering clause
+        sql.append(" ORDER BY bi.id DESC");
+
+        // Executing the query
+        try {
+            billItems = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
+            e.printStackTrace();
+        }
+
+        // Calculating total purchase
+        totalPurchase = billItems.stream()
+                .mapToDouble(i -> i.getQty() * i.getPharmaceuticalBillItem().getPurchaseRate())
+                .sum();
+    }
+
+    public void generateReportAsSummary(BillType billType) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT b.department.name, SUM(b.netTotal), ")
+                .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.netTotal ELSE 0 END) ")
+                .append("FROM Bill b ")
+                .append("WHERE b.retired = false ")
+                .append("AND b.billType = :billType ")
+                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("billType", billType);
+        parameters.put("fromDate", getFromDate());
+        parameters.put("toDate", getToDate());
+
+        additionalCommonFilltersForBillEntity(sql, parameters);
+
+        sql.append(" GROUP BY b.department.name ORDER BY SUM(b.netTotal) DESC");
+
+        try {
+            List<Object[]> results = getBillFacade().findObjectsArrayByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+
+            departmentSummaries = new ArrayList<>();
+            double grandTotal = 0.0;
+            double goodInTransistTotal = 0.0;
+
+            for (Object[] result : results) {
+                String departmentName = (String) result[0];
+                double netTotal = (double) result[1];
+                double goodInTransist = (double) result[2];
+                grandTotal += netTotal;
+                goodInTransistTotal += goodInTransist;
+
+                departmentSummaries.add(new PharmacySummery(departmentName, netTotal, goodInTransist));
+            }
+            departmentSummaries.add(new PharmacySummery("Total", grandTotal, goodInTransistTotal));
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Something Went Wrong!");
+        }
     }
 
     public void deleteSelectedPharmaceuticalLight() {
@@ -3887,11 +4142,11 @@ public class PharmacyController implements Serializable {
     }
 
     public Institution getFromSite() {
-        return FromSite;
+        return fromSite;
     }
 
-    public void setFromSite(Institution FromSite) {
-        this.FromSite = FromSite;
+    public void setFromSite(Institution fromSite) {
+        this.fromSite = fromSite;
     }
 
     public Institution getToSite() {
@@ -3908,6 +4163,14 @@ public class PharmacyController implements Serializable {
 
     public void setResultsList(List<DepartmentCategoryWiseItems> resultsList) {
         this.resultsList = resultsList;
+    }
+
+    public List<DepartmentWiseBill> getDepartmentWiseBillList() {
+        return departmentWiseBillList;
+    }
+
+    public void setDepartmentWiseBillList(List<DepartmentWiseBill> departmentWiseBillList) {
+        this.departmentWiseBillList = departmentWiseBillList;
     }
 
 }

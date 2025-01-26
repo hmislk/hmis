@@ -17,8 +17,12 @@
                 }
             </style>
 
-
-
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Displaying the message provided to system users',false)}" style="background-color: #{configOptionApplicationController.getColorValueByKey('Message background color')}">
+                <div class="d-flex justify-content-center" style="background-color: #{configOptionApplicationController.getColorValueByKey('Message background color')}; font-weight: 700; font-size: 18px;">
+                    <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Message to system users')}"></h:outputText>
+                </div>
+            </h:panelGroup>
+            
             <p:menubar autoDisplay="#{sessionController.userPreference.autodisplayMenu}"  >
                 <p:menuitem 
                     id="home"
@@ -380,6 +384,10 @@
                                      action="#{admissionController.navigateToListAdmissions}"
                                      value="Admissions"
                                      rendered="#{webUserController.hasPrivilege('InwardSearchServiceBill')}" ></p:menuitem>  
+                        <p:menuitem  ajax="false"  
+                                     action="#{admissionController.navigateToListAdmissionsWithoutRoom}"
+                                     value="Admissions Without Rooms"
+                                     rendered="#{webUserController.hasPrivilege('InwardSearchServiceBill')}" ></p:menuitem>  
                         <p:menuitem  ajax="false"  action="/inward/inward_search_service?faces-redirect=true" value="Service Bill" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchServiceBill')}" ></p:menuitem>  
                         <p:menuitem  ajax="false"  action="/inward/inward_search_professional?faces-redirect=true" value="Professional Bill" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchProfessionalBill')}" ></p:menuitem>  
                         <p:menuitem  ajax="false"  action="/inward/inward_search_professional_estimate?faces-redirect=true" value="Estimated Professional Bill" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchProfessionalBill')}" ></p:menuitem>  
@@ -526,8 +534,7 @@
 
                     </p:submenu>
 
-                    <p:submenu 
-                        style="width: 350px;"
+                    <p:submenu
                         id="smLabBillingSearch"
                         label="Billing Search"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the Bill Search in Under the Lab Module', false)}">
@@ -895,8 +902,8 @@
                     </p:submenu>
 
                     <p:submenu label="Adjustments" icon="fas fa-sliders-h" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentMenue')}">
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department?faces-redirect=true"  value="Department Stock(QTY)" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockQTY')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department_by_item?faces-redirect=true"  value="Department Stock By Single Item(QTY)" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockBySingleItemQTY')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
+                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department?faces-redirect=true"  value="Department Stock (QTY)" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockQTY')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
+                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department_by_item?faces-redirect=true"  value="Department Stock By Single Item (QTY)" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockBySingleItemQTY')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_staff?faces-redirect=true"  value="Staff Stock Adjustment" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentStaffStockAdjustment')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_purchase_rate?faces-redirect=true"  value="Purchase Rate" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentPurchaseRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_retail_sale_rate?faces-redirect=true"  value="Sale Rate" actionListener="#{pharmacyAdjustmentController.makeNull()}" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentSaleRate')}" ></p:menuitem>
@@ -1074,10 +1081,10 @@
                         <p:menuitem  ajax="false" action="/store/store_report_transfer?faces-redirect=true"  value="Reports" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferReport')}" ></p:menuitem>
                     </p:submenu>                                   
                     <p:submenu label="Adjustments" rendered="#{webUserController.hasPrivilege('StoreAdjustment')}">
-                        <p:menuitem  ajax="false" action="/store/store_adjustment_department?faces-redirect=true"  value="Department Stock(QTY)" rendered="#{webUserController.hasPrivilege('StoreAdjustmentDepartmentStock')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/store/store_adjustment_staff?faces-redirect=true"  value="Staff Stock Adjustment" rendered="#{webUserController.hasPrivilege('StoreAdjustmentStaffStock')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/store/store_adjustment_purchase_rate?faces-redirect=true"  value="Purchase Rate" rendered="#{webUserController.hasPrivilege('StoreAdjustmentPurchaseRate')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/store/store_adjustment_retail_sale_rate?faces-redirect=true"  value="Sale Rate" rendered="#{webUserController.hasPrivilege('StoreAdjustmentSaleRate')}" ></p:menuitem>
+                        <p:menuitem  ajax="false" action="/store/store_adjustment_department?faces-redirect=true"  value="Department Stock (QTY)" rendered="#{webUserController.hasPrivilege('StoreAdjustmentDepartmentStock')}" actionListener="#{storeAdjustmentController.makeNull()}"></p:menuitem>
+                        <p:menuitem  ajax="false" action="/store/store_adjustment_staff?faces-redirect=true"  value="Staff Stock Adjustment" rendered="#{webUserController.hasPrivilege('StoreAdjustmentStaffStock')}"  actionListener="#{storeAdjustmentController.makeNull()}"></p:menuitem>
+                        <p:menuitem  ajax="false" action="/store/store_adjustment_purchase_rate?faces-redirect=true"  value="Purchase Rate" rendered="#{webUserController.hasPrivilege('StoreAdjustmentPurchaseRate')}"  actionListener="#{storeAdjustmentController.makeNull()}"></p:menuitem>
+                        <p:menuitem  ajax="false" action="/store/store_adjustment_retail_sale_rate?faces-redirect=true"  value="Sale Rate" rendered="#{webUserController.hasPrivilege('StoreAdjustmentSaleRate')}"  actionListener="#{storeAdjustmentController.makeNull()}"></p:menuitem>
                         <p:menuitem  ajax="false" action="/store/store_search_adjustment_bill_item?faces-redirect=true"  value="Search Adjustment Bills"  ></p:menuitem>
                     </p:submenu>
 

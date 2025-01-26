@@ -1889,7 +1889,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
                 getBillFacade().edit(cancellationBatchBill);
             }
-        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff_Welfare){
+        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
             if (cancellationBatchBill.getToStaff() != null) {
                 staffService.updateStaffWelfare(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
                 JsfUtil.addSuccessMessage("Staff Welfare Updated");
@@ -2878,6 +2878,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         m.put("ret", false);
         List<Bill> billsWithoutBillTypeAtomic = getFacade().findByJpql(jpql, m, 1000);
         for (Bill b : billsWithoutBillTypeAtomic) {
+            if (b.getBillTypeAtomic() != null) {
+                continue;
+            }
             b.setBillTypeAtomic(BillTypeAtomic.getBillTypeAtomic(b.getBillType(), b.getBillClassType()));
             getFacade().edit(b);
         }

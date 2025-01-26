@@ -238,6 +238,13 @@ public class GoodsReturnController implements Serializable {
                 getBillItemFacade().edit(i);
                 getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
             }
+
+            double invertReturnQty = i.getPharmaceuticalBillItem().getQty();
+            double invertReturnFreeQty = i.getPharmaceuticalBillItem().getFreeQty();
+            i.getPharmaceuticalBillItem().setQty(0 - Math.abs(invertReturnQty));
+            i.getPharmaceuticalBillItem().setFreeQty(0 - Math.abs(invertReturnFreeQty));
+            getBillItemFacade().edit(i);
+
             saveBillFee(i, p);
             getReturnBill().getBillItems().add(i);
 
@@ -274,7 +281,7 @@ public class GoodsReturnController implements Serializable {
 
         return false;
     }
-    
+
     public void removeItem(BillItem bi) {
         getBillItems().remove(bi.getSearialNo());
         calTotal();
@@ -295,6 +302,11 @@ public class GoodsReturnController implements Serializable {
             return;
         }
 
+        if (!hasPositiveItemQuantity(billItems)) {
+            JsfUtil.addErrorMessage("Items for This GRN Already Returned So You can't Return ");
+            return;
+        }
+
         saveReturnBill();
         Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
 //        saveComponent();
@@ -308,6 +320,18 @@ public class GoodsReturnController implements Serializable {
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Returned");
 
+    }
+
+    private boolean hasPositiveItemQuantity(final List<BillItem> billItems) {
+        for (BillItem billItem : billItems) {
+            double itemQty = billItem.getPharmaceuticalBillItem().getQty();
+
+            if (itemQty > 0.0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void calTotal() {
@@ -364,7 +388,7 @@ public class GoodsReturnController implements Serializable {
 //                suggessions.add(item);
 //            }
 //
-//            
+//
 //            bi.setTmpSuggession(suggessions);
             bi.setTmpQty((double) (grnPh.getQtyInUnit() - netQty));
             bi.setTmpFreeQty((double) (grnPh.getFreeQtyInUnit() - netFreeQty));

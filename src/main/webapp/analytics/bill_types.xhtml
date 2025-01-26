@@ -161,6 +161,9 @@
                                 <p:column headerText="Bill Type (Atomic)" >                                
                                     <h:outputLabel value="#{row.billTypeAtomic.label}"/>
                                 </p:column>
+                                 <p:column headerText="Bill Type (Atomic)" >                                
+                                     <h:outputLabel value="#{row.billTypeAtomic.billFinanceType}"/>
+                                </p:column>
 
                                 <p:column headerText="Gross Value" styleClass="averageNumericColumn">
                                     <h:outputLabel value="#{row.grossTotal}">

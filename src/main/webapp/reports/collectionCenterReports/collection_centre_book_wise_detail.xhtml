@@ -86,7 +86,7 @@
                                     ajax="false"
                                     style="width: 150px"
                                     value="Print">
-                                    <p:printer target="tbl"/>
+                                    <p:printer target="tblPrint"/>
                                 </p:commandButton>
                                 <p:commandButton
                                     id="btnExcel" class="m-1 ui-button-success"
@@ -168,11 +168,67 @@
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{reportsController.bundle.grossTotal}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                            </f:facet>
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                         </p:dataTable>
+
+                        <div class="printingOnly">
+                            <p:dataTable id="tblPrint"
+                                         class="w-100 m-2"
+                                         value="#{reportsController.bundle.reportTemplateRows}"
+                                         var="c"
+                                         rowIndexVar="b">
+                                <p:column 
+                                    headerText="Bill No" 
+                                    width="5rem" 
+                                    sortBy="#{c.bill.deptId}" >
+                                    <h:outputText value="#{c.bill.deptId}"/>
+                                </p:column>
+                                <p:column 
+                                    headerText="Book Reference No" 
+                                    width="5rem"
+                                    sortBy="#{c.bill.referenceNumber}" >
+                                    <h:outputText value="#{c.bill.referenceNumber}"/>
+                                </p:column>
+                                <p:column 
+                                    headerText="Patient" 
+                                    width="5rem"
+                                    sortBy="#{c.bill.patient.person.nameWithTitle}" >
+                                    <h:outputText value="#{c.bill.patient.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column 
+                                    headerText="Creater" 
+                                    width="5rem"
+                                    sortBy="#{c.bill.creater.webUserPerson.name}" >
+                                    <h:outputText value="#{c.bill.creater.webUserPerson.name}"/>
+                                </p:column>
+                                <p:column 
+                                    headerText="Created Date" 
+                                    width="5rem"
+                                    sortBy="#{c.bill.createdAt}" >
+                                    <h:outputText value="#{c.bill.createdAt}">
+                                        <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column 
+                                    headerText="Bill Value" 
+                                    width="5rem" 
+                                    style="text-align: right;"
+                                    sortBy="#{c.bill.netTotal}" >
+                                    <h:outputText value="#{c.bill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{reportsController.bundle.grossTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
                     </p:panel>
                 </h:form>
             </ui:define>

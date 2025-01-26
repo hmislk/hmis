@@ -1,13 +1,14 @@
 select `ID`, 
+ `DTYPE`,
+`BILLCLASSTYPE`,
+`BILLTYPE`, 
+`BILLTYPEATOMIC`, 
 `REFERENCENUMBER`,
 `PAIDAMOUNT`, 
 `SETTLEDAMOUNTBYPATIENT`, `SETTLEDAMOUNTBYSPONSOR`, `PAIDAT`,
 `DEPTID`, 
 `COMMENTS`,
  `CREATEDAT`,
- `BILLTYPE`, 
-`BILLTYPEATOMIC`, 
- `DTYPE`
 `TOTAL`,
 `GRANTTOTAL`,
 `GRNNETTOTAL`,
@@ -23,6 +24,3 @@ select `ID`,
 `CREDITCOMPANY_ID`
 from bill 
 order by `ID` desc limit 10;
-select `ID`, `CREATEDAT`, `BILL_ID` , `PATIENTENCOUNTER_ID`
-from billitem order by id desc;
-select `ID`, `BILLITEM_ID` , `CREATEDAT`, `INVESTIGATION_ID` from patientinvestigation order by id desc limit 10;

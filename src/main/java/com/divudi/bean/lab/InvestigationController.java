@@ -565,10 +565,10 @@ public class InvestigationController implements Serializable {
     }
 
     public String navigateToEditPathologyFormat() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("Please select investigation");
-            return "";
-        }
+//        if (current == null) {
+//            JsfUtil.addErrorMessage("Please select investigation");
+//            return "";
+//        }
         return "/admin/lims/pathology_format?faces-redirect=true";
     }
 
