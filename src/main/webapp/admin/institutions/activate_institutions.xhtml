@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:p="http://primefaces.org/ui">
+    <h:body>
+        <ui:composition template="/admin/institutions/admin_institutions_index.xhtml">
+            <ui:define name="admin">
+                <h:form>
+                    <h:panelGroup rendered="#{!webUserController.hasPrivilege('Reactivate')}">
+                        <na:not_authorize />
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Reactivate')}" id="dataPage">
+                        <p:growl id="msg"/>
+
+                        <p:panel header="Activate Institutions">
+                            <div class="d-flex my-3">
+                                <div class="col-4 d-flex"> 
+                                    <h:outputText id="lblDept" value="Institution Type" style="width: 200px;" class="mt-2"/>
+
+                                    <p:selectOneMenu
+                                        class="form-control"
+                                        id="cmbDept"
+                                        value="#{institutionController.institutionType}"
+                                        filter="true"
+                                        filterMatchMode="contains">
+                                        <f:selectItem itemLabel="All Types"/>
+                                        <f:selectItems value="#{institutionController.institutionTypes}" var="it" itemValue="#{it}" itemLabel="#{it.label}"/>                                       
+                                    </p:selectOneMenu>
+                                </div>
+
+                                <div class="col-1"></div>
+
+                                <div class="col-3">
+                                    <p:commandButton 
+                                        ajax="false"
+                                        action="#{institutionController.fillRetiredInstitution()}" 
+                                        icon="fas fa-cogs"
+                                        class="ui-button-warning"
+                                        value="Fill Institutions">
+                                    </p:commandButton>
+                                </div>
+
+                            </div>
+
+
+                            <p:dataTable 
+                                rowIndexVar="i"
+                                value="#{institutionController.institutions}" 
+                                var="ins"
+                                rowKey="#{ins.id}"
+                                class="w-100"
+                                id="tbl"
+                                rows="20"
+                                paginator="true" 
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="20,50,100">
+
+                                <p:column  headerText="No" style="width: 3em; padding: 6px;">
+                                    <h:outputText value="#{i+1}"/>
+                                </p:column>
+
+                                <p:column  headerText="ID" style="width: 7em; padding: 6px;">
+                                    <h:outputText value="#{ins}"/>
+                                </p:column>
+
+                                <p:column filterBy="#{ins.code}" filterMatchMode="contains" headerText="Code" style="padding: 6px; width: 8em;">
+                                    <h:outputText value="#{ins.code}"/>
+                                </p:column>
+
+                                <p:column filterBy="#{ins.institutionType}" filterMatchMode="contains" headerText="Type" style="padding: 6px; width: 10em;">
+                                    <h:outputText value="#{ins.institutionType}"/>
+                                </p:column>
+
+                                <p:column filterBy="#{ins.name}" filterMatchMode="contains" headerText="institution Name" style="padding: 6px;">
+                                    <h:outputText value="#{ins.name}"/>
+                                </p:column>
+
+                                <p:column headerText="Status" class="text-center" style="padding: 6px; width: 7em;">
+                                    <p:badge value="Inactive" styleClass="ui-badge-danger" size="large"/>
+                                </p:column>
+                                
+                                <p:column headerText="Inactive" class="text-center" style="padding: 6px; width: 7em;">
+                                    <p:toggleSwitch value="#{ins.retired}" onIcon="pi pi-check" class="mt-1" offIcon="pi pi-times" />
+                                </p:column>
+
+                                <p:column headerText="Activate" class="text-center" style="padding: 6px;width: 7em;">
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Update"
+                                        action="#{institutionController.reactivateRetiredInstitution(ins)}"
+                                        icon="fas fa-pencil" 
+                                        class="ui-button-success">
+                                    </p:commandButton>
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:panel>
+                    </h:panelGroup>
+                </h:form>
+                
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
