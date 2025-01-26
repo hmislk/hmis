@@ -956,8 +956,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         calculateRates(billItem);
-        if (stock != null && stock.getItemBatch() != null) {
-            fillReplaceableStocksForAmp((Amp) stock.getItemBatch().getItem());
+
+        boolean findAlternatives = configOptionApplicationController.getBooleanValueByKey("Show alternative medicines available during retail sale", false);
+        if (findAlternatives) {
+            if (stock != null && stock.getItemBatch() != null) {
+                fillReplaceableStocksForAmp((Amp) stock.getItemBatch().getItem());
+            }
         }
     }
 
