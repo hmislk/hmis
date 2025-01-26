@@ -77,6 +77,7 @@ import com.divudi.facade.UserStockFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -870,7 +871,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     //matara pharmacy auto complete
-    public List<Stock> completeAvailableStocksFromNameOrGeneric(String qry) {
+    @Deprecated
+    public List<Stock> completeAvailableStocksFromNameOrGenericOld(String qry) {
         List<Stock> items;
         String sql;
         Map m = new HashMap();
@@ -897,6 +899,46 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             itemsWithoutStocks = completeRetailSaleItemsWithoutStocks(qry);
         }
         return items;
+    }
+
+    public List<Stock> completeAvailableStocksFromNameOrGeneric(String qry) {
+        System.out.println("completeAvailableStocksFromNameOrGeneric");
+        System.out.println("Start = " + new Date().getTime());
+        if (qry == null || qry.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+
+        String sql;
+        System.out.println("qry.length()" + qry.length());
+        if (qry.length() > 6) {
+            sql = "SELECT i FROM Stock i "
+                    + "WHERE i.stock > :stockMin "
+                    + "AND i.department = :department "
+                    + "AND ("
+                    + "i.itemBatch.item.name LIKE :query OR "
+                    + "i.itemBatch.item.code LIKE :query"
+                    + " ) "
+                    + "ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        } else {
+            sql = "SELECT i FROM Stock i "
+                    + "WHERE i.stock > :stockMin "
+                    + "AND i.department = :department "
+                    + "AND ("
+                    + "i.itemBatch.item.name LIKE :query OR "
+                    + "i.itemBatch.item.code LIKE :query OR "
+                    + "i.itemBatch.item.vmp.name LIKE :query"
+                    + ") "
+                    + "ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        }
+        System.out.println("End = " + new Date().getTime());
+        return getStockFacade().findByJpql(sql, parameters, 20);
     }
 
     public void handleSelectAction() {
