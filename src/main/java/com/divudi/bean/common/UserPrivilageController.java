@@ -634,6 +634,7 @@ public class UserPrivilageController implements Serializable {
 
         TreeNode superAdminNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SuperAdmin, "Super Admin"), allNode);
         TreeNode editData = new DefaultTreeNode(new PrivilegeHolder(Privileges.EditData, "Edit Data"), superAdminNode);
+        TreeNode reActivate = new DefaultTreeNode(new PrivilegeHolder(Privileges.Reactivate, "Reactivate"), superAdminNode);
         TreeNode deleteData = new DefaultTreeNode(new PrivilegeHolder(Privileges.DeleteData, "Delete Data"), superAdminNode);
         TreeNode billCancel = new DefaultTreeNode(new PrivilegeHolder(Privileges.BillCancel, "Bill Cancel "), superAdminNode);
         TreeNode billRefund = new DefaultTreeNode(new PrivilegeHolder(Privileges.BillRefund, "Bill Refund"), superAdminNode);
