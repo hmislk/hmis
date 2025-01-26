@@ -1625,6 +1625,7 @@ public class PharmacyController implements Serializable {
         additionalCommonFilltersForBillEntity(sql, parameters);
 
         sql.append(" GROUP BY b.toDepartment, b.department, b.deptId, b.createdAt, b.backwardReferenceBill, b.backwardReferenceBill.deptId, b");
+        sql.append(" ORDER BY b.id");
 
         Map<Department, List<DepartmentWiseBill>> departmentWiseBillMap = new HashMap<>();
 
