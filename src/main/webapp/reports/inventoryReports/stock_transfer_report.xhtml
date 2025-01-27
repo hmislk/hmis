@@ -112,7 +112,7 @@
                                     filter="true"> 
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.site)}" 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.fromSite)}" 
                                         var="dept" 
                                         itemLabel="#{dept.name}" 
                                         itemValue="#{dept}" />
@@ -127,7 +127,7 @@
                                     filter="true"> 
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution)}" 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.fromInstitution)}" 
                                         var="dept" 
                                         itemLabel="#{dept.name}" 
                                         itemValue="#{dept}" />
@@ -142,7 +142,7 @@
                                     filter="true"> 
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}" 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.fromInstitution, pharmacyController.fromSite)}" 
                                         var="dept" 
                                         itemLabel="#{dept.name}" 
                                         itemValue="#{dept}" />
@@ -214,7 +214,7 @@
                                     filter="true"> 
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.site)}" 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.toSite)}" 
                                         var="dept" 
                                         itemLabel="#{dept.name}" 
                                         itemValue="#{dept}" />
@@ -229,7 +229,7 @@
                                     filter="true"> 
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution)}" 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.toInstitution)}" 
                                         var="dept" 
                                         itemLabel="#{dept.name}" 
                                         itemValue="#{dept}" />
@@ -244,7 +244,7 @@
                                     filter="true"> 
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}" 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.toInstitution, pharmacyController.toSite)}" 
                                         var="dept" 
                                         itemLabel="#{dept.name}" 
                                         itemValue="#{dept}" />
