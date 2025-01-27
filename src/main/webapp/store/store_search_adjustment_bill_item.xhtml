@@ -12,19 +12,41 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="SEARCH STORE AJUSTMENT BILLS "/>                                                          
+                            <h:outputLabel value="Search Store Ajustment Bills "/>                                                          
                         </f:facet>
                         <div class="row">
                             <div class="col-md-2">
 
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" class="w-100" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                <p:calendar 
+                                    styleClass="dateTimePicker" 
+                                    class="w-100" 
+                                    inputStyleClass="w-100" 
+                                    id="fromDate" 
+                                    value="#{searchController.fromDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                                 </p:calendar>
+
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar styleClass="dateTimePicker" class="w-100" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                <p:calendar 
+                                    styleClass="dateTimePicker" 
+                                    class="w-100" 
+                                    inputStyleClass="w-100" 
+                                    id="toDate" 
+                                    value="#{searchController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                 </p:calendar>
-                                <p:commandButton class="w-100 ui-button-warning my-2"  id="btnSearch" icon="fas fa-search"  ajax="false" value="Search" action="#{searchController.createStoreAdjustmentBillItemTable()}"/>
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+
+                                <p:commandButton 
+                                    class="w-100 ui-button-warning my-2"  
+                                    id="btnSearch" 
+                                    icon="fas fa-search"  
+                                    ajax="false" 
+                                    value="Search" 
+                                    action="#{searchController.createStoreAdjustmentBillItemTable()}">
+                                </p:commandButton>
 
                                 <h:outputLabel value="Bill No" class="w-100"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.billNo}" />
@@ -35,47 +57,69 @@
                                 <h:outputLabel/><h:outputLabel/>
 
                             </div>
+
                             <div class="col-md-10">
 
-                                <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.billItems}" var="pi" >
-                                    <p:column headerText="No" styleClass="alignTop">
+                                <p:dataTable 
+                                    rowIndexVar="i" 
+                                    id="tblBills" 
+                                    value="#{searchController.billItems}" 
+                                    rows="20"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="20, 50, 100" 
+                                    var="pi" >
+
+                                    <p:column headerText="No" styleClass="alignTop" style="padding: 10px; width: 4em">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
-                                    <p:column>
-                                        <p:commandButton ajax="false" action="store_reprint_adjustment" value="View BIll">
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{storeBillSearch.bill}"/>
-                                        </p:commandButton>
-                                    </p:column>
-                                    <p:column headerText="Bill No" styleClass="alignTop"  >
-                                        <h:outputLabel value="#{pi.bill.deptId}"/>
-                                    </p:column>
-                                    <p:column headerText="Item Name"  styleClass="alignTop" >
-                                        <h:outputLabel value="#{pi.item.name}" />    
+
+                                    <p:column headerText="Bill No" style="padding: 10px; width: 10em">
+                                        <p:commandLink 
+                                            id="insNo" 
+                                            ajax="false" 
+                                            value="#{pi.bill.deptId}" 
+                                            action="#{storeAdjustmentController.navigateAdjustmentBillRePrint(pi.bill)}">
+                                        </p:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Item Code">
-                                        <f:facet name="header">
-                                            <h:outputLabel value="Code"/>
-                                        </f:facet>
+                                    <p:column headerText="Ajustment Type" class="text-center" style="padding: 10px; width: 10em">
+                                        <div class="d-grid justify-content-center">
+                                            <p:badge value="Deparment Stock" rendered="#{pi.bill.billTypeAtomic eq 'STORE_DEPAERTMENT_STOCK_ADJUSTMENT'}" ></p:badge>
+                                            <p:badge value="Staff Stock" severity="warning" rendered="#{pi.bill.billTypeAtomic eq 'STORE_STAFF_STOCK_ADJUSTMENT'}" ></p:badge>
+                                            <p:badge value="Purchase Rate" severity="info" rendered="#{pi.bill.billTypeAtomic eq 'STORE_PURCHASE_RATE_ADJUSTMENT'}" ></p:badge>
+                                            <p:badge value="Sale Rate" severity="success" rendered="#{pi.bill.billTypeAtomic eq 'STORE_SALE_RATE_ADJUSTMENT'}" ></p:badge>
+                                            <p:badge value="Expiry Date" severity="danger" rendered="#{pi.bill.billTypeAtomic eq 'STORE_EXPIRY_DATE_ADJUSTMENT'}" ></p:badge>
+                                        </div>
+
+                                    </p:column>
+
+                                    <p:column headerText="Item Code"  style="padding: 10px; width: 10em">
                                         <h:outputLabel value="#{pi.item.code}" style="width: 100px!important;" ></h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Billed At"  >
-                                        <h:outputLabel value="Billed at " />
+                                    <p:column headerText="Item Name"  styleClass="alignTop"  style="padding: 10px;">
+                                        <h:outputLabel value="#{pi.item.name}" />    
+                                    </p:column>
+
+                                    <p:column headerText="Billed At"  style="padding: 10px; width: 20em;" >
+                                        <h:outputLabel value="Billed at "  style="width: 100px;"/>
                                         <h:outputLabel value="#{pi.bill.createdAt}" >
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{pi.bill.referenceBill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red; width: 100px; " value="Cancelled at " />
                                             <h:outputLabel style="color: red;" 
                                                            rendered="#{pi.bill.referenceBill.cancelled}" 
                                                            value="#{pi.bill.referenceBill.cancelledBill.createdAt}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
+
                                         <h:panelGroup rendered="#{pi.bill.referenceBill.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Refunded at " />
+                                            <h:outputLabel style="color: red; width: 100px;" value="Refunded at "/>
                                             <h:outputLabel style="color: red;" 
                                                            rendered="#{pi.bill.referenceBill.refunded}" 
                                                            value="#{pi.referanceBillItem.bill.createdAt}" >
@@ -84,36 +128,9 @@
                                         </h:panelGroup>
                                     </p:column>     
 
-                                    <p:column headerText="Befory Qty" >
-                                        <h:outputLabel value="#{pi.pharmaceuticalBillItem.stockHistory.stockQty}" >
-                                        </h:outputLabel>
-                                    </p:column>   
-
-                                    <p:column headerText="After Qty" >
-                                        <h:outputLabel value="#{pi.qty}" >
-                                            <f:convertNumber pattern="#0.00"/>
-                                        </h:outputLabel>
+                                    <p:column headerText="Creater"  style="padding: 10px;  width: 20em;" >
+                                        <h:outputLabel value="#{pi.bill.creater.webUserPerson.nameWithTitle}" />
                                     </p:column>
-
-                                    <!--                            <p:column headerText="Befory Purchase Rate" >
-                                                                    <h:outputLabel value="#{pi.pharmaceuticalBillItem.purchaseRate}" >
-                                                                    </h:outputLabel>
-                                                                </p:column> 
-                                                                
-                                                                <p:column headerText="After Purchase Rate" >
-                                                                    <h:outputLabel value="#{pi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" >
-                                                                    </h:outputLabel>
-                                                                </p:column>
-                                                                
-                                                                <p:column headerText="Befory Sale Rate" >
-                                                                    <h:outputLabel value="#{pi.pharmaceuticalBillItem.retailRate}" >
-                                                                    </h:outputLabel>
-                                                                </p:column> 
-                                                                
-                                                                <p:column headerText="After Sale Rate" >
-                                                                    <h:outputLabel value="#{pi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" >
-                                                                    </h:outputLabel>
-                                                                </p:column>-->
                                 </p:dataTable>
                             </div>
                         </div>

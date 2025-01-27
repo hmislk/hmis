@@ -175,6 +175,10 @@
                         </h:panelGroup>
                     </h:panelGroup>
 
+                    <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
+                        <ph:sale_bill_five_five_custom_3_Return bill="#{saleReturnController.returnBill}"/>
+                    </h:panelGroup>
+
                 </h:panelGroup>
             </p:panel>
         </h:form>
