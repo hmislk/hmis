@@ -132,7 +132,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     PatientDepositController patientDepositController;
     @Inject
     CommonController commonController;
-    
 
     @Inject
     TokenController tokenController;
@@ -509,14 +508,18 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         return false;
     }
-    
+
     private Prescription prescription;
-    
-    public void addPrescriptionToBillitem(){
-        if(prescription == null){
+
+    public void addPrescriptionToBillitem(BillItem billItem) {
+        if (prescription == null) {
             prescription = new Prescription();
         }
-        
+
+        if (billItem.getPrescription().getComment() == null || billItem.getPrescription().getComment().isEmpty()) {
+            billItem.getPrescription().setComment(billItem.getInstructions());
+        }
+
     }
 
     private void onEditCalculation(BillItem tmp) {
@@ -1089,7 +1092,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         } else {
             addBillItemSingleItem();
         }
-        
+
         processBillItems();
         setActiveIndex(1);
     }
@@ -1234,9 +1237,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         UserStock us = saveUserStock(billItem);
         billItem.setTransUserStock(us);
-        
+
         pharmacyService.addBillItemInstructions(billItem);
-        
+
         clearBillItem();
         getBillItem();
         return addedQty;
@@ -3223,7 +3226,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public Prescription getPrescription() {
-        if(prescription == null){
+        if (prescription == null) {
             prescription = new Prescription();
         }
         return prescription;

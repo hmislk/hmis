@@ -57,6 +57,23 @@
                                 </p:commandButton>
                             </f:facet>
 
+                            <style>
+                                @keyframes slideInFromButton {
+                                    0% {
+                                        transform: scale(0) translate(50, 50);
+                                        opacity: 0;
+                                    }
+                                    100% {
+                                        transform: scale(1) translate(50, 50);
+                                        opacity: 1;
+                                    }
+                                }
+
+                                .custom-dialog {
+                                    animation: slideInFromButton 0.3s ease-out;
+                                }
+                            </style>
+
                             <div class="row">
                                 <div class="col-md-7" >
                                     <p:panel>
@@ -243,8 +260,6 @@
                                         <p:focus id="focusItem" for="acStock"></p:focus>
                                     </p:panel>
 
-
-
                                     <p:panel id="pBis">
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fas fa-money-bill" />
@@ -272,6 +287,7 @@
                                                     widgetVar="dlg" 
                                                     resizable="false" 
                                                     modal="true" 
+                                                    onShow="$('.ui-dialog').addClass('custom-dialog')"
                                                     class="w-50">
                                                     <p:panelGrid 
                                                         columns="2"
@@ -314,7 +330,7 @@
                                             </p:column>
 
                                             <p:column headerText="Instructions" style="text-align: center">
-                                                <p:commandButton style="font-size: small; margin: auto; border-radius: 10px" id="processInstructions" class="ui-button-info" value="Add" oncomplete="PF('instructions').show();" process="processInstructions" update="#{p:resolveFirstComponentWithId('instructionDetials',view).clientId}"></p:commandButton>
+                                                <p:commandButton style="font-size: small; margin: auto; border-radius: 10px" actionListener="#{pharmacySaleController.addPrescriptionToBillitem(bi)}" id="processInstructions" class="ui-button-info" value="Add" oncomplete="PF('instructions').show();" process="processInstructions" update="#{p:resolveFirstComponentWithId('instructionDetials',view).clientId}"></p:commandButton>
 
                                                 <p:dialog 
                                                     id="instructionDetials" 
@@ -322,14 +338,15 @@
                                                     resizable="false"
                                                     closable="false"
                                                     modal="true" 
+                                                    onShow="$('.ui-dialog').addClass('custom-dialog')"
 
                                                     >
                                                     <p:panel>
-                                                        <f:facet name="header">
+                                                        <f:facet name="header" class="align-items-center">
                                                             <h:outputText styleClass="fas fa-pills"/>
                                                             <p:outputLabel class="mx-4" value="Instruction for the #{bi.item.name}" />
 
-                                                            <p:commandButton value="Close" process="@this" class='ui-button-warning' icon='fas fa-fill' style="float: right;" oncomplete="PF('instructions').hide()"/>
+                                                            <p:commandButton value="Close" process="@this" class='ui-button-warning' style="float: right;" oncomplete="PF('instructions').hide()"/>
 
                                                         </f:facet>
                                                         <div>
@@ -410,7 +427,7 @@
                                                                 </div>
 
                                                                 <div class="col-md-9">
-                                                                    <p:inputTextarea id="instructionText" rows="6" cols="33"/>
+                                                                    <p:inputTextarea value="#{bi.prescription.comment}" id="instructionText" rows="6" cols="33"/>
                                                                 </div>
 
 
@@ -426,7 +443,7 @@
                                                                                  oncomplete="PF('instructions').hide()"
                                                                                  process="btnAddRx instructionDetials"
                                                                                  update="tblBillItem"
-                                                                                 action="#{pharmacySaleController.addPrescriptionToBillitem}" />
+                                                                                 action="#{pharmacySaleController.addPrescriptionToBillitem(bi)}" />
                                                             </div>
 
                                                         </div>
