@@ -246,7 +246,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 resetAll();
-                return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
