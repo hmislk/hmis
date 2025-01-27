@@ -103,6 +103,8 @@ public class InwardBeanController implements Serializable {
     private PriceMatrixFacade priceMatrixFacade;
     @EJB
     private AdmissionFacade admissionFacade;
+    @EJB
+    private PatientEncounterFacade encounterFacade;
     @Inject
     BillBeanController billBean;
     @Inject
@@ -459,11 +461,20 @@ public class InwardBeanController implements Serializable {
                 + " and type(bt.staff)!=:class "
                 + " and bt.fee.feeType=:ftp "
                 + " and (bt.bill.billType=:btp)"
-                + " and bt.bill.patientEncounter=:pe ";
+                + " and bt.bill.patientEncounter IN :pe ";
         hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        System.out.println("cpts = " + cpts);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         return getBillFeeFacade().findByJpql(sql, hm, TemporalType.TIME);
 
@@ -476,12 +487,21 @@ public class InwardBeanController implements Serializable {
                 + " and type(bt.staff)=:class "
                 + " and bt.fee.feeType=:ftp "
                 + " and (bt.bill.billType=:btp)"
-                + " and bt.bill.patientEncounter=:pe "
+                + " and bt.bill.patientEncounter IN :pe "
                 + " order by bt.feeAdjusted desc ";
         hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        System.out.println("cpts = " + cpts);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         return getBillFeeFacade().findByJpql(sql, hm, TemporalType.TIME);
         //////// // System.out.println("Size : " + profesionallFee.size());
@@ -515,11 +535,20 @@ public class InwardBeanController implements Serializable {
                 + " and type(bt.staff)=:class "
                 + " and bt.fee.feeType=:ftp "
                 + " and (bt.bill.billType=:btp)"
-                + " and bt.bill.patientEncounter=:pe ";
+                + " and bt.bill.patientEncounter in :pe ";
         hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        System.out.println("cpts = " + cpts);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         List<BillFee> list = getBillFeeFacade().findByJpql(sql, hm);
 
@@ -539,12 +568,21 @@ public class InwardBeanController implements Serializable {
                 + " WHERE b.retired=false "
                 + " and b.billType=:btp "
                 + " and (b.billedBill is null )  "
-                + " and  b.patientEncounter=:pe"
+                + " and  b.patientEncounter IN :pe"
                 + " and (type(b)=:class) ";
         hm = new HashMap();
         hm.put("btp", billType);
         hm.put("class", PreBill.class);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        System.out.println("cpts = " + cpts);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         List<Bill> bills = getBillFacade().findByJpql(sql, hm);
 
@@ -553,13 +591,22 @@ public class InwardBeanController implements Serializable {
                 + " WHERE b.retired=false "
                 + " and b.billType=:btp"
                 + " and type(b.billedBill)=:billedClass "
-                + " and  b.patientEncounter=:pe"
+                + " and  b.patientEncounter IN :pe"
                 + " and (type(b)=:class) ";
         hm = new HashMap();
         hm.put("btp", billType);
         hm.put("class", RefundBill.class);
         hm.put("billedClass", PreBill.class);
-        hm.put("pe", patientEncounter);
+       List<PatientEncounter> pts1 = new ArrayList<>();
+        pts1.add(patientEncounter);
+        List<PatientEncounter> cpts1 = fetchChildPatientEncounter(patientEncounter);
+        System.out.println("cpts = " + cpts);
+        if(cpts1.size() > 0){
+            for(PatientEncounter pt : cpts1){
+                pts1.add(pt);
+            }
+        }
+        hm.put("pe", pts1);
 
         List<Bill> bills2 = getBillFacade().findByJpql(sql, hm);
 
@@ -941,10 +988,19 @@ public class InwardBeanController implements Serializable {
         }
 
         sql += " and Type(b.item)!=TimedItem "
-                + " and b.bill.patientEncounter=:pe ";
+                + " and b.bill.patientEncounter in :pe ";
 
         hm.put("btp", BillType.InwardBill);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        System.out.println("cpts = " + cpts);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         return getDepartmentFacade().findByJpql(sql, hm, TemporalType.TIME);
     }
@@ -961,12 +1017,21 @@ public class InwardBeanController implements Serializable {
         }
 
         sql += " and Type(b.item)!=TimedItem"
-                + "  and b.bill.patientEncounter=:pe"
+                + "  and b.bill.patientEncounter IN :pe"
                 + " and b.bill.toDepartment=:dep "
                 + "  order by b.item.name ";
 
         hm.put("btp", BillType.InwardBill);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        System.out.println("cpts = " + cpts);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
         hm.put("dep", department);
 
         return getItemFacade().findByJpql(sql, hm, TemporalType.TIME);
@@ -1062,12 +1127,21 @@ public class InwardBeanController implements Serializable {
             hm.put("fB", forwardBill);
         }
 
-        sql += " and b.bill.patientEncounter=:pe "
+        sql += " and b.bill.patientEncounter IN :pe "
                 + " and b.item=:itm "
                 + " and type(b.bill)=:cls";
 
         hm.put("btp", BillType.InwardBill);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        System.out.println("cpts = " + cpts);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
         hm.put("itm", item);
         hm.put("cls", bill.getClass());
         double dbl = getBillItemFacade().countByJpql(sql, hm, TemporalType.TIME);
@@ -1101,11 +1175,20 @@ public class InwardBeanController implements Serializable {
         String sql = "Select i From BilledBill i "
                 + " where i.retired=false"
                 + "  and i.billType=:btp "
-                + " and i.patientEncounter=:pe ";
+                + " and i.patientEncounter in :pe ";
 
         HashMap m = new HashMap();
         m.put("btp", BillType.InwardOutSideBill);
-        m.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        System.out.println("cpts = " + cpts);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        m.put("pe", pts);
         return getBillFacade().findByJpql(sql, m, TemporalType.DATE);
 
         //return additionalChargeBill;
@@ -1142,14 +1225,37 @@ public class InwardBeanController implements Serializable {
 
         return val;
     }
+    
+    public List<PatientEncounter> fetchChildPatientEncounter(PatientEncounter patientEncounter){
+        List<PatientEncounter> cpt = new ArrayList<>();
+        
+        HashMap hm = new HashMap();
+        String sql = "SELECT pe FROM PatientEncounter pe "
+                + " where pe.parentEncounter = :pe "
+                + " and pe.retired=false ";
+        hm.put("pe", patientEncounter);
+        
+        cpt = encounterFacade.findByJpql(sql, hm);
+        
+        return cpt;
+    }
 
     public List<PatientItem> fetchPatientItem(PatientEncounter patientEncounter) {
         HashMap hm = new HashMap();
         String sql = "SELECT i FROM PatientItem i "
                 + " where Type(i.item)=TimedItem "
                 + " and i.retired=false "
-                + " and i.patientEncounter=:pe";
-        hm.put("pe", patientEncounter);
+                + " and i.patientEncounter in :pe";
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        System.out.println("cpts = " + cpts);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
         return getPatientItemFacade().findByJpql(sql, hm);
     }
 
@@ -1159,9 +1265,18 @@ public class InwardBeanController implements Serializable {
         String sql = "SELECT  b FROM Bill b "
                 + " WHERE b.retired=false "
                 + " and b.billType=:btp "
-                + " and b.patientEncounter=:pe ";
+                + " and b.patientEncounter IN :pe ";
         hm.put("btp", BillType.InwardPaymentBill);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        System.out.println("cpts = " + cpts);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
         return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
