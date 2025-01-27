@@ -198,7 +198,7 @@
                                                             styleClass="ui-button-success" 
                                                             action="#{pharmacySaleController.addBillItem()}" 
                                                             process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId} focusForAcIx" 
-                                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId}" >
+                                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtItemInstructions" >
                                                         </p:commandButton>
 
                                                     </div>
@@ -233,8 +233,9 @@
                                         </div>
                                         <div class="row w-100 m-1 p-1 boder-1">
                                             <div class="col-12" >
-                                                <h:panelGroup id="txtItemInstructions" >
-                                                    <h:outputText value="#{pharmacySaleController.billItem.instructions}" ></h:outputText>
+                                                <h:panelGroup id="txtItemInstructions" style="display: #{pharmacySaleController.billItem != null and not empty pharmacySaleController.billItem.instructions ? 'block' : 'none'}">
+                                                    <h:outputLabel style="font-weight: bold" value="Instructions : " for="instructionText"></h:outputLabel>
+                                                    <h:outputText id="instructionText" class=" text-muted" value=" #{pharmacySaleController.billItem.instructions}" ></h:outputText>
                                                 </h:panelGroup>
                                             </div>
                                         </div>
@@ -310,6 +311,10 @@
 
 
                                                 </p:dialog>
+                                            </p:column>
+
+                                            <p:column headerText="Instructions" style="text-align: center">
+                                                <p:commandButton style="font-size: small; margin: auto; border-radius: 10px" class="ui-button-info" value="Add" oncomplete="PF('addInstruction').show();"></p:commandButton>
                                             </p:column>
 
                                             <p:column headerText="Rate" style="width: 5em; padding: 6px;">
@@ -414,6 +419,13 @@
 
 
                                     </p:panel> 
+
+
+                                       
+
+
+
+
                                 </div>
                                 <div class="col-md-5"  >
                                     <h:panelGrid id="sale" columns="1" class="alignTop w-100"  >
