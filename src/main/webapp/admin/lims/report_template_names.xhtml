@@ -13,7 +13,7 @@
                     <p:panel header="Manage Report Template Names" >
                         <p:focus id="selectFocus" for="lstSelect"  />
                         <p:focus id="detailFocus" for="txtName" />
-                        
+                        <p:growl id="msg"/>
 
                         <div class="row">
                             <div class="col-md-5">
@@ -43,10 +43,28 @@
                                     id="lstSelect"
                                     value="#{reportFormatController.current}" 
                                     class="w-100 mt-3"
+                                    var="i"
                                     filter="true">
                                     <f:selectItems  value="#{reportFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                    <p:ajax update="gpDetail" process="lstSelect" >
-                                    </p:ajax>
+                                    <p:ajax update="gpDetail" process="lstSelect" ></p:ajax>
+                                    <p:column>
+                                        <h:outputText value="#{i.name}" style="width: 100px;"/>
+                                        <h:outputLabel value="(#{i.orderNo})" class="mx-2" rendered="#{i.parentCategory ne null}"/>
+                                    </p:column>
+                                    <p:column class="text-center">
+                                        <p:badge 
+                                            value="Parent" 
+                                            severity="success"
+                                            style="width: 100px;"
+                                            rendered="#{i.parentCategory eq null}" >
+                                        </p:badge>
+                                        <p:badge 
+                                            value="Child" 
+                                            severity="info"
+                                            style="width: 100px;"
+                                            rendered="#{i.parentCategory ne null}" >
+                                        </p:badge>
+                                    </p:column>
                                 </p:selectOneListbox>
                             </div>
 
@@ -54,12 +72,45 @@
                                 <p:panel class="w-100 form-control m-1" id="gpDetail" header="Details of the Template">
                                     <div class="d-flex">
                                         <h:outputText id="lblName" class="col-3 mt-2" value="Name" ></h:outputText>
-                                        <p:inputText 
-                                            autocomplete="off" 
-                                            id="txtName" 
-                                            class="w-100"
-                                            value="#{reportFormatController.current.name}"  >
-                                        </p:inputText>
+                                        <div class="d-flex gap-3 col-9">
+                                            <p:inputText 
+                                                autocomplete="off"
+                                                id="txtName"
+                                                class="w-100"
+                                                value="#{reportFormatController.current.name}"  >
+                                            </p:inputText>
+                                            <p:badge 
+                                                value="Parent" 
+                                                severity="success"
+                                                size="large"
+                                                style="width: 150px;"
+                                                rendered="#{reportFormatController.current.parentCategory eq null}" >
+                                            </p:badge>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex mt-2">
+                                        <h:outputText id="lblParent" class="col-3 mt-2" value="Parent Format" ></h:outputText>
+                                        <div class="d-flex gap-3 col-9">
+                                            <p:selectOneMenu
+                                                class="w-100 "
+                                                id="lstParent"
+                                                value="#{reportFormatController.current.parentCategory}"
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Select Parent Format"/>
+                                                <f:selectItems value="#{reportFormatController.fillParentReportFormats()}" var="format" itemValue="#{format}" itemLabel="#{format.name}"/>                                       
+                                            </p:selectOneMenu>
+                                            <p:spinner 
+                                                style="width: 10em;"
+                                                id="horizontal" 
+                                                class="text-center"
+                                                min="1"
+                                                rendered="#{reportFormatController.current.parentCategory ne null}"
+                                                value="#{reportFormatController.current.orderNo}" 
+                                                buttons="horizontal" >
+                                            </p:spinner>
+                                        </div>
                                     </div>
 
                                     <div class="d-flex mt-2">
@@ -83,7 +134,6 @@
                                             forceSelection="true" 
                                             value="#{reportFormatController.current.institution}" >
                                         </p:autoComplete>
-
                                     </div>
 
                                     <div class="d-flex mt-4 justify-content-end">
