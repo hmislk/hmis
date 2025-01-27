@@ -75,15 +75,15 @@ jobs:
 
           # Variables
           WAR_NAME="mp.war"
-          WAR_DIR="/home/appuser/app/latest"
+          WAR_DIR="/home/appadmin/app/latest"
           APP_NAME="mp"
           SUBDOMAIN="mp"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             sudo mkdir -p $WAR_DIR
-            sudo chown -R appuser:appuser /home/appuser/app/latest
-            sudo su - appuser
+            sudo chown -R appadmin:appadmin /home/appadmin/app/latest
+            sudo su - appadmin
             cd $WAR_DIR
 
             # Remove old backup if it exists
@@ -103,23 +103,23 @@ jobs:
           # Move the file to /home/appuser/app/latest/ and set permissions
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             sudo mv /tmp/$WAR_NAME $WAR_DIR/
-            sudo chown appuser:appuser $WAR_DIR/$WAR_NAME
+            sudo chown appadmin:appadmin $WAR_DIR/$WAR_NAME
           "
 
           # Deploy the WAR using asadmin
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            sudo su - appuser
+            sudo su - appadmin
             echo 'AS_ADMIN_PASSWORD=${{ secrets.MP_PROD_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
-            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
-            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
+            /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
+            /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
           "
 
           # Validate if the application is running
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            sudo su - appuser
+            sudo su - appadmin
             echo 'AS_ADMIN_PASSWORD=${{ secrets.MP_PROD_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
-            if /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
+            if /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
               echo 'Application is running.'
             else
               echo 'Application failed to start.'

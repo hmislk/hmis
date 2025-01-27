@@ -4449,7 +4449,7 @@ public class SearchController implements Serializable {
 
         sql += " order by bi.id desc  ";
 
-        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
+        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
