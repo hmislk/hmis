@@ -56,6 +56,7 @@ import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.Token;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.clinical.Prescription;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -507,6 +508,15 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         onEditCalculation(tmp);
 
         return false;
+    }
+    
+    private Prescription prescription;
+    
+    public void addPrescriptionToBillitem(){
+        if(prescription == null){
+            prescription = new Prescription();
+        }
+        
     }
 
     private void onEditCalculation(BillItem tmp) {
@@ -3210,6 +3220,17 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         }
         processBillItems();
+    }
+
+    public Prescription getPrescription() {
+        if(prescription == null){
+            prescription = new Prescription();
+        }
+        return prescription;
+    }
+
+    public void setPrescription(Prescription prescription) {
+        this.prescription = prescription;
     }
 
 }

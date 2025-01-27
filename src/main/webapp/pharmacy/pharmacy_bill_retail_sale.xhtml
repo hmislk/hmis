@@ -315,16 +315,98 @@
 
                                             <p:column headerText="Instructions" style="text-align: center">
                                                 <p:commandButton style="font-size: small; margin: auto; border-radius: 10px" id="processInstructions" class="ui-button-info" value="Add" oncomplete="PF('instructions').show();" process="processInstructions" update="#{p:resolveFirstComponentWithId('instructionDetials',view).clientId}"></p:commandButton>
-                                                
-                                                 <p:dialog 
+
+                                                <p:dialog 
                                                     id="instructionDetials" 
                                                     widgetVar="instructions" 
-                                                    resizable="false" 
+                                                    resizable="false"
+                                                    closable="false"
                                                     modal="true" 
-                                                    class="w-25">
-                                                     <h:outputLabel>Hello</h:outputLabel>
-                                                        
-                                                 </p:dialog>
+
+                                                    >
+                                                    <p:panel>
+                                                        <f:facet name="header">
+                                                            <h:outputText styleClass="fas fa-pills"/>
+                                                            <p:outputLabel class="mx-4" value="Instruction for the #{bi.item.name}" />
+
+                                                            <p:commandButton value="Close" process="@this" class='ui-button-warning' icon='fas fa-fill' style="float: right;" oncomplete="PF('instructions').hide()"/>
+
+                                                        </f:facet>
+                                                        <div>
+
+                                                            <!-- Dose Group -->
+                                                            <div>
+                                                                <label>Dose:</label>
+                                                                <div>
+                                                                    <p:inputText style="width: 6em;"
+                                                                                 id="txtDose"
+                                                                                 value="#{bi.prescription.dose}"
+                                                                                 placeholder="Dose"/>
+                                                                    <p:selectOneMenu id="cmbDose" 
+                                                                                     value="#{bi.prescription.doseUnit}">
+                                                                        <f:selectItem itemLabel="Select" />
+                                                                        <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(patientEncounterController.encounterMedicine.prescription.item)}" 
+                                                                                       var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                                    </p:selectOneMenu>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Frequency Selection -->
+                                                            <div>
+                                                                <label for="cmbFrequency">Frequency:</label>
+                                                                <p:selectOneMenu id="cmbFrequency" 
+                                                                                 value="#{bi.prescription.frequencyUnit}">
+                                                                    <f:selectItem itemLabel="Select" />
+                                                                    <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
+                                                                                   var="du" 
+                                                                                   itemLabel="#{du.name}"
+                                                                                   itemValue="#{du}" />
+                                                                </p:selectOneMenu>
+                                                            </div>
+
+                                                            <!-- Duration Group -->
+                                                            <div>
+                                                                <label>Duration:</label>
+                                                                <div class="d-flex">
+                                                                    <p:inputText style="width: 6em;"
+                                                                                 id="txtDuration"
+                                                                                 value="#{bi.prescription.duration}"
+                                                                                 placeholder="Duration"/>
+                                                                    <p:selectOneMenu id="cmbDuration" 
+                                                                                     value="#{bi.prescription.durationUnit}">
+                                                                        <f:selectItem itemLabel="Select" />
+                                                                        <f:selectItems value="#{measurementUnitController.durationUnits}" 
+                                                                                       var="du" 
+                                                                                       itemLabel="#{du.name}" 
+                                                                                       itemValue="#{du}" />
+                                                                    </p:selectOneMenu>
+                                                                </div>
+                                                            </div>
+
+                                                            <div>
+                                                                <label for="instructionText" class="w-100">Comment :</label>
+                                                                <p:inputTextarea id="instructionText" rows="6" cols="33"/>
+                                                            </div>
+
+                                                            <!-- Add Prescription Button -->
+                                                            <div>
+                                                                <label for="chkIndoor" ></label>
+                                                                <p:commandButton value="Add"
+                                                                                 class="ui-button-success"
+                                                                                 id="btnAddRx"
+                                                                                 icon="pi pi-plus"
+                                                                                 oncomplete="PF('instructions').hide()"
+                                                                                 process="btnAddRx instructionDetials"
+                                                                                 update="tblBillItem"
+                                                                                 action="#{pharmacySaleController.addPrescriptionToBillitem}" />
+                                                            </div>
+
+                                                        </div>
+
+
+                                                    </p:panel>
+
+                                                </p:dialog>
                                             </p:column>
 
                                             <p:column headerText="Rate" style="width: 5em; padding: 6px;">
@@ -431,7 +513,7 @@
                                     </p:panel> 
 
 
-                                       
+
 
 
 
