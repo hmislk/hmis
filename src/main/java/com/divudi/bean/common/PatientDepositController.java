@@ -428,7 +428,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             return;
         }
 
-        System.out.println("patientController.getBill() = " + patientController.getBill());
         updateBalance(patientController.getBill(), current);
         List<Payment> ps = billBeanController.createPayment(patientController.getBill(),
                 patientController.getBill().getPaymentMethod(),
@@ -561,7 +560,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         m.put("ret", false);
 
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
-        System.out.println("pd = " + pd);
 
         patientController.save(p);
 
@@ -592,7 +590,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         m.put("ret", false);
 
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
-        System.out.println("pd = " + pd);
         return pd;
     }
 

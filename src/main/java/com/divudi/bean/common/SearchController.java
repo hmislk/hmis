@@ -4449,7 +4449,7 @@ public class SearchController implements Serializable {
 
         sql += " order by bi.id desc  ";
 
-        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
+        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -11740,77 +11740,75 @@ public class SearchController implements Serializable {
 
     public void createAgentPaymentTable(BillType billType) {
         bills = new ArrayList<>();
-        String sql;
+        String jpql;
         Map temMap = new HashMap();
 
-        sql = "select b from BilledBill b where b.billType = :billType "
+        jpql = "select b from BilledBill b where b.billType = :billType "
                 + " and b.institution=:ins and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.insId) like :billNo )";
+            jpql += " and  ((b.insId) like :billNo )";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            jpql += " and  ((b.netTotal) like :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getFromInstitution() != null && !getSearchKeyword().getFromInstitution().trim().equals("")) {
-            sql += " and  ((b.fromInstitution.name) like :frmIns )";
+            jpql += " and  ((b.fromInstitution.name) like :frmIns )";
             temMap.put("frmIns", "%" + getSearchKeyword().getFromInstitution().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
-            sql += " and  ((b.fromInstitution.institutionCode) like :num )";
+            jpql += " and  ((b.fromInstitution.institutionCode) like :num )";
             temMap.put("num", "%" + getSearchKeyword().getNumber().trim().toUpperCase() + "%");
         }
 
-        sql += " order by b.createdAt desc  ";
+        jpql += " order by b.createdAt desc  ";
 
         temMap.put("billType", billType);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
 
-        //System.err.println("Sql " + sql);
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+        bills = getBillFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
 
     }
 
     public void createPatientDepositTable(BillType billType) {
         bills = new ArrayList<>();
-        String sql;
+        String jpql;
         Map temMap = new HashMap();
 
-        sql = "select b from Bill b where b.billType = :billType "
+        jpql = "select b from Bill b where b.billType = :billType "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.insId) like :billNo )";
+            jpql += " and  ((b.insId) like :billNo )";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            jpql += " and  ((b.netTotal) like :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-            sql += " and  ((b.patient.person.name) like :pn )";
+            jpql += " and  ((b.patient.person.name) like :pn )";
             temMap.put("pn", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
 
-        sql += " order by b.createdAt desc  ";
+        jpql += " order by b.createdAt desc  ";
 
         temMap.put("billType", billType);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-        //System.err.println("Sql " + sql);
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+        bills = getBillFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -13566,7 +13564,7 @@ public class SearchController implements Serializable {
         pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
         pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
         pharmacyRefunds.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
-        
+
         ReportTemplateRowBundle pharmacyServiceRefunds = generatePaymentMethodColumnsByBills(pharmacyRefunds, nonCreditPaymentMethods);
         pharmacyServiceRefunds.setBundleType("pharmacyServiceRefunds");
         pharmacyServiceRefunds.setName("Pharmacy Service Refunds");
@@ -13912,7 +13910,8 @@ public class SearchController implements Serializable {
 // Generate Pharmacy service refunds and add to the main bundle
         List<BillTypeAtomic> pharmacyRefunds = new ArrayList<>();
         pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
-        pharmacyRefunds.add(BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_REFUND);
+        pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        pharmacyRefunds.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
         ReportTemplateRowBundle pharmacyServiceRefunds = generatePaymentMethodColumnsByBills(pharmacyRefunds);
         pharmacyServiceRefunds.setBundleType("pharmacyServiceRefunds");
         pharmacyServiceRefunds.setName("Pharmacy Service Refunds");

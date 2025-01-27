@@ -134,7 +134,7 @@
                             <p:selectOneMenu 
                                 id="phmToSite"
                                 class="w-100"
-                                value="#{pharmacyController.site}"
+                                value="#{pharmacyController.toSite}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
@@ -214,7 +214,7 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu class="w-100" id="reportType"  value="#{pharmacyController.reportType}">
-                                <f:selectItem itemLabel="Summery" itemValue="summeryReport"/>
+                                <f:selectItem itemLabel="Summary" itemValue="summeryReport"/>
                                 <f:selectItem itemLabel="Detail" itemValue="detailReport"/>
                                 <f:selectItem itemLabel="Bill" itemValue="byBill"/>
                             </p:selectOneMenu>
@@ -286,7 +286,9 @@
                                     </h:outputText>                               
                                 </p:column>                          
                                 <p:column headerText="Good In Transist Amount">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{s.goodInTransistAmount}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:column>>
 
 
@@ -335,7 +337,7 @@
                                     <p:outputLabel value="#{i.pharmaceuticalBillItem.qty}" ><f:convertNumber pattern="#,##0"/></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Unit" width="4em" style="text-align: center;">
-                                    <h:outputText value="#{i.item.measurementUnit.name}" />
+                                    <h:outputText value="#{i.item.vmp.strengthUnit.name}" />
                                 </p:column>
                                 <p:column headerText="Cost rate" width="5em" style="text-align: right; padding-right: 10px;">
                                     <p:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate}" >
@@ -357,7 +359,7 @@
 
                         <h:panelGroup class="mt-5" rendered="#{pharmacyController.reportType eq 'byBill'}">
                             <h5>Transfer Issue By Bill</h5>
-                            <p:dataTable id="tbl3" value="#{pharmacyController.bills}"
+                            <p:dataTable id="tbl3" value="#{pharmacyController.departmentWiseBillList}"
                                          var="b" 
                                          rowIndexVar="n" 
                                          paginator="true" 
@@ -366,20 +368,24 @@
                                          currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
                                          rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
+                                <p:column headerText="Issue/Receive      Department">
+                                    <h:outputText value="#{b.bill.toDepartment.name}" ></h:outputText>
+                                </p:column>
+                                
                                 <p:column headerText="Bill No">
-                                    <p:commandLink ajax="false" value="#{b.deptId}" action="/pharmacy/pharmacy_reprint_transfer_isssue" >
-                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                    <p:commandLink ajax="false" value="#{b.billId}" action="/pharmacy/pharmacy_reprint_transfer_isssue" >
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.bill}"/>
                                     </p:commandLink>
                                 </p:column>
 
                                 <p:column headerText="Date">
-                                    <h:outputText value="#{b.createdAt}" >
+                                    <h:outputText value="#{b.createdDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
                                 </p:column>                       
                                 <p:column headerText="Ref Bill No">
-                                    <p:commandLink ajax="false" value="#{b.backwardReferenceBill.deptId}" action="/pharmacy/pharmacy_reprint_transfer_request">
-                                        <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"/>
+                                    <p:commandLink ajax="false" value="#{b.backwardReferenceBillId}" action="/pharmacy/pharmacy_reprint_transfer_request">
+                                        <f:setPropertyActionListener value="#{b.backwardReferenceBill}" target="#{pharmacyBillSearch.bill}"/>
                                     </p:commandLink>
                                 </p:column>
                                 <p:column headerText="Ref Bill Approved Date">
@@ -388,14 +394,14 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Net Total" style="text-align: right;">
-                                    <h:outputText value="#{b.netTotal}" >
+                                    <h:outputText value="#{b.bill.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{pharmacyController.totalPurchase}" ></h:outputLabel>
                                     </f:facet>
                                 </p:column>
-
+                                
 
                             </p:dataTable>
 

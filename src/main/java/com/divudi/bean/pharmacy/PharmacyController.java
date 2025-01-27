@@ -57,22 +57,26 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.DepartmentCategoryWiseItems;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.CategoryWithItem;
+import com.divudi.data.DepartmentWiseBill;
 import com.divudi.data.dataStructure.PharmacySummery;
 import com.divudi.data.table.String1Value1;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.pharmacy.PharmaceuticalItemLight;
 import com.divudi.service.BillService;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
@@ -747,6 +751,8 @@ public class PharmacyController implements Serializable {
     private Institution fromSite;
     private Institution toSite;
 
+    private List<DepartmentWiseBill> departmentWiseBillList;
+
     public void clearItemHistory() {
 
         grantStock = 0.00;
@@ -908,6 +914,7 @@ public class PharmacyController implements Serializable {
 
         String sql = "SELECT b FROM Bill b "
                 + " WHERE b.retired = false"
+                + " and b.cancelled = false"
                 + " and b.billTypeAtomic In :btas"
                 + " and b.createdAt between :fromDate and :toDate";
 
@@ -1354,9 +1361,7 @@ public class PharmacyController implements Serializable {
         totalSaleValue = 0.0;
 
         // Create a map to store net totals grouped by main and consumption departments
-        Map<String, Map<String, Double>> departmentTotals = new HashMap<>();
-
-        // Populate the map with department-wise data
+        Map<String, Map<String, Double>> departmentTotals = new HashMap<>();// Populate the map with department-wise data
         for (DepartmentCategoryWiseItems item : list) {
             String mainDepartmentName = item.getMainDepartment().getName();
             String consumptionDepartmentName = item.getConsumptionDepartment().getName();
@@ -1590,48 +1595,79 @@ public class PharmacyController implements Serializable {
             generateReportByBillItems(bt);
 
         } else if ("byBill".equals(reportType)) {
-            generateReportByBill(bt);
+            generateReportByDepartmentWiseBill(bt);
 
         }
 
     }
 
-    public void generateReportByBill(BillType billType) {
-        bills = new ArrayList<>();
-
-        // SQL query construction
-        StringBuilder sql = new StringBuilder("SELECT b FROM Bill b WHERE b.retired = false")
-                .append(" and b.billType = :btp")
-                .append(" and b.createdAt between :fromDate and :toDate");
-
-        // Parameters for query execution
+    public void generateReportByDepartmentWiseBill(BillType billType) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("btp", billType);
-        parameters.put("fromDate", getFromDate());
-        parameters.put("toDate", getToDate());
+        StringBuilder sql = new StringBuilder(
+                "SELECT b.toDepartment, "
+                + "b.department, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.backwardReferenceBill, "
+                + "b.backwardReferenceBill.deptId, "
+                + "SUM(b.netTotal), "
+                + "b "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND b.billType = :billType "
+        );
 
-        // Add filters dynamically
+        parameters.put("billType", billType);
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+
         additionalCommonFilltersForBillEntity(sql, parameters);
-        // Finalize the query with ordering
-        sql.append(" order by b.id desc");
 
-        // Execute the query and handle exceptions
+        sql.append(" GROUP BY b.toDepartment, b.department, b.deptId, b.createdAt, b.backwardReferenceBill, b.backwardReferenceBill.deptId, b");
+
+        Map<Department, List<DepartmentWiseBill>> departmentWiseBillMap = new HashMap<>();
+
         try {
-            bills = getBillFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+            List<Object[]> results = (List<Object[]>) getBillFacade()
+                    .findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+
+            departmentWiseBillList = new ArrayList<>();
+            totalPurchase = 0;
+
+            for (Object[] result : results) {
+                Department toDepartment = (Department) result[0];
+                DepartmentWiseBill departmentWiseBill = new DepartmentWiseBill(
+                        (Department) result[1],
+                        (String) result[2],
+                        (Date) result[3],
+                        (Bill) result[4],
+                        (String) result[5],
+                        (Double) result[6],
+                        (Bill) result[7]
+                );
+
+                departmentWiseBillMap
+                        .computeIfAbsent(toDepartment, k -> new ArrayList<>())
+                        .add(departmentWiseBill);
+
+                departmentWiseBillList.add(departmentWiseBill);
+                totalPurchase += departmentWiseBill.getBill().getNetTotal();
+            }
+
+            departmentWiseBillList = departmentWiseBillMap.entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey(Comparator.comparing(Department::getName)))
+                    .flatMap(entry -> entry.getValue().stream())
+                    .collect(Collectors.toList());
+
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error occurred while generating the consumption report.");
-            return;
         }
-
-        // Calculate the total purchase using Streams
-        totalPurchase = bills.stream()
-                .mapToDouble(b -> b.getStockBill().getStockValueAtPurchaseRates())
-                .sum();
     }
 
     private void addFilter(StringBuilder sql, Map<String, Object> parameters, String sqlField, String paramKey, Object value) {
         if (value != null) {
-            sql.append(" and ").append(sqlField).append(" = :").append(paramKey);
+            sql.append(" AND ").append(sqlField).append(" = :").append(paramKey).append(" ");
             parameters.put(paramKey, value);
         }
     }
@@ -1689,45 +1725,40 @@ public class PharmacyController implements Serializable {
     }
 
     public void generateReportAsSummary(BillType billType) {
-        // Prepare SQL query with dynamic filtering
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT b.department.name, SUM(b.netTotal) ")
+        sql.append("SELECT b.department.name, SUM(b.netTotal), ")
+                .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.netTotal ELSE 0 END) ")
                 .append("FROM Bill b ")
                 .append("WHERE b.retired = false ")
                 .append("AND b.billType = :billType ")
                 .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
-        // Prepare parameters
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("billType", billType);
         parameters.put("fromDate", getFromDate());
         parameters.put("toDate", getToDate());
 
-        // Add optional filters
         additionalCommonFilltersForBillEntity(sql, parameters);
 
-        // Group by department and order by total in descending order
         sql.append(" GROUP BY b.department.name ORDER BY SUM(b.netTotal) DESC");
 
         try {
-            // Execute the query and fetch summarized data
             List<Object[]> results = getBillFacade().findObjectsArrayByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
-            // Process results into a summary list
             departmentSummaries = new ArrayList<>();
-            double grandTotal = 0;
+            double grandTotal = 0.0;
+            double goodInTransistTotal = 0.0;
 
             for (Object[] result : results) {
-                String departmentName = (String) result[0]; // Extract department name
-                Double netTotal = (Double) result[1];       // Extract net total
-                grandTotal += netTotal;                     // Accumulate the grand total
+                String departmentName = (String) result[0];
+                double netTotal = (double) result[1];
+                double goodInTransist = (double) result[2];
+                grandTotal += netTotal;
+                goodInTransistTotal += goodInTransist;
 
-                // Add summary data
-                departmentSummaries.add(new PharmacySummery(departmentName, netTotal));
+                departmentSummaries.add(new PharmacySummery(departmentName, netTotal, goodInTransist));
             }
-
-            // Add grand total
-            departmentSummaries.add(new PharmacySummery("Total", grandTotal));
+            departmentSummaries.add(new PharmacySummery("Total", grandTotal, goodInTransistTotal));
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Something Went Wrong!");
@@ -4132,6 +4163,14 @@ public class PharmacyController implements Serializable {
 
     public void setResultsList(List<DepartmentCategoryWiseItems> resultsList) {
         this.resultsList = resultsList;
+    }
+
+    public List<DepartmentWiseBill> getDepartmentWiseBillList() {
+        return departmentWiseBillList;
+    }
+
+    public void setDepartmentWiseBillList(List<DepartmentWiseBill> departmentWiseBillList) {
+        this.departmentWiseBillList = departmentWiseBillList;
     }
 
 }

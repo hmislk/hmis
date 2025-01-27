@@ -23,10 +23,16 @@ public class PharmacySummery {
     private String departmentName;
     private double netTotal;
     private String department;
+    private double goodInTransistAmount;
 
     public PharmacySummery(String departmentName, double netTotal) {
         this.departmentName = departmentName;
         this.netTotal = netTotal;
+    }
+    public PharmacySummery(String departmentName, double netTotal, double goodInTransistAmount) {
+        this.departmentName = departmentName;
+        this.netTotal = netTotal;
+        this.goodInTransistAmount = goodInTransistAmount;
     }
     public PharmacySummery(String departmentName, String department, double netTotal) {
         this.departmentName = departmentName;
@@ -99,6 +105,14 @@ public class PharmacySummery {
 
     public void setDepartment(String department) {
         this.department = department;
+    }
+
+    public double getGoodInTransistAmount() {
+        return goodInTransistAmount;
+    }
+
+    public void setGoodInTransistAmount(double goodInTransistAmount) {
+        this.goodInTransistAmount = goodInTransistAmount;
     }
 
 }
