@@ -516,8 +516,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             prescription = new Prescription();
         }
 
-        if (billItem.getPrescription().getComment() == null || billItem.getPrescription().getComment().isEmpty()) {
-            billItem.getPrescription().setComment(billItem.getInstructions());
+        if (billItem.getInstructions() != null && !billItem.getInstructions().isBlank()) {
+            if (billItem.getPrescription().getComment() == null || billItem.getPrescription().getComment().isEmpty()) {
+                billItem.getPrescription().setComment(billItem.getInstructions());
+            } else if (!billItem.getInstructions().equalsIgnoreCase(billItem.getPrescription().getComment())) {
+                billItem.getPrescription().setComment(billItem.getInstructions());
+            }
         }
 
     }
