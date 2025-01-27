@@ -314,7 +314,17 @@
                                             </p:column>
 
                                             <p:column headerText="Instructions" style="text-align: center">
-                                                <p:commandButton style="font-size: small; margin: auto; border-radius: 10px" class="ui-button-info" value="Add"></p:commandButton>
+                                                <p:commandButton style="font-size: small; margin: auto; border-radius: 10px" id="processInstructions" class="ui-button-info" value="Add" oncomplete="PF('instructions').show();" process="processInstructions" update="#{p:resolveFirstComponentWithId('instructionDetials',view).clientId}"></p:commandButton>
+                                                
+                                                 <p:dialog 
+                                                    id="instructionDetials" 
+                                                    widgetVar="instructions" 
+                                                    resizable="false" 
+                                                    modal="true" 
+                                                    class="w-25">
+                                                     <h:outputLabel>Hello</h:outputLabel>
+                                                        
+                                                 </p:dialog>
                                             </p:column>
 
                                             <p:column headerText="Rate" style="width: 5em; padding: 6px;">
