@@ -335,13 +335,20 @@
                                                         <div>
 
                                                             <!-- Dose Group -->
-                                                            <div>
-                                                                <label>Dose:</label>
-                                                                <div>
-                                                                    <p:inputText style="width: 6em;"
-                                                                                 id="txtDose"
-                                                                                 value="#{bi.prescription.dose}"
-                                                                                 placeholder="Dose"/>
+                                                            <div class="row align-items-center text-left text-start">
+                                                                <div class="col-md-3">
+                                                                    <label>Dose:</label>
+                                                                </div>
+
+                                                                <div class="col-md-3">
+                                                                    <p:inputText
+                                                                        id="txtDose"
+                                                                        class="w-100"
+                                                                        value="#{bi.prescription.dose}"
+                                                                        placeholder="Dose"/>
+
+                                                                </div>
+                                                                <div class="col-md-3">
                                                                     <p:selectOneMenu id="cmbDose" 
                                                                                      value="#{bi.prescription.doseUnit}">
                                                                         <f:selectItem itemLabel="Select" />
@@ -352,26 +359,40 @@
                                                             </div>
 
                                                             <!-- Frequency Selection -->
-                                                            <div>
-                                                                <label for="cmbFrequency">Frequency:</label>
-                                                                <p:selectOneMenu id="cmbFrequency" 
-                                                                                 value="#{bi.prescription.frequencyUnit}">
-                                                                    <f:selectItem itemLabel="Select" />
-                                                                    <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
-                                                                                   var="du" 
-                                                                                   itemLabel="#{du.name}"
-                                                                                   itemValue="#{du}" />
-                                                                </p:selectOneMenu>
+                                                            <div class="row my-3 text-start">
+                                                                <div class="col-md-3">
+                                                                    <label for="cmbFrequency">Frequency:</label>
+                                                                </div>
+
+                                                                <div class="col-md-6">
+                                                                    <p:selectOneMenu id="cmbFrequency" 
+                                                                                     class="w-100"
+                                                                                     value="#{bi.prescription.frequencyUnit}">
+                                                                        <f:selectItem itemLabel="Select" />
+                                                                        <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
+                                                                                       var="du" 
+                                                                                       itemLabel="#{du.name}"
+                                                                                       itemValue="#{du}" />
+                                                                    </p:selectOneMenu>
+                                                                </div>
+
                                                             </div>
 
                                                             <!-- Duration Group -->
-                                                            <div>
-                                                                <label>Duration:</label>
-                                                                <div class="d-flex">
+                                                            <div class="row text-start">
+                                                                <div class="col-md-3">
+                                                                    <label>Duration:</label>
+                                                                </div>
+
+                                                                <div class="col-md-3">
                                                                     <p:inputText style="width: 6em;"
                                                                                  id="txtDuration"
                                                                                  value="#{bi.prescription.duration}"
                                                                                  placeholder="Duration"/>
+
+                                                                </div>
+
+                                                                <div class="col-md-3">
                                                                     <p:selectOneMenu id="cmbDuration" 
                                                                                      value="#{bi.prescription.durationUnit}">
                                                                         <f:selectItem itemLabel="Select" />
@@ -383,16 +404,23 @@
                                                                 </div>
                                                             </div>
 
-                                                            <div>
-                                                                <label for="instructionText" class="w-100">Comment :</label>
-                                                                <p:inputTextarea id="instructionText" rows="6" cols="33"/>
+                                                            <div class="row text-start my-3">
+                                                                <div class="col-md-3">
+                                                                    <label for="instructionText" class="w-100">Comment :</label>
+                                                                </div>
+
+                                                                <div class="col-md-9">
+                                                                    <p:inputTextarea id="instructionText" rows="6" cols="33"/>
+                                                                </div>
+
+
                                                             </div>
 
                                                             <!-- Add Prescription Button -->
-                                                            <div>
+                                                            <div class="row">
                                                                 <label for="chkIndoor" ></label>
-                                                                <p:commandButton value="Add"
-                                                                                 class="ui-button-success"
+                                                                <p:commandButton value="Add Instructions"
+                                                                                 class="ui-button-success w-100"
                                                                                  id="btnAddRx"
                                                                                  icon="pi pi-plus"
                                                                                  oncomplete="PF('instructions').hide()"
