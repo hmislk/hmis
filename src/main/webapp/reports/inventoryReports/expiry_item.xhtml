@@ -227,21 +227,15 @@
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
+                                action="#{pharmacyReportController.exportExpiryItemReportToExcel()}"
                                 value="Download">
-                            <p:dataExporter
-                                    type="xlsx"
-                                    fileName="Expiry Item Report"
-                                    target="tbl"/>
                         </p:commandButton>
                         <p:commandButton
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
+                                action="#{pharmacyReportController.exportExpiryItemReportToPdf()}"
                                 value="PDF">
-                            <p:dataExporter
-                                    type="pdf"
-                                    target="tbl"
-                                    fileName="Expiry Item Report"/>
                         </p:commandButton>
                     </div>
 
