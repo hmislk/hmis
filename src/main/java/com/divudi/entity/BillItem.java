@@ -38,7 +38,7 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
-public class BillItem implements Serializable, RetirableEntity  {
+public class BillItem implements Serializable, RetirableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -146,6 +146,8 @@ public class BillItem implements Serializable, RetirableEntity  {
     private Department requestedToDepartment;
     @ManyToOne
     private Department peformedDepartment;
+    @Lob
+    private String instructions;
 
 //    @Transient
     int searialNo;
@@ -1073,5 +1075,15 @@ public class BillItem implements Serializable, RetirableEntity  {
     public void setPeformedDepartment(Department peformedDepartment) {
         this.peformedDepartment = peformedDepartment;
     }
+
+    public String getInstructions() {
+        return instructions;
+    }
+
+    public void setInstructions(String instructions) {
+        this.instructions = instructions;
+    }
+    
+    
 
 }

@@ -575,7 +575,7 @@ public class StockController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
     }
-    
+
     public void saveSilantly(Stock s) {
         if (s == null) {
             return;
@@ -740,24 +740,32 @@ public class StockController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.trim().isEmpty()) {
                 return null;
             }
-            StockController controller = (StockController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "stockController");
-            return controller.getEjbFacade().find(getKey(value));
+            try {
+                StockController controller = (StockController) facesContext.getApplication().getELResolver()
+                        .getValue(facesContext.getELContext(), null, "stockController");
+                return controller.getEjbFacade().find(getKey(value));
+            } catch (NumberFormatException e) {
+                return null;
+            }
         }
 
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+        Long getKey(String value) {
+            try {
+                return Long.valueOf(value);
+            } catch (NumberFormatException e) {
+                // Rethrow the exception to handle it in getAsObject
+                throw e;
+            }
         }
 
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+        String getStringKey(Long value) {
+            if (value == null) {
+                return null;
+            }
+            return value.toString();
         }
 
         @Override
@@ -766,8 +774,8 @@ public class StockController implements Serializable {
                 return null;
             }
             if (object instanceof Stock) {
-                Stock o = (Stock) object;
-                return getStringKey(o.getId());
+                Stock stock = (Stock) object;
+                return getStringKey(stock.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
                         + object.getClass().getName() + "; expected type: " + Stock.class.getName());
