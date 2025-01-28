@@ -294,6 +294,9 @@ public class PharmacyReportController implements Serializable {
     private List<ItemLastSupplier> itemLastSuppliers;
     private String sortType;
 
+    private Map<Item, Map<Long, List<Stock>>> itemStockMap;
+    private Double quantity;
+
     //Constructor
     public PharmacyReportController() {
     }
@@ -1047,7 +1050,7 @@ public class PharmacyReportController implements Serializable {
         return navigateToPrescriptionList();
     }
 
-//    public void processPharmacySaleReferralCount() {
+    //    public void processPharmacySaleReferralCount() {
 //        String jpql = "select new com.divudi.data.BillLight(bi.referredBy.person.name, count(bi), count(bi.netTotal)) "
 //                + " from Bill bi "
 //                + " where bi.cancelled=:can "
@@ -1933,10 +1936,10 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         } else if ("consumptionDoc".equals(documentType)) {
             billTypes.add(BillType.PharmacyIssue);
-            
+
         } else if ("transferIssueDoc".equals(documentType)) {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);           
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
@@ -2224,10 +2227,69 @@ public class PharmacyReportController implements Serializable {
         stocks = stockFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
+        quantity = 0.0;
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            quantity = quantity + ts.getStock();
         }
+
+        groupExpiryItems(stocks);
+    }
+
+    private void groupExpiryItems(final List<Stock> stocks) {
+        // Map<Item, Map<Batch Number, List<Stock>>> itemStockMap
+        Map<Item, Map<Long, List<Stock>>> itemStockMap = new HashMap<>();
+
+        for (Stock stock : stocks) {
+            final Item item = stock.getItemBatch().getItem();
+            Map<Long, List<Stock>> batchStockMap = itemStockMap.computeIfAbsent(item, k -> new HashMap<>());
+
+            final Long batchNumber = stock.getItemBatch().getId();
+            List<Stock> stockList = batchStockMap.computeIfAbsent(batchNumber, k -> new ArrayList<>());
+            stockList.add(stock);
+
+            batchStockMap.put(batchNumber, stockList);
+            itemStockMap.put(item, batchStockMap);
+        }
+
+        setItemStockMap(itemStockMap);
+    }
+
+    public Double calculateBatchWiseTotalOfExpiredItems(final Item item, final Long batchNumber) {
+        final Map<Long, List<Stock>> batchStockMap = getItemStockMap().get(item);
+        final List<Stock> stockList = batchStockMap.get(batchNumber);
+
+        return stockList.stream()
+                .mapToDouble(stock -> stock.getItemBatch().getPurcahseRate() * stock.getStock())
+                .sum();
+    }
+
+    public Double calculateBatchWiseQtyOfExpiredItems(final Item item, final Long batchNumber) {
+        final Map<Long, List<Stock>> batchStockMap = getItemStockMap().get(item);
+        final List<Stock> stockList = batchStockMap.get(batchNumber);
+
+        return stockList.stream()
+                .mapToDouble(Stock::getStock)
+                .sum();
+    }
+
+    public Double calculateItemWiseTotalOfExpiredItems(final Item item) {
+        final Map<Long, List<Stock>> batchStockMap = getItemStockMap().get(item);
+
+        return batchStockMap.values().stream()
+                .flatMap(List::stream)
+                .mapToDouble(stock -> stock.getItemBatch().getPurcahseRate() * stock.getStock())
+                .sum();
+    }
+
+    public Double calculateItemWiseQtyOfExpiredItems(final Item item) {
+        final Map<Long, List<Stock>> batchStockMap = getItemStockMap().get(item);
+
+        return batchStockMap.values().stream()
+                .flatMap(List::stream)
+                .mapToDouble(Stock::getStock)
+                .sum();
     }
 
     public long calculateDaysRemaining(Date dateOfExpire) {
@@ -3223,6 +3285,19 @@ public class PharmacyReportController implements Serializable {
         this.itemLastSuppliers = itemLastSuppliers;
     }
 
-    
-    
+    public Map<Item, Map<Long, List<Stock>>> getItemStockMap() {
+        return itemStockMap;
+    }
+
+    public void setItemStockMap(Map<Item, Map<Long, List<Stock>>> itemStockMap) {
+        this.itemStockMap = itemStockMap;
+    }
+
+    public Double getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Double quantity) {
+        this.quantity = quantity;
+    }
 }
