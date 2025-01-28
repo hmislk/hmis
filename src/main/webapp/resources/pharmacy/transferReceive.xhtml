@@ -14,69 +14,113 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div class="a4bill">
+        <div >
 
-            <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
-            </div>
-            <div class="institutionContact" >
-                <div>
-                    <h:outputLabel value="#{cc.attrs.bill.creater.department.address}"/>
-                </div>
-                <div >
-                    <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1} "/>
-                    <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}"/>
-                </div>
-                <div >
-                    <h:outputLabel value="#{cc.attrs.bill.creater.department.fax}"/>                                                 
-                </div>
-                <div >
-                    <h:outputLabel value="#{cc.attrs.bill.creater.department.email}"/>                                                 
-                </div>
-            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Headings in Pharmacy Disbursement Reports', '12pt')}!Important;">
+                <!-- Institution Details -->
+                <tr>
+                    <td colspan="2" style="text-align: center; font-weight: bold;">
+                        <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <h:outputLabel value="#{cc.attrs.bill.creater.department.address}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1}" />
+                        <h:outputLabel value=" / " rendered="#{not empty cc.attrs.bill.creater.department.telephone2}" />
+                        <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <h:outputLabel value="Fax: #{cc.attrs.bill.creater.department.fax}" rendered="#{not empty cc.attrs.bill.creater.department.fax}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <h:outputLabel value="Email: #{cc.attrs.bill.creater.department.email}" rendered="#{not empty cc.attrs.bill.creater.department.email}" />
+                    </td>
+                </tr>
 
-            <div class="headingBill">
-                <h:outputLabel value="Transfer Recieve Note" style="text-decoration: underline;"/>
-                <h:outputLabel value="**Cancelled**" style="text-decoration: underline;" rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" /> 
-            </div>
+                <!-- Bill Heading -->
+                <tr>
+                    <td colspan="2" style="text-align: center; font-size: 1.2em; text-decoration: underline;">
+                        <h:outputLabel value="Transfer Receive Note" />
+                        <h:outputLabel value="**Cancelled**" style="color: red;" rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" />
+                    </td>
+                </tr>
 
-            <div class="row" style="text-align: left; margin-left: 10px;">
-                <div class="col-6">
-                    <div class="col-12">
-                        <h:outputLabel value="Location From : #{cc.attrs.bill.fromDepartment.name}"/>
+                <!-- Bill Details -->
+                <tr>
+                    <td style="width: 50%; padding: 1px;">
+                        <h:outputLabel value="Location From: #{cc.attrs.bill.fromDepartment.name}" />
+                    </td>
+                    <td style="width: 50%; padding: 1px;">
+                        <h:outputLabel value="Location To: #{cc.attrs.bill.department.name}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Received Person: #{cc.attrs.bill.creater.staff.code}" />
+                    </td>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Issued Person: #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Receive No: #{cc.attrs.bill.deptId}" />
+                    </td>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Issue No: #{cc.attrs.bill.backwardReferenceBill.deptId}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Received Time: #{cc.attrs.bill.createdAt}" />
+                    </td>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Issue Time: #{cc.attrs.bill.backwardReferenceBill.createdAt}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Transporter: #{cc.attrs.bill.fromStaff.person.nameWithTitle}" />
+                    </td>
+                    <td></td>
+                </tr>
+            </table>
 
-                    </div>
-                    <div class="col-12">
-                        <h:outputLabel value="Recieved Person : #{cc.attrs.bill.creater.staff.code}"/>
-                    </div>
-                    <div class="col-12"> <h:outputLabel value="Recieve No : #{cc.attrs.bill.deptId}"/></div>
-                    <div class="col-12"><h:outputLabel value="Recieved Time : #{cc.attrs.bill.createdAt}"/></div>
-                    <div class="col-12"><h:outputLabel value="Transporter : #{cc.attrs.bill.fromStaff.person.nameWithTitle}"/></div>
-
-                </div>
-                <div class="col-6">
-                    <div class="col-12">
-                        <h:outputLabel value="Location To : #{cc.attrs.bill.department.name}" />
-                    </div>
-                    <div class="col-12">
-                        <h:outputLabel value="Issued Person : #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}"/>
-                    </div>
-                    <div class="col-12"> <h:outputLabel value="Issue No : #{cc.attrs.bill.backwardReferenceBill.deptId}" /></div>
-                    <div class="col-12"><h:outputLabel value="Issue Time : #{cc.attrs.bill.backwardReferenceBill.createdAt}"/></div>
-
-                </div>
-            </div>
 
             <div >
-                <p:dataTable styleClass="noBorder normalFont" rowIndexVar="rowIndex"  value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip" >
-                    <p:column width="2em" style="padding: 0px; margin: 0px; " >
+                <p:dataTable 
+                    styleClass="no-border-table"
+                    rowIndexVar="rowIndex" 
+                    value="#{cc.attrs.bill.billItems}"
+                    sortBy="#{bip.searialNo}" 
+                    var="bip"
+                    style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important;"
+                    rowKey="#{bip.id}">
+                    <p:column 
+                        width="2em"
+                        style="padding: 0px; margin: 0px; "
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Serial Number is required in Pharmacy Disbursement Reports', true)}">
                         <f:facet name="header">
                             <h:outputLabel value="No"/>
                         </f:facet>
-                        <h:outputLabel value="#{rowIndex+1}"/>
+                        <h:outputLabel value="#{rowIndex+1}">
+                            <f:convertNumber pattern="00" rendered=""></f:convertNumber>
+                        </h:outputLabel>
                     </p:column>
 
-                    <p:column width="5em" style="padding: 0px; margin: 0px; " >
+                    <p:column
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Code is required in Pharmacy Disbursement Reports', true)}"
+                        width="2em"
+                        style="padding: 0px; margin: 0px; " >
                         <f:facet name="header">
                             <h:outputLabel value="Code"/>
                         </f:facet>
@@ -94,7 +138,9 @@
                         </f:facet>
                     </p:column>
 
-                    <p:column  width="10em" style="padding: 0px; margin: 0px; text-align: right;" >
+                    <p:column 
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Date of Expiary is required in Pharmacy Disbursement Reports', true)}"
+                        width="6em" style="padding: 0px; margin: 0px; text-align: right;" >
                         <f:facet name="header">
                             <h:outputLabel value="D O E"/>
                         </f:facet>
@@ -103,7 +149,7 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column  width="10em" style="padding: 0px; margin: 0px; text-align: right;" >
+                    <p:column  width="6em" style="padding: 0px; margin: 0px; text-align: right;" >
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
@@ -112,7 +158,9 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column  width="10em" style="padding: 0px; margin: 0px; text-align: right;" >
+                    <p:column  
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Purchase Rate is required in Pharmacy Disbursement Reports', true)}"
+                        width="5em" style="padding: 0px; margin: 0px; text-align: right;" >
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Rate"/>
                         </f:facet>
@@ -121,7 +169,9 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column  width="10em" style="padding: 0px; margin: 0px; text-align: right;" >
+                    <p:column
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Purchase Value is required in Pharmacy Disbursement Reports', true)}"
+                        width="6em" style="padding: 0px; margin: 0px; text-align: right;" >
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Value"/>
                         </f:facet>
@@ -136,7 +186,10 @@
 
                     </p:column>
 
-                    <p:column width="10em" style="padding: 0px; margin: 0px; text-align: right;" >
+                    <p:column 
+                        width="5em" 
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Retail Rate is required in Pharmacy Disbursement Reports', true)}"
+                        style="padding: 0px; margin: 0px; text-align: right;" >
                         <f:facet name="header">
                             <h:outputLabel value="Retail Rate"/>
                         </f:facet>
@@ -144,11 +197,10 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
+
                 </p:dataTable>
             </div>
-
-            <div  value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer CSS')}" >
+            <div class="w-100" style="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer CSS')}" >
                 <p:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer Text')}" escape="false" ></p:outputLabel>
             </div>
 
