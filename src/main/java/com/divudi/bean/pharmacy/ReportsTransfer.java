@@ -119,6 +119,7 @@ public class ReportsTransfer implements Serializable {
     private double totalBHTIssueQty;
     private double totalIssueValue;
     private double totalBHTIssueValue;
+    private int pharmacyDisbursementReportIndex = 8;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructions">
@@ -130,27 +131,27 @@ public class ReportsTransfer implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     // </editor-fold>  
     public String navigateToTransferIssueByBillItem() {
-        pharmacyController.setManagePharamcyReportIndex(9);
+        pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_item?faces-redirect=true";
     }
 
     public String navigateToTransferReceiveByBillItem() {
-        pharmacyController.setManagePharamcyReportIndex(9);
+        pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_item?faces-redirect=true";
     }
 
     public String navigateToTransferIssueByBill() {
-        pharmacyController.setManagePharamcyReportIndex(9);
+        pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill?faces-redirect=true";
     }
 
     public String navigateToTransferReceiveByBill() {
-        pharmacyController.setManagePharamcyReportIndex(9);
+        pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill?faces-redirect=true";
     }
 
     public String navigateToPharmacyTransferReports() {
-        pharmacyController.setManagePharamcyReportIndex(9);
+        pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return pharmacyController.navigateToPharmacyAnalytics();
     }
 

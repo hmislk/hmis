@@ -22,7 +22,7 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
-                
+
                 <!-- Patient Lookup -->
                 <h:panelGroup rendered="#{ui.icon eq 'Patient_Lookup' and webUserController.hasPrivilege('OpdPreBilling')}" layout="block" class="col-1 m-4">
                     <h:form>
@@ -103,7 +103,7 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
-                
+
                 <h:panelGroup rendered="#{ui.icon eq 'Medical_Package_Billing'}" layout="block" class="col-1 m-3">
                     <h:form>
                         <p:tooltip for="Medical_Package_Billing" value="Package Billing"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -1200,7 +1200,7 @@
                         <p:commandLink 
                             id="pharmacy_disbursement_reports"
                             ajax="false" 
-                            action="/pharmacy/reports/disbursement_reports/pharmacy_report_transfer?faces-redirect=true"
+                            action="#{reportsTransfer.navigateToPharmacyTransferReports()}"
                             actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" 
                             styleClass="svg-link" >
