@@ -28,9 +28,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
-
                             <p:spacer width="20"></p:spacer>
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
@@ -46,10 +44,12 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
-                            <p:spacer width="20"></p:spacer>  
-
-
                             
+                            <p:spacer width="20"></p:spacer>  
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2" />
@@ -64,11 +64,11 @@
                                 <f:selectItem itemLabel="All Institutions" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="phmIns" update="phmDept" />
-                            </p:selectOneMenu>
-
-
-                            <p:spacer width="20"></p:spacer>                            
-
+                            </p:selectOneMenu>        
+                            
+                            
+                            <p:spacer width="20"></p:spacer>
+                            
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
@@ -84,9 +84,9 @@
                                 <p:ajax process="phmSite" update="phmDept" />
                             </p:selectOneMenu>
 
-
+                            
                             <p:spacer width="20"></p:spacer>
-
+                            
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2" />
@@ -157,23 +157,7 @@
                             </h:panelGroup>
 
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-box mr-2" />
-                                <p:outputLabel value="Item Name" for="phmItem" class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:autoComplete 
-                                id="phmItem"
-                                value="#{pharmacyReportController.amp}" 
-                                completeMethod="#{ampController.completeAmp}"
-                                var="item" 
-                                class="w-100"
-                                minQueryLength="3"
-                                maxResults="20"
-                                inputStyleClass="w-100"
-                                itemLabel="#{item.name}" 
-                                itemValue="#{item}" 
-                                ></p:autoComplete>
+
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center mt-5">
@@ -181,8 +165,7 @@
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
                                 ajax="false"  
-                                value="Process" 
-                                action="#{pharmacyReportController.processStockLedgerReport()}" >
+                                value="Process" >
                             </p:commandButton>
 
                             <p:commandButton 
@@ -200,7 +183,7 @@
                                 value="Download">
                                 <p:dataExporter 
                                     type="xlsx" 
-                                    fileName="Stock Ledger Report" 
+                                    fileName="GRN Cash Report" 
                                     target="tbl"  />
                             </p:commandButton>
 
@@ -212,17 +195,18 @@
                                 <p:dataExporter 
                                     type="pdf" 
                                     target="tbl" 
-                                    fileName="Stock Ledger Report" />
+                                    fileName="GRN Cash Report" />
                             </p:commandButton>
 
                         </div>
 
 
                         <p:dataTable id="tbl" 
-                                     value="#{pharmacyReportController.stockLedgerHistories}" 
+                                     value="" 
                                      var="f" 
                                      rowIndexVar="n" 
                                      paginator="true" 
+                                     paginatorPosition="bottom"
                                      rows="10" 
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
@@ -232,8 +216,8 @@
                             <p:column headerText="Date" width="5em">
                                 <h:outputText value="" />
                                 <f:facet name="footer">
-                                        <h:outputText value="Total" />
-                                    </f:facet>
+                                    <h:outputText value="Total" />
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Item Name" width="5em">
                                 <h:outputText value="" />
@@ -256,7 +240,6 @@
                             <p:column headerText="Total" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            
 
                         </p:dataTable>
 
