@@ -510,19 +510,26 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     private Prescription prescription;
+    private boolean enableLabelPrintFromSaleView = false;
+    
+    public void enableLabelPrint(Prescription p){
+        enableLabelPrintFromSaleView = true;
+        this.prescription = p;
+    }
 
     public void addPrescriptionToBillitem(BillItem billItem) {
         if (prescription == null) {
             prescription = new Prescription();
         }
 
-        if (billItem.getInstructions() != null && !billItem.getInstructions().isBlank()) {
+        if (billItem.getInstructions() != null && !billItem.getInstructions().isEmpty()) {
             if (billItem.getPrescription().getComment() == null || billItem.getPrescription().getComment().isEmpty()) {
                 billItem.getPrescription().setComment(billItem.getInstructions());
-            } else if (!billItem.getInstructions().equalsIgnoreCase(billItem.getPrescription().getComment())) {
+            } else if (billItem.getInstructions().equalsIgnoreCase(billItem.getPrescription().getComment())) {
                 billItem.getPrescription().setComment(billItem.getInstructions());
             }
         }
+        
 
     }
 
@@ -3238,6 +3245,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void setPrescription(Prescription prescription) {
         this.prescription = prescription;
+    }
+
+    public boolean isEnableLabelPrintFromSaleView() {
+        return enableLabelPrintFromSaleView;
+    }
+
+    public void setEnableLabelPrintFromSaleView(boolean enableLabelPrintFromSaleView) {
+        this.enableLabelPrintFromSaleView = enableLabelPrintFromSaleView;
     }
 
 }

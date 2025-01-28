@@ -329,7 +329,7 @@
                                                 </p:dialog>
                                             </p:column>
 
-                                            <p:column headerText="Instructions" style="text-align: center">
+                                            <p:column headerText="Instructions" style="text-align: center" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable label printing for pharmacy medicines', false)}">
                                                 <p:commandButton style="font-size: small; margin: auto; border-radius: 10px" actionListener="#{pharmacySaleController.addPrescriptionToBillitem(bi)}" id="processInstructions" class="ui-button-info" value="Add" oncomplete="PF('instructions').show();" process="processInstructions" update="#{p:resolveFirstComponentWithId('instructionDetials',view).clientId}"></p:commandButton>
 
                                                 <p:dialog 
@@ -376,7 +376,7 @@
                                                             </div>
 
                                                             <!-- Frequency Selection -->
-                                                            <div class="row my-3 text-start">
+                                                            <div class="row my-3 text-start align-items-center">
                                                                 <div class="col-md-3">
                                                                     <label for="cmbFrequency">Frequency:</label>
                                                                 </div>
@@ -396,7 +396,7 @@
                                                             </div>
 
                                                             <!-- Duration Group -->
-                                                            <div class="row text-start">
+                                                            <div class="row text-start align-items-center">
                                                                 <div class="col-md-3">
                                                                     <label>Duration:</label>
                                                                 </div>
@@ -435,23 +435,71 @@
 
                                                             <!-- Add Prescription Button -->
                                                             <div class="row">
-                                                                <label for="chkIndoor" ></label>
-                                                                <p:commandButton value="Add Instructions"
-                                                                                 class="ui-button-success w-100"
-                                                                                 id="btnAddRx"
-                                                                                 icon="pi pi-plus"
-                                                                                 oncomplete="PF('instructions').hide()"
-                                                                                 process="btnAddRx instructionDetials"
-                                                                                 update="tblBillItem"
-                                                                                 action="#{pharmacySaleController.addPrescriptionToBillitem(bi)}" />
+                                                                <div class="col-md-6">
+                                                                    <p:commandButton value="Print Label"
+                                                                                     class="ui-button-info w-100"
+                                                                                     action="#{pharmacySaleController.enableLabelPrint(bi.prescription)}"
+                                                                                     ajax="true"
+                                                                                     update="printLabelSection"
+                                                                                     oncomplete="PF('printLabelSectionView').show()"
+                                                                                     
+                                                                                     >
+
+                                                                    </p:commandButton>
+
+
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <p:commandButton value="Add Instructions"
+                                                                                     class="ui-button-success w-100"
+                                                                                     id="btnAddRx"
+                                                                                     icon="pi pi-plus"
+                                                                                     oncomplete="PF('instructions').hide()"
+                                                                                     process="btnAddRx instructionDetials"
+                                                                                     update="tblBillItem"
+                                                                                     action="#{pharmacySaleController.addPrescriptionToBillitem(bi)}" />
+                                                                </div>
+
                                                             </div>
+
+
 
                                                         </div>
 
 
                                                     </p:panel>
 
+
+
                                                 </p:dialog>
+
+                                                <p:dialog 
+                                                    id="printLabelDialog" 
+                                                    widgetVar="printLabelSectionView" 
+                                                    resizable="false"
+                                                    closable="true"
+                                                    modal="true" 
+                                                    onShow="$('.ui-dialog').addClass('custom-dialog')"
+                                                    
+                                                    >
+
+                                                    <h:panelGroup id="printLabelSection">
+                                                        <phi:pharmacy_instruction_label billItem="#{bi}" controller="#{sessionController}"/>
+                                                    </h:panelGroup>
+
+                                                    <p:commandButton value="Print Label"
+                                                                     class="ui-button-info w-100 my-4"
+                                                                     action="#{pharmacySaleController.enableLabelPrint(bi.prescription)}"
+                                                                     ajax="false"
+                                                                     update="printLabelSection instructionDetials"
+                                                                     oncomplete="PF('printLabelSectionView').show()"
+                                                                     process="@this"
+                                                                     >
+                                                        <p:printer target="printLabelSection"></p:printer>
+
+                                                    </p:commandButton>
+                                                </p:dialog>
+
                                             </p:column>
 
                                             <p:column headerText="Rate" style="width: 5em; padding: 6px;">
