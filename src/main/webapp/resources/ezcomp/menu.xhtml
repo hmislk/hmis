@@ -22,7 +22,7 @@
                     <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Message to system users')}"></h:outputText>
                 </div>
             </h:panelGroup>
-            
+
             <p:menubar autoDisplay="#{sessionController.userPreference.autodisplayMenu}"  >
                 <p:menuitem 
                     id="home"
@@ -893,12 +893,13 @@
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive With Approval')}"
                                     icon="fas fa-truck-loading"></p:menuitem>
 
-                        <p:menuitem ajax="false"
-                                    action="/pharmacy/pharmacy_report_transfer?faces-redirect=true"  
-                                    value="Reports" 
-                                    actionListener="#{searchController.makeListNull()}" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementReports')}" 
-                                    icon="fas fa-file-alt"></p:menuitem>
+                        <p:menuitem 
+                            ajax="false"
+                            action="/pharmacy/reports/disbursement_reports/pharmacy_report_transfer?faces-redirect=true"  
+                            value="Reports" 
+                            actionListener="#{searchController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('PharmacyDisbursementReports')}" 
+                            icon="fas fa-file-alt"></p:menuitem>
                     </p:submenu>
 
                     <p:submenu label="Adjustments" icon="fas fa-sliders-h" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentMenue')}">
@@ -971,7 +972,7 @@
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_request?faces-redirect=true"  value="Request" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRequest')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="#{transferIssueController.navigateToDirectPharmacyIssue}"  value="Direct Issue" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferIssue')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  value="Recieve" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRecieve')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_report_transfer?faces-redirect=true"  value="Reports" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferReport')}" ></p:menuitem>
+                        <p:menuitem  ajax="false" action="/pharmacy/reports/disbursement_reports/pharmacy_report_transfer?faces-redirect=true"  value="Reports" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferReport')}" ></p:menuitem>
                     </p:submenu>
 
 
