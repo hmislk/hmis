@@ -49,24 +49,7 @@
                             <p:spacer width="20"></p:spacer>  
 
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-file-alt mr-2" />
-                                <p:outputLabel value="Document Type" for="phmDocType" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="phmDocType"
-                                value="#{pharmacyReportController.documentType}"
-                                class="w-100">
-                                <f:selectItem itemLabel="All Document Types"/>
-                                <f:selectItem itemLabel="OP Sale" itemValue="opSaleDoc"/>
-                                <f:selectItem itemLabel="IP Sale" itemValue="ipSaleDoc"/>
-                                <f:selectItem itemLabel="Transfer Issue" itemValue="transferIssueDoc"/>
-                                <f:selectItem itemLabel="Transfer Receive" itemValue="transferReceiveDoc"/>
-                                <f:selectItem itemLabel="Consumption" itemValue="consumptionDoc"/>
-                                <f:selectItem itemLabel="Purchase" itemValue="purchaseDoc"/>
-                                <f:selectItem itemLabel="GRN" itemValue="grnDoc"/>
-                            </p:selectOneMenu>
+                            
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2" />
@@ -246,121 +229,34 @@
                                      rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
 
-                            <p:column headerText="S.No." width="5em">
-                                <h:outputText value="#{n+1}" />
-                            </p:column>
-                            <p:column headerText="Department" width="5em">
-                                <h:outputText value="#{f.department.name}" />
-                            </p:column>
-                            <p:column headerText="Item Category / Drug Form" width="10em">
-                                <h:outputText value="#{f.pbItem.billItem.item.category.name}" />
-                            </p:column>
-                            <p:column headerText="Item Code" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.item.code}" />
+                            <p:column headerText="Date" width="5em">
+                                <h:outputText value="" />
+                                <f:facet name="footer">
+                                        <h:outputText value="Total" />
+                                    </f:facet>
                             </p:column>
                             <p:column headerText="Item Name" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.item.name}" />
-                            </p:column>
-                            <p:column headerText="UOM" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.item.measurementUnit.name}" />
-                            </p:column>
-                            <p:column headerText="Transaction Type" width="8em">
-                                <p:badge 
-                                    value="#{f.pbItem.transThisIsStockIn ? 'STOCK IN' : 'STOCK OUT'}" 
-                                    severity="#{f.pbItem.transThisIsStockIn ? 'success' : 'danger'}" 
-                                    styleClass="mr-2" />
-                            </p:column>
-                            <p:column headerText="Doc No" width="15em">
-                                <p:commandLink 
-                                    value="#{f.pbItem.billItem.bill.deptId}"
-                                    class="m-1 ui-button-info"
-                                    style="width: 100px;"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                    ajax="false">
-                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
-                                </p:commandLink>
-                            </p:column>
-                            <p:column headerText="Doc Date" width="5em">
-                                <h:outputText value="#{f.createdAt}" />
-                            </p:column>
-                            <p:column headerText="Ref Doc No." width="15em">
-                                <p:commandLink 
-                                    value="#{not empty f.pbItem.billItem.bill.cancelledBill ? f.pbItem.billItem.bill.cancelledBill.deptId : f.pbItem.billItem.bill.referenceBill.deptId}"
-                                    class="m-1 ui-button-info"
-                                    style="width: 100px;"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                    ajax="false">
-                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
-                                </p:commandLink>
-                            </p:column>
-
-                            <!--                            <p:column headerText="Ref Doc No." width="15em">
-                                                            <p:commandLink 
-                                                                value="#{f.pbItem.billItem.bill.cancelledBill.deptId}"
-                                                                class="m-1 ui-button-info"
-                                                                style="width: 100px;"
-                                                                action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                                                ajax="false">
-                                                                <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
-                                                            </p:commandLink>
-                                                            <p:commandLink 
-                                                                value="#{f.pbItem.billItem.bill.referenceBill.deptId}"
-                                                                class="m-1 ui-button-info"
-                                                                style="width: 100px;"
-                                                                action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                                                ajax="false">
-                                                                <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
-                                                            </p:commandLink>
-                                                        </p:column>-->
-                            <p:column headerText="Ref Doc Date" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.createdAt}" />
-                                <h:outputText value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" />
-                            </p:column>
-                            <p:column headerText="From Store" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.bill.fromDepartment.name}" />
-                            </p:column>
-                            <p:column headerText="To Store" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.bill.toDepartment.name}" />
-                            </p:column>
-                            <p:column headerText="Document Type" width="5em">
-                                <h:outputText 
-                                    value="#{not empty f.pbItem.billItem.bill.billTypeAtomic ? 
-                                             f.pbItem.billItem.bill.billTypeAtomic.label : 
-                                             f.pbItem.billItem.bill.billType.label}" />
-                            </p:column>
-                            <p:column headerText="Stock In Quantity (Purchase + Free)" width="13em">
-                                <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? f.pbItem.qty + f.pbItem.freeQty : 0.0}" />
-                            </p:column>
-                            <p:column headerText="Stock Out Quantity" width="5em">
-                                <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty + f.pbItem.freeQty : 0.0}" />
-                            </p:column>
-                            <p:column headerText="Closing Stock" width="5em">
-                                <h:outputText value="#{f.itemStock}" />
-                            </p:column>
-                            <p:column headerText="Rate" width="5em">
-                                <h:outputText value="#{f.pbItem.purchaseRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
-                            </p:column>
-                            <p:column headerText="Closing Stock Value" width="15em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Locator" width="5em">
+                            <p:column headerText="Code" width="5em">
                                 <h:outputText value="" />
                             </p:column>
                             <p:column headerText="Batch Code" width="5em">
-                                <h:outputText value="#{f.itemBatch.batchNo}" />
+                                <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="MRP" width="5em">
-                                <h:outputText value="#{f.pbItem.retailRate}" ><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                            <p:column headerText="QTY" width="5em">
+                                <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Expiry Date" width="5em">
-                                <h:outputText value="#{f.pbItem.doe}" />
+                            <p:column headerText="Rate" width="5em">
+                                <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Inserted Date" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.createdAt}" />
+                            <p:column headerText="GRN Value" width="5em">
+                                <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="UserName" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.bill.creater.name}" />
+                            <p:column headerText="Total" width="5em">
+                                <h:outputText value="" />
                             </p:column>
+                            
 
                         </p:dataTable>
 
