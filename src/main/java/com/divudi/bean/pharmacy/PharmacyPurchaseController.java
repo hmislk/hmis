@@ -60,6 +60,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.event.SelectEvent;
 
 /**
  *
@@ -110,7 +111,7 @@ public class PharmacyPurchaseController implements Serializable {
     private BilledBill bill;
     private BillItem currentBillItem;
     private boolean printPreview;
-    
+
     private String warningMessage;
 
     double saleRate;
@@ -130,12 +131,12 @@ public class PharmacyPurchaseController implements Serializable {
     private Institution site;
     private Institution toInstitution;
     private PaymentMethod paymentMethod;
-    
+
     private BillItem currentExpense;
     private List<BillItem> billExpenses;
 
     public List<BillItem> getBillExpenses() {
-        if(billExpenses == null){
+        if (billExpenses == null) {
             billExpenses = new ArrayList<>();
         }
         return billExpenses;
@@ -146,7 +147,7 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public BillItem getCurrentExpense() {
-        if(currentExpense == null){
+        if (currentExpense == null) {
             currentExpense = new BillItem();
         }
         return currentExpense;
@@ -155,7 +156,14 @@ public class PharmacyPurchaseController implements Serializable {
     public void setCurrentExpense(BillItem currentExpense) {
         this.currentExpense = currentExpense;
     }
-    
+
+    public void onItemSelect(SelectEvent event) {
+//        Item selectedItem = (Item) event.getObject();
+//        System.out.println("selectedItem = " + selectedItem);
+//        System.out.println("getCurrentBillItem().getItem() = " + getCurrentBillItem().getItem());
+        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+    }
 
     public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
         Date startTime = new Date();
@@ -292,7 +300,7 @@ public class PharmacyPurchaseController implements Serializable {
         billItems = null;
         billExpenses = null;
         currentExpense = null;
-        warningMessage=null;
+        warningMessage = null;
     }
 
     public String navigateToAddNewPharmacyWholesaleDirectPurchaseBill() {
@@ -474,8 +482,7 @@ public class PharmacyPurchaseController implements Serializable {
         }
 
     }
-    
-    
+
     public void addExpense() {
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
@@ -580,18 +587,18 @@ public class PharmacyPurchaseController implements Serializable {
             JsfUtil.addErrorMessage("Please Add Item Quantities To Bill");
             return;
         }
-        
+
         //check and calculate expenses separately
-        if(billExpenses != null && !billExpenses.isEmpty()){
+        if (billExpenses != null && !billExpenses.isEmpty()) {
             getBill().setBillExpenses(billExpenses);
-            
+
             double totalForExpenses = 0;
-            for(BillItem expense : getBillExpenses()){
+            for (BillItem expense : getBillExpenses()) {
                 totalForExpenses += expense.getNetValue();
             }
-            
+
             getBill().setExpenseTotal(-totalForExpenses);
-            getBill().setNetTotal(getBill().getNetTotal()-totalForExpenses);
+            getBill().setNetTotal(getBill().getNetTotal() - totalForExpenses);
         }
 
         getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
@@ -742,7 +749,7 @@ public class PharmacyPurchaseController implements Serializable {
             getCurrentBillItem().getPharmaceuticalBillItem().setFreeQty(getCurrentBillItem().getPharmaceuticalBillItem().getFreeQtyPacks() * getCurrentBillItem().getItem().getDblValue());
             getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRatePack() / getCurrentBillItem().getItem().getDblValue());
         }
-        
+
         System.out.println("getBillItems().size() = " + getBillItems().size());
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
@@ -756,7 +763,7 @@ public class PharmacyPurchaseController implements Serializable {
     public void saveBill() {
 
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
- 
+
         getBill().setDeptId(deptId);
         getBill().setInsId(deptId);
         getBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
@@ -1057,6 +1064,4 @@ public class PharmacyPurchaseController implements Serializable {
         this.paymentMethod = paymentMethod;
     }
 
-    
-    
 }
