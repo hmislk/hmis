@@ -69,35 +69,41 @@
 
             <div >
                 <p:dataTable styleClass="noBorder normalFont" rowIndexVar="rowIndex"  value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip" >
-                    <p:column>
+                    <p:column width="2em" style="padding: 0px; margin: 0px; " >
                         <f:facet name="header">
                             <h:outputLabel value="No"/>
                         </f:facet>
                         <h:outputLabel value="#{rowIndex+1}"/>
                     </p:column>
 
-                    <p:column>
+                    <p:column width="5em" style="padding: 0px; margin: 0px; " >
                         <f:facet name="header">
                             <h:outputLabel value="Code"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.item.code}"/>
                     </p:column>    
 
-                    <p:column>
+                    <p:column   style="padding: 0px; margin: 0px; " >
                         <f:facet name="header">
                             <h:outputLabel value="Item"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
+                        <f:facet name="footer">
+                            <h:outputLabel value="Total">
+                            </h:outputLabel>
+                        </f:facet>
                     </p:column>
 
-                    <p:column>
+                    <p:column  width="10em" style="padding: 0px; margin: 0px; text-align: right;" >
                         <f:facet name="header">
                             <h:outputLabel value="D O E"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}"/>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                        </h:outputLabel>
                     </p:column>
 
-                    <p:column>
+                    <p:column  width="10em" style="padding: 0px; margin: 0px; text-align: right;" >
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
@@ -106,7 +112,7 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column styleClass="averageNumericColumn">
+                    <p:column  width="10em" style="padding: 0px; margin: 0px; text-align: right;" >
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Rate"/>
                         </f:facet>
@@ -115,17 +121,22 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column styleClass="averageNumericColumn">
+                    <p:column  width="10em" style="padding: 0px; margin: 0px; text-align: right;" >
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Value"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.purcahseRate*bip.pharmaceuticalBillItem.qtyInUnit}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
 
                     </p:column>
 
-                    <p:column styleClass="averageNumericColumn" >
+                    <p:column width="10em" style="padding: 0px; margin: 0px; text-align: right;" >
                         <f:facet name="header">
                             <h:outputLabel value="Retail Rate"/>
                         </f:facet>
@@ -133,23 +144,13 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-
-                    <p:columnGroup type="footer">
-                        <p:row>
-                            <p:column footerText="Total" colspan="6"/>
-                            <p:column footerText="#{cc.attrs.bill.netTotal}">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{cc.attrs.bill.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                        </p:row>
-                    </p:columnGroup>
-
+                    
                 </p:dataTable>
             </div>
 
+            <div  value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer CSS')}" >
+                <p:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer Text')}" escape="false" ></p:outputLabel>
+            </div>
 
         </div>
     </cc:implementation>

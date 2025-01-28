@@ -14,7 +14,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        
+
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
         <div class="a4bill">
 
@@ -45,7 +45,7 @@
 
 
             <div >
-                
+
                 <h:panelGrid columns="2" class="poDetail" >
                     <h:outputLabel value="Location From : #{cc.attrs.bill.department.name}"/>
                     <h:outputLabel value="Location To : #{cc.attrs.bill.toDepartment.name}"/>
@@ -60,7 +60,7 @@
                         </h:outputLabel>
                     </h:panelGroup>
                     <h:outputLabel value="Transporter : #{cc.attrs.bill.toStaff.person.nameWithTitle}"/>
-           
+
                 </h:panelGrid>
             </div>
 
@@ -68,35 +68,38 @@
 
                 <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip" >
 
-                    <p:column>
+                    <p:column width="2em" style="margin: 0px; padding: 0px;">
                         <f:facet name="header">
                             <h:outputLabel value="No"/>
                         </f:facet>
                         <h:outputLabel value="#{rowIndex+1}"/>
                     </p:column>
 
-                    <p:column>
+                    <p:column style="margin: 0px; padding: 0px;">
                         <f:facet name="header">
                             <h:outputLabel value="Item Name"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
+                        <f:facet name="footer">
+                            <h:outputLabel value="Total"/>
+                        </f:facet>
                     </p:column>
-                    
-                    <p:column>
+
+                    <p:column  width="5em" style="margin: 0px; padding: 0px;">
                         <f:facet name="header">
-                            <h:outputLabel value="Item Code"/>
+                            <h:outputLabel value="Code"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.item.code}"/>
                     </p:column>
 
-                    <p:column>
+                    <p:column  width="5em" style="margin: 0px; padding: 0px;">
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
                         <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.qty}"/>
                     </p:column>
 
-                    <p:column style="text-align: right;">
+                    <p:column  width="6em"  style="margin: 0px; padding: 0px;text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Rate"/>
                         </f:facet>
@@ -105,16 +108,21 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column style="text-align: right;">
+                    <p:column  width="10em" style="margin: 0px; padding: 0px;text-align: right;">
                         <f:facet name="header">
-                            <h:outputLabel value="Value"/>
+                            <h:outputLabel value="Purchase Value"/>
                         </f:facet>
                         <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.itemBatch.purcahseRate*bip.pharmaceuticalBillItem.qty}">
                             <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{-cc.attrs.bill.netTotal}">
+                                <f:convertNumber pattern="#0.00" />
+                            </h:outputLabel>
+                        </f:facet>
                     </p:column>
-                    
-                    <p:column style="text-align: right;">
+
+                    <p:column  width="10em" style="margin: 0px; padding: 0px;text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Sale Rate"/>
                         </f:facet>
@@ -123,7 +131,7 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column style="text-align: right;">
+                    <p:column  width="10em" style="margin: 0px; padding: 0px;text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Value"/>
                         </f:facet>
@@ -132,23 +140,14 @@
                         </h:outputLabel>
                     </p:column>
 
-<!--                    <p:column style="text-align: right;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Sale Price"/>
-                        </f:facet>                           
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
-                            <f:convertNumber pattern="#0.00" />
-                        </h:outputLabel>
-                    </p:column>-->
-
-                    <p:column style="text-align: right;">
+                    <p:column width="10em" style="margin: 0px; padding: 0px; text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Batch No"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.batchNo}"/>
                     </p:column>
 
-                    <p:column>
+                    <p:column width="10em"  style="margin: 0px; padding: 0px;">
                         <f:facet name="header">
                             <h:outputLabel value="D O E"/>
                         </f:facet>
@@ -157,28 +156,12 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:columnGroup type="footer">
-                        <p:row>
-                            <p:column colspan="5">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="Total"/>
-                                </f:facet>
-                            </p:column>
-                            <p:column  style="text-align: right;">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{-cc.attrs.bill.netTotal}">
-                                        <f:convertNumber pattern="#0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column colspan="2">
-                                <f:facet name="footer">
-                                    <h:outputLabel value=""/>
-                                </f:facet>
-                            </p:column>
-                        </p:row>
-                    </p:columnGroup>
+
                 </p:dataTable>
+            </div>
+
+            <div  value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer CSS')}" >
+                <p:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer Text')}" escape="false" ></p:outputLabel>
             </div>
 
 
