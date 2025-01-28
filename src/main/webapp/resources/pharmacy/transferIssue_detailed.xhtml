@@ -16,19 +16,19 @@
 
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
         <div style="position: relative!important;
-        /*padding-left: 0.5%!important;*/
-        height:800px!important;
-        width:100%!important; 
-/*        overflow:hidden!important; */
-        font-family: monospace!important; 
-        font-size: 12px!important; 
-        margin:1px!important; 
-        padding: 1px!important;
-        background-size: 100% auto!important; 
-        border: none;
-        font-size: 100%;
-        line-height: 2!important;">
-            
+             /*padding-left: 0.5%!important;*/
+             height:800px!important;
+             width:100%!important;
+             /*        overflow:hidden!important; */
+             font-family: monospace!important;
+             font-size: 12px!important;
+             margin:1px!important;
+             padding: 1px!important;
+             background-size: 100% auto!important;
+             border: none;
+             font-size: 100%;
+             line-height: 2!important;">
+
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
             </div>
@@ -57,7 +57,7 @@
             </div>
 
             <h:panelGrid columns="7" style="min-width: 100%;">
-                
+
                 <h:outputLabel value="Request To"/>
                 <h:outputLabel/>
                 <h:outputLabel value="#{cc.attrs.bill.department.name}"   style="font-weight: bold;"/>
@@ -75,7 +75,7 @@
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                 </h:outputLabel>
-                
+
                 <h:outputLabel value="Order No"/>
                 <h:outputLabel/>
                 <h:outputLabel value="#{cc.attrs.bill.deptId}" style="font-weight: bold;"/>
@@ -85,7 +85,7 @@
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                 </h:outputLabel>
-                
+
             </h:panelGrid>
 
             <div >
@@ -105,14 +105,14 @@
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
-                    
+
                     <p:column style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Batch"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.batchNo}"/>
                     </p:column>
-                    
+
                     <p:column style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="DOE"/>
@@ -121,7 +121,7 @@
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Rate"/>
@@ -166,24 +166,27 @@
                     </p:columnGroup>
                 </p:dataTable>
             </div>
-            
+
             <div>
                 <h:panelGrid columns="2">
                     <h:outputLabel value="Prepared by:"/>
                     <h:outputLabel value=" #{cc.attrs.bill.creater.staff.code}"/>
-                    
+
                     <h:outputLabel value="Transporter:"/>
                     <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}"/>
-                    
+
                     <h:outputLabel value="Issued by:"/>
                     <h:outputLabel value="................................."/>
-                    
+
                     <h:outputLabel value="Checked by:"/>
                     <h:outputLabel value="................................."/>
                 </h:panelGrid>
-                
+
             </div>
 
+            <div  value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Detailed Bill Footer CSS')}" >
+                <p:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Detailed Bill Footer Text')}" escape="false" ></p:outputLabel>
+            </div>
 
         </div>
     </cc:implementation>

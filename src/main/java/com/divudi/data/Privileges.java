@@ -589,6 +589,7 @@ public enum Privileges {
 
     SendBulkSMS("Send Bulk SMS"),
     SuperAdmin("Supper Admin"),
+    Reactivate("Reactivate"),
     EditData("Edit Data"),
     DeleteData("Delete Data"),
     BillCancel("Bill Cancel"),
