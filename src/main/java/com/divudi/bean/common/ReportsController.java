@@ -3019,7 +3019,7 @@ public class ReportsController implements Serializable {
         }
 
         if (site != null) {
-            jpql += "AND bill.department.site = :site ";
+            jpql += "AND bill.toDepartment.site = :site ";
             parameters.put("site", site);
         }
         if (webUser != null) {
