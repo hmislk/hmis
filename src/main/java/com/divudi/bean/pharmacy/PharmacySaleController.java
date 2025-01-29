@@ -80,6 +80,7 @@ import com.divudi.facade.UserStockFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -247,7 +248,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 resetAll();
-                return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
@@ -900,7 +901,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     //matara pharmacy auto complete
-    public List<Stock> completeAvailableStocksFromNameOrGeneric(String qry) {
+    @Deprecated
+    public List<Stock> completeAvailableStocksFromNameOrGenericOld(String qry) {
         List<Stock> items;
         String sql;
         Map m = new HashMap();
@@ -929,6 +931,46 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return items;
     }
 
+    public List<Stock> completeAvailableStocksFromNameOrGeneric(String qry) {
+        System.out.println("completeAvailableStocksFromNameOrGeneric");
+        System.out.println("Start = " + new Date().getTime());
+        if (qry == null || qry.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+
+        String sql;
+        System.out.println("qry.length()" + qry.length());
+        if (qry.length() > 6) {
+            sql = "SELECT i FROM Stock i "
+                    + "WHERE i.stock > :stockMin "
+                    + "AND i.department = :department "
+                    + "AND ("
+                    + "i.itemBatch.item.name LIKE :query OR "
+                    + "i.itemBatch.item.code LIKE :query"
+                    + " ) "
+                    + "ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        } else {
+            sql = "SELECT i FROM Stock i "
+                    + "WHERE i.stock > :stockMin "
+                    + "AND i.department = :department "
+                    + "AND ("
+                    + "i.itemBatch.item.name LIKE :query OR "
+                    + "i.itemBatch.item.code LIKE :query OR "
+                    + "i.itemBatch.item.vmp.name LIKE :query"
+                    + ") "
+                    + "ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        }
+        System.out.println("End = " + new Date().getTime());
+        return getStockFacade().findByJpql(sql, parameters, 20);
+    }
+
     public void handleSelectAction() {
         if (stock == null) {
             //////System.out.println("Stock NOT selected.");
@@ -940,8 +982,13 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         calculateRates(billItem);
         pharmacyService.addBillItemInstructions(billItem);
-        if (stock != null && stock.getItemBatch() != null) {
-            fillReplaceableStocksForAmp((Amp) stock.getItemBatch().getItem());
+
+        boolean findAlternatives = configOptionApplicationController.getBooleanValueByKey("Show alternative medicines available during retail sale", false);
+        if (findAlternatives) {
+            if (stock != null && stock.getItemBatch() != null) {
+                fillReplaceableStocksForAmp((Amp) stock.getItemBatch().getItem());
+            }
+
         }
     }
 
