@@ -1385,7 +1385,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         getCurrentNonBht().setParentEncounter(current);
         getCurrentNonBht().setDischarged(true);
         getCurrentNonBht().setDateOfDischarge(new Date());
-        getCurrentNonBht().setConvertedToBht(true);
+        getCurrentNonBht().setConvertedToAnotherEncounter(true);
         getFacade().edit(currentNonBht);
         currentNonBht = null;
 
