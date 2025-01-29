@@ -84,8 +84,8 @@ jobs:
             sudo mkdir -p $WAR_DIR
             sudo chown -R appuser:appuser /home/appuser/app/latest
             sudo su - appuser
-            whoami
             cd $WAR_DIR
+            echo whoami
 
             # Remove old backup if it exists
             if [ -f $WAR_NAME.old ]; then
