@@ -84,6 +84,7 @@ jobs:
             sudo mkdir -p $WAR_DIR
             sudo chown -R appuser:appuser /home/appuser/app/latest
             sudo su - appuser
+            whoami
             cd $WAR_DIR
 
             # Remove old backup if it exists
