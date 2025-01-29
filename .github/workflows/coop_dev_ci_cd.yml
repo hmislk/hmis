@@ -126,7 +126,7 @@ jobs:
             fi
             rm /tmp/payara-admin-pass.txt
           "
-
+ 
           # Check if the application is reachable
           for i in {1..5}; do
             RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://$SUBDOMAIN.carecode.org/$APP_NAME/faces/index1.xhtml)
