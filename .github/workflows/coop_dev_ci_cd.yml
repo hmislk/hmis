@@ -96,7 +96,7 @@ jobs:
               mv $WAR_NAME $WAR_NAME.old
             fi
           "
-
+ 
           # Copy new WAR file to the server
           rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:/tmp/$WAR_NAME
 
