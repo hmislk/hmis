@@ -52,7 +52,6 @@ import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -66,7 +65,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import org.joda.time.LocalDate;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.LazyDataModel;
 
@@ -78,50 +76,11 @@ import org.primefaces.model.LazyDataModel;
 @SessionScoped
 public class PharmacyBillSearch implements Serializable {
 
-    /**
-     * EJBs
-     */
-    /**
-     * Controllers
-     */
-    @Inject
-    PharmacyCalculation pharmacyCalculation;
-
-    /**
-     * Properties
-     */
-    private boolean printPreview = false;
-    private double refundAmount;
-    String txtSearch;
-    private String comment;
-    Bill bill;
-    PaymentMethod paymentMethod;
-    PaymentScheme paymentScheme;
-    private RefundBill billForRefund;
-    @Temporal(TemporalType.TIME)
-    private Date fromDate;
-    @Temporal(TemporalType.TIME)
-    private Date toDate;
-    //  private String comment;
-    WebUser user;
-    StoreBillSearch storeBillSearch;
-    ////////////////
-    List<BillItem> refundingItems;
-    List<Bill> bills;
-    private List<Bill> filteredBill;
-    private List<Bill> selectedBills;
-    List<BillEntry> billEntrys;
-    List<BillItem> billItems;
-    List<BillComponent> billComponents;
-    List<BillFee> billFees;
-    private List<BillItem> tempbillItems;
-    List<Bill> searchRetaiBills;
-    //////////////////
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
-    StaffService staffBean;
-
+    private StaffService staffBean;
     @EJB
-    BillFeeFacade billFeeFacade;
+    private BillFeeFacade billFeeFacade;
     @EJB
     private BillItemFacade billItemFacede;
     @EJB
@@ -130,18 +89,17 @@ public class PharmacyBillSearch implements Serializable {
     private BillFacade billFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    ////////////////////
 
-    private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
     private PharmacyBean pharmacyBean;
     @EJB
-    EjbApplication ejbApplication;
+    private EjbApplication ejbApplication;
     @EJB
-    BillFeePaymentFacade billFeePaymentFacade;
-    ///////////////////
+    private BillFeePaymentFacade billFeePaymentFacade;
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     SessionController sessionController;
     @Inject
@@ -154,7 +112,38 @@ public class PharmacyBillSearch implements Serializable {
     DrawerController drawerController;
     @Inject
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
+    @Inject
+    PharmacyCalculation pharmacyCalculation;
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    private CommonFunctions commonFunctions;
+    private boolean printPreview = false;
+    private double refundAmount;
+    private String txtSearch;
+    private String comment;
+    private Bill bill;
+    private PaymentMethod paymentMethod;
+    private PaymentScheme paymentScheme;
+    private RefundBill billForRefund;
+    private Date fromDate;
+    private Date toDate;
+    private WebUser user;
+    private StoreBillSearch storeBillSearch;
+    private List<BillItem> refundingItems;
+    private List<Bill> bills;
+    private List<Bill> filteredBill;
+    private List<Bill> selectedBills;
+    private List<BillEntry> billEntrys;
+    private List<BillItem> billItems;
+    private List<BillComponent> billComponents;
+    private List<BillFee> billFees;
+    private List<BillItem> tempbillItems;
+    private List<Bill> searchRetaiBills;
 
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToCancelPharmacyDirectIssueToInpatients() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
@@ -167,6 +156,39 @@ public class PharmacyBillSearch implements Serializable {
         return "pharmacy_reprint_po?faces-redirect=true";
     }
 
+    public String navigateToReprintPharmacyTransferIssue() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true";
+    }
+
+    public String navigateToReprintPharmacyTransferReceive() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_transfer_receive?faces-redirect=true";
+    }
+
+    public String navigateToReprintPharmacyTransferRequest() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_transfer_request?faces-redirect=true";
+    }
+
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Functions">
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Inner Classes">
+    // </editor-fold>  
+    //////////////////
+    ///////////////////
     public String editInwardPharmacyRequestBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Not Bill Found !");
@@ -1467,7 +1489,7 @@ public class PharmacyBillSearch implements Serializable {
 
             if (b.getId() == null) {
                 getBillItemFacede().create(b);
-            }else{
+            } else {
                 getBillItemFacede().edit(b);
             }
 
@@ -1515,7 +1537,7 @@ public class PharmacyBillSearch implements Serializable {
 
             if (b.getId() == null) {
                 getBillItemFacede().create(b);
-            }else{
+            } else {
                 getBillItemFacede().edit(b);
             }
 
@@ -2131,7 +2153,7 @@ public class PharmacyBillSearch implements Serializable {
         newlyCreatedCancellationBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
         newlyCreatedCancellationBill.setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         newlyCreatedCancellationBill.setDeptId(deptId);
-        
+
         getBillFacade().edit(newlyCreatedCancellationBill);
 
         getBill().setCancelled(true);

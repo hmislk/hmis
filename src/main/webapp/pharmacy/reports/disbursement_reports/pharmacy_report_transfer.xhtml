@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <p:panel header="Pharmacy Reports" >
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h:form>
+                                <p:accordionPanel>
+                                    <p:tab title="Transfer Reports" >
+
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton value="Transfer Issue By Bill Item" 
+                                                             action="#{reportsTransfer.navigateToTransferIssueByBillItem}" 
+                                                             ajax="false" 
+                                                             icon="fa fa-file-invoice" 
+                                                             class="w-100"></p:commandButton>
+
+                                            <p:commandButton value="Transfer Receive By Bill Item" 
+                                                             action="#{reportsTransfer.navigateToTransferReceiveByBillItem}" 
+                                                             ajax="false" 
+                                                             icon="fa fa-receipt" 
+                                                             class="w-100"></p:commandButton>
+
+                                            <p:commandButton value="Transfer Issue by Bill" 
+                                                             action="#{reportsTransfer.navigateToTransferIssueByBill}" 
+                                                             ajax="false" 
+                                                             icon="fa fa-file-export" 
+                                                             class="w-100"></p:commandButton>
+
+                                            <p:commandButton value="Transfer Receive by Bill" 
+                                                             action="#{reportsTransfer.navigateToTransferReceiveByBill}" 
+                                                             ajax="false" 
+                                                             icon="fa fa-file-import" 
+                                                             class="w-100"></p:commandButton>
+                                        </div>
+
+
+                                    </p:tab>         
+                                </p:accordionPanel>
+                            </h:form>
+                        </div>
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent" >
+
+                            </ui:insert>
+                        </div>
+                    </div>
+
+
+
+                </p:panel>
+
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </h:body>
+</html>
