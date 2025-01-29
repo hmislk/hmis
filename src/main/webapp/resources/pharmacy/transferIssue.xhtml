@@ -55,7 +55,9 @@
                         <h:outputLabel value="**Cancelled**" style="color: red;" rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" />
                     </td>
                 </tr>
-
+                <tr>
+                    <td><br></br></td>
+                </tr>
                 <!-- Bill Details -->
                 <tr>
                     <td style="width: 50%; padding: 1px;">
@@ -113,7 +115,7 @@
                     rowIndexVar="rowIndex" 
                     styleClass="no-border-table"
                     style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important;"
-
+                    class="my-4"
                     value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip" >
 
                     <p:column
@@ -126,7 +128,7 @@
                         <h:outputLabel value="#{rowIndex+1}"/>
                     </p:column>
 
-                    <p:column style="margin: 0px; padding: 0px;">
+                    <p:column style="margin: 0px; padding: 0px;" width="15em">
                         <f:facet name="header">
                             <h:outputLabel value="Item Name"/>
                         </f:facet>
@@ -145,7 +147,7 @@
                         <h:outputLabel value="#{bip.item.code}"/>
                     </p:column>
 
-                    <p:column  width="5em" style="margin: 0px; padding: 0px;">
+                    <p:column  width="3em" style="margin: 0px; padding: 0px;">
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
@@ -154,7 +156,7 @@
 
                     <p:column  
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Purchase Rate is required in Pharmacy Disbursement Reports', true)}"
-                        width="6em" 
+                        width="4em" 
                                style="margin: 0px; padding: 0px;text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Rate"/>
@@ -166,7 +168,7 @@
 
                     <p:column  
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Purchase Value is required in Pharmacy Disbursement Reports', false)}"
-                        width="6em" style="margin: 0px; padding: 0px;text-align: right;">
+                        width="4em" style="margin: 0px; padding: 0px;text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Value"/>
                         </f:facet>
@@ -182,7 +184,7 @@
 
                     <p:column  
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Retail Rate is required in Pharmacy Disbursement Reports', false)}"
-                        width="5em" style="margin: 0px; padding: 0px;text-align: right;">
+                        width="4em" style="margin: 0px; padding: 0px;text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Sale Rate"/>
                         </f:facet>
@@ -193,7 +195,7 @@
 
                     <p:column  
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Retail Value is required in Pharmacy Disbursement Reports', false)}"
-                        width="5em" style="margin: 0px; padding: 0px;text-align: right;">
+                        width="4em" style="margin: 0px; padding: 0px;text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Sale Value"/>
                         </f:facet>
@@ -203,7 +205,7 @@
 
                     <p:column 
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Batch Number is required in Pharmacy Disbursement Reports', false)}"
-                        width="5em"
+                        width="4em"
                         style="margin: 0px; padding: 0px; text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Batch No"/>
@@ -214,7 +216,7 @@
                     <p:column 
                         width="5em"  
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Date of Expiary is required in Pharmacy Disbursement Reports', true)}"
-                        style="margin: 0px; padding: 0px;">
+                        style="margin: 0px; padding: 0px; text-align: right" class="mx-2">
                         <f:facet name="header">
                             <h:outputLabel value="D O E"/>
                         </f:facet>
@@ -227,8 +229,8 @@
                 </p:dataTable>
             </div>
 
-            <div  value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer CSS')}" >
-                <p:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer Text')}" escape="false" ></p:outputLabel>
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer CSS')}" >
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer Text')}" escape="false" ></h:outputText>
             </div>
 
 
