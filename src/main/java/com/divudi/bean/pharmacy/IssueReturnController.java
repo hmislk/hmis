@@ -94,6 +94,10 @@ public class IssueReturnController implements Serializable {
             JsfUtil.addErrorMessage("Pleace Finalise Bill First. Can not Return");
             return;
         }
+        if (!hasQtyToReturn(billItems)) {
+            JsfUtil.addErrorMessage("Return Quantity is Zero. Can not Return");
+            return;
+        }
         saveReturnBill();
         saveComponent();
 
@@ -113,6 +117,15 @@ public class IssueReturnController implements Serializable {
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Returned");
 
+    }
+
+    public boolean hasQtyToReturn(List<BillItem> bIList) {
+        for (BillItem billItem : bIList) {
+            if (billItem.getQty() > 0.0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Bill getBill() {
@@ -175,10 +188,12 @@ public class IssueReturnController implements Serializable {
         if (tmp.getQty() > tmp.getPharmaceuticalBillItem().getQty()) {
             tmp.setQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
+            return;
         }
-        if (tmp.getQty() > tmp.getPharmaceuticalBillItem().getQty()) {
+        if (tmp.getQty() > tmp.getRemainingQty()) {
             tmp.setQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
+            return;
         }
 
         calTotal();
@@ -414,7 +429,7 @@ public class IssueReturnController implements Serializable {
             bi.setReferenceBill(getBill());
             bi.setReferanceBillItem(i.getBillItem());
             bi.copy(i.getBillItem());
-            bi.setQty(tmpQty); 
+            bi.setQty(tmpQty);
             bi.setRemainingQty(tmpQty);
 
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
