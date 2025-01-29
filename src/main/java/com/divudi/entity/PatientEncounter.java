@@ -167,7 +167,7 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     private Staff referringConsultant;
     @ManyToOne
     private Staff referringStaff;
-    private boolean convertedToBht;
+    private boolean convertedToAnotherEncounter;
 
     // Transient method for BP
     public String getBp() {
@@ -1031,12 +1031,12 @@ public class PatientEncounter implements Serializable, RetirableEntity {
         this.guardianRelationshipToPatient = guardianRelationshipToPatient;
     }
 
-    public boolean isConvertedToBht() {
-        return convertedToBht;
+    public boolean isConvertedToAnotherEncounter() {
+        return convertedToAnotherEncounter;
     }
 
-    public void setConvertedToBht(boolean convertedToBht) {
-        this.convertedToBht = convertedToBht;
+    public void setConvertedToAnotherEncounter(boolean convertedToAnotherEncounter) {
+        this.convertedToAnotherEncounter = convertedToAnotherEncounter;
     }
     
     
