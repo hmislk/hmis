@@ -58,31 +58,31 @@
 
                 <!-- Bill Details -->
                 <tr>
-                    <td style="width: 50%; padding: 1px; padding-left: 100px">
+                    <td style="width: 50%; padding: 1px;">
                         <h:outputLabel value="Location From: #{cc.attrs.bill.department.name}" />
                     </td>
-                    <td style="width: 50%; padding: 1px; padding-left: 100px">
+                    <td style="width: 50%; padding: 1px;">
                         <h:outputLabel value="Location To: #{cc.attrs.bill.toDepartment.name}" />
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 1px; padding-left: 100px">
+                    <td style="padding: 1px;">
                         <h:outputLabel value="Requested Person: #{cc.attrs.bill.backwardReferenceBill.creater.webUserPerson.name} - #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}" />
                     </td>
-                    <td style="padding: 1px; padding-left: 100px">
+                    <td style="padding: 1px;">
                         <h:outputLabel value="Issued Person: #{cc.attrs.bill.creater.webUserPerson.name} - #{cc.attrs.bill.creater.staff.code}" />
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 1px; padding-left: 100px">
+                    <td style="padding: 1px;">
                         <h:outputLabel value="Request No: #{cc.attrs.bill.backwardReferenceBill.deptId}" />
                     </td>
-                    <td style="padding: 1px; padding-left: 100px">
+                    <td style="padding: 1px;">
                         <h:outputLabel value="Issue No: #{cc.attrs.bill.deptId}" />
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 1px; padding-left: 100px">
+                    <td style="padding: 1px;">
                         <h:panelGroup>
                             <h:outputLabel value="Issued Date Time: " />
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}">
@@ -90,7 +90,7 @@
                             </h:outputLabel>
                         </h:panelGroup>
                     </td>
-                    <td style="padding: 1px; padding-left: 100px">
+                    <td style="padding: 1px;">
                         <h:panelGroup>
                             <h:outputLabel value="Request Date Time: " />
                             <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.createdAt}">
@@ -100,7 +100,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 1px; padding-left: 100px">
+                    <td style="padding: 1px;">
                         <h:outputLabel value="Transporter: #{cc.attrs.bill.toStaff.person.nameWithTitle}" />
                     </td>
                     <td></td>
