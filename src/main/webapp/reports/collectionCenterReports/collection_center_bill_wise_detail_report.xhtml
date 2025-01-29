@@ -284,7 +284,7 @@
                                     <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Leaf No.</th>
                                     <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">MRN</th>
                                     <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Patient Name</th>
-                                    <th style="width: 7rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Invoice Date</th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Invoice Date</th>
                                     <th style="width: 10rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Invoice No</th>
                                     <th style="width: 40rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Details</th>
                                 </tr>
@@ -293,13 +293,13 @@
                                 <ui:repeat value="#{reportsController.bundle.groupedBillItems.entrySet()}" var="entry">
                                     <tr style="border-bottom: 1px solid #d9d9d9;">
                                         <td>#{entry.value[0].bill.collectingCentre.code}</td>
-                                        <td>#{entry.value[0].bill.referenceNumber}</td>
+                                        <td>#{entry.value[0].bill.billTypeAtomic eq 'CC_BILL_CANCELLATION' ? entry.value[0].bill.billedBill.referenceNumber: entry.value[0].bill.referenceNumber}</td>
                                         <td>#{entry.value[0].bill.patient.phn}</td>
                                         <td>#{entry.value[0].bill.patient.person.name}</td>
                                         <td>
                                             <h:outputLabel value="#{entry.value[0].bill.createdAt}">
                                                 <f:convertDateTime
-                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                        pattern="dd MM yyyy hh:mm:ss a"/>
                                             </h:outputLabel>
                                         </td>
                                         <td>#{entry.key}</td>
@@ -346,26 +346,30 @@
                                                 <tr>
                                                     <td style="font-weight: bold;">Total</td>
                                                     <td style="text-align: right">
-                                                        <h:outputText value="#{reportsController.calculateTotalHospitalFeeByBillItems(entry.value)}"
-                                                                      style="font-weight: bold;">
+                                                        <h:outputText
+                                                                value="#{reportsController.calculateTotalHospitalFeeByBillItems(entry.value)}"
+                                                                style="font-weight: bold;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: right">
-                                                        <h:outputText value="#{reportsController.calculateTotalStaffFeeByBillItems(entry.value)}"
-                                                                      style="font-weight: bold;">
+                                                        <h:outputText
+                                                                value="#{reportsController.calculateTotalStaffFeeByBillItems(entry.value)}"
+                                                                style="font-weight: bold;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: right">
-                                                        <h:outputText value="#{reportsController.calculateTotalCollectionCenterFeeByBillItems(entry.value)}"
-                                                                      style="font-weight: bold;">
+                                                        <h:outputText
+                                                                value="#{reportsController.calculateTotalCollectionCenterFeeByBillItems(entry.value)}"
+                                                                style="font-weight: bold;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: right">
-                                                        <h:outputText value="#{reportsController.calculateTotalNetValueByBillItems(entry.value)}"
-                                                                      style="font-weight: bold;">
+                                                        <h:outputText
+                                                                value="#{reportsController.calculateTotalNetValueByBillItems(entry.value)}"
+                                                                style="font-weight: bold;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
@@ -427,7 +431,7 @@
                             <p:column headerText="Bill Date" width="5rem">
                                 <h:outputText value="#{row.billItem.bill.createdAt}">
                                     <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            pattern="dd MM yyyy hh:mm:ss a"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Patient Name" width="5rem">
@@ -528,7 +532,7 @@
                             <p:column headerText="Bill Date" width="5rem">
                                 <h:outputText value="#{row.billItem.bill.createdAt}">
                                     <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            pattern="dd MM yyyy hh:mm:ss a"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Patient Name" width="5rem">

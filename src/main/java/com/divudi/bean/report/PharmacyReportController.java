@@ -12,11 +12,9 @@ import com.divudi.bean.pharmacy.StockHistoryController;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
-import static com.divudi.data.BillType.PharmacyBhtPre;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CategoryCount;
 import com.divudi.data.DepartmentType;
-import com.divudi.data.InstitutionType;
 import com.divudi.data.ItemCount;
 import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
@@ -76,7 +74,17 @@ import com.divudi.light.common.PrescriptionSummaryReportRow;
 import java.io.IOException;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import com.itextpdf.text.pdf.PdfWriter;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -91,19 +99,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.inject.Inject;
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import org.hl7.fhir.r5.model.Bundle;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import com.divudi.facade.ItemFacade;
@@ -293,6 +297,9 @@ public class PharmacyReportController implements Serializable {
 
     private List<ItemLastSupplier> itemLastSuppliers;
     private String sortType;
+
+    private Map<Item, Map<Long, List<Stock>>> itemStockMap;
+    private Double quantity;
 
     //Constructor
     public PharmacyReportController() {
@@ -1047,7 +1054,7 @@ public class PharmacyReportController implements Serializable {
         return navigateToPrescriptionList();
     }
 
-//    public void processPharmacySaleReferralCount() {
+    //    public void processPharmacySaleReferralCount() {
 //        String jpql = "select new com.divudi.data.BillLight(bi.referredBy.person.name, count(bi), count(bi.netTotal)) "
 //                + " from Bill bi "
 //                + " where bi.cancelled=:can "
@@ -1933,10 +1940,10 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         } else if ("consumptionDoc".equals(documentType)) {
             billTypes.add(BillType.PharmacyIssue);
-            
+
         } else if ("transferIssueDoc".equals(documentType)) {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);           
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
@@ -2224,10 +2231,256 @@ public class PharmacyReportController implements Serializable {
         stocks = stockFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
+        quantity = 0.0;
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            quantity = quantity + ts.getStock();
         }
+
+        groupExpiryItems(stocks);
+    }
+
+    private void groupExpiryItems(final List<Stock> stocks) {
+        // Map<Item, Map<Batch Number, List<Stock>>> itemStockMap
+        Map<Item, Map<Long, List<Stock>>> itemStockMap = new HashMap<>();
+
+        for (Stock stock : stocks) {
+            final Item item = stock.getItemBatch().getItem();
+            Map<Long, List<Stock>> batchStockMap = itemStockMap.computeIfAbsent(item, k -> new HashMap<>());
+
+            final Long batchNumber = stock.getItemBatch().getId();
+            List<Stock> stockList = batchStockMap.computeIfAbsent(batchNumber, k -> new ArrayList<>());
+            stockList.add(stock);
+
+            batchStockMap.put(batchNumber, stockList);
+            itemStockMap.put(item, batchStockMap);
+        }
+
+        setItemStockMap(itemStockMap);
+    }
+
+    public void exportExpiryItemReportToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report.xlsx");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("Report");
+            int rowIndex = 0;
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            headerRow.createCell(0).setCellValue("Department");
+            headerRow.createCell(1).setCellValue("Item Category Code");
+            headerRow.createCell(2).setCellValue("Item Category Name");
+            headerRow.createCell(3).setCellValue("Item Code");
+            headerRow.createCell(4).setCellValue("Item Name");
+            headerRow.createCell(5).setCellValue("Base UOM");
+            headerRow.createCell(6).setCellValue("Item Type");
+            headerRow.createCell(7).setCellValue("Batch No");
+            headerRow.createCell(8).setCellValue("Batch Date");
+            headerRow.createCell(9).setCellValue("Expiry Date");
+            headerRow.createCell(10).setCellValue("Supplier");
+            headerRow.createCell(11).setCellValue("Shelf life remaining (Days)");
+            headerRow.createCell(12).setCellValue("Rate");
+            headerRow.createCell(13).setCellValue("MRP");
+            headerRow.createCell(14).setCellValue("Quantity");
+            headerRow.createCell(15).setCellValue("Item Value");
+            headerRow.createCell(16).setCellValue("Batch wise Item Value");
+            headerRow.createCell(17).setCellValue("Batch wise Qty");
+            headerRow.createCell(18).setCellValue("Item wise total");
+            headerRow.createCell(19).setCellValue("Item wise Qty");
+
+            for (Map.Entry<Item, Map<Long, List<Stock>>> entry : getItemStockMap().entrySet()) {
+                Item item = entry.getKey();
+                Map<Long, List<Stock>> batchStockMap = entry.getValue();
+
+                for (Map.Entry<Long, List<Stock>> batchEntry : batchStockMap.entrySet()) {
+                    Long batchNumber = batchEntry.getKey();
+                    List<Stock> stockList = batchEntry.getValue();
+
+                    for (Stock stock : stockList) {
+                        Row row = sheet.createRow(rowIndex++);
+                        row.createCell(0).setCellValue(stock.getDepartment().getName());
+                        row.createCell(1).setCellValue(item.getCategory().getCode());
+                        row.createCell(2).setCellValue(item.getCategory().getName());
+                        row.createCell(3).setCellValue(item.getCode());
+                        row.createCell(4).setCellValue(item.getName());
+                        row.createCell(5).setCellValue(item.getMeasurementUnit()!=null?item.getMeasurementUnit().getName():"-");
+                        row.createCell(6).setCellValue(item.getCategory().getName());
+                        row.createCell(7).setCellValue(stock.getItemBatch().getId());
+                        row.createCell(8).setCellValue(sdf.format(stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt()));
+                        row.createCell(9).setCellValue(sdf.format(stock.getItemBatch().getDateOfExpire()));
+                        row.createCell(10).setCellValue(stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution().getName());
+                        row.createCell(11).setCellValue(calculateDaysRemaining(stock.getItemBatch().getDateOfExpire()));
+                        row.createCell(12).setCellValue(stock.getItemBatch().getPurcahseRate());
+                        row.createCell(13).setCellValue(stock.getItemBatch().getRetailsaleRate());
+                        row.createCell(14).setCellValue(stock.getStock());
+                        row.createCell(15).setCellValue(stock.getItemBatch().getPurcahseRate() * stock.getStock());
+                        row.createCell(16).setCellValue("-");
+                        row.createCell(17).setCellValue("-");
+                        row.createCell(18).setCellValue("-");
+                        row.createCell(19).setCellValue("-");
+                    }
+
+                    Row batchFooterRow = sheet.createRow(rowIndex++);
+                    batchFooterRow.createCell(16).setCellValue(calculateBatchWiseTotalOfExpiredItems(item, batchNumber));
+                    batchFooterRow.createCell(17).setCellValue(calculateBatchWiseQtyOfExpiredItems(item, batchNumber));
+                }
+                Row itemFooterRow = sheet.createRow(rowIndex++);
+
+                itemFooterRow.createCell(18).setCellValue(calculateItemWiseTotalOfExpiredItems(item));
+                itemFooterRow.createCell(19).setCellValue(calculateItemWiseQtyOfExpiredItems(item));
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportExpiryItemReportToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Expiry Item Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            PdfPTable table = new PdfPTable(20);
+            table.setWidthPercentage(100);
+
+            float[] columnWidths = {3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f};
+            table.setWidths(columnWidths);
+
+            String[] headers = {
+                    "Department", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
+                    "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date",
+                    "Supplier", "Shelf Life Remaining (Days)", "Rate", "MRP", "Quantity",
+                    "Item Value", "Batch wise Item Value", "Batch wise Qty", "Item wise Total", "Item wise Qty"
+            };
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+
+            for (Map.Entry<Item, Map<Long, List<Stock>>> entry : getItemStockMap().entrySet()) {
+                Item item = entry.getKey();
+                Map<Long, List<Stock>> batchStockMap = entry.getValue();
+
+                for (Map.Entry<Long, List<Stock>> batchEntry : batchStockMap.entrySet()) {
+                    Long batchNumber = batchEntry.getKey();
+                    List<Stock> stockList = batchEntry.getValue();
+
+                    for (Stock stock : stockList) {
+                        table.addCell(new PdfPCell(new Phrase(stock.getDepartment().getName(), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getCategory().getCode(), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getCategory().getName(), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getCode(), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getName(), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(
+                                item.getMeasurementUnit() != null ? item.getMeasurementUnit().getName() : "-", normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getCategory().getName(), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(stock.getItemBatch().getId()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(
+                                sdf.format(stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(
+                                sdf.format(stock.getItemBatch().getDateOfExpire()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(
+                                stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution().getName(), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(
+                                String.valueOf(calculateDaysRemaining(stock.getItemBatch().getDateOfExpire())), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(stock.getItemBatch().getPurcahseRate()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(stock.getItemBatch().getRetailsaleRate()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(stock.getStock()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(
+                                String.valueOf(stock.getItemBatch().getPurcahseRate() * stock.getStock()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase("-", normalFont)));
+                        table.addCell(new PdfPCell(new Phrase("-", normalFont)));
+                        table.addCell(new PdfPCell(new Phrase("-", normalFont)));
+                        table.addCell(new PdfPCell(new Phrase("-", normalFont)));
+                    }
+
+                    PdfPCell batchFooterCell = new PdfPCell(new Phrase("Batch Totals", boldFont));
+                    batchFooterCell.setColspan(16);
+                    table.addCell(batchFooterCell);
+
+                    table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateBatchWiseTotalOfExpiredItems(item, batchNumber)), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateBatchWiseQtyOfExpiredItems(item, batchNumber)), normalFont)));
+                }
+
+                PdfPCell itemFooterCell = new PdfPCell(new Phrase("Item Totals", boldFont));
+                itemFooterCell.setColspan(18);
+                table.addCell(itemFooterCell);
+
+                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateItemWiseTotalOfExpiredItems(item)), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateItemWiseQtyOfExpiredItems(item)), normalFont)));
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Double calculateBatchWiseTotalOfExpiredItems(final Item item, final Long batchNumber) {
+        final Map<Long, List<Stock>> batchStockMap = getItemStockMap().get(item);
+        final List<Stock> stockList = batchStockMap.get(batchNumber);
+
+        return stockList.stream()
+                .mapToDouble(stock -> stock.getItemBatch().getPurcahseRate() * stock.getStock())
+                .sum();
+    }
+
+    public Double calculateBatchWiseQtyOfExpiredItems(final Item item, final Long batchNumber) {
+        final Map<Long, List<Stock>> batchStockMap = getItemStockMap().get(item);
+        final List<Stock> stockList = batchStockMap.get(batchNumber);
+
+        return stockList.stream()
+                .mapToDouble(Stock::getStock)
+                .sum();
+    }
+
+    public Double calculateItemWiseTotalOfExpiredItems(final Item item) {
+        final Map<Long, List<Stock>> batchStockMap = getItemStockMap().get(item);
+
+        return batchStockMap.values().stream()
+                .flatMap(List::stream)
+                .mapToDouble(stock -> stock.getItemBatch().getPurcahseRate() * stock.getStock())
+                .sum();
+    }
+
+    public Double calculateItemWiseQtyOfExpiredItems(final Item item) {
+        final Map<Long, List<Stock>> batchStockMap = getItemStockMap().get(item);
+
+        return batchStockMap.values().stream()
+                .flatMap(List::stream)
+                .mapToDouble(Stock::getStock)
+                .sum();
     }
 
     public long calculateDaysRemaining(Date dateOfExpire) {
@@ -3223,6 +3476,19 @@ public class PharmacyReportController implements Serializable {
         this.itemLastSuppliers = itemLastSuppliers;
     }
 
-    
-    
+    public Map<Item, Map<Long, List<Stock>>> getItemStockMap() {
+        return itemStockMap;
+    }
+
+    public void setItemStockMap(Map<Item, Map<Long, List<Stock>>> itemStockMap) {
+        this.itemStockMap = itemStockMap;
+    }
+
+    public Double getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Double quantity) {
+        this.quantity = quantity;
+    }
 }
