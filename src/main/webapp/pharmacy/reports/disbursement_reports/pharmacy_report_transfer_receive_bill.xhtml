@@ -11,7 +11,7 @@
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="Detailed Transfer Listing - (Consider after receiving)" >
+                    <p:panel header="Pharmacy Transfer Received Bills" >
                         <p:panelGrid columns="4" class="w-100">
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
@@ -93,12 +93,9 @@
 
                                 <!-- Bill No Column -->
                                 <p:column headerText="Bill No" sortBy="#{i.deptId}" filterBy="#{i.deptId}" filterMatchMode="contains">
-                                    <p:commandLink 
-                                        ajax="false" 
-                                        value="#{i.deptId}" 
-                                        action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferReceive}">
-                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{i}" />
-                                    </p:commandLink>  
+                                    <h:outputLabel 
+                                        value="#{i.deptId}" >
+                                    </h:outputLabel>  
                                 </p:column>
 
                                 <!-- Received Date Time Column -->
@@ -109,20 +106,41 @@
                                 </p:column>
 
                                 <!-- Received Department Column -->
-                                <p:column headerText="Received Department" sortBy="#{i.fromDepartment.name}" filterBy="#{i.fromDepartment.name}" filterMatchMode="contains">
+                                <p:column headerText="Received By Department" sortBy="#{i.fromDepartment.name}" filterBy="#{i.fromDepartment.name}" filterMatchMode="contains">
                                     <h:outputLabel value="#{i.fromDepartment != null ? i.fromDepartment.name : 'Not Assigned'}" />
                                 </p:column>
 
                                 <!-- Sent Department Column -->
-                                <p:column headerText="Sent Department" sortBy="#{i.department.name}" filterBy="#{i.department.name}" filterMatchMode="contains">
+                                <p:column headerText="Sent From Department" sortBy="#{i.department.name}" filterBy="#{i.department.name}" filterMatchMode="contains">
                                     <h:outputLabel value="#{i.department != null ? i.department.name : 'Not Assigned'}" />
                                 </p:column>
+                                
+                                <!-- Transporter Column -->
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Transporter"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.fromStaff.person.name}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
 
                                 <!-- Purchase Total Column -->
                                 <p:column headerText="Purchase Total" style="text-align: right;" sortBy="#{i.netTotal}" filterBy="#{i.netTotal}" filterMatchMode="gte">
                                     <h:outputLabel value="#{i.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>                                  
+                                </p:column>
+
+
+                                <!-- Actions -->
+                                <p:column headerText="Actions" width="5em">
+                                    <p:commandButton
+                                        ajax="false" 
+                                        value="View" 
+                                        action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferReceive}">
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{i}" />
+                                    </p:commandButton>  
                                 </p:column>
                             </p:dataTable>
 

@@ -98,11 +98,11 @@
 
             <div >
                 <p:dataTable 
-                    styleClass="no-border-table"
                     rowIndexVar="rowIndex" 
                     value="#{cc.attrs.bill.billItems}"
                     sortBy="#{bip.searialNo}" 
                     var="bip"
+                    styleClass="no-border-table"
                     style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important;"
                     rowKey="#{bip.id}">
                     <p:column 

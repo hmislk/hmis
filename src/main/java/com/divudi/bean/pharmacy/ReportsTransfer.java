@@ -131,26 +131,31 @@ public class ReportsTransfer implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     // </editor-fold>  
     public String navigateToTransferIssueByBillItem() {
+        transferBills = null;
         pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_item?faces-redirect=true";
     }
 
     public String navigateToTransferReceiveByBillItem() {
+        transferBills = null;
         pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_item?faces-redirect=true";
     }
 
     public String navigateToTransferIssueByBill() {
+        transferBills = null;
         pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill?faces-redirect=true";
     }
 
     public String navigateToTransferReceiveByBill() {
+        transferBills = null;
         pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill?faces-redirect=true";
     }
 
     public String navigateToPharmacyTransferReports() {
+        transferBills = null;
         pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return pharmacyController.navigateToPharmacyAnalytics();
     }
