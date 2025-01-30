@@ -559,12 +559,17 @@ public class GrnController implements Serializable {
         if (getGrnBill().getReferenceInstitution() == null) {
             getGrnBill().setReferenceInstitution(getReferenceInstitution());
         }
-
-        if (currentGrnBillPre != null) {
-            getGrnBill().setPaymentMethod(getCurrentGrnBillPre().getPaymentMethod());
-        } else {
-            getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
+        
+        if(getGrnBill().getPaymentMethod()==null){
+            JsfUtil.addErrorMessage("Please select a payment method");
+            return;
         }
+
+//        if (currentGrnBillPre != null) {
+//            getGrnBill().setPaymentMethod(getCurrentGrnBillPre().getPaymentMethod());
+//        } else {
+//            getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
+//        }
         getGrnBill().setInvoiceDate(invoiceDate);
         getGrnBill().setInvoiceNumber(invoiceNumber);
         String msg = pharmacyCalculation.errorCheck(getGrnBill(), billItems);
