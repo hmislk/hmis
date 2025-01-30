@@ -100,7 +100,7 @@
                                              class="my-1 w-100 ui-button-warning" 
                                              icon="fas fa-search-dollar"
                                              action="#{supplierPaymentController.fillAllSupplierPaymentsByChequDate()}"/>
-                            
+
                             <p:commandButton ajax="false" value="Reapprove Canceled Payments for Settlement" 
                                              class="my-1 w-100 ui-button-danger" 
                                              icon="fas fa-search-dollar"
@@ -118,7 +118,7 @@
                                 rowsPerPageTemplate="5,10,15"
                                 >
 
-                                <p:column headerText="Bill No" > 
+                                <p:column headerText="GRN No" > 
                                     <h:commandLink action="reprint_bill_dealor">
                                         #{bill.deptId}"                               
                                         <f:setPropertyActionListener target="#{dealorPaymentBillSearch.bill}" value="#{bill}"/>
@@ -136,6 +136,10 @@
 
                                 <p:column headerText="Department">                             
                                     <h:outputLabel value="#{bill.department.name}" />
+                                </p:column>
+
+                                <p:column headerText="Invoice No">                             
+                                    <h:outputLabel value="#{bill.invoiceNumber}" />
                                 </p:column>
 
                                 <p:column headerText="Billed at"  >                                
