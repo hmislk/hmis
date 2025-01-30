@@ -19,13 +19,17 @@
                         <f:facet  name="header" >
                             <div class="row d-flex align-items-center">
                                 <div class="col-1">
-                                    <h5>Patient Report</h5>
+                                    <h4 class="mt-2 font-bold">Patient Report</h4>
                                 </div>
                                 <div class="col-3 d-flex justify-content-end">
                                     <h:panelGrid columns="2" >
                                         <p:outputLabel value="Report Format" class="mx-2"></p:outputLabel>
-                                        <p:selectOneMenu  id="mnuCat" value="#{patientReportController.currentPatientReport.reportFormat}"  style="width: 300px!important;">
-                                            <f:selectItems  value="#{reportFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                        <p:selectOneMenu  
+                                            disabled="#{patientReportController.currentPatientReport.approved}"
+                                            id="mnuCat" 
+                                            value="#{patientReportController.currentPatientReport.reportFormat}"  
+                                            style="width: 300px!important;">
+                                            <f:selectItems  value="#{patientReportController.avalilableReportFormats}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                             <f:ajax event="change" execute="mnuCat" render=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
                                         </p:selectOneMenu>
                                     </h:panelGrid>
@@ -131,6 +135,8 @@
                         <div class="row">
 
                             <div class="col-5">
+                                
+<!--                            Enter Values                        -->
                                 <p:panel header="Enter Values"  
                                          rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology' and patientReportController.currentPatientReport.containValues eq true}" >
                                     <table >
@@ -167,9 +173,10 @@
                                         </ui:repeat>
                                     </table>
                                 </p:panel>
-                                <h:panelGroup  
-                                    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }">
-                                    <p:panel header="Calculations " id="tblCals">
+                                
+<!--                            Calculations                        -->
+                                <h:panelGroup rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }">
+                                    <p:panel class="my-2" header="Calculations " id="tblCals">
                                         <table >               
                                             <ui:repeat  
                                                 value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
@@ -198,6 +205,8 @@
                                     </p:panel>
 
                                 </h:panelGroup>
+
+<!--                            Flags                               -->
                                 <p:panel class="my-2" header="Flags" id="tblFlags"
                                          rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containFlags eq true}" 
                                          >
@@ -228,6 +237,8 @@
                                     </h:panelGroup>
 
                                 </p:panel>
+
+<!--                            Dynamic Labels                      -->
                                 <p:panel header="Dynamic Labels" rendered="#{patientReportController.currentPatientReport.containDynamicLabels eq true }"  >
                                     <table >
                                         <ui:repeat id="tblDls" 
@@ -259,6 +270,8 @@
                                         </ui:repeat>
                                     </table>
                                 </p:panel>
+
+<!--                            Microbiology                        -->
                                 <p:panel header="Microbiology"    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
                                     <f:view contentType="text/html">
 
@@ -300,6 +313,7 @@
 
                                 </p:panel>
 
+<!--                            Pathology or Haematology Report     -->
                                 <p:panel 
                                     class="mb-2"
                                     header="Pathology or Haematology Report"    
@@ -407,7 +421,8 @@
                                     </p:dialog>
                                 </p:panel>
 
-                                <p:panel header="Report Details"  >
+<!--                            Report Details                      -->
+                                <p:panel header="Report Details" class="my-2" >
                                     <p:panelGrid columns="2" >
                                         <p:outputLabel for="sampleIDs" value="sampleIDs" ></p:outputLabel>
                                         <p:inputText id="sampleIDs" value="#{patientReportController.currentPatientReport.sampleIDs}" ></p:inputText>
@@ -485,7 +500,7 @@
 
                             </div>
                             <div class="col-7 ">
-                                <div class="my-1 row w-100" >
+                                <div class="mb-1 row w-100" >
                                     <p:panel class="mx-2" header="Patient details" >
                                         <ezcommon:patient patient="#{patientReportController.currentPatientReport.patientInvestigation.patient}" ></ezcommon:patient>
                                     </p:panel>

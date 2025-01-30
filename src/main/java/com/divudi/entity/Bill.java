@@ -346,6 +346,22 @@ public class Bill implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date printedAt;
 
+    private boolean paymentApproved;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser paymentApprovedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date paymentApprovedAt;
+    @Lob
+    private String paymentApprovalComments;
+
+    private boolean paymentCompleted;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser paymentCompletedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date paymentCompletedAt;
+    @Lob
+    private String paymentCompletionComments;
+
     //Print Information
     private boolean duplicatedPrinted;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -410,8 +426,8 @@ public class Bill implements Serializable, RetirableEntity {
     private PharmacyBill pharmacyBill;
 
     private String externalDoctor;
-    
-    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER, optional = true,orphanRemoval = true)
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
     private StockBill stockBill;
 
     public Bill() {
@@ -2523,8 +2539,8 @@ public class Bill implements Serializable, RetirableEntity {
     }
 
     public StockBill getStockBill() {
-        if(stockBill==null){
-            stockBill=new StockBill();
+        if (stockBill == null) {
+            stockBill = new StockBill();
         }
         return stockBill;
     }
@@ -2532,6 +2548,71 @@ public class Bill implements Serializable, RetirableEntity {
     public void setStockBill(StockBill stockBill) {
         this.stockBill = stockBill;
     }
+
+    public boolean isPaymentApproved() {
+        return paymentApproved;
+    }
+
+    public void setPaymentApproved(boolean paymentApproved) {
+        this.paymentApproved = paymentApproved;
+    }
+
+    public WebUser getPaymentApprovedBy() {
+        return paymentApprovedBy;
+    }
+
+    public void setPaymentApprovedBy(WebUser paymentApprovedBy) {
+        this.paymentApprovedBy = paymentApprovedBy;
+    }
+
+    public Date getPaymentApprovedAt() {
+        return paymentApprovedAt;
+    }
+
+    public void setPaymentApprovedAt(Date paymentApprovedAt) {
+        this.paymentApprovedAt = paymentApprovedAt;
+    }
+
+    public boolean isPaymentCompleted() {
+        return paymentCompleted;
+    }
+
+    public void setPaymentCompleted(boolean paymentCompleted) {
+        this.paymentCompleted = paymentCompleted;
+    }
+
+    public WebUser getPaymentCompletedBy() {
+        return paymentCompletedBy;
+    }
+
+    public void setPaymentCompletedBy(WebUser paymentCompletedBy) {
+        this.paymentCompletedBy = paymentCompletedBy;
+    }
+
+    public Date getPaymentCompletedAt() {
+        return paymentCompletedAt;
+    }
+
+    public void setPaymentCompletedAt(Date paymentCompletedAt) {
+        this.paymentCompletedAt = paymentCompletedAt;
+    }
+
+    public String getPaymentApprovalComments() {
+        return paymentApprovalComments;
+    }
+
+    public void setPaymentApprovalComments(String paymentApprovalComments) {
+        this.paymentApprovalComments = paymentApprovalComments;
+    }
+
+    public String getPaymentCompletionComments() {
+        return paymentCompletionComments;
+    }
+
+    public void setPaymentCompletionComments(String paymentCompletionComments) {
+        this.paymentCompletionComments = paymentCompletionComments;
+    }
+
     
     
 }
