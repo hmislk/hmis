@@ -448,6 +448,10 @@ public class SupplierPaymentController implements Serializable {
         }
         calTotal();
     }
+    
+    public void changeDiscountListenerForPaymentPreperation() {
+        calTotal();
+    }
 
     public void calTotalBySelectedBillTems() {
         if (selectedBillItems == null) {
@@ -563,6 +567,24 @@ public class SupplierPaymentController implements Serializable {
         }
 
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
+            return true;
+        }
+
+        return false;
+    }
+    
+    private boolean errorCheckForPaymentPreperationBill() {
+        if (getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Item ");
+            return true;
+        }
+
+        if (getCurrent().getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Select Cant settle without Dealor");
+            return true;
+        }
+
+        if (getCurrent().getPaymentMethod() == null) {
             return true;
         }
 
@@ -1477,7 +1499,7 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void settlePrepairingSupplierPayment() {
-        if (errorCheck()) {
+        if (errorCheckForPaymentPreperationBill()) {
             return;
         }
         calculateTotal(billItems);

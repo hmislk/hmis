@@ -34,15 +34,20 @@
                                 <h:outputLabel value="#{supplierPaymentController.current.toInstitution.name}" />
 
                                 <h:outputLabel value="Payment Method" />
-                                <p:selectOneMenu id="cmbPs" value="#{supplierPaymentController.current.paymentMethod}">                                                                     
+                                <p:selectOneMenu 
+                                    id="cmbPs" 
+                                    required="true"
+                                    requiredMessage="You must select a payment method to approve"
+                                    value="#{supplierPaymentController.current.paymentMethod}">                                                                     
+                                    <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
-                                    <p:ajax 
+<!--                                    <p:ajax 
                                         process="cmbPs"
                                         update="gpPaymentMethodDetails" 
-                                        event="change" />
+                                        event="change" />-->
                                 </p:selectOneMenu>
 
-                                <h:outputLabel value="Payment Details" />
+<!--                                <h:outputLabel value="Payment Details" />
                                 <h:panelGroup id="gpPaymentMethodDetails" >
                                     <h:panelGroup id="creditCard" style="display: #{supplierPaymentController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                         <pa:creditCard paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
@@ -55,30 +60,44 @@
                                     <h:panelGroup id="slip" style="display: #{supplierPaymentController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
                                         <pa:slip paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                     </h:panelGroup>
-                                </h:panelGroup>
+                                </h:panelGroup>-->
 
                                 <p:outputLabel value="Total" />
-                                <p:outputLabel id="lblTotal"  value="#{supplierPaymentController.current.total}">
+                                <p:inputText
+                                    readonly="true"
+                                    class="text-end"
+                                    id="lblTotal"
+                                    value="#{supplierPaymentController.current.total}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                </p:outputLabel>
+                                </p:inputText>
 
                                 <p:outputLabel value="Discount" />
-                                <p:inputText id="lblNetTotal"  value="#{supplierPaymentController.current.discount}">
+                                <p:inputText 
+                                    id="txtDiscount"  
+                                    onfocus="this.select();"
+                                    class="text-end"
+                                    value="#{supplierPaymentController.current.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                     <f:ajax 
                                         event="blur" 
                                         execute="@this" 
                                         render="@all" 
-                                        listener="#{supplierPaymentController.changeNetValueListener(b)}"/>
+                                        listener="#{supplierPaymentController.changeDiscountListenerForPaymentPreperation}"/>
                                 </p:inputText>
 
                                 <p:outputLabel value="Net Total" />
-                                <p:outputLabel id="lblNetTotal"  value="#{supplierPaymentController.current.netTotal}">
+                                <p:inputText 
+                                    id="lblNetTotal"
+                                    class="text-end"
+                                    readonly="true"
+                                    value="#{supplierPaymentController.current.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                </p:outputLabel>
+                                </p:inputText>
 
                                 <p:outputLabel value="Description"/>
-                                <p:inputTextarea value="#{supplierPaymentController.current.comments}"/>                                                         
+                                <p:inputTextarea
+                                    class="w-100"
+                                    value="#{supplierPaymentController.current.comments}"/>                                                         
 
 
 
@@ -121,8 +140,13 @@
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Paying Amount">
-                                    <p:inputText autocomplete="off" value="#{b.netValue}">    
+                                    <p:inputText 
+                                        class="w-100 text-end"
+                                        autocomplete="off"
+                                        onfocus="this.select();"
+                                        value="#{b.netValue}">    
                                         <f:convertNumber pattern="#,##0.00" />
+
                                         <f:ajax 
                                             event="blur" 
                                             execute="@this" 
