@@ -52,8 +52,11 @@
                                     icon="fas fa-file-invoice-dollar"
                                     class="my-1 w-100  ui-button-warning" />
 
-                                <p:separator ></p:separator>
+                                
+                                
+<!--                                <p:separator ></p:separator>
 
+                                
                                 <p:commandButton 
                                     value="List All Paid &amp; Missing Pharmacy Bills"
                                     action="#{supplierPaymentController.fillAllCreditBills()}"
@@ -67,16 +70,16 @@
                                     action="#{supplierPaymentController.fillAllCanceledReturnedSupplierPayments()}"
                                     ajax="false"
                                     icon="fas fa-file-invoice-dollar"
-                                    class="my-1 w-100  ui-button-danger" />
+                                    class="my-1 w-100  ui-button-danger" />-->
 
                                 <p:separator></p:separator>
 
                                 <p:commandButton 
-                                    value="Navigate to Settle Selected Bills" 
+                                    value="Settle Selected Bills" 
                                     action="#{supplierPaymentController.navigateToStartSupplierPaymentOfSelectedBills()}" 
                                     ajax="false" 
                                     icon="fas fa-hand-point-right" 
-                                    class="my-1 w-100  ui-button-primary" />
+                                    class="my-1 w-100  ui-button-success" />
 
                                 <p:separator></p:separator>
 
@@ -177,12 +180,19 @@
                                     </p:column>
 
                                     <p:column  headerText="Actions" >
-                                        bta - #{b.referenceBill.billTypeAtomic}
-                                        paid amount - #{b.paidAmount}
                                         <p:commandButton
+                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Approval is necessary for Procument Payments', false)}"
                                             value="Pay" 
                                             update="@form" 
                                             action="#{supplierPaymentController.navigateToStartSupplierPayment(b)}" 
+                                            ajax="false" 
+                                            disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}" >
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Approval is necessary for Procument Payments', false)}"
+                                            value="Prepare Payment" 
+                                            update="@form" 
+                                            action="#{supplierPaymentController.navigateToPrepareSupplierPayment(b)}" 
                                             ajax="false" 
                                             disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}" >
                                         </p:commandButton>
