@@ -80,7 +80,7 @@
                                             ajax="false" 
                                             value="#{bill.deptId}" 
                                             disabled="#{bill.referenceBill eq null}"
-                                            action="pharmacy_reprint_bill_sale">
+                                            action="#{pharmacyBillSearch.navigatePharmacyReprintRetailBill()}">
                                             <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>  
                                         </p:commandLink>
                                     </p:column>

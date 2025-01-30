@@ -29,7 +29,7 @@ import javax.persistence.Temporal;
  * @author Buddhika
  */
 @Entity
-public class StockHistory implements Serializable, RetirableEntity  {
+public class StockHistory implements Serializable, RetirableEntity {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -71,10 +71,17 @@ public class StockHistory implements Serializable, RetirableEntity  {
     int hxWeek;
     // This give the sotck of this Item for this department
     private Double itemStock;
-    // This give the sotck of this Item for this Institution
     private Double institutionItemStock;
-    // This give the sotck of this Item for the system
     private Double totalItemStock;
+
+    private Double itemStockValueAtSaleRate;
+    private Double institutionItemStockValueAtSaleRate;
+    private Double totalItemStockValueAtSaleRate;
+    
+    private Double itemStockValueAtPurchaseRate;
+    private Double institutionItemStockValueAtPurchaseRate;
+    private Double totalItemStockValueAtPurchaseRate;
+    
 
     //Created Properties
     @ManyToOne
@@ -89,6 +96,8 @@ public class StockHistory implements Serializable, RetirableEntity  {
     private Date retiredAt;
     private String retireComments;
 
+    
+    
     public Date getStockAt() {
         return stockAt;
     }
@@ -353,7 +362,53 @@ public class StockHistory implements Serializable, RetirableEntity  {
     public void setTotalItemStock(Double totalItemStock) {
         this.totalItemStock = totalItemStock;
     }
-    
-    
+
+    public Double getItemStockValueAtSaleRate() {
+        return itemStockValueAtSaleRate;
+    }
+
+    public void setItemStockValueAtSaleRate(Double itemStockValueAtSaleRate) {
+        this.itemStockValueAtSaleRate = itemStockValueAtSaleRate;
+    }
+
+    public Double getInstitutionItemStockValueAtSaleRate() {
+        return institutionItemStockValueAtSaleRate;
+    }
+
+    public void setInstitutionItemStockValueAtSaleRate(Double institutionItemStockValueAtSaleRate) {
+        this.institutionItemStockValueAtSaleRate = institutionItemStockValueAtSaleRate;
+    }
+
+    public Double getTotalItemStockValueAtSaleRate() {
+        return totalItemStockValueAtSaleRate;
+    }
+
+    public void setTotalItemStockValueAtSaleRate(Double totalItemStockValueAtSaleRate) {
+        this.totalItemStockValueAtSaleRate = totalItemStockValueAtSaleRate;
+    }
+
+    public Double getItemStockValueAtPurchaseRate() {
+        return itemStockValueAtPurchaseRate;
+    }
+
+    public void setItemStockValueAtPurchaseRate(Double itemStockValueAtPurchaseRate) {
+        this.itemStockValueAtPurchaseRate = itemStockValueAtPurchaseRate;
+    }
+
+    public Double getInstitutionItemStockValueAtPurchaseRate() {
+        return institutionItemStockValueAtPurchaseRate;
+    }
+
+    public void setInstitutionItemStockValueAtPurchaseRate(Double institutionItemStockValueAtPurchaseRate) {
+        this.institutionItemStockValueAtPurchaseRate = institutionItemStockValueAtPurchaseRate;
+    }
+
+    public Double getTotalItemStockValueAtPurchaseRate() {
+        return totalItemStockValueAtPurchaseRate;
+    }
+
+    public void setTotalItemStockValueAtPurchaseRate(Double totalItemStockValueAtPurchaseRate) {
+        this.totalItemStockValueAtPurchaseRate = totalItemStockValueAtPurchaseRate;
+    }
 
 }

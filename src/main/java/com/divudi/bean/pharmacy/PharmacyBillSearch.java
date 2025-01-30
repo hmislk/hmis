@@ -152,8 +152,24 @@ public class PharmacyBillSearch implements Serializable {
         return "/inward/pharmacy_cancel_bill_retail_bht?faces-redirect=true";
     }
 
+    public String navigateToCancelPharmacyRetailSale() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        paymentMethod = bill.getPaymentMethod();
+        return "/pharmacy/pharmacy_cancel_bill_retail?faces-redirect=true";
+    }
+
     public String navigatePharmacyReprintPo() {
         return "pharmacy_reprint_po?faces-redirect=true";
+    }
+    
+    public String navigatePharmacyReprintRetailBill() {
+        if(bill==null){
+            JsfUtil.addErrorMessage("No Bill Selected");
+        }
+        return "/pharmacy/pharmacy_reprint_bill_sale?faces-redirect=true";
     }
 
     public String navigateToReprintPharmacyTransferIssue() {
@@ -1202,7 +1218,7 @@ public class PharmacyBillSearch implements Serializable {
         cb.invertAndAssignValuesFromOtherBill(getBill());
 
         cb.setPaymentScheme(getBill().getPaymentScheme());
-        cb.setPaymentMethod(getBill().getPaymentMethod());
+        cb.setPaymentMethod(paymentMethod);
         cb.setBalance(0.0);
         cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
@@ -1964,7 +1980,6 @@ public class PharmacyBillSearch implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
 
     public void pharmacyRetailCancelBillWithStock() throws ParseException {
-
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -2004,8 +2019,11 @@ public class PharmacyBillSearch implements Serializable {
 
             CancelledBill cb = pharmacyCreateCancelBill();
 
-            cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.SALCAN));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.SALCAN));
+            
+            String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            
+            cb.setDeptId(deptId);
+            cb.setInsId(deptId);
 
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
@@ -2024,7 +2042,7 @@ public class PharmacyBillSearch implements Serializable {
 //                getBill().getReferenceBill().setReferenceBill(null);
 //                getBillFacade().edit(getBill().getReferenceBill());
 //            }
-            getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
+//            getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
 
             JsfUtil.addSuccessMessage("Cancelled");
             //   ////System.out.println("going to cancel staff payments");

@@ -93,6 +93,7 @@ public enum Icon {
     adjustments_search_adjustment_bill("Adjustments - Search Adjustment Bill"),
     adjustments_transfer_all_stock("Adjustments - Transfer All Stock"),
     supplier_due_search("Supplier Due Search"),
+    supplier_payment_management("Supplier Payment Management"),
     dealer_due_by_age("Dealer Due by Age"),
     payment_by_supplier("Payment by Supplier"),
     payment_by_bill("Payment by Bill"),
