@@ -460,9 +460,9 @@ public class SupplierPaymentController implements Serializable {
         getCurrent().setNetTotal(0 - n);
     }
 
-    public void calTotalAtSupplierPaymentBillSettling() {
+    public void calculateTotalAndUpdateReferanceBillBalances(List<BillItem> billItemsWithReferanceToSettlingBills) {
         double n = 0.0;
-        for (BillItem payingBillItem : billItems) {
+        for (BillItem payingBillItem : billItemsWithReferanceToSettlingBills) {
             double biNetTotal = 0 - Math.abs(payingBillItem.getNetValue());
             payingBillItem.setNetValue(biNetTotal);
             payingBillItem.setGrossValue(biNetTotal);
@@ -1359,7 +1359,7 @@ public class SupplierPaymentController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        calTotalAtSupplierPaymentBillSettling();
+        calculateTotalAndUpdateReferanceBillBalances(billItems);
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
         getCurrent().setTotal(getCurrent().getNetTotal());
 
@@ -1389,10 +1389,7 @@ public class SupplierPaymentController implements Serializable {
         }
 
         Payment p = createPayment(getCurrent(), getCurrent().getPaymentMethod());
-        saveBillItemBySelectedItems(p);
-
-        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
+//        saveBillItemBySelectedItems(p);
 
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
@@ -1415,10 +1412,10 @@ public class SupplierPaymentController implements Serializable {
 
         saveBill(BillType.GrnPaymentPre);
         Payment p = createPayment(getCurrent(), getCurrent().getPaymentMethod());
-        saveBillItemBySelectedItems(p);
-
-        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
+        
+        calculateTotalAndUpdateReferanceBillBalances(selectedBillItems);
+        
+//        saveBillItemBySelectedItems(p);
 
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
@@ -1426,55 +1423,47 @@ public class SupplierPaymentController implements Serializable {
     }
 
     private void saveBillItem() {
+        System.out.println("save bill item");
         for (BillItem tmp : getBillItems()) {
             tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());
             tmp.setBill(getCurrent());
             tmp.setNetValue(0 - tmp.getNetValue());
-
             if (tmp.getId() == null) {
                 getBillItemFacade().create(tmp);
             }
-
             updateReferenceBill(tmp);
-
         }
-
     }
 
-    private void saveBillItemBySelectedItems() {
-        for (BillItem tmp : getSelectedBillItems()) {
-            tmp.setCreatedAt(new Date());
-            tmp.setCreater(getSessionController().getLoggedUser());
-            tmp.setBill(getCurrent());
-            tmp.setNetValue(0 - tmp.getNetValue());
+//    private void saveBillItemBySelectedItems() {
+//        for (BillItem tmp : getSelectedBillItems()) {
+//            tmp.setCreatedAt(new Date());
+//            tmp.setCreater(getSessionController().getLoggedUser());
+//            tmp.setBill(getCurrent());
+//            tmp.setNetValue(0 - tmp.getNetValue());
+//            if (tmp.getId() == null) {
+//                getBillItemFacade().create(tmp);
+//            }
+//            updateReferenceBill(tmp);
+//        }
+//    }
 
-            if (tmp.getId() == null) {
-                getBillItemFacade().create(tmp);
-            }
-
-            updateReferenceBill(tmp);
-
-        }
-
-    }
-
-    private void saveBillItemBySelectedItems(Payment p) {
-        for (BillItem tmp : getSelectedBillItems()) {
-            tmp.setCreatedAt(new Date());
-            tmp.setCreater(getSessionController().getLoggedUser());
-            tmp.setBill(getCurrent());
-            tmp.setNetValue(0 - tmp.getNetValue());
-
-            if (tmp.getId() == null) {
-                getBillItemFacade().create(tmp);
-            }
-            saveBillFee(tmp, p);
-            updateReferenceBill(tmp);
-
-        }
-
-    }
+//    private void saveBillItemBySelectedItems(Payment p) {
+//        System.out.println("saveBillItemBySelectedItems");
+//        for (BillItem tmp : getSelectedBillItems()) {
+//            System.out.println("tmp = " + tmp);
+//            tmp.setCreatedAt(new Date());
+//            tmp.setCreater(getSessionController().getLoggedUser());
+//            tmp.setBill(getCurrent());
+//            tmp.setNetValue(0 - tmp.getNetValue());
+//            if (tmp.getId() == null) {
+//                getBillItemFacade().create(tmp);
+//            }
+//            saveBillFee(tmp, p);
+//            updateReferenceBill(tmp);
+//        }
+//    }
 
     private boolean isPaidAmountOk(BillItem tmp) {
 
@@ -1494,14 +1483,19 @@ public class SupplierPaymentController implements Serializable {
     }
 
     private void updateReferenceBill(BillItem tmp) {
+        System.out.println("updateReferenceBill");
+        System.out.println("tmp = " + tmp);
         double dbl = getCreditBean().getPaidAmount(tmp.getReferenceBill(), BillType.GrnPaymentPre);
-
+        System.out.println("dbl = " + dbl);
+        dbl = Math.abs(dbl);
         tmp.getReferenceBill().setPaidAmount(0 - dbl);
         getBillFacade().edit(tmp.getReferenceBill());
-
     }
 
     public void saveBillFee(BillItem bi, Payment p) {
+        System.out.println("saveBillFee = " );
+        System.out.println("bi = " + bi);
+        System.out.println("p = " + p);
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());
         bf.setCreater(getSessionController().getLoggedUser());
