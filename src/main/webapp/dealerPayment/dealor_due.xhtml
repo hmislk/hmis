@@ -32,25 +32,27 @@
                                 </p:calendar>
 
                                 <p:commandButton 
-                                    value="List Pharmacy Credit Bills to Settle" 
+                                    value="Pharmacy Credit Bills to Settle" 
                                     action="#{supplierPaymentController.fillUnsettledCreditPharmacyBills}" 
                                     ajax="false"  
                                     icon="fas fa-prescription-bottle-alt" 
-                                    class="my-1 w-100 ui-button-info" />
+                                    class="my-1 w-100 ui-button-warning" />
 
                                 <p:commandButton 
-                                    value="List Store Credit Bills to Settle" 
+                                    value="Store Credit Bills to Settle" 
                                     action="#{supplierPaymentController.fillUnsettledCreditStoreBills()}" 
                                     ajax="false"  
                                     icon="fas fa-store-alt" 
                                     class="my-1 w-100  ui-button-warning" />
 
                                 <p:commandButton 
-                                    value="List All Credit Bills to Settle"
+                                    value="All Credit Bills to Settle"
                                     action="#{supplierPaymentController.fillUnsettledCreditBills()}"
                                     ajax="false"
                                     icon="fas fa-file-invoice-dollar"
-                                    class="my-1 w-100  ui-button-danger" />
+                                    class="my-1 w-100  ui-button-warning" />
+                                
+                                <p:separator ></p:separator>
                                 
                                  <p:commandButton 
                                     value="List All Paid &amp; Missing Pharmacy Bills"
