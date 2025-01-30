@@ -13,7 +13,7 @@
                     <p:panel >
                         <f:facet name="header" >
                             <h:outputText styleClass="fa-solid fa-file-invoice"/>
-                            <h:outputLabel value="Supplier Payment Approval" class="mx-4"/> 
+                            <h:outputLabel value="Mark Supplier Bill Payment as Completed" class="mx-4"/> 
                         </f:facet>
 
                         <div class="row" >
@@ -35,16 +35,16 @@
                                 <p:panel header="Approval" >
 
                                     <h:outputLabel 
-                                        value="Approve Comments" 
+                                        value="Payment Completion Comments" 
                                         class="form-label m-1"></h:outputLabel>
                                     <p:inputTextarea 
                                         class="form-control m-1"
-                                        value="#{supplierPaymentController.bill.paymentApprovalComments}" ></p:inputTextarea>
+                                        value="#{supplierPaymentController.bill.comments}" ></p:inputTextarea>
                                     <p:commandButton 
                                         ajax="false"
-                                        value="Approve"
+                                        value="Complete"
                                         styleClass="m-1"
-                                        action="#{supplierPaymentController.approvePayment}" ></p:commandButton>
+                                        action="#{supplierPaymentController.completePayment()}" ></p:commandButton>
 
                                 </p:panel>
 

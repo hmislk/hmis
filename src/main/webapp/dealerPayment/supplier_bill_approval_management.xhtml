@@ -56,6 +56,15 @@
                                     class="m-1 ui-button-success" 
                                     icon="fas fa-pills"
                                     action="#{supplierPaymentController.fillSupplierBillsApprovedForPayments()}"/>
+
+                                <p:commandButton 
+                                    id="btnSearchAll" 
+                                    ajax="false" value="List All Supplier Bills" 
+                                    class="m-1 ui-button-primary" 
+                                    icon="fas fa-pills"
+                                    action="#{supplierPaymentController.fillSupplierBills()}"/>
+
+
                             </div>
                         </div>
                         <div class="row" >
@@ -66,76 +75,57 @@
                                     var="bill"  
                                     paginatorPosition="bottom"
                                     rows="10"
+                                    rowKey="#{bill.id}"
                                     paginator="true"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15"
-                                    >
+                                    filterEvent="keyup"
+                                    widgetVar="billsTable">
 
-                                    <p:column headerText="Bill No" >                                
+                                    <p:column headerText="Bill No" sortable="true" filterBy="#{bill.deptId}" filterMatchMode="contains">                                
                                         <h:commandLink action="reprint_bill_dealor" value="#{bill.deptId}">
                                             <f:setPropertyActionListener target="#{dealorPaymentBillSearch.bill}" value="#{bill}"/>
                                         </h:commandLink>
                                     </p:column>
-                                    <p:column headerText="Supplier Name">                             
-                                        <h:outputLabel value="#{bill.fromInstitution.name}" />
-                                    </p:column>   
 
-                                    <p:column headerText="Department">                             
+                                    <p:column headerText="Supplier Name" sortable="true" filterBy="#{bill.fromInstitution.name}" filterMatchMode="contains">                             
+                                        <h:outputLabel value="#{bill.fromInstitution.name}" />
+                                    </p:column>  
+
+                                    <p:column headerText="Payment Method" sortable="true" sortBy="#{bill.paymentMethod}" filterBy="#{bill.paymentMethod}" filterMatchMode="contains">                             
+                                        <h:outputLabel value="#{bill.paymentMethod}" />
+                                    </p:column>  
+
+                                    <p:column headerText="Department" sortable="true" filterBy="#{bill.department.name}" filterMatchMode="contains">                             
                                         <h:outputLabel value="#{bill.department.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Billed at"  >                                
-                                        <h:outputLabel value="#{bill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    <p:column headerText="Billed at" sortable="true" filterBy="#{bill.createdAt}">
+                                        <h:outputLabel value="#{bill.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>                               
                                     </p:column>  
-                                    <p:column headerText="Billed by" >                               
-                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
-                                        </h:outputLabel>                             
-                                    </p:column> 
-                                    <p:column headerText="Approved at"  >                                
-                                        <h:outputLabel value="#{bill.approveAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>                                    
-                                        <br/>
-                                        <h:panelGroup rendered="#{bill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup> 
-                                        <br/>
-                                        <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: orange;" value="Refunded at " />
-                                            <h:outputLabel style="color: orange;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup> 
-                                    </p:column>  
-                                    <p:column headerText="Approved by" >                               
-                                        <h:outputLabel value="#{bill.approveUser.webUserPerson.name}" >                                      
-                                        </h:outputLabel>                                    
-                                        <br/>
-                                        <h:panelGroup rendered="#{bill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
-                                            </h:outputLabel>
-                                        </h:panelGroup> 
-                                        <br/>
-                                        <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: orange;" value="Refunded By " />
-                                            <h:outputLabel style="color: orange;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup> 
+
+                                    <p:column headerText="Billed by" sortable="true" filterBy="#{bill.creater.webUserPerson.name}" filterMatchMode="contains">                               
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" />                             
                                     </p:column> 
 
-                                    <p:column headerText="Payment Method" >                                
-                                        <h:outputLabel value="#{bill.paymentMethod}" >                                       
-                                        </h:outputLabel>
+                                    <p:column headerText="Payment Approval" sortable="true" filterBy="#{bill.paymentApprovedAt}" rendered="#{supplierPaymentController.supplierPaymentStatus ne 'Pending Payment Approval'}">                               
+                                        <h:outputLabel value="#{bill.paymentApprovedAt}">               
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                        </h:outputLabel>                                    
+                                    </p:column> 
+
+                                    <p:column headerText="Payment Approval By" sortable="true" filterBy="#{bill.paymentApprovedBy.webUserPerson.name}" filterMatchMode="contains" rendered="#{supplierPaymentController.supplierPaymentStatus ne 'Pending Payment Approval'}">                               
+                                        <h:outputLabel value="#{bill.paymentApprovedBy.webUserPerson.name}" />                                    
+                                    </p:column> 
+
+                                    <p:column headerText="Payment Method" sortable="true" filterBy="#{bill.paymentMethod.label}" filterMatchMode="contains">                                
+                                        <h:outputLabel value="#{bill.paymentMethod.label}" />                                       
                                     </p:column>
-                                    <p:column headerText="Net Value" >                             
-                                        <h:outputLabel value="#{bill.netTotal}" >
+
+                                    <p:column headerText="Net Value" sortable="true" filterBy="#{bill.netTotal}">
+                                        <h:outputLabel value="#{bill.netTotal}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                         <f:facet name="footer">
@@ -144,45 +134,39 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Bank" >                                
-                                        <h:outputLabel value="#{bill.bank.name}" >                                        
-                                        </h:outputLabel>
-                                        <br/>
-                                        <h:outputLabel  value="#{bill.billType}" >
-                                        </h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Cheque Date" sortBy="#{bill.chequeDate}" filterBy="#{bill.chequeDate}"  filterMatchMode="contains">                                
-                                        <h:outputLabel value="#{bill.chequeDate}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                        </h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Cheque No" sortBy="#{bill.chequeRefNo}" filterBy="#{bill.chequeRefNo}"  filterMatchMode="contains">                                
-                                        <h:outputLabel value="#{bill.chequeRefNo}" >
-                                        </h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Comments" >                                
-                                        <h:outputLabel  value="#{bill.comments}" >
-                                        </h:outputLabel>
-                                        <br/>
-                                        <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: orange;" rendered="#{bill.refunded}" value="#{bill.refundedBill.comments}" >
-                                            </h:outputLabel>
-                                        </h:panelGroup> 
-                                        <br/>
-                                        <h:panelGroup rendered="#{bill.cancelled}" >
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.comments}" >                                       
-                                            </h:outputLabel>
-                                        </h:panelGroup> 
-                                        <br/>
 
-                                    </p:column>
-                                    <p:column headerText="Action">
-                                        <p:commandButton ajax="false" value="Manage" action="reprint_bill_dealor" class="ui-button-info" style="width: 100px;">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{dealorPaymentBillSearch.bill}"/>
-                                        </p:commandButton>
+                                    <p:column headerText="Approval Status" rendered="#{supplierPaymentController.supplierPaymentStatus eq 'All'}" >                               
+                                        <p:badge value="Approved" severity="success" rendered="#{bill.paymentApproved}" />
+                                        <p:badge value="Pending Approval" severity="warning" rendered="#{!bill.paymentApproved}" />
+
+                                        <p:badge value="Completed" severity="info" rendered="#{bill.paymentCompleted}" />
+                                        <p:badge value="Pending Completion" severity="danger" rendered="#{!bill.paymentCompleted}" />
 
                                     </p:column> 
+
+                                    <p:column headerText="Comments" filterBy="#{bill.comments}" filterMatchMode="contains">                                
+                                        <h:outputLabel value="#{bill.comments}" />
+                                        <h:panelGroup rendered="#{bill.refunded}" >
+                                            <h:outputLabel style="color: orange;" rendered="#{bill.refunded}" value="#{bill.refundedBill.comments}" />
+                                        </h:panelGroup> 
+                                        <h:panelGroup rendered="#{bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.comments}" />                                       
+                                        </h:panelGroup> 
+                                    </p:column>
+
+                                    <p:column headerText="Action">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="To Approve" 
+                                            action="#{supplierPaymentController.navigateToApprovePayment()}" 
+                                            class="ui-button-success">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{supplierPaymentController.bill}"/>
+                                        </p:commandButton>
+                                    </p:column> 
+
                                 </p:dataTable>
+
+
                             </div>
                         </div>
 

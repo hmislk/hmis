@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -94,6 +95,8 @@ public class SupplierPaymentController implements Serializable {
     private SessionController sessionController;
     @Inject
     CommonController commonController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private List<Bill> bills;
@@ -971,8 +974,6 @@ public class SupplierPaymentController implements Serializable {
     public void fillSupplierBillsForPayments(Boolean approved, Boolean completed) {
         bills = null;
         netTotal = 0.0;
-        supplierPaymentStatus = "Any";
-
         StringBuilder jpql = new StringBuilder("select b from Bill b "
                 + " where b.retired=:retired "
                 + " and b.cancelled=:cancelled "
@@ -1031,7 +1032,7 @@ public class SupplierPaymentController implements Serializable {
 
     public void fillSupplierBills() {
         supplierPaymentStatus = "All";
-        fillSupplierBillsForPayments(true, null);
+        fillSupplierBillsForPayments(null, null);
     }
 
     public String navigateToApprovePayment() {
@@ -1055,7 +1056,7 @@ public class SupplierPaymentController implements Serializable {
             JsfUtil.addErrorMessage("Bill Payment is already Approved. Can not approve again");
             return null;
         }
-        if (bill.getComments() == null || bill.getComments().trim().equals("")) {
+        if (bill.getPaymentApprovalComments() == null || bill.getPaymentApprovalComments().trim().equals("")) {
             JsfUtil.addErrorMessage("Noot a Comment. Can not approve payment");
             return null;
         }
@@ -1063,7 +1064,7 @@ public class SupplierPaymentController implements Serializable {
         bill.setPaymentApprovedAt(new Date());
         bill.setPaymentApprovedBy(sessionController.getLoggedUser());
         billFacade.edit(bill);
-        return navigateToApprovePayment();
+        return naviateToSupplierBillApprovalManagement();
     }
 
     public String navigateToCompletePayment() {
@@ -1111,7 +1112,12 @@ public class SupplierPaymentController implements Serializable {
 // Method to retrieve pending completion (approved but not completed)
     public void fillSupplierBillsPendingCompletionForPayments() {
         supplierPaymentStatus = "Pending Payment Completion";
-        fillSupplierBillsForPayments(null, false);
+        boolean approvalIsNeeded = configOptionApplicationController.getBooleanValueByKey("Approval is necessary for Procument Payments", false);
+        if (approvalIsNeeded) {
+            fillSupplierBillsForPayments(true, false);
+        } else {
+            fillSupplierBillsForPayments(null, false);
+        }
     }
 
     public void fillDealorPaymentCanceled() {
