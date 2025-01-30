@@ -49,7 +49,6 @@
                                     <p:ajax update="gpDetail" process="lstSelect" ></p:ajax>
                                     <p:column>
                                         <h:outputText value="#{i.name}" style="width: 100px;"/>
-                                        <h:outputLabel value="(#{i.orderNo})" class="mx-2" rendered="#{i.parentCategory ne null}"/>
                                     </p:column>
                                     <p:column class="text-center">
                                         <p:badge 
@@ -64,6 +63,9 @@
                                             style="width: 100px;"
                                             rendered="#{i.parentCategory ne null}" >
                                         </p:badge>
+                                    </p:column>
+                                    <p:column class="text-center">
+                                        <p:badge value="#{i.orderNo}" styleClass="mr-2" rendered="#{i.parentCategory ne null}"></p:badge>
                                     </p:column>
                                 </p:selectOneListbox>
                             </div>

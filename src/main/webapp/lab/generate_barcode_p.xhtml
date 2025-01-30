@@ -1104,7 +1104,6 @@
                                             <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}" >
                                                 <h:outputLabel value="Investigation ID : #{dpr.patientInvestigation.id}" /><br/>
                                                 <h:outputLabel value="Report ID : #{dpr.id}" /><br/>
-                                                <h:outputLabel value="Report Format : #{dpr.reportFormat}" /><br/>
                                                 <h:outputLabel value="Report Type : #{dpr.reportType}" /><br/><br/>
                                             </h:panelGroup>                                            
 
@@ -1155,7 +1154,7 @@
                                                     style="height: 30px; width: 30px; #{dpr.printed ? '':'opacity: 0.1;'}" >
                                                 </p:graphicImage>
 
-                                                <!-- SMS Link -->
+                                                <!-- GET SMS Link -->
                                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers') and dpr.approved}" >
                                                     <a target="_blank" href="#{dpr.qrCodeContentsLink}" class="fa fa-link fa-xl mt-3"  title="SMS Link"></a>
                                                 </h:panelGroup>

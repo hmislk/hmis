@@ -2751,28 +2751,21 @@ public class PatientReportController implements Serializable {
                 avalilableReportFormats = reportFormatController.fillReportFormatsForLoggedDepartmentSite(patientReport);
                 
                 if(!avalilableReportFormats.isEmpty()){
-                    System.out.println("Avalilable Report Formats not Empty");
                     if(avalilableReportFormats.size()>=1){
                         patientReport.setReportFormat(avalilableReportFormats.get(0));
                     }
                 }else{
-                    System.out.println("Avalilable Report Formats Null");
-                    System.out.println("patientReport = " + patientReport);
-                    System.out.println("patientReport = " + patientReport.getReportFormat());
                     ReportFormat currentPatientReportFormat = (ReportFormat) patientReport.getPatientInvestigation().getInvestigation().getReportFormat();
-                    System.out.println("currentPatientReportFormat = " + currentPatientReportFormat);
                     avalilableReportFormats.add(currentPatientReportFormat);
-                    System.out.println("Avalilable Report Formats for Null= " + avalilableReportFormats);
                     patientReport.setReportFormat(currentPatientReportFormat);
                 }
             } else {
-                avalilableReportFormats = reportFormatController.getItems();
+                avalilableReportFormats = reportFormatController.getParentFormat();
             }
         }else{
             avalilableReportFormats.add((ReportFormat) patientReport.getReportFormat());
         }
 
-        System.out.println("avalilableReportFormats = " + avalilableReportFormats);
         return avalilableReportFormats;
     }
 

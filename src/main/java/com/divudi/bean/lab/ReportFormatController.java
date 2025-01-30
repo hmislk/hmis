@@ -269,16 +269,10 @@ public class ReportFormatController implements Serializable {
         jpql += " order by i.name";
 
         formats = ejbFacade.findByJpql(jpql, params);
-
-        System.out.println("Parent Report Formats = " + formats);
         return formats;
     }
 
     public List<ReportFormat> fillReportFormatsForLoggedDepartmentSite(PatientReport patientReport) {
-        System.out.println("fillReportFormatsForLoggedDepartmentSite ");
-        System.out.println("patientReport = " + patientReport);
-        
-
         List<ReportFormat> formats = new ArrayList<>();
         Map params = new HashMap();
         String jpql = "SELECT i "
@@ -288,27 +282,18 @@ public class ReportFormatController implements Serializable {
                 + " AND i.parentCategory =:rf ";
 
         if (sessionController.getDepartment() != null && sessionController.getDepartment().getSite() != null) {
-            System.out.println("getSite");
             jpql += " AND i.institution = :site";
-            System.out.println("site = " + sessionController.getDepartment().getSite());
             params.put("site", sessionController.getDepartment().getSite());
         }
         
         ReportFormat  parentCategory = ejbFacade.find(patientReport.getPatientInvestigation().getInvestigation().getReportFormat().getId());
-
-        System.out.println("parentCategory= " + parentCategory);
-
         params.put("rf", parentCategory  );
 
         jpql += " ORDER BY i.orderNo ASC";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
-
         try {
             formats = ejbFacade.findByJpql(jpql, params);
         } catch (Exception e) {
-            System.err.println("Error executing JPQL query: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -340,6 +325,20 @@ public class ReportFormatController implements Serializable {
             items = getEjbFacade().findByJpql(sql);
         }
         return items;
+    }
+    
+    private List<ReportFormat> parentFormat;
+    
+    public List<ReportFormat> getParentFormat() {
+        if (parentFormat == null) {
+            String sql = "SELECT i FROM ReportFormat i where i.retired=false and i.parentCategory=null order by i.name";
+            parentFormat = getEjbFacade().findByJpql(sql);
+        }
+        return parentFormat;
+    }
+
+    public void setParentFormat(List<ReportFormat> parentFormat) {
+        this.parentFormat = parentFormat;
     }
 
     public void setItems(List<ReportFormat> items) {
