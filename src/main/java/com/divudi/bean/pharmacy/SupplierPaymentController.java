@@ -218,9 +218,9 @@ public class SupplierPaymentController implements Serializable {
         return "/credit/index_pharmacy_due_access?faces-redirect=true";
     }
 
-    public String naviateToSupplierBillApprovalManagement() {
+    public String naviateToSupplierBillSettleManagement() {
         bills = null;
-        return "/dealerPayment/supplier_bill_approval_management?faces-redirect=true";
+        return "/dealerPayment/supplier_bill_settle_management?faces-redirect=true";
     }
 
     public String naviateToSupplierBillPaymentCompletionManagement() {
@@ -448,7 +448,7 @@ public class SupplierPaymentController implements Serializable {
         }
         calTotal();
     }
-    
+
     public void changeDiscountListenerForPaymentPreperation() {
         calTotal();
     }
@@ -572,7 +572,7 @@ public class SupplierPaymentController implements Serializable {
 
         return false;
     }
-    
+
     private boolean errorCheckForPaymentPreperationBill() {
         if (getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Item ");
@@ -1100,7 +1100,7 @@ public class SupplierPaymentController implements Serializable {
         }
     }
 
-    public void fillSupplierBillsForPayments(Boolean approved, Boolean completed) {
+    public void fillSupplierPayments(Boolean completed, Boolean paymentCompleted) {
         bills = null;
         netTotal = 0.0;
         StringBuilder jpql = new StringBuilder("select b from Bill b "
@@ -1111,8 +1111,7 @@ public class SupplierPaymentController implements Serializable {
 
         Map<String, Object> params = new HashMap<>();
         List<BillTypeAtomic> btas = Arrays.asList(
-                BillTypeAtomic.PHARMACY_GRN,
-                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+                BillTypeAtomic.SUPPLIER_PAYMENT_PREPERATION);
 
         params.put("btas", btas);
         params.put("cancelled", false);
@@ -1121,19 +1120,19 @@ public class SupplierPaymentController implements Serializable {
         params.put("toDate", toDate);
 
         // Conditionally append paymentApproved if parameter is not null
-        if (approved != null) {
-            if (approved) {
-                jpql.append(" and b.paymentApproved = :approved ");
-                params.put("approved", true);
+        if (completed != null) {
+            if (completed) {
+                jpql.append(" and b.completed = :completed ");
+                params.put("completed", true);
             } else {
-                jpql.append(" and b.paymentApproved = :approved ");
-                params.put("approved", false);
+                jpql.append(" and b.completed = :completed ");
+                params.put("completed", false);
             }
         }
 
         // Conditionally append paymentCompleted if parameter is not null
-        if (completed != null) {
-            if (completed) {
+        if (paymentCompleted != null) {
+            if (paymentCompleted) {
                 jpql.append(" and b.paymentCompleted = :completed ");
                 params.put("completed", true);
             } else {
@@ -1149,19 +1148,19 @@ public class SupplierPaymentController implements Serializable {
         netTotal = bills.stream().mapToDouble(Bill::getNetTotal).sum();
     }
 
-    public void fillSupplierBillsToApproveForPayments() {
-        supplierPaymentStatus = "Pending Payment Approval";
-        fillSupplierBillsForPayments(false, null);
+    public void fillApprovedSupplierBillsToSettlePayments() {
+        supplierPaymentStatus = "Pending Settling";
+        fillSupplierPayments(false, null);
     }
 
-    public void fillSupplierBillsApprovedForPayments() {
-        supplierPaymentStatus = "Payment Approved";
-        fillSupplierBillsForPayments(true, null);
+    public void fillApprovedSupplierPaymentsToComplete() {
+        supplierPaymentStatus = "Pending Completion";
+        fillSupplierPayments(true, false);
     }
 
-    public void fillSupplierBills() {
+    public void fillSupplierPaymentsIgnoringApprovealAndCompletion() {
         supplierPaymentStatus = "All";
-        fillSupplierBillsForPayments(null, null);
+        fillSupplierPayments(null, null);
     }
 
     public String navigateToApprovePayment() {
@@ -1193,7 +1192,7 @@ public class SupplierPaymentController implements Serializable {
         bill.setPaymentApprovedAt(new Date());
         bill.setPaymentApprovedBy(sessionController.getLoggedUser());
         billFacade.edit(bill);
-        return naviateToSupplierBillApprovalManagement();
+        return naviateToSupplierBillSettleManagement();
     }
 
     public String navigateToCompletePayment() {
@@ -1235,7 +1234,7 @@ public class SupplierPaymentController implements Serializable {
 // Method to retrieve completed payments
     public void fillSupplierBillsCompletedForPayments() {
         supplierPaymentStatus = "Payment Completed";
-        fillSupplierBillsForPayments(null, true);
+        fillSupplierPayments(null, true);
     }
 
 // Method to retrieve pending completion (approved but not completed)
@@ -1243,9 +1242,9 @@ public class SupplierPaymentController implements Serializable {
         supplierPaymentStatus = "Pending Payment Completion";
         boolean approvalIsNeeded = configOptionApplicationController.getBooleanValueByKey("Approval is necessary for Procument Payments", false);
         if (approvalIsNeeded) {
-            fillSupplierBillsForPayments(true, false);
+            fillSupplierPayments(true, false);
         } else {
-            fillSupplierBillsForPayments(null, false);
+            fillSupplierPayments(null, false);
         }
     }
 
