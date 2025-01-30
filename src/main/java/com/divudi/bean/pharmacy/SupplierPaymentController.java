@@ -1092,7 +1092,7 @@ public class SupplierPaymentController implements Serializable {
             JsfUtil.addErrorMessage("Bill Payment is already Completed. Cannot complete again");
             return null;
         }
-        if (bill.getComments() == null || bill.getComments().trim().equals("")) {
+        if (bill.getPaymentCompletionComments() == null || bill.getPaymentCompletionComments().trim().equals("")) {
             JsfUtil.addErrorMessage("No Comment. Cannot complete payment");
             return null;
         }
