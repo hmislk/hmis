@@ -90,6 +90,10 @@
                                 </h:commandLink>
                             </p:column>
 
+                            <p:column headerText="Supplier" >
+                                <h:outputText value="#{b.paymentMethod}" ></h:outputText>
+                            </p:column>
+
                             <p:column headerText="Requested Deprtment" >
                                 <h:commandLink action="pharmacy_reprint_order_request" >
                                     #{b.department.name}
@@ -152,7 +156,7 @@
                                     disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
                                 </p:commandButton>
-                                
+
                                 <p:tooltip for="approve" value="Go to Approve the PO"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="edit" value="Edit PO"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="view" value="View PO"  showDelay="0" hideDelay="0"></p:tooltip>
