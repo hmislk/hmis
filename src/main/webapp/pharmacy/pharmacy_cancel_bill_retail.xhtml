@@ -21,7 +21,12 @@
                                     <p:spacer width="200" />
                                     <p:inputText placeholder="Enter Comments to Cancel Bill" value="#{pharmacyBillSearch.bill.comments}" class="p-2 w-50" />
                                     <h:panelGrid columns="2" class="my-2">
-                                        <p:commandButton class="ui-button-danger" icon="fas fa-cancel" value="Cancel" ajax="false" action="#{pharmacyBillSearch.pharmacyRetailCancelBillWithStock()}" >
+                                        <p:commandButton
+                                            class="ui-button-danger" 
+                                            icon="fas fa-cancel" 
+                                            value="CANCEL" 
+                                            ajax="false" 
+                                            action="#{pharmacyBillSearch.pharmacyRetailCancelBillWithStock()}" >
                                         </p:commandButton>
                                         <p:commandButton class="ui-button-secondary mx-2" icon="fas fa-arrow-left" value="Back" onclick="history.back(); return false;" >
                                         </p:commandButton>
