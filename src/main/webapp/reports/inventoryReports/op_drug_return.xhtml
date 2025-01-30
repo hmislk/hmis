@@ -183,7 +183,7 @@
                                 value="Download">
                                 <p:dataExporter 
                                     type="xlsx" 
-                                    fileName="GRN Credit Report" 
+                                    fileName="OP Drug Return Report" 
                                     target="tbl"  />
                             </p:commandButton>
 
@@ -195,7 +195,7 @@
                                 <p:dataExporter 
                                     type="pdf" 
                                     target="tbl" 
-                                    fileName="GRN Credit Report" />
+                                    fileName="OP Drug Return Report" />
                             </p:commandButton>
 
                         </div>
@@ -225,7 +225,10 @@
                             <p:column headerText="Code" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Batch Code" width="5em">
+                            <p:column headerText="Doc No" width="5em">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Ref Doc No (Original Bill No)" width="5em">
                                 <h:outputText value="" />
                             </p:column>
                             <p:column headerText="QTY" width="5em">
@@ -234,10 +237,22 @@
                             <p:column headerText="Rate" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="GRN Value" width="5em">
+                            <p:column headerText="Total" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Total" width="5em">
+                            <p:column headerText="Net Total" width="5em">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="MRP" width="5em">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="MRP Value" width="5em">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Payment Mode" width="5em">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Discount" width="5em">
                                 <h:outputText value="" />
                             </p:column>
 
