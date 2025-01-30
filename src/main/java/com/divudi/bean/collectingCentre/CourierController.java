@@ -60,9 +60,9 @@ public class CourierController implements Serializable {
         return "/collecting_centre/courier/viewStatistics.xhtml?faces-redirect=true";
     }
 
-    public String navigateToCourierViewBillReports() {
+    public String navigateToCourierViewCCReports() {
         activeIndex = 6;
-        return "/collecting_centre/courier/viewBillReports.xhtml?faces-redirect=true";
+        return "/collecting_centre/courier/courier_report_index.xhtml?faces-redirect=true";
     }
     
     public String navigateToCourierViewReciptReports() {

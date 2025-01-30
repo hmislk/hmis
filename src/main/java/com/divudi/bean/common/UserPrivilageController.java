@@ -502,6 +502,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CourierViewStatistics, "Courier View Statistics"), courierNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CourierViewBillReports, "Courier View Bill Reports"), courierNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CourierViewPaymentReports, "Courier View Payment Reports"), courierNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CollectingCentreReports, "Courier View Collecting Centre Reports"), courierNode);
         
         // User Menu
         TreeNode userNode = new DefaultTreeNode(new PrivilegeHolder(null, "User"), allNode);
