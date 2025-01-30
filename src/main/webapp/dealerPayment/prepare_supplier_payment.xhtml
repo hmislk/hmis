@@ -57,6 +57,20 @@
                                     </h:panelGroup>
                                 </h:panelGroup>
 
+                                <p:outputLabel value="Total" />
+                                <p:outputLabel id="lblTotal"  value="#{supplierPaymentController.current.total}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+
+                                <p:outputLabel value="Discount" />
+                                <p:inputText id="lblNetTotal"  value="#{supplierPaymentController.current.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                    <f:ajax 
+                                        event="blur" 
+                                        execute="@this" 
+                                        render="@all" 
+                                        listener="#{supplierPaymentController.changeNetValueListener(b)}"/>
+                                </p:inputText>
 
                                 <p:outputLabel value="Net Total" />
                                 <p:outputLabel id="lblNetTotal"  value="#{supplierPaymentController.current.netTotal}">
