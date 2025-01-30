@@ -17,9 +17,11 @@ import com.divudi.entity.lab.ReportFormat;
 import com.divudi.facade.ReportFormatFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.UploadType;
+import com.divudi.entity.lab.PatientReport;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -253,6 +255,64 @@ public class ReportFormatController implements Serializable {
 
     private ReportFormatFacade getFacade() {
         return ejbFacade;
+    }
+
+    public List<ReportFormat> fillParentReportFormats() {
+
+        List<ReportFormat> formats = new ArrayList<>();
+        Map params = new HashMap();
+        String jpql = "SELECT i "
+                + " FROM ReportFormat i "
+                + " where i.retired=false "
+                + " and i.parentCategory=null ";
+
+        jpql += " order by i.name";
+
+        formats = ejbFacade.findByJpql(jpql, params);
+
+        System.out.println("Parent Report Formats = " + formats);
+        return formats;
+    }
+
+    public List<ReportFormat> fillReportFormatsForLoggedDepartmentSite(PatientReport patientReport) {
+        System.out.println("fillReportFormatsForLoggedDepartmentSite ");
+        System.out.println("patientReport = " + patientReport);
+        
+
+        List<ReportFormat> formats = new ArrayList<>();
+        Map params = new HashMap();
+        String jpql = "SELECT i "
+                + " FROM ReportFormat i "
+                + " WHERE i.retired = false "
+                + " AND i.parentCategory IS NOT NULL "
+                + " AND i.parentCategory =:rf ";
+
+        if (sessionController.getDepartment() != null && sessionController.getDepartment().getSite() != null) {
+            System.out.println("getSite");
+            jpql += " AND i.institution = :site";
+            System.out.println("site = " + sessionController.getDepartment().getSite());
+            params.put("site", sessionController.getDepartment().getSite());
+        }
+        
+        ReportFormat  parentCategory = ejbFacade.find(patientReport.getPatientInvestigation().getInvestigation().getReportFormat().getId());
+
+        System.out.println("parentCategory= " + parentCategory);
+
+        params.put("rf", parentCategory  );
+
+        jpql += " ORDER BY i.orderNo ASC";
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+
+        try {
+            formats = ejbFacade.findByJpql(jpql, params);
+        } catch (Exception e) {
+            System.err.println("Error executing JPQL query: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return formats;
     }
 
     public StreamedContent getImage() throws IOException {
