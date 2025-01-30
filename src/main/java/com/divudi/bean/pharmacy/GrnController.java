@@ -890,7 +890,7 @@ public class GrnController implements Serializable {
     public void saveBill() {
         getGrnBill().setBillDate(new Date());
         getGrnBill().setBillTime(new Date());
-        getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
+//        getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
         getGrnBill().setReferenceBill(getApproveBill());
         getGrnBill().setTotal(total);
         getGrnBill().setDiscount(discount);
