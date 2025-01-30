@@ -2867,6 +2867,43 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
 
     }
+    
+    public List<Bill> findPaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes, PaymentMethod pm, Double balanceGraterThan) {
+        String jpql;
+        HashMap hm;
+        List<BillType> bts = null;
+        jpql = "Select b "
+                + " From Bill b "
+                + " where b.retired=:ret "
+                + " and b.cancelled=:can "
+                + " and b.createdAt between :frm and :to ";
+        hm = new HashMap();
+        hm.put("frm", frmDate);
+        hm.put("ret", false);
+        hm.put("can", false);
+        hm.put("to", toDate);
+
+        if (balanceGraterThan != null) {
+            jpql += " and (abs(b.balance) < :val) ";
+            hm.put("val", balanceGraterThan);
+        }
+        if (pm != null) {
+            hm.put("pm", pm);
+            jpql += " and b.paymentMethod=:pm ";
+        }
+        if (billTypes != null) {
+            hm.put("bts", billTypes);
+            jpql += " and b.billTypeAtomic in :bts";
+        }
+
+        if (bts != null) {
+            hm.put("bt", bts);
+            jpql += " or b.billType in :bt";
+        }
+
+        return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
+
+    }
 
     public void addMissingBillTypeAtomics() {
         String jpql = "select b "
