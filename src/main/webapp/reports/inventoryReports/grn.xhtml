@@ -215,20 +215,42 @@
                                          ajax="false"
                                          value="Process"
                                          action="#{pharmacyController.generateGrnReport()}"/>
-                        <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                        <p:commandButton class="ui-button- mx-1"
+                                         icon="fas fa-print"
+                                         ajax="false"
+                                         value="Print All">
                             <p:printer target="printPanel"/>
                         </p:commandButton>
-                        <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
-                                         value="Download">
+                        <p:commandButton class="ui-button-success mx-1"
+                                         icon="fas fa-file-excel"
+                                         ajax="false"
+                                         value="Download"
+                                         rendered="#{pharmacyController.reportType eq 'summary'}">
                             <p:dataExporter type="xlsx"
-                                            target="#{pharmacyController.reportType eq 'summary' ? 'tbl1' : 'tbl2'}"
+                                            target="tbl1"
                                             fileName="grn.xlsx"/>
                         </p:commandButton>
-                        <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
+                        <p:commandButton class="ui-button-success mx-1"
+                                         icon="fas fa-file-excel"
+                                         ajax="false"
+                                         value="Download"
+                                         rendered="#{pharmacyController.reportType eq 'detail'}"
+                                         action="#{pharmacyController.exportGRNDetailReportToExcel()}" />
+                        <p:commandButton class="ui-button-danger mx-1"
+                                         icon="fas fa-file-pdf"
+                                         ajax="false"
+                                         value="PDF"
+                                         rendered="#{pharmacyController.reportType eq 'summary'}">
                             <p:dataExporter type="pdf"
-                                            target="#{pharmacyController.reportType eq 'summary' ? 'tbl1' : 'tbl2'}"
+                                            target="tbl1"
                                             fileName="grn.pdf"/>
                         </p:commandButton>
+                        <p:commandButton class="ui-button-danger mx-1"
+                                         icon="fas fa-file-pdf"
+                                         ajax="false"
+                                         action="#{pharmacyController.exportGRNDetailReportToPDF()}"
+                                         value="PDF"
+                                         rendered="#{pharmacyController.reportType eq 'detail'}"/>
                     </div>
 
                     <h:panelGroup id="printPanel">
