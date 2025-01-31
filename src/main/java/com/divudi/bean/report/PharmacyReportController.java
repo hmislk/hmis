@@ -2232,7 +2232,12 @@ public class PharmacyReportController implements Serializable {
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         quantity = 0.0;
+
         for (Stock ts : stocks) {
+            if (ts.getItemBatch() == null || ts.getStock() == null) {
+                continue;
+            }
+
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
             quantity = quantity + ts.getStock();
@@ -2246,6 +2251,10 @@ public class PharmacyReportController implements Serializable {
         Map<Item, Map<Long, List<Stock>>> itemStockMap = new HashMap<>();
 
         for (Stock stock : stocks) {
+            if (stock.getItemBatch() == null || stock.getItemBatch().getItem() == null) {
+                continue;
+            }
+
             final Item item = stock.getItemBatch().getItem();
             Map<Long, List<Stock>> batchStockMap = itemStockMap.computeIfAbsent(item, k -> new HashMap<>());
 
