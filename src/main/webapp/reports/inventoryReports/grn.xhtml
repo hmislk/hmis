@@ -147,11 +147,20 @@
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText styleClass="fa fa-store ml-5"/>
-                            <p:outputLabel value="Store(implement)" class="mx-3"/>
+                            <p:outputLabel value="Store" class="mx-3"/>
                         </h:panelGroup>
-                        <!--TODO: Change this-->
-                        <p:selectOneMenu class="w-100" value="#{pharmacyController.toDepartment}">
-                            <f:selectItem itemLabel="All" itemValue="#{null}"/>
+                        <p:selectOneMenu
+                                styleClass="w-100 form-control"
+                                value="#{pharmacyController.toDepartment}"
+                                filterMatchMode="contains"
+                                filter="true"
+                                style="width: 100%;">
+                            <f:selectItem itemLabel="All Stores"/>
+                            <f:selectItems
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                    var="dept"
+                                    itemLabel="#{dept.name}"
+                                    itemValue="#{dept}"/>
                         </p:selectOneMenu>
 
                         <h:panelGroup layout="block" styleClass="form-group">
@@ -176,7 +185,7 @@
                             </p:outputLabel>
                         </h:panelGroup>
                         <!--TODO: Change this-->
-                        <p:selectOneMenu class="w-100" value="#{pharmacyController.toDepartment}">
+                        <p:selectOneMenu class="w-100" value="#{pharmacyController.toInstitution}">
                             <f:selectItem itemLabel="All" itemValue="#{null}"/>
                         </p:selectOneMenu>
 
@@ -431,7 +440,9 @@
                                     <h:outputText value="-"/>
                                 </p:column>
                                 <p:column width="10em">
-                                    <h:outputText value="#{billItem.bill.department.name}"/>
+                                    <h:outputText
+                                            value="#{billItem.bill.toDepartment.name ne null?
+                                            billItem.bill.toDepartment.name: billItem.bill.referenceBill.toDepartment.name}"/>
                                 </p:column>
                                 <p:column width="10em">
                                     <h:outputText value="#{billItem.item.category.name}"/>

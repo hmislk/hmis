@@ -3455,6 +3455,11 @@ public class PharmacyController implements Serializable {
             tmp.put("itm", item);
         }
 
+        if (toDepartment != null) {
+            sql += " AND b.toDepartment = :toDepartment";
+            tmp.put("toDepartment", toDepartment);
+        }
+
         sql += " order by b.id desc";
 
         try {
