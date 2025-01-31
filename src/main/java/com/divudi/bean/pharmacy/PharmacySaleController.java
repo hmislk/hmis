@@ -934,7 +934,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
 
             if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by generic name(VMP)", false)) {
-                sql += "i.itemBatch.item.vmp.vtm.name LIKE :query";
+                sql += "OR i.itemBatch.item.vmp.vtm.name LIKE :query ";
             }
 
             sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
@@ -955,7 +955,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
 
             if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by generic name(VMP)", false)) {
-                sql += "i.itemBatch.item.vmp.vtm.name LIKE :query ";
+                sql += "OR i.itemBatch.item.vmp.vtm.name LIKE :query ";
             }
 
             sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
