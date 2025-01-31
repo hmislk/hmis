@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html  xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+       xmlns:h="http://xmlns.jcp.org/jsf/html"
+       xmlns:p="http://primefaces.org/ui"
+       xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+        <cc:attribute name="billController" type="com.divudi.bean.pharmacy.DealorPaymentBillSearch" />
+        <cc:attribute name="dup" type="java.lang.Boolean" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <div >
+            <div >
+                <div >
+
+                    <h:outputStylesheet name="printing.css" library="css" />
+                    <div class="d-flex justify-content-end">
+                        <p:commandButton 
+                            style="width: 100px" 
+                            value="Print" 
+                            ajax="false" 
+                            action="#"  
+                            class="ui-button-info mb-2"
+                            icon="fa fa-print">
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                    </div>
+
+                    <cc:implementation>
+                        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+
+                        <div class="posbill noBorder summeryBorder" >
+
+                            <div class="institutionName">
+                                <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
+                            </div>
+                            <div class="institutionName">
+                                <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+                            </div>
+
+                            <div>
+                                <h4 style="color: #000000; text-align: center " >
+                                    <h:outputLabel value="Supplier Payment Preperation" style="text-decoration: underline;"/>
+                                </h4>
+                            </div>
+
+
+                            <p:panelGrid columns="2" >
+                                <h:outputLabel value="Payee : " />
+                                <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
+                                <h:outputLabel value="Date :"  />
+                                <h:outputLabel value="#{cc.attrs.bill.createdAt}"  style="position: relative; left: 70%;" >
+                                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value="Total : " />
+                                <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                                <h:outputLabel value="Discount : " />
+                                <h:outputLabel value="#{cc.attrs.bill.discount}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                                <h:outputLabel value="Net : " />
+                                <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                                <h:outputLabel value="Prepaired By : " />
+                                <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" >
+                                </h:outputLabel>
+                            </p:panelGrid>
+
+
+
+
+
+                        </div>
+                    </cc:implementation>
+                </div>
+            </div>
+        </div>
+
+
+    </cc:implementation>
+</html>
