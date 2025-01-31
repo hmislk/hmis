@@ -910,7 +910,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (qry == null || qry.trim().isEmpty()) {
             return Collections.emptyList();
         }
-
+        
         qry = qry.replaceAll("[\\n\\r]", "").trim();
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("department", getSessionController().getLoggedUser().getDepartment());
