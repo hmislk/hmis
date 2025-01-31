@@ -4,11 +4,10 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/reports/index.xhtml">
+        <ui:composition template="#{reportController.reportTemplateFileIndexName}">
             <ui:define name="subcontent">
 
                 <h:form >

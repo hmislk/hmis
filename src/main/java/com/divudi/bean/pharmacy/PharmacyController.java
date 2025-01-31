@@ -752,6 +752,8 @@ public class PharmacyController implements Serializable {
     private Institution toSite;
 
     private List<DepartmentWiseBill> departmentWiseBillList;
+    private List<Stock> stockList;
+    private double qty;
 
     public void clearItemHistory() {
 
@@ -1766,6 +1768,43 @@ public class PharmacyController implements Serializable {
         }
     }
 
+    public void createBeforeStockTakingReport() {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT s ")
+                .append("FROM Stock s ")
+                .append("WHERE s.retired = false ");
+
+        Map<String, Object> parameters = new HashMap<>();
+
+        if (transferType != null && qty >= 0.0) {
+            if ("equal".equals(transferType)) {
+                sql.append(" AND s.stock = :st ");
+            } else if ("notEqual".equals(transferType)) {
+                sql.append(" AND s.stock <> :st ");
+            } else if ("gThan".equals(transferType)) {
+                sql.append(" AND s.stock > :st ");
+            } else if ("lThan".equals(transferType)) {
+                sql.append(" AND s.stock < :st ");
+            } else if ("gThanOrEqual".equals(transferType)) {
+                sql.append(" AND s.stock >= :st ");
+            } else if ("lThanOrEqual".equals(transferType)) {
+                sql.append(" AND s.stock <= :st ");
+            }
+            parameters.put("st", qty);
+        }
+
+        addFilter(sql, parameters,"s.department", "dept", dept);
+        addFilter(sql, parameters,"s.itemBatch.item.category", "cat", category);
+
+        sql.append(" ORDER BY s.itemBatch.item.name ");
+
+        try {
+            stockList = getStockFacade().findByJpql(sql.toString(), parameters);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Something Went Wrong!");
+        }
+    }
+
     public void deleteSelectedPharmaceuticalLight() {
         if (selectedLights == null || selectedLights.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -1905,7 +1944,9 @@ public class PharmacyController implements Serializable {
         BillType[] abts = new BillType[]{BillType.PharmacySale, BillType.PharmacyTransferReceive, BillType.PharmacyPurchaseBill, BillType.PharmacyGrnBill, BillType.PharmacyBhtPre, BillType.PharmacyTransferIssue, BillType.PharmacyIssue, BillType.PharmacyWholeSale};
 
         Map p = new HashMap();
-        p.put("t", Amp.class);
+        p
+                .put("t", Amp.class
+                );
         p.put("fd", fromDate);
         p.put("td", toDate);
         p.put("dep", department);
@@ -3266,7 +3307,9 @@ public class PharmacyController implements Serializable {
         hm.put("i", pharmacyItem);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
-        hm.put("class", BilledBill.class);
+        hm
+                .put("class", BilledBill.class
+                );
         hm.put("btp", BillType.PharmacyGrnBill);
         hm.put("btp2", BillType.PharmacyGrnReturn);
 
@@ -3301,7 +3344,9 @@ public class PharmacyController implements Serializable {
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
         hm.put("btp", BillType.PharmacyPurchaseBill);
-        hm.put("class", BilledBill.class);
+        hm
+                .put("class", BilledBill.class
+                );
         directPurchase = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
@@ -3321,7 +3366,9 @@ public class PharmacyController implements Serializable {
         hm.put("btp", BillType.PharmacyOrderApprove);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
-        hm.put("class", BilledBill.class);
+        hm
+                .put("class", BilledBill.class
+                );
         pos = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         for (BillItem t : pos) {
@@ -4259,6 +4306,22 @@ public class PharmacyController implements Serializable {
 
     public void setDepartmentWiseBillList(List<DepartmentWiseBill> departmentWiseBillList) {
         this.departmentWiseBillList = departmentWiseBillList;
+    }
+
+    public List<Stock> getStockList() {
+        return stockList;
+    }
+
+    public void setStockList(List<Stock> stockList) {
+        this.stockList = stockList;
+    }
+
+    public double getQty() {
+        return qty;
+    }
+
+    public void setQty(double qty) {
+        this.qty = qty;
     }
 
 }
