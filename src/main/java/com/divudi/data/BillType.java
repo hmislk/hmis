@@ -83,6 +83,7 @@ public enum BillType {
     PharmacyGrnReturn,
     PharmacyReturnWithoutTraising,
     GrnPayment,
+    GrnPaymentPreparation,
     GrnPaymentPre,
     PharmacyPurchaseBill, //Cash out
     PurchaseReturn,// Purchase Return
