@@ -51,11 +51,11 @@
 
                 <div class="row align-items-center">
 
-                    <div class="col-3 text-start mx-5">
-                        <h:outputLabel value="Medicine :" ></h:outputLabel>
+                    <div class="col-3 text-start ms-5">
+                        <h:outputLabel value="Medicine:" ></h:outputLabel>
                     </div>
 
-                    <div class="col-4 text-start">
+                    <div class="col-7 text-start">
                         <h:outputLabel value="#{cc.attrs.billItem.item.name}" ></h:outputLabel>
                     </div>
 
@@ -63,24 +63,24 @@
 
                 <div class="row align-items-center">
 
-                    <div class="col-3 text-start mx-5 my-3">
-                        <h:outputLabel value="Dose :" ></h:outputLabel>
+                    <div class="col-3 text-start ms-5 my-3">
+                        <h:outputLabel value="Dose:" ></h:outputLabel>
                     </div>
 
-                    <div class="col-2 text-start">
+                    <div class="col-1 text-start">
                         <h:outputLabel value="#{cc.attrs.billItem.prescription.dose}" ></h:outputLabel>
                     </div>
 
-                    <div class="col-2 text-start">
-                        <h:outputLabel value="#{cc.attrs.billItem.prescription.doseUnit}" ></h:outputLabel>
+                    <div class="col-2">
+                        <h:outputLabel value="#{cc.attrs.billItem.prescription.doseUnit.name}" ></h:outputLabel>
                     </div>
 
                 </div>
 
-                <div class="row align-items-center">
+                <div class="row ">
 
-                    <div class="col-4 text-start mx-5">
-                        <h:outputLabel value="Frequency :" ></h:outputLabel>
+                    <div class="col-3 text-start ms-5">
+                        <h:outputLabel value="Frequency:" ></h:outputLabel>
                     </div>
 
                     <div class="col-2 text-start">
@@ -92,22 +92,29 @@
 
                 <div class="row align-items-center">
 
-                    <div class="col-3 text-start mx-5 my-3">
-                        <h:outputLabel value="Duration :" ></h:outputLabel>
+                    <div class="col-3 text-start ms-5 my-3">
+                        <h:outputLabel value="Duration:" ></h:outputLabel>
                     </div>
 
-                    <div class="col-2 text-start">
+                    <div class="col-1 text-start">
                         <h:outputLabel value="#{cc.attrs.billItem.prescription.duration}" ></h:outputLabel>
                     </div>
 
                     <div class="col-2 text-start">
-                        <h:outputLabel value="#{cc.attrs.billItem.prescription.durationUnit}" ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.billItem.prescription.durationUnit.name}" ></h:outputLabel>
                     </div>
 
                 </div>
 
                 <div class="row">
-                    <h:outputText style="font-weight: bold; word-wrap: break-word" value="#{cc.attrs.billItem.prescription.comment}"></h:outputText>
+                     <div class="col-3 text-start ms-5">
+                        <h:outputLabel value="Special Note:" ></h:outputLabel>
+                    </div>
+                    
+                    <div class="col-7">
+                        <h:outputText style="font-weight: bold; word-wrap: break-word" value="#{cc.attrs.billItem.prescription.comment}"></h:outputText>
+                    </div>
+                    
                 </div>
 
                 <!-- Separator Line -->
