@@ -37,7 +37,7 @@ jobs:
           grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
 
       - name: Build with Maven
-        run: mvn clean package -DskipTests -DfinalName=hmis
+        run: mvn clean package -DskipTests
 
       - name: Archive Build Artifacts
         uses: actions/upload-artifact@v4
