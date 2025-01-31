@@ -264,14 +264,14 @@
                                           style="font-weight: bold; text-align: left; display: block;"/>
                         </f:facet>
                         <p:column headerText="Receipt No" width="8rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.deptId}"/>
+                            <h:outputText value="#{bi.billItem.bill.deptId}"/>
                         </p:column>
                         <p:column headerText="BHT No" width="8rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.patient.phn}"/>
+                            <h:outputText value="#{bi.billItem.patientEncounter.bhtNo}"/>
                         </p:column>
                         <p:column headerText="Credit Company" width="5rem">
                             <h:outputText
-                                    value="#{bi.billItem.patientEncounter.finalBill.creditCompany.name}"/>
+                                    value="#{bi.billItem.bill.creditCompany.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
                             <h:outputText value="#{bi.billItem.patientEncounter.dateOfDischarge}">
@@ -301,7 +301,7 @@
                             </f:facet>
                         </p:column>
                         <p:column headerText="Receipt Value" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.netTotal}">
+                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.paidAmount}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                         </p:column>
@@ -353,11 +353,11 @@
                                           style="font-weight: bold; text-align: left; display: block;"/>
                         </f:facet>
                         <p:column headerText="Receipt No" width="8rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.deptId}"/>
+                            <h:outputText value="#{bi.billItem.bill.deptId}"/>
                         </p:column>
                         <p:column headerText="Credit Company" width="5rem">
                             <h:outputText
-                                    value="#{bi.billItem.patientEncounter.finalBill.creditCompany.name}"/>
+                                    value="#{bi.billItem.bill.creditCompany.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
                             <h:outputText value="#{bi.billItem.patientEncounter.dateOfDischarge}">

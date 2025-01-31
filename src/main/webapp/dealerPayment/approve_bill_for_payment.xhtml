@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/dealerPayment/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputText styleClass="fa-solid fa-file-invoice"/>
+                            <h:outputLabel value="Supplier Payment Approval" class="mx-4"/> 
+                        </f:facet>
+
+                        <div class="row" >
+                            <div class="col-6" >
+
+
+                                <p:panel header="Due Payments" >
+
+                                    <p:panelGrid columns="2" >
+                                        <h:outputLabel value="Bill Value" ></h:outputLabel>
+                                        <h:outputLabel value="#{supplierPaymentController.bill.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+
+                                    </p:panelGrid>
+
+                                </p:panel>
+
+                                <p:panel header="Approval" >
+
+                                    <h:outputLabel 
+                                        value="Approve Comments" 
+                                        class="form-label m-1"></h:outputLabel>
+                                    <p:inputTextarea 
+                                        class="form-control m-1"
+                                        value="#{supplierPaymentController.bill.paymentApprovalComments}" ></p:inputTextarea>
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Approve"
+                                        styleClass="m-1"
+                                        action="#{supplierPaymentController.approvePayment}" ></p:commandButton>
+
+                                </p:panel>
+
+
+                            </div>
+                            <div class="col-6" >
+                                <p:panel header="Bill Details" >
+                                    <p:panelGrid columns="2" >
+                                        <h:outputLabel value="Bill Date / Time" ></h:outputLabel>
+                                        <h:outputLabel value="#{supplierPaymentController.bill.createdAt}" ></h:outputLabel>
+
+                                        <h:outputLabel value="Bill Number" ></h:outputLabel>
+                                        <h:outputLabel value="#{supplierPaymentController.bill.deptId}" ></h:outputLabel>
+
+                                        <h:outputLabel value="Bill Type" ></h:outputLabel>
+                                        <h:outputLabel value="#{supplierPaymentController.bill.billTypeAtomic.label}" ></h:outputLabel>
+
+                                        <p:separator ></p:separator>
+                                        <p:separator ></p:separator>
+
+                                        <h:outputLabel value="Supplier" ></h:outputLabel>
+                                        <h:outputLabel value="#{supplierPaymentController.bill.fromInstitution.name}" ></h:outputLabel>
+
+                                        <p:separator ></p:separator>
+                                        <p:separator ></p:separator>
+
+                                        <h:outputLabel value="Total Value" ></h:outputLabel>
+                                        <h:outputLabel value="#{supplierPaymentController.bill.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="Discount" ></h:outputLabel>
+                                        <h:outputLabel value="#{supplierPaymentController.bill.discount}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="Net Value" ></h:outputLabel>
+                                        <h:outputLabel value="#{supplierPaymentController.bill.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+
+                                    </p:panelGrid>
+                                </p:panel>
+
+                                <p:panel header="Bill Returns" >
+
+                                </p:panel>
+
+                            </div>
+                        </div>
+
+
+
+
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

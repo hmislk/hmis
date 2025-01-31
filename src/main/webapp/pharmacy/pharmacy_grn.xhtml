@@ -78,6 +78,7 @@
                         class="w-100" scrollable="true"
                         scrollHeight="350px"
                         id="itemList" 
+                        selectionMode="multiple"
                         editable="true">  
                         <p:focus id="focusPrate" for="pRate"></p:focus>
 
@@ -92,7 +93,8 @@
                                 action="#{grnController.removeSelected()}"/>
                         </f:facet>  
 
-                        <p:column selectionMode="multiple" style="width: 10px;" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}"/>
+                        <p:column 
+                            selectionBox="true"  style="width: 10px;" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}"/>
 
                         <p:column headerText="Item Name" style="width: 250px!important;" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" > 
 

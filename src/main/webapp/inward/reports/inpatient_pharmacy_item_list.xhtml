@@ -225,6 +225,7 @@
                             <p:dataTable 
                                 id="tbl1" 
                                 rowIndexVar="rowIndex" 
+                                
                                 value="#{inwardReportControllerBht.pharmacyIssueBillItemsToPatientEncounter}"  
                                 var="bip">
 
@@ -241,7 +242,7 @@
                                             <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.sex.label}" />
                                             <h:outputLabel value="" />
                                             <h:outputLabel value="Room Number:" />
-                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.currentPatientRoom.name}" />
+                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}" />
 
                                             <h:outputLabel value="Date of Admission:" />
                                             <h:outputLabel>

@@ -237,7 +237,7 @@
                                                              icon="fa fa-repeat" 
                                                              title="Convert to BHT"
                                                              action="#{patientController.navigateToConvertNonBhtToBht(a)}"
-                                                             disabled="#{a.convertedToBht}">
+                                                             disabled="#{a.convertedToAnotherEncounter}">
                                                 <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
                                             </p:commandButton>
 

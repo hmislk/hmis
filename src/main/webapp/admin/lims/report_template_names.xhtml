@@ -4,9 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
-      xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/admin/lims/index.xhtml">
@@ -15,33 +13,147 @@
                     <p:panel header="Manage Report Template Names" >
                         <p:focus id="selectFocus" for="lstSelect"  />
                         <p:focus id="detailFocus" for="txtName" />
-                        <p:panelGrid columns="2"  styleClass="alignTop">
-                            <p:panel  >
-                                <p:selectOneListbox   id="lstSelect"   value="#{reportFormatController.current}" styleClass="listBox">
+                        <p:growl id="msg"/>
+
+                        <div class="row">
+                            <div class="col-md-5">
+
+                                <p:commandButton 
+                                    id="btnAdd" 
+                                    value="Add New"                             
+                                    action="#{reportFormatController.prepareAdd()}"
+                                    class="ui-button-success"
+                                    update="lstSelect gpDetail" 
+                                    icon="fa fa-plus"
+                                    process="btnAdd">
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    id="btnDelete" 
+                                    icon="fa fa-trash"
+                                    onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                return false;" 
+                                    action="#{reportFormatController.delete()}"
+                                    value="Delete"
+                                    update="lstSelect gpDetail msg" process="btnDelete"
+                                    class=" m-1 ui-button-danger w-25">
+                                </p:commandButton>
+
+                                <p:selectOneListbox  
+                                    id="lstSelect"
+                                    value="#{reportFormatController.current}" 
+                                    class="w-100 mt-3"
+                                    var="i"
+                                    filter="true">
                                     <f:selectItems  value="#{reportFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                    <f:ajax render=":#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" execute="lstSelect" >
-                                    </f:ajax>
+                                    <p:ajax update="gpDetail" process="lstSelect" ></p:ajax>
+                                    <p:column>
+                                        <h:outputText value="#{i.name}" style="width: 100px;"/>
+                                    </p:column>
+                                    <p:column class="text-center">
+                                        <p:badge 
+                                            value="Parent" 
+                                            severity="success"
+                                            style="width: 100px;"
+                                            rendered="#{i.parentCategory eq null}" >
+                                        </p:badge>
+                                        <p:badge 
+                                            value="Child" 
+                                            severity="info"
+                                            style="width: 100px;"
+                                            rendered="#{i.parentCategory ne null}" >
+                                        </p:badge>
+                                    </p:column>
+                                    <p:column class="text-center">
+                                        <p:badge value="#{i.orderNo}" styleClass="mr-2" rendered="#{i.parentCategory ne null}"></p:badge>
+                                    </p:column>
                                 </p:selectOneListbox>
-                                <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{reportFormatController.prepareAdd()}" styleClass="buttons"   >
-                                </p:commandButton>
-                                <p:commandButton id="btnDelete" ajax="false" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                            return false;" action="#{reportFormatController.delete()}"  value="Delete"  >
-                                </p:commandButton>
-                            </p:panel>
-                            <p:panel  style="float: right;display: block;">
-                                <h:panelGrid id="gpDetail" columns="2" >
-                                    <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <p:inputText autocomplete="off" id="txtName" value="#{reportFormatController.current.name}"  ></p:inputText>
-                                    <h:outputText id="lblCode" value="Code" >                                        
-                                    </h:outputText>
-                                    <p:inputTextarea id="txtCode"  value="#{reportFormatController.current.description}"  >
-                                    </p:inputTextarea>
-                                    <p:commandButton ajax="false" id="btnSave" value="Save" action="#{reportFormatController.saveSelected()}" styleClass="buttons"  >
-                                    </p:commandButton>
-                                    <p:defaultCommand target="btnSave"/>
-                                </h:panelGrid>
-                            </p:panel>
-                        </p:panelGrid>
+                            </div>
+
+                            <div class="col-md-7">
+                                <p:panel class="w-100 form-control m-1" id="gpDetail" header="Details of the Template">
+                                    <div class="d-flex">
+                                        <h:outputText id="lblName" class="col-3 mt-2" value="Name" ></h:outputText>
+                                        <div class="d-flex gap-3 col-9">
+                                            <p:inputText 
+                                                autocomplete="off"
+                                                id="txtName"
+                                                class="w-100"
+                                                value="#{reportFormatController.current.name}"  >
+                                            </p:inputText>
+                                            <p:badge 
+                                                value="Parent" 
+                                                severity="success"
+                                                size="large"
+                                                style="width: 150px;"
+                                                rendered="#{reportFormatController.current.parentCategory eq null}" >
+                                            </p:badge>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex mt-2">
+                                        <h:outputText id="lblParent" class="col-3 mt-2" value="Parent Format" ></h:outputText>
+                                        <div class="d-flex gap-3 col-9">
+                                            <p:selectOneMenu
+                                                class="w-100 "
+                                                id="lstParent"
+                                                value="#{reportFormatController.current.parentCategory}"
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Select Parent Format"/>
+                                                <f:selectItems value="#{reportFormatController.fillParentReportFormats()}" var="format" itemValue="#{format}" itemLabel="#{format.name}"/>                                       
+                                            </p:selectOneMenu>
+                                            <p:spinner 
+                                                style="width: 10em;"
+                                                id="horizontal" 
+                                                class="text-center"
+                                                min="1"
+                                                rendered="#{reportFormatController.current.parentCategory ne null}"
+                                                value="#{reportFormatController.current.orderNo}" 
+                                                buttons="horizontal" >
+                                            </p:spinner>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex mt-2">
+                                        <h:outputText id="lblCode" class="col-3 mt-2"  value="Code" ></h:outputText>
+                                        <p:inputText 
+                                            id="txtCode" 
+                                            class="w-100"
+                                            value="#{reportFormatController.current.description}"  >
+                                        </p:inputText>
+                                    </div>
+
+                                    <div class="d-flex mt-2">
+                                        <h:outputText id="lblsite" class="col-3 mt-2"  value="Site" ></h:outputText>
+                                        <p:autoComplete 
+                                            class="w-100" 
+                                            inputStyleClass="w-100" 
+                                            completeMethod="#{institutionController.completeSite}" 
+                                            var="site" 
+                                            itemLabel="#{site.name}" 
+                                            itemValue="#{site}" 
+                                            forceSelection="true" 
+                                            value="#{reportFormatController.current.institution}" >
+                                        </p:autoComplete>
+                                    </div>
+
+                                    <div class="d-flex mt-4 justify-content-end">
+                                        <p:commandButton 
+                                            id="btnSave" 
+                                            value="Save" 
+                                            action="#{reportFormatController.saveSelected()}"
+                                            process="btnSave gpDetail" 
+                                            update="lstSelect msg" 
+                                            class=" m-1 ui-button-warning w-25"
+                                            icon="fas fa-save">
+                                        </p:commandButton>
+                                    </div>
+
+                                </p:panel>
+                            </div>
+                        </div>
+
                     </p:panel>
                 </h:form>
             </ui:define>

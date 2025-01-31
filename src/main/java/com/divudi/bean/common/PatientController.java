@@ -857,7 +857,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/inward/inward_admission?faces-redirect=true;";
 
     }
-
+    
     public String navigateToConvertNonBhtToBht(Admission nonBhtAd) {
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {

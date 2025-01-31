@@ -2801,7 +2801,7 @@ public class ReportsController implements Serializable {
             if (visitType != null && visitType.equalsIgnoreCase("OP")) {
                 jpql += "AND billItem.referenceBill.creditCompany = :creditC ";
             } else if (visitType != null && visitType.equalsIgnoreCase("IP")) {
-                jpql += "AND billItem.referenceBill.patientEncounter.finalBill.creditCompany = :creditC ";
+                jpql += "AND billItem.bill.creditCompany = :creditC ";
             }
 
             parameters.put("creditC", creditCompany);
@@ -3019,7 +3019,7 @@ public class ReportsController implements Serializable {
         }
 
         if (site != null) {
-            jpql += "AND bill.department.site = :site ";
+            jpql += "AND bill.toDepartment.site = :site ";
             parameters.put("site", site);
         }
         if (webUser != null) {
@@ -4564,7 +4564,7 @@ public class ReportsController implements Serializable {
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=Collection_Center_Report.xlsx");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
 
