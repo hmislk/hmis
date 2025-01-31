@@ -84,7 +84,7 @@
                             <p:selectOneMenu
                                     rendered="#{pharmacyController.institution eq null and pharmacyController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{pharmacyController.department}"
+                                    value="#{pharmacyController.dept}"
                                     filterMatchMode="contains"
                                     filter="true"
                                     style="width: 100%;">
@@ -100,7 +100,7 @@
                             <p:selectOneMenu
                                     rendered="#{pharmacyController.institution eq null and pharmacyController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{pharmacyController.department}"
+                                    value="#{pharmacyController.dept}"
                                     filterMatchMode="contains"
                                     filter="true"
                                     style="width: 100%;">
@@ -116,7 +116,7 @@
                             <p:selectOneMenu
                                     rendered="#{pharmacyController.institution ne null and pharmacyController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{pharmacyController.department}"
+                                    value="#{pharmacyController.dept}"
                                     filterMatchMode="contains"
                                     filter="true"
                                     style="width: 100%;">
@@ -132,7 +132,7 @@
                             <p:selectOneMenu
                                     rendered="#{pharmacyController.institution ne null and pharmacyController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{pharmacyController.department}"
+                                    value="#{pharmacyController.dept}"
                                     filterMatchMode="contains"
                                     filter="true"
                                     style="width: 100%;">
@@ -186,8 +186,8 @@
                             </p:outputLabel>
                         </h:panelGroup>
                         <p:selectOneMenu class="w-100" value="#{pharmacyController.reportType}">
-                            <f:selectItem itemLabel="Summary" itemValue="summary"/>
                             <f:selectItem itemLabel="Detail" itemValue="detail"/>
+                            <f:selectItem itemLabel="Summary" itemValue="summary"/>
                         </p:selectOneMenu>
                     </p:panelGrid>
 
@@ -430,7 +430,6 @@
                                 <p:column width="10em">
                                     <h:outputText value="-"/>
                                 </p:column>
-                                <!--                            <p:column headerText="Store Name" width="10em">-->
                                 <p:column width="10em">
                                     <h:outputText value="#{billItem.bill.department.name}"/>
                                 </p:column>
@@ -453,28 +452,28 @@
                                     <h:outputText
                                             value="#{billItem.item.measurementUnit.name eq null ? '-' : billItem.item.measurementUnit.name}"/>
                                 </p:column>
-                                <!--                            <p:column headerText="Rate" width="5em">-->
                                 <p:column width="10em">
-                                    <h:outputText value="#{billItem.pharmaceuticalBillItem.purchaseRate}"/>
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{billItem.pharmaceuticalBillItem.purchaseRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:column>
-                                <!--                            <p:column headerText="Batch" width="5em">-->
                                 <p:column width="10em">
                                     <h:outputText value="#{billItem.pharmaceuticalBillItem.itemBatch.batchNo}"/>
                                     <h:outputText value=""/>
                                 </p:column>
-                                <!--                            <p:column headerText="Exp Date" width="5em">-->
                                 <p:column width="10em">
-                                    <h:outputText value="#{billItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}"/>
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{billItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                                        <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
                                 </p:column>
                                 <p:column width="10em">
                                     <h:outputText value="-"/>
                                 </p:column>
-                                <!--                            <p:column headerText="MRP" width="5em">-->
                                 <p:column width="10em">
-                                    <h:outputText value="#{billItem.pharmaceuticalBillItem.retailRate}"/>
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{billItem.pharmaceuticalBillItem.retailRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:column>
                                 <p:column width="10em">
                                     <h:outputText value="#{billItem.discount}"/>

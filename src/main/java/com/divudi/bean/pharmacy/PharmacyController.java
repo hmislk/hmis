@@ -3404,7 +3404,6 @@ public class PharmacyController implements Serializable {
     public void generateGrnReport() {
         resetFields();
 
-        List<BillType> bt = new ArrayList<>();
         List<BillTypeAtomic> bta = new ArrayList<>();
 
         bta.add(BillTypeAtomic.PHARMACY_GRN);
@@ -3418,14 +3417,6 @@ public class PharmacyController implements Serializable {
                 + " and b.cancelled = false"
                 + " and b.billTypeAtomic In :btas"
                 + " and b.createdAt between :fromDate and :toDate";
-//        String sql = "SELECT b FROM Bill b "
-//                + " JOIN FETCH b.billItems bi "  // Join BillItem
-//                + " LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "  // Join PharmaceuticalBillItem
-//                + " WHERE b.retired = false"
-//                + " and b.cancelled = false"
-//                + " and b.billTypeAtomic In :btas"
-//                + " and b.createdAt between :fromDate and :toDate";
-
 
         Map<String, Object> tmp = new HashMap<>();
 
@@ -3458,13 +3449,16 @@ public class PharmacyController implements Serializable {
             tmp.put("supplier", fromInstitution);
         }
 
+        if (amp != null) {
+            item = amp;
+            sql += " AND EXISTS (SELECT bi FROM b.billItems bi WHERE bi.item = :itm)";
+            tmp.put("itm", item);
+        }
+
         sql += " order by b.id desc";
 
         try {
             bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
-
-            System.out.println("end");
-
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, " Something Went Worng!");
         }
