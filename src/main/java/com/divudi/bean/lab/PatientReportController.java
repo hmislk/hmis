@@ -2,6 +2,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.ApplicationController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.PdfController;
 import com.divudi.bean.common.SecurityController;
@@ -156,6 +157,8 @@ public class PatientReportController implements Serializable {
     WebUserController webUserController;
     @Inject
     PatientReportUploadController patientReportUploadController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     //Class Variables
     String selectText = "";
@@ -195,8 +198,6 @@ public class PatientReportController implements Serializable {
     }
 
     public String navigateToViewPatientReport(PatientReport patientReport) {
-        System.out.println("Navigate To View Patient Report");
-        System.out.println("Report Type = " + patientReport.getReportType());
         if (null == patientReport.getReportType()) {
             System.out.println("Null");
             setCurrentPatientReport(patientReport);
@@ -206,6 +207,7 @@ public class PatientReportController implements Serializable {
                 case GENARATE:
                     System.out.println("GENARATE");
                     setCurrentPatientReport(patientReport);
+                    fillReportFormats(patientReport);
                     return "/lab/patient_report?faces-redirect=true";
                 case UPLOAD:
                     System.out.println("UPLOAD");
@@ -223,7 +225,6 @@ public class PatientReportController implements Serializable {
                         patientReportUploadController.setReportUpload(null);
                     }
 
-                    setCurrentPatientReport(patientReport);
                     patientReportUploadController.setPatientInvestigation(patientReport.getPatientInvestigation());
                     return "/lab/upload_patient_report?faces-redirect=true";
                 default:
@@ -596,10 +597,10 @@ public class PatientReportController implements Serializable {
             String toBeReplaced;
 
             toBeReplaced = patternStart + s.getFullText() + patternEnd;
-            
+
             finalText = finalText.replace(toBeReplaced, s.getSelectedValue());
         }
-        
+
         currentPatientReport.getTemplateItem().setLobValue(finalText);
     }
 
@@ -1210,9 +1211,6 @@ public class PatientReportController implements Serializable {
         currentPtIx.setDataEntryUser(getSessionController().getLoggedUser());
         currentPtIx.setDataEntryDepartment(getSessionController().getDepartment());
 
-        ////System.out.println("1. getPatientReportItemValues() = " + getPatientReportItemValues());
-        ////System.out.println("2. currentPatientReport.getReportItemValues() = " + currentPatientReport.getPatientReportItemValues());
-        ////System.out.println("3. currentPatientReport.getReportItemValues() = " + currentPatientReport.getPatientReportItemValues());
         currentPatientReport.setDataEntered(Boolean.TRUE);
 
         currentPatientReport.setDataEntryAt(Calendar.getInstance().getTime());
@@ -2435,9 +2433,6 @@ public class PatientReportController implements Serializable {
 
     public PatientReport createNewPatientReport(PatientInvestigation pi, Investigation ix, String sampleIds) {
         System.out.println("createNewPatientReport");
-        System.out.println("pi = " + pi);
-        System.out.println("ix = " + ix);
-        //System.err.println("creating a new patient report");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
@@ -2485,9 +2480,6 @@ public class PatientReportController implements Serializable {
 
     public PatientReport createNewPatientReportForUpload(PatientInvestigation pi, Investigation ix, String sampleIds) {
         System.out.println("createNewPatientReport");
-        System.out.println("pi = " + pi);
-        System.out.println("ix = " + ix);
-        //System.err.println("creating a new patient report");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
@@ -2735,7 +2727,6 @@ public class PatientReportController implements Serializable {
             newlyCreatedReport = createNewMicrobiologyReport(pi, ix);
         } else {
             newlyCreatedReport = createNewPatientReport(pi, ix);
-
         }
 
         if (newlyCreatedReport == null) {
@@ -2746,7 +2737,36 @@ public class PatientReportController implements Serializable {
         currentPatientReport = newlyCreatedReport;
         getCommonReportItemController().setCategory(ix.getReportFormat());
 
+        fillReportFormats(currentPatientReport);
+
         return "/lab/patient_report?faces-redirect=true";
+    }
+
+    private List<ReportFormat> avalilableReportFormats;
+
+    public List<ReportFormat> fillReportFormats(PatientReport patientReport) {
+        avalilableReportFormats = new ArrayList<>();
+        if (!patientReport.getApproved()) {
+            if (configOptionApplicationController.getBooleanValueByKey("Obtaining the report format related to the logged-in department's site.", false)) {
+                avalilableReportFormats = reportFormatController.fillReportFormatsForLoggedDepartmentSite(patientReport);
+                
+                if(!avalilableReportFormats.isEmpty()){
+                    if(avalilableReportFormats.size()>=1){
+                        patientReport.setReportFormat(avalilableReportFormats.get(0));
+                    }
+                }else{
+                    ReportFormat currentPatientReportFormat = (ReportFormat) patientReport.getPatientInvestigation().getInvestigation().getReportFormat();
+                    avalilableReportFormats.add(currentPatientReportFormat);
+                    patientReport.setReportFormat(currentPatientReportFormat);
+                }
+            } else {
+                avalilableReportFormats = reportFormatController.getParentFormat();
+            }
+        }else{
+            avalilableReportFormats.add((ReportFormat) patientReport.getReportFormat());
+        }
+
+        return avalilableReportFormats;
     }
 
     public void createNewReport(PatientInvestigation pi) {
@@ -2961,6 +2981,23 @@ public class PatientReportController implements Serializable {
     public void setCurrentPatientSampleComponant(PatientSampleComponant currentPatientSampleComponant) {
         this.currentPatientSampleComponant = currentPatientSampleComponant;
 
+    }
+
+    public List<ReportFormat> getAvalilableReportFormats() {
+        return avalilableReportFormats;
+    }
+
+    public void setAvalilableReportFormats(List<ReportFormat> avalilableReportFormats) {
+        this.avalilableReportFormats = avalilableReportFormats;
+
+    }
+
+    public ConfigOptionApplicationController getConfigOptionApplicationController() {
+        return configOptionApplicationController;
+    }
+
+    public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
+        this.configOptionApplicationController = configOptionApplicationController;
     }
 
     @FacesConverter(forClass = PatientReport.class)
