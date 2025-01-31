@@ -926,23 +926,34 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             sql = "SELECT i FROM Stock i "
                     + "WHERE i.stock > :stockMin "
                     + "AND i.department = :department "
-                    + "AND ("
-                    + "i.itemBatch.item.name LIKE :query OR "
-                    + "i.itemBatch.item.code LIKE :query"
-                    + " ) "
-                    + "ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+                    + "AND (i.itemBatch.item.name LIKE :query "
+                    + " OR i.itemBatch.item.code LIKE :query ";
+
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines from considering barcode with item name", true)) {
+                sql += "OR i.itemBatch.item.barcode like :query ";
+            }
+
+            sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+
         } else {
             sql = "SELECT i FROM Stock i "
                     + "WHERE i.stock > :stockMin "
                     + "AND i.department = :department "
-                    + "AND ("
-                    + "i.itemBatch.item.name LIKE :query OR "
-                    + "i.itemBatch.item.code LIKE :query OR "
-                    + "i.itemBatch.item.vmp.name LIKE :query"
-                    + ") "
-                    + "ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+                    + "AND( i.itemBatch.item.name LIKE :query "
+                    + "OR i.itemBatch.item.code LIKE :query ";
+
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines from considering barcode with item name", true)) {
+                sql += "OR i.itemBatch.item.barcode like :query ";
+            }
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines from considering VMP name with item name", false)) {
+                sql += "OR i.itemBatch.item.barcode like :query ";
+            }
+
+            sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
         System.out.println("End = " + new Date().getTime());
+        System.out.println("sql");
         return getStockFacade().findByJpql(sql, parameters, 20);
     }
 
