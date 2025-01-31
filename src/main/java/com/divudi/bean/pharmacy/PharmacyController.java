@@ -63,6 +63,7 @@ import com.divudi.data.table.String1Value1;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.pharmacy.PharmaceuticalItemLight;
 import com.divudi.service.BillService;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -86,7 +87,6 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
- *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
  * Consultant (Health Informatics)
  */
@@ -1605,17 +1605,17 @@ public class PharmacyController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
         StringBuilder sql = new StringBuilder(
                 "SELECT b.toDepartment, "
-                + "b.department, "
-                + "b.deptId, "
-                + "b.createdAt, "
-                + "b.backwardReferenceBill, "
-                + "b.backwardReferenceBill.deptId, "
-                + "SUM(b.netTotal), "
-                + "b "
-                + "FROM Bill b "
-                + "WHERE b.retired = false "
-                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
-                + "AND b.billType = :billType "
+                        + "b.department, "
+                        + "b.deptId, "
+                        + "b.createdAt, "
+                        + "b.backwardReferenceBill, "
+                        + "b.backwardReferenceBill.deptId, "
+                        + "SUM(b.netTotal), "
+                        + "b "
+                        + "FROM Bill b "
+                        + "WHERE b.retired = false "
+                        + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                        + "AND b.billType = :billType "
         );
 
         parameters.put("billType", billType);
@@ -2038,12 +2038,12 @@ public class PharmacyController implements Serializable {
     }
 
     public List<ItemQuantityAndValues> findPharmacyTrnasactionQuantityAndValues(Date fromDate,
-            Date toDate,
-            Institution ins,
-            Department department,
-            Item item,
-            BillType[] billTypes,
-            BillType[] referenceBillTypes) {
+                                                                                Date toDate,
+                                                                                Institution ins,
+                                                                                Department department,
+                                                                                Item item,
+                                                                                BillType[] billTypes,
+                                                                                BillType[] referenceBillTypes) {
 
         if (false) {
             BillItem bi = new BillItem();
@@ -3274,7 +3274,7 @@ public class PharmacyController implements Serializable {
 
     }
 
-//    public void createPhrmacyIssueTable() {
+    //    public void createPhrmacyIssueTable() {
 //
 //        // //System.err.println("Getting GRNS : ");
 //        String sql = "Select b From BillItem b where type(b.bill)=:class and b.bill.creater is not null "
@@ -3331,7 +3331,7 @@ public class PharmacyController implements Serializable {
 
     }
 
-//    private PharmaceuticalBillItem getPoQty(BillItem b) {
+    //    private PharmaceuticalBillItem getPoQty(BillItem b) {
 //        String sql = "Select b From PharmaceuticalBillItem b where b.billItem=:bt";
 //
 //        HashMap hm = new HashMap();
@@ -3352,6 +3352,93 @@ public class PharmacyController implements Serializable {
 //            value = value / pharmacyItem.getDblValue();
 //        }
         return value;
+    }
+
+    public void generateGrnReport() {
+        resetFields();
+
+        List<BillType> bt = new ArrayList<>();
+        List<BillTypeAtomic> bta = new ArrayList<>();
+
+        bta.add(BillTypeAtomic.PHARMACY_GRN);
+        bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+        bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+
+        bills = new ArrayList<>();
+
+        String sql = "SELECT b FROM Bill b "
+                + " WHERE b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.billTypeAtomic In :btas"
+                + " and b.createdAt between :fromDate and :toDate";
+//        String sql = "SELECT b FROM Bill b "
+//                + " JOIN FETCH b.billItems bi "  // Join BillItem
+//                + " LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "  // Join PharmaceuticalBillItem
+//                + " WHERE b.retired = false"
+//                + " and b.cancelled = false"
+//                + " and b.billTypeAtomic In :btas"
+//                + " and b.createdAt between :fromDate and :toDate";
+
+
+        Map<String, Object> tmp = new HashMap<>();
+
+        tmp.put("btas", bta);
+        tmp.put("fromDate", getFromDate());
+        tmp.put("toDate", getToDate());
+
+        if (institution != null) {
+            sql += " and b.institution = :fIns";
+            tmp.put("fIns", institution);
+        }
+
+        if (site != null) {
+            sql += " and b.department.site = :site";
+            tmp.put("site", site);
+        }
+
+        if (dept != null) {
+            sql += " and b.department = :dept";
+            tmp.put("dept", dept);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod = :pm";
+            tmp.put("pm", paymentMethod);
+        }
+
+        if (fromInstitution != null) {
+            sql += " AND b.fromInstitution = :supplier";
+            tmp.put("supplier", fromInstitution);
+        }
+
+        sql += " order by b.id desc";
+
+        try {
+            bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+
+            System.out.println("end");
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, " Something Went Worng!");
+        }
+    }
+
+    public Double calculateTotalGrnAmount() {
+        double total = 0.0;
+
+        for (Bill b : bills) {
+            total += b.getNetTotal();
+        }
+        return total;
+    }
+
+    public Double calculateTotalPOAmount() {
+        double total = 0.0;
+
+        for (Bill b : bills) {
+            total += b.getReferenceBill().getNetTotal();
+        }
+        return total;
     }
 
     public SessionController getSessionController() {
