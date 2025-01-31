@@ -45,24 +45,24 @@
                             <div class="col-10 gap-1">
                                 <p:commandButton 
                                     id="btnSearchPending" 
-                                    ajax="false" value="List Supplier Bills to Approve for Payments" 
+                                    ajax="false" value="List Approved Supplier Payments to Settle" 
                                     class="m-1 ui-button-warning" 
                                     icon="fas fa-pills"
-                                    action="#{supplierPaymentController.fillSupplierBillsToApproveForPayments()}"/>
+                                    action="#{supplierPaymentController.fillApprovedSupplierPaymentsToSettle()}"/>
 
                                 <p:commandButton 
                                     id="btnSearchCompleted" 
-                                    ajax="false" value="List Supplier Bills Approved for Payments" 
+                                    ajax="false" value="List Supplier Payments Settled" 
                                     class="m-1 ui-button-success" 
                                     icon="fas fa-pills"
-                                    action="#{supplierPaymentController.fillSupplierBillsApprovedForPayments()}"/>
+                                    action="#{supplierPaymentController.fillApprovedSupplierPaymentsToComplete()}"/>
 
                                 <p:commandButton 
                                     id="btnSearchAll" 
-                                    ajax="false" value="List All Supplier Bills" 
+                                    ajax="false" value="List All Payments" 
                                     class="m-1 ui-button-primary" 
                                     icon="fas fa-pills"
-                                    action="#{supplierPaymentController.fillSupplierBills()}"/>
+                                    action="#{supplierPaymentController.fillSupplierPaymentsIgnoringApprovealAndCompletion()}"/>
 
 
                             </div>
@@ -158,7 +158,7 @@
                                         <p:commandButton 
                                             ajax="false" 
                                             value="To Approve" 
-                                            action="#{supplierPaymentController.navigateToApprovePayment()}" 
+                                            action="#{supplierPaymentController.navigateToSettleApprovedPayment()}" 
                                             class="ui-button-success">
                                             <f:setPropertyActionListener value="#{bill}" target="#{supplierPaymentController.bill}"/>
                                         </p:commandButton>
