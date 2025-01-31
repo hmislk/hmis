@@ -1,9 +1,9 @@
-name: COOP-DEV Build & Deployment Pipeline
+name: COOP-STG Build & Deployment Pipeline
 
 on:
   push:
     branches:
-      - coop-dev
+      - coop-stg
 
 jobs:
   build:
@@ -64,10 +64,10 @@ jobs:
 
       - name: Deploy to Payara
         env:
-          SERVER_IP: ${{ secrets.DEV_SERVER_IP }}
-          SERVER_USER: ${{ secrets.DEV_SERVER_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
-          PAYARA_ADMIN_PASS: ${{ secrets.DEV_PAYARA_ADMIN_PASS }}
+          SERVER_IP: ${{ secrets.COOP_STG_SERVER_IP }}
+          SERVER_USER: ${{ secrets.COOP_STG_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.COOP_STG_SSH_PRIVATE_KEY }}
+          PAYARA_ADMIN_PASS: ${{ secrets.COOP_STG_PAYARA_ADMIN_PASS }}
         run: |
           # Add SSH private key to the SSH agent
           echo "$SSH_PRIVATE_KEY" > private_key.pem
@@ -77,7 +77,7 @@ jobs:
           WAR_NAME="coop.war"
           WAR_DIR="/home/appuser/app/latest"
           APP_NAME="coop"
-          SUBDOMAIN="dev"
+          SUBDOMAIN="stg"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
@@ -96,7 +96,7 @@ jobs:
               mv $WAR_NAME $WAR_NAME.old
             fi
           "
- 
+
           # Copy new WAR file to the server
           rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:/tmp/$WAR_NAME
 
@@ -109,7 +109,7 @@ jobs:
           # Deploy the WAR using asadmin
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             sudo su - appuser
-            echo 'AS_ADMIN_PASSWORD=${{ secrets.DEV_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.COOP_STG_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
@@ -118,7 +118,7 @@ jobs:
           # Validate if the application is running
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             sudo su - appuser
-            echo 'AS_ADMIN_PASSWORD=${{ secrets.DEV_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.COOP_STG_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
             if /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
               echo 'Application is running.'
             else
@@ -126,7 +126,7 @@ jobs:
             fi
             rm /tmp/payara-admin-pass.txt
           "
- 
+
           # Check if the application is reachable
           for i in {1..5}; do
             RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://$SUBDOMAIN.carecode.org/$APP_NAME/faces/index1.xhtml)

@@ -2801,7 +2801,7 @@ public class ReportsController implements Serializable {
             if (visitType != null && visitType.equalsIgnoreCase("OP")) {
                 jpql += "AND billItem.referenceBill.creditCompany = :creditC ";
             } else if (visitType != null && visitType.equalsIgnoreCase("IP")) {
-                jpql += "AND billItem.referenceBill.patientEncounter.finalBill.creditCompany = :creditC ";
+                jpql += "AND billItem.bill.creditCompany = :creditC ";
             }
 
             parameters.put("creditC", creditCompany);
