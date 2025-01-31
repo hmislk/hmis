@@ -910,7 +910,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (qry == null || qry.trim().isEmpty()) {
             return Collections.emptyList();
         }
-        
+
         qry = qry.replaceAll("[\\n\\r]", "").trim();
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("department", getSessionController().getLoggedUser().getDepartment());
@@ -923,10 +923,18 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     + "WHERE i.stock > :stockMin "
                     + "AND i.department = :department "
                     + "AND (i.itemBatch.item.name LIKE :query "
-                    + " OR i.itemBatch.item.code LIKE :query ";
+                   ;
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by item code", true)) {
+                sql += " OR i.itemBatch.item.code LIKE :query ";
+            }
 
-            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines from considering barcode with item name", true)) {
-                sql += "OR i.itemBatch.item.barcode like :query ";
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by barcode", true)) {
+                sql += "OR i.itemBatch.item.barcode = :query ";
+            }
+
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by generic name(VMP)", false)) {
+                sql += "i.itemBatch.item.vmp.vtm.name LIKE :query";
             }
 
             sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
@@ -936,14 +944,18 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     + "WHERE i.stock > :stockMin "
                     + "AND i.department = :department "
                     + "AND( i.itemBatch.item.name LIKE :query "
-                    + "OR i.itemBatch.item.code LIKE :query ";
-
-            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines from considering barcode with item name", true)) {
-                sql += "OR i.itemBatch.item.barcode like :query ";
-            }
+                   ;
             
-            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines from considering VMP name with item name", false)) {
-                sql += "OR i.itemBatch.item.barcode like :query ";
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by item code", true)) {
+                sql += " OR i.itemBatch.item.code LIKE :query ";
+            }
+
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by barcode", false)) {
+                sql += "OR i.itemBatch.item.barcode = :query ";
+            }
+
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by generic name(VMP)", false)) {
+                sql += "i.itemBatch.item.vmp.vtm.name LIKE :query ";
             }
 
             sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
