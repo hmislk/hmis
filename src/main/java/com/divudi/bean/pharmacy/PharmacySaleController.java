@@ -907,21 +907,17 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public List<Stock> completeAvailableStocksFromNameOrGeneric(String qry) {
-        System.out.println("completeAvailableStocksFromNameOrGeneric");
-        System.out.println("Start = " + new Date().getTime());
         if (qry == null || qry.trim().isEmpty()) {
             return Collections.emptyList();
         }
 
         qry = qry.replaceAll("[\\n\\r]", "").trim();
-
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("department", getSessionController().getLoggedUser().getDepartment());
         parameters.put("stockMin", 0.0);
         parameters.put("query", "%" + qry + "%");
 
         String sql;
-        System.out.println("qry.length()" + qry.length());
         if (qry.length() > 6) {
             sql = "SELECT i FROM Stock i "
                     + "WHERE i.stock > :stockMin "
@@ -952,8 +948,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
             sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
-        System.out.println("End = " + new Date().getTime());
-        System.out.println("sql");
         return getStockFacade().findByJpql(sql, parameters, 20);
     }
 
