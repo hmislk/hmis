@@ -28,14 +28,26 @@
             <div class="receipt-container align-items-center">
                 <!-- Header Section -->
                 <div class="hospital-name">
-                    <h:outputLabel value="#{cc.attrs.controller.institution.name}"/> <br></br>
-                    <h:outputLabel style="font-size:  15px" value="#{cc.attrs.controller.department.name}"  /> <br></br>
+                    <h:outputLabel value="#{sessionController.institution.name}"/> <br></br>
+                    <h:outputLabel style="font-size:  15px" value="#{sessionController.department.name}"  /> <br></br>
                     <h:outputLabel class="my-2" style="font-size:  12px; font-weight: bold" value="Instruction for use #{cc.attrs.billItem.item.name}"  /> 
 
                 </div>
 
+                <div class="row my-1"> 
+                    <div class="col-6">
+                        <h:outputLabel value="Patient :" ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.controller.patient.person.name}"></h:outputLabel>
+                    </div>
+
+                    <div class="col-6">
+                        <h:outputLabel value="Age :" ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.controller.patient.person.ageAsString}"></h:outputLabel>
+                    </div>
+                </div>
+
                 <!-- Separator Line -->
-                <div class="separator my-4"></div>
+                <div class="separator my-1"></div>
 
                 <div class="row align-items-center">
 
@@ -51,7 +63,7 @@
 
                 <div class="row align-items-center">
 
-                    <div class="col-3 text-start mx-5 m-2">
+                    <div class="col-3 text-start mx-5 my-3">
                         <h:outputLabel value="Dose :" ></h:outputLabel>
                     </div>
 
@@ -67,7 +79,7 @@
 
                 <div class="row align-items-center">
 
-                    <div class="col-3 text-start mx-5 m-2">
+                    <div class="col-4 text-start mx-5">
                         <h:outputLabel value="Frequency :" ></h:outputLabel>
                     </div>
 
@@ -80,7 +92,7 @@
 
                 <div class="row align-items-center">
 
-                    <div class="col-3 text-start mx-5 m-2">
+                    <div class="col-3 text-start mx-5 my-3">
                         <h:outputLabel value="Duration :" ></h:outputLabel>
                     </div>
 
@@ -94,10 +106,8 @@
 
                 </div>
 
-                <div class="row my-4 mx-4 m-2">
-                    <div class="col-12 text-start">
-                        <h:outputText style="font-weight: bold; word-wrap: break-word" value="#{cc.attrs.billItem.prescription.comment}"></h:outputText>
-                    </div>
+                <div class="row">
+                    <h:outputText style="font-weight: bold; word-wrap: break-word" value="#{cc.attrs.billItem.prescription.comment}"></h:outputText>
                 </div>
 
                 <!-- Separator Line -->
