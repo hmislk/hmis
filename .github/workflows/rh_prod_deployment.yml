@@ -54,6 +54,7 @@ jobs:
           WAR_NAME="rh.war"
           WAR_DIR="/home/appuser/app/latest"
           APP_NAME="rh"
+          SUBDOMAIN="rh-green"
           
           rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:/tmp/$WAR_NAME
           
@@ -66,6 +67,32 @@ jobs:
             /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
           "
+      - name: Verify Green Application Deployment
+        run: |
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            sudo su - appuser
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.GREEN_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            if /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
+              echo 'Application successfully deployed on Green VM.'
+            else
+              echo 'Application failed to deploy on Green VM.'
+              exit 1
+            fi
+            rm /tmp/payara-admin-pass.txt
+          "
+      - name: Validate Green Application Reachability
+        run: |
+          for i in {1..5}; do
+            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://$SUBDOMAIN.carecode.org/$APP_NAME/faces/index1.xhtml)
+            if [ "$RESPONSE_CODE" == "200" ]; then
+              echo "Application on Green VM is reachable."
+              break
+            elif [ "$i" == "5" ]; then
+              echo "Application on Green VM is not reachable. Exiting."
+              exit 1
+            fi
+            sleep 10
+          done
       - name: Wait for Green VM Health Probe
         run: |
           az network lb probe wait \
@@ -116,13 +143,6 @@ jobs:
             /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
           "
-      - name: Wait for Blue VM Health Probe
-        run: |
-          az network lb probe wait \
-            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --lb-name ${{ secrets.AZURE_LB_NAME }} \
-            --name ${{ secrets.BLUE_LB_PROBE_NAME }} \
-            --created
 
   switch-to-blue:
     needs: deploy-blue
