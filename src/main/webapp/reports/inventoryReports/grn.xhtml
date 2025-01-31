@@ -181,12 +181,21 @@
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText styleClass="fa fa-pills ml-5"/>
-                            <p:outputLabel value="Category/Drug Form (implement)" class="mx-2">
+                            <p:outputLabel value="Category" class="mx-2">
                             </p:outputLabel>
                         </h:panelGroup>
-                        <!--TODO: Change this-->
-                        <p:selectOneMenu class="w-100" value="#{pharmacyController.toInstitution}">
-                            <f:selectItem itemLabel="All" itemValue="#{null}"/>
+                        <p:selectOneMenu
+                                styleClass="w-100 form-control"
+                                value="#{pharmacyController.category}"
+                                filterMatchMode="contains"
+                                filter="true"
+                                style="width: 100%;">
+                            <f:selectItem itemLabel="All Categories"/>
+                            <f:selectItems
+                                    value="#{categoryController.fetchAllPharmaceuticalCategories()}"
+                                    var="category"
+                                    itemLabel="#{category.name}"
+                                    itemValue="#{category}"/>
                         </p:selectOneMenu>
 
                         <h:panelGroup layout="block" styleClass="form-group">
@@ -242,7 +251,7 @@
                             <p:column headerText="PO No" width="10em">
                                 <h:outputText value="#{bill.referenceBill.deptId}"/>
                             </p:column>
-                            <p:column headerText="Invoice No" width="10em">
+                            <p:column headerText="Invoice No" width="6em">
                                 <h:outputText
                                         value="#{bill.invoiceNumber eq null ? bill.referenceBill.invoiceNumber : bill.invoiceNumber}"/>
                             </p:column>
@@ -291,12 +300,12 @@
                                     <p:column headerText="Item Category" width="5rem"/>
                                     <p:column headerText="Code" width="5rem"/>
                                     <p:column headerText="Item" width="5rem"/>
-                                    <p:column headerText="Receiving Time" width="5rem"/>
+                                    <p:column headerText="Receiving Time" width="10rem"/>
                                     <p:column headerText="Qty" width="5rem"/>
                                     <p:column headerText="UOM" width="5rem"/>
                                     <p:column headerText="Rate" width="5rem"/>
                                     <p:column headerText="Batch" width="5rem"/>
-                                    <p:column headerText="Exp Date" width="5rem"/>
+                                    <p:column headerText="Expiry Date" width="10rem"/>
                                     <p:column headerText="Supplier" width="5rem"/>
                                     <p:column headerText="MRP" width="5rem"/>
                                     <p:column headerText="Discount" width="5rem"/>

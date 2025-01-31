@@ -3455,6 +3455,11 @@ public class PharmacyController implements Serializable {
             tmp.put("itm", item);
         }
 
+        if (category != null) {
+            sql += " AND EXISTS (SELECT bi FROM b.billItems bi WHERE bi.item.category = :category)";
+            tmp.put("category", category);
+        }
+
         if (toDepartment != null) {
             sql += " AND b.toDepartment = :toDepartment";
             tmp.put("toDepartment", toDepartment);
