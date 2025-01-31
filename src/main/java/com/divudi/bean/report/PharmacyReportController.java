@@ -71,7 +71,9 @@ import com.divudi.facade.StockHistoryFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.PrescriptionSummaryReportRow;
+
 import java.io.IOException;
+import javax.faces.context.ExternalContext;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.OutputStream;
@@ -85,6 +87,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.itextpdf.text.pdf.PdfWriter;
+
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -101,19 +104,21 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+
 import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
+
 import com.divudi.facade.ItemFacade;
 
 /**
- *
  * @author Pubudu Piyankara
  */
 @Named
@@ -2232,7 +2237,12 @@ public class PharmacyReportController implements Serializable {
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         quantity = 0.0;
+
         for (Stock ts : stocks) {
+            if (ts.getItemBatch() == null || ts.getStock() == null) {
+                continue;
+            }
+
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
             quantity = quantity + ts.getStock();
@@ -2246,6 +2256,10 @@ public class PharmacyReportController implements Serializable {
         Map<Item, Map<Long, List<Stock>>> itemStockMap = new HashMap<>();
 
         for (Stock stock : stocks) {
+            if (stock.getItemBatch() == null || stock.getItemBatch().getItem() == null) {
+                continue;
+            }
+
             final Item item = stock.getItemBatch().getItem();
             Map<Long, List<Stock>> batchStockMap = itemStockMap.computeIfAbsent(item, k -> new HashMap<>());
 
@@ -2270,31 +2284,19 @@ public class PharmacyReportController implements Serializable {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
-
             XSSFSheet sheet = workbook.createSheet("Report");
             int rowIndex = 0;
 
             Row headerRow = sheet.createRow(rowIndex++);
-            headerRow.createCell(0).setCellValue("Department");
-            headerRow.createCell(1).setCellValue("Item Category Code");
-            headerRow.createCell(2).setCellValue("Item Category Name");
-            headerRow.createCell(3).setCellValue("Item Code");
-            headerRow.createCell(4).setCellValue("Item Name");
-            headerRow.createCell(5).setCellValue("Base UOM");
-            headerRow.createCell(6).setCellValue("Item Type");
-            headerRow.createCell(7).setCellValue("Batch No");
-            headerRow.createCell(8).setCellValue("Batch Date");
-            headerRow.createCell(9).setCellValue("Expiry Date");
-            headerRow.createCell(10).setCellValue("Supplier");
-            headerRow.createCell(11).setCellValue("Shelf life remaining (Days)");
-            headerRow.createCell(12).setCellValue("Rate");
-            headerRow.createCell(13).setCellValue("MRP");
-            headerRow.createCell(14).setCellValue("Quantity");
-            headerRow.createCell(15).setCellValue("Item Value");
-            headerRow.createCell(16).setCellValue("Batch wise Item Value");
-            headerRow.createCell(17).setCellValue("Batch wise Qty");
-            headerRow.createCell(18).setCellValue("Item wise total");
-            headerRow.createCell(19).setCellValue("Item wise Qty");
+
+            String[] headers = {"Department", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
+                    "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
+                    "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
+                    "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
+
+            for (int i = 0; i < headers.length; i++) {
+                headerRow.createCell(i).setCellValue(headers[i]);
+            }
 
             for (Map.Entry<Item, Map<Long, List<Stock>>> entry : getItemStockMap().entrySet()) {
                 Item item = entry.getKey();
@@ -2306,22 +2308,39 @@ public class PharmacyReportController implements Serializable {
 
                     for (Stock stock : stockList) {
                         Row row = sheet.createRow(rowIndex++);
-                        row.createCell(0).setCellValue(stock.getDepartment().getName());
-                        row.createCell(1).setCellValue(item.getCategory().getCode());
-                        row.createCell(2).setCellValue(item.getCategory().getName());
-                        row.createCell(3).setCellValue(item.getCode());
-                        row.createCell(4).setCellValue(item.getName());
-                        row.createCell(5).setCellValue(item.getMeasurementUnit()!=null?item.getMeasurementUnit().getName():"-");
-                        row.createCell(6).setCellValue(item.getCategory().getName());
+
+                        row.createCell(0).setCellValue(stock.getDepartment() != null ? stock.getDepartment().getName() : "-");
+                        row.createCell(1).setCellValue(item.getCategory() != null ? item.getCategory().getCode() : "-");
+                        row.createCell(2).setCellValue(item.getCategory() != null ? item.getCategory().getName() : "-");
+                        row.createCell(3).setCellValue(item.getCode() != null ? item.getCode() : "-");
+                        row.createCell(4).setCellValue(item.getName() != null ? item.getName() : "-");
+                        row.createCell(5).setCellValue(item.getMeasurementUnit() != null ? item.getMeasurementUnit().getName() : "-");
+                        row.createCell(6).setCellValue(item.getCategory() != null ? item.getCategory().getName() : "-");
                         row.createCell(7).setCellValue(stock.getItemBatch().getId());
-                        row.createCell(8).setCellValue(sdf.format(stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt()));
-                        row.createCell(9).setCellValue(sdf.format(stock.getItemBatch().getDateOfExpire()));
-                        row.createCell(10).setCellValue(stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution().getName());
-                        row.createCell(11).setCellValue(calculateDaysRemaining(stock.getItemBatch().getDateOfExpire()));
-                        row.createCell(12).setCellValue(stock.getItemBatch().getPurcahseRate());
-                        row.createCell(13).setCellValue(stock.getItemBatch().getRetailsaleRate());
-                        row.createCell(14).setCellValue(stock.getStock());
-                        row.createCell(15).setCellValue(stock.getItemBatch().getPurcahseRate() * stock.getStock());
+                        row.createCell(8).setCellValue(stock.getItemBatch() != null &&
+                                stock.getItemBatch().getLastPurchaseBillItem() != null &&
+                                stock.getItemBatch().getLastPurchaseBillItem().getBill() != null &&
+                                stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt() != null
+                                ? sdf.format(stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt()) : "-");
+                        row.createCell(9).setCellValue(stock.getItemBatch() != null &&
+                                stock.getItemBatch().getDateOfExpire() != null
+                                ? sdf.format(stock.getItemBatch().getDateOfExpire()) : "-");
+                        row.createCell(10).setCellValue(stock.getItemBatch() != null &&
+                                stock.getItemBatch().getLastPurchaseBillItem() != null &&
+                                stock.getItemBatch().getLastPurchaseBillItem().getBill() != null &&
+                                stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution() != null
+                                ? stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution().getName() : "-");
+                        row.createCell(11).setCellValue(stock.getItemBatch() != null &&
+                                stock.getItemBatch().getDateOfExpire() != null
+                                ? calculateDaysRemaining(stock.getItemBatch().getDateOfExpire()) : 0);
+                        row.createCell(12).setCellValue(stock.getItemBatch() != null ? stock.getItemBatch().getPurcahseRate() : 0);
+                        row.createCell(13).setCellValue(stock.getItemBatch() != null ? stock.getItemBatch().getRetailsaleRate() : 0);
+                        row.createCell(14).setCellValue(stock.getStock() != null ? stock.getStock() : 0);
+
+                        double itemValue = stock.getItemBatch() != null && stock.getStock() != null
+                                ? stock.getItemBatch().getPurcahseRate() * stock.getStock() : 0;
+                        row.createCell(15).setCellValue(itemValue);
+
                         row.createCell(16).setCellValue("-");
                         row.createCell(17).setCellValue("-");
                         row.createCell(18).setCellValue("-");
@@ -2337,6 +2356,11 @@ public class PharmacyReportController implements Serializable {
                 itemFooterRow.createCell(18).setCellValue(calculateItemWiseTotalOfExpiredItems(item));
                 itemFooterRow.createCell(19).setCellValue(calculateItemWiseQtyOfExpiredItems(item));
             }
+            Row tableFooterRow = sheet.createRow(rowIndex++);
+            tableFooterRow.createCell(16).setCellValue(stockPurchaseValue);
+            tableFooterRow.createCell(17).setCellValue(quantity);
+            tableFooterRow.createCell(18).setCellValue(stockPurchaseValue);
+            tableFooterRow.createCell(19).setCellValue(quantity);
 
             workbook.write(out);
             context.responseComplete();
@@ -2347,44 +2371,39 @@ public class PharmacyReportController implements Serializable {
 
     public void exportExpiryItemReportToPdf() {
         FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
 
-            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
-            Paragraph title = new Paragraph("Expiry Item Report", titleFont);
-            title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(20);
-            document.add(title);
-
-            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
-            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            document.add(new Paragraph("Expiry Item Report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
 
             PdfPTable table = new PdfPTable(20);
             table.setWidthPercentage(100);
-
-            float[] columnWidths = {3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f};
+            float[] columnWidths = {3f, 2f, 3f, 2f, 3f, 2f, 2f, 2f, 3f, 3f, 3f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f};
             table.setWidths(columnWidths);
 
-            String[] headers = {
-                    "Department", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
-                    "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date",
-                    "Supplier", "Shelf Life Remaining (Days)", "Rate", "MRP", "Quantity",
-                    "Item Value", "Batch wise Item Value", "Batch wise Qty", "Item wise Total", "Item wise Qty"
-            };
+            String[] headers = {"Department", "Item Cat Code", "Item Cat Name", "Item Code", "Item Name", "Base UOM",
+                    "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
+                    "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
+
             for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
-                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
                 table.addCell(cell);
             }
-
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
 
             for (Map.Entry<Item, Map<Long, List<Stock>>> entry : getItemStockMap().entrySet()) {
                 Item item = entry.getKey();
@@ -2395,49 +2414,52 @@ public class PharmacyReportController implements Serializable {
                     List<Stock> stockList = batchEntry.getValue();
 
                     for (Stock stock : stockList) {
-                        table.addCell(new PdfPCell(new Phrase(stock.getDepartment().getName(), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(item.getCategory().getCode(), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(item.getCategory().getName(), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(item.getCode(), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(item.getName(), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(
-                                item.getMeasurementUnit() != null ? item.getMeasurementUnit().getName() : "-", normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(item.getCategory().getName(), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(String.valueOf(stock.getItemBatch().getId()), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(
-                                sdf.format(stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt()), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(
-                                sdf.format(stock.getItemBatch().getDateOfExpire()), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution().getName(), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(
-                                String.valueOf(calculateDaysRemaining(stock.getItemBatch().getDateOfExpire())), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(String.valueOf(stock.getItemBatch().getPurcahseRate()), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(String.valueOf(stock.getItemBatch().getRetailsaleRate()), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(String.valueOf(stock.getStock()), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(
-                                String.valueOf(stock.getItemBatch().getPurcahseRate() * stock.getStock()), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase("-", normalFont)));
-                        table.addCell(new PdfPCell(new Phrase("-", normalFont)));
-                        table.addCell(new PdfPCell(new Phrase("-", normalFont)));
-                        table.addCell(new PdfPCell(new Phrase("-", normalFont)));
+                        table.addCell(stock.getDepartment() != null ? stock.getDepartment().getName() : "-");
+                        table.addCell(item.getCategory() != null ? item.getCategory().getCode() : "-");
+                        table.addCell(item.getCategory() != null ? item.getCategory().getName() : "-");
+                        table.addCell(item.getCode() != null ? item.getCode() : "-");
+                        table.addCell(item.getName() != null ? item.getName() : "-");
+                        table.addCell(item.getMeasurementUnit() != null ? item.getMeasurementUnit().getName() : "-");
+                        table.addCell(item.getCategory() != null ? item.getCategory().getName() : "-");
+                        table.addCell(stock.getItemBatch() != null ? String.valueOf(stock.getItemBatch().getId()) : "-");
+                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null &&
+                                stock.getItemBatch().getLastPurchaseBillItem().getBill() != null &&
+                                stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt() != null
+                                ? sdf.format(stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt()) : "-");
+                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null
+                                ? sdf.format(stock.getItemBatch().getDateOfExpire()) : "-");
+                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null &&
+                                stock.getItemBatch().getLastPurchaseBillItem().getBill() != null &&
+                                stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution() != null
+                                ? stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution().getName() : "-");
+                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null
+                                ? String.valueOf(calculateDaysRemaining(stock.getItemBatch().getDateOfExpire())) : "0");
+                        table.addCell(String.valueOf(stock.getItemBatch() != null ? stock.getItemBatch().getPurcahseRate() : 0));
+                        table.addCell(String.valueOf(stock.getItemBatch() != null ? stock.getItemBatch().getRetailsaleRate() : 0));
+                        table.addCell(String.valueOf(stock.getStock() != null ? stock.getStock() : 0));
+
+                        double itemValue = stock.getItemBatch() != null && stock.getStock() != null
+                                ? stock.getItemBatch().getPurcahseRate() * stock.getStock() : 0;
+                        table.addCell(String.valueOf(itemValue));
+                        table.addCell("-");
+                        table.addCell("-");
+                        table.addCell("-");
+                        table.addCell("-");
                     }
-
-                    PdfPCell batchFooterCell = new PdfPCell(new Phrase("Batch Totals", boldFont));
-                    batchFooterCell.setColspan(16);
-                    table.addCell(batchFooterCell);
-
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateBatchWiseTotalOfExpiredItems(item, batchNumber)), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateBatchWiseQtyOfExpiredItems(item, batchNumber)), normalFont)));
+                    for (int i = 0; i < 16; i++) table.addCell(" ");
+                    table.addCell(String.valueOf(calculateItemWiseTotalOfExpiredItems(item)));
+                    table.addCell(String.valueOf(calculateBatchWiseQtyOfExpiredItems(item, batchNumber)));
+                    for (int i = 0; i < 2; i++) table.addCell(" ");
                 }
-
-                PdfPCell itemFooterCell = new PdfPCell(new Phrase("Item Totals", boldFont));
-                itemFooterCell.setColspan(18);
-                table.addCell(itemFooterCell);
-
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateItemWiseTotalOfExpiredItems(item)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(calculateItemWiseQtyOfExpiredItems(item)), normalFont)));
+                for (int i = 0; i < 18; i++) table.addCell(" ");
+                table.addCell(String.valueOf(calculateItemWiseTotalOfExpiredItems(item)));
+                table.addCell(String.valueOf(calculateItemWiseQtyOfExpiredItems(item)));
             }
+            for (int i = 0; i < 16; i++) table.addCell(" ");
+            table.addCell(String.format("%.2f", stockPurchaseValue));
+            table.addCell(String.format("%.2f", quantity));
+            table.addCell(String.format("%.2f", stockPurchaseValue));
+            table.addCell(String.format("%.2f", quantity));
 
             document.add(table);
             document.close();
