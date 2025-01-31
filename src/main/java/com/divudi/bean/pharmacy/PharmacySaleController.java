@@ -907,42 +907,59 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public List<Stock> completeAvailableStocksFromNameOrGeneric(String qry) {
-        System.out.println("completeAvailableStocksFromNameOrGeneric");
-        System.out.println("Start = " + new Date().getTime());
         if (qry == null || qry.trim().isEmpty()) {
             return Collections.emptyList();
         }
 
         qry = qry.replaceAll("[\\n\\r]", "").trim();
-
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("department", getSessionController().getLoggedUser().getDepartment());
         parameters.put("stockMin", 0.0);
         parameters.put("query", "%" + qry + "%");
 
         String sql;
-        System.out.println("qry.length()" + qry.length());
         if (qry.length() > 6) {
             sql = "SELECT i FROM Stock i "
                     + "WHERE i.stock > :stockMin "
                     + "AND i.department = :department "
-                    + "AND ("
-                    + "i.itemBatch.item.name LIKE :query OR "
-                    + "i.itemBatch.item.code LIKE :query"
-                    + " ) "
-                    + "ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+                    + "AND (i.itemBatch.item.name LIKE :query "
+                   ;
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by item code", true)) {
+                sql += " OR i.itemBatch.item.code LIKE :query ";
+            }
+
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by barcode", true)) {
+                sql += "OR i.itemBatch.item.barcode = :query ";
+            }
+
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by generic name(VMP)", false)) {
+                sql += "OR i.itemBatch.item.vmp.vtm.name LIKE :query ";
+            }
+
+            sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+
         } else {
             sql = "SELECT i FROM Stock i "
                     + "WHERE i.stock > :stockMin "
                     + "AND i.department = :department "
-                    + "AND ("
-                    + "i.itemBatch.item.name LIKE :query OR "
-                    + "i.itemBatch.item.code LIKE :query OR "
-                    + "i.itemBatch.item.vmp.name LIKE :query"
-                    + ") "
-                    + "ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+                    + "AND( i.itemBatch.item.name LIKE :query "
+                   ;
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by item code", true)) {
+                sql += " OR i.itemBatch.item.code LIKE :query ";
+            }
+
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by barcode", false)) {
+                sql += "OR i.itemBatch.item.barcode = :query ";
+            }
+
+            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by generic name(VMP)", false)) {
+                sql += "OR i.itemBatch.item.vmp.vtm.name LIKE :query ";
+            }
+
+            sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
-        System.out.println("End = " + new Date().getTime());
         return getStockFacade().findByJpql(sql, parameters, 20);
     }
 
