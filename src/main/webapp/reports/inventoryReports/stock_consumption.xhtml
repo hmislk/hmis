@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="GRN Cash" >
+                    <p:panel header="Stock Consumption" >
 
                         <h:panelGrid columns="8" class="w-100">          
 
@@ -183,7 +183,7 @@
                                 value="Download">
                                 <p:dataExporter 
                                     type="xlsx" 
-                                    fileName="GRN Cash Report" 
+                                    fileName="Stock Consumption Report" 
                                     target="tbl"  />
                             </p:commandButton>
 
@@ -195,7 +195,7 @@
                                 <p:dataExporter 
                                     type="pdf" 
                                     target="tbl" 
-                                    fileName="GRN Cash Report" />
+                                    fileName="Stock Consumption Report" />
                             </p:commandButton>
 
                         </div>
