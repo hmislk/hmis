@@ -28,8 +28,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -151,7 +151,6 @@ public class ManufacturerController implements Serializable {
     /**
      *
      */
-
     @FacesConverter(forClass = Institution.class)
     public static class ManufacturerConverter implements Converter {
 
@@ -166,9 +165,11 @@ public class ManufacturerController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+            try {
+                return Long.valueOf(value);
+            } catch (NumberFormatException e) {
+                return null;
+            }
         }
 
         String getStringKey(java.lang.Long value) {
@@ -191,6 +192,5 @@ public class ManufacturerController implements Serializable {
             }
         }
     }
-    
-    
+
 }
