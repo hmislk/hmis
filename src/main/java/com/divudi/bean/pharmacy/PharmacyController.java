@@ -1580,9 +1580,21 @@ public class PharmacyController implements Serializable {
         return data;
     }
 
+    public boolean isInvalidFilter() {
+        if (item != null && (reportType.equals("summeryReport") || reportType.equals("byBill"))) {
+            return true;
+        }
+        return false;
+    }
+
     public void createStockTransferReport() {
         resetFields();
         BillType bt;
+
+        if (isInvalidFilter()) {
+            JsfUtil.addErrorMessage("Item filter cannot be applied for 'Summary' or 'Bill' report types. Please remove the item filter or choose a 'Detail' Report.");
+            return;
+        }
 
         if ("issue".equals(transferType)) {
             bt = BillType.PharmacyTransferIssue;
