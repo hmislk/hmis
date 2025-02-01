@@ -161,7 +161,11 @@ public class ManufacturerController implements Serializable {
             }
             ManufacturerController controller = (ManufacturerController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "manufacturerController");
-            return controller.getEjbFacade().find(getKey(value));
+            Long key = getKey(value);
+            if (key == null) {
+                return null;
+            }
+            return controller.getEjbFacade().find(key);
         }
 
         java.lang.Long getKey(String value) {
