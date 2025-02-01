@@ -127,23 +127,34 @@
                                             forceSelection="true"  
                                             id="acStock" 
                                             class="w-100 "
-                                            maxResults="5"
+                                            maxResults="10"
                                             value="#{pharmacySaleBhtController.stock}" 
                                             completeMethod="#{stockController.completeAvailableStocks}" 
                                             var="i" 
                                             itemLabel="#{i.itemBatch.item.name}" 
                                             itemValue="#{i}" 
                                             >
+
                                             <p:column 
                                                 headerText="Item" 
                                                 style="padding: 6px;"
-                                                styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputLabel value="#{i.itemBatch.item.name}">
-                                                    &nbsp;<p:tag rendered="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': 
-                                                                             commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                                 severity="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
-                                                </h:outputLabel>
+                                                styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ? 'ui-messages-fatal' : commonController.dateAfterThreeMonthsCurrentDateTime gt i.itemBatch.dateOfExpire ? 'ui-messages-warn' : ''}">
+
+                                                <h:outputLabel value="#{i.itemBatch.item.name}" />
+
+                                                <h:outputLabel 
+                                                    rendered="#{commonController.currentDateTime gt i.itemBatch.dateOfExpire}"
+                                                    value="Expired"
+                                                    styleClass="mx-5 ui-badge ui-badge-danger" />
+
+                                                <h:outputLabel 
+                                                    rendered="#{commonController.dateAfterThreeMonthsCurrentDateTime gt i.itemBatch.dateOfExpire and commonController.currentDateTime lt i.itemBatch.dateOfExpire}"
+                                                    value="Expiring Soon"
+                                                    styleClass="mx-5 ui-badge ui-badge-warning" />
                                             </p:column>
+
+
+
                                             <p:column
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used',true)}"
                                                 headerText="Code"

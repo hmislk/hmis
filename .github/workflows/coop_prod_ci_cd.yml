@@ -40,10 +40,11 @@ jobs:
         run: mvn clean package -DskipTests
 
       - name: Archive Build Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: target/*.war
+          overwrite: true
 
       # - name: Run Tests
       #   run: mvn test
@@ -59,7 +60,7 @@ jobs:
           ref: 'coop-prod'
 
       - name: Download Build Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: ./
