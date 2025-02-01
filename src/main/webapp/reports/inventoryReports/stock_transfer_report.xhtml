@@ -348,7 +348,7 @@
 
                             <h5>Stock Issues Summary</h5>
 
-                            <p:dataTable id="tbl1" value="#{pharmacyController.departmentSummaries}" 
+                            <p:dataTable id="tbl1" value="#{pharmacyController.transferType eq 'issue' ? pharmacyController.departmentSummaries : pharmacyController.summaries}" 
                                          var="s" 
                                          rowIndexVar="n" 
                                          paginator="true" 

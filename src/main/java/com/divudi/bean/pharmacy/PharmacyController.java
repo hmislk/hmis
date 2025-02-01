@@ -1729,9 +1729,11 @@ public class PharmacyController implements Serializable {
 
     public void generateReportAsSummary(BillType billType) {
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT b.department.name, SUM(b.netTotal), ")
-                .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.netTotal ELSE 0 END) ")
-                .append("FROM Bill b ")
+        sql.append("SELECT b.department.name, SUM(b.netTotal) ");
+        if ("issue".equals(transferType)) {
+            sql.append(", SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.netTotal ELSE 0 END) ");
+        }
+        sql.append("FROM Bill b ")
                 .append("WHERE b.retired = false ")
                 .append("AND b.billType = :billType ")
                 .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
@@ -1747,7 +1749,7 @@ public class PharmacyController implements Serializable {
 
         try {
             List<Object[]> results = getBillFacade().findObjectsArrayByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
-
+            Map<String, PharmacySummery> departmentMap = new HashMap<>();
             departmentSummaries = new ArrayList<>();
             double grandTotal = 0.0;
             double goodInTransistTotal = 0.0;
@@ -1755,13 +1757,69 @@ public class PharmacyController implements Serializable {
             for (Object[] result : results) {
                 String departmentName = (String) result[0];
                 double netTotal = (double) result[1];
-                double goodInTransist = (double) result[2];
                 grandTotal += netTotal;
-                goodInTransistTotal += goodInTransist;
-
-                departmentSummaries.add(new PharmacySummery(departmentName, netTotal, goodInTransist));
+                if ("issue".equals(transferType)) {
+                    double goodInTransist = (double) result[2];
+                    goodInTransistTotal += goodInTransist;
+                    departmentSummaries.add(new PharmacySummery(departmentName, netTotal, goodInTransist));
+                } else {
+                    PharmacySummery summary = new PharmacySummery(departmentName, netTotal);
+                    departmentSummaries.add(summary);
+                    departmentMap.put(departmentName, summary);
+                }
             }
             departmentSummaries.add(new PharmacySummery("Total", grandTotal, goodInTransistTotal));
+
+            if ("receive".equals(transferType)) {
+                generateReportAsSummaryWithGiT(BillType.PharmacyTransferIssue, departmentMap);
+            }
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Something Went Wrong!");
+        }
+    }
+    private List<PharmacySummery> summaries;
+
+    public void generateReportAsSummaryWithGiT(BillType billType, Map<String, PharmacySummery> departmentMap) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT b.toDepartment.name,")
+                .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.netTotal ELSE 0 END) ")
+                .append("FROM Bill b ")
+                .append("WHERE b.retired = false ")
+                .append("AND b.billType = :billType ")
+                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("billType", billType);
+        parameters.put("fromDate", getFromDate());
+        parameters.put("toDate", getToDate());
+
+        additionalCommonFilltersForBillEntity(sql, parameters);
+
+        sql.append(" GROUP BY b.toDepartment.name ");
+
+        try {
+            List<Object[]> results = getBillFacade().findObjectsArrayByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+
+            summaries = new ArrayList<>();
+
+            double goodInTransitTotal = 0.0;
+            for (Object[] result : results) {
+                String toDepartmentName = (String) result[0];
+                double goodInTransit = (double) result[1];
+                goodInTransitTotal += goodInTransit;
+
+                if (departmentMap.containsKey(toDepartmentName)) {
+                    PharmacySummery existingSummary = departmentMap.get(toDepartmentName);
+                    existingSummary.setGoodInTransistAmount(goodInTransit);
+                    summaries.add(existingSummary);
+                }
+            }
+
+            PharmacySummery lastRow = departmentSummaries.get(departmentSummaries.size() - 1);
+            if ("Total".equals(lastRow.getDepartmentName())) {
+                lastRow.setGoodInTransistAmount(goodInTransitTotal);
+            }
+            summaries.add(new PharmacySummery("Total", lastRow.getNetTotal(), lastRow.getGoodInTransistAmount()));
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Something Went Wrong!");
@@ -1793,8 +1851,8 @@ public class PharmacyController implements Serializable {
             parameters.put("st", qty);
         }
 
-        addFilter(sql, parameters,"s.department", "dept", dept);
-        addFilter(sql, parameters,"s.itemBatch.item.category", "cat", category);
+        addFilter(sql, parameters, "s.department", "dept", dept);
+        addFilter(sql, parameters, "s.itemBatch.item.category", "cat", category);
 
         sql.append(" ORDER BY s.itemBatch.item.name ");
 
@@ -4235,6 +4293,14 @@ public class PharmacyController implements Serializable {
 
     public void setQty(double qty) {
         this.qty = qty;
+    }
+
+    public List<PharmacySummery> getSummaries() {
+        return summaries;
+    }
+
+    public void setSummaries(List<PharmacySummery> summaries) {
+        this.summaries = summaries;
     }
 
 }
