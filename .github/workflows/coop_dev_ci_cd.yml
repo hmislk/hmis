@@ -40,10 +40,11 @@ jobs:
         run: mvn clean package -DskipTests
 
       - name: Archive Build Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: target/*.war
+          overwrite: true
 
       # - name: Run Tests
       #   run: mvn test
@@ -57,7 +58,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Download Build Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: ./
@@ -96,7 +97,7 @@ jobs:
               mv $WAR_NAME $WAR_NAME.old
             fi
           "
-
+ 
           # Copy new WAR file to the server
           rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:/tmp/$WAR_NAME
 
@@ -126,7 +127,7 @@ jobs:
             fi
             rm /tmp/payara-admin-pass.txt
           "
-
+ 
           # Check if the application is reachable
           for i in {1..5}; do
             RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://$SUBDOMAIN.carecode.org/$APP_NAME/faces/index1.xhtml)

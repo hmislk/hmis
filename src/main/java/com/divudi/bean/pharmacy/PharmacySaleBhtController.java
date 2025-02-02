@@ -759,8 +759,10 @@ public class PharmacySaleBhtController implements Serializable {
             if (getPatientEncounter().getCurrentPatientRoom() == null) {
                 matrixDept = getSessionController().getDepartment();
             }
-            if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
-                matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+            if (getPatientEncounter().getCurrentPatientRoom() != null) {
+                if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+                    matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+                }
             }
 
         } else if (matrixByIssuingDepartment) {
@@ -1404,7 +1406,7 @@ public class PharmacySaleBhtController implements Serializable {
         double grossValue;
         double netValue;
 
-        Department matrixDept=null;
+        Department matrixDept = null;
         boolean matrixByAdmissionDepartment;
         boolean matrixByIssuingDepartment;
         matrixByAdmissionDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Inpatient Department for " + sessionController.getDepartment().getName(), true);
@@ -1416,8 +1418,10 @@ public class PharmacySaleBhtController implements Serializable {
             if (getPatientEncounter().getCurrentPatientRoom() == null) {
                 matrixDept = getSessionController().getDepartment();
             }
-            if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
-                matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+            if (getPatientEncounter().getCurrentPatientRoom() != null) {
+                if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+                    matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+                }
             }
 
         } else if (matrixByIssuingDepartment) {

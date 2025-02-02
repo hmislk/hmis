@@ -272,6 +272,9 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
     
     @Lob
     private String forGender;
+    
+    @Lob
+    private String instructions;
 
     @Column(name = "DTYPE", insertable = false, updatable = false)
     private String clazz;
@@ -1498,6 +1501,16 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
         this.canUploadPatinrtReport = canUploadPatinrtReport;
     }
 
+    public String getInstructions() {
+        return instructions;
+    }
+
+    public void setInstructions(String instructions) {
+        this.instructions = instructions;
+    }
+
+    
+    
     static class ReportItemComparator implements Comparator<ReportItem> {
 
         @Override
