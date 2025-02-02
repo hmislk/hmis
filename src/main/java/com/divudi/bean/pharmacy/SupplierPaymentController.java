@@ -620,8 +620,8 @@ public class SupplierPaymentController implements Serializable {
             originalBill.setBalance(originalBillBallance);
             billFacade.edit(originalBill);
         }
-        getCurrent().setTotal(n);
-        getCurrent().setNetTotal(n);
+//        getCurrent().setTotal(n);
+//        getCurrent().setNetTotal(n);
     }
 
     public void updateReferanceBillAsPaymentApproved(List<BillItem> billItemsWithReferanceToSettlingBills) {
@@ -680,6 +680,28 @@ public class SupplierPaymentController implements Serializable {
 
     private boolean errorCheck() {
         if (getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Item ");
+            return true;
+        }
+
+        if (getCurrent().getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Select Cant settle without Dealor");
+            return true;
+        }
+
+        if (getCurrent().getPaymentMethod() == null) {
+            return true;
+        }
+
+        if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
+            return true;
+        }
+
+        return false;
+    }
+    
+    private boolean errorCheckForAllSelectedItemsSettlingBill() {
+        if (getSelectedBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Item ");
             return true;
         }
@@ -1702,11 +1724,10 @@ public class SupplierPaymentController implements Serializable {
             double settlingValue = Math.abs(b.getNetTotal()) - (Math.abs(b.getRefundAmount()) + Math.abs(b.getPaidAmount()));
             currentBillItem.setNetValue(-settlingValue);
             currentBillItem.setGrossValue(-settlingValue);
-            getBillItems().add(currentBillItem);
+            getSelectedBillItems().add(currentBillItem);
         }
         current.setToInstitution(paymentSupplier);
         calTotalBySelectedBillTems();
-        calTotal();
         return "/dealerPayment/pay_supplier?faces-redirect=true";
     }
 
@@ -1751,11 +1772,11 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void settleSupplierPayment() {
-        if (errorCheck()) {
+        if (errorCheckForAllSelectedItemsSettlingBill()) {
             return;
         }
-        calculateTotalByCurrentBillsBillItems();
-        updateReferanceBillBalances(getCurrent().getBillItems());
+        calculateTotalBySelectedBillItems();
+        updateReferanceBillBalances(selectedBillItems);
 
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
 
@@ -1783,7 +1804,7 @@ public class SupplierPaymentController implements Serializable {
             getBillFacade().edit(getCurrent());
         }
 
-        for (BillItem savingBillItem : getCurrent().getBillItems()) {
+        for (BillItem savingBillItem : selectedBillItems) {
             savingBillItem.setBill(current);
             if (savingBillItem.getId() == null) {
                 savingBillItem.setCreatedAt(new Date());
@@ -1794,8 +1815,10 @@ public class SupplierPaymentController implements Serializable {
             }
         }
 
-        Payment p = createPayment(getCurrent(), getCurrent().getPaymentMethod());
+        List<Payment> ps = paymentService.createPayment(current, paymentMethodData);
 //        saveBillItemBySelectedItems(p);
+
+        current = billService.reloadBill(current);
 
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
@@ -1865,6 +1888,7 @@ public class SupplierPaymentController implements Serializable {
         List<Payment> payments = paymentService.createPayment(getCurrent(), paymentMethodData);
         updateReferanceBillBalances(selectedBillItems);
         saveBillItemBySelectedItems();
+        current = billService.reloadBill(current);
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
