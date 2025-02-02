@@ -155,7 +155,7 @@
                 <p:panel rendered="#{supplierPaymentController.printPreview}" >
                     <p:commandButton value="New Bill" ajax="false" action="#{supplierPaymentController.makeNull()}" >
                     </p:commandButton>
-                    <bit:dealerPayment bill="#{supplierPaymentController.current}" billController ="#{supplierPaymentController }" dup="false" />
+                    <bit:dealerPayment bill="#{supplierPaymentController.current}" billController ="#{supplierPaymentController}" dup="false" />
                 </p:panel>
 
             </h:form>
