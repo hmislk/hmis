@@ -169,6 +169,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Institution site;
 
     private PaymentMethod paymentMethod;
+    private boolean admittingProcessStarted;
 
     public void addPatientAllergy() {
         if (currentPatientAllergy == null) {
@@ -1268,7 +1269,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void saveSelected() {
+        if(admittingProcessStarted){
+            JsfUtil.addErrorMessage("Admittin process already started.");
+            return;
+        }
+        admittingProcessStarted=true;
+        
         if (errorCheck()) {
+            admittingProcessStarted=false;
             return;
         }
         savePatient();
@@ -1324,6 +1332,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         // Save EncounterCreditCompanies
         // Need to create EncounterCredit
+        admittingProcessStarted=false;
         printPreview = true;
     }
     
@@ -1931,6 +1940,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void setCurrentNonBht(Admission currentNonBht) {
         this.currentNonBht = currentNonBht;
     }
+
+    public boolean isAdmittingProcessStarted() {
+        return admittingProcessStarted;
+    }
+
+    public void setAdmittingProcessStarted(boolean admittingProcessStarted) {
+        this.admittingProcessStarted = admittingProcessStarted;
+    }
+    
+    
 
     /**
      *

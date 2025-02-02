@@ -17,35 +17,87 @@
                             <div class="d-grid gap-1">
                                 <!-- Dealer Due Search -->
 
+                                <h:panelGroup rendered="#{not configOptionApplicationController.getBooleanValueByKey('Approval is necessary for Procument Payments', false)}">
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Bills to Settle"
+                                        icon="fas fa-file-invoice"  
+                                        styleClass="ui-button-danger"
+                                        action="#{supplierPaymentController.navigateToDealerDueSearch}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
+
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Settle Bills"
+                                        icon="fas fa-money-check-alt"  
+                                        styleClass="ui-button-warning"
+                                        action="#{supplierPaymentController.navigateToDealerDuehalfPaymentsSearch}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
+
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Settled Bills"
+                                        icon="fas fa-file-invoice-dollar"  
+                                        styleClass="ui-button-success"
+                                        action="#{supplierPaymentController.navigateToDealerDoneSearch}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
+
+
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Approval is necessary for Procument Payments', false)}">
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Generate Payments"
+                                        icon="fas fa-file-invoice"  
+                                        styleClass="ui-button-danger"
+                                        action="#{supplierPaymentController.navigateToDealerDueSearch}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
+
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Approve Payments"
+                                        icon="fas fa-thumbs-up"  
+                                        styleClass="ui-button-warning"
+                                        action="#{supplierPaymentController.navigateToDealerDuehalfPaymentsSearch}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
+
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Settle Payments"
+                                        icon="fas fa-hand-holding-dollar"  
+                                        styleClass="ui-button-primary"
+                                        action="#{supplierPaymentController.naviateToSupplierBillSettleManagement}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
+
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Complete Payments"
+                                        icon="fas fa-check-circle"  
+                                        styleClass="ui-button-secondary"
+                                        action="#{supplierPaymentController.naviateToSupplierBillPaymentCompletionManagement}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
+
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Settled Bills"
+                                        icon="fas fa-file-invoice-dollar"  
+                                        styleClass="ui-button-success"
+                                        action="#{supplierPaymentController.navigateToDealerDoneSearch}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
 
 
 
-                                <p:commandButton 
-                                    class="w-100"
-                                    ajax="false"
-                                    value="Bills to Settle"
-                                    icon="fas fa-file-invoice-dollar"  
-                                    styleClass="ui-button-danger"
-                                    action="#{supplierPaymentController.navigateToDealerDueSearch}"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
+                                </h:panelGroup>
 
-                                <p:commandButton 
-                                    class="w-100"
-                                    ajax="false"
-                                    value="Settle Bills"
-                                    icon="fas fa-hand-holding-usd"  
-                                    styleClass="ui-button-warning"
-                                    action="#{supplierPaymentController.navigateToDealerDuehalfPaymentsSearch}"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
-
-                                <p:commandButton 
-                                    class="w-100"
-                                    ajax="false"
-                                    value="Settled Bills"
-                                    icon="fas fa-receipt"  
-                                    styleClass="ui-button-success"
-                                    action="#{supplierPaymentController.navigateToDealerDoneSearch}"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
 
                                 <p:commandButton 
                                     class="w-100 bg-indigo-500 hover:bg-indigo-600 text-white" 
@@ -54,28 +106,6 @@
                                     icon="fas fa-money-check-alt"  
                                     action="#{supplierPaymentController.navigateToSupplierPaymentDoneSearch}"
                                     rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
-
-                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Approval is necessary for Procument Payments', false)}">
-                                    <p:commandButton 
-                                        class="w-100"
-                                        ajax="false"
-                                        value="Settle Payments"
-                                        icon="fas fa-user-check"  
-                                        styleClass="ui-button-primary"
-                                        action="#{supplierPaymentController.naviateToSupplierBillSettleManagement}"
-                                        rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
-                                </h:panelGroup>
-
-                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Completion is necessary for Procument Payments', false)}">
-                                    <p:commandButton 
-                                        class="w-100"
-                                        ajax="false"
-                                        value="Complete Payments"
-                                        icon="fas fa-check-double"  
-                                        styleClass="ui-button-secondary"
-                                        action="#{supplierPaymentController.naviateToSupplierBillPaymentCompletionManagement}"
-                                        rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
-                                </h:panelGroup>
 
 
                             </div>

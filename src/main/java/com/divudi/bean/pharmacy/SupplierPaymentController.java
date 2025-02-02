@@ -147,6 +147,12 @@ public class SupplierPaymentController implements Serializable {
         return "/dealerPayment/dealor_due?faces-redirect=true";
     }
 
+    public String navigateToGenerateSupplierPayments() {
+        bills = new ArrayList<>();
+        netTotal = 0.0;
+        return "/dealerPayment/dealor_due?faces-redirect=true";
+    }
+
     public String navigateToDealerDoneSearch() {
         bills = new ArrayList<>();
         netTotal = 0.0;
@@ -470,6 +476,24 @@ public class SupplierPaymentController implements Serializable {
         getCurrent().setNetTotal(-n);
     }
 
+    public void calculateTotalByCurrentBillsBillItems() {
+        getCurrent().setNetTotal(0);
+        if (current == null) {
+            return;
+        }
+        if (current.getBillItems() == null) {
+            return;
+        }
+        double methodTotal = 0.0;
+        double methodNetTotal = 0.0;
+        for (BillItem b : current.getBillItems()) {
+            methodTotal += Math.abs(b.getNetValue());
+        }
+        methodNetTotal = methodTotal - Math.abs(current.getDiscount());
+        getCurrent().setTotal(-methodTotal);
+        getCurrent().setNetTotal(-methodNetTotal);
+    }
+
     public void calTotal() {
         double n = 0.0;
         for (BillItem b : billItems) {
@@ -577,15 +601,15 @@ public class SupplierPaymentController implements Serializable {
     }
 
     private boolean errorCheckForSettlingPaymentForApprovedPayment() {
-        if (getCurrent()==null) {
+        if (getCurrent() == null) {
             JsfUtil.addErrorMessage("No Current Bill");
             return true;
         }
-        if (getCurrent().getBillTypeAtomic()==null) {
+        if (getCurrent().getBillTypeAtomic() == null) {
             JsfUtil.addErrorMessage("No Bill Type Atomic");
             return true;
         }
-        if (getCurrent().getBillTypeAtomic()!=BillTypeAtomic.SUPPLIER_PAYMENT) {
+        if (getCurrent().getBillTypeAtomic() != BillTypeAtomic.SUPPLIER_PAYMENT) {
             JsfUtil.addErrorMessage("Wrong Bill Type Atomic");
             return true;
         }
@@ -606,7 +630,6 @@ public class SupplierPaymentController implements Serializable {
         return false;
     }
 
-    
     private boolean errorCheckForPaymentPreperationBill() {
         if (getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Item ");
@@ -643,7 +666,6 @@ public class SupplierPaymentController implements Serializable {
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
 //        getCurrent().setNetTotal(getCurrent().getNetTotal());
-
         if (getCurrent().getId() == null) {
             getBillFacade().create(getCurrent());
         } else {
@@ -1248,11 +1270,11 @@ public class SupplierPaymentController implements Serializable {
         }
 
         current = new BilledBill();
-        
+
         current.copy(bill);
         current.copyValue(bill);
         current.setReferenceBill(bill);
-        
+
         current.setBillType(BillType.GrnPayment);
         current.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT);
 
@@ -1268,8 +1290,8 @@ public class SupplierPaymentController implements Serializable {
         paymentMethodData = null;
         selectedBillItems = new ArrayList<>();
         billItems = new ArrayList<>();
-        
-        for(BillItem originalBillItem : bill.getBillItems()){
+
+        for (BillItem originalBillItem : bill.getBillItems()) {
             BillItem newlyCreateBillItem = new BillItem();
             newlyCreateBillItem.copy(originalBillItem);
             newlyCreateBillItem.setReferanceBillItem(originalBillItem);
@@ -1501,9 +1523,9 @@ public class SupplierPaymentController implements Serializable {
         currentBillItem.setNetValue(-settlingValue);
         currentBillItem.setGrossValue(-settlingValue);
         getBillItems().add(currentBillItem);
-        calTotalBySelectedBillTems();
-        calTotal();
-        return "/dealerPayment/settle_supplier_payment_for_approved_payment?faces-redirect=true";
+        current.getBillItems().add(currentBillItem);
+        calculateTotalByCurrentBillsBillItems();
+        return "/dealerPayment/settle_supplier_payment?faces-redirect=true";
     }
 
     public String navigateToPrepareSupplierPayment(Bill originalBill) {
@@ -1522,12 +1544,13 @@ public class SupplierPaymentController implements Serializable {
         }
         currentBillItem = new BillItem();
         currentBillItem.setReferenceBill(originalBill);
-        double settlingValue = Math.abs(originalBill.getNetTotal()) - (Math.abs(originalBill.getRefundAmount()) + Math.abs(originalBill.getPaidAmount()));
-        currentBillItem.setNetValue(-settlingValue);
-        currentBillItem.setGrossValue(-settlingValue);
-        getBillItems().add(currentBillItem);
-        getSelectedBillItems().add(currentBillItem);
-        calTotalBySelectedBillTems();
+//        double settlingValue = Math.abs(originalBill.getNetTotal()) - (Math.abs(originalBill.getRefundAmount()) + Math.abs(originalBill.getPaidAmount()));
+//        currentBillItem.setNetValue(-settlingValue);
+//        currentBillItem.setGrossValue(-settlingValue);
+//        getBillItems().add(currentBillItem);
+//        getSelectedBillItems().add(currentBillItem);
+        current.getBillItems().add(currentBillItem);
+        calculateTotalByCurrentBillsBillItems();
 //        calTotal();
         return "/dealerPayment/prepare_supplier_payment?faces-redirect=true";
     }
@@ -1563,12 +1586,12 @@ public class SupplierPaymentController implements Serializable {
         calTotal();
         return "/dealerPayment/pay_supplier?faces-redirect=true";
     }
-    
+
     public void settleSupplierPaymentForApprovedPayment() {
         if (errorCheckForSettlingPaymentForApprovedPayment()) {
             return;
         }
-        
+
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
 
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT);
@@ -1589,7 +1612,6 @@ public class SupplierPaymentController implements Serializable {
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
 //        getCurrent().setNetTotal(getCurrent().getNetTotal());
-
         if (getCurrent().getId() == null) {
             getBillFacade().create(getCurrent());
         } else {
@@ -1597,9 +1619,9 @@ public class SupplierPaymentController implements Serializable {
         }
 
         Payment p = createPayment(getCurrent(), getCurrent().getPaymentMethod());
-        
+
         updateReferanceBillBalances(getCurrent().getBillItems());
-        
+
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
@@ -1609,11 +1631,11 @@ public class SupplierPaymentController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        calculateTotal(billItems);
-        updateReferanceBillBalances(billItems);
+        calculateTotalByCurrentBillsBillItems();
+        updateReferanceBillBalances(getCurrent().getBillItems());
+        
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-        getCurrent().setTotal(getCurrent().getNetTotal());
-
+        
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT);
 
         getCurrent().setInsId(deptId);
@@ -1632,11 +1654,21 @@ public class SupplierPaymentController implements Serializable {
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
 //        getCurrent().setNetTotal(getCurrent().getNetTotal());
-
         if (getCurrent().getId() == null) {
             getBillFacade().create(getCurrent());
         } else {
             getBillFacade().edit(getCurrent());
+        }
+        
+        for(BillItem savingBillItem: getCurrent().getBillItems()){
+            savingBillItem.setBill(current);
+            if(savingBillItem.getId()==null){
+                savingBillItem.setCreatedAt(new Date());
+                savingBillItem.setCreater(sessionController.getLoggedUser());
+                billItemFacade.create(savingBillItem);
+            }else{
+                billItemFacade.edit(savingBillItem);
+            }
         }
 
         Payment p = createPayment(getCurrent(), getCurrent().getPaymentMethod());
@@ -1648,10 +1680,11 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void settlePrepairingSupplierPayment() {
+        System.out.println("settlePrepairingSupplierPayment");
         if (errorCheckForPaymentPreperationBill()) {
             return;
         }
-        calculateTotal(billItems);
+//        calculateTotal(billItems);
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
         getCurrent().setTotal(getCurrent().getNetTotal());
 
@@ -1673,11 +1706,22 @@ public class SupplierPaymentController implements Serializable {
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
 //        getCurrent().setNetTotal(getCurrent().getNetTotal());
-
         if (getCurrent().getId() == null) {
             getBillFacade().create(getCurrent());
         } else {
             getBillFacade().edit(getCurrent());
+        }
+        System.out.println("deptId = " + deptId);
+        for (BillItem bi : billItems) {
+            System.out.println("bi = " + bi);
+            bi.setBill(getCurrent());
+            if (bi.getId() == null) {
+                bi.setCreatedAt(new Date());
+                bi.setCreater(sessionController.getLoggedUser());
+                billItemFacade.create(bi);
+            } else {
+                billItemFacade.edit(bi);
+            }
         }
 
         updateReferanceBillAsPaymentApproved(billItems);
@@ -2020,7 +2064,7 @@ public class SupplierPaymentController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -2031,7 +2075,7 @@ public class SupplierPaymentController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = new Date();
+            toDate = CommonFunctions.getEndOfDay();
         }
         return toDate;
     }
