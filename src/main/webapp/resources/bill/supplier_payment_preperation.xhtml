@@ -35,7 +35,7 @@
                     <cc:implementation>
                         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
 
-                        <div class="posbill noBorder summeryBorder" >
+                        <div  >
 
                             <div class="institutionName">
                                 <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
@@ -55,7 +55,7 @@
                                 <h:outputLabel value="Payee : " />
                                 <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
                                 <h:outputLabel value="Date :"  />
-                                <h:outputLabel value="#{cc.attrs.bill.createdAt}"  style="position: relative; left: 70%;" >
+                                <h:outputLabel value="#{cc.attrs.bill.createdAt}"  >
                                     <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
                                 </h:outputLabel>
                                 <h:outputLabel value="Total : " />

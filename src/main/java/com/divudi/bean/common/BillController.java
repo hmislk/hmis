@@ -2830,8 +2830,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
 
     }
-
+    
     public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes, PaymentMethod pm, Double balanceGraterThan) {
+        return findUnpaidBills(frmDate, toDate, billTypes, pm, balanceGraterThan, null);
+    }
+
+    public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes, PaymentMethod pm, Double balanceGraterThan, Boolean omitPaymentApprovedBills) {
         String jpql;
         HashMap hm;
         List<BillType> bts = null;
@@ -2857,6 +2861,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (billTypes != null) {
             hm.put("bts", billTypes);
             jpql += " and b.billTypeAtomic in :bts";
+        }
+        if (omitPaymentApprovedBills != null) {
+            hm.put("pa", omitPaymentApprovedBills);
+            jpql += " and b.paymentApproved=:pa";
         }
 
         if (bts != null) {
