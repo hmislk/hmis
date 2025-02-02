@@ -95,6 +95,14 @@
                                                    var="status"
                                                    itemValue="#{status}" itemLabel="#{status.label}" />
                                 </p:selectOneMenu>
+                                
+                                <p:outputLabel value="Admission Type" ></p:outputLabel>
+                                <p:selectOneMenu 
+                                    class="w-100"
+                                    value="#{admissionController.admissionTypeForSearch}" >
+                                    <f:selectItem itemLabel="All"></f:selectItem>
+                                    <f:selectItems value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                </p:selectOneMenu>
 
                                 <p:outputLabel value="Institution"></p:outputLabel>
                                 <p:selectOneMenu 
@@ -230,6 +238,16 @@
                                                              icon="fa fa-user-md" 
                                                              action="#{patientController.navigateToOpdPatientProfile()}">
                                                 <f:setPropertyActionListener value="#{a.patient}" target="#{patientController.current}" />
+                                            </p:commandButton>
+                                            
+                                            <p:commandButton ajax="false" 
+                                                             class="m-1"
+                                                             icon="fa fa-repeat" 
+                                                             title="Convert"
+                                                             action="#{patientController.navigateToConvertNonBhtToBht(a)}"
+                                                             rendered="#{a.currentPatientRoom eq null and configOptionApplicationController.getBooleanValueByKey('Enable Button to Convert Admissions to new Admission',false)}"
+                                                             disabled="#{a.convertedToAnotherEncounter}">
+                                                <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
                                             </p:commandButton>
 
                                         </p:column>
