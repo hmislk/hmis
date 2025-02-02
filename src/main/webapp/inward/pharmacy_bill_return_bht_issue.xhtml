@@ -57,8 +57,8 @@
                             </h:outputText>
                         </p:column>  
 
-                        <p:column headerText="Purchase Rate" style="width:25px!important;"> 
-                            <h:outputText value="#{ph.rate}"  >
+                        <p:column headerText="Rate" style="width:25px!important;"> 
+                            <h:outputText value="#{ph.netRate}"  >
                                 <f:convertNumber pattern="#,##0.00" />                                
                             </h:outputText>                      
                         </p:column>                
@@ -69,7 +69,7 @@
 
                         <p:column headerText="Date of Expiry" style="width:25px!important;">                     
                             <h:outputLabel value="#{ph.pharmaceuticalBillItem.doe}"> 
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
                             </h:outputLabel>
                         </p:column>
 
@@ -132,6 +132,10 @@
                             </f:facet>
 
                             <h:panelGroup   id="gpBillPreview2">
+                                
+                                 <h:panelGroup id="gpBillPreviewFiveFiveCustom3Original" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
+                                    <phi:inward_direct_issue_bill_five_five_custom_3 bill="#{bhtIssueReturnController.bill}"/>
+                                </h:panelGroup>
 
                                 <h:panelGroup   id="gpBillPreviewSingle2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                     <div >
@@ -177,6 +181,11 @@
                             </f:facet>
 
                             <h:panelGroup   id="gpBillPreview1">
+
+                                <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
+                                    <phi:inward_direct_issue_return_bill_five_five_custom_3 bill="#{bhtIssueReturnController.returnBill}"/>
+                                </h:panelGroup>
+
                                 <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
                                         <phi:returnBill bill="#{bhtIssueReturnController.returnBill}"/>
