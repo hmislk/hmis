@@ -850,15 +850,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         clearSearchValues();
         return "/inward/inpatient_search?faces-redirect=true;";
     }
-    
-    public String navigateToListAdmissionsWithoutRoom() {
-        institutionForSearch = sessionController.getLoggedUser().getInstitution();
-        if (configOptionApplicationController.getBooleanValueByKey("Restirct Inward Admission Search to Logged Department of the User")) {
-            loggedDepartment = sessionController.getLoggedUser().getDepartment();
-        }
-        clearSearchValues();
-        return "/inward/inpatient_search_without_room?faces-redirect=true;";
-    }
 
     public String navigateToListChildAdmissions() {
         perantAddmission = current;
