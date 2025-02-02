@@ -52,6 +52,7 @@ import static com.divudi.data.inward.AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_N
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.ClinicalFindingValueFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
@@ -160,6 +161,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Doctor referringDoctorForSearch;
     private Institution institutionForSearch;
     private AdmissionStatus admissionStatusForSearch;
+    private AdmissionType admissionTypeForSearch;
     private Admission perantAddmission;
     private boolean patientDetailsEditable;
     private List<ClinicalFindingValue> patientAllergies;
@@ -617,6 +619,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             j += "  and c.parentEncounter=:pent ";
             m.put("pent", parentAdmission);
         }
+        
+        if (admissionTypeForSearch != null) {
+            j += "  and c.admissionType=:at ";
+            m.put("at", admissionTypeForSearch);
+        }
 
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
     }
@@ -831,6 +838,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         referringDoctorForSearch = null;
         institutionForSearch = null;
         admissionStatusForSearch = null;
+        admissionTypeForSearch = null;
         parentAdmission = null;
     }
 
@@ -1930,6 +1938,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setCurrentNonBht(Admission currentNonBht) {
         this.currentNonBht = currentNonBht;
+    }
+
+    public AdmissionType getAdmissionTypeForSearch() {
+        return admissionTypeForSearch;
+    }
+
+    public void setAdmissionTypeForSearch(AdmissionType admissionTypeForSearch) {
+        this.admissionTypeForSearch = admissionTypeForSearch;
     }
 
     /**
