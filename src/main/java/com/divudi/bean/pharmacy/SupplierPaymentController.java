@@ -146,7 +146,7 @@ public class SupplierPaymentController implements Serializable {
         netTotal = 0.0;
         return "/dealerPayment/dealor_due?faces-redirect=true";
     }
-    
+
     public String navigateToGenerateSupplierPayments() {
         bills = new ArrayList<>();
         netTotal = 0.0;
@@ -474,6 +474,24 @@ public class SupplierPaymentController implements Serializable {
         }
         getCurrent().setTotal(-n);
         getCurrent().setNetTotal(-n);
+    }
+
+    public void calculateTotalByCurrentBillsBillItems() {
+        getCurrent().setNetTotal(0);
+        if (current == null) {
+            return;
+        }
+        if (current.getBillItems() == null) {
+            return;
+        }
+        double methodTotal = 0.0;
+        double methodNetTotal = 0.0;
+        for (BillItem b : current.getBillItems()) {
+            methodTotal += Math.abs(b.getNetValue());
+        }
+        methodNetTotal = methodTotal - Math.abs(current.getDiscount());
+        getCurrent().setTotal(-methodTotal);
+        getCurrent().setNetTotal(-methodNetTotal);
     }
 
     public void calTotal() {
@@ -1505,9 +1523,9 @@ public class SupplierPaymentController implements Serializable {
         currentBillItem.setNetValue(-settlingValue);
         currentBillItem.setGrossValue(-settlingValue);
         getBillItems().add(currentBillItem);
-        calTotalBySelectedBillTems();
-        calTotal();
-        return "/dealerPayment/settle_supplier_payment_for_approved_payment?faces-redirect=true";
+        current.getBillItems().add(currentBillItem);
+        calculateTotalByCurrentBillsBillItems();
+        return "/dealerPayment/settle_supplier_payment?faces-redirect=true";
     }
 
     public String navigateToPrepareSupplierPayment(Bill originalBill) {
@@ -1526,12 +1544,13 @@ public class SupplierPaymentController implements Serializable {
         }
         currentBillItem = new BillItem();
         currentBillItem.setReferenceBill(originalBill);
-        double settlingValue = Math.abs(originalBill.getNetTotal()) - (Math.abs(originalBill.getRefundAmount()) + Math.abs(originalBill.getPaidAmount()));
-        currentBillItem.setNetValue(-settlingValue);
-        currentBillItem.setGrossValue(-settlingValue);
-        getBillItems().add(currentBillItem);
-        getSelectedBillItems().add(currentBillItem);
-        calTotalBySelectedBillTems();
+//        double settlingValue = Math.abs(originalBill.getNetTotal()) - (Math.abs(originalBill.getRefundAmount()) + Math.abs(originalBill.getPaidAmount()));
+//        currentBillItem.setNetValue(-settlingValue);
+//        currentBillItem.setGrossValue(-settlingValue);
+//        getBillItems().add(currentBillItem);
+//        getSelectedBillItems().add(currentBillItem);
+        current.getBillItems().add(currentBillItem);
+        calculateTotalByCurrentBillsBillItems();
 //        calTotal();
         return "/dealerPayment/prepare_supplier_payment?faces-redirect=true";
     }
@@ -1612,11 +1631,11 @@ public class SupplierPaymentController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        calculateTotal(billItems);
-        updateReferanceBillBalances(billItems);
+        calculateTotalByCurrentBillsBillItems();
+        updateReferanceBillBalances(getCurrent().getBillItems());
+        
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-        getCurrent().setTotal(getCurrent().getNetTotal());
-
+        
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT);
 
         getCurrent().setInsId(deptId);
@@ -1639,6 +1658,17 @@ public class SupplierPaymentController implements Serializable {
             getBillFacade().create(getCurrent());
         } else {
             getBillFacade().edit(getCurrent());
+        }
+        
+        for(BillItem savingBillItem: getCurrent().getBillItems()){
+            savingBillItem.setBill(current);
+            if(savingBillItem.getId()==null){
+                savingBillItem.setCreatedAt(new Date());
+                savingBillItem.setCreater(sessionController.getLoggedUser());
+                billItemFacade.create(savingBillItem);
+            }else{
+                billItemFacade.edit(savingBillItem);
+            }
         }
 
         Payment p = createPayment(getCurrent(), getCurrent().getPaymentMethod());
