@@ -408,6 +408,16 @@ public class SupplierPaymentController implements Serializable {
 
     }
 
+    public void fillNetValueForBillItems(BillItem fillinfItem) {
+        if (fillinfItem == null) {
+            return;
+        }
+        double ballanceAmt = getReferenceBallance(fillinfItem);
+        if (ballanceAmt > 0.1) {
+            fillinfItem.setNetValue(ballanceAmt);
+        }
+    }
+
     @Deprecated
     public void selectInstitutionListener() {
         Institution ins = institution;
@@ -423,9 +433,28 @@ public class SupplierPaymentController implements Serializable {
             getCurrentBillItem().setReferenceBill(b);
             double returned = Math.abs(getCreditBean().getGrnReturnValue(getCurrentBillItem().getReferenceBill(), billTypesListReturn));
             getCurrentBillItem().getReferenceBill().setTmpReturnTotal(returned);
+            fillNetValueForBillItems(currentBillItem);
+//            addToBill();
+        }
+        calTotalBySelectedBillTems();
+    }
 
-            selectListener();
-            addToBill();
+    public void fillInstitutionBillsToSettle() {
+        Institution ins = institution;
+        makeNull();
+
+        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.StoreGrnBill, BillType.StorePurchase};
+        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        BillType[] billTypesArrayReturn = {BillType.PharmacyGrnReturn, BillType.PurchaseReturn, BillType.StoreGrnReturn, BillType.StorePurchaseReturn};
+        List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
+
+        List<Bill> list = getBillController().getDealorBills(ins, billTypesListBilled);
+        for (Bill b : list) {
+            getCurrentBillItem().setReferenceBill(b);
+            double returned = Math.abs(getCreditBean().getGrnReturnValue(getCurrentBillItem().getReferenceBill(), billTypesListReturn));
+            getCurrentBillItem().getReferenceBill().setTmpReturnTotal(returned);
+            fillNetValueForBillItems(currentBillItem);
+//            addToBill();
         }
         calTotalBySelectedBillTems();
     }
@@ -455,7 +484,7 @@ public class SupplierPaymentController implements Serializable {
         if (!isPaidAmountOk(billItem)) {
             billItem.setNetValue(0);
         }
-        calTotal();
+        calculateTotalBySelectedBillItems();
     }
 
     public void changeDiscountListenerForPaymentPreperation() {
@@ -487,6 +516,24 @@ public class SupplierPaymentController implements Serializable {
         double methodTotal = 0.0;
         double methodNetTotal = 0.0;
         for (BillItem b : current.getBillItems()) {
+            methodTotal += Math.abs(b.getNetValue());
+        }
+        methodNetTotal = methodTotal - Math.abs(current.getDiscount());
+        getCurrent().setTotal(-methodTotal);
+        getCurrent().setNetTotal(-methodNetTotal);
+    }
+
+    public void calculateTotalBySelectedBillItems() {
+        getCurrent().setNetTotal(0);
+        if (current == null) {
+            return;
+        }
+        if (selectedBillItems == null) {
+            return;
+        }
+        double methodTotal = 0.0;
+        double methodNetTotal = 0.0;
+        for (BillItem b : selectedBillItems) {
             methodTotal += Math.abs(b.getNetValue());
         }
         methodNetTotal = methodTotal - Math.abs(current.getDiscount());
@@ -560,13 +607,28 @@ public class SupplierPaymentController implements Serializable {
 
     public void removeAll() {
         for (BillItem b : selectedBillItems) {
-
             remove(b);
         }
 
         //   calTotalWithResetingIndex();
         selectedBillItems = null;
     }
+
+//    public void deselectAllBillItems() {
+//        if (selectedBillItems == null) {
+//            selectedBillItems = new ArrayList<>();
+//        } else {
+//            selectedBillItems.clear();
+//        }
+//    }
+//
+//    public void selectAllBillItems() {
+//        if (billItems == null || billItems.isEmpty()) {
+//            selectedBillItems = new ArrayList<>();
+//        } else {
+//            selectedBillItems = new ArrayList<>(billItems);
+//        }
+//    }
 
     public void remove(BillItem billItem) {
         getBillItems().remove(billItem.getSearialNo());
@@ -1633,9 +1695,9 @@ public class SupplierPaymentController implements Serializable {
         }
         calculateTotalByCurrentBillsBillItems();
         updateReferanceBillBalances(getCurrent().getBillItems());
-        
+
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-        
+
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT);
 
         getCurrent().setInsId(deptId);
@@ -1659,14 +1721,14 @@ public class SupplierPaymentController implements Serializable {
         } else {
             getBillFacade().edit(getCurrent());
         }
-        
-        for(BillItem savingBillItem: getCurrent().getBillItems()){
+
+        for (BillItem savingBillItem : getCurrent().getBillItems()) {
             savingBillItem.setBill(current);
-            if(savingBillItem.getId()==null){
+            if (savingBillItem.getId() == null) {
                 savingBillItem.setCreatedAt(new Date());
                 savingBillItem.setCreater(sessionController.getLoggedUser());
                 billItemFacade.create(savingBillItem);
-            }else{
+            } else {
                 billItemFacade.edit(savingBillItem);
             }
         }

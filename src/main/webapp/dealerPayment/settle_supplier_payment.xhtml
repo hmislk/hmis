@@ -57,14 +57,39 @@
                                     </h:panelGroup>
                                 </h:panelGroup>
 
+                                <p:outputLabel value="Total" />
+                                <p:inputText
+                                    id="lblTotal"
+                                    readonly="true"
+                                    class="text-end"
+                                    value="#{supplierPaymentController.current.total}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:inputText>
+
+                                <p:outputLabel value="Discount" />
+                                <p:inputText 
+                                    id="txtDiscount"
+                                    class="text-end"
+                                    onfocus="this.select();"
+                                    value="#{supplierPaymentController.current.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                    <p:ajax process="txtDiscount" update="lblNetTotal" listener="#{supplierPaymentController.calculateTotalByCurrentBillsBillItems()}" ></p:ajax>
+                                </p:inputText>
 
                                 <p:outputLabel value="Net Total" />
-                                <p:outputLabel id="lblNetTotal"  value="#{supplierPaymentController.current.netTotal}">
+                                <p:inputText 
+                                    id="lblNetTotal" 
+                                    readonly="true"
+                                    class="text-end"
+                                    value="#{supplierPaymentController.current.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                </p:outputLabel>
+                                </p:inputText>
 
-                                <p:outputLabel value="Description"/>
-                                <p:inputTextarea value="#{supplierPaymentController.current.comments}"/>                                                         
+                                <p:outputLabel 
+                                    value="Description"/>
+                                <p:inputTextarea 
+                                    class="w-100"
+                                    value="#{supplierPaymentController.current.comments}"/>                                                         
 
 
 
