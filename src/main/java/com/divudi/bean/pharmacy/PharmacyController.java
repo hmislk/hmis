@@ -1004,6 +1004,7 @@ public class PharmacyController implements Serializable {
         totalCreditPurchaseValue = 0.0;
         totalCashPurchaseValue = 0.0;
         totalPurchase = 0.0;
+        grantIssueQty = 0.0;
     }
 
     public void generateConsumptionReportTableByBill(BillType billType) {
@@ -1298,6 +1299,7 @@ public class PharmacyController implements Serializable {
 
     public List<DepartmentCategoryWiseItems> generateConsumptionReportTableByDepartmentAndCategoryWise(BillType billType) {
         totalSaleValue = 0.0;
+        qty = 0.0;
 
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.DepartmentCategoryWiseItems("
