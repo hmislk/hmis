@@ -52,6 +52,7 @@ import static com.divudi.data.inward.AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_N
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.ClinicalFindingValueFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
@@ -139,6 +140,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private List<Patient> patientList;
     private boolean printPreview;
     private List<Admission> currentAdmissions;
+    AdmissionType admissionTypeForSearch;
     ///////////////////////////
     String selectText = "";
     private String ageText = "";
@@ -169,6 +171,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Institution site;
 
     private PaymentMethod paymentMethod;
+    private boolean admittingProcessStarted;
 
     public void addPatientAllergy() {
         if (currentPatientAllergy == null) {
@@ -620,7 +623,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
     }
-    
+
     public void searchAdmissionsWithoutRoom() {
         if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Please select date");
@@ -716,7 +719,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         bhtSummeryController.setPatientEncounter(current);
         return bhtSummeryController.navigateToInpatientProfile();
     }
-    
 
     public List<Admission> completeAdmission(String query) {
         List<Admission> suggestions;
@@ -842,7 +844,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         clearSearchValues();
         return "/inward/inpatient_search?faces-redirect=true;";
     }
-    
+
     public String navigateToListAdmissionsWithoutRoom() {
         institutionForSearch = sessionController.getLoggedUser().getInstitution();
         if (configOptionApplicationController.getBooleanValueByKey("Restirct Inward Admission Search to Logged Department of the User")) {
@@ -1120,7 +1122,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 return true;
             }
         }
-        
+
         if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
             if (getPatientRoom().getRoomFacilityCharge() == null) {
                 JsfUtil.addErrorMessage("Select Room ");
@@ -1268,7 +1270,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void saveSelected() {
+        if (admittingProcessStarted) {
+            JsfUtil.addErrorMessage("Admittin process already started.");
+            return;
+        }
+        admittingProcessStarted = true;
+
         if (errorCheck()) {
+            admittingProcessStarted = false;
             return;
         }
         savePatient();
@@ -1324,9 +1333,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         // Save EncounterCreditCompanies
         // Need to create EncounterCredit
+        admittingProcessStarted = false;
         printPreview = true;
     }
-    
+
     public void saveConvertSelected() {
         if (errorCheck()) {
             return;
@@ -1381,7 +1391,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         saveEncounterCreditCompanies(current);
-        
+
         getCurrentNonBht().setParentEncounter(current);
         getCurrentNonBht().setDischarged(true);
         getCurrentNonBht().setDateOfDischarge(new Date());
@@ -1492,6 +1502,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public PersonFacade getPersonFacade() {
         return personFacade;
+    }
+
+    public AdmissionType getAdmissionTypeForSearch() {
+        return admissionTypeForSearch;
+    }
+
+    public void setAdmissionTypeForSearch(AdmissionType admissionTypeForSearch) {
+        this.admissionTypeForSearch = admissionTypeForSearch;
     }
 
     public void setPersonFacade(PersonFacade personFacade) {
@@ -1930,6 +1948,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setCurrentNonBht(Admission currentNonBht) {
         this.currentNonBht = currentNonBht;
+    }
+
+    public boolean isAdmittingProcessStarted() {
+        return admittingProcessStarted;
+    }
+
+    public void setAdmittingProcessStarted(boolean admittingProcessStarted) {
+        this.admittingProcessStarted = admittingProcessStarted;
     }
 
     /**
