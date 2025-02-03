@@ -7,6 +7,7 @@ package com.divudi.data;
 public enum BillCategory {
 
     BILL("Bill"),
+    PREBILL("Prebill"),
     CANCELLATION("Cancellation"),
     PAYMENTS("Payments"),
     REFUND("Refund");

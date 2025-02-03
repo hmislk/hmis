@@ -1,4 +1,5 @@
 select `ID`, 
+`COMPLETED`,
  `DTYPE`,
 `BILLCLASSTYPE`,
 `BILLTYPE`, 

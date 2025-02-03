@@ -24,37 +24,45 @@
                         value="Check Missing Fields"  
                         class="w-25"
                         />
-                    
+
                 </f:facet>
                 <p:outputLabel value="Errors" ></p:outputLabel>
-                <p:inputTextarea value="#{dataAdministrationController.errors}" 
-                                 class="w-100"/>
+                <p:inputTextarea 
+                    rows="2"
+                    value="#{dataAdministrationController.errors}" 
+                    class="w-100"/>
 
-                
+
                 <p:outputLabel value="Data table Create SQL statement" ></p:outputLabel>
-                <p:inputTextarea value="#{dataAdministrationController.createdSql}" 
-                                 class="w-100"/>
-                
+                <p:inputTextarea 
+                    rows="2"
+                    value="#{dataAdministrationController.createdSql}" 
+                    class="w-100"/>
+
                 <p:spacer ></p:spacer>
                 <p:commandButton 
                     value="Generate Alter Statements" 
                     ajax="false" 
                     action="#{dataAdministrationController.generateAlterStatementFromCreateTableStatement}" ></p:commandButton>
-                
+
                 <p:outputLabel value="SQL to Run" ></p:outputLabel>
-                <p:inputTextarea value="#{dataAdministrationController.suggestedSql}" 
-                                 class="w-100"/>
+                <p:inputTextarea
+                    rows="2"
+                    value="#{dataAdministrationController.suggestedSql}" 
+                    class="w-100"/>
 
                 <p:spacer ></p:spacer>
                 <p:commandButton 
                     value="RUN SQL" 
                     ajax="false" 
                     action="#{dataAdministrationController.runSqlToCreateFields}" ></p:commandButton>
-                
+
                 <p:outputLabel value="Execution Feedback" ></p:outputLabel>
-                <p:inputTextarea value="#{dataAdministrationController.executionFeedback}" 
-                                 readonly="true"
-                                 class="w-100"/>
+                <p:inputTextarea
+                    rows="2"
+                    value="#{dataAdministrationController.executionFeedback}" 
+                    readonly="true"
+                    class="w-100"/>
             </p:panelGrid>
         </h:form>
     </cc:implementation>

@@ -85,6 +85,43 @@ public class InstitutionController implements Serializable {
         hm.put("type", InstitutionType.Site);
         sites = getFacade().findByJpql(sql, hm);
     }
+    
+    private List<Institution> institutions;
+    private InstitutionType institutionType;
+    
+    public void fillRetiredInstitution() {
+        institutions = new ArrayList();
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Institution c "
+                + " where c.retired=true ";
+        
+        if(institutionType != null){
+            sql += " and c.institutionType =:type ";
+            hm.put("type", institutionType);
+        }
+        
+        sql += " order by c.name";
+        institutions = getFacade().findByJpql(sql, hm);
+    }
+    
+    public void reactivateRetiredInstitution(Institution institution) {
+        Institution currentRetiredInstitution = getFacade().find(institution.getId());
+
+        if(currentRetiredInstitution == null){
+            JsfUtil.addErrorMessage("No Found Institution");
+            return;
+        }
+        if(!currentRetiredInstitution.isRetired()){
+            JsfUtil.addErrorMessage("Already Active");
+            return;
+        }
+        
+        currentRetiredInstitution.setRetired(false);
+        getFacade().edit(currentRetiredInstitution);
+
+        JsfUtil.addSuccessMessage("Successfully Reactiveed");
+    }
 
     public String toAdminManageInstitutions() {
         return "/admin/institutions/admin_institutions_index?faces-redirect=true";
@@ -93,6 +130,10 @@ public class InstitutionController implements Serializable {
     public String toListInstitutions() {
         fillItems();
         return "/admin/institutions/institutions?faces-redirect=true";
+    }
+    
+    public String navigatetoActivateInstitutions() {
+        return "/admin/institutions/activate_institutions?faces-redirect=true";
     }
 
     public String toAddNewInstitution() {
@@ -923,6 +964,22 @@ public class InstitutionController implements Serializable {
 
     public void setSites(List<Institution> sites) {
         this.sites = sites;
+    }
+
+    public InstitutionType getInstitutionType() {
+        return institutionType;
+    }
+
+    public void setInstitutionType(InstitutionType institutionType) {
+        this.institutionType = institutionType;
+    }
+
+    public List<Institution> getInstitutions() {
+        return institutions;
+    }
+
+    public void setInstitutions(List<Institution> institutions) {
+        this.institutions = institutions;
     }
 
     /**

@@ -171,7 +171,8 @@
                                         <p:ajax 
                                             event="itemSelect" 
                                             process="acItem" 
-                                            update="txtQty txtFreeQty txtPrate" ></p:ajax>
+                                            listener="#{pharmacyPurchaseController.onItemSelect}"
+                                            update="txtQty txtFreeQty txtPrate txtRetailRate" ></p:ajax>
                                     </p:autoComplete>
                                 </div>
                                 <div class="col-1">
@@ -224,7 +225,7 @@
                                             onfocus="this.select()"
                                             styleClass="numericTxt" 
                                             value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
-                                            <f:ajax event="keyup" execute="@this acItem" render="tmpRetail" listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>
+                                            <!--<f:ajax event="keyup" execute="@this acItem" render="txtRetailRate" listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>-->
                                         </p:inputText>
                                         <p:inputText 
                                             autocomplete="off" 
@@ -232,7 +233,7 @@
                                             onfocus="this.select()"
                                             styleClass="numericTxt" 
                                             value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRatePack}"  >
-                                            <f:ajax event="keyup" execute="@this acItem" render="tmpRetail" listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>
+                                            <!--<f:ajax event="keyup" execute="@this acItem" render="txtRetailRate" listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>-->
                                         </p:inputText>
                                     </h:panelGroup>
 
@@ -241,7 +242,7 @@
                                     <h:outputLabel value="Sale Price (Per Unit)"></h:outputLabel>
                                     <p:inputText 
                                         autocomplete="off" 
-                                        id="tmpRetail" 
+                                        id="txtRetailRate" 
                                         onfocus="this.select()"
                                         styleClass="numericTxt" 
                                         value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate}"  >
@@ -332,11 +333,11 @@
                         <h:outputText  class="mx-4" value="Ordered Items" />  
                     </f:facet>
 
-                     <p:column headerText="No" width="2em">  
+                    <p:column headerText="No" width="2em">  
                         <h:outputLabel  value="#{i+1}">
                         </h:outputLabel>
                     </p:column> 
-                    
+
                     <p:column headerText="Item Name"  styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                         <h:outputLabel id="item" value="#{ph.item.name} - #{ph.item.code}" style="width:100%">
                         </h:outputLabel>
@@ -497,58 +498,58 @@
                         </p:panel>
                     </div>
                 </div>
-                
+
                 <p:panel header="Bill Expenses" class="my-3" >
-                        <h:panelGrid id="billExpenseGrid" columns="4" style="min-width: 100%;">
-                            <h:outputLabel value="Select Expense"/>
-                            <h:outputLabel value="Value"/>
-                            <h:outputLabel value="Description"/>
-                            <h:outputLabel ></h:outputLabel>
-                            <p:autoComplete 
-                                id="acExpense"   
-                                value="#{pharmacyPurchaseController.currentExpense.item}" 
-                                forceSelection="true"
-                                completeMethod="#{itemController.completeExpenseItem}" 
-                                var="ex" 
-                                itemLabel="#{ex.name}" 
-                                itemValue="#{ex}" 
-                                inputStyleClass="w-100" 
-                                class="w-75">
-                            </p:autoComplete>
-                            <p:inputText 
-                                autocomplete="off" 
-                                id="txtExpense"
-                                onfocus="this.select()"
-                                styleClass="numericTxt" 
-                                value="#{pharmacyPurchaseController.currentExpense.rate}" 
-                                style="width:50%" />  
-                            <p:inputText maxlength="250" value="#{pharmacyPurchaseController.currentExpense.descreption}" style="width:75%" ></p:inputText>
-                            <p:commandButton 
-                                id="btnAddExpense" 
-                                value="Add Expense" 
-                                icon="fas fa-plus"
-                                class="ui-button-Warning mx-2"
-                                action="#{pharmacyPurchaseController.addExpense()}"
-                                ajax = "false"
-                                process="billExpenseGrid btnAddExpense @this" 
-                                update=" billExpenseGrid @all"/>
-                        </h:panelGrid>
-                        <p:dataTable id="tblExpenses" value="#{pharmacyPurchaseController.billExpenses}" var="be" class="mt-2"
-                                     emptyMessage="No Bill Expenses" >
-                            <p:column headerText="Expense" >
-                                <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Value" >
-                                <h:outputLabel value="#{be.netValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Description" >
-                                <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
-                            </p:column>
-                        </p:dataTable>
-                    </p:panel>
-                
+                    <h:panelGrid id="billExpenseGrid" columns="4" style="min-width: 100%;">
+                        <h:outputLabel value="Select Expense"/>
+                        <h:outputLabel value="Value"/>
+                        <h:outputLabel value="Description"/>
+                        <h:outputLabel ></h:outputLabel>
+                        <p:autoComplete 
+                            id="acExpense"   
+                            value="#{pharmacyPurchaseController.currentExpense.item}" 
+                            forceSelection="true"
+                            completeMethod="#{itemController.completeExpenseItem}" 
+                            var="ex" 
+                            itemLabel="#{ex.name}" 
+                            itemValue="#{ex}" 
+                            inputStyleClass="w-100" 
+                            class="w-75">
+                        </p:autoComplete>
+                        <p:inputText 
+                            autocomplete="off" 
+                            id="txtExpense"
+                            onfocus="this.select()"
+                            styleClass="numericTxt" 
+                            value="#{pharmacyPurchaseController.currentExpense.rate}" 
+                            style="width:50%" />  
+                        <p:inputText maxlength="250" value="#{pharmacyPurchaseController.currentExpense.descreption}" style="width:75%" ></p:inputText>
+                        <p:commandButton 
+                            id="btnAddExpense" 
+                            value="Add Expense" 
+                            icon="fas fa-plus"
+                            class="ui-button-Warning mx-2"
+                            action="#{pharmacyPurchaseController.addExpense()}"
+                            ajax = "false"
+                            process="billExpenseGrid btnAddExpense @this" 
+                            update=" billExpenseGrid @all"/>
+                    </h:panelGrid>
+                    <p:dataTable id="tblExpenses" value="#{pharmacyPurchaseController.billExpenses}" var="be" class="mt-2"
+                                 emptyMessage="No Bill Expenses" >
+                        <p:column headerText="Expense" >
+                            <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Value" >
+                            <h:outputLabel value="#{be.netValue}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Description" >
+                            <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+
                 <p:commandButton 
                     id="nullButton" 
                     value="No Action"

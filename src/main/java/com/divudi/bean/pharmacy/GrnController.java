@@ -559,12 +559,17 @@ public class GrnController implements Serializable {
         if (getGrnBill().getReferenceInstitution() == null) {
             getGrnBill().setReferenceInstitution(getReferenceInstitution());
         }
-
-        if (currentGrnBillPre != null) {
-            getGrnBill().setPaymentMethod(getCurrentGrnBillPre().getPaymentMethod());
-        } else {
-            getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
+        
+        if(getGrnBill().getPaymentMethod()==null){
+            JsfUtil.addErrorMessage("Please select a payment method");
+            return;
         }
+
+//        if (currentGrnBillPre != null) {
+//            getGrnBill().setPaymentMethod(getCurrentGrnBillPre().getPaymentMethod());
+//        } else {
+//            getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
+//        }
         getGrnBill().setInvoiceDate(invoiceDate);
         getGrnBill().setInvoiceNumber(invoiceNumber);
         String msg = pharmacyCalculation.errorCheck(getGrnBill(), billItems);
@@ -578,11 +583,6 @@ public class GrnController implements Serializable {
         }
 
         saveBill();
-        
-        getGrnBill().setBillExpenses(billExpenses);
-        getGrnBill().setExpenseTotal(calExpenses());
-        calGrossTotal();
-        getGrnBill().setNetTotal(getGrnBill().getNetTotal() - calExpenses());
 
         Payment p = createPayment(getGrnBill(), getGrnBill().getPaymentMethod());
 
@@ -648,7 +648,10 @@ public class GrnController implements Serializable {
         getGrnBill().setCreater(getSessionController().getLoggedUser());
         getGrnBill().setCreatedAt(Calendar.getInstance().getTime());
 
-        
+        getGrnBill().setBillExpenses(billExpenses);
+        getGrnBill().setExpenseTotal(calExpenses());
+        calGrossTotal();
+        getGrnBill().setNetTotal(getGrnBill().getNetTotal() - calExpenses());
 
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         updateBalanceForGrn(getGrnBill());
@@ -885,7 +888,7 @@ public class GrnController implements Serializable {
     public void saveBill() {
         getGrnBill().setBillDate(new Date());
         getGrnBill().setBillTime(new Date());
-        getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
+//        getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
         getGrnBill().setReferenceBill(getApproveBill());
         getGrnBill().setTotal(total);
         getGrnBill().setDiscount(discount);

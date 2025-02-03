@@ -207,7 +207,7 @@ public class PurchaseOrderController implements Serializable {
     public void saveBill() {
 
         getAprovedBill().setCreditDuration(getAprovedBill().getCreditDuration());
-        getAprovedBill().setPaymentMethod(getRequestedBill().getPaymentMethod());
+//        getAprovedBill().setPaymentMethod(getRequestedBill().getPaymentMethod());
         getAprovedBill().setFromDepartment(getRequestedBill().getDepartment());
         getAprovedBill().setFromInstitution(getRequestedBill().getInstitution());
         getAprovedBill().setReferenceBill(getRequestedBill());

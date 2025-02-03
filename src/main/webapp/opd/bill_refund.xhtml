@@ -7,7 +7,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -232,6 +233,9 @@
                                         bill="#{billSearch.currentRefundBill}" 
                                         payments="#{opdBillController.payments}"/>
 
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFiveCustom3'}">
+                                    <prints:five_five_custom_3 bill="#{billSearch.currentRefundBill}"/>
                                 </h:panelGroup>
 
 

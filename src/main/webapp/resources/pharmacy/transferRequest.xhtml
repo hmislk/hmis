@@ -15,33 +15,12 @@
     <cc:implementation>
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
         <div class="posbillA4 noBorder summeryBorder">
-
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
             </div>
-            <div class="institutionContact" >
-                <div >
-                    <h:outputLabel value="Telephone : #{cc.attrs.bill.institution.phone} / #{cc.attrs.bill.department.telephone1}"/>
-
-                </div>
-                <!--                <div >
-                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.referenceBill.creater.department.telephone1} "/>
-                                </div>-->
-                <div >
-                    <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.referenceBill.creater.institution.fax}"/>                                                 
-                </div>
-                <div >
-                    <h:outputLabel value="Email : "/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.email}"/>                                                 
-                </div>
-            </div>
-
             <div class="headingBill">
                 <h:outputLabel value="Transfer Reqeust" style="text-decoration: underline;"/>                           
             </div>
-
-            <div  >
-
 
             <h:panelGrid columns="3" class="w-100">
                 <h:outputLabel value="Request From"/>
@@ -52,7 +31,7 @@
                 <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}  (#{cc.attrs.bill.toDepartment.institution.name})"   /> 
                 <h:outputLabel value="Req No"/>
                 <h:outputLabel value=":"/>
-                 <h:outputLabel value="#{cc.attrs.bill.deptId}"   /> 
+                <h:outputLabel value="#{cc.attrs.bill.deptId}"   /> 
                 <h:outputLabel value="Req Person"/>
                 <h:outputLabel value=":"/>
                 <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"/>
@@ -67,36 +46,37 @@
                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                 </h:outputLabel>
             </h:panelGrid>
-                <!--</h:panelGrid>-->
-            </div>
+
 
             <p:spacer height="30"/>
-            
-            <div >
-                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip"  >
 
-                    <p:column style="width: 50px!important; text-align: right!important; padding-right: 20px;">
+            <div >
+                <p:dataTable
+                    style="padding:0px; margin: 0px;"
+                    rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip"  >
+
+                    <p:column style="padding: 0px; margin: 0px;">
                         <f:facet name="header">
                             <h:outputLabel value="No"/>
                         </f:facet>
                         <h:outputLabel value="#{rowIndex+1}"/>
                     </p:column>
 
-                    <p:column style="text-align: left!important;">
+                    <p:column style="padding: 0px; margin: 0px; text-align: left!important;">
                         <f:facet name="header">
                             <h:outputLabel value="Item Name"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
-                    
-                    <p:column style="text-align: left!important;">
+
+                    <p:column style="padding: 0px; margin: 0px; text-align: left!important;">
                         <f:facet name="header">
                             <h:outputLabel value="Item Code"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.item.code}"/>
                     </p:column>
 
-                    <p:column  style="width: 300px!important; text-align: right!important; padding-right: 50px;">
+                    <p:column  style="padding: 0px; margin: 0px; text-align: right!important; ">
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
@@ -108,9 +88,12 @@
                 </p:dataTable>
             </div>
 
-           
+            <div  value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Request Bill Footer CSS')}" >
+                <p:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Request Bill Footer Text')}" escape="false" ></p:outputLabel>
+            </div>
 
-          
+
+
         </div>
     </cc:implementation>
 </html>
