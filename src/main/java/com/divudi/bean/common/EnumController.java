@@ -75,7 +75,7 @@ public class EnumController implements Serializable {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    
+
     private PaymentScheme paymentScheme;
     private List<Class<? extends Enum<?>>> enumList;
     List<PaymentMethod> paymentMethodsForOpdBilling;
@@ -110,7 +110,7 @@ public class EnumController implements Serializable {
         }
         return paymentMethodsForOpdBilling;
     }
-    
+
     public List<PaymentMethod> getPaymentMethodsForPackageBilling() {
         if (paymentMethodsForOpdBilling == null) {
             fillPaymentMethodsForPackageBilling();
@@ -154,7 +154,7 @@ public class EnumController implements Serializable {
             }
         }
     }
-    
+
     public void fillPaymentMethodsFoPharmacyPurchase() {
         paymentMethodsForPharmacyPurchase = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
@@ -218,6 +218,25 @@ public class EnumController implements Serializable {
     public List<PaymentMethod> getPaymentMethodsForPharmacyBilling() {
         if (paymentMethodsForPharmacyBilling == null) {
             fillPaymentMethodsForPharmacyBilling();
+        }
+        return paymentMethodsForPharmacyBilling;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPharmacyBillCancellations() {
+        if (paymentMethodsForPharmacyBilling == null) {
+            fillPaymentMethodsForPharmacyBilling();
+        }
+        if (paymentMethodsForPharmacyBilling == null) {
+            paymentMethodsForPharmacyBilling = new ArrayList<>();
+        }
+        if (paymentMethodsForPharmacyBilling.isEmpty()) {
+            paymentMethodsForPharmacyBilling.add(PaymentMethod.Cash);
+            paymentMethodsForPharmacyBilling.add(PaymentMethod.Card);
+        }
+        try {
+            paymentMethodsForPharmacyBilling.remove(PaymentMethod.MultiplePaymentMethods);
+        } catch (Exception e) {
+            System.err.println("e = " + e);
         }
         return paymentMethodsForPharmacyBilling;
     }
@@ -783,8 +802,8 @@ public class EnumController implements Serializable {
             PaymentMethod.ewallet};
         return p;
     }
-    
-     public PaymentMethod[] getPaymentMethodsForIwardDeposit() {
+
+    public PaymentMethod[] getPaymentMethodsForIwardDeposit() {
         PaymentMethod[] p = {PaymentMethod.Cash,
             PaymentMethod.Card,
             PaymentMethod.Cheque,
@@ -1053,7 +1072,7 @@ public class EnumController implements Serializable {
         }
         return paymentMethodsForPharmacyPurchase;
     }
-    
+
     public InvestigationItemType getInvestigationItemType(String name) {
         for (InvestigationItemType type : InvestigationItemType.values()) {
             if (type.toString().equalsIgnoreCase(name.trim())) {
@@ -1062,7 +1081,7 @@ public class EnumController implements Serializable {
         }
         return null;
     }
-    
+
     public InvestigationItemValueType getInvestigationItemValueType(String name) {
         for (InvestigationItemValueType type : InvestigationItemValueType.values()) {
             if (type.toString().equalsIgnoreCase(name)) {
@@ -1071,41 +1090,41 @@ public class EnumController implements Serializable {
         }
         return null;
     }
-    
+
     public CssVerticalAlign getCssVerticalAlign(String name) {
         for (CssVerticalAlign verAlign : CssVerticalAlign.values()) {
             if (verAlign.toString().equalsIgnoreCase(name)) {
                 return verAlign;
             }
         }
-        return null; 
+        return null;
     }
-    
+
     public CssTextDecoration getCssTextDecoration(String name) {
         for (CssTextDecoration txDeco : CssTextDecoration.values()) {
             if (txDeco.toString().equalsIgnoreCase(name)) {
                 return txDeco;
             }
         }
-        return null; 
+        return null;
     }
-    
+
     public CssFontStyle getCssFontStyle(String name) {
         for (CssFontStyle fontstyle : CssFontStyle.values()) {
             if (fontstyle.toString().equalsIgnoreCase(name)) {
                 return fontstyle;
             }
         }
-        return null; 
+        return null;
     }
-    
+
     public CssTextAlign getCssTextAlign(String name) {
         for (CssTextAlign txetAlign : CssTextAlign.values()) {
             if (txetAlign.toString().equalsIgnoreCase(name)) {
                 return txetAlign;
             }
         }
-        return null; 
+        return null;
     }
-    
+
 }
