@@ -37,7 +37,8 @@
                 <div class="row my-1"> 
                     <div class="col-6">
                         <h:outputLabel value="Patient :" ></h:outputLabel>
-                        <h:outputLabel value="#{cc.attrs.controller.billItem.prescription.patient.person.name}" ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.controller.billItem.prescription.patient.person.name}" rendered="#{cc.attrs.controller.billItem.prescription.patient ne null}"></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.controller.patient.person.name}" rendered="#{cc.attrs.controller.patient ne null}"></h:outputLabel>
                         
                     </div>
 
