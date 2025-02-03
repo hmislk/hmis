@@ -1287,6 +1287,8 @@ public class PharmacyController implements Serializable {
     }
 
     public List<DepartmentCategoryWiseItems> generateConsumptionReportTableByDepartmentAndCategoryWise(BillType billType) {
+        totalSaleValue = 0.0;
+
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.DepartmentCategoryWiseItems("
                 + "bi.bill.department, "
@@ -1404,6 +1406,11 @@ public class PharmacyController implements Serializable {
             for (Map.Entry<String, Double> consumptionEntry : consumptionMap.entrySet()) {
                 String consumptionDepartmentName = consumptionEntry.getKey();
                 double netTotal = consumptionEntry.getValue();
+
+                if (netTotal == 0) {
+                    continue;
+                }
+
                 departmentSummaries.add(new PharmacySummery(null, consumptionDepartmentName, netTotal));
             }
 
