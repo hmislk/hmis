@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Stock Adjustment Receive" >
+                    <p:panel header="Stock Adjustment Issue" >
 
                         <h:panelGrid columns="8" class="w-100">          
 
@@ -183,7 +183,7 @@
                                 value="Download">
                                 <p:dataExporter 
                                     type="xlsx" 
-                                    fileName="Stock Adjustment Receive Report" 
+                                    fileName="Stock Adjustment Issue Report" 
                                     target="tbl"  />
                             </p:commandButton>
 
@@ -195,7 +195,7 @@
                                 <p:dataExporter 
                                     type="pdf" 
                                     target="tbl" 
-                                    fileName="Stock Adjustment Receive Report" />
+                                    fileName="Stock Adjustment Issue Report" />
                             </p:commandButton>
 
                         </div>
