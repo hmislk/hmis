@@ -3,6 +3,7 @@ package com.divudi.ws.lims;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.data.lab.Analyzer;
+import static com.divudi.data.lab.Analyzer.HumaCount5D;
 import java.util.ArrayList;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.PatientSample;
@@ -178,6 +179,7 @@ public class MiddlewareController {
                     case IndikoPlus:
                     case SmartLytePlus:
                     case SwelabLumi:
+                    case HumaCount5D:
                         return processResultsCommon(dataBundle);
                     default:
                         throw new IllegalArgumentException("Unsupported analyzer type: " + analyzerDetails.getAnalyzerName());
@@ -281,10 +283,8 @@ public class MiddlewareController {
             System.out.println("testStr = " + testStr);
 
             String result = rr.getResultValueString();
-            
 
             System.out.println("Initial result = " + result);
-
 
             System.out.println("Final result = " + result);
 

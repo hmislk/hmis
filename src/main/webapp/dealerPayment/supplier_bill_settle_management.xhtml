@@ -13,7 +13,7 @@
                     <p:panel >
                         <f:facet name="header" >
                             <h:outputText styleClass="fa-solid fa-file-invoice"/>
-                            <h:outputLabel value="Supplier Payment Done Search" class="mx-4"/> 
+                            <h:outputLabel value="Settiling approved supplier Payments" class="mx-4"/> 
                         </f:facet>
                         <div class="row">
                             <div class="col-2">
@@ -45,24 +45,25 @@
                             <div class="col-10 gap-1">
                                 <p:commandButton 
                                     id="btnSearchPending" 
-                                    ajax="false" value="List Supplier Bills to Mark as Payments Completed" 
+                                    ajax="false" value="List Approved Supplier Payments to Settle" 
                                     class="m-1 ui-button-warning" 
                                     icon="fas fa-pills"
-                                    action="#{supplierPaymentController.fillSupplierBillsPendingCompletionForPayments()}"/>
+                                    action="#{supplierPaymentController.fillApprovedSupplierPaymentsToSettle()}"/>
 
                                 <p:commandButton 
                                     id="btnSearchCompleted" 
-                                    ajax="false" value="List Supplier Bills where Payments Marked as Complete" 
+                                    ajax="false" value="List Supplier Payments Settled" 
                                     class="m-1 ui-button-success" 
                                     icon="fas fa-pills"
-                                    action="#{supplierPaymentController.fillSupplierBillsCompletedForPayments()}"/>
+                                    action="#{supplierPaymentController.fillApprovedSupplierPaymentsToComplete()}"/>
 
                                 <p:commandButton 
                                     id="btnSearchAll" 
-                                    ajax="false" value="List All Supplier Bills" 
+                                    ajax="false" value="List All Payments" 
                                     class="m-1 ui-button-primary" 
                                     icon="fas fa-pills"
                                     action="#{supplierPaymentController.fillSupplierPaymentsIgnoringApprovealAndCompletion()}"/>
+
 
                             </div>
                         </div>
@@ -74,6 +75,7 @@
                                     var="bill"  
                                     paginatorPosition="bottom"
                                     rows="10"
+                                    rowKey="#{bill.id}"
                                     paginator="true"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15"
@@ -88,7 +90,11 @@
 
                                     <p:column headerText="Supplier Name" sortable="true" filterBy="#{bill.fromInstitution.name}" filterMatchMode="contains">                             
                                         <h:outputLabel value="#{bill.fromInstitution.name}" />
-                                    </p:column>   
+                                    </p:column>  
+
+                                    <p:column headerText="Payment Method" sortable="true" sortBy="#{bill.paymentMethod}" filterBy="#{bill.paymentMethod}" filterMatchMode="contains">                             
+                                        <h:outputLabel value="#{bill.paymentMethod}" />
+                                    </p:column>  
 
                                     <p:column headerText="Department" sortable="true" filterBy="#{bill.department.name}" filterMatchMode="contains">                             
                                         <h:outputLabel value="#{bill.department.name}" />
@@ -130,10 +136,12 @@
                                     </p:column>
 
                                     <p:column headerText="Approval Status" rendered="#{supplierPaymentController.supplierPaymentStatus eq 'All'}" >                               
-                                        <h:outputLabel value="#{bill.paymentApproved}" >               
-                                        </h:outputLabel>                                    
-                                        <h:outputLabel value="#{bill.paymentCompleted}" >               
-                                        </h:outputLabel>                                    
+                                        <p:badge value="Approved" severity="success" rendered="#{bill.paymentApproved}" />
+                                        <p:badge value="Pending Approval" severity="warning" rendered="#{!bill.paymentApproved}" />
+
+                                        <p:badge value="Completed" severity="info" rendered="#{bill.paymentCompleted}" />
+                                        <p:badge value="Pending Completion" severity="danger" rendered="#{!bill.paymentCompleted}" />
+
                                     </p:column> 
 
                                     <p:column headerText="Comments" filterBy="#{bill.comments}" filterMatchMode="contains">                                
@@ -149,14 +157,16 @@
                                     <p:column headerText="Action">
                                         <p:commandButton 
                                             ajax="false" 
-                                            value="To Complete" 
-                                            action="#{supplierPaymentController.navigateToCompletePayment()}" 
+                                            value="To Settle" 
+                                            action="#{supplierPaymentController.navigateToSettleApprovedPayment()}" 
                                             class="ui-button-success">
                                             <f:setPropertyActionListener value="#{bill}" target="#{supplierPaymentController.bill}"/>
                                         </p:commandButton>
                                     </p:column> 
 
                                 </p:dataTable>
+
+
                             </div>
                         </div>
 
