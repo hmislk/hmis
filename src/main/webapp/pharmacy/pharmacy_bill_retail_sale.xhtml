@@ -442,7 +442,7 @@
                                                                                      ajax="true"
                                                                                      update="printLabelSection"
                                                                                      oncomplete="PF('printLabelSectionView').show()"
-                                                                                     
+
                                                                                      >
 
                                                                     </p:commandButton>
@@ -472,7 +472,7 @@
                                                     closable="true"
                                                     modal="true" 
                                                     onShow="$('.ui-dialog').addClass('custom-dialog')"
-                                                    
+
                                                     >
 
                                                     <h:panelGroup id="printLabelSection">
@@ -1207,13 +1207,60 @@
                                 <p:commandButton 
                                     accesskey="p" 
                                     id="btnPrint" 
-                                    value="PRINT"
+                                    value="Print Bill"
                                     style="width: 10em;"
                                     class="ui-button-info"
                                     rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
                                     ajax="false"  >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
+                                <p:commandButton 
+                                    
+                                    id="btnLabelPrint" 
+                                    value="Print Labels"
+                                    style="width: 10em;"
+                                    oncomplete="PF('PrintLables').show()"
+                                    class="ui-button-info mx-3"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable label printing for pharmacy medicines', false)}"
+                                      >
+
+                                </p:commandButton>
+
+                                <p:dialog 
+                                    id="PrintLableSectionAfterSettleBill" 
+                                    widgetVar="PrintLables" 
+                                    resizable="false"
+                                    closable="true"
+                                    modal="true" 
+                                    onShow="$('.ui-dialog').addClass('custom-dialog')"
+
+                                    >
+                                    <p:outputLabel for="@next" value="Select Bill Item" class="m-2"/>
+                                    <p:selectOneMenu id="group" value="#{pharmacySaleController.billItem}">
+                                        <f:selectItem itemLabel="Select One" itemValue=""/>
+                                        <f:selectItems value="#{pharmacySaleController.printBill.billItems}" var="item" itemLabel="#{item.pharmaceuticalBillItem.itemBatch.item.name}" itemValue="#{item}"/>
+                                   
+                                        <p:ajax event="change" update="printLabelSectionAfterSettle"></p:ajax>
+                                        
+                                    </p:selectOneMenu>
+
+                                    <h:panelGroup id="printLabelSectionAfterSettle" class="my-3" rendered="#{pharmacySaleController.billItem ne null}">
+                                        <phi:pharmacy_instruction_label billItem="#{pharmacySaleController.billItem}" controller="#{pharmacySaleController}"/>
+                                    </h:panelGroup>
+
+                                    <p:commandButton value="Print Label"
+                                                     class="ui-button-info w-100 my-4"
+                                                     action="#{pharmacySaleController.enableLabelPrint(pharmacySaleController.billItem.prescription)}"
+                                                     ajax="false"
+                                                     update="PrintLableSectionAfterSettleBill"
+                                                     oncomplete="PF('printLabelSectionView').show()"
+                                                     process="@this"
+                                                     >
+                                        <p:printer target="printLabelSectionAfterSettle"></p:printer>
+
+                                    </p:commandButton>
+                                </p:dialog>
+
                                 <p:commandButton 
                                     accesskey="n" 
                                     value="New Bill"  
