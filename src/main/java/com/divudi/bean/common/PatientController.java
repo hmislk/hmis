@@ -854,7 +854,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         admissionController.setCurrent(ad);
         admissionController.setPrintPreview(false);
-        admissionController.setAdmittingProcessStarted(false);
         return "/inward/inward_admission?faces-redirect=true;";
 
     }
