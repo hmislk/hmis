@@ -559,6 +559,7 @@ public enum Privileges {
     CourierViewBillReports("Courier View Bill Reports"),
     CourierViewPaymentReports("Courier View Payment Reports"),
     ChangeCreditLimitInCC("Change Credit Limit in Collecting Centre"),
+    CollectingCentreReports("Collecting Centre Reports"),
     ChangeCollectingCentre("Change Collecting Centre"),
     //</editor-fold>
     

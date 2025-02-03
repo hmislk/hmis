@@ -18,37 +18,27 @@
 
                         <div class="row" >
                             <div class="col-6" >
-
-
                                 <p:panel header="Due Payments" >
-
                                     <p:panelGrid columns="2" >
                                         <h:outputLabel value="Bill Value" ></h:outputLabel>
                                         <h:outputLabel value="#{supplierPaymentController.bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
-
                                     </p:panelGrid>
-
                                 </p:panel>
-
                                 <p:panel header="Approval" >
-
                                     <h:outputLabel 
                                         value="Payment Completion Comments" 
                                         class="form-label m-1"></h:outputLabel>
                                     <p:inputTextarea 
                                         class="form-control m-1"
-                                        value="#{supplierPaymentController.bill.comments}" ></p:inputTextarea>
+                                        value="#{supplierPaymentController.bill.paymentCompletionComments}" ></p:inputTextarea>
                                     <p:commandButton 
                                         ajax="false"
                                         value="Complete"
                                         styleClass="m-1"
                                         action="#{supplierPaymentController.completePayment()}" ></p:commandButton>
-
                                 </p:panel>
-
-
                             </div>
                             <div class="col-6" >
                                 <p:panel header="Bill Details" >

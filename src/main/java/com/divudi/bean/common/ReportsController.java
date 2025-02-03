@@ -2801,7 +2801,7 @@ public class ReportsController implements Serializable {
             if (visitType != null && visitType.equalsIgnoreCase("OP")) {
                 jpql += "AND billItem.referenceBill.creditCompany = :creditC ";
             } else if (visitType != null && visitType.equalsIgnoreCase("IP")) {
-                jpql += "AND billItem.referenceBill.patientEncounter.finalBill.creditCompany = :creditC ";
+                jpql += "AND billItem.bill.creditCompany = :creditC ";
             }
 
             parameters.put("creditC", creditCompany);
@@ -3230,6 +3230,7 @@ public class ReportsController implements Serializable {
 //                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
 //                + "WHERE bill.billTypeAtomic IN :bts "
 //                + "AND bill.createdAt BETWEEN :fd AND :td ";
+
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
                 + "FROM PatientInvestigation pi "
                 + "JOIN pi.billItem billItem "
@@ -3329,11 +3330,11 @@ public class ReportsController implements Serializable {
         parameters.put("bts", bts);
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
-
+        
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem.item.name, SUM(billItem.qty)) "
-                + "FROM BillItem billItem "
+                + "FROM PatientInvestigation pi "
+                + "JOIN pi.billItem billItem "
                 + "JOIN billItem.bill bill "
-                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
                 + "WHERE bill.billTypeAtomic IN :bts "
                 + "AND bill.createdAt BETWEEN :fd AND :td ";
 
@@ -3345,12 +3346,12 @@ public class ReportsController implements Serializable {
         }
 
         if (staff != null) {
-            jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
+            jpql += "AND pi.barcodeGeneratedBy.webUserPerson.name = :staff ";
             parameters.put("staff", staff.getPerson().getName());
         }
 
         if (item != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.name = :item ";
+            jpql += "AND pi.investigation.name = :item ";
             parameters.put("item", item.getName());
         }
 
@@ -3388,17 +3389,17 @@ public class ReportsController implements Serializable {
         }
 
         if (mrnNo != null && !mrnNo.trim().isEmpty()) {
-            jpql += "AND billItem.bill.patient.phn LIKE :phn ";
+            jpql += "AND bill.patient.phn LIKE :phn ";
             parameters.put("phn", mrnNo + "%");
         }
 
         if (category != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.category.id = :cat ";
+            jpql += "AND pi.investigation.category.id = :cat ";
             parameters.put("cat", category.getId());
         }
 
         if (investigationCode != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.code = :code ";
+            jpql += "AND pi.investigation.code = :code ";
             parameters.put("code", investigationCode.getCode());
         }
 

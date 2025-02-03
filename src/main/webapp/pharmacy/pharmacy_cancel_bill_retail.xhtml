@@ -39,8 +39,9 @@
                                     <h:outputText styleClass="fas fa-money-bill"></h:outputText>
                                     <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
                                 </f:facet>
-                                <p:selectOneMenu   id="cmbPs" value="#{pharmacyBillSearch.paymentMethod}" required="true"  >
-                                    <f:selectItems value="#{enumController.paymentMethods}"  />
+                                <p:selectOneMenu   id="cmbPs" value="#{pharmacyBillSearch.paymentMethod}"  >
+                                    <f:selectItem itemLabel="Same as Billed" ></f:selectItem>
+                                    <f:selectItems value="#{enumController.paymentMethodsForPharmacyBillCancellations}"  />
                                 </p:selectOneMenu>
                             </p:panel>
 

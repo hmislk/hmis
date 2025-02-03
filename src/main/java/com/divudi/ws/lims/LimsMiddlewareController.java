@@ -161,7 +161,7 @@ public class LimsMiddlewareController {
     }
 
     private Response processD10Observation(JSONObject observation) {
-        // Extract relevant fields from the JSON object using the exact names as sent by the client
+        System.out.println("processD10Observation");
         String sampleId = observation.optString("sampleId");
         String analyzerName = observation.optString("analyzerName");
         String analyzerId = observation.optString("analyzerId");
@@ -199,7 +199,6 @@ public class LimsMiddlewareController {
         System.out.println("observationUnitCode: " + observationUnitCode);
         System.out.println("observationValue: " + observationValueStr);
         System.out.println("issuedDate: " + issuedDate);
-
         Long sampleIdLong;
         Machine analyzer;
         DepartmentMachine departmentAnalyzer = null;
@@ -281,15 +280,15 @@ public class LimsMiddlewareController {
 
         // Process the patient investigations and reports
         System.out.println("Process the patient investigations and reports = ");
-        for (PatientInvestigation pi : ptixs) {
+        for (PatientInvestigation patientInvestigation : ptixs) {
 
             Investigation ix = null;
 
-            if (pi.getInvestigation() == null) {
+            if (patientInvestigation.getInvestigation() == null) {
                 continue;
             }
 
-            ix = pi.getInvestigation();
+            ix = patientInvestigation.getInvestigation();
 
             if (ix.getReportedAs() != null) {
                 if (ix.getReportedAs() instanceof Investigation) {
@@ -297,43 +296,42 @@ public class LimsMiddlewareController {
                 }
             }
 
-            System.out.println("pi = " + pi);
-            List<PatientReport> prs = new ArrayList<>();
+            System.out.println("Patient Investigation = " + patientInvestigation);
+            List<PatientReport> patientReports = new ArrayList<>();
 
             System.out.println("ix = " + ix);
-
-            System.out.println("pi.getInvestigation().getMachine() = " + pi.getInvestigation().getMachine());
+            System.out.println("pi.getInvestigation().getMachine() = " + patientInvestigation.getInvestigation().getMachine());
             if (ix.getMachine() != null && ix.getMachine().equals(analyzer)) {
                 System.out.println("Match Machine");
-                PatientReport tpr = getUnsavedPatientReport(pi);
-                System.out.println("tpr = " + tpr);
-                if (tpr == null) {
-                    tpr = createNewPatientReport(pi, ix, departmentAnalyzer, wu);
+                PatientReport unsavedPatientReport = getUnsavedPatientReport(patientInvestigation);
+                System.out.println("unsavedPatientReport = " + unsavedPatientReport);
+                if (unsavedPatientReport == null) {
+                    unsavedPatientReport = createNewPatientReport(patientInvestigation, ix, departmentAnalyzer, wu);
                 }
-                System.out.println("tpr = " + tpr);
-                prs.add(tpr);
+                System.out.println("unsavedPatientReport = " + unsavedPatientReport);
+                patientReports.add(unsavedPatientReport);
             }
-            System.out.println("prs = " + prs);
-            if (prs.isEmpty()) {
+            System.out.println("patientReports = " + patientReports);
+            if (patientReports.isEmpty()) {
                 List<Item> temItems = getItemsForParentItem(ix);
                 for (Item ti : temItems) {
                     System.out.println("ti = " + ti);
                     if (ti instanceof Investigation) {
                         Investigation tix = (Investigation) ti;
                         if (tix.getMachine() != null && tix.getMachine().equals(analyzer)) {
-                            PatientReport tprs = getUnsavedPatientReport(pi);
+                            PatientReport tprs = getUnsavedPatientReport(patientInvestigation);
                             System.out.println("tprs = " + tprs);
                             if (tprs == null) {
-                                tprs = createNewPatientReport(pi, tix);
+                                tprs = createNewPatientReport(patientInvestigation, tix);
                             }
-                            prs.add(tprs);
+                            patientReports.add(tprs);
                         }
                     }
                 }
             }
 
-            System.out.println("prs = " + prs);
-            for (PatientReport tpr : prs) {
+            System.out.println("prs = " + patientReports);
+            for (PatientReport tpr : patientReports) {
                 System.out.println("tpr = " + tpr);
                 for (PatientReportItemValue priv : tpr.getPatientReportItemValues()) {
                     System.out.println("priv = " + priv);
@@ -881,7 +879,6 @@ public class LimsMiddlewareController {
                 + "\nQPD|WOS^Work Order Step^IHE_LABTF|%s|SPM01";
 
         System.out.println("responseMessageTemplate = " + responseMessageTemplate);
-
         return String.format(responseMessageTemplate, sendingApplication, sendingFacility, receivingApplication,
                 receivingFacility, messageControlID, inputMessageControlID, messageControlID, messageControlID);
     }
@@ -1035,7 +1032,6 @@ public class LimsMiddlewareController {
             }
 
             System.out.println("ix = " + ix.getName());
-
             List<PatientReport> prs = new ArrayList<>();
             PatientReport tpr;
             tpr = getUnapprovedPatientReport(pi);
@@ -1640,8 +1636,10 @@ public class LimsMiddlewareController {
     }
 
     public PatientReport getUnsavedPatientReport(PatientInvestigation pi) {
+        //Retired Reports are not excluded
         String j = "select r from PatientReport r "
-                + " where r.patientInvestigation = :pi "
+                + " where r.patientInvestigation = :pi"
+                + " and r.retired=false "
                 + " and (r.dataEntered = :a or r.dataEntered is null) "
                 + " order by r.id desc";
         Map m = new HashMap();
@@ -1661,15 +1659,12 @@ public class LimsMiddlewareController {
     }
 
     private List<MyPatient> generateListOfPatientSpecimanTestDataFromQBPcQ11cQBP_Q11(String qBPcQ11cQBP_Q11) {
-        System.out.println("generateListOfPatientSpecimanTestDataFromQBPcQ11cQBP_Q11");
         List<String> samplesIdentifiers = getSampleIdentifiersFromqBPcQ11cQBP_Q11(qBPcQ11cQBP_Q11);
-        System.out.println("samplesIdentifiers = " + samplesIdentifiers);
         List<MyPatient> mps = new ArrayList<>();
         for (String sid : samplesIdentifiers) {
 
             PatientSample ps = patientSampleFromId(sid);
             if (ps == null) {
-                System.out.println("No PS");
                 continue;
             }
 
