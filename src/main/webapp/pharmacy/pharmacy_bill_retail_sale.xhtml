@@ -454,8 +454,7 @@
                                                                                      class="ui-button-success w-100"
                                                                                      id="btnAddRx"
                                                                                      icon="pi pi-plus"
-                                                                                     oncomplete="PF('instructions').hide()"
-                                                                                     process="btnAddRx instructionDetials"
+                                                                                     process="btnAddRx instructionDetials "
                                                                                      update="tblBillItem"
                                                                                      action="#{pharmacySaleController.addPrescriptionToBillitem(bi)}" />
                                                                 </div>
@@ -1214,6 +1213,7 @@
                                     ajax="false"  >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
+                                <h:outputText value="#{pharmacySaleController.printBill.billItems.size()}"></h:outputText>
                                 <p:commandButton 
                                     
                                     id="btnLabelPrint" 
@@ -1235,12 +1235,12 @@
                                     onShow="$('.ui-dialog').addClass('custom-dialog')"
 
                                     >
-                                    <p:outputLabel for="@next" value="Select Bill Item" class="m-2"/>
+                                    <p:outputLabel for="@next" value="Select Bill Item : " class="m-2"/>
                                     <p:selectOneMenu id="group" value="#{pharmacySaleController.billItem}">
                                         <f:selectItem itemLabel="Select One" itemValue=""/>
                                         <f:selectItems value="#{pharmacySaleController.printBill.billItems}" var="item" itemLabel="#{item.pharmaceuticalBillItem.itemBatch.item.name}" itemValue="#{item}"/>
                                    
-                                        <p:ajax event="change" update="printLabelSectionAfterSettle"></p:ajax>
+                                        <p:ajax event="change" process="group" update="printLabelSectionAfterSettle"></p:ajax>
                                         
                                     </p:selectOneMenu>
 

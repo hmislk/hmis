@@ -1749,6 +1749,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //If any issue in Stock Bill Item will not save & not include for total
 //                continue;
             }
+            
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
 
@@ -1830,6 +1831,16 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
             if (newBil.getId() == null) {
                 getBillItemFacade().create(newBil);
+            }
+            
+            if(tbi.getPrescription() != null){
+                if(tbi.getPrescription().getId() == null){
+                    prescriptionFacade.create(tbi.getPrescription());
+                }else{
+                    prescriptionFacade.edit(tbi.getPrescription());
+                }
+                
+                newBil.setPrescription(tbi.getPrescription());
             }
 
             PharmaceuticalBillItem newPhar = new PharmaceuticalBillItem();
