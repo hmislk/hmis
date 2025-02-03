@@ -73,7 +73,7 @@
                                     onfocus="this.select();"
                                     value="#{supplierPaymentController.current.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                    <p:ajax process="txtDiscount" update="lblNetTotal" listener="#{supplierPaymentController.calculateTotalByCurrentBillsBillItems()}" ></p:ajax>
+                                    <p:ajax process="txtDiscount" update="lblNetTotal" listener="#{supplierPaymentController.calculateTotalBySelectedBillItems()}" ></p:ajax>
                                 </p:inputText>
 
                                 <p:outputLabel value="Net Total" />
@@ -96,7 +96,7 @@
                             </p:panelGrid>
 
                             <p:dataTable  
-                                value="#{supplierPaymentController.current.billItems}"
+                                value="#{supplierPaymentController.selectedBillItems}"
                                 var="b" 
                                 id="itms" rowKey="#{b.searialNo}" >
                                 <p:column >  

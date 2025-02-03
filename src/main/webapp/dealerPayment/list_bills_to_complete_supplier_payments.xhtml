@@ -14,7 +14,7 @@
                     <p:panel>
                         <f:facet name="header" > 
                             <h:outputText styleClass="fas fa-file-invoice"/>
-                            <h:outputLabel class="mx-4" value="Supplier Bill Search"/>  
+                            <h:outputLabel class="mx-4" value="Complete Supplier Payments"/>  
                         </f:facet>
                         <div class="row">
                             <div class="col-2">
@@ -32,26 +32,11 @@
                                 </p:calendar>
 
                                 <p:commandButton 
-                                    value="Pharmacy Credit Bills Settled" 
-                                    action="#{supplierPaymentController.fillSettledCreditPharmacyBills}" 
+                                    value="Pharmacy Credit Bills to Mark as Complete" 
+                                    action="#{supplierPaymentController.fillUnsettledCreditPharmacyBills}" 
                                     ajax="false"  
                                     icon="fas fa-prescription-bottle-alt" 
-                                    class="my-1 w-100 ui-button-success" />
-
-                                <p:commandButton 
-                                    value="Store Credit Bills Settled" 
-                                    action="#{supplierPaymentController.fillSettledCreditStoreBills()}" 
-                                    ajax="false"  
-                                    icon="fas fa-store-alt" 
-                                    class="my-1 w-100  ui-button-success" />
-
-                                <p:commandButton 
-                                    value="All Credit Bills Settled"
-                                    action="#{supplierPaymentController.fillSettledCreditBills()}"
-                                    ajax="false"
-                                    icon="fas fa-file-invoice-dollar"
-                                    class="my-1 w-100  ui-button-success" />
-
+                                    class="my-1 w-100 ui-button-warning" />
 
                             </div>
                             <div class="col-10">
@@ -141,10 +126,13 @@
                                     </p:column>
 
                                     <p:column  headerText="Actions" >
-                                        <p:commandButton 
-                                            value="View" 
-                                            action="#{supplierPaymentController.navigateToStartSupplierPayment(b)}" 
-                                            ajax="false" >
+                                        <p:commandButton
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Approval is necessary for Procument Payments', false)}"
+                                            value="Prepare Payment" 
+                                            update="@form" 
+                                            action="#{supplierPaymentController.navigateToPrepareSupplierPayment(b)}" 
+                                            ajax="false" 
+                                            disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}" >
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>

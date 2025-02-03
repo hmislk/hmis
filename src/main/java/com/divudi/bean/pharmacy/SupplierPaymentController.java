@@ -168,6 +168,12 @@ public class SupplierPaymentController implements Serializable {
         return "/dealerPayment/list_bills_to_settle_supplier_payments?faces-redirect=true";
     }
 
+    public String navigateToCompleteSupplierPayments() {
+        bills = new ArrayList<>();
+        netTotal = 0.0;
+        return "/dealerPayment/list_bills_to_complete_supplier_payments?faces-redirect=true";
+    }
+
     public String navigateToDealerDoneSearch() {
         bills = new ArrayList<>();
         netTotal = 0.0;
@@ -1067,7 +1073,7 @@ public class SupplierPaymentController implements Serializable {
     public void fillSettledCreditBills() {
         BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.STORE_GRN, BillTypeAtomic.STORE_DIRECT_PURCHASE};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
-        bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
+        bills = billController.findPaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
         netTotal = 0.0;
         paidAmount = 0.0;
         refundAmount = 0.0;
@@ -1807,10 +1813,19 @@ public class SupplierPaymentController implements Serializable {
         double settlingValue = Math.abs(originalBill.getNetTotal()) - (Math.abs(originalBill.getRefundAmount()) + Math.abs(originalBill.getPaidAmount()));
         currentBillItem.setNetValue(-settlingValue);
         currentBillItem.setGrossValue(-settlingValue);
-        getBillItems().add(currentBillItem);
-        current.getBillItems().add(currentBillItem);
-        calculateTotalByCurrentBillsBillItems();
+        getSelectedBillItems().add(currentBillItem);
+//        current.getBillItems().add(currentBillItem);
+        calculateTotalBySelectedBillItems();
         return "/dealerPayment/settle_supplier_payment?faces-redirect=true";
+    }
+
+    public String navigateToViewSupplierPayment(Bill originalBill) {
+        if (originalBill == null) {
+            JsfUtil.addErrorMessage("No Bill Is Selected");
+            return null;
+        }
+        current = billService.reloadBill(current);
+        return "/dealerPayment/view_supplier_payment?faces-redirect=true";
     }
 
     public String navigateToPrepareSupplierPayment(Bill originalBill) {
@@ -2012,10 +2027,16 @@ public class SupplierPaymentController implements Serializable {
 
 //        getCurrent().setNetTotal(getCurrent().getNetTotal());
         if (newlyCreatedSupplierPaymentBill.getId() == null) {
-            getBillFacade().create(getCurrent());
+            getBillFacade().create(newlyCreatedSupplierPaymentBill);
         } else {
-            getBillFacade().edit(getCurrent());
+            getBillFacade().edit(newlyCreatedSupplierPaymentBill);
         }
+
+        getCurrent().setBackwardReferenceBill(newlyCreatedSupplierPaymentBill);
+        getCurrent().setPaymentGenerated(true);
+        getCurrent().setPaymentGeneratedAt(new Date());
+        getCurrent().setPaymentGeneratedBy(sessionController.getLoggedUser());
+        getBillFacade().edit(getCurrent());
 
         for (BillItem originalBillItem : current.getBillItems()) {
             BillItem newlyCreateBillItem = new BillItem();
