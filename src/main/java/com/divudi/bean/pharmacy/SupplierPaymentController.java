@@ -162,11 +162,11 @@ public class SupplierPaymentController implements Serializable {
         return "/dealerPayment/list_bills_to_approve_supplier_payments?faces-redirect=true";
     }
     
-//    public String navigateToApproveSupplierPayments() {
-//        bills = new ArrayList<>();
-//        netTotal = 0.0;
-//        return "/dealerPayment/list_supplier_payments?faces-redirect=true";
-//    }
+    public String navigateToViewSupplierPayments() {
+        bills = new ArrayList<>();
+        netTotal = 0.0;
+        return "/dealerPayment/list_bills_to_supplier_payments?faces-redirect=true";
+    }
 
     public String navigateToSettleSupplierPayments() {
         bills = new ArrayList<>();
@@ -961,6 +961,35 @@ public class SupplierPaymentController implements Serializable {
                 + "AND (b.paymentGenerated = 0 OR b.paymentGenerated IS NULL)";
 
         // Logging
+        System.out.println("JPQL Query: " + jpql);
+        System.out.println("Parameters: " + params);
+
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        netTotal = 0.0;
+        for (Bill b : bills) {
+            netTotal += b.getNetTotal();
+        }
+    }
+    
+    public void listSupplierPayments() {
+        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.SUPPLIER_PAYMENT};
+        List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+
+        bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01, true);
+
+        String jpql = "SELECT b FROM Bill b WHERE b.retired = :ret AND b.cancelled = :can "
+                + "AND b.createdAt BETWEEN :frm AND :to";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("frm", fromDate);
+        params.put("to", toDate);
+        params.put("ret", false);
+        params.put("can", false);
+
+        jpql += " AND (b.billTypeAtomic IN :bts)";
+        params.put("bts", billTypesListBilled);
+
         System.out.println("JPQL Query: " + jpql);
         System.out.println("Parameters: " + params);
 
