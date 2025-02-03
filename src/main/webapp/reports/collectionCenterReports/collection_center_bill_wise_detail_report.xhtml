@@ -9,7 +9,7 @@
       xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
 <h:body>
-    <ui:composition template="/reports/index.xhtml">
+    <ui:composition template="#{reportController.reportTemplateFileIndexName}">
         <ui:define name="subcontent">
 
             <h:form>
@@ -426,7 +426,8 @@
                                 <h:outputText value="#{row.billItem.bill.deptId}"/>
                             </p:column>
                             <p:column headerText="Ref No (Leaf No)" width="5rem">
-                                <h:outputText value="#{row.billItem.bill.referenceNumber}"/>
+                                <h:outputText value="#{ row.billItem.bill.billTypeAtomic eq 'CC_BILL_CANCELLATION' ?
+                                row.billItem.bill.billedBill.referenceNumber: row.billItem.bill.referenceNumber}"/>
                             </p:column>
                             <p:column headerText="Bill Date" width="5rem">
                                 <h:outputText value="#{row.billItem.bill.createdAt}">
@@ -527,7 +528,8 @@
                                 <h:outputText value="#{row.billItem.bill.deptId}"/>
                             </p:column>
                             <p:column headerText="Ref No (Leaf No)" width="5rem">
-                                <h:outputText value="#{row.billItem.bill.referenceNumber}"/>
+                                <h:outputText value="#{row.billItem.bill.billTypeAtomic eq 'CC_BILL_CANCELLATION' ?
+                                row.billItem.bill.billedBill.referenceNumber: row.billItem.bill.referenceNumber}"/>
                             </p:column>
                             <p:column headerText="Bill Date" width="5rem">
                                 <h:outputText value="#{row.billItem.bill.createdAt}">

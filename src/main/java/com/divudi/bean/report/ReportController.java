@@ -226,6 +226,7 @@ public class ReportController implements Serializable {
     private String type;
     private String reportType;
     private Speciality speciality;
+    private String reportTemplateFileIndexName;
 
     public String getTableRowColor(AgentHistory ah) {
         if (ah == null) {
@@ -1358,7 +1359,7 @@ public class ReportController implements Serializable {
             netTotal += b.getTotal();
         }
     }
-
+    
     public String navigatetoOPDLabReportByMenu() {
         return "/lab/report_for_opd_print?faces-redirect=true";
     }
@@ -1370,7 +1371,82 @@ public class ReportController implements Serializable {
     public String navigateToPrescriptionList() {
         return "/pharmacy/prescription_list?faces-redirect=true";
     }
-
+    
+    public String navigateToCourierLabReportsPrint() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/courier_lab_report_print?faces-redirect=true";
+    }
+    
+    public String navigateToCCReportsPrint() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/collection_center_report_print?faces-redirect=true";
+    }
+    
+    public String navigateToCCCurrentBalanceReport() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/collection_center_current_balance_report?faces-redirect=true";
+    }
+    
+    public String navigateToCCBalanceReport() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/collection_center_balance_report?faces-redirect=true";
+    }
+    
+    public String navigateToCCReceiptReport() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/collection_center_recipt_reports?faces-redirect=true";
+    }
+    
+    public String navigateToCCBillWiseDetailReport() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/collection_center_bill_wise_detail_report?faces-redirect=true";
+    }
+    
+    public String navigateToCCWiseInvoiceListReport() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/collection_center_wise_invoice_list_report?faces-redirect=true";
+    }
+    
+    public String navigateToCCStatementReport() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/collection_center_statement_report?faces-redirect=true";
+    }
+    
+    public String navigateToCCWiseSummaryReport() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/collection_center_wise_summary_report?faces-redirect=true";
+    }
+    
+    public String navigateToTestWiseCountReport() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/collection_center_test_wise_count_report?faces-redirect=true";
+    }
+    
+    public String navigateToCCRouteAnalysisReport() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/route_analysis_report?faces-redirect=true";
+    }
+    
+    public String navigateToCCBookReport() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/collection_center_book_report?faces-redirect=true";
+    }
+    
+    public String navigateToCCBookWiseDetail() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/collection_centre_book_wise_detail?faces-redirect=true";
+    }
+    
+    public String navigateToCCInvestigationListReport() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/cc_investigation_list?faces-redirect=true";
+    }
+    
+    public String navigateToCCBillItemListReport() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/collectionCenterReports/cc_bill_item_list?faces-redirect=true";
+    }
+    
     private Person person;
 
     public String navigateToPrescriptionListFromPrescriptionSummery(Long personId) {
@@ -3635,6 +3711,14 @@ public class ReportController implements Serializable {
 
     public void setNetTotal(Double netTotal) {
         this.netTotal = netTotal;
+    }
+
+    public String getReportTemplateFileIndexName() {
+        return reportTemplateFileIndexName;
+    }
+
+    public void setReportTemplateFileIndexName(String reportTemplateFileIndexName) {
+        this.reportTemplateFileIndexName = reportTemplateFileIndexName;
     }
 
 }

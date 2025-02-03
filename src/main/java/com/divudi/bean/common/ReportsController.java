@@ -61,6 +61,7 @@ import java.util.List;
 import java.text.SimpleDateFormat;
 import java.util.stream.Collectors;
 import java.text.DecimalFormat;
+
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 
 /**
@@ -2650,7 +2651,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-            boolean onlyDueBills) {
+                                                                    boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -2801,7 +2802,7 @@ public class ReportsController implements Serializable {
             if (visitType != null && visitType.equalsIgnoreCase("OP")) {
                 jpql += "AND billItem.referenceBill.creditCompany = :creditC ";
             } else if (visitType != null && visitType.equalsIgnoreCase("IP")) {
-                jpql += "AND billItem.referenceBill.patientEncounter.finalBill.creditCompany = :creditC ";
+                jpql += "AND billItem.bill.creditCompany = :creditC ";
             }
 
             parameters.put("creditC", creditCompany);
@@ -3014,7 +3015,7 @@ public class ReportsController implements Serializable {
         }
 
         if (department != null) {
-            jpql += "AND bill.toDepartment = :dep ";
+            jpql += "AND bill.department = :dep ";
             parameters.put("dep", department);
         }
 
@@ -3230,6 +3231,7 @@ public class ReportsController implements Serializable {
 //                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
 //                + "WHERE bill.billTypeAtomic IN :bts "
 //                + "AND bill.createdAt BETWEEN :fd AND :td ";
+
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
                 + "FROM PatientInvestigation pi "
                 + "JOIN pi.billItem billItem "
@@ -3331,9 +3333,9 @@ public class ReportsController implements Serializable {
         parameters.put("td", toDate);
 
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem.item.name, SUM(billItem.qty)) "
-                + "FROM BillItem billItem "
+                + "FROM PatientInvestigation pi "
+                + "JOIN pi.billItem billItem "
                 + "JOIN billItem.bill bill "
-                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
                 + "WHERE bill.billTypeAtomic IN :bts "
                 + "AND bill.createdAt BETWEEN :fd AND :td ";
 
@@ -3345,12 +3347,12 @@ public class ReportsController implements Serializable {
         }
 
         if (staff != null) {
-            jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
+            jpql += "AND pi.barcodeGeneratedBy.webUserPerson.name = :staff ";
             parameters.put("staff", staff.getPerson().getName());
         }
 
         if (item != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.name = :item ";
+            jpql += "AND pi.investigation.name = :item ";
             parameters.put("item", item.getName());
         }
 
@@ -3388,17 +3390,17 @@ public class ReportsController implements Serializable {
         }
 
         if (mrnNo != null && !mrnNo.trim().isEmpty()) {
-            jpql += "AND billItem.bill.patient.phn LIKE :phn ";
+            jpql += "AND bill.patient.phn LIKE :phn ";
             parameters.put("phn", mrnNo + "%");
         }
 
         if (category != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.category.id = :cat ";
+            jpql += "AND pi.investigation.category.id = :cat ";
             parameters.put("cat", category.getId());
         }
 
         if (investigationCode != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.code = :code ";
+            jpql += "AND pi.investigation.code = :code ";
             parameters.put("code", investigationCode.getCode());
         }
 
@@ -3588,7 +3590,7 @@ public class ReportsController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S. No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -3811,7 +3813,7 @@ public class ReportsController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S. No", "BHT No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -4853,8 +4855,8 @@ public class ReportsController implements Serializable {
     }
 
     private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
-            List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
-            int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
         document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
         document.add(com.itextpdf.text.Chunk.NEWLINE);
 
