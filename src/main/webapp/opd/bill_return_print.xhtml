@@ -51,6 +51,9 @@
                                 <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}">
                                     <prints:five_five_paper_coustom_opd_refundBill bill="#{billReturnController.newlyReturnedBill}" duplicate="false"/>
                                 </h:panelGroup>
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFiveCustom3'}">
+                                    <prints:five_five_custom_3 bill="#{billReturnController.newlyReturnedBill}" duplicate="false"/>
+                                </h:panelGroup>
 
                             </h:panelGroup>
                         </div>
