@@ -748,6 +748,32 @@ public class SupplierPaymentController implements Serializable {
         return false;
     }
 
+    private boolean errorCheckForSettlingApprovedPayments() {
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("Nothing to settle");
+            return true;
+        }
+        if (getCurrent().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Item ");
+            return true;
+        }
+
+        if (getCurrent().getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Select Cant settle without Dealor");
+            return true;
+        }
+
+        if (getCurrent().getPaymentMethod() == null) {
+            return true;
+        }
+
+        if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
+            return true;
+        }
+
+        return false;
+    }
+
     private boolean errorCheckForSettlingSelectedSupplierBills() {
         if (getSelectedBillItems() == null || getSelectedBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Bill is selected to pay");
@@ -1813,6 +1839,7 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public String navigateToApproveSupplierPayment(Bill approvalBill) {
+        makeNull();
         if (approvalBill == null) {
             JsfUtil.addErrorMessage("No Bill Is Selected");
             return null;
@@ -1822,6 +1849,7 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public String navigateToSettleSupplierPayment(Bill approvalBill) {
+        makeNull();
         if (approvalBill == null) {
             JsfUtil.addErrorMessage("No Bill Is Selected");
             return null;
@@ -1954,56 +1982,62 @@ public class SupplierPaymentController implements Serializable {
         printPreview = true;
 
     }
-    
-    
+
     public void settleApprovedSupplierPayment() {
-        if (errorCheckForAllSelectedItemsSettlingBill()) {
+        if (errorCheckForSettlingApprovedPayments()) {
             return;
         }
-        calculateTotalBySelectedBillItems();
-        updateReferanceBillBalances(selectedBillItems);
-
-        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+        current = billService.reloadBill(current);
+        Bill newlyCreatedSupplierPaymentBill = new Bill();
+        newlyCreatedSupplierPaymentBill.copy(current);
+        newlyCreatedSupplierPaymentBill.copyValue(current);
+        newlyCreatedSupplierPaymentBill.setReferenceBill(current);
 
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT);
 
-        getCurrent().setInsId(deptId);
-        getCurrent().setDeptId(deptId);
+        newlyCreatedSupplierPaymentBill.setInsId(deptId);
+        newlyCreatedSupplierPaymentBill.setDeptId(deptId);
 
-        getCurrent().setBillType(BillType.GrnPaymentPre);
-        getCurrent().setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT);
+        newlyCreatedSupplierPaymentBill.setBillType(BillType.GrnPaymentPre);
+        newlyCreatedSupplierPaymentBill.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT);
 
-        getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        newlyCreatedSupplierPaymentBill.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        newlyCreatedSupplierPaymentBill.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
-        getCurrent().setBillDate(new Date());
-        getCurrent().setBillTime(new Date());
+        newlyCreatedSupplierPaymentBill.setBillDate(new Date());
+        newlyCreatedSupplierPaymentBill.setBillTime(new Date());
 
-        getCurrent().setCreatedAt(new Date());
-        getCurrent().setCreater(getSessionController().getLoggedUser());
+        newlyCreatedSupplierPaymentBill.setCreatedAt(new Date());
+        newlyCreatedSupplierPaymentBill.setCreater(getSessionController().getLoggedUser());
 
 //        getCurrent().setNetTotal(getCurrent().getNetTotal());
-        if (getCurrent().getId() == null) {
+        if (newlyCreatedSupplierPaymentBill.getId() == null) {
             getBillFacade().create(getCurrent());
         } else {
             getBillFacade().edit(getCurrent());
         }
 
-        for (BillItem savingBillItem : selectedBillItems) {
-            savingBillItem.setBill(current);
-            if (savingBillItem.getId() == null) {
-                savingBillItem.setCreatedAt(new Date());
-                savingBillItem.setCreater(sessionController.getLoggedUser());
-                billItemFacade.create(savingBillItem);
+        for (BillItem originalBillItem : current.getBillItems()) {
+            BillItem newlyCreateBillItem = new BillItem();
+            newlyCreateBillItem.copy(originalBillItem);
+            newlyCreateBillItem.setBill(newlyCreatedSupplierPaymentBill);
+            newlyCreateBillItem.setReferanceBillItem(originalBillItem);
+            if (newlyCreateBillItem.getId() == null) {
+                newlyCreateBillItem.setCreatedAt(new Date());
+                newlyCreateBillItem.setCreater(sessionController.getLoggedUser());
+                billItemFacade.create(newlyCreateBillItem);
             } else {
-                billItemFacade.edit(savingBillItem);
+                billItemFacade.edit(newlyCreateBillItem);
             }
         }
 
         List<Payment> ps = paymentService.createPayment(current, paymentMethodData);
-//        saveBillItemBySelectedItems(p);
 
-        current = billService.reloadBill(current);
+//        saveBillItemBySelectedItems(p);
+        newlyCreatedSupplierPaymentBill = billService.reloadBill(newlyCreatedSupplierPaymentBill);
+        updateReferanceBillBalances(newlyCreatedSupplierPaymentBill.getBillItems());
+
+        current = newlyCreatedSupplierPaymentBill;
 
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
