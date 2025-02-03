@@ -1841,6 +1841,13 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 }
                 
                 newBil.setPrescription(tbi.getPrescription());
+                System.out.println(patient);
+                tbi.getPrescription().setPatient(patient);
+                tbi.getPrescription().setCreatedAt(new Date());
+                tbi.getPrescription().setCreater(sessionController.getWebUser());
+                tbi.getPrescription().setInstitution(sessionController.getInstitution());
+                tbi.getPrescription().setDepartment(sessionController.getDepartment());
+                prescriptionFacade.edit(tbi.getPrescription());
             }
 
             PharmaceuticalBillItem newPhar = new PharmaceuticalBillItem();
