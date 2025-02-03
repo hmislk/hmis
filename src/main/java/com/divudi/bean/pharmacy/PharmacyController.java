@@ -1004,6 +1004,7 @@ public class PharmacyController implements Serializable {
         totalCreditPurchaseValue = 0.0;
         totalCashPurchaseValue = 0.0;
         totalPurchase = 0.0;
+        grantIssueQty = 0.0;
     }
 
     public void generateConsumptionReportTableByBill(BillType billType) {
@@ -1034,6 +1035,16 @@ public class PharmacyController implements Serializable {
         if (dept != null) {
             sql += " and b.department = :dept";
             tmp.put("dept", dept);
+        }
+
+        if (category != null) {
+            sql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.category = :category)";
+            tmp.put("category", category);
+        }
+
+        if (item != null) {
+            sql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item)";
+            tmp.put("item", item);
         }
 
         if (toDepartment != null) {
@@ -1287,6 +1298,9 @@ public class PharmacyController implements Serializable {
     }
 
     public List<DepartmentCategoryWiseItems> generateConsumptionReportTableByDepartmentAndCategoryWise(BillType billType) {
+        totalSaleValue = 0.0;
+        qty = 0.0;
+
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.DepartmentCategoryWiseItems("
                 + "bi.bill.department, "
@@ -1404,6 +1418,11 @@ public class PharmacyController implements Serializable {
             for (Map.Entry<String, Double> consumptionEntry : consumptionMap.entrySet()) {
                 String consumptionDepartmentName = consumptionEntry.getKey();
                 double netTotal = consumptionEntry.getValue();
+
+                if (netTotal == 0) {
+                    continue;
+                }
+
                 departmentSummaries.add(new PharmacySummery(null, consumptionDepartmentName, netTotal));
             }
 
