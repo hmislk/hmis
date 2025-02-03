@@ -238,6 +238,12 @@ public class RoomChangeController implements Serializable {
 
     public void change() {
         if (getCurrent().getCurrentPatientRoom() == null) {
+            JsfUtil.addErrorMessage("Can't Change Room Without a Room.");
+            return;
+        }
+        
+        if (newRoomFacilityCharge == null){
+            JsfUtil.addErrorMessage("There is No Room Selected");
             return;
         }
 
@@ -278,6 +284,10 @@ public class RoomChangeController implements Serializable {
 
         PatientRoom newPatientRoom = new PatientRoom();
         newPatientRoom = getInwardBean().savePatientRoom(newPatientRoom, getNewRoomFacilityCharge(), current, changeAt, getSessionController().getLoggedUser());
+        if(newPatientRoom == null){
+            JsfUtil.addErrorMessage("Selected a Room to Add");
+            return;
+        }
         getCurrent().setCurrentPatientRoom(newPatientRoom);
         getEjbFacade().edit(getCurrent());
 

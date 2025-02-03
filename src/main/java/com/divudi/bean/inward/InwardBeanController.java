@@ -1659,6 +1659,9 @@ public class InwardBeanController implements Serializable {
         if (patientRoom == null) {
             return null;
         }
+        if(newRoomFacilityCharge == null){
+            return null;
+        }
 
         patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
         patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
