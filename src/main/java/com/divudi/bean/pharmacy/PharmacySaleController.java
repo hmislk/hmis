@@ -85,6 +85,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.PrescriptionFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
 import com.divudi.facade.TokenFacade;
@@ -1012,6 +1013,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         calculateRates(billItem);
+        pharmacyService.addBillItemInstructions(billItem);
 
         boolean findAlternatives = configOptionApplicationController.getBooleanValueByKey("Show alternative medicines available during retail sale", false);
         if (findAlternatives) {
@@ -1323,6 +1325,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         UserStock us = saveUserStock(billItem);
         billItem.setTransUserStock(us);
+
+        pharmacyService.addBillItemInstructions(billItem);
+
         clearBillItem();
         getBillItem();
         return addedQty;
@@ -1734,6 +1739,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setReferenceBill(getSaleBill());
         getBillFacade().edit(getPreBill());
     }
+    
+    @EJB
+    PrescriptionFacade prescriptionFacade;
 
     private void savePreBillItemsFinally(List<BillItem> list) {
         for (BillItem tbi : list) {
@@ -1749,6 +1757,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
+            
+            if(tbi.getPrescription() != null){
+                if(tbi.getPrescription().getId() == null){
+                    prescriptionFacade.create(tbi.getPrescription());
+                }else{
+                    prescriptionFacade.edit(tbi.getPrescription());
+                }
+            }
 
             if (tbi.getId() == null) {
                 getBillItemFacade().create(tbi);
