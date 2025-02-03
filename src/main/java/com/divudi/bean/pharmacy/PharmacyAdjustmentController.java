@@ -280,8 +280,9 @@ public class PharmacyAdjustmentController implements Serializable {
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select i from Stock i where i.stock !=:s and "
-                + "((i.staff.code) like :n or "
+                + "((i.itemBatch.item.code) like :n or "
                 + "(i.staff.person.name) like :n or "
+                + "(i.staff.code) like :n or "
                 + "(i.itemBatch.item.name) like :n ) "
                 + "order by i.itemBatch.item.name, i.itemBatch.dateOfExpire , i.stock desc";
         items = getStockFacade().findByJpql(sql, m, 20);
