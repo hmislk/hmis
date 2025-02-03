@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html 
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:p="http://primefaces.org/ui"                
+    xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+    xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+
+    <h:body>
+        <ui:composition template="/dealerPayment/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:panelGroup >
+                    <h:form  >
+                        <p:panel rendered="#{!supplierPaymentController.printPreview}" >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Approve Supplier Payment" ></h:outputLabel>
+                                <p:commandButton
+                                    id="btnSettle" 
+                                    value="Approve Payment"
+                                    action="#{supplierPaymentController.settleApproveSupplierPayment}"
+                                    ajax="false" 
+                                    class="me-5"
+                                    style="float: right">
+                                </p:commandButton>
+                            </f:facet>
+
+
+                            <p:panelGrid layout="tabular" columns="2" class="w-100">
+                                <h:outputLabel value="Supplier" />
+                                <h:outputLabel value="#{supplierPaymentController.current.toInstitution.name}" />
+
+                                <h:outputLabel value="Payment Method" />
+                                <p:selectOneMenu 
+                                    id="cmbPs" 
+                                    required="true"
+                                    requiredMessage="You must select a payment method to approve"
+                                    value="#{supplierPaymentController.current.paymentMethod}">                                                                     
+                                    <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
+                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                </p:selectOneMenu>
+
+                                <p:outputLabel value="Total" />
+                                <p:inputText
+                                    readonly="true"
+                                    class="text-end"
+                                    id="lblTotal"
+                                    value="#{supplierPaymentController.current.total}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:inputText>
+
+                                <p:outputLabel value="Discount" />
+                                <p:inputText 
+                                    id="txtDiscount"  
+                                    onfocus="this.select();"
+                                    class="text-end"
+                                     readonly="true"
+                                    value="#{supplierPaymentController.current.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:inputText>
+
+                                <p:outputLabel value="Net Total" />
+                                <p:inputText 
+                                    id="lblNetTotal"
+                                    class="text-end"
+                                    readonly="true"
+                                    value="#{supplierPaymentController.current.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:inputText>
+
+                                <p:outputLabel value="Description"/>
+                                <p:inputTextarea
+                                    class="w-100"
+                                    value="#{supplierPaymentController.current.comments}"/>                                                         
+
+
+
+                            </p:panelGrid>
+
+                            <p:dataTable  
+                                value="#{supplierPaymentController.current.billItems}"
+                                var="b" 
+                                id="itms" rowKey="#{b.searialNo}" >
+                                <p:column >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="GRN No"/>                                  
+                                    </f:facet>                              
+                                    #{b.referenceBill.deptId}
+                                </p:column> 
+                                <p:column >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Invoice No"/>                                  
+                                    </f:facet>                              
+                                    #{b.referenceBill.invoiceNumber}
+                                </p:column> 
+                                <p:column headerText="GRN Amount">
+                                    <p:outputLabel value="#{b.referenceBill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="GRN Return Amount">
+                                    <p:outputLabel value="#{b.referenceBill.tmpReturnTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Paid Amount">
+                                    <p:outputLabel value="#{b.referenceBill.paidAmount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Recievable Amount">
+                                    <p:outputLabel value="#{(b.referenceBill.balance)}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Paying Amount">
+                                    <p:inputText 
+                                        class="w-100 text-end"
+                                        autocomplete="off"
+                                        readonly="true"
+                                        onfocus="this.select();"
+                                        value="#{b.netValue}">    
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:inputText>
+                                </p:column>
+
+
+                            </p:dataTable>
+
+
+                        </p:panel>
+
+                        <p:panel rendered="#{supplierPaymentController.printPreview}">                                
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                            <p:panel   id="gpBillPreview">
+                                <bi:supplier_payment_approval bill="#{supplierPaymentController.current}" billController="#{supplierPaymentController}" dup="false"/>
+                            </p:panel>
+                        </p:panel>
+                    </h:form>
+                </h:panelGroup>
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

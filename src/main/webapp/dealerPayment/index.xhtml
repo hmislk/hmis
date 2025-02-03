@@ -54,7 +54,7 @@
                                         value="Generate Payments"
                                         icon="fas fa-file-invoice"  
                                         styleClass="ui-button-danger"
-                                        action="#{supplierPaymentController.navigateToDealerDueSearch}"
+                                        action="#{supplierPaymentController.navigateToGenerateSupplierPayments()}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
 
                                     <p:commandButton 
@@ -63,7 +63,7 @@
                                         value="Approve Payments"
                                         icon="fas fa-thumbs-up"  
                                         styleClass="ui-button-warning"
-                                        action="#{supplierPaymentController.navigateToDealerDuehalfPaymentsSearch}"
+                                        action="#{supplierPaymentController.navigateToApproveSupplierPayments()}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
 
                                     <p:commandButton 
