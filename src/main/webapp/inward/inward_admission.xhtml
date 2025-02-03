@@ -58,7 +58,7 @@
                         <div class="col-md-3 p-2">
                             <p:outputLabel 
                                 class="m-1 form-label"
-                                value="Admission Type :" />
+                                value="Admission Type* :" />
                             <p:selectOneMenu
                                 id="lstSelect"  
                                 value="#{admissionController.current.admissionType}"
@@ -81,7 +81,7 @@
                         <div class="col-md-3 p-2">
                             <p:outputLabel 
                                 class="m-1 form-label"
-                                value="Room No :" />
+                                value="Room No* :" />
                             <p:autoComplete 
                                 forceSelection="true"
                                 id="cmbDoc"
@@ -120,7 +120,7 @@
                             <div class="row">
                                 <div class="col-6">
                                     <p:panel header="Admission Details">
-                                        <p:outputLabel value="Admitted Time"/>
+                                        <p:outputLabel value="Admitted Time*"/>
                                         <p:datePicker value="#{admissionController.current.dateOfAdmission}" 
                                                       id="admissionTimeStamp"
                                                       pattern="dd/MMM/yyyy - hh:mm:ss a" 
@@ -132,7 +132,7 @@
                                                       inputStyleClass="w-100" >                               
                                         </p:datePicker>     
 
-                                        <p:outputLabel value="Consultant" ></p:outputLabel>
+                                        <p:outputLabel value="Consultant*" ></p:outputLabel>
                                         <p:autoComplete forceSelection="true" 
                                                         value="#{admissionController.current.referringConsultant}" 
                                                         id="refCon"
@@ -143,7 +143,7 @@
                                                         class="w-100" placeholder="Referring Consultant"
                                                         inputStyleClass="w-100"></p:autoComplete>
 
-                                        <p:outputLabel value="Medical Officer"/>
+                                        <p:outputLabel value="Medical Officer*"/>
                                         <p:autoComplete required="true" 
                                                         requiredMessage="Please select referring doctor"
                                                         forceSelection="true" id="scStaff" placeholder="OPD Doctor"
@@ -286,7 +286,7 @@
                                             </p:tabView>
                                         </p:panel>
                                     </div>
-                                    <p:panel header="Payment Detail" style="margin-top: 10px;">
+                                    <p:panel header="Payment Details" style="margin-top: 10px;">
 
                                         <div class="row">
                                             <div class="col-12">
@@ -308,7 +308,7 @@
                                                              rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"
                                                              />
 
-                                                    <p:outputLabel value="Payment Method"/>
+                                                    <p:outputLabel value="Payment Method*"/>
                                                     <p:selectOneMenu  class="mx-1  w-100" styleClass="form-control w-100" id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
                                                         <f:selectItem itemLabel="Select" />                           
                                                         <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
