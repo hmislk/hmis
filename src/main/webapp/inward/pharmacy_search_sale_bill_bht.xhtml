@@ -93,7 +93,7 @@
                                     <p:column headerText="Bill No" > 
                                         <h:commandLink
                                             value="#{bill.deptId}" 
-                                            action="pharmacy_reprint_bill_sale_bht"  >
+                                            action="pharmacy_reprint_bill_sale_bht?faces-redirect=true;"  >
                                             <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                                         </h:commandLink>
                                     </p:column>

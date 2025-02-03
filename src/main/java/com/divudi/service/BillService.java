@@ -65,12 +65,16 @@ public class BillService {
     @Deprecated //Please use payment service > createPaymentMethod
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData) {
         List<Payment> ps = new ArrayList<>();
+
         if (paymentMethodData == null) {
+            PaymentMethod npm;
             if (bill.getPaymentMethod() == null) {
-                return null;
+                npm = Cash;
             }
             if (bill.getPaymentMethod() == MultiplePaymentMethods) {
-                return null;
+                npm = Cash;
+            } else {
+                npm = bill.getPaymentMethod();
             }
             Payment p = new Payment();
             p.setBill(bill);

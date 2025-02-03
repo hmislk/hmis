@@ -13,7 +13,7 @@
                     <p:panel >
                         <f:facet name="header" >
                             <h:outputText styleClass="fa-solid fa-file-invoice"/>
-                            <h:outputLabel value="Supplier Payment Done Search" class="mx-4"/> 
+                            <h:outputLabel value="Settiling approved supplier Payments" class="mx-4"/> 
                         </f:facet>
                         <div class="row">
                             <div class="col-2">
@@ -157,7 +157,7 @@
                                     <p:column headerText="Action">
                                         <p:commandButton 
                                             ajax="false" 
-                                            value="To Approve" 
+                                            value="To Settle" 
                                             action="#{supplierPaymentController.navigateToSettleApprovedPayment()}" 
                                             class="ui-button-success">
                                             <f:setPropertyActionListener value="#{bill}" target="#{supplierPaymentController.bill}"/>
