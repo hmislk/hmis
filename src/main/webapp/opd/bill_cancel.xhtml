@@ -219,6 +219,9 @@
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
                                 <prints:A4_paper_without_headings bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             </h:panelGroup>
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom3'}" >
+                                <prints:five_five_custom_3 bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                            </h:panelGroup>
 
                         </h:panelGroup>
                     </p:panel>
