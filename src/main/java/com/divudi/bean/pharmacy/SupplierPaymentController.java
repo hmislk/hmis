@@ -90,7 +90,7 @@ public class SupplierPaymentController implements Serializable {
     BillService billService;
     @EJB
     PaymentService paymentService;
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private BillController billController;
@@ -104,7 +104,7 @@ public class SupplierPaymentController implements Serializable {
     CommonController commonController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private List<Bill> bills;
     private List<Bill> selectedBills;
@@ -136,21 +136,15 @@ public class SupplierPaymentController implements Serializable {
     private List<String> supplierPaymentStatusList;
     private String supplierPaymentStatus;
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToDealerPaymentIndex() {
         return "/dealerPayment/index?faces-redirect=true";
     }
 
     public String navigateToDealerDueSearch() {
-        bills = new ArrayList<>();
-        netTotal = 0.0;
-        return "/dealerPayment/dealor_due?faces-redirect=true";
-    }
-    
-    public String navigateToGenerateSupplierPayments() {
         bills = new ArrayList<>();
         netTotal = 0.0;
         return "/dealerPayment/dealor_due?faces-redirect=true";
@@ -246,13 +240,13 @@ public class SupplierPaymentController implements Serializable {
         return "/dealerPayment/supplier_bill_payment_completion_management?faces-redirect=true";
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Functions">
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Inner Classes">
-    // </editor-fold>  
+    // </editor-fold>
     @Deprecated
     public void fillPharmacySupplierPayments() {
         List<BillTypeAtomic> btas = new ArrayList<>();
@@ -317,7 +311,7 @@ public class SupplierPaymentController implements Serializable {
         }
 
         jpql += " order by b.createdAt desc  ";
-//    
+//
         params.put("billTypes", billTypes);
 
         params.put("toDate", getToDate());
