@@ -84,7 +84,7 @@
                     </div>
 
                     <div class="col-2 text-start">
-                        <h:outputLabel value="#{cc.attrs.billItem.prescription.frequencyUnit}" ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.billItem.prescription.frequencyUnit.name}" ></h:outputLabel>
                     </div>
 
 
@@ -111,7 +111,7 @@
                         <h:outputLabel value="Special Note:" ></h:outputLabel>
                     </div>
                     
-                    <div class="col-7">
+                    <div class="col-7 text-start">
                         <h:outputText style="font-weight: bold; word-wrap: break-word" value="#{cc.attrs.billItem.prescription.comment}"></h:outputText>
                     </div>
                     

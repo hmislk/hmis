@@ -69,6 +69,7 @@ import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.Token;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.clinical.Prescription;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -523,6 +524,30 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         onEditCalculation(tmp);
 
         return false;
+    }
+
+    private Prescription prescription;
+    private boolean enableLabelPrintFromSaleView = false;
+    
+    public void enableLabelPrint(Prescription p){
+        enableLabelPrintFromSaleView = true;
+        this.prescription = p;
+    }
+
+    public void addPrescriptionToBillitem(BillItem billItem) {
+        if (prescription == null) {
+            prescription = new Prescription();
+        }
+
+        if (billItem.getInstructions() != null && !billItem.getInstructions().isEmpty()) {
+            if (billItem.getPrescription().getComment() == null || billItem.getPrescription().getComment().isEmpty()) {
+                billItem.getPrescription().setComment(billItem.getInstructions());
+            } else if (billItem.getInstructions().equalsIgnoreCase(billItem.getPrescription().getComment())) {
+                billItem.getPrescription().setComment(billItem.getInstructions());
+            }
+        }
+        
+
     }
 
     private void onEditCalculation(BillItem tmp) {
@@ -3390,6 +3415,25 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         }
         processBillItems();
+    }
+
+    public Prescription getPrescription() {
+        if (prescription == null) {
+            prescription = new Prescription();
+}
+        return prescription;
+    }
+
+    public void setPrescription(Prescription prescription) {
+        this.prescription = prescription;
+    }
+
+    public boolean isEnableLabelPrintFromSaleView() {
+        return enableLabelPrintFromSaleView;
+    }
+
+    public void setEnableLabelPrintFromSaleView(boolean enableLabelPrintFromSaleView) {
+        this.enableLabelPrintFromSaleView = enableLabelPrintFromSaleView;
     }
 
 }
