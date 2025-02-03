@@ -161,7 +161,6 @@ public class LimsMiddlewareController {
     }
 
     private Response processD10Observation(JSONObject observation) {
-        // System.out.println("processD10Observation");
         String sampleId = observation.optString("sampleId");
         String analyzerName = observation.optString("analyzerName");
         String analyzerId = observation.optString("analyzerId");
@@ -187,18 +186,6 @@ public class LimsMiddlewareController {
                     .build();
         }
 
-        // Log the extracted values for debugging or further processing
-        // System.out.println("sampleId: " + sampleId);
-        // System.out.println("analyzerName: " + analyzerName);
-        // System.out.println("analyzerId: " + analyzerId);
-        // System.out.println("departmentId: " + departmentId);
-        // System.out.println("departmentAnalyzerId: " + departmentAnalyzerId);
-        // System.out.println("observationValueCodingSystem: " + observationValueCodingSystem);
-        // System.out.println("observationValueCode: " + observationValueCode);
-        // System.out.println("observationUnitCodingSystem: " + observationUnitCodingSystem);
-        // System.out.println("observationUnitCode: " + observationUnitCode);
-        // System.out.println("observationValue: " + observationValueStr);
-        // System.out.println("issuedDate: " + issuedDate);
 
         Long sampleIdLong;
         Machine analyzer;
@@ -279,8 +266,7 @@ public class LimsMiddlewareController {
                     .build();
         }
 
-        // Process the patient investigations and reports
-        // System.out.println("Process the patient investigations and reports = ");
+
         for (PatientInvestigation patientInvestigation : ptixs) {
 
             Investigation ix = null;
@@ -296,6 +282,7 @@ public class LimsMiddlewareController {
                     ix = (Investigation) ix.getReportedAs();
                 }
             }
+
 
             // System.out.println("Patient Investigation = " + patientInvestigation);
             List<PatientReport> patientReports = new ArrayList<>();
@@ -314,6 +301,7 @@ public class LimsMiddlewareController {
                 patientReports.add(unsavedPatientReport);
             }
             // System.out.println("patientReports = " + patientReports);
+
             if (patientReports.isEmpty()) {
                 List<Item> temItems = getItemsForParentItem(ix);
                 for (Item ti : temItems) {
@@ -322,7 +310,6 @@ public class LimsMiddlewareController {
                         Investigation tix = (Investigation) ti;
                         if (tix.getMachine() != null && tix.getMachine().equals(analyzer)) {
                             PatientReport tprs = getUnsavedPatientReport(patientInvestigation);
-                            // System.out.println("tprs = " + tprs);
                             if (tprs == null) {
                                 tprs = createNewPatientReport(patientInvestigation, tix);
                             }
@@ -335,6 +322,7 @@ public class LimsMiddlewareController {
             // System.out.println("prs = " + patientReports);
             for (PatientReport tpr : patientReports) {
                 // System.out.println("tpr = " + tpr);
+
                 for (PatientReportItemValue priv : tpr.getPatientReportItemValues()) {
                     // System.out.println("priv = " + priv);
                     // System.out.println("priv.getInvestigationItem().getValueCodeSystem() = " + priv.getInvestigationItem());
@@ -880,8 +868,6 @@ public class LimsMiddlewareController {
                 + "\nQAK|%s|OK|WOS^Work Order Step^IHE_LABTF"
                 + "\nQPD|WOS^Work Order Step^IHE_LABTF|%s|SPM01";
 
-        // System.out.println("responseMessageTemplate = " + responseMessageTemplate);
-
         return String.format(responseMessageTemplate, sendingApplication, sendingFacility, receivingApplication,
                 receivingFacility, messageControlID, inputMessageControlID, messageControlID, messageControlID);
     }
@@ -1034,7 +1020,6 @@ public class LimsMiddlewareController {
                 }
             }
 
-            // System.out.println("ix = " + ix.getName());
 
             List<PatientReport> prs = new ArrayList<>();
             PatientReport tpr;

@@ -1012,6 +1012,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         
         temp.setDeptId(billNumber);
         temp.setInsId(billNumber);
+        temp.setComments(comment);
 
         if (temp.getId() == null) {
             getFacade().create(temp);

@@ -217,6 +217,11 @@
                                                         <prints:five_five_paper_coustom_1 bill="#{ffb}" duplicate="true" payments="1"/>                        
                                                     </ui:repeat>
                                                 </h:panelGroup>
+                                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom3'}" >
+                                                    <ui:repeat value="#{billSearch.bill}" var="pp">
+                                                        <prints:five_five_custom_3 bill="#{pp}" duplicate="true"/>                        
+                                                    </ui:repeat>
+                                                </h:panelGroup>
                                             </h:panelGroup>
                                         </div>
                                         <div class="col-6">
@@ -232,6 +237,10 @@
 
                                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                                         <bi:opdReturnfive_five_paper_without_headings 
+                                                            bill="#{billSearch.bill.refundedBill}"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom3'}" >
+                                                        <prints:five_five_custom_3
                                                             bill="#{billSearch.bill.refundedBill}"/>
                                                     </h:panelGroup>
                                                 </h:panelGroup>

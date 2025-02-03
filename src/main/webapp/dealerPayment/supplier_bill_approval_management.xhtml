@@ -13,7 +13,7 @@
                     <p:panel >
                         <f:facet name="header" >
                             <h:outputText styleClass="fa-solid fa-file-invoice"/>
-                            <h:outputLabel value="Settiling approved supplier Payments" class="mx-4"/> 
+                            <h:outputLabel value="Supplier Payment Done Search" class="mx-4"/> 
                         </f:facet>
                         <div class="row">
                             <div class="col-2">
@@ -45,24 +45,24 @@
                             <div class="col-10 gap-1">
                                 <p:commandButton 
                                     id="btnSearchPending" 
-                                    ajax="false" value="List Approved Supplier Payments to Settle" 
+                                    ajax="false" value="List Supplier Bills to Approve for Payments" 
                                     class="m-1 ui-button-warning" 
                                     icon="fas fa-pills"
-                                    action="#{supplierPaymentController.fillApprovedSupplierPaymentsToSettle()}"/>
+                                    action="#{supplierPaymentController.fillSupplierBillsToApproveForPayments()}"/>
 
                                 <p:commandButton 
                                     id="btnSearchCompleted" 
-                                    ajax="false" value="List Supplier Payments Settled" 
+                                    ajax="false" value="List Supplier Bills Approved for Payments" 
                                     class="m-1 ui-button-success" 
                                     icon="fas fa-pills"
-                                    action="#{supplierPaymentController.fillApprovedSupplierPaymentsToComplete()}"/>
+                                    action="#{supplierPaymentController.fillSupplierBillsApprovedForPayments()}"/>
 
                                 <p:commandButton 
                                     id="btnSearchAll" 
-                                    ajax="false" value="List All Payments" 
+                                    ajax="false" value="List All Supplier Bills" 
                                     class="m-1 ui-button-primary" 
                                     icon="fas fa-pills"
-                                    action="#{supplierPaymentController.fillSupplierPaymentsIgnoringApprovealAndCompletion()}"/>
+                                    action="#{supplierPaymentController.fillSupplierBills()}"/>
 
 
                             </div>
@@ -157,8 +157,8 @@
                                     <p:column headerText="Action">
                                         <p:commandButton 
                                             ajax="false" 
-                                            value="To Settle" 
-                                            action="#{supplierPaymentController.navigateToSettleApprovedPayment()}" 
+                                            value="To Approve" 
+                                            action="#{supplierPaymentController.navigateToApprovePayment()}" 
                                             class="ui-button-success">
                                             <f:setPropertyActionListener value="#{bill}" target="#{supplierPaymentController.bill}"/>
                                         </p:commandButton>

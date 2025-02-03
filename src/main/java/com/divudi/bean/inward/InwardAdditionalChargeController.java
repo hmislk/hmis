@@ -12,6 +12,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.BillFee;
@@ -147,6 +148,7 @@ public class InwardAdditionalChargeController implements Serializable {
 
     private void saveBill() {
         getCurrent().setBillType(BillType.InwardOutSideBill);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setInstitution(getSessionController().getInstitution());
 
