@@ -43,6 +43,15 @@
                                         styleClass="ui-button-success"
                                         action="#{supplierPaymentController.navigateToDealerDoneSearch}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
+                                    
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Settled Payments"
+                                        icon="fas fa-file-invoice-dollar"  
+                                        styleClass="ui-button-success"
+                                        action="#{supplierPaymentController.navigateToDealerDoneSearch}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
 
 
                                 </h:panelGroup>

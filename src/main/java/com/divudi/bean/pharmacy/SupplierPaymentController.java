@@ -161,6 +161,12 @@ public class SupplierPaymentController implements Serializable {
         netTotal = 0.0;
         return "/dealerPayment/list_bills_to_approve_supplier_payments?faces-redirect=true";
     }
+    
+//    public String navigateToApproveSupplierPayments() {
+//        bills = new ArrayList<>();
+//        netTotal = 0.0;
+//        return "/dealerPayment/list_supplier_payments?faces-redirect=true";
+//    }
 
     public String navigateToSettleSupplierPayments() {
         bills = new ArrayList<>();
@@ -179,6 +185,8 @@ public class SupplierPaymentController implements Serializable {
         netTotal = 0.0;
         return "/dealerPayment/settled_bills?faces-redirect=true";
     }
+    
+    
 
     public String navigateToDealerDuehalfPaymentsSearch() {
         bills = new ArrayList<>();

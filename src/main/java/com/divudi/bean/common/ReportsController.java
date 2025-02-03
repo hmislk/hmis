@@ -2994,6 +2994,7 @@ public class ReportsController implements Serializable {
         return totalNetValue;
     }
 
+    //Correct
     public ReportTemplateRowBundle generateCollectingCenterBillWiseBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
@@ -3014,12 +3015,12 @@ public class ReportsController implements Serializable {
         }
 
         if (department != null) {
-            jpql += "AND bill.toDepartment = :dep ";
+            jpql += "AND (bill.toDepartment = :dep or bill.department = :dep) ";
             parameters.put("dep", department);
         }
 
         if (site != null) {
-            jpql += "AND bill.toDepartment.site = :site ";
+            jpql += "AND (bill.toDepartment.site = :site or bill.department.site = :site)";
             parameters.put("site", site);
         }
         if (webUser != null) {
