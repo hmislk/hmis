@@ -749,4 +749,16 @@ public class BillService {
         return fetchedBillItems;
     }
 
+    public List<Bill> fetchReturnBills(Bill current) {
+        String jpql;
+        Map params = new HashMap();
+        jpql = "select b "
+                + " from RefundBill b "
+                + " where b.retired=:ret "
+                + " and b.billedBill=:bill ";
+        jpql += " order by b.createdAt desc  ";
+        List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return fetchedBills;
+    }
+
 }

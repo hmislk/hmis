@@ -33,7 +33,7 @@
 
                                 <p:commandButton 
                                     value="List Supplier Payments" 
-                                    action="#{supplierPaymentController.fillSupplierPaymentsToApprove}" 
+                                    action="#{supplierPaymentController.fillSupplierPaymentsDone()}" 
                                     ajax="false"  
                                     icon="fas fa-prescription-bottle-alt" 
                                     class="my-1 w-100 ui-button-warning" />
@@ -82,7 +82,7 @@
 
                                     <p:column  headerText="Actions" >
                                         <p:commandButton
-                                            value="To Approve Payment" 
+                                            value="View" 
                                             action="#{supplierPaymentController.navigateToViewSupplierPayment(b)}" 
                                             ajax="false" >
                                         </p:commandButton>

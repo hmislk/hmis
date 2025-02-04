@@ -123,6 +123,11 @@ public class SupplierPaymentController implements Serializable {
     private boolean printPreview;
     private SearchKeyword searchKeyword;
     private Bill current;
+    private Bill currentCancellationBill;
+    private List<Bill> currentReturnBills;
+    private List<Bill> currentPaymentBills;
+    private List<Bill> currentPaymentRefundBills;
+
     private PaymentMethodData paymentMethodData;
     private BillItem currentBillItem;
     private Institution institution;
@@ -149,13 +154,12 @@ public class SupplierPaymentController implements Serializable {
         netTotal = 0.0;
         return "/dealerPayment/dealor_due?faces-redirect=true";
     }
-    
-    public String navigateToGenerateSupplierPayments() {
-        bills = new ArrayList<>();
-        netTotal = 0.0;
-        return "/dealerPayment/dealor_due?faces-redirect=true";
-    }
 
+//    public String navigateToGenerateSupplierPayments() {
+//        bills = new ArrayList<>();
+//        netTotal = 0.0;
+//        return "/dealerPayment/dealor_due?faces-redirect=true";
+//    }
     public String navigateToGenerateSupplierPayments() {
         bills = new ArrayList<>();
         netTotal = 0.0;
@@ -167,11 +171,11 @@ public class SupplierPaymentController implements Serializable {
         netTotal = 0.0;
         return "/dealerPayment/list_bills_to_approve_supplier_payments?faces-redirect=true";
     }
-    
+
     public String navigateToViewSupplierPayments() {
         bills = new ArrayList<>();
         netTotal = 0.0;
-        return "/dealerPayment/list_bills_to_supplier_payments?faces-redirect=true";
+        return "/dealerPayment/list_supplier_payments?faces-redirect=true";
     }
 
     public String navigateToSettleSupplierPayments() {
@@ -191,8 +195,6 @@ public class SupplierPaymentController implements Serializable {
         netTotal = 0.0;
         return "/dealerPayment/settled_bills?faces-redirect=true";
     }
-    
-    
 
     public String navigateToDealerDuehalfPaymentsSearch() {
         bills = new ArrayList<>();
@@ -949,8 +951,7 @@ public class SupplierPaymentController implements Serializable {
         BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.SUPPLIER_PAYMENT_PREPERATION};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
 
-        bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01, true);
-
+//        bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01, true);
         String jpql = "SELECT b FROM Bill b WHERE b.retired = :ret AND b.cancelled = :can "
                 + "AND b.createdAt BETWEEN :frm AND :to";
 
@@ -977,7 +978,37 @@ public class SupplierPaymentController implements Serializable {
             netTotal += b.getNetTotal();
         }
     }
-    
+
+    public void fillSupplierPaymentsDone() {
+        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.SUPPLIER_PAYMENT};
+        List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+
+        bills = billController.findPaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
+
+        String jpql = "SELECT b FROM Bill b WHERE b.retired = :ret AND b.cancelled = :can "
+                + "AND b.createdAt BETWEEN :frm AND :to";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("frm", fromDate);
+        params.put("to", toDate);
+        params.put("ret", false);
+        params.put("can", false);
+
+        jpql += " AND (b.billTypeAtomic IN :bts)";
+        params.put("bts", billTypesListBilled);
+
+        // Logging
+        System.out.println("JPQL Query: " + jpql);
+        System.out.println("Parameters: " + params);
+
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        netTotal = 0.0;
+        for (Bill b : bills) {
+            netTotal += b.getNetTotal();
+        }
+    }
+
     public void listSupplierPayments() {
         BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.SUPPLIER_PAYMENT};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
@@ -1867,8 +1898,48 @@ public class SupplierPaymentController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Is Selected");
             return null;
         }
-        current = billService.reloadBill(current);
+        current = billService.reloadBill(originalBill);
         return "/dealerPayment/view_supplier_payment?faces-redirect=true";
+    }
+
+    public String navigateToViewProcurementBill(Bill originalBill) {
+        if (originalBill == null) {
+            JsfUtil.addErrorMessage("No Bill Is Selected");
+            return null;
+        }
+        current = billService.reloadBill(originalBill);
+        return "/dealerPayment/view_purchase_bill?faces-redirect=true";
+    }
+
+    private void loadProcurementBillDetails() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        if (current.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return;
+        }
+
+        BillTypeAtomic[] billTypes = {
+            BillTypeAtomic.PHARMACY_GRN,
+            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
+            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
+            BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL,
+            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
+            BillTypeAtomic.STORE_GRN,
+            BillTypeAtomic.STORE_DIRECT_PURCHASE
+        };
+
+        if (!Arrays.asList(billTypes).contains(current.getBillTypeAtomic())) {
+            JsfUtil.addErrorMessage("Wrong Bill Type");
+            return;
+        }
+        current = billService.reloadBill(current);
+        currentCancellationBill = current.getCancelledBill();
+        currentReturnBills = billService.fetchReturnBills(current);
+        
+        
     }
 
     public String navigateToPrepareSupplierPayment(Bill originalBill) {
@@ -2675,6 +2746,38 @@ public class SupplierPaymentController implements Serializable {
 
     public void setSupplierPaymentStatus(String supplierPaymentStatus) {
         this.supplierPaymentStatus = supplierPaymentStatus;
+    }
+
+    public Bill getCurrentCancellationBill() {
+        return currentCancellationBill;
+    }
+
+    public void setCurrentCancellationBill(Bill currentCancellationBill) {
+        this.currentCancellationBill = currentCancellationBill;
+    }
+
+    public List<Bill> getCurrentReturnBills() {
+        return currentReturnBills;
+    }
+
+    public void setCurrentReturnBills(List<Bill> currentReturnBills) {
+        this.currentReturnBills = currentReturnBills;
+    }
+
+    public List<Bill> getCurrentPaymentBills() {
+        return currentPaymentBills;
+    }
+
+    public void setCurrentPaymentBills(List<Bill> currentPaymentBills) {
+        this.currentPaymentBills = currentPaymentBills;
+    }
+
+    public List<Bill> getCurrentPaymentRefundBills() {
+        return currentPaymentRefundBills;
+    }
+
+    public void setCurrentPaymentRefundBills(List<Bill> currentPaymentRefundBills) {
+        this.currentPaymentRefundBills = currentPaymentRefundBills;
     }
 
 }
