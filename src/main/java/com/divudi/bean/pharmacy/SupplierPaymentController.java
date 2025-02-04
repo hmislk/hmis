@@ -156,12 +156,6 @@ public class SupplierPaymentController implements Serializable {
         return "/dealerPayment/dealor_due?faces-redirect=true";
     }
 
-    public String navigateToGenerateSupplierPayments() {
-        bills = new ArrayList<>();
-        netTotal = 0.0;
-        return "/dealerPayment/dealor_due?faces-redirect=true";
-    }
-
     public String navigateToDealerDoneSearch() {
         bills = new ArrayList<>();
         netTotal = 0.0;
