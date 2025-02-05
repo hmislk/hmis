@@ -183,7 +183,7 @@
                                 value="Download">
                                 <p:dataExporter 
                                     type="xlsx" 
-                                    fileName="Transfer Receive Report" 
+                                    fileName="BHT Issue Report" 
                                     target="tbl"  />
                             </p:commandButton>
 
@@ -195,7 +195,7 @@
                                 <p:dataExporter 
                                     type="pdf" 
                                     target="tbl" 
-                                    fileName="Transfer Receive Report" />
+                                    fileName="BHT Issue Report" />
                             </p:commandButton>
 
                         </div>
@@ -221,17 +221,14 @@
                             </p:column>
                             <p:column headerText="Item Name">
                                 <h:outputText value="" />
+                            </p:column>                   
+                            <p:column headerText="Code">
+                                <h:outputText value="" />
                             </p:column>
                             <p:column headerText="Doc No">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Ref Doc No (Issue Doc No)">
-                                <h:outputText value="" />
-                            </p:column>                          
-                            <p:column headerText="Issue Department">
-                                <h:outputText value="" />
-                            </p:column>                   
-                            <p:column headerText="Code">
+                            <p:column headerText="Batch Code">
                                 <h:outputText value="" />
                             </p:column>
                             <p:column headerText="QTY">
@@ -240,13 +237,28 @@
                             <p:column headerText="Rate">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Total">
+                            <p:column headerText="MRP">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="BHT Issue">
                                 <h:outputText value="" />
                             </p:column>
                             <p:column headerText="Net Total">
                                 <h:outputText value="" />
-                            </p:column>                            
-
+                            </p:column> 
+                            <p:column headerText="Margine">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Discount">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="BHT No">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="MRN">
+                                <h:outputText value="" />
+                            </p:column>
+                            
                         </p:dataTable>
 
                     </p:panel>
