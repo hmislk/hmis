@@ -100,9 +100,10 @@
                     <h:outputLabel value="Cheque No :"/>
                     <h:outputLabel value="...................................................................."/>
                     <h:outputLabel value="Amount  : Rs. #{0-cc.attrs.bill.total - cc.attrs.bill.discount} " style="position: absolute; left: 70%;"/>
+                     <h:outputLabel value="Cheque No :"/>
+                    <h:outputLabel value="...................................................................."/>
+                    <h:outputLabel value="Amount  : Rs. #{0-cc.attrs.bill.netTotal} " style="position: absolute; left: 70%;"/>
                     <br></br>
-                    #{0-cc.attrs.bill.id}
-                    #{0-cc.attrs.bill.netTotal}
                     <br></br>                    
                     <h:outputLabel value="Received with thanks sum of Rupees  .................................................................................................................................................. #{sessionController.loggedUser.institution.name} "/>
                     <br></br>
