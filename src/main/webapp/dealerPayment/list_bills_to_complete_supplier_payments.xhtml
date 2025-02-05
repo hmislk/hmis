@@ -11,7 +11,7 @@
         <ui:composition template="/dealerPayment/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel>
+                    <p:panel class="m-1">
                         <f:facet name="header" > 
                             <h:outputText styleClass="fas fa-file-invoice"/>
                             <h:outputLabel class="mx-4" value="Complete Supplier Payments"/>  
@@ -49,38 +49,15 @@
                                     selectionRowMode="add"
                                     selectionPageOnly="false"
                                     rows="10"
-                                    selection="#{supplierPaymentController.selectedBills}"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15">
 
-                                    <p:column selectionBox="true" width="20">
-
-                                    </p:column>
-
-                                    <p:column headerText="GRN No" sortBy="#{b.deptId}" filterBy="#{b.deptId}" filterMatchMode="contains">
+                                    <p:column headerText="Payment No" sortBy="#{b.deptId}" filterBy="#{b.deptId}" filterMatchMode="contains">
                                         <h:outputText value="#{b.deptId}" />
                                     </p:column>
-
-                                    <p:column headerText="Date" sortBy="#{b.billDate}" filterBy="#{b.billDate}" filterMatchMode="contains">
-                                        <h:outputText value="#{b.billDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                        </h:outputText>
+                                    <p:column width="16em" headerText="Supplier" sortBy="#{b.toInstitution.name}" filterBy="#{b.toInstitution.name}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.toInstitution.name}" />
                                     </p:column>
-
-                                    <p:column headerText="Supplier" sortBy="#{b.fromInstitution.name}" filterBy="#{b.fromInstitution.name}" filterMatchMode="contains">
-                                        <h:outputText value="#{b.fromInstitution.name}" />
-                                    </p:column>
-
-                                    <p:column headerText="Bill Type" sortBy="#{b.billTypeAtomic.label}" filterBy="#{b.billTypeAtomic.label}" filterMatchMode="contains">
-                                        <h:outputText value="#{b.billTypeAtomic.label}" />
-                                    </p:column>
-
-                                    <p:column headerText="Invoice No"
-                                              filterMatchMode="contains"
-                                              sortBy="#{b.invoiceNumber}" filterBy="#{b.invoiceNumber}">
-                                        <h:outputText value="#{b.invoiceNumber}" />
-                                    </p:column>
-
                                     <p:column  class="text-end" headerText="Total" sortBy="#{b.netTotal}" filterBy="#{b.netTotal}" filterMatchMode="contains">
                                         <h:outputText value="#{b.netTotal}">
                                             <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
@@ -92,45 +69,44 @@
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column class="text-end" headerText="Returned" sortBy="#{b.refundAmount}" filterBy="#{b.refundAmount}" filterMatchMode="contains">
-                                        <h:outputText value="#{b.refundAmount}">
-                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+
+                                    <p:column headerText="Created At" sortBy="#{b.createdAt}" filterBy="#{b.createdAt}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                         </h:outputText>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{supplierPaymentController.refundAmount}">
-                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
-                                            </h:outputText>
-                                        </f:facet>
                                     </p:column>
 
-                                    <p:column  class="text-end" headerText="Paid Total" sortBy="#{b.paidAmount}" filterBy="#{b.paidAmount}" filterMatchMode="contains">
-                                        <h:outputText value="#{b.paidAmount}">
-                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                    <p:column headerText="Created By" sortBy="#{b.creater.webUserPerson.name}" filterBy="#{b.creater.webUserPerson.name}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.creater.webUserPerson.name}">
                                         </h:outputText>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{supplierPaymentController.paidAmount}">
-                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
-                                            </h:outputText>
-                                        </f:facet>
                                     </p:column>
 
-                                    <p:column  class="text-end" headerText="Balance" sortBy="#{b.balance}" filterBy="#{b.balance}" filterMatchMode="contains">
-                                        <h:outputText value="#{b.balance}">
-                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                    <p:column headerText="Approved At" sortBy="#{b.paymentApprovedAt}" filterBy="#{b.paymentApprovedAt}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.paymentApprovedAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                         </h:outputText>
-                                        <f:facet name="footer">
-                                            <h:outputText value="#{supplierPaymentController.balance}">
-                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
-                                            </h:outputText>
-                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Approved By" sortBy="#{b.creater.webUserPerson.name}" filterBy="#{b.creater.webUserPerson.name}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.creater.webUserPerson.name}">
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Settled At" sortBy="#{b.paymentGeneratedAt}" filterBy="#{b.paymentGeneratedAt}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.paymentGeneratedAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Settled By" sortBy="#{b.creater.webUserPerson.name}" filterBy="#{b.creater.webUserPerson.name}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.paymentGeneratedBy.webUserPerson.name}">
+                                        </h:outputText>
                                     </p:column>
 
                                     <p:column  headerText="Actions" >
                                         <p:commandButton
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Approval is necessary for Procument Payments', false)}"
-                                            value="Prepare Payment" 
+                                            value="Complete Payment" 
                                             update="@form" 
-                                            action="#{supplierPaymentController.navigateToPrepareSupplierPayment(b)}" 
+                                            action="#{supplierPaymentController.navigateToSettleSupplierPayment(b)}" 
                                             ajax="false" 
                                             disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}" >
                                         </p:commandButton>

@@ -667,6 +667,17 @@ public class SupplierPaymentController implements Serializable {
 //        getCurrent().setNetTotal(n);
     }
 
+    public void updateReferanceBillCompletionStatus(List<BillItem> billItemsWithReferanceToSettlingBills) {
+        for (BillItem payingBillItem : billItemsWithReferanceToSettlingBills) {
+            Bill originalBill = payingBillItem.getReferenceBill();
+            if (originalBill == null) {
+                continue;
+            }
+            originalBill.setPaymentGenerated(false);
+            billFacade.edit(originalBill);
+        }
+    }
+
     public void updateReferanceBillAsPaymentApproved(List<BillItem> billItemsWithReferanceToSettlingBills) {
         for (BillItem payingBillItem : billItemsWithReferanceToSettlingBills) {
             Bill originalBill = payingBillItem.getReferenceBill();
@@ -802,6 +813,27 @@ public class SupplierPaymentController implements Serializable {
             return true;
         }
 
+        return false;
+    }
+
+    private boolean errorCheckForCompletingApprovedAndSettledPayment() {
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("Nothing to settle");
+            return true;
+        }
+        if (getCurrent().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Item ");
+            return true;
+        }
+
+        if (getCurrent().getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Select Cant settle without Dealor");
+            return true;
+        }
+
+        if (getCurrent().getPaymentMethod() == null) {
+            return true;
+        }
         return false;
     }
 
@@ -1578,6 +1610,65 @@ public class SupplierPaymentController implements Serializable {
         netTotal = bills.stream().mapToDouble(Bill::getNetTotal).sum();
     }
 
+    public void fillSupplierPayments(Boolean completed, Boolean paymentApproved, Boolean paymentCompleted) {
+        bills = null;
+        netTotal = 0.0;
+        StringBuilder jpql = new StringBuilder("select b from Bill b "
+                + " where b.retired=:retired "
+                + " and b.cancelled=:cancelled "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.billTypeAtomic in :btas ");
+
+        Map<String, Object> params = new HashMap<>();
+        List<BillTypeAtomic> btas = Arrays.asList(
+                BillTypeAtomic.SUPPLIER_PAYMENT_PREPERATION);
+
+        params.put("btas", btas);
+        params.put("cancelled", false);
+        params.put("retired", false);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        // Conditionally append paymentApproved if parameter is not null
+        if (completed != null) {
+            if (completed) {
+                jpql.append(" and b.completed = :completed ");
+                params.put("completed", true);
+            } else {
+                jpql.append(" and b.completed = :completed ");
+                params.put("completed", false);
+            }
+        }
+
+        // Conditionally append paymentCompleted if parameter is not null
+        if (paymentCompleted != null) {
+            if (paymentCompleted) {
+                jpql.append(" and b.paymentCompleted = :completed ");
+                params.put("completed", true);
+            } else {
+                jpql.append(" and b.paymentCompleted = :completed ");
+                params.put("completed", false);
+            }
+        }
+
+        // Conditionally append paymentCompleted if parameter is not null
+        if (paymentApproved != null) {
+            if (paymentApproved) {
+                jpql.append(" and b.paymentApproved = :paymentApproved ");
+                params.put("paymentApproved", true);
+            } else {
+                jpql.append(" and b.paymentApproved = :paymentApproved ");
+                params.put("paymentApproved", false);
+            }
+        }
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        System.out.println("bills = " + bills);
+        netTotal = bills.stream().mapToDouble(Bill::getNetTotal).sum();
+    }
+
     public void fillApprovedSupplierPaymentsToSettle() {
         supplierPaymentStatus = "Pending Settling";
         fillSupplierPayments(false, null);
@@ -1595,7 +1686,7 @@ public class SupplierPaymentController implements Serializable {
 
     public void fillApprovedSupplierPaymentsToComplete() {
         supplierPaymentStatus = "Pending Completion";
-        fillSupplierPayments(true, false);
+        fillSupplierPayments(null, true, false);
     }
 
     public void fillSupplierPaymentsIgnoringApprovealAndCompletion() {
@@ -1941,7 +2032,7 @@ public class SupplierPaymentController implements Serializable {
         currentSummaryPurchaseNetTotalValue = Math.abs(currentSummaryPurchaseTotalValue) - Math.abs(currentSummaryPurchaseReturnTotalValue);
         currentTotalPaymentSettledValue = calculateTotalValue(currentPaymentBillItems);
 
-        currentTotalPaymentToSettleValue =  Math.abs(currentSummaryPurchaseNetTotalValue) - Math.abs(currentTotalPaymentSettledValue);
+        currentTotalPaymentToSettleValue = Math.abs(currentSummaryPurchaseNetTotalValue) - Math.abs(currentTotalPaymentSettledValue);
 
         return "/dealerPayment/view_purchase_bill?faces-redirect=true";
     }
@@ -2134,6 +2225,24 @@ public class SupplierPaymentController implements Serializable {
         return "/dealerPayment/settle_approved_supplier_payment?faces-redirect=true";
     }
 
+    public String navigateToCompleteSupplierPayment(Bill approvedAndSettledPaymentBill) {
+        makeNull();
+        if (approvedAndSettledPaymentBill == null) {
+            JsfUtil.addErrorMessage("No Bill Is Selected");
+            return null;
+        }
+        if (!approvedAndSettledPaymentBill.isPaymentApproved()) {
+            JsfUtil.addErrorMessage("Not Approved. Can not complete.");
+            return null;
+        }
+        if (!approvedAndSettledPaymentBill.isPaymentCompleted()) {
+            JsfUtil.addErrorMessage("Already Completed. Can not complete again.");
+            return null;
+        }
+        current = billService.reloadBill(approvedAndSettledPaymentBill);
+        return "/dealerPayment/complete_approved_and_settled_supplier_payment?faces-redirect=true";
+    }
+
     public String navigateToStartSupplierPaymentOfSelectedBills() {
         prepareForNewSupplierPayment();
         if (getSelectedBills().isEmpty()) {
@@ -2163,6 +2272,49 @@ public class SupplierPaymentController implements Serializable {
         current.setToInstitution(paymentSupplier);
         calTotalBySelectedBillTems();
         return "/dealerPayment/pay_supplier?faces-redirect=true";
+    }
+
+    public String navigateToPrepareSupplierPaymentForAllSelectedBills() {
+        if (selectedBills == null) {
+            JsfUtil.addErrorMessage("No Bills are Selected");
+            return null;
+        }
+        if (selectedBills.isEmpty()) {
+            JsfUtil.addErrorMessage("No Bills are Selected");
+            return null;
+        }
+        Institution payingSupplier = null;
+        for (Bill b : getSelectedBills()) {
+            if (b.getFromInstitution() == null) {
+                JsfUtil.addErrorMessage("One purchase or GRN bill does not have a Supplier. Can not proceed.");
+                return null;
+            }
+            if (payingSupplier == null) {
+                payingSupplier = b.getFromInstitution();
+            } else {
+                if (!payingSupplier.equals(b.getFromInstitution())) {
+                    JsfUtil.addErrorMessage("Can not settle purchase or GRN bills from more than one supplier at once.");
+                    return null;
+                }
+            }
+
+        }
+        prepareForNewSupplierPaymentGeneration();
+        current.setFromInstitution(sessionController.getInstitution());
+        current.setFromDepartment(sessionController.getDepartment());
+        current.setToInstitution(payingSupplier);
+
+        for (Bill billsPaymentsWillBeCreated : selectedBills) {
+            currentBillItem = new BillItem();
+            currentBillItem.setSearialNo(1);
+            currentBillItem.setReferenceBill(billsPaymentsWillBeCreated);
+            double settlingValue = Math.abs(billsPaymentsWillBeCreated.getNetTotal()) - (Math.abs(billsPaymentsWillBeCreated.getRefundAmount()) + Math.abs(billsPaymentsWillBeCreated.getPaidAmount()));
+            currentBillItem.setNetValue(-settlingValue);
+            currentBillItem.setGrossValue(-settlingValue);
+            getSelectedBillItems().add(currentBillItem);
+        }
+        calculateTotalBySelectedBillItems();
+        return "/dealerPayment/generate_supplier_payment?faces-redirect=true";
     }
 
     public void settleSupplierPaymentForApprovedPayment() {
@@ -2326,6 +2478,24 @@ public class SupplierPaymentController implements Serializable {
 
     }
 
+    public void completeApprovedAndSettledSupplierPayment() {
+        if (errorCheckForCompletingApprovedAndSettledPayment()) {
+            return;
+        }
+        current = billService.reloadBill(current);
+
+        getCurrent().setPaymentCompleted(true);
+        getCurrent().setPaymentCompletedAt(new Date());
+        getCurrent().setPaymentCompletedBy(sessionController.getLoggedUser());
+        getBillFacade().edit(getCurrent());
+
+        updateReferanceBillCompletionStatus(current.getBillItems());
+
+        JsfUtil.addSuccessMessage("Bill Payment Completed");
+        printPreview = true;
+
+    }
+
     public void settleApproveSupplierPayment() {
         if (errorCheckForApprovingSupplierPayment()) {
             return;
@@ -2341,17 +2511,17 @@ public class SupplierPaymentController implements Serializable {
         }
         updateReferanceBillAsPaymentApproved(getCurrent().getBillItems());
 
-        for(BillItem bi:getCurrent().getBillItems()){
+        for (BillItem bi : getCurrent().getBillItems()) {
             bi.setBill(current);
-            if(bi.getId()==null){
+            if (bi.getId() == null) {
                 bi.setCreatedAt(new Date());
                 bi.setCreater(sessionController.getLoggedUser());
                 billItemFacade.create(bi);
-            }else{
+            } else {
                 billItemFacade.edit(bi);
             }
         }
-        
+
         JsfUtil.addSuccessMessage("Payment Approved");
         printPreview = true;
 
