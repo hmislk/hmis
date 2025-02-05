@@ -180,12 +180,18 @@
                                     </p:column>
 
                                     <p:column  headerText="Actions" >
+                                        <p:commandButton 
+                                            value="View" 
+                                            action="#{supplierPaymentController.navigateToViewProcurementBill(b)}" 
+                                            ajax="false" >
+                                        </p:commandButton>
                                         <p:commandButton
                                             value="Pay" 
                                             action="#{supplierPaymentController.navigateToStartSupplierPayment(b)}" 
                                             ajax="false" 
                                             disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}" >
                                         </p:commandButton>
+
 
                                     </p:column>
                                 </p:dataTable>

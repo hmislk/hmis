@@ -31,9 +31,12 @@ import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.Payment;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.pharmacy.ItemBatch;
+import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillFeePaymentFacade;
@@ -125,8 +128,14 @@ public class SupplierPaymentController implements Serializable {
     private Bill current;
     private Bill currentCancellationBill;
     private List<Bill> currentReturnBills;
-    private List<Bill> currentPaymentBills;
+    private List<BillItem> currentPaymentBills;
     private List<Bill> currentPaymentRefundBills;
+    private List<BillItem> currentSummeryBillItems;
+    private double currentSummaryPurchaseTotalValue;
+    private double currentSummaryPurchaseReturnTotalValue;
+    private double currentSummaryPurchaseNetTotalValue;
+    private double currentTotalPaymentSettledValue;
+    private double currentTotalPaymentToSettleValue;
 
     private PaymentMethodData paymentMethodData;
     private BillItem currentBillItem;
@@ -1908,7 +1917,146 @@ public class SupplierPaymentController implements Serializable {
             return null;
         }
         current = billService.reloadBill(originalBill);
+        if (current.isCancelled()) {
+            currentCancellationBill = billService.reloadBill(current.getCancelledBill());
+        } else {
+            currentCancellationBill = null;
+        }
+        if (current.isRefunded()) {
+            currentReturnBills = billService.fetchReturnBills(current);
+            if (currentReturnBills == null || currentReturnBills.isEmpty()) {
+                System.err.println("Error in Bill Return Process. Bill marked as Returned, but no return bills found");
+            }
+        } else {
+            currentReturnBills = billService.fetchReturnBills(current);
+            if (currentReturnBills != null && !currentReturnBills.isEmpty()) {
+                System.err.println("Error in Bill Return Process. Bill not marked as Returned, but has return bills.");
+            }
+        }
+        currentSummeryBillItems = createSummeryBillItems(current, currentReturnBills);
+
+        currentPaymentBills = billService.fetchPaymentBills(current);
+        currentSummaryPurchaseTotalValue = current.getTotal();
+        currentSummaryPurchaseReturnTotalValue = calculateTotalGrossTotalValue(currentReturnBills);
+        currentSummaryPurchaseNetTotalValue = Math.abs(currentSummaryPurchaseTotalValue) - Math.abs(currentSummaryPurchaseReturnTotalValue);
+        currentTotalPaymentSettledValue = calculateTotalValue(currentPaymentBills);
+
+        currentTotalPaymentToSettleValue =  Math.abs(currentSummaryPurchaseNetTotalValue) - Math.abs(currentTotalPaymentSettledValue);
+
         return "/dealerPayment/view_purchase_bill?faces-redirect=true";
+    }
+
+    private List<BillItem> createSummeryBillItems(Bill originalBill, List<Bill> returnBills) {
+        List<BillItem> newlyCreatedSummeryBillItems = new ArrayList<>();
+        if (originalBill == null || originalBill.getBillItems() == null) {
+            return newlyCreatedSummeryBillItems;
+        }
+
+        // Map to store the total purchased quantities grouped by batch
+        Map<ItemBatch, BillItem> batchMap = new HashMap<>();
+
+        // Add original bill items to the map based on ItemBatch
+        for (BillItem originalBillItem : originalBill.getBillItems()) {
+            PharmaceuticalBillItem pbi = originalBillItem.getPharmaceuticalBillItem();
+            if (pbi == null || pbi.getItemBatch() == null) {
+                continue;
+            }
+
+            ItemBatch batch = pbi.getItemBatch();
+            Item item = pbi.getItemBatch().getItem();
+
+            BillItem summaryItem = batchMap.get(batch);
+            if (summaryItem == null) {
+                summaryItem = new BillItem();
+                summaryItem.setItem(item);
+                summaryItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
+
+                // Copy batch-specific details
+                summaryItem.getPharmaceuticalBillItem().setItemBatch(batch);
+                summaryItem.getPharmaceuticalBillItem().setPurchaseRate(pbi.getPurchaseRate());
+                summaryItem.getPharmaceuticalBillItem().setRetailRate(pbi.getRetailRate());
+                summaryItem.getPharmaceuticalBillItem().setStringValue(pbi.getStringValue()); // Batch details
+                summaryItem.getPharmaceuticalBillItem().setDoe(pbi.getDoe());
+
+                summaryItem.getPharmaceuticalBillItem().setQty(0.0);
+                summaryItem.getPharmaceuticalBillItem().setFreeQty(0.0);
+
+                batchMap.put(batch, summaryItem);
+            }
+
+            summaryItem.getPharmaceuticalBillItem().setQty(
+                    summaryItem.getPharmaceuticalBillItem().getQty() + pbi.getQty()
+            );
+            summaryItem.getPharmaceuticalBillItem().setFreeQty(
+                    summaryItem.getPharmaceuticalBillItem().getFreeQty() + pbi.getFreeQty()
+            );
+        }
+
+        // Deduct return bill items from the map based on ItemBatch
+        if (returnBills != null) {
+            for (Bill returnBill : returnBills) {
+                if (returnBill.getBillItems() == null) {
+                    continue;
+                }
+                for (BillItem returningBillItem : returnBill.getBillItems()) {
+                    PharmaceuticalBillItem retPbi = returningBillItem.getPharmaceuticalBillItem();
+                    if (retPbi == null || retPbi.getItemBatch() == null) {
+                        continue;
+                    }
+
+                    ItemBatch batch = retPbi.getItemBatch();
+                    if (!batchMap.containsKey(batch)) {
+                        continue;
+                    }
+
+                    BillItem summaryItem = batchMap.get(batch);
+                    summaryItem.getPharmaceuticalBillItem().setQty(
+                            summaryItem.getPharmaceuticalBillItem().getQty() - retPbi.getQty()
+                    );
+                    summaryItem.getPharmaceuticalBillItem().setFreeQty(
+                            summaryItem.getPharmaceuticalBillItem().getFreeQty() - retPbi.getFreeQty()
+                    );
+                }
+            }
+        }
+
+        // Add all processed batch-based items to the final list
+        newlyCreatedSummeryBillItems.addAll(batchMap.values());
+        return newlyCreatedSummeryBillItems;
+    }
+
+    private double calculateTotalValue(List<BillItem> billItems) {
+        if (billItems == null || billItems.isEmpty()) {
+            return 0.0;
+        }
+
+        double totalPurchaseValue = 0.0;
+        for (BillItem billItem : billItems) {
+            totalPurchaseValue += billItem.getGrossValue();
+        }
+        return totalPurchaseValue;
+    }
+
+    private double calculateTotalNetTotalValue(List<Bill> inputBills) {
+        if (inputBills == null || inputBills.isEmpty()) {
+            return 0.0;
+        }
+        double totalPaidValue = 0.0;
+        for (Bill inputBill : inputBills) {
+            totalPaidValue += inputBill.getNetTotal();
+        }
+        return totalPaidValue;
+    }
+
+    private double calculateTotalGrossTotalValue(List<Bill> inputBills) {
+        if (inputBills == null || inputBills.isEmpty()) {
+            return 0.0;
+        }
+        double totalPaidValue = 0.0;
+        for (Bill inputBill : inputBills) {
+            totalPaidValue += inputBill.getTotal();
+        }
+        return totalPaidValue;
     }
 
     private void loadProcurementBillDetails() {
@@ -1938,8 +2086,7 @@ public class SupplierPaymentController implements Serializable {
         current = billService.reloadBill(current);
         currentCancellationBill = current.getCancelledBill();
         currentReturnBills = billService.fetchReturnBills(current);
-        
-        
+
     }
 
     public String navigateToPrepareSupplierPayment(Bill originalBill) {
@@ -2764,11 +2911,11 @@ public class SupplierPaymentController implements Serializable {
         this.currentReturnBills = currentReturnBills;
     }
 
-    public List<Bill> getCurrentPaymentBills() {
+    public List<BillItem> getCurrentPaymentBills() {
         return currentPaymentBills;
     }
 
-    public void setCurrentPaymentBills(List<Bill> currentPaymentBills) {
+    public void setCurrentPaymentBills(List<BillItem> currentPaymentBills) {
         this.currentPaymentBills = currentPaymentBills;
     }
 
@@ -2778,6 +2925,54 @@ public class SupplierPaymentController implements Serializable {
 
     public void setCurrentPaymentRefundBills(List<Bill> currentPaymentRefundBills) {
         this.currentPaymentRefundBills = currentPaymentRefundBills;
+    }
+
+    public List<BillItem> getCurrentSummeryBillItems() {
+        return currentSummeryBillItems;
+    }
+
+    public void setCurrentSummeryBillItems(List<BillItem> currentSummeryBillItems) {
+        this.currentSummeryBillItems = currentSummeryBillItems;
+    }
+
+    public double getCurrentSummaryPurchaseTotalValue() {
+        return currentSummaryPurchaseTotalValue;
+    }
+
+    public void setCurrentSummaryPurchaseTotalValue(double currentSummaryPurchaseTotalValue) {
+        this.currentSummaryPurchaseTotalValue = currentSummaryPurchaseTotalValue;
+    }
+
+    public double getCurrentTotalPaymentSettledValue() {
+        return currentTotalPaymentSettledValue;
+    }
+
+    public void setCurrentTotalPaymentSettledValue(double currentTotalPaymentSettledValue) {
+        this.currentTotalPaymentSettledValue = currentTotalPaymentSettledValue;
+    }
+
+    public double getCurrentTotalPaymentToSettleValue() {
+        return currentTotalPaymentToSettleValue;
+    }
+
+    public void setCurrentTotalPaymentToSettleValue(double currentTotalPaymentToSettleValue) {
+        this.currentTotalPaymentToSettleValue = currentTotalPaymentToSettleValue;
+    }
+
+    public double getCurrentSummaryPurchaseReturnTotalValue() {
+        return currentSummaryPurchaseReturnTotalValue;
+    }
+
+    public void setCurrentSummaryPurchaseReturnTotalValue(double currentSummaryPurchaseReturnTotalValue) {
+        this.currentSummaryPurchaseReturnTotalValue = currentSummaryPurchaseReturnTotalValue;
+    }
+
+    public double getCurrentSummaryPurchaseNetTotalValue() {
+        return currentSummaryPurchaseNetTotalValue;
+    }
+
+    public void setCurrentSummaryPurchaseNetTotalValue(double currentSummaryPurchaseNetTotalValue) {
+        this.currentSummaryPurchaseNetTotalValue = currentSummaryPurchaseNetTotalValue;
     }
 
 }
