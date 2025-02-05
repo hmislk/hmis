@@ -17,11 +17,11 @@
                     <h:form  >
                         <p:panel rendered="#{!supplierPaymentController.printPreview}" >
                             <f:facet name="header" >
-                                <h:outputLabel value="Supplier Payment" ></h:outputLabel>
+                                <h:outputLabel value="Settle Approved Supplier Payment" ></h:outputLabel>
                                 <p:commandButton
                                     id="btnSettle" 
                                     value="Settle"
-                                    action="#{supplierPaymentController.settleSupplierPayment()}"
+                                    action="#{supplierPaymentController.settleApprovedSupplierPayment()}"
                                     ajax="false" 
                                     class="me-5"
                                     style="float: right">
@@ -45,15 +45,15 @@
                                 <h:outputLabel value="Payment Details" />
                                 <h:panelGroup id="gpPaymentMethodDetails" >
                                     <h:panelGroup id="creditCard" style="display: #{supplierPaymentController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                        <pa:creditCard paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
+                                        <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                     </h:panelGroup>
 
                                     <h:panelGroup id="cheque" style="display: #{supplierPaymentController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                        <pa:cheque paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
+                                        <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                     </h:panelGroup>
 
                                     <h:panelGroup id="slip" style="display: #{supplierPaymentController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                        <pa:slip paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
+                                        <pa:slipDetailsAsOnlyPayment paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                     </h:panelGroup>
                                 </h:panelGroup>
 
@@ -70,10 +70,10 @@
                                 <p:inputText 
                                     id="txtDiscount"
                                     class="text-end"
+                                    readonly="true"
                                     onfocus="this.select();"
                                     value="#{supplierPaymentController.current.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                    <p:ajax process="txtDiscount" update="lblNetTotal" listener="#{supplierPaymentController.calculateTotalBySelectedBillItems()}" ></p:ajax>
                                 </p:inputText>
 
                                 <p:outputLabel value="Net Total" />
@@ -96,7 +96,7 @@
                             </p:panelGrid>
 
                             <p:dataTable  
-                                value="#{supplierPaymentController.selectedBillItems}"
+                                value="#{supplierPaymentController.current.billItems}"
                                 var="b" 
                                 id="itms" rowKey="#{b.searialNo}" >
                                 <p:column >  
@@ -132,23 +132,12 @@
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Paying Amount">
-                                    <p:inputText autocomplete="off" value="#{b.netValue}">    
+                                    <p:outputLabel value="#{b.netValue}">    
                                         <f:convertNumber pattern="#,##0.00" />
-                                        <f:ajax 
-                                            event="blur" 
-                                            execute="@this" 
-                                            render="@all" 
-                                            listener="#{supplierPaymentController.changeNetValueListener(b)}"/>
-                                    </p:inputText>
+                                    </p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Remove">
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        action="#{supplierPaymentController.remove(b)}" 
-                                        value="Remove">
-                                    </p:commandButton>
-                                </p:column>
+                                
                             </p:dataTable>
 
 

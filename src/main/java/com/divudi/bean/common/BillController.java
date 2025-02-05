@@ -2830,52 +2830,46 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
 
     }
-    
+
     public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes, PaymentMethod pm, Double balanceGraterThan) {
         return findUnpaidBills(frmDate, toDate, billTypes, pm, balanceGraterThan, null);
     }
 
-    public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes, PaymentMethod pm, Double balanceGraterThan, Boolean omitPaymentApprovedBills) {
-        String jpql;
-        HashMap hm;
-        List<BillType> bts = null;
-        jpql = "Select b "
-                + " From Bill b "
-                + " where b.retired=:ret "
-                + " and b.cancelled=:can "
-                + " and b.createdAt between :frm and :to ";
-        hm = new HashMap();
-        hm.put("frm", frmDate);
-        hm.put("ret", false);
-        hm.put("can", false);
-        hm.put("to", toDate);
+    public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes,
+            PaymentMethod pm, Double balanceGraterThan, Boolean omitPaymentGeneratedBills) {
+        String jpql = "SELECT b FROM Bill b WHERE b.retired = :ret AND b.cancelled = :can "
+                + "AND b.createdAt BETWEEN :frm AND :to";
 
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("frm", frmDate);
+        params.put("to", toDate);
+        params.put("ret", false);
+        params.put("can", false);
+
+        // Add filters dynamically
         if (balanceGraterThan != null) {
-            jpql += " and (abs(b.balance) > :val) ";
-            hm.put("val", balanceGraterThan);
+            jpql += " AND ABS(b.balance) > :val";
+            params.put("val", balanceGraterThan);
         }
         if (pm != null) {
-            hm.put("pm", pm);
-            jpql += " and b.paymentMethod=:pm ";
+            jpql += " AND b.paymentMethod = :pm";
+            params.put("pm", pm);
         }
-        if (billTypes != null) {
-            hm.put("bts", billTypes);
-            jpql += " and b.billTypeAtomic in :bts";
+        if (billTypes != null && !billTypes.isEmpty()) {
+            jpql += " AND (b.billTypeAtomic IN :bts)";
+            params.put("bts", billTypes);
         }
-        if (omitPaymentApprovedBills != null) {
-            hm.put("pa", omitPaymentApprovedBills);
-            jpql += " and b.paymentApproved=:pa";
-        }
-
-        if (bts != null) {
-            hm.put("bt", bts);
-            jpql += " or b.billType in :bt";
+        if (omitPaymentGeneratedBills != null && omitPaymentGeneratedBills) {
+            jpql += " AND (b.paymentGenerated = false OR b.paymentGenerated = 0 OR b.paymentGenerated IS NULL)";
         }
 
-        return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
+        // Logging
+        System.out.println("JPQL Query: " + jpql);
+        System.out.println("Parameters: " + params);
 
+        return getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
-    
+
     public List<Bill> findPaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes, PaymentMethod pm, Double balanceGraterThan) {
         String jpql;
         HashMap hm;

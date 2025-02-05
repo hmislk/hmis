@@ -17,11 +17,11 @@
                     <h:form  >
                         <p:panel rendered="#{!supplierPaymentController.printPreview}" >
                             <f:facet name="header" >
-                                <h:outputLabel value="Prepare Supplier Payment" ></h:outputLabel>
+                                <h:outputLabel value="Generate Supplier Payment" ></h:outputLabel>
                                 <p:commandButton
                                     id="btnSettle" 
-                                    value="Complete Preperation"
-                                    action="#{supplierPaymentController.settlePrepairingSupplierPayment}"
+                                    value="Complete Generation of Payment"
+                                    action="#{supplierPaymentController.settleGenerateSupplierPayment}"
                                     ajax="false" 
                                     class="me-5"
                                     style="float: right">
@@ -41,26 +41,7 @@
                                     value="#{supplierPaymentController.current.paymentMethod}">                                                                     
                                     <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
-<!--                                    <p:ajax 
-                                        process="cmbPs"
-                                        update="gpPaymentMethodDetails" 
-                                        event="change" />-->
                                 </p:selectOneMenu>
-
-<!--                                <h:outputLabel value="Payment Details" />
-                                <h:panelGroup id="gpPaymentMethodDetails" >
-                                    <h:panelGroup id="creditCard" style="display: #{supplierPaymentController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                        <pa:creditCard paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup id="cheque" style="display: #{supplierPaymentController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                        <pa:cheque paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup id="slip" style="display: #{supplierPaymentController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                        <pa:slip paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
-                                    </h:panelGroup>
-                                </h:panelGroup>-->
 
                                 <p:outputLabel value="Total" />
                                 <p:inputText
@@ -104,7 +85,7 @@
                             </p:panelGrid>
 
                             <p:dataTable  
-                                value="#{supplierPaymentController.billItems}"
+                                value="#{supplierPaymentController.selectedBillItems}"
                                 var="b" 
                                 id="itms" rowKey="#{b.searialNo}" >
                                 <p:column >  

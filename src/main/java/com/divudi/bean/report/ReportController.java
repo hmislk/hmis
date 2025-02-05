@@ -1701,6 +1701,7 @@ public class ReportController implements Serializable {
         billItems = billItemFacade.findByJpql(jpql, m);
     }
 
+//    Not COrrect
     public void listCcReportPrint() {
         String jpql;
         Map<String, Object> params = new HashMap<>();
