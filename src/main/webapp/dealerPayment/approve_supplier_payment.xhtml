@@ -21,9 +21,10 @@
                             <p:commandButton
                                 id="btnSettle" 
                                 value="Approve Payment"
+                                icon="pi pi-check"
                                 action="#{supplierPaymentController.settleApproveSupplierPayment}"
                                 ajax="false" 
-                                class="me-5"
+                                class="me-5 ui-button-success"
                                 style="float: right">
                             </p:commandButton>
                         </f:facet>
@@ -32,6 +33,9 @@
                         <p:panelGrid layout="tabular" columns="2" >
                             <h:outputLabel value="Supplier" />
                             <h:outputLabel value="#{supplierPaymentController.current.toInstitution.name}" />
+
+                            <h:outputLabel value="Payment No" />
+                            <h:outputLabel value="#{supplierPaymentController.current.deptId}" />
 
                             <h:outputLabel value="Payment Method" />
                             <p:outputLabel 
@@ -92,13 +96,13 @@
                                 </f:facet>                
                                 <p:outputLabel value="#{n+1}" ></p:outputLabel>
                             </p:column> 
-                            <p:column class="text-end">  
+                            <p:column >  
                                 <f:facet name="header">
                                     <h:outputLabel value="GRN No"/>                                  
                                 </f:facet> 
                                 <p:outputLabel value=" #{b.referenceBill.invoiceNumber}" ></p:outputLabel>
                             </p:column> 
-                            <p:column  class="text-end">  
+                            <p:column >  
                                 <f:facet name="header">
                                     <h:outputLabel value="Invoice No"/>                                  
                                 </f:facet> 
@@ -149,7 +153,12 @@
                     </p:panel>
 
                     <p:panel rendered="#{supplierPaymentController.printPreview}">                                
-                        <p:commandButton value="Print" ajax="false" action="#" >
+                        <p:commandButton 
+                            value="Print" 
+                            ajax="false" 
+                            action="#"  
+                            class="ui-button-info m-1"
+                            icon="pi pi-print">
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel   id="gpBillPreview">
