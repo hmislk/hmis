@@ -1276,8 +1276,6 @@
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
-
-
                             </div>
 
                             <div>
@@ -1285,11 +1283,7 @@
                                 <br/>
                                 <br/>
                             </div>
-
-
-
                         </div>
-
 
                         <h:panelGroup id="gpBillPreview" >
                             <h:panelGroup   id="gpBillWithOutItem" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosPaper',true)}">
@@ -1319,13 +1313,8 @@
                             </h:panelGroup>
                         </h:panelGroup>                     
                     </p:panel>
-
-
-
                 </h:form>
-
             </ui:define>
-
         </ui:composition>
 
     </h:body>
