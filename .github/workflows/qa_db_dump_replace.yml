@@ -1,3 +1,5 @@
+name: QA Database Dump and Replace
+
 on:
   workflow_dispatch:
     inputs:
