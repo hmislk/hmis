@@ -69,28 +69,28 @@
                             </p:column>
                         </p:autoComplete>
 
-<!--                        <p:selectOneListbox 
-                            id="acAmp" 
-                            class="w-100"
-                            filter="true"
-                            filterMatchMode="contains"
-                            value="#{ampController.current}" 
-                            var="amp"
-                            >
-                            <f:selectItems 
-                                value="#{ampController.completeAmp}"
-                                var="myItem"
-                                itemValue="#{myItem}"
-                                itemLabel="#{myItem.code} - #{myItem.name}" >
-                            </f:selectItems>
-                            <p:column style="padding: 8px; width: 20px;" headerText="Code">
-                                <h:outputText value="#{amp.code}"/>
-                            </p:column>
-                            <p:column  style="padding: 8px;" headerText="Code">
-                                <h:outputText value="#{amp.name}"/>
-                            </p:column>
-                            <p:ajax update="gpDetail" process="acAmp" ></p:ajax>
-                        </p:selectOneListbox>-->
+                        <!--                        <p:selectOneListbox 
+                                                    id="acAmp" 
+                                                    class="w-100"
+                                                    filter="true"
+                                                    filterMatchMode="contains"
+                                                    value="#{ampController.current}" 
+                                                    var="amp"
+                                                    >
+                                                    <f:selectItems 
+                                                        value="#{ampController.completeAmp}"
+                                                        var="myItem"
+                                                        itemValue="#{myItem}"
+                                                        itemLabel="#{myItem.code} - #{myItem.name}" >
+                                                    </f:selectItems>
+                                                    <p:column style="padding: 8px; width: 20px;" headerText="Code">
+                                                        <h:outputText value="#{amp.code}"/>
+                                                    </p:column>
+                                                    <p:column  style="padding: 8px;" headerText="Code">
+                                                        <h:outputText value="#{amp.name}"/>
+                                                    </p:column>
+                                                    <p:ajax update="gpDetail" process="acAmp" ></p:ajax>
+                                                </p:selectOneListbox>-->
 
 
                     </div>
@@ -169,9 +169,12 @@
                                     onLabel="Yes"
                                     offLabel="No"
                                     class="w-100" />
-
-
-
+                                <p:outputLabel for="txtIns" value="Instructions" class="form-label"></p:outputLabel>
+                                <h:inputTextarea 
+                                    id="txtIns" 
+                                    value="#{ampController.current.instructions}" 
+                                    required="false" 
+                                    class="form-control" ></h:inputTextarea>
 
                             </h:panelGrid>
                             <p:commandButton 
