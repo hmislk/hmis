@@ -2569,7 +2569,7 @@ public class SupplierPaymentController implements Serializable {
         }
 
         updateReferanceBillAsPaymentGenerated(selectedBillItems);
-
+        current= billService.reloadBill(current);
         JsfUtil.addSuccessMessage("Payment Generated");
         printPreview = true;
 

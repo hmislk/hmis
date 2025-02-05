@@ -55,9 +55,13 @@
                                         <h:outputText value="#{b.deptId}" />
                                     </p:column>
 
-                                    <p:column headerText="Date" sortBy="#{b.billDate}" filterBy="#{b.billDate}" filterMatchMode="contains">
-                                        <h:outputText value="#{b.billDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                    <p:column 
+                                        headerText="Created at"
+                                        sortBy="#{b.billTypeAtomic.label}"
+                                        filterBy="#{b.billTypeAtomic.label}"
+                                        filterMatchMode="contains">
+                                        <h:outputText value="#{b.createdAt}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                         </h:outputText>
                                     </p:column>
 
@@ -65,9 +69,7 @@
                                         <h:outputText value="#{b.toInstitution.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Bill Type" sortBy="#{b.billTypeAtomic.label}" filterBy="#{b.billTypeAtomic.label}" filterMatchMode="contains">
-                                        <h:outputText value="#{b.billTypeAtomic.label}" />
-                                    </p:column>
+
 
                                     <p:column  class="text-end" headerText="Total" sortBy="#{b.netTotal}" filterBy="#{b.netTotal}" filterMatchMode="contains">
                                         <h:outputText value="#{b.netTotal}">

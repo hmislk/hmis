@@ -56,7 +56,7 @@
                                 <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
                                 <h:outputLabel value="Date :"  />
                                 <h:outputLabel value="#{cc.attrs.bill.createdAt}"  >
-                                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputLabel>
                                 <h:outputLabel value="Total : " />
                                 <h:outputLabel value="#{cc.attrs.bill.total}" >
@@ -76,7 +76,56 @@
                             </p:panelGrid>
 
 
+                            <p:dataTable  
+                                value="#{cc.attrs.bill.billItems}"
+                                var="b" 
+                                id="itms" 
+                                rowIndexVar="n"
+                                rowKey="#{b.searialNo}" >
+                                <p:column >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="No"/>                                  
+                                    </f:facet>      
+                                    <p:outputLabel value="#{n+1}"/>
+                                </p:column> 
+                                <p:column >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="GRN No"/>                                  
+                                    </f:facet>      
+                                    <p:outputLabel value="#{b.referenceBill.deptId}"/>
+                                </p:column> 
+                                <p:column >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Invoice No"/>                                  
+                                    </f:facet>       
+                                    <p:outputLabel value="#{b.referenceBill.invoiceNumber}"></p:outputLabel>
+                                </p:column> 
+                                <p:column headerText="GRN Amount">
+                                    <p:outputLabel value="#{b.referenceBill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="GRN Return Amount">
+                                    <p:outputLabel value="#{b.referenceBill.tmpReturnTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Paying Amount">
+                                    <p:inputText 
+                                        class="w-100 text-end"
+                                        autocomplete="off"
+                                        onfocus="this.select();"
+                                        value="#{b.netValue}">    
+                                        <f:convertNumber pattern="#,##0.00" />
 
+                                        <f:ajax 
+                                            event="blur" 
+                                            execute="@this" 
+                                            render="@all" 
+                                            listener="#{supplierPaymentController.changeNetValueListener(b)}"/>
+                                    </p:inputText>
+                                </p:column>
+                            </p:dataTable>
 
 
                         </div>
