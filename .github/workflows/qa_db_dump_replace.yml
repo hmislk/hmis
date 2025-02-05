@@ -1,0 +1,46 @@
+on:
+  workflow_dispatch:
+    inputs:
+      fromDb:
+        description: 'Select Environment to Dump'
+        required: true
+        type: choice
+        options:
+          - QA
+          - COOP_Dev
+      toDb:
+        description: 'Select Environment to Replace'
+        required: true
+        type: choice
+        options:
+          - QA
+          - COOP_Dev
+
+jobs:
+  print-selected-values:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Environment Variables Based on Selection
+        run: |
+          if [[ "${{ inputs.fromDb }}" == "QA" ]]; then
+            echo "FROM_SERVER_IP=${{ secrets.QA_SERVER_IP }}" >> $GITHUB_ENV
+            echo "FROM_SERVER_SSH_PRIVATE_KEY=${{ secrets.QA_SERVER_SSH_KEY }}" >> $GITHUB_ENV
+          elif [[ "${{ inputs.fromDb }}" == "COOP_Dev" ]]; then
+            echo "FROM_SERVER_IP=${{ secrets.DEV_SERVER_IP }}" >> $GITHUB_ENV
+            echo "FROM_SERVER_SSH_PRIVATE_KEY=${{ secrets.DEV_SSH_PRIVATE_KEY }}" >> $GITHUB_ENV
+          fi
+
+          if [[ "${{ inputs.toDb }}" == "QA" ]]; then
+            echo "TO_SERVER_IP=${{ secrets.QA_SERVER_IP }}" >> $GITHUB_ENV
+            echo "TO_SERVER_SSH_PRIVATE_KEY=${{ secrets.QA_SERVER_SSH_KEY }}" >> $GITHUB_ENV
+          elif [[ "${{ inputs.toDb }}" == "COOP_Dev" ]]; then
+            echo "TO_SERVER_IP=${{ secrets.DEV_SERVER_IP }}" >> $GITHUB_ENV
+            echo "TO_SERVER_SSH_PRIVATE_KEY=${{ secrets.DEV_SSH_PRIVATE_KEY }}" >> $GITHUB_ENV
+          fi
+
+      - name: Print Environment Variables
+        run: |
+          echo "FROM_SERVER_IP: $FROM_SERVER_IP"
+          echo "FROM_SERVER_SSH_PRIVATE_KEY: [HIDDEN]"
+          echo "TO_SERVER_IP: $TO_SERVER_IP"
+          echo "TO_SERVER_SSH_PRIVATE_KEY: [HIDDEN]"
