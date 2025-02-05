@@ -61,8 +61,8 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Supplier" sortBy="#{b.fromInstitution.name}" filterBy="#{b.fromInstitution.name}" filterMatchMode="contains">
-                                        <h:outputText value="#{b.fromInstitution.name}" />
+                                    <p:column headerText="Supplier" sortBy="#{b.toInstitution.name}" filterBy="#{b.toInstitution.name}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.toInstitution.name}" />
                                     </p:column>
 
                                     <p:column headerText="Bill Type" sortBy="#{b.billTypeAtomic.label}" filterBy="#{b.billTypeAtomic.label}" filterMatchMode="contains">

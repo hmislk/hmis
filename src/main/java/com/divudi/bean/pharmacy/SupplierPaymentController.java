@@ -128,7 +128,7 @@ public class SupplierPaymentController implements Serializable {
     private Bill current;
     private Bill currentCancellationBill;
     private List<Bill> currentReturnBills;
-    private List<BillItem> currentPaymentBills;
+    private List<BillItem> currentPaymentBillItems;
     private List<Bill> currentPaymentRefundBills;
     private List<BillItem> currentSummeryBillItems;
     private double currentSummaryPurchaseTotalValue;
@@ -1935,11 +1935,11 @@ public class SupplierPaymentController implements Serializable {
         }
         currentSummeryBillItems = createSummeryBillItems(current, currentReturnBills);
 
-        currentPaymentBills = billService.fetchPaymentBills(current);
+        currentPaymentBillItems = billService.fetchPaymentBillItems(current);
         currentSummaryPurchaseTotalValue = current.getTotal();
         currentSummaryPurchaseReturnTotalValue = calculateTotalGrossTotalValue(currentReturnBills);
         currentSummaryPurchaseNetTotalValue = Math.abs(currentSummaryPurchaseTotalValue) - Math.abs(currentSummaryPurchaseReturnTotalValue);
-        currentTotalPaymentSettledValue = calculateTotalValue(currentPaymentBills);
+        currentTotalPaymentSettledValue = calculateTotalValue(currentPaymentBillItems);
 
         currentTotalPaymentToSettleValue =  Math.abs(currentSummaryPurchaseNetTotalValue) - Math.abs(currentTotalPaymentSettledValue);
 
@@ -2032,7 +2032,7 @@ public class SupplierPaymentController implements Serializable {
 
         double totalPurchaseValue = 0.0;
         for (BillItem billItem : billItems) {
-            totalPurchaseValue += billItem.getGrossValue();
+            totalPurchaseValue += billItem.getNetValue();
         }
         return totalPurchaseValue;
     }
@@ -2341,6 +2341,17 @@ public class SupplierPaymentController implements Serializable {
         }
         updateReferanceBillAsPaymentApproved(getCurrent().getBillItems());
 
+        for(BillItem bi:getCurrent().getBillItems()){
+            bi.setBill(current);
+            if(bi.getId()==null){
+                bi.setCreatedAt(new Date());
+                bi.setCreater(sessionController.getLoggedUser());
+                billItemFacade.create(bi);
+            }else{
+                billItemFacade.edit(bi);
+            }
+        }
+        
         JsfUtil.addSuccessMessage("Payment Approved");
         printPreview = true;
 
@@ -2911,12 +2922,12 @@ public class SupplierPaymentController implements Serializable {
         this.currentReturnBills = currentReturnBills;
     }
 
-    public List<BillItem> getCurrentPaymentBills() {
-        return currentPaymentBills;
+    public List<BillItem> getCurrentPaymentBillItems() {
+        return currentPaymentBillItems;
     }
 
-    public void setCurrentPaymentBills(List<BillItem> currentPaymentBills) {
-        this.currentPaymentBills = currentPaymentBills;
+    public void setCurrentPaymentBillItems(List<BillItem> currentPaymentBillItems) {
+        this.currentPaymentBillItems = currentPaymentBillItems;
     }
 
     public List<Bill> getCurrentPaymentRefundBills() {
