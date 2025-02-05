@@ -183,7 +183,7 @@
                                 value="Download">
                                 <p:dataExporter 
                                     type="xlsx" 
-                                    fileName="Transfer Receive Report" 
+                                    fileName="OPD Credit Report" 
                                     target="tbl"  />
                             </p:commandButton>
 
@@ -195,7 +195,7 @@
                                 <p:dataExporter 
                                     type="pdf" 
                                     target="tbl" 
-                                    fileName="Transfer Receive Report" />
+                                    fileName="OPD Credit Report" />
                             </p:commandButton>
 
                         </div>
@@ -219,19 +219,19 @@
                                     <h:outputText value="Total" />
                                 </f:facet>
                             </p:column>
+                            <p:column headerText="Credit Company">
+                                <h:outputText value="" />
+                            </p:column>
                             <p:column headerText="Item Name">
                                 <h:outputText value="" />
                             </p:column>
                             <p:column headerText="Doc No">
                                 <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Ref Doc No (Issue Doc No)">
-                                <h:outputText value="" />
-                            </p:column>                          
-                            <p:column headerText="Issue Department">
-                                <h:outputText value="" />
-                            </p:column>                   
+                            </p:column>                
                             <p:column headerText="Code">
+                                <h:outputText value="" />
+                            </p:column>                
+                            <p:column headerText="Batch Code">
                                 <h:outputText value="" />
                             </p:column>
                             <p:column headerText="QTY">
@@ -244,6 +244,15 @@
                                 <h:outputText value="" />
                             </p:column>
                             <p:column headerText="Net Total">
+                                <h:outputText value="" />
+                            </p:column>
+<p:column headerText="Discount">
+                                <h:outputText value="" />
+                            </p:column>
+<p:column headerText="Sale Rate">
+                                <h:outputText value="" />
+                            </p:column>
+<p:column headerText="Sale Value">
                                 <h:outputText value="" />
                             </p:column>                            
 
