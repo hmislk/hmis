@@ -52,6 +52,7 @@
                                 <p:commandButton 
                                     id="btnLabelPrint" 
                                     value="Print Labels"
+                                    disabled="#{pharmacyBillSearch.bill.cancelled}"
                                     style="width: 10em;"
                                     oncomplete="PF('PrintLables').show()"
                                     class="ui-button-info mx-1"
