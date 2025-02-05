@@ -2931,6 +2931,10 @@ public class ReportsController implements Serializable {
         for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
             BillItem billItem1 = row.getBillItem();
 
+            if (billItem1.getBill() == null || billItem1.getBill().getDeptId() == null) {
+                continue;
+            }
+
             if (billItemMap.containsKey(billItem1.getBill().getDeptId())) {
                 billItemMap.get(billItem1.getBill().getDeptId()).add(billItem1);
             } else {

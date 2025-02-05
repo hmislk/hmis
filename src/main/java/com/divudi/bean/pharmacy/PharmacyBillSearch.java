@@ -1218,7 +1218,7 @@ public class PharmacyBillSearch implements Serializable {
         cb.invertAndAssignValuesFromOtherBill(getBill());
 
         cb.setPaymentScheme(getBill().getPaymentScheme());
-        cb.setPaymentMethod(paymentMethod);
+        //cb.setPaymentMethod(paymentMethod);
         cb.setBalance(0.0);
         cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
@@ -2022,7 +2022,6 @@ public class PharmacyBillSearch implements Serializable {
             }
 
             getPharmacyBean().reAddToStock(getBill().getReferenceBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PRECAN);
-
             CancelledBill cb = pharmacyCreateCancelBill();
 
             String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);

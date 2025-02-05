@@ -240,6 +240,18 @@
                         <h:outputLabel value="#{billItem.bill.collectingCentre.name}" />
                     </p:column>
 
+                    <p:column headerText="From Department" rendered="#{webUserController.hasPrivilege('Developers')}">
+                        <h:outputLabel value="#{billItem.bill.fromDepartment.name}" />
+                    </p:column>
+
+                    <p:column headerText="Department" rendered="#{webUserController.hasPrivilege('Developers')}">
+                        <h:outputLabel value="#{billItem.bill.department.name}" />
+                    </p:column>
+
+                    <p:column headerText="To Department" rendered="#{webUserController.hasPrivilege('Developers')}">
+                        <h:outputLabel value="#{billItem.bill.toDepartment.name}" />
+                    </p:column>
+
                     <p:column headerText="CC Code" filterBy="#{billItem.bill.collectingCentre.code}" sortBy="#{billItem.bill.collectingCentre.code}">
                         <h:outputLabel value="#{billItem.bill.collectingCentre.code}" />
                     </p:column>
