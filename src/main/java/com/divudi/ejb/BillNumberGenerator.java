@@ -1510,6 +1510,9 @@ public class BillNumberGenerator {
         BillNumber billNumber;
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
         System.out.println("billSuffix = " + billSuffix);
+        if (billSuffix == null || billSuffix.trim().equals("")) {
+            billSuffix = billType.toString();
+        }
         boolean commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic
                 = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Common Bill Number for All Departments, Institutions and Bill Types", false);
         boolean separateBillNumberForAllDepartmentsInstitutionsBillTypeAtomic
@@ -1539,7 +1542,7 @@ public class BillNumberGenerator {
         Long dd = billNumber.getLastBillNumber();
         System.out.println("dd = " + dd);
         // Increment the bill number
-        dd++;
+        dd = dd + 1;
 
         // Set the updated bill number in the BillNumber entity
         billNumber.setLastBillNumber(dd);
