@@ -43,6 +43,15 @@
                                         styleClass="ui-button-success"
                                         action="#{supplierPaymentController.navigateToDealerDoneSearch}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
+                                    
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Settled Payments"
+                                        icon="fas fa-file-invoice-dollar"  
+                                        styleClass="ui-button-success"
+                                        action="#{supplierPaymentController.navigateToViewSupplierPayments()}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
 
 
                                 </h:panelGroup>
@@ -54,7 +63,7 @@
                                         value="Generate Payments"
                                         icon="fas fa-file-invoice"  
                                         styleClass="ui-button-danger"
-                                        action="#{supplierPaymentController.navigateToDealerDueSearch}"
+                                        action="#{supplierPaymentController.navigateToGenerateSupplierPayments()}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
 
                                     <p:commandButton 
@@ -63,7 +72,7 @@
                                         value="Approve Payments"
                                         icon="fas fa-thumbs-up"  
                                         styleClass="ui-button-warning"
-                                        action="#{supplierPaymentController.navigateToDealerDuehalfPaymentsSearch}"
+                                        action="#{supplierPaymentController.navigateToApproveSupplierPayments()}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
 
                                     <p:commandButton 
@@ -72,7 +81,7 @@
                                         value="Settle Payments"
                                         icon="fas fa-hand-holding-dollar"  
                                         styleClass="ui-button-primary"
-                                        action="#{supplierPaymentController.naviateToSupplierBillSettleManagement}"
+                                        action="#{supplierPaymentController.navigateToSettleSupplierPayments}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
 
                                     <p:commandButton 
@@ -81,7 +90,7 @@
                                         value="Complete Payments"
                                         icon="fas fa-check-circle"  
                                         styleClass="ui-button-secondary"
-                                        action="#{supplierPaymentController.naviateToSupplierBillPaymentCompletionManagement}"
+                                        action="#{supplierPaymentController.navigateToSettleSupplierPayments}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
 
                                     <p:commandButton 
