@@ -27,6 +27,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
@@ -120,6 +121,8 @@ public class ReportsTransfer implements Serializable {
     private double totalIssueValue;
     private double totalBHTIssueValue;
     private int pharmacyDisbursementReportIndex = 8;
+    private AdmissionType admissionType;
+    private Bill previewBill;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructions">
@@ -158,6 +161,17 @@ public class ReportsTransfer implements Serializable {
         transferBills = null;
         pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return pharmacyController.navigateToPharmacyAnalytics();
+    }
+    
+    public String navigateToBillPreview(Bill b){
+        previewBill = null;
+        previewBill = b;
+        return"/inward/pharmacy_reprint_bill_sale_bht_bill?faces-redirect=true";
+    }
+    
+    public String navigateBackFromBillPreview(){
+        previewBill = null;
+        return "/pharmacy/pharmacy_report_bht_issue_bill?faces-redirect=true";
     }
 
     /**
@@ -538,8 +552,15 @@ public class ReportsTransfer implements Serializable {
         m.put("fdept", fromDepartment);
         sql = "select b from Bill b "
                 + " where b.department=:fdept "
-                + " and b.createdAt  between :fd and :td "
-                + " and b.billType=:bt order by b.id";
+                + " and b.createdAt  between :fd and :td ";
+
+        if (admissionType != null) {
+            sql += "  and b.patientEncounter.admissionType=:at ";
+            m.put("at", admissionType);
+        }
+        
+        sql += " and b.billType=:bt order by b.id";
+
         transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
@@ -1837,6 +1858,22 @@ public class ReportsTransfer implements Serializable {
 
     public void setItemBHTIssueCountTrancerReciveCounts(List<ItemBHTIssueCountTrancerReciveCount> itemBHTIssueCountTrancerReciveCounts) {
         this.itemBHTIssueCountTrancerReciveCounts = itemBHTIssueCountTrancerReciveCounts;
+    }
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    public Bill getPreviewBill() {
+        return previewBill;
+    }
+
+    public void setPreviewBill(Bill previewBill) {
+        this.previewBill = previewBill;
     }
 
     public class ItemBHTIssueCountTrancerReciveCount {
