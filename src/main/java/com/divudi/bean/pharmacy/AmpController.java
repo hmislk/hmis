@@ -247,6 +247,17 @@ public class AmpController implements Serializable {
 
     }
 
+    public void fillSuppliersForItemSupplierPrices() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
+        for (ItemSupplierPrices p : itemSupplierPrices) {
+            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
+        }
+
+    }
+
     public List<Amp> getListToRemove() {
         if (listToRemove == null) {
             listToRemove = new ArrayList<>();
@@ -714,19 +725,19 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("No Name");
             return;
         }
-        
+
         int maxCodeLeanth = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item","4"));
-        
+
         System.out.println("maxCodeLeanth = " + maxCodeLeanth);
         System.out.println("Current Code length = " + current.getCode().trim().length());
-        
+
         System.out.println(current.getCode().trim().length() < maxCodeLeanth);
-        
+
         if (current.getCode().trim().length() < maxCodeLeanth){
             JsfUtil.addErrorMessage("Minimum " + maxCodeLeanth + " characters are Required for Item Code");
             return;
         }
-        
+
         if (checkItemCode(current.getCode(), current)) {
             JsfUtil.addErrorMessage("This Code has Already been Used.");
             return;
