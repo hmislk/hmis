@@ -77,7 +77,7 @@ jobs:
           # Variables
           WAR_NAME="test-coop.war"
           WAR_DIR="/home/appuser/app/latest"
-          APP_NAME="test-coop-3.0.0"
+          APP_NAME="test-coop"
           SUBDOMAIN="qa"
           CONTEXT_PATH="coop-test"
 
