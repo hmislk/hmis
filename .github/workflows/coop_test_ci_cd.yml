@@ -142,7 +142,7 @@ jobs:
                done
 
              # Cleanup
-             rm -f private_key.pem
+               rm -f private_key.pem
            
 
 
