@@ -788,7 +788,7 @@ public class BillService {
         return fetchedBills;
     }
 
-    public List<BillItem> fetchPaymentBills(Bill inputBill) {
+    public List<BillItem> fetchPaymentBillItems(Bill inputBill) {
         String jpql;
         if (inputBill == null) {
             return null;
@@ -813,15 +813,16 @@ public class BillService {
                 + " from BillItem bi"
                 + " join bi.bill b "
                 + " where b.retired=:ret "
-                + " and bi.referanceBillItem in :inputBillItems "
+                + " and bi.referenceBill = :bill "
                 + " and b.billTypeAtomic in :btas ";
         jpql += " order by b.createdAt";
         params.put("ret", false);
         params.put("btas", btas);
-        params.put("inputBillItems", inputBill.getBillItems());
+        params.put("bill", inputBill);
         System.out.println("jpql = " + jpql);
         System.out.println("params = " + params);
         List<BillItem> fetchedBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("fetchedBillItems = " + fetchedBillItems);
         return fetchedBillItems;
     }
 
