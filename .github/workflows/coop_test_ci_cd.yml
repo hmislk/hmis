@@ -81,6 +81,7 @@ jobs:
           SUBDOMAIN="qa"
           CONTEXT_PATH="coop-test"
 
+
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             mkdir -p $WAR_DIR
