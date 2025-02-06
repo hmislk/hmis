@@ -1635,8 +1635,8 @@ public class SupplierPaymentController implements Serializable {
                 jpql.append(" and b.completed = :completed ");
                 params.put("completed", true);
             } else {
-                jpql.append(" and b.completed = :completed ");
-                params.put("completed", false);
+                jpql.append(" and b.completed != :completed ");
+                params.put("completed", true);
             }
         }
 
@@ -1644,10 +1644,10 @@ public class SupplierPaymentController implements Serializable {
         if (paymentCompleted != null) {
             if (paymentCompleted) {
                 jpql.append(" and b.paymentCompleted = :completed ");
-                params.put("completed", true);
+                params.put("paymentCompleted", true);
             } else {
-                jpql.append(" and b.paymentCompleted = :completed ");
-                params.put("completed", false);
+                jpql.append(" and b.paymentCompleted != :completed ");
+                params.put("paymentCompleted", true);
             }
         }
 
@@ -1657,8 +1657,8 @@ public class SupplierPaymentController implements Serializable {
                 jpql.append(" and b.paymentApproved = :paymentApproved ");
                 params.put("paymentApproved", true);
             } else {
-                jpql.append(" and b.paymentApproved = :paymentApproved ");
-                params.put("paymentApproved", false);
+                jpql.append(" and b.paymentApproved != :paymentApproved ");
+                params.put("paymentApproved", true);
             }
         }
 
@@ -2569,7 +2569,7 @@ public class SupplierPaymentController implements Serializable {
         }
 
         updateReferanceBillAsPaymentGenerated(selectedBillItems);
-        current= billService.reloadBill(current);
+        current = billService.reloadBill(current);
         JsfUtil.addSuccessMessage("Payment Generated");
         printPreview = true;
 

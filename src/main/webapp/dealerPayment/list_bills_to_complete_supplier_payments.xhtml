@@ -101,14 +101,15 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column  headerText="Actions" >
+                                    <p:column width="14em"  headerText="Actions" >
                                         <p:commandButton
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Approval is necessary for Procument Payments', false)}"
                                             value="Complete Payment" 
-                                            update="@form" 
-                                            action="#{supplierPaymentController.navigateToSettleSupplierPayment(b)}" 
-                                            ajax="false" 
-                                            disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}" >
+                                            style="width: 12em;"
+                                            action="#{supplierPaymentController.navigateToCompleteSupplierPayment(b)}" 
+                                            ajax="false"
+                                            class="ui-button-success"
+                                            icon="pi pi-check">
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
