@@ -75,7 +75,7 @@ jobs:
           chmod 600 private_key.pem
 
           # Variables
-          WAR_NAME="test-coop.war"
+          WAR_NAME="coop-test.war"
           WAR_DIR="/home/appuser/app/latest"
           APP_NAME="test-coop"
           SUBDOMAIN="qa"
