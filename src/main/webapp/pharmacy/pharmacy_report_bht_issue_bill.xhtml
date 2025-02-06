@@ -98,7 +98,7 @@
                                     <h:outputLabel value="#{i.patientEncounter.bhtNo}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Bill No">
+                                <p:column headerText="Bill No" filterBy="#{i.deptId}" filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
