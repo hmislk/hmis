@@ -77,8 +77,10 @@ jobs:
           # Variables
           WAR_NAME="test-coop.war"
           WAR_DIR="/home/appuser/app/latest"
-          APP_NAME="coop-test"
+          APP_NAME="test-coop"
           SUBDOMAIN="qa"
+          CONTEXT_PATH="coop-test"
+
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
@@ -109,7 +111,7 @@ jobs:
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
             /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
-            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
+            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $CONTEXT_PATH $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
           "
 
@@ -126,12 +128,12 @@ jobs:
  
           # Check if the application is reachable
           for i in {1..5}; do
-            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://$SUBDOMAIN.carecode.org/$APP_NAME/faces/index1.xhtml)
+            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://$SUBDOMAIN.carecode.org/$CONTEXT_PATH/faces/index1.xhtml)
             if [ "$RESPONSE_CODE" == "200" ]; then
               echo "Application is reachable and healthy."
               break
             elif [ "$i" == "5" ]; then
-              echo "Application is not reachable or unhealthy at https://$SUBDOMAIN.carecode.org/$APP_NAME (HTTP $RESPONSE_CODE)"
+              echo "Application is not reachable or unhealthy at https://$SUBDOMAIN.carecode.org/$CONTEXT_PATH (HTTP $RESPONSE_CODE)"
               break
             fi
             sleep 10
