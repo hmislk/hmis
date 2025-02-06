@@ -14,76 +14,125 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
 
-        <div >
-            <div >
-                <div >
+        <h:panelGroup id="gpBillPreview" >
+            <div  >
+                <div class="institutionName">
+                    <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
+                </div>
+                <div class="institutionName">
+                    <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+                </div>
 
-                    <h:outputStylesheet name="printing.css" library="css" />
-                    <div class="d-flex justify-content-end">
-                        <p:commandButton 
-                            style="width: 100px" 
-                            value="Print" 
-                            ajax="false" 
-                            action="#"  
-                            class="ui-button-info mb-2"
-                            icon="fa fa-print">
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
+                <div>
+                    <h4 style="color: #000000; text-align: center " >
+                        <h:outputLabel value="Supplier Payment Approval" style="text-decoration: underline;"/>
+                    </h4>
+                </div>
+
+                <div class="row" >
+                    <div class="col-md-4 p-1" >
+                        <h:panelGrid columns="2" columnClasses="text-start, text-end" >
+                            <h:outputLabel value="Payee : " />
+                            <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
+                            <h:outputLabel value="Payment No : " />
+                            <h:outputLabel value="#{cc.attrs.bill.insId}"/>
+                            <h:outputLabel value="Total : " />
+                            <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                            <h:outputLabel value="Discount : " />
+                            <h:outputLabel value="#{cc.attrs.bill.discount}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                            <h:outputLabel value="Net : " />
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                        </h:panelGrid>
+                    </div>
+                    <div class="col-md-4 p-1" >
+                        <h:panelGrid columns="2" columnClasses="text-start, text-end" >
+                            <h:outputLabel value="Prepaired By : " />
+                            <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" >
+                            </h:outputLabel>
+                            <h:outputLabel value="Comments : " />
+                            <h:outputLabel value="#{cc.attrs.bill.comments}" >
+                            </h:outputLabel>
+                            <h:outputLabel value="Prepaired at :"  />
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputLabel>
+                        </h:panelGrid>
                     </div>
 
-                    <cc:implementation>
-                        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-
-                        <div  >
-
-                            <div class="institutionName">
-                                <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
-                            </div>
-                            <div class="institutionName">
-                                <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
-                            </div>
-
-                            <div>
-                                <h4 style="color: #000000; text-align: center " >
-                                    <h:outputLabel value="Supplier Payment Approval" style="text-decoration: underline;"/>
-                                </h4>
-                            </div>
-
-
-                            <p:panelGrid columns="2" >
-                                <h:outputLabel value="Payee : " />
-                                <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
-                                <h:outputLabel value="Date :"  />
-                                <h:outputLabel value="#{cc.attrs.bill.createdAt}"  >
-                                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
-                                </h:outputLabel>
-                                <h:outputLabel value="Total : " />
-                                <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
-                                <h:outputLabel value="Discount : " />
-                                <h:outputLabel value="#{cc.attrs.bill.discount}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
-                                <h:outputLabel value="Net : " />
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
-                                <h:outputLabel value="Prepaired By : " />
-                                <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" >
-                                </h:outputLabel>
-                            </p:panelGrid>
-
-
-
-
-
-                        </div>
-                    </cc:implementation>
+                    <div class="col-md-4 p-1" >
+                        <h:panelGrid columns="2" columnClasses="text-start, text-end" >
+                            <h:outputLabel value="Approved By : " />
+                            <h:outputLabel value="#{cc.attrs.bill.paymentApprovedBy.webUserPerson.name}" >
+                            </h:outputLabel>
+                            <h:outputLabel value="Comments : " />
+                            <h:outputLabel value="#{cc.attrs.bill.paymentApprovalComments}" >
+                            </h:outputLabel>
+                            <h:outputLabel value="Prepaired at :"  />
+                            <h:outputLabel value="#{cc.attrs.bill.paymentApprovedAt}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputLabel>
+                        </h:panelGrid>
+                    </div>
                 </div>
+
+
+
+
+                <p:dataTable  
+                    value="#{cc.attrs.bill.billItems}"
+                    var="b" 
+                    id="itms" 
+                    styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                    rowIndexVar="n"
+                    rowKey="#{b.searialNo}" >
+                    <p:column width="2em">  
+                        <f:facet name="header">
+                            <h:outputLabel value="No"/>                                  
+                        </f:facet>      
+                        <p:outputLabel value="#{n+1}"/>
+                    </p:column> 
+                    <p:column  class="text-end">  
+                        <f:facet name="header">
+                            <h:outputLabel value="GRN No"/>                                  
+                        </f:facet>      
+                        <p:outputLabel value="#{b.referenceBill.deptId}"/>
+                    </p:column> 
+                    <p:column  class="text-end">  
+                        <f:facet name="header">
+                            <h:outputLabel value="Invoice No"/>                                  
+                        </f:facet>       
+                        <p:outputLabel value="#{b.referenceBill.invoiceNumber}"></p:outputLabel>
+                    </p:column> 
+                    <p:column headerText="GRN Amount" class="text-end">
+                        <p:outputLabel value="#{b.referenceBill.netTotal}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="GRN Return Amount" class="text-end">
+                        <p:outputLabel value="#{b.referenceBill.tmpReturnTotal}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Paying Amount" class="text-end">
+                        <p:outputLabel 
+                            value="#{b.netValue}">    
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel>
+                    </p:column>
+                </p:dataTable>
+
+
             </div>
-        </div>
+
+        </h:panelGroup>
 
 
     </cc:implementation>

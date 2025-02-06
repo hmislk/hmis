@@ -77,7 +77,7 @@
             <p:column headerText="Billed at"  >
                 <h:commandLink action="/pharmacy/pharmacy_reprint_grn" >
                     <h:outputLabel value="#{bill.createdAt}" >
-                        <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                     </h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>

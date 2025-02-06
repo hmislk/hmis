@@ -1498,6 +1498,9 @@ public class BillNumberGenerator {
     }
 
     public String departmentBillNumberGeneratorYearly(Department dep, BillTypeAtomic billType) {
+        System.out.println("departmentBillNumberGeneratorYearly = ");
+        System.out.println("billType = " + billType);
+        System.out.println("dep = " + dep);
         if (dep == null) {
             return "";
         }
@@ -1506,7 +1509,7 @@ public class BillNumberGenerator {
         }
         BillNumber billNumber;
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
-
+        System.out.println("billSuffix = " + billSuffix);
         boolean commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic
                 = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Common Bill Number for All Departments, Institutions and Bill Types", false);
         boolean separateBillNumberForAllDepartmentsInstitutionsBillTypeAtomic
@@ -1534,7 +1537,7 @@ public class BillNumberGenerator {
 
         // Get the last bill number
         Long dd = billNumber.getLastBillNumber();
-
+        System.out.println("dd = " + dd);
         // Increment the bill number
         dd++;
 
