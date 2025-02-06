@@ -6,8 +6,9 @@ on:
       - development
 
 jobs:
-  validate-jdbc-resources:
+  validate-jdbc-data-sources:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -18,7 +19,9 @@ jobs:
           grep -q '<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>' src/main/resources/META-INF/persistence.xml
 
   validate-compilation:
+      needs: validate-jdbc-data-sources
       runs-on: ubuntu-latest
+
       steps:
         - name: Checkout Code
           uses: actions/checkout@v3
@@ -37,5 +40,5 @@ jobs:
             restore-keys: |
               ${{ runner.os }}-maven-
 
-        - name: Build with Maven
+        - name: Compile with Maven
           run: mvn clean compile
