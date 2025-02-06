@@ -38,10 +38,26 @@
                                             timeInput="true" 
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                         </p:datePicker>
+                                        <h:outputLabel for="departmentList" value="Select Department"/> 
+                                        <p:selectOneMenu 
+                                            id="departmentList" 
+                                            class="w-100" 
+                                            value="#{searchController.searchKeyword.frmDepartment}"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            >
+                                            <f:selectItem itemLabel="All Departments"></f:selectItem>
+                                            <f:selectItems 
+                                                value="#{departmentController.institutionDepatrments}" 
+                                                var="dept" 
+                                                itemLabel="#{dept.name}" 
+                                                itemValue="#{dept}">
+                                            </f:selectItems>
+                                        </p:selectOneMenu>
                                         <p:commandButton 
                                             id="btnSearch" 
                                             ajax="false"
-                                            class="w-100 ui-button-warning" 
+                                            class="w-100 my-2 ui-button-warning" 
                                             icon="fas fa-search"
                                             value="Search" 
                                             action="#{searchController.createPharmacyBillItemTableBht()}"  />

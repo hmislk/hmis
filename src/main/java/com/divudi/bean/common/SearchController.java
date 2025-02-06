@@ -4534,14 +4534,18 @@ public class SearchController implements Serializable {
         m.put("bType", btp);
         m.put("ins", getSessionController().getInstitution());
         m.put("class", PreBill.class);
-        m.put("dep", getSessionController().getDepartment());
+       
 
         sql = "select bi from BillItem bi"
                 + " where  type(bi.bill)=:class "
                 + " and bi.bill.institution=:ins"
-                + " and bi.bill.department=:dep"
                 + " and bi.bill.billType=:bType and "
                 + " bi.createdAt between :fromDate and :toDate ";
+        
+        if (getSearchKeyword().getFrmDepartment() != null) {
+            sql += " and bi.bill.department=:dep";
+             m.put("dep", getSearchKeyword().getFrmDepartment());
+        }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((bi.bill.patient.person.name) like :patientName )";
