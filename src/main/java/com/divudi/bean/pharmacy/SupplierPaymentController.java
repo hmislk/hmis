@@ -1635,19 +1635,19 @@ public class SupplierPaymentController implements Serializable {
                 jpql.append(" and b.completed = :completed ");
                 params.put("completed", true);
             } else {
-                jpql.append(" and b.completed = :completed ");
-                params.put("completed", false);
+                jpql.append(" and b.completed != :completed ");
+                params.put("completed", true);
             }
         }
 
         // Conditionally append paymentCompleted if parameter is not null
         if (paymentCompleted != null) {
             if (paymentCompleted) {
-                jpql.append(" and b.paymentCompleted = :completed ");
-                params.put("completed", true);
+                jpql.append(" and b.paymentCompleted = :paymentCompleted ");
+                params.put("paymentCompleted", true);
             } else {
-                jpql.append(" and b.paymentCompleted = :completed ");
-                params.put("completed", false);
+                jpql.append(" and b.paymentCompleted != :paymentCompleted ");
+                params.put("paymentCompleted", true);
             }
         }
 
@@ -1657,8 +1657,8 @@ public class SupplierPaymentController implements Serializable {
                 jpql.append(" and b.paymentApproved = :paymentApproved ");
                 params.put("paymentApproved", true);
             } else {
-                jpql.append(" and b.paymentApproved = :paymentApproved ");
-                params.put("paymentApproved", false);
+                jpql.append(" and b.paymentApproved != :paymentApproved ");
+                params.put("paymentApproved", true);
             }
         }
 
@@ -2231,16 +2231,48 @@ public class SupplierPaymentController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Is Selected");
             return null;
         }
-        if (!approvedAndSettledPaymentBill.isPaymentApproved()) {
+        current = billService.reloadBill(approvedAndSettledPaymentBill);
+        if (!current.isPaymentApproved()) {
             JsfUtil.addErrorMessage("Not Approved. Can not complete.");
             return null;
         }
-        if (!approvedAndSettledPaymentBill.isPaymentCompleted()) {
+        if (current.isPaymentCompleted()) {
             JsfUtil.addErrorMessage("Already Completed. Can not complete again.");
             return null;
         }
-        current = billService.reloadBill(approvedAndSettledPaymentBill);
+
         return "/dealerPayment/complete_approved_and_settled_supplier_payment?faces-redirect=true";
+    }
+
+    public String navigateToViewSupplierPaymentVoucher(Bill supplierPaymentBill) {
+        if (supplierPaymentBill == null) {
+            JsfUtil.addErrorMessage("No Bill Is Selected");
+            return null;
+        }
+        if (supplierPaymentBill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return null;
+        }
+        if (supplierPaymentBill.getBillTypeAtomic() == BillTypeAtomic.SUPPLIER_PAYMENT_PREPERATION) {
+            current = supplierPaymentBill.getReferenceBill();
+        } else {
+            current = supplierPaymentBill;
+        }
+        if (current.getBillTypeAtomic() != BillTypeAtomic.SUPPLIER_PAYMENT) {
+            JsfUtil.addErrorMessage("Not a supplier bill");
+            return null;
+        }
+        current = billService.reloadBill(supplierPaymentBill);
+        if (!current.isPaymentApproved()) {
+            JsfUtil.addErrorMessage("Not Approved. Can not complete.");
+            return null;
+        }
+        if (current.isPaymentCompleted()) {
+            JsfUtil.addErrorMessage("Already Completed. Can not complete again.");
+            return null;
+        }
+
+        return "/dealerPayment/view_supplier_payment_voucher?faces-redirect=true";
     }
 
     public String navigateToStartSupplierPaymentOfSelectedBills() {
@@ -2569,7 +2601,7 @@ public class SupplierPaymentController implements Serializable {
         }
 
         updateReferanceBillAsPaymentGenerated(selectedBillItems);
-        current= billService.reloadBill(current);
+        current = billService.reloadBill(current);
         JsfUtil.addSuccessMessage("Payment Generated");
         printPreview = true;
 
