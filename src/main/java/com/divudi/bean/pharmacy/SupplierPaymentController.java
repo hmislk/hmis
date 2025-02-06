@@ -2254,7 +2254,15 @@ public class SupplierPaymentController implements Serializable {
             return null;
         }
         if (supplierPaymentBill.getBillTypeAtomic() == BillTypeAtomic.SUPPLIER_PAYMENT_PREPERATION) {
-            current = supplierPaymentBill.getReferenceBill();
+            if (supplierPaymentBill.getReferenceBill() != null) {
+                current = supplierPaymentBill.getReferenceBill();
+            } else if (supplierPaymentBill.getBackwardReferenceBill() != null) {
+                current = supplierPaymentBill.getBackwardReferenceBill();
+            } else {
+                System.out.println("supplierPaymentBill = " + supplierPaymentBill);
+                JsfUtil.addErrorMessage("Not a supplier bill");
+                return null;
+            }
         } else {
             current = supplierPaymentBill;
         }
