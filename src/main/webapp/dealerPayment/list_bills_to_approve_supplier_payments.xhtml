@@ -32,11 +32,13 @@
                                 </p:calendar>
 
                                 <p:commandButton 
-                                    value="Pharmacy Payments to Approve" 
+                                    value="List Pharmacy Payments to Approve" 
                                     action="#{supplierPaymentController.fillSupplierPaymentsToApprove}" 
                                     ajax="false"  
-                                    icon="fas fa-prescription-bottle-alt" 
-                                    class="my-1 w-100 ui-button-warning" />
+                                    class="my-3 w-100 ui-button-primary"
+                                    icon="pi pi-list">
+                                </p:commandButton>
+
 
                             </div>
                             <div class="col-10">
@@ -55,19 +57,29 @@
                                         <h:outputText value="#{b.deptId}" />
                                     </p:column>
 
-                                    <p:column headerText="Date" sortBy="#{b.billDate}" filterBy="#{b.billDate}" filterMatchMode="contains">
-                                        <h:outputText value="#{b.billDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                    <p:column headerText="Supplier" sortBy="#{b.toInstitution.name}" filterBy="#{b.toInstitution.name}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.toInstitution.name}" />
+                                    </p:column>
+
+                                    <p:column 
+                                        width="20em"
+                                        headerText="Created at"
+                                        sortBy="#{b.createdAt}"
+                                        filterBy="#{b.createdAt}">
+                                        <h:outputText value="#{b.createdAt}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Supplier" sortBy="#{b.fromInstitution.name}" filterBy="#{b.fromInstitution.name}" filterMatchMode="contains">
-                                        <h:outputText value="#{b.fromInstitution.name}" />
+                                    <p:column 
+                                        headerText="Creted By" 
+                                        sortBy="#{b.creater.webUserPerson.name}"
+                                        filterBy="#{b.creater.webUserPerson.name}"
+                                        filterMatchMode="contains">
+                                        <h:outputText value="#{b.creater.webUserPerson.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Bill Type" sortBy="#{b.billTypeAtomic.label}" filterBy="#{b.billTypeAtomic.label}" filterMatchMode="contains">
-                                        <h:outputText value="#{b.billTypeAtomic.label}" />
-                                    </p:column>
+
 
                                     <p:column  class="text-end" headerText="Total" sortBy="#{b.netTotal}" filterBy="#{b.netTotal}" filterMatchMode="contains">
                                         <h:outputText value="#{b.netTotal}">
@@ -80,12 +92,16 @@
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column  headerText="Actions" >
+                                    <p:column width="18em" class="text-center" headerText="Actions" >
                                         <p:commandButton
                                             value="To Approve Payment" 
                                             action="#{supplierPaymentController.navigateToApproveSupplierPayment(b)}" 
-                                            ajax="false" >
+                                            ajax="false"
+                                            style="width:16em;"
+                                            class="ui-button-warning"
+                                            icon="pi pi-thumbs-up">
                                         </p:commandButton>
+
                                     </p:column>
                                 </p:dataTable>
 

@@ -2837,8 +2837,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes,
             PaymentMethod pm, Double balanceGraterThan, Boolean omitPaymentGeneratedBills) {
-        String jpql = "SELECT b FROM Bill b WHERE b.retired = :ret AND b.cancelled = :can "
-                + "AND b.createdAt BETWEEN :frm AND :to";
+        String jpql = "SELECT b FROM Bill b WHERE b.retired = :ret "
+                + " AND b.cancelled = :can " //Cancelled bills are no longer listed here
+                + " AND b.createdAt BETWEEN :frm AND :to";
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("frm", frmDate);
