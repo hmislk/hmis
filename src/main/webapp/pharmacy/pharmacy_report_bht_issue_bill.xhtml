@@ -15,28 +15,32 @@
                 <h:form>
 
                     <p:panel header="BHT Pharmacy Issue Report" >
+                        <h:panelGrid columns="4" class="w-100">
+                            <h:outputLabel value="BHT Issue From" ></h:outputLabel>
+                            <p:autoComplete class="w-50" completeMethod="#{departmentController.completeDept}" var="dept" 
+                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                            value="#{reportsTransfer.fromDepartment}" >
+                            </p:autoComplete>
+                            <p:outputLabel value="Admission Type" ></p:outputLabel>
+                            <p:selectOneMenu
+                                class="w-50"
+                                value="#{reportsTransfer.admissionType}" >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar 
+                                value="#{reportsTransfer.fromDate}" class="w-50"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:calendar>
+                            
 
-                        <div class="row">
-                            <div class="col-4">
-                                <h:outputLabel value="BHT Issue From" ></h:outputLabel>&nbsp;
-                                <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
-                                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                value="#{reportsTransfer.fromDepartment}" >
-                                </p:autoComplete>
-                            </div>
-                            <div class="col-4">
-                                <h:outputLabel value="From" ></h:outputLabel>&nbsp;
-                                <p:calendar 
-                                    value="#{reportsTransfer.fromDate}" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:calendar>
-                            </div>
-                            <div class="col-4">
-                                <h:outputLabel value="To" ></h:outputLabel>&nbsp;
-                                <p:calendar 
-                                    value="#{reportsTransfer.toDate}"
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
-                            </div>
-                        </div>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar 
+                                value="#{reportsTransfer.toDate}" class="w-50"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+
+
+                        </h:panelGrid>
 
 
                         <h:panelGrid columns="3" class="my-2">
@@ -91,7 +95,7 @@
                                         <h:outputLabel value="BHT No"/>
                                     </f:facet>
                                     #{i.billType}
-                                    <h:outputLabel value="#{i.patientEncounter.bhtNo}" ></h:outputLabel>                                    
+                                    <h:outputLabel value="#{i.patientEncounter.bhtNo}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Bill No">
