@@ -57,20 +57,20 @@ jobs:
            - name: Checkout Code
              uses: actions/checkout@v3
 
-          - name: Download Build Artifact
+           - name: Download Build Artifact
              uses: actions/download-artifact@v4
              with:
                name: build-artifacts
                path: ./
      
-          - name: Deploy to Payara
+           - name: Deploy to Payara
              env:
                SERVER_IP: ${{ secrets.QA_SERVER_IP }}
                SERVER_USER: ${{ secrets.QA_SERVER_USER }}
                SSH_PRIVATE_KEY: ${{ secrets.QA_SSH_PRIVATE_KEY }}
                PAYARA_ADMIN_PASS: ${{ secrets.QA_PAYARA_ADMIN_PASS }}
             
-            run: |
+             run: |
               # Add SSH private key to the SSH agent
                echo "$SSH_PRIVATE_KEY" > private_key.pem
                chmod 600 private_key.pem
