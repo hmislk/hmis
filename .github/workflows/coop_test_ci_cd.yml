@@ -27,6 +27,7 @@ jobs:
                 restore-keys: |
                   ${{ runner.os }}-maven-
 
+
             - name: Update JDBC Data Sources in persistence.xml
               run: |
                  sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coop</jta-data-source>|' src/main/resources/META-INF/persistence.xml
