@@ -1643,10 +1643,10 @@ public class SupplierPaymentController implements Serializable {
         // Conditionally append paymentCompleted if parameter is not null
         if (paymentCompleted != null) {
             if (paymentCompleted) {
-                jpql.append(" and b.paymentCompleted = :completed ");
+                jpql.append(" and b.paymentCompleted = :paymentCompleted ");
                 params.put("paymentCompleted", true);
             } else {
-                jpql.append(" and b.paymentCompleted != :completed ");
+                jpql.append(" and b.paymentCompleted != :paymentCompleted ");
                 params.put("paymentCompleted", true);
             }
         }
@@ -2231,16 +2231,49 @@ public class SupplierPaymentController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Is Selected");
             return null;
         }
-        if (!approvedAndSettledPaymentBill.isPaymentApproved()) {
+        current = billService.reloadBill(approvedAndSettledPaymentBill);
+        if (!current.isPaymentApproved()) {
             JsfUtil.addErrorMessage("Not Approved. Can not complete.");
             return null;
         }
-        if (!approvedAndSettledPaymentBill.isPaymentCompleted()) {
+        if (current.isPaymentCompleted()) {
             JsfUtil.addErrorMessage("Already Completed. Can not complete again.");
             return null;
         }
-        current = billService.reloadBill(approvedAndSettledPaymentBill);
+
         return "/dealerPayment/complete_approved_and_settled_supplier_payment?faces-redirect=true";
+    }
+
+    public String navigateToViewSupplierPaymentVoucher(Bill supplierPaymentBill) {
+        makeNull();
+        if (supplierPaymentBill == null) {
+            JsfUtil.addErrorMessage("No Bill Is Selected");
+            return null;
+        }
+        if (supplierPaymentBill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return null;
+        }
+        if (supplierPaymentBill.getBillTypeAtomic() == BillTypeAtomic.SUPPLIER_PAYMENT_PREPERATION) {
+            current = supplierPaymentBill.getReferenceBill();
+        } else {
+            current = supplierPaymentBill;
+        }
+        if (supplierPaymentBill.getBillTypeAtomic() != BillTypeAtomic.SUPPLIER_PAYMENT) {
+            JsfUtil.addErrorMessage("Not a supplier bill");
+            return null;
+        }
+        current = billService.reloadBill(supplierPaymentBill);
+        if (!current.isPaymentApproved()) {
+            JsfUtil.addErrorMessage("Not Approved. Can not complete.");
+            return null;
+        }
+        if (current.isPaymentCompleted()) {
+            JsfUtil.addErrorMessage("Already Completed. Can not complete again.");
+            return null;
+        }
+
+        return "/dealerPayment/view_supplier_payment_voucher?faces-redirect=true";
     }
 
     public String navigateToStartSupplierPaymentOfSelectedBills() {
