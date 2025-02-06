@@ -122,6 +122,7 @@ public class ReportsTransfer implements Serializable {
     private double totalBHTIssueValue;
     private int pharmacyDisbursementReportIndex = 8;
     private AdmissionType admissionType;
+    private Bill previewBill;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructions">
@@ -160,6 +161,17 @@ public class ReportsTransfer implements Serializable {
         transferBills = null;
         pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return pharmacyController.navigateToPharmacyAnalytics();
+    }
+    
+    public String navigateToBillPreview(Bill b){
+        previewBill = null;
+        previewBill = b;
+        return"/inward/pharmacy_reprint_bill_sale_bht_bill?faces-redirect=true";
+    }
+    
+    public String navigateBackFromBillPreview(){
+        previewBill = null;
+        return "/pharmacy/pharmacy_report_bht_issue_bill?faces-redirect=true";
     }
 
     /**
@@ -1854,6 +1866,14 @@ public class ReportsTransfer implements Serializable {
 
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
+    }
+
+    public Bill getPreviewBill() {
+        return previewBill;
+    }
+
+    public void setPreviewBill(Bill previewBill) {
+        this.previewBill = previewBill;
     }
 
     public class ItemBHTIssueCountTrancerReciveCount {
