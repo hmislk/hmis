@@ -101,24 +101,26 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column width="14em"  headerText="Actions" >
+                                    <p:column width="24em" headerText="Actions">
                                         <p:commandButton
                                             value="Complete Payment" 
                                             style="width: 12em;"
                                             action="#{supplierPaymentController.navigateToCompleteSupplierPayment(b)}" 
                                             ajax="false"
-                                            class="ui-button-success"
+                                            class="ui-button-success mx-1"
                                             icon="pi pi-check">
                                         </p:commandButton>
+
                                         <p:commandButton
                                             value="View Voucher" 
-                                            style="width: 12em;"
+                                            style="width: 10em;"
                                             action="#{supplierPaymentController.navigateToViewSupplierPaymentVoucher(b)}" 
                                             ajax="false"
-                                            class="ui-button-success"
-                                            icon="pi pi-check">
+                                            class="ui-button-info mx-1"
+                                            icon="pi pi-file">
                                         </p:commandButton>
                                     </p:column>
+
                                 </p:dataTable>
 
                             </div>

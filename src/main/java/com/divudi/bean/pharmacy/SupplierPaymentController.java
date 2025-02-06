@@ -2245,7 +2245,6 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public String navigateToViewSupplierPaymentVoucher(Bill supplierPaymentBill) {
-        makeNull();
         if (supplierPaymentBill == null) {
             JsfUtil.addErrorMessage("No Bill Is Selected");
             return null;
@@ -2259,7 +2258,7 @@ public class SupplierPaymentController implements Serializable {
         } else {
             current = supplierPaymentBill;
         }
-        if (supplierPaymentBill.getBillTypeAtomic() != BillTypeAtomic.SUPPLIER_PAYMENT) {
+        if (current.getBillTypeAtomic() != BillTypeAtomic.SUPPLIER_PAYMENT) {
             JsfUtil.addErrorMessage("Not a supplier bill");
             return null;
         }
