@@ -1,4 +1,4 @@
-name: Coop Test environment(QA) ci-cd workflow
+name: Coop Test Environment(QA) CI-CD Workflow
 
 on: 
     push: 
