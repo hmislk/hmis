@@ -40,6 +40,7 @@ import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Category;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.DrawerFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
@@ -147,9 +148,9 @@ public class PharmacySummaryReportController implements Serializable {
     // Date range
     private Date fromDate;
     private Date toDate;
-    
+
     private List<Bill> bills;
-    
+
     private double total;
     private double discount;
     private double netTotal;
@@ -160,6 +161,7 @@ public class PharmacySummaryReportController implements Serializable {
     private BillTypeAtomic billTypeAtomic;
     private BillClassType billClassType;
     private PaymentMethod paymentMethod;
+    private AdmissionType admissionType;
 
     // Collections
     private List<PaymentMethod> paymentMethods;
@@ -212,7 +214,7 @@ public class PharmacySummaryReportController implements Serializable {
     public String navigateToBillTypeIncome() {
         return "/pharmacy/reports/summary_reports/bill_type_income?faces-redirect=true";
     }
-    
+
     public String navigatToBillListByBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
         listBills();
@@ -373,7 +375,7 @@ public class PharmacySummaryReportController implements Serializable {
         }
 
     }
-    
+
     public void resetAllFiltersExceptDateRange() {
         setInstitution(null);
         setDepartment(null);
@@ -436,7 +438,7 @@ public class PharmacySummaryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE);
 
-        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics);
+        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType);
         bundle = new IncomeBundle(bills);
         for (IncomeRow r : bundle.getRows()) {
             if (r.getBill() == null) {
@@ -1424,6 +1426,15 @@ public class PharmacySummaryReportController implements Serializable {
     public void setBills(List<Bill> bills) {
         this.bills = bills;
     }
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
     
     
+
 }

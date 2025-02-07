@@ -27,3 +27,4 @@ select `ID`,
 `CREDITCOMPANY_ID`
 from bill 
 order by `ID` desc limit 10;
+select * from billnumber limit 100;
