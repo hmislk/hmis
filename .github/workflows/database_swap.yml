@@ -38,7 +38,7 @@ jobs:
           echo "$OBSERVABILITY_SSH_KEY" > observability_key.pem
           chmod 600 observability_key.pem
           
-          UTC_TIME=$(date -d "${DATE}T13:55:00+05:30" -u "+%H:%M %Y-%m-%d")
+          UTC_TIME=$(date -d "${DATE}T02:00:00+05:30" -u "+%H:%M %Y-%m-%d")
 
           HOUR=$(echo "$UTC_TIME" | awk '{print $1}' | cut -d':' -f1)
           MINUTE=$(echo "$UTC_TIME" | awk '{print $1}' | cut -d':' -f2)
