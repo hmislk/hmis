@@ -20,12 +20,14 @@
                                 <h:outputLabel value="Complete Approved And Settled Supplier Payment" ></h:outputLabel>
                                 <p:commandButton
                                     id="btnSettle" 
-                                    value="Settle"
-                                    action="#{supplierPaymentController.settleApprovedSupplierPayment()}"
+                                    value="Mark as Complete"
+                                    action="#{supplierPaymentController.completeApprovedAndSettledSupplierPayment()}"
                                     ajax="false" 
-                                    class="me-5"
-                                    style="float: right">
+                                    class="ui-button-success me-5"
+                                    icon="pi pi-check"
+                                    style="float: right;">
                                 </p:commandButton>
+
                             </f:facet>
 
 
@@ -137,7 +139,7 @@
                                     </p:outputLabel>
                                 </p:column>
 
-                                
+
                             </p:dataTable>
 
 
