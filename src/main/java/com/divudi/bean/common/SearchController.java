@@ -4577,6 +4577,11 @@ public class SearchController implements Serializable {
             m.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
 
+        if (getSearchKeyword().getAdmissionType() != null) {
+            sql += " and bi.bill.patientEncounter.admissionType=:admissionType ";
+            m.put("admissionType", getSearchKeyword().getAdmissionType());
+        }
+
         sql += " order by bi.id desc  ";
 
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
