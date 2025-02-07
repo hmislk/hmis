@@ -11,9 +11,6 @@
             <ui:define name="subcontent">
 
                 <h:form >
-
-
-
                     <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
@@ -145,6 +142,21 @@
                             </p:selectOneMenu>
 
                         </h:panelGroup>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf80d;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                            <h:outputLabel value="Admission Type" for="cmbDept" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu 
+                            class="w-100"
+                            autoWidth="false"
+                            value="#{pharmacySummaryReportController.admissionType}" 
+                            rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
+                            <f:selectItem itemLabel="All Admission Type"/>
+                            <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
+                                            itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                        </p:selectOneMenu>
+
                     </h:panelGrid>
 
                     <p:commandButton 

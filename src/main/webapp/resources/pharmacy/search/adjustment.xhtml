@@ -38,7 +38,7 @@
             <p:column headerText="Billed at"  >
 
                 <h:outputLabel value="#{bill.createdAt}" >
-                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                 </h:outputLabel>
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
