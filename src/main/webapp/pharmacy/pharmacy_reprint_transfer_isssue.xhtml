@@ -24,7 +24,7 @@
                                     ajax="false" 
                                     icon="fas fa-list"
                                     class="ui-button-warning m-2"
-                                    action="/pharmacy/pharmacy_transfer_request_list" 
+                                    action="/pharmacy/pharmacy_transfer_request_list?faces-redirect=true" 
                                     actionListener="#{pharmacyBillSearch.makeNull()}" 
                                     value="Issued List"/>
 
@@ -33,7 +33,7 @@
                                     value="To Cancel" 
                                     icon="fas fa-cancel"
                                     class="ui-button-danger m-2"
-                                    action="pharmacy_cancel_transfer_issue" 
+                                    action="pharmacy_cancel_transfer_issue?faces-redirect=true" 
                                     rendered="#{pharmacyBillSearch.bill.department eq sessionController.loggedUser.department}" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
                                 </p:commandButton>  
                             </div>
