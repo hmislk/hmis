@@ -112,7 +112,7 @@
             <div >
 
                 <p:dataTable 
-                    rowIndexVar="rowIndex" 
+                    rowIndexVar="rowIndex"                     
                     styleClass="no-border-table"
                     style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important;"
                     class="my-4"
@@ -157,7 +157,7 @@
                     <p:column  
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Purchase Rate is required in Pharmacy Disbursement Reports', true)}"
                         width="4em" 
-                               style="margin: 0px; padding: 0px;text-align: right;">
+                        style="margin: 0px; padding: 0px;text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Rate"/>
                         </f:facet>
@@ -199,8 +199,13 @@
                         <f:facet name="header">
                             <h:outputLabel value="Sale Value"/>
                         </f:facet>
-                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.itemBatch.retailsaleRate*bip.pharmaceuticalBillItem.qty}">
+                        <h:outputLabel styleClass="sale-value" value="#{0-bip.pharmaceuticalBillItem.itemBatch.retailsaleRate*bip.pharmaceuticalBillItem.qty}">
                         </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel styleClass="totalSaleValue" value="0.00">
+                                <f:convertNumber pattern="#0.00" />
+                            </h:outputLabel>
+                        </f:facet>
                     </p:column>
 
                     <p:column 
@@ -216,7 +221,7 @@
                     <p:column 
                         width="5em"  
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Date of Expiary is required in Pharmacy Disbursement Reports', true)}"
-                        style="margin: 0px; padding: 0px; text-align: right" class="mx-2">
+                        style="margin: 2px; padding: 0px; text-align: right" class="mx-2">
                         <f:facet name="header">
                             <h:outputLabel value="D O E"/>
                         </f:facet>
@@ -225,9 +230,38 @@
                         </h:outputLabel>
                     </p:column>
 
+                    <p:ajax event="page" oncomplete="calculateSaleTotalInBill()" />
+                    <p:ajax event="sort" oncomplete="calculateSaleTotalInBill()" />
+                    <p:ajax event="filter" oncomplete="calculateSaleTotalInBill()" />
+
 
                 </p:dataTable>
             </div>
+            <h:outputScript>
+                function calculateSaleTotalInBill(){
+                    let total = 0;
+                    document.querySelectorAll('.sale-value').forEach(cell=>{
+
+                        let value = cell.innerText.replace(/,/g, ''); 
+                        total += parseFloat(value) || 0
+                    });
+
+                    let footerElement = document.querySelector('.totalSaleValue');
+                    if (footerElement) {
+                        footerElement.innerText = total.toFixed(2); 
+                        console.log("Total Sale Value Updated: " + total.toFixed(2));
+                    }
+
+                }
+
+                PrimeFaces.widget.DataTable.prototype.refresh = function() {
+                    setTimeout(calculateSaleTotalInBill, 100); 
+                };
+
+                document.addEventListener("DOMContentLoaded", function() {
+                    setTimeout(calculateSaleTotalInBill, 500);
+                });
+            </h:outputScript>
 
             <div  style="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer CSS')}" >
                 <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer Text')}" escape="false" ></h:outputText>
