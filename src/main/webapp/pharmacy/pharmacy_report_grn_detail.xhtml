@@ -119,10 +119,10 @@
                                 <h:outputLabel value="GRN"/>
                             </f:facet>
 
-                            <p:column headerText="GRN No" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="GRN No"/>
-                                </f:facet> 
+                            <p:column headerText="GRN No" 
+                                      sortBy="#{b.deptId}"
+                                      filterBy="#{b.deptId}"
+                                      filterMatchMode="contains">                               
                                 <h:outputLabel value="#{b.deptId}"/>
                             </p:column>
 
@@ -158,10 +158,10 @@
 
                             </p:column>-->
 
-                            <p:column headerText="Po No" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Po No"/>
-                                </f:facet> 
+                            <p:column headerText="Po No" 
+                                      sortBy="#{b.referenceBill.deptId}"
+                                      filterBy="#{b.referenceBill.deptId}"
+                                      filterMatchMode="contains">                            
                                 <h:outputLabel value="#{b.referenceBill.deptId}"/>
                             </p:column>
 
@@ -212,12 +212,12 @@
                                 <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Remark" exportable="false" >
+<!--                            <p:column headerText="Remark" exportable="false" >
                                 <p:commandButton ajax="false" value="View" action="/pharmacy/pharmacy_grn" >
                                     <f:setPropertyActionListener value="#{b}" target="#{grnController.grnBill}" ></f:setPropertyActionListener>
                                     <f:setPropertyActionListener value="true" target="#{grnController.printPreview}" ></f:setPropertyActionListener>
                                 </p:commandButton>
-                            </p:column>
+                            </p:column>-->
 
                             <p:columnGroup type="footer">  
                                 <p:row >  
