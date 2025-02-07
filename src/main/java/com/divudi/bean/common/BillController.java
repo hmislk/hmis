@@ -747,6 +747,40 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
         return a;
     }
+    
+    public List<Bill> completeInwardCreditCompanyPaymentBill(String qry) {
+        System.out.println("completeInwardCreditCompanyPaymentBill");
+        List<Bill> a = null;
+        String jpql;
+        HashMap params = new HashMap();
+        if (qry != null) {
+            jpql = "select c from BilledBill c "
+                    + " where abs(c.netTotal)-abs(c.paidAmount)>:val "
+                    + " and c.billTypeAtomic in :btas "
+                    + " and c.paymentMethod= :pm "
+                    + " and c.cancelledBill is null "
+                    + " and c.refundedBill is null "
+                    + " and c.retired=false "
+                    + " and ((c.deptId) like :q or"
+                    + " (c.patient.person.name) like :q "
+                    + " or (c.creditCompany.name) like :q ) "
+                    + " order by c.creditCompany.name";
+            List<BillTypeAtomic> btas = new ArrayList<>();
+            btas.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+            params.put("btas", btas);
+            params.put("pm", PaymentMethod.Credit);
+            params.put("val", 0.1);
+            params.put("q", "%" + qry.toUpperCase() + "%");
+            a = getFacade().findByJpql(jpql, params);
+            System.out.println("jpql = " + jpql);
+            System.out.println("params = " + params);
+            System.out.println("a = " + a);
+        }
+        if (a == null) {
+            a = new ArrayList<>();
+        }
+        return a;
+    }
 
     public List<Bill> completePharmacyCreditBill(String qry) {
         List<Bill> a = null;
