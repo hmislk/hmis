@@ -17,15 +17,17 @@
                     <h:form  >
                         <p:panel rendered="#{!supplierPaymentController.printPreview}" >
                             <f:facet name="header" >
-                                <h:outputLabel value="Prepare Supplier Payment" ></h:outputLabel>
+                                <h:outputLabel value="Complete Approved And Settled Supplier Payment" ></h:outputLabel>
                                 <p:commandButton
                                     id="btnSettle" 
-                                    value="Complete Preperation"
-                                    action="#{supplierPaymentController.settlePrepairingSupplierPayment}"
+                                    value="Mark as Complete"
+                                    action="#{supplierPaymentController.completeApprovedAndSettledSupplierPayment()}"
                                     ajax="false" 
-                                    class="me-5"
-                                    style="float: right">
+                                    class="ui-button-success me-5"
+                                    icon="pi pi-check"
+                                    style="float: right;">
                                 </p:commandButton>
+
                             </f:facet>
 
 
@@ -34,68 +36,60 @@
                                 <h:outputLabel value="#{supplierPaymentController.current.toInstitution.name}" />
 
                                 <h:outputLabel value="Payment Method" />
-                                <p:selectOneMenu 
-                                    id="cmbPs" 
-                                    required="true"
-                                    requiredMessage="You must select a payment method to approve"
-                                    value="#{supplierPaymentController.current.paymentMethod}">                                                                     
-                                    <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
+                                <p:selectOneMenu id="cmbPs" value="#{supplierPaymentController.current.paymentMethod}">                                                                     
                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
-<!--                                    <p:ajax 
+                                    <p:ajax 
                                         process="cmbPs"
                                         update="gpPaymentMethodDetails" 
-                                        event="change" />-->
+                                        event="change" />
                                 </p:selectOneMenu>
 
-<!--                                <h:outputLabel value="Payment Details" />
+                                <h:outputLabel value="Payment Details" />
                                 <h:panelGroup id="gpPaymentMethodDetails" >
                                     <h:panelGroup id="creditCard" style="display: #{supplierPaymentController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                        <pa:creditCard paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
+                                        <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                     </h:panelGroup>
 
                                     <h:panelGroup id="cheque" style="display: #{supplierPaymentController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                        <pa:cheque paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
+                                        <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                     </h:panelGroup>
 
                                     <h:panelGroup id="slip" style="display: #{supplierPaymentController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                        <pa:slip paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
+                                        <pa:slipDetailsAsOnlyPayment paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                     </h:panelGroup>
-                                </h:panelGroup>-->
+                                </h:panelGroup>
 
                                 <p:outputLabel value="Total" />
                                 <p:inputText
+                                    id="lblTotal"
                                     readonly="true"
                                     class="text-end"
-                                    id="lblTotal"
                                     value="#{supplierPaymentController.current.total}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
 
                                 <p:outputLabel value="Discount" />
                                 <p:inputText 
-                                    id="txtDiscount"  
-                                    onfocus="this.select();"
+                                    id="txtDiscount"
                                     class="text-end"
+                                    readonly="true"
+                                    onfocus="this.select();"
                                     value="#{supplierPaymentController.current.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                    <f:ajax 
-                                        event="blur" 
-                                        execute="@this" 
-                                        render="@all" 
-                                        listener="#{supplierPaymentController.changeDiscountListenerForPaymentPreperation}"/>
                                 </p:inputText>
 
                                 <p:outputLabel value="Net Total" />
                                 <p:inputText 
-                                    id="lblNetTotal"
-                                    class="text-end"
+                                    id="lblNetTotal" 
                                     readonly="true"
+                                    class="text-end"
                                     value="#{supplierPaymentController.current.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
 
-                                <p:outputLabel value="Description"/>
-                                <p:inputTextarea
+                                <p:outputLabel 
+                                    value="Description"/>
+                                <p:inputTextarea 
                                     class="w-100"
                                     value="#{supplierPaymentController.current.comments}"/>                                                         
 
@@ -104,7 +98,7 @@
                             </p:panelGrid>
 
                             <p:dataTable  
-                                value="#{supplierPaymentController.billItems}"
+                                value="#{supplierPaymentController.current.billItems}"
                                 var="b" 
                                 id="itms" rowKey="#{b.searialNo}" >
                                 <p:column >  
@@ -140,28 +134,12 @@
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Paying Amount">
-                                    <p:inputText 
-                                        class="w-100 text-end"
-                                        autocomplete="off"
-                                        onfocus="this.select();"
-                                        value="#{b.netValue}">    
+                                    <p:outputLabel value="#{b.netValue}">    
                                         <f:convertNumber pattern="#,##0.00" />
-
-                                        <f:ajax 
-                                            event="blur" 
-                                            execute="@this" 
-                                            render="@all" 
-                                            listener="#{supplierPaymentController.changeNetValueListener(b)}"/>
-                                    </p:inputText>
+                                    </p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Remove">
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        action="#{supplierPaymentController.remove(b)}" 
-                                        value="Remove">
-                                    </p:commandButton>
-                                </p:column>
+
                             </p:dataTable>
 
 
@@ -172,7 +150,8 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:panel   id="gpBillPreview">
-                                <bi:supplier_payment_preperation bill="#{supplierPaymentController.current}" billController="#{supplierPaymentController}" dup="false"/>
+                                <bi:grn_payment billItems="#{supplierPaymentController.current.billItems}" bill="#{supplierPaymentController.current}"/>
+                                <!--<bi:grnCheque bill="#{supplierPaymentController.current}" billController="#{supplierPaymentController}" dup="false"/>-->
                             </p:panel>
                         </p:panel>
                     </h:form>

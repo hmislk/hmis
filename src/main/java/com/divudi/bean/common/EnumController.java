@@ -223,6 +223,7 @@ public class EnumController implements Serializable {
     }
 
     public List<PaymentMethod> getPaymentMethodsForPharmacyBillCancellations() {
+        List<PaymentMethod> paymentMethodsForPharmacyBillCancellations = new ArrayList<>();
         if (paymentMethodsForPharmacyBilling == null) {
             fillPaymentMethodsForPharmacyBilling();
         }
@@ -233,12 +234,13 @@ public class EnumController implements Serializable {
             paymentMethodsForPharmacyBilling.add(PaymentMethod.Cash);
             paymentMethodsForPharmacyBilling.add(PaymentMethod.Card);
         }
+        paymentMethodsForPharmacyBillCancellations.addAll(paymentMethodsForPharmacyBilling);
         try {
-            paymentMethodsForPharmacyBilling.remove(PaymentMethod.MultiplePaymentMethods);
+            paymentMethodsForPharmacyBillCancellations.remove(PaymentMethod.MultiplePaymentMethods);
         } catch (Exception e) {
             System.err.println("e = " + e);
         }
-        return paymentMethodsForPharmacyBilling;
+        return paymentMethodsForPharmacyBillCancellations;
     }
 
     public void fillPaymentMethodsForPharmacyBilling() {

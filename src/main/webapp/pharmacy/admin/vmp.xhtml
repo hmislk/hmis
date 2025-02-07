@@ -122,16 +122,16 @@
                                     value="#{vmpController.current.strengthOfAnIssueUnit}"
                                     ></p:inputText>
 
-<!--                                <h:outputText value="No of days to mark as Short Expiary" >
-                                </h:outputText>
-                                <p:inputText 
-                                    autocomplete="off"
-                                    class="w-100"
-                                    value="#{vmpController.current.numberOfDaysToMarkAsShortExpiary}"
-                                    ></p:inputText>-->
-                                
-                                
-                                
+                                <!--                                <h:outputText value="No of days to mark as Short Expiary" >
+                                                                </h:outputText>
+                                                                <p:inputText 
+                                                                    autocomplete="off"
+                                                                    class="w-100"
+                                                                    value="#{vmpController.current.numberOfDaysToMarkAsShortExpiary}"
+                                                                    ></p:inputText>-->
+
+
+
                                 <h:outputText value="Strength Unit" >
                                 </h:outputText>
                                 <p:selectOneMenu 
@@ -156,11 +156,14 @@
                                     >
                                     <f:selectItem itemLabel="Select Issue Unit" ></f:selectItem>
                                     <f:selectItems value="#{measurementUnitController.issueUnits}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
-                                </p:selectOneMenu>     
+                                </p:selectOneMenu>  
 
-
-
-
+                                <p:outputLabel for="txtIns" value="Instructions" class="form-label"></p:outputLabel>
+                                <h:inputTextarea 
+                                    id="txtIns" 
+                                    value="#{vmpController.current.instructions}" 
+                                    required="false" 
+                                    class="form-control" ></h:inputTextarea>
 
                             </h:panelGrid>
                             <p:commandButton 

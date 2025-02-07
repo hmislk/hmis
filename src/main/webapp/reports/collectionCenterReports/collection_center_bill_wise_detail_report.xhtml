@@ -282,6 +282,21 @@
                                 <tr>
                                     <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">CC Code</th>
                                     <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Leaf No.</th>
+                                    <ui:fragment rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">
+                                            From Department
+                                        </th>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">
+                                            Department
+                                        </th>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">
+                                            To Department
+                                        </th>
+                                    </ui:fragment>
                                     <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">MRN</th>
                                     <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Patient Name</th>
                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Invoice Date</th>
@@ -294,6 +309,15 @@
                                     <tr style="border-bottom: 1px solid #d9d9d9;">
                                         <td>#{entry.value[0].bill.collectingCentre.code}</td>
                                         <td>#{entry.value[0].bill.billTypeAtomic eq 'CC_BILL_CANCELLATION' ? entry.value[0].bill.billedBill.referenceNumber: entry.value[0].bill.referenceNumber}</td>
+                                        <ui:fragment rendered="#{webUserController.hasPrivilege('Developers')}">
+                                            <td>#{entry.value[0].bill.fromDepartment.name}</td>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{webUserController.hasPrivilege('Developers')}">
+                                            <td>#{entry.value[0].bill.department.name}</td>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{webUserController.hasPrivilege('Developers')}">
+                                            <td>#{entry.value[0].bill.toDepartment.name}</td>
+                                        </ui:fragment>
                                         <td>#{entry.value[0].bill.patient.phn}</td>
                                         <td>#{entry.value[0].bill.patient.person.name}</td>
                                         <td>

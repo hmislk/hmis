@@ -346,6 +346,15 @@ public class Bill implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date printedAt;
 
+    private boolean paymentGenerated;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser paymentGeneratedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date paymentGeneratedAt;
+    @Lob
+    private String paymentGenerationComments;
+
+    
     private boolean paymentApproved;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser paymentApprovedBy;
@@ -2613,6 +2622,40 @@ public class Bill implements Serializable, RetirableEntity {
         this.paymentCompletionComments = paymentCompletionComments;
     }
 
+    public boolean isPaymentGenerated() {
+        return paymentGenerated;
+    }
+
+    public void setPaymentGenerated(boolean paymentGenerated) {
+        this.paymentGenerated = paymentGenerated;
+    }
+
+    public WebUser getPaymentGeneratedBy() {
+        return paymentGeneratedBy;
+    }
+
+    public void setPaymentGeneratedBy(WebUser paymentGeneratedBy) {
+        this.paymentGeneratedBy = paymentGeneratedBy;
+    }
+
+    public Date getPaymentGeneratedAt() {
+        return paymentGeneratedAt;
+    }
+
+    public void setPaymentGeneratedAt(Date paymentGeneratedAt) {
+        this.paymentGeneratedAt = paymentGeneratedAt;
+    }
+
+    public String getPaymentGenerationComments() {
+        return paymentGenerationComments;
+    }
+
+    public void setPaymentGenerationComments(String paymentGenerationComments) {
+        this.paymentGenerationComments = paymentGenerationComments;
+    }
+
+    
+    
     
     
 }

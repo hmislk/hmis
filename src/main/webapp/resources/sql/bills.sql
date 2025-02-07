@@ -1,5 +1,7 @@
 select `ID`, 
 `COMPLETED`,
+`BILLEDBILL_ID`,
+`REFERENCEBILL_ID`,
  `DTYPE`,
 `BILLCLASSTYPE`,
 `BILLTYPE`, 
@@ -25,3 +27,4 @@ select `ID`,
 `CREDITCOMPANY_ID`
 from bill 
 order by `ID` desc limit 10;
+select * from billnumber limit 100;
