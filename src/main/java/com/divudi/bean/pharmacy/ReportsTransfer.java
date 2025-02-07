@@ -1710,6 +1710,15 @@ public class ReportsTransfer implements Serializable {
 
         jpql.append(" order by b.id");
         transferBills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        
+        totalsValue = 0.0;
+        discountsValue = 0.0;
+        netTotalValues = 0.0;
+        for (Bill b : transferBills) {
+            totalsValue = totalsValue + (b.getTotal());
+            discountsValue = discountsValue + b.getDiscount();
+            netTotalValues = netTotalValues + b.getNetTotal();
+        }
     }
 
     public void fillTheaterTransfersReceiveWithBHTIssue() {
