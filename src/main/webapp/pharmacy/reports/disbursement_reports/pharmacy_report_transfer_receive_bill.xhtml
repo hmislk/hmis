@@ -129,10 +129,15 @@
                                 <p:column headerText="Purchase Total" style="text-align: right;" sortBy="#{i.netTotal}" filterBy="#{i.netTotal}" filterMatchMode="gte">
                                     <h:outputLabel value="#{i.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>                                  
+                                    </h:outputLabel> 
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.netTotalValues}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
-
+                                
                                 <!-- Actions -->
                                 <p:column headerText="Actions" width="5em">
                                     <p:commandButton

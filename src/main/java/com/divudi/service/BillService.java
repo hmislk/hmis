@@ -33,6 +33,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -600,6 +601,17 @@ public class BillService {
             Department department,
             WebUser webUser,
             List<BillTypeAtomic> billTypeAtomics) {
+        return fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null);
+    }
+
+    public List<Bill> fetchBills(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType) {
         String jpql;
         Map params = new HashMap();
 
@@ -627,6 +639,11 @@ public class BillService {
         if (department != null) {
             jpql += " and b.department=:dep ";
             params.put("dep", department);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
         }
 
         jpql += " order by b.createdAt desc  ";
