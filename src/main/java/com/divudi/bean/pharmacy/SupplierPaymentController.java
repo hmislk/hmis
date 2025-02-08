@@ -2649,7 +2649,7 @@ public class SupplierPaymentController implements Serializable {
 //            tmp.setCreater(getSessionController().getLoggedUser());
 //            tmp.setBill(getCurrent());
 //            tmp.setNetValue(0 - tmp.getNetValue());
-//            if (tmp.getId() == null) {
+//            if (tmp.getId() == membershipnull) {
 //                getBillItemFacade().create(tmp);
 //            }
 //            saveBillFee(tmp, p);
