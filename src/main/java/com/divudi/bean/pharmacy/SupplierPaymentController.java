@@ -289,19 +289,6 @@ public class SupplierPaymentController implements Serializable {
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Functions">
-    public void onToggleSelect(ToggleSelectEvent event) {
-        selectedBills = (List<Bill>) event.getSelections();
-    }
-
-    public void onRowSelect(SelectEvent event) {
-        Bill selectedBill = (Bill) event.getObject();
-        selectedBills.add(selectedBill);
-    }
-
-    public void onRowUnselect(UnselectEvent event) {
-        Bill unselectedBill = (Bill) event.getObject();
-        selectedBills.remove(unselectedBill);
-    }
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
@@ -378,8 +365,6 @@ public class SupplierPaymentController implements Serializable {
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
 
-        System.err.println("Sql " + jpql);
-        System.out.println("temMap = " + params);
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
     }
@@ -567,15 +552,12 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void calTotalBySelectedBillTems() {
-        System.out.println("calTotalBySelectedBillTems called.");
 
         if (getCurrent() == null) {
-            System.out.println("Error: current is null.");
             return;
         }
 
         if (selectedBillItems == null || selectedBillItems.isEmpty()) {
-            System.out.println("No selected bill items.");
             getCurrent().setTotal(0);
             getCurrent().setNetTotal(0);
             return;
@@ -585,9 +567,7 @@ public class SupplierPaymentController implements Serializable {
 
         for (BillItem sbi : selectedBillItems) {
             if (sbi != null) {
-                System.out.println("Processing bill item: " + sbi);
                 calculatedTotal += Math.abs(sbi.getNetValue()); // Ensure positive accumulation
-                System.out.println("Updated calculatedTotal: " + calculatedTotal);
             }
         }
 
@@ -596,9 +576,6 @@ public class SupplierPaymentController implements Serializable {
 
         getCurrent().setTotal(-calculatedTotal); // Keep total negative for cash out
         getCurrent().setNetTotal(-calculatedNetTotal); // Keep net total negative
-
-        System.out.println("Final Total: " + getCurrent().getTotal());
-        System.out.println("Final Net Total: " + getCurrent().getNetTotal());
     }
 
     public void calculateTotalByCurrentBillsBillItems() {
@@ -1025,10 +1002,8 @@ public class SupplierPaymentController implements Serializable {
 
         jpql += " AND (b.paymentApproved = false OR b.paymentApproved IS NULL) "
                 + "AND (b.paymentGenerated = 0 OR b.paymentGenerated IS NULL)";
-
         // Logging
-        System.out.println("JPQL Query: " + jpql);
-        System.out.println("Parameters: " + params);
+
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -1055,10 +1030,8 @@ public class SupplierPaymentController implements Serializable {
 
         jpql += " AND (b.billTypeAtomic IN :bts)";
         params.put("bts", billTypesListBilled);
-
         // Logging
-        System.out.println("JPQL Query: " + jpql);
-        System.out.println("Parameters: " + params);
+
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -1086,8 +1059,6 @@ public class SupplierPaymentController implements Serializable {
         jpql += " AND (b.billTypeAtomic IN :bts)";
         params.put("bts", billTypesListBilled);
 
-        System.out.println("JPQL Query: " + jpql);
-        System.out.println("Parameters: " + params);
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -1116,10 +1087,8 @@ public class SupplierPaymentController implements Serializable {
         params.put("bts", billTypesListBilled);
 
         jpql += " AND (b.paymentApproved = true OR b.paymentApproved = 1 ) ";
-
         // Logging
-        System.out.println("JPQL Query: " + jpql);
-        System.out.println("Parameters: " + params);
+
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -1621,10 +1590,7 @@ public class SupplierPaymentController implements Serializable {
             }
         }
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        System.out.println("bills = " + bills);
         netTotal = bills.stream().mapToDouble(Bill::getNetTotal).sum();
     }
 
@@ -1680,10 +1646,7 @@ public class SupplierPaymentController implements Serializable {
             }
         }
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        System.out.println("bills = " + bills);
         netTotal = bills.stream().mapToDouble(Bill::getNetTotal).sum();
     }
 
@@ -2034,12 +1997,10 @@ public class SupplierPaymentController implements Serializable {
         if (current.isRefunded()) {
             currentReturnBills = billService.fetchReturnBills(current);
             if (currentReturnBills == null || currentReturnBills.isEmpty()) {
-                System.err.println("Error in Bill Return Process. Bill marked as Returned, but no return bills found");
             }
         } else {
             currentReturnBills = billService.fetchReturnBills(current);
             if (currentReturnBills != null && !currentReturnBills.isEmpty()) {
-                System.err.println("Error in Bill Return Process. Bill not marked as Returned, but has return bills.");
             }
         }
         currentSummeryBillItems = createSummeryBillItems(current, currentReturnBills);
@@ -2280,7 +2241,6 @@ public class SupplierPaymentController implements Serializable {
             } else if (supplierPaymentBill.getBackwardReferenceBill() != null) {
                 current = supplierPaymentBill.getBackwardReferenceBill();
             } else {
-                System.out.println("supplierPaymentBill = " + supplierPaymentBill);
                 JsfUtil.addErrorMessage("Not a supplier bill");
                 return null;
             }
@@ -2336,7 +2296,6 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public String navigateToPrepareSupplierPaymentForAllSelectedBills() {
-        System.out.println("selectedBills = " + selectedBills);
         if (selectedBills == null) {
             JsfUtil.addErrorMessage("No Bills are Selected");
             return null;
@@ -2347,19 +2306,13 @@ public class SupplierPaymentController implements Serializable {
         }
         Institution payingSupplier = null;
         for (Bill b : getSelectedBills()) {
-            System.out.println("b = " + b);
-            System.out.println("b.getFromInstitution() = " + b.getFromInstitution());
             if (b.getFromInstitution() == null) {
                 JsfUtil.addErrorMessage("One purchase or GRN bill does not have a Supplier. Can not proceed.");
                 return null;
             }
-            System.out.println("payingSupplier = " + payingSupplier);
             if (payingSupplier == null) {
-                System.out.println("setting for null");
                 payingSupplier = b.getFromInstitution();
             } else {
-                System.out.println("payingSupplier = " + payingSupplier);
-                System.out.println("b.getFromInstitution() = " + b.getFromInstitution());
                 if (!payingSupplier.equals(b.getFromInstitution())) {
                     JsfUtil.addErrorMessage("Can not settle purchase or GRN bills from more than one supplier at once.");
                     return null;
@@ -2600,7 +2553,6 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void settleGenerateSupplierPayment() {
-        System.out.println("settlePrepairingSupplierPayment");
         if (errorCheckForPaymentPreperationBill()) {
             return;
         }
@@ -2627,9 +2579,7 @@ public class SupplierPaymentController implements Serializable {
         } else {
             getBillFacade().edit(getCurrent());
         }
-        System.out.println("deptId = " + deptId);
         for (BillItem bi : selectedBillItems) {
-            System.out.println("bi = " + bi);
             bi.setBill(getCurrent());
             if (bi.getId() == null) {
                 bi.setCreatedAt(new Date());
@@ -2665,7 +2615,6 @@ public class SupplierPaymentController implements Serializable {
     }
 
     private void saveBillItem() {
-        System.out.println("save bill item");
         for (BillItem tmp : getBillItems()) {
             tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());
@@ -2725,19 +2674,13 @@ public class SupplierPaymentController implements Serializable {
     }
 
     private void updateReferenceBill(BillItem tmp) {
-        System.out.println("updateReferenceBill");
-        System.out.println("tmp = " + tmp);
         double dbl = getCreditBean().getPaidAmount(tmp.getReferenceBill(), BillType.GrnPaymentPre);
-        System.out.println("dbl = " + dbl);
         dbl = Math.abs(dbl);
         tmp.getReferenceBill().setPaidAmount(0 - dbl);
         getBillFacade().edit(tmp.getReferenceBill());
     }
 
     public void saveBillFee(BillItem bi, Payment p) {
-        System.out.println("saveBillFee = ");
-        System.out.println("bi = " + bi);
-        System.out.println("p = " + p);
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());
         bf.setCreater(getSessionController().getLoggedUser());
