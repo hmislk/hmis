@@ -30,7 +30,7 @@
                                             class="w-100" inputStyleClass="w-100">
 
                                 </p:calendar>
-                                
+
                                 <p:separator></p:separator>
 
                                 <p:commandButton 
@@ -78,17 +78,22 @@
                             </div>
                             <div class="col-10">
                                 <p:dataTable 
+                                    id="tbl"
                                     value="#{supplierPaymentController.bills}"
                                     var="b"
                                     rowKey="#{b.id}"
                                     paginator="true" 
                                     selectionMode="multiple"
-                                    selectionRowMode="add"
                                     selectionPageOnly="false"
                                     rows="10"
                                     selection="#{supplierPaymentController.selectedBills}"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15">
+
+                                    <p:ajax event="toggleSelect"  process="tbl" />
+                                    <p:ajax event="rowSelectCheckbox" process="tbl" />
+                                    <p:ajax event="rowUnselectCheckbox"  process="tbl" />
+
 
                                     <p:column selectionBox="true" width="20">
 
@@ -105,6 +110,8 @@
                                     </p:column>
 
                                     <p:column headerText="Supplier" sortBy="#{b.fromInstitution.name}" filterBy="#{b.fromInstitution.name}" filterMatchMode="contains">
+                                        BIll ID #{b.id}<br/>
+                                        From Ins ID #{b.fromInstitution.id}<br/>
                                         <h:outputText value="#{b.fromInstitution.name}" />
                                     </p:column>
 

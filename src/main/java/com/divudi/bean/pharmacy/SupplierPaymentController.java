@@ -63,6 +63,9 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.event.SelectEvent;
+import org.primefaces.event.ToggleSelectEvent;
+import org.primefaces.event.UnselectEvent;
 
 /**
  *
@@ -131,6 +134,7 @@ public class SupplierPaymentController implements Serializable {
     private List<BillItem> currentPaymentBillItems;
     private List<Bill> currentPaymentRefundBills;
     private List<BillItem> currentSummeryBillItems;
+    private Payment currentPayment;
     private double currentSummaryPurchaseTotalValue;
     private double currentSummaryPurchaseReturnTotalValue;
     private double currentSummaryPurchaseNetTotalValue;
@@ -285,6 +289,20 @@ public class SupplierPaymentController implements Serializable {
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Functions">
+    public void onToggleSelect(ToggleSelectEvent event) {
+        selectedBills = (List<Bill>) event.getSelections();
+    }
+
+    public void onRowSelect(SelectEvent event) {
+        Bill selectedBill = (Bill) event.getObject();
+        selectedBills.add(selectedBill);
+    }
+
+    public void onRowUnselect(UnselectEvent event) {
+        Bill unselectedBill = (Bill) event.getObject();
+        selectedBills.remove(unselectedBill);
+    }
+
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     // </editor-fold>  
@@ -2102,11 +2120,12 @@ public class SupplierPaymentController implements Serializable {
 
                     BillItem summaryItem = batchMap.get(batch);
                     summaryItem.getPharmaceuticalBillItem().setQty(
-                            summaryItem.getPharmaceuticalBillItem().getQty() - retPbi.getQty()
+                            Math.abs(summaryItem.getPharmaceuticalBillItem().getQty()) - Math.abs(retPbi.getQty())
                     );
                     summaryItem.getPharmaceuticalBillItem().setFreeQty(
-                            summaryItem.getPharmaceuticalBillItem().getFreeQty() - retPbi.getFreeQty()
+                            Math.abs(summaryItem.getPharmaceuticalBillItem().getFreeQty()) - Math.abs(retPbi.getFreeQty())
                     );
+
                 }
             }
         }
@@ -2232,6 +2251,8 @@ public class SupplierPaymentController implements Serializable {
             return null;
         }
         current = billService.reloadBill(approvedAndSettledPaymentBill);
+        currentPayment = billService.fetchBillPayment(current.getReferenceBill());
+
         if (!current.isPaymentApproved()) {
             JsfUtil.addErrorMessage("Not Approved. Can not complete.");
             return null;
@@ -2315,6 +2336,7 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public String navigateToPrepareSupplierPaymentForAllSelectedBills() {
+        System.out.println("selectedBills = " + selectedBills);
         if (selectedBills == null) {
             JsfUtil.addErrorMessage("No Bills are Selected");
             return null;
@@ -2325,13 +2347,19 @@ public class SupplierPaymentController implements Serializable {
         }
         Institution payingSupplier = null;
         for (Bill b : getSelectedBills()) {
+            System.out.println("b = " + b);
+            System.out.println("b.getFromInstitution() = " + b.getFromInstitution());
             if (b.getFromInstitution() == null) {
                 JsfUtil.addErrorMessage("One purchase or GRN bill does not have a Supplier. Can not proceed.");
                 return null;
             }
+            System.out.println("payingSupplier = " + payingSupplier);
             if (payingSupplier == null) {
+                System.out.println("setting for null");
                 payingSupplier = b.getFromInstitution();
             } else {
+                System.out.println("payingSupplier = " + payingSupplier);
+                System.out.println("b.getFromInstitution() = " + b.getFromInstitution());
                 if (!payingSupplier.equals(b.getFromInstitution())) {
                     JsfUtil.addErrorMessage("Can not settle purchase or GRN bills from more than one supplier at once.");
                     return null;
@@ -2505,7 +2533,11 @@ public class SupplierPaymentController implements Serializable {
             }
         }
 
-        List<Payment> ps = paymentService.createPayment(current, paymentMethodData);
+        current.setReferenceBill(newlyCreatedSupplierPaymentBill);
+        current.setBackwardReferenceBill(newlyCreatedSupplierPaymentBill);
+        billFacade.edit(current);
+
+        List<Payment> ps = paymentService.createPayment(newlyCreatedSupplierPaymentBill, paymentMethodData);
 
 //        saveBillItemBySelectedItems(p);
         newlyCreatedSupplierPaymentBill = billService.reloadBill(newlyCreatedSupplierPaymentBill);
@@ -3194,6 +3226,14 @@ public class SupplierPaymentController implements Serializable {
 
     public void setCurrentSummaryPurchaseNetTotalValue(double currentSummaryPurchaseNetTotalValue) {
         this.currentSummaryPurchaseNetTotalValue = currentSummaryPurchaseNetTotalValue;
+    }
+
+    public Payment getCurrentPayment() {
+        return currentPayment;
+    }
+
+    public void setCurrentPayment(Payment currentPayment) {
+        this.currentPayment = currentPayment;
     }
 
 }
