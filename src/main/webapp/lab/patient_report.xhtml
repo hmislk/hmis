@@ -135,8 +135,8 @@
                         <div class="row">
 
                             <div class="col-5">
-                                
-<!--                            Enter Values                        -->
+
+                                <!--                            Enter Values                        -->
                                 <p:panel header="Enter Values"  
                                          rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology' and patientReportController.currentPatientReport.containValues eq true}" >
                                     <table >
@@ -173,8 +173,8 @@
                                         </ui:repeat>
                                     </table>
                                 </p:panel>
-                                
-<!--                            Calculations                        -->
+
+                                <!--                            Calculations                        -->
                                 <h:panelGroup rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }">
                                     <p:panel class="my-2" header="Calculations " id="tblCals">
                                         <table >               
@@ -206,7 +206,7 @@
 
                                 </h:panelGroup>
 
-<!--                            Flags                               -->
+                                <!--                            Flags                               -->
                                 <p:panel class="my-2" header="Flags" id="tblFlags"
                                          rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containFlags eq true}" 
                                          >
@@ -238,7 +238,7 @@
 
                                 </p:panel>
 
-<!--                            Dynamic Labels                      -->
+                                <!--                            Dynamic Labels                      -->
                                 <p:panel header="Dynamic Labels" rendered="#{patientReportController.currentPatientReport.containDynamicLabels eq true }"  >
                                     <table >
                                         <ui:repeat id="tblDls" 
@@ -271,7 +271,7 @@
                                     </table>
                                 </p:panel>
 
-<!--                            Microbiology                        -->
+                                <!--                            Microbiology                        -->
                                 <p:panel header="Microbiology"    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
                                     <f:view contentType="text/html">
 
@@ -313,7 +313,7 @@
 
                                 </p:panel>
 
-<!--                            Pathology or Haematology Report     -->
+                                <!--                            Pathology or Haematology Report     -->
                                 <p:panel 
                                     class="mb-2"
                                     header="Pathology or Haematology Report"    
@@ -421,7 +421,7 @@
                                     </p:dialog>
                                 </p:panel>
 
-<!--                            Report Details                      -->
+                                <!--                            Report Details                      -->
                                 <p:panel header="Report Details" class="my-2" >
                                     <p:panelGrid columns="2" >
                                         <p:outputLabel for="sampleIDs" value="sampleIDs" ></p:outputLabel>
@@ -635,20 +635,36 @@
                                                         </h:outputLabel>
                                                     </h:panelGroup>
                                                 </ui:repeat>
-                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+<!--                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                                     <h:panelGroup 
 
                                                         layout="block" style="#{prv.investigationItem.cssStyle}; position:absolute;" rendered="#{prv.investigationItem.ixItemType eq 'Image'}" >
                                                         <img style="height: 350px; width: 350px; z-index: 100;" src="#{prv.investigationItem.htmltext}" ></img>
                                                         <p:graphicImage
-                                                            value="#{prv.lobValue}"
+                                                            value="#{prv.baImage}"
                                                             style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block; z-index: 800; " 
                                                             height="#{prv.investigationItem.htPix}"
 
                                                             width="#{prv.investigationItem.wtPix}">
                                                         </p:graphicImage>
                                                     </h:panelGroup>
+                                                </ui:repeat>-->
+
+
+                                                <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv">
+                                                    <h:panelGroup 
+                                                        layout="block"
+                                                        style="#{prv.investigationItem.cssStyle}; position:absolute;"
+                                                        rendered="#{prv.investigationItem.ixItemType eq 'Image'}">
+                                                        <p:graphicImage 
+                                                            cache="false"
+                                                            value="#{byteArrayToStreamContentController.getImageStream(prv.baImage, 'image/BMP')}"
+                                                            style="width: #{prv.investigationItem.wtPix}; overflow: visible; display: block; z-index: 800;"
+                                                            height="#{prv.investigationItem.htPix}"
+                                                            width="#{prv.investigationItem.wtPix}"/>
+                                                    </h:panelGroup>
                                                 </ui:repeat>
+
 
                                             </div>
                                         </h:panelGroup>
@@ -807,7 +823,7 @@
 
                     </p:panel>
 
-                    <p:panel header="Debug" rendered="false">
+                    <p:panel header="Debug" rendered="true">
 
                         <table class="table table-stripped">
 

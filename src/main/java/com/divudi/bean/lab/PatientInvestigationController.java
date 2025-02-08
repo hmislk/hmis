@@ -1545,14 +1545,14 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
-        
+
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
         }
-        
+
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
         Map<Long, PatientInvestigation> samplePtixs = new HashMap<>();
@@ -1611,14 +1611,14 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
-        
+
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
         }
-        
+
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
         Map<Long, PatientInvestigation> receivedPtixs = new HashMap<>();
@@ -3708,23 +3708,22 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void listPatientSamples() {
-        String jpql = "select ps from PatientSample ps"
-                + " where ps.sampleInstitution=:ins "
-                + " and ps.sampledAt between :fd and :td "
+        String jpql = "select ps "
+                + " from PatientSample ps"
+                + " where ps.createdAt between :fd and :td "
                 + " order by ps.id";
         Map m = new HashMap();
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("ins", sessionController.getLoggedUser().getInstitution());
+//        m.put("ins", sessionController.getLoggedUser().getInstitution());
         patientSamples = getPatientSampleFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        /**
-         *
-         * ps.setSampleDepartment(sessionController.getLoggedUser().getDepartment());
-         * ps.setSampleInstitution(sessionController.getLoggedUser().getInstitution());
-         * ps.setSampledAt(ps.getCreatedAt());
-         * ps.setSampleCollecter(ps.getCreater());
-         */
+    }
 
+    public String navigateToEditPatientSample() {
+        if (currentPatientSample == null) {
+            return null;
+        }
+        return "/lab/patient_sample?faces-redirect=true;";
     }
 
     public void prepareSampleCollectionByRequest() {
