@@ -8,7 +8,8 @@
       xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:ezcommon="http://java.sun.com/jsf/composite/ezcomp/common"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
-      >
+
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml" >
 
@@ -635,9 +636,8 @@
                                                         </h:outputLabel>
                                                     </h:panelGroup>
                                                 </ui:repeat>
-<!--                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                                     <h:panelGroup 
-
                                                         layout="block" style="#{prv.investigationItem.cssStyle}; position:absolute;" rendered="#{prv.investigationItem.ixItemType eq 'Image'}" >
                                                         <img style="height: 350px; width: 350px; z-index: 100;" src="#{prv.investigationItem.htmltext}" ></img>
                                                         <p:graphicImage
@@ -648,22 +648,26 @@
                                                             width="#{prv.investigationItem.wtPix}">
                                                         </p:graphicImage>
                                                     </h:panelGroup>
-                                                </ui:repeat>-->
-
-
+                                                </ui:repeat>
                                                 <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv">
                                                     <h:panelGroup 
                                                         layout="block"
                                                         style="#{prv.investigationItem.cssStyle}; position:absolute;"
-                                                        rendered="#{prv.investigationItem.ixItemType eq 'Image'}">
+                                                        rendered="#{prv.investigationItem.ixItemType eq 'ReportImage'}">
                                                         <p:graphicImage 
                                                             cache="false"
-                                                            value="#{byteArrayToStreamContentController.getImageStream(prv.baImage, 'image/BMP')}"
+                                                            value="#{byteArrayToStreamContentController.imageById}"
                                                             style="width: #{prv.investigationItem.wtPix}; overflow: visible; display: block; z-index: 800;"
                                                             height="#{prv.investigationItem.htPix}"
-                                                            width="#{prv.investigationItem.wtPix}"/>
+                                                            width="#{prv.investigationItem.wtPix}">
+                                                            <f:param name="id" value="#{prv.id}" />
+                                                        </p:graphicImage>
                                                     </h:panelGroup>
                                                 </ui:repeat>
+
+
+
+
 
 
                                             </div>

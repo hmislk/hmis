@@ -1034,7 +1034,7 @@ public class LimsMiddlewareController {
                     System.out.println("priv.getInvestigationItem()  = " + priv.getInvestigationItem());
 
                     if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null
-                            && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Image) {
+                            && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.ReportImage) {
                         
                         System.out.println("image found");
 
