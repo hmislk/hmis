@@ -5395,16 +5395,13 @@ public class PatientInvestigationController implements Serializable {
                             }
                         }
                     }
-
                     if (ixi.getTube() == null) {
                         InvestigationTube it = investigationTubeController.findAndCreateInvestigationTubeByName("Plain Tube");
                         ixi.setTube(it);
                     }
-
                     if (ixi.getSampleComponent() == null) {
                         ixi.setSampleComponent(ixSampleComponant);
                     }
-
                     j = "select ps "
                             + " from PatientSample ps "
                             + " where ps.tube=:tube "
