@@ -1354,6 +1354,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void generateBarcodesForSelectedBill(Bill billForBarcode) {
+        System.out.println("generateBarcodesForSelectedBill");
         selectedBillBarcodes = new ArrayList<>();
         billBarcodes = new ArrayList<>();
         if (billForBarcode == null) {
@@ -5325,6 +5326,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientSample> prepareSampleCollectionByBillsForPhlebotomyRoom(Bill barcodeBill, WebUser wu) {
+        System.out.println("prepareSampleCollectionByBillsForPhlebotomyRoom");
         String j;
         Map m;
         Map<Long, PatientSample> rPatientSamplesMap = new HashMap<>();
@@ -5341,12 +5343,14 @@ public class PatientInvestigationController implements Serializable {
         }
 
         for (PatientInvestigation ptix : pis) {
+            System.out.println("ptix = " + ptix);
             Investigation ix = ptix.getInvestigation();
             if (ix.getReportedAs() != null) {
                 if (ix.getReportedAs() instanceof Investigation) {
                     ix = (Investigation) ix.getReportedAs();
                 }
             }
+            System.out.println("ix = " + ix);
             if (ix == null) {
                 continue;
             }
@@ -5362,7 +5366,7 @@ public class PatientInvestigationController implements Serializable {
             List<InvestigationItem> ixis = getIvestigationItemsForInvestigation(ix);
 
             Item ixSampleComponant = itemController.addSampleComponent(ix);
-
+            System.out.println("ixSampleComponant = " + ixSampleComponant);
             if (ixis == null || ixis.isEmpty()) {
                 InvestigationItem ixi = new InvestigationItem();
                 ixi.setRiTop(46);
@@ -5687,6 +5691,8 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<InvestigationItem> getIvestigationItemsForInvestigation(Investigation ix) {
+        System.out.println("getIvestigationItemsForInvestigation");
+        System.out.println("ix = " + ix);
         List<InvestigationItem> iis;
         if (ix == null) {
             return new ArrayList<>();
