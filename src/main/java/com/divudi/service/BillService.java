@@ -1,6 +1,9 @@
 package com.divudi.service;
 
+import com.divudi.data.BillCategory;
 import com.divudi.data.BillTypeAtomic;
+import static com.divudi.data.BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
+import static com.divudi.data.BillTypeAtomic.PHARMACY_GRN;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Agent;
@@ -30,6 +33,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -65,12 +69,16 @@ public class BillService {
     @Deprecated //Please use payment service > createPaymentMethod
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData) {
         List<Payment> ps = new ArrayList<>();
+
         if (paymentMethodData == null) {
+            PaymentMethod npm;
             if (bill.getPaymentMethod() == null) {
-                return null;
+                npm = Cash;
             }
             if (bill.getPaymentMethod() == MultiplePaymentMethods) {
-                return null;
+                npm = Cash;
+            } else {
+                npm = bill.getPaymentMethod();
             }
             Payment p = new Payment();
             p.setBill(bill);
@@ -579,6 +587,17 @@ public class BillService {
             Department department,
             WebUser webUser,
             List<BillTypeAtomic> billTypeAtomics) {
+        return fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null);
+    }
+
+    public List<Bill> fetchBills(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType) {
         String jpql;
         Map params = new HashMap();
 
@@ -606,6 +625,11 @@ public class BillService {
         if (department != null) {
             jpql += " and b.department=:dep ";
             params.put("dep", department);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
         }
 
         jpql += " order by b.createdAt desc  ";
@@ -742,6 +766,80 @@ public class BillService {
         System.out.println("params = " + params);
         List<BillItem> fetchedBillItems = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         System.out.println("fetchedBillItems = " + fetchedBillItems.size());
+        return fetchedBillItems;
+    }
+
+    public List<Bill> fetchReturnBills(Bill inputBill) {
+        String jpql;
+        if (inputBill == null) {
+            return null;
+        }
+        if (inputBill.getBillTypeAtomic() == null) {
+            return null;
+        }
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        switch (inputBill.getBillTypeAtomic()) {
+            case PHARMACY_GRN:
+                btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+                break;
+            case PHARMACY_DIRECT_PURCHASE:
+                btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+                break;
+            default:
+                btas.addAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
+        }
+        //
+        Map params = new HashMap();
+        jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and (b.billedBill=:bill or b.referenceBill=:bill) "
+                + " and b.billTypeAtomic in :btas ";
+        jpql += " order by b.createdAt";
+        params.put("ret", false);
+        params.put("btas", btas);
+        params.put("bill", inputBill);
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return fetchedBills;
+    }
+
+    public List<BillItem> fetchPaymentBillItems(Bill inputBill) {
+        String jpql;
+        if (inputBill == null) {
+            return null;
+        }
+        if (inputBill.getBillTypeAtomic() == null) {
+            return null;
+        }
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        switch (inputBill.getBillTypeAtomic()) {
+            case PHARMACY_GRN:
+            case PHARMACY_DIRECT_PURCHASE:
+                btas.add(BillTypeAtomic.SUPPLIER_PAYMENT);
+                btas.add(BillTypeAtomic.SUPPLIER_PAYMENT_CANCELLED);
+                btas.add(BillTypeAtomic.SUPPLIER_PAYMENT_RETURNED);
+                break;
+            default:
+                btas.addAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
+        }
+        //
+        Map params = new HashMap();
+        jpql = "select bi "
+                + " from BillItem bi"
+                + " join bi.bill b "
+                + " where b.retired=:ret "
+                + " and bi.referenceBill = :bill "
+                + " and b.billTypeAtomic in :btas ";
+        jpql += " order by b.createdAt";
+        params.put("ret", false);
+        params.put("btas", btas);
+        params.put("bill", inputBill);
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        List<BillItem> fetchedBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("fetchedBillItems = " + fetchedBillItems);
         return fetchedBillItems;
     }
 

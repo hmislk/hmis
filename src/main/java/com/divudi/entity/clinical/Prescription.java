@@ -97,6 +97,7 @@ public class Prescription implements Serializable {
     private WebUser editer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
+    private String comment;
 
     public String getFormattedPrescription() {
         DecimalFormat df = new DecimalFormat("#.##"); // Formats the number to avoid unnecessary decimal places
@@ -419,6 +420,14 @@ public class Prescription implements Serializable {
 
     public void setIndoor(boolean indoor) {
         this.indoor = indoor;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
 }

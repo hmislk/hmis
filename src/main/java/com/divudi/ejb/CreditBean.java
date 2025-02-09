@@ -17,6 +17,7 @@ import com.divudi.facade.PatientEncounterFacade;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -222,7 +223,7 @@ public class CreditBean {
     }
 
     public List<PatientEncounter> getCreditPatientEncounter(Institution institution, Date fromDate, Date toDate, PaymentMethod paymentMethod, boolean lessThan,
-                                                            Institution institutionOfDepartment, Department department, Institution site) {
+            Institution institutionOfDepartment, Department department, Institution site) {
         String sql;
         HashMap hm = new HashMap();
 
@@ -292,7 +293,7 @@ public class CreditBean {
     }
 
     public List<Institution> getCreditCompanyFromBht(boolean lessThan, PaymentMethod paymentMethod,
-                                                     Institution institutionOfDepartment, Department department, Institution site) {
+            Institution institutionOfDepartment, Department department, Institution site) {
         String sql;
         HashMap hm;
         sql = "Select distinct(b.creditCompany) "
@@ -366,9 +367,8 @@ public class CreditBean {
         return setIns;
     }
 
-
     public List<Institution> getCreditInstitutionByPatientEncounter(Date fromDate, Date toDate, PaymentMethod paymentMethod, boolean lessThan,
-                                                                    Institution institution, Department department, Institution site) {
+            Institution institution, Department department, Institution site) {
         String sql;
         HashMap<String, Object> hm = new HashMap<>();
         sql = "Select distinct(b.creditCompany)"
@@ -413,14 +413,42 @@ public class CreditBean {
     }
 
     public double getPaidAmount(Bill b, BillType billType) {
-        String sql = "Select sum(b.netValue) From BillItem b "
-                + " where b.retired=false "
-                + " and b.referenceBill=:rB "
-                + " and b.bill.billType=:btp ";
-        HashMap hm = new HashMap();
-        hm.put("rB", b);
-        hm.put("btp", billType);
-        return getBillItemFacade().findDoubleByJpql(sql, hm);
+        return getPaidAmount(b, Collections.singletonList(billType)); // Calls the overloaded method
+    }
+
+    public double getPaidAmount(Bill b, List<BillType> billTypes) {
+        if (b == null || billTypes == null || billTypes.isEmpty()) {
+            return 0.0; // Return zero if no valid data
+        }
+
+        String sql = "SELECT SUM(b.netValue) FROM BillItem b "
+                + "WHERE b.retired=false "
+                + "AND b.referenceBill=:rB "
+                + "AND b.bill.billType IN :btps";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("rB", b);
+        params.put("btps", billTypes);
+
+        return getBillItemFacade().findDoubleByJpql(sql, params);
+    }
+    
+    public double getPaidAmountByBillTypeAtomic(Bill b, BillTypeAtomic billType) {
+        return getPaidAmountByBillTypeAtomic(b, Collections.singletonList(billType)); // Calls the overloaded method
+    }
+
+    public double getPaidAmountByBillTypeAtomic(Bill b, List<BillTypeAtomic> billTypes) {
+        if (b == null || billTypes == null || billTypes.isEmpty()) {
+            return 0.0; // Return zero if no valid data
+        }
+        String sql = "SELECT SUM(b.netValue) FROM BillItem b "
+                + "WHERE b.retired=false "
+                + "AND b.referenceBill=:rB "
+                + "AND b.bill.billTypeAtomic IN :btps";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("rB", b);
+        params.put("btps", billTypes);
+        return getBillItemFacade().findDoubleByJpql(sql, params);
     }
 
     public double getTotalCreditSettledAmount(Bill b) {
@@ -827,7 +855,7 @@ public class CreditBean {
     }
 
     public List<PatientEncounter> getCreditPatientEncounters(Institution institution, boolean lessThan, PaymentMethod paymentMethod,
-                                                             Institution institutionOfDepartment, Department department, Institution site) {
+            Institution institutionOfDepartment, Department department, Institution site) {
         String sql;
         HashMap hm = new HashMap();
         sql = "Select b From PatientEncounter b "

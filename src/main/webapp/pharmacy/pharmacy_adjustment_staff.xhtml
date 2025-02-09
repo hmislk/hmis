@@ -45,6 +45,9 @@
                                                 <p:column headerText="Staff">
                                                     <h:outputLabel value="#{i.staff.person.name}" ></h:outputLabel>
                                                 </p:column>
+                                                <p:column headerText="Staff Code">
+                                                    <h:outputLabel value="#{i.staff.code}" ></h:outputLabel>
+                                                </p:column>
                                                 <p:column headerText="Item">
                                                     <h:outputLabel value="#{i.itemBatch.item.name}" style="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
                                                                             commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}" ></h:outputLabel>

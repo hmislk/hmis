@@ -17,11 +17,11 @@
                     <h:form  >
                         <p:panel rendered="#{!supplierPaymentController.printPreview}" >
                             <f:facet name="header" >
-                                <h:outputLabel value="Prepare Supplier Payment" ></h:outputLabel>
+                                <h:outputLabel value="Supplier Payment" ></h:outputLabel>
                                 <p:commandButton
                                     id="btnSettle" 
-                                    value="Complete Preperation"
-                                    action="#{supplierPaymentController.settlePrepairingSupplierPayment}"
+                                    value="Settle"
+                                    action="#{supplierPaymentController.settleSupplierPayment()}"
                                     ajax="false" 
                                     class="me-5"
                                     style="float: right">
@@ -34,20 +34,15 @@
                                 <h:outputLabel value="#{supplierPaymentController.current.toInstitution.name}" />
 
                                 <h:outputLabel value="Payment Method" />
-                                <p:selectOneMenu 
-                                    id="cmbPs" 
-                                    required="true"
-                                    requiredMessage="You must select a payment method to approve"
-                                    value="#{supplierPaymentController.current.paymentMethod}">                                                                     
-                                    <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
+                                <p:selectOneMenu id="cmbPs" value="#{supplierPaymentController.current.paymentMethod}">                                                                     
                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
-<!--                                    <p:ajax 
+                                    <p:ajax 
                                         process="cmbPs"
                                         update="gpPaymentMethodDetails" 
-                                        event="change" />-->
+                                        event="change" />
                                 </p:selectOneMenu>
 
-<!--                                <h:outputLabel value="Payment Details" />
+                                <h:outputLabel value="Payment Details" />
                                 <h:panelGroup id="gpPaymentMethodDetails" >
                                     <h:panelGroup id="creditCard" style="display: #{supplierPaymentController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                         <pa:creditCard paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
@@ -60,42 +55,39 @@
                                     <h:panelGroup id="slip" style="display: #{supplierPaymentController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
                                         <pa:slip paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                     </h:panelGroup>
-                                </h:panelGroup>-->
+                                </h:panelGroup>
 
                                 <p:outputLabel value="Total" />
                                 <p:inputText
+                                    id="lblTotal"
                                     readonly="true"
                                     class="text-end"
-                                    id="lblTotal"
                                     value="#{supplierPaymentController.current.total}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
 
                                 <p:outputLabel value="Discount" />
                                 <p:inputText 
-                                    id="txtDiscount"  
-                                    onfocus="this.select();"
+                                    id="txtDiscount"
                                     class="text-end"
+                                    onfocus="this.select();"
                                     value="#{supplierPaymentController.current.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                    <f:ajax 
-                                        event="blur" 
-                                        execute="@this" 
-                                        render="@all" 
-                                        listener="#{supplierPaymentController.changeDiscountListenerForPaymentPreperation}"/>
+                                    <p:ajax process="txtDiscount" update="lblNetTotal" listener="#{supplierPaymentController.calculateTotalBySelectedBillItems()}" ></p:ajax>
                                 </p:inputText>
 
                                 <p:outputLabel value="Net Total" />
                                 <p:inputText 
-                                    id="lblNetTotal"
-                                    class="text-end"
+                                    id="lblNetTotal" 
                                     readonly="true"
+                                    class="text-end"
                                     value="#{supplierPaymentController.current.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
 
-                                <p:outputLabel value="Description"/>
-                                <p:inputTextarea
+                                <p:outputLabel 
+                                    value="Description"/>
+                                <p:inputTextarea 
                                     class="w-100"
                                     value="#{supplierPaymentController.current.comments}"/>                                                         
 
@@ -104,7 +96,7 @@
                             </p:panelGrid>
 
                             <p:dataTable  
-                                value="#{supplierPaymentController.billItems}"
+                                value="#{supplierPaymentController.selectedBillItems}"
                                 var="b" 
                                 id="itms" rowKey="#{b.searialNo}" >
                                 <p:column >  
@@ -140,13 +132,8 @@
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Paying Amount">
-                                    <p:inputText 
-                                        class="w-100 text-end"
-                                        autocomplete="off"
-                                        onfocus="this.select();"
-                                        value="#{b.netValue}">    
+                                    <p:inputText autocomplete="off" value="#{b.netValue}">    
                                         <f:convertNumber pattern="#,##0.00" />
-
                                         <f:ajax 
                                             event="blur" 
                                             execute="@this" 
@@ -172,7 +159,8 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:panel   id="gpBillPreview">
-                                <bi:supplier_payment_preperation bill="#{supplierPaymentController.current}" billController="#{supplierPaymentController}" dup="false"/>
+                                <bi:grn_payment billItems="#{supplierPaymentController.current.billItems}" bill="#{supplierPaymentController.current}"/>
+                                <!--<bi:grnCheque bill="#{supplierPaymentController.current}" billController="#{supplierPaymentController}" dup="false"/>-->
                             </p:panel>
                         </p:panel>
                     </h:form>

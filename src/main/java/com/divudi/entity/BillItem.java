@@ -8,6 +8,7 @@ import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.Priority;
+import com.divudi.entity.clinical.Prescription;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -63,6 +64,8 @@ public class BillItem implements Serializable, RetirableEntity {
     @ManyToOne
     PriceMatrix priceMatrix;
     double remainingQty;
+    @OneToOne
+    private Prescription prescription;
 
     double Rate;
     double discountRate;
@@ -1082,6 +1085,17 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setInstructions(String instructions) {
         this.instructions = instructions;
+    }
+
+    public Prescription getPrescription() {
+        if(prescription == null){
+            prescription = new Prescription();
+        }
+        return prescription;
+    }
+
+    public void setPrescription(Prescription prescription) {
+        this.prescription = prescription;
     }
     
     

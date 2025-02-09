@@ -58,6 +58,7 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.PatientDeposit;
+import com.divudi.entity.inward.PatientRoom;
 import com.divudi.java.CommonFunctions;
 import com.google.protobuf.Descriptors;
 import java.io.ByteArrayInputStream;
@@ -854,6 +855,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         admissionController.setCurrent(ad);
         admissionController.setPrintPreview(false);
+        admissionController.setAdmittingProcessStarted(false);
+        admissionController.setPatientRoom(new PatientRoom());
         return "/inward/inward_admission?faces-redirect=true;";
 
     }
