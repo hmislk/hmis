@@ -200,6 +200,14 @@
                                             <p:commandButton class="w-100" ajax="false" value="Import from Excel With Stock with barcode" icon="fa fa-barcode" action="#{pharmacyController.navigateToItemImportByBarcode()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Import from Excel With Stock with name" icon="fa fa-tags" action="#{pharmacyController.navigateToItemImportStocksByName()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Purchase Opening Stock" icon="fa fa-truck-loading" action="#{pharmacyController.navigateToPurchaseOpeningStock()}" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}" actionListener="#{pharmacyPurchaseController.makeNull()}" />
+                                            
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="Import Bills from Excel" 
+                                                icon="fa fa-boxes"
+                                                action="#{pharmacyBillSearch.navigateToImportBillsFromJson()}" />
+                                            
                                             <p:commandButton class="w-100" ajax="false" value="Fix Categories from Excel" icon="fa fa-sitemap" action="#{pharmacyController.navigateToImporterCategory()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Fix Codes and Barcodes" icon="fa fa-barcode" action="#{pharmacyController.navigateToItemImportBarcode()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Error Correction" icon="fa fa-tools" action="#{pharmacyController.navigateToErrorCorrection()}" />

@@ -27,7 +27,6 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
 import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
@@ -49,6 +48,9 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.StockBill;
 import com.divudi.java.CommonFunctions;
+import com.divudi.service.BillService;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -63,10 +65,15 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.primefaces.event.RowEditEvent;
+import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.LazyDataModel;
+import org.primefaces.model.StreamedContent;
+import org.primefaces.model.file.UploadedFile;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
 
 /**
  *
@@ -79,6 +86,8 @@ public class PharmacyBillSearch implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private StaffService staffBean;
+    @EJB
+    BillService billService;
     @EJB
     private BillFeeFacade billFeeFacade;
     @EJB
@@ -103,6 +112,8 @@ public class PharmacyBillSearch implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
+    GrnController grnController;
+    @Inject
     private WebUserController webUserController;
     @Inject
     InwardBeanController inwardBean;
@@ -117,6 +128,7 @@ public class PharmacyBillSearch implements Serializable {
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private CommonFunctions commonFunctions;
+    private UploadedFile file;
     private boolean printPreview = false;
     private double refundAmount;
     private String txtSearch;
@@ -150,6 +162,10 @@ public class PharmacyBillSearch implements Serializable {
             return null;
         }
         return "/inward/pharmacy_cancel_bill_retail_bht?faces-redirect=true";
+    }
+
+    public String navigateToImportBillsFromJson() {
+        return "/pharmacy/admin/import_bill?faces-redirect=true";
     }
 
     public String navigateToCancelPharmacyRetailSale() {
@@ -198,6 +214,22 @@ public class PharmacyBillSearch implements Serializable {
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Functions">
+    public StreamedContent exportAsJson() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return null;
+        }
+
+        String json = billService.convertBillToJson(bill);
+        InputStream stream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+
+        return DefaultStreamedContent.builder()
+                .name("bill_" + bill.getDeptId() + ".json")
+                .contentType("application/json")
+                .stream(() -> stream)
+                .build();
+    }
+
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     // </editor-fold>  
@@ -1709,7 +1741,6 @@ public class PharmacyBillSearch implements Serializable {
 //            setBillFeePaymentAndPayment(bf, p);
 //        }
 //    }
-
 //    public void setBillFeePaymentAndPayment(BillFee bf, Payment p) {
 //        BillFeePayment bfp = new BillFeePayment();
 //        bfp.setBillFee(bf);
@@ -1724,7 +1755,6 @@ public class PharmacyBillSearch implements Serializable {
 //        bfp.setPayment(p);
 //        getBillFeePaymentFacade().create(bfp);
 //    }
-
     private void pharmacyCancelReturnBillItems(Bill can) {
         for (PharmaceuticalBillItem nB : getPharmacyBillItems()) {
             BillItem b = new BillItem();
@@ -3383,6 +3413,40 @@ public class PharmacyBillSearch implements Serializable {
         return searchRetaiBills;
     }
 
+    public String importBill() {
+        if (file == null || file.getSize() == 0) {
+            JsfUtil.addErrorMessage("No JSON file selected.");
+            return null;
+        }
+
+        String jsonString;
+        try {
+            jsonString = new Scanner(file.getInputStream(), StandardCharsets.UTF_8)
+                    .useDelimiter("\\A").next();
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error reading file: " + e.getMessage());
+            return null;
+        }
+
+        bill = billService.convertJsonToBill(jsonString);
+        if (bill == null || bill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("Invalid JSON structure.");
+            return null;
+        }
+
+        switch (bill.getBillTypeAtomic()) {
+            case PHARMACY_GRN:
+                return importGrnBill(bill);
+            default:
+                JsfUtil.addErrorMessage("Bill Type does NOT support import.");
+                return null;
+        }
+    }
+
+    public String importGrnBill(Bill importGrnBill) {
+        return grnController.navigateToResiveFromImportGrn(importGrnBill);
+    }
+
     public void setSearchRetaiBills(List<Bill> searchRetaiBills) {
         this.searchRetaiBills = searchRetaiBills;
     }
@@ -3420,6 +3484,14 @@ public class PharmacyBillSearch implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public UploadedFile getFile() {
+        return file;
+    }
+
+    public void setFile(UploadedFile file) {
+        this.file = file;
     }
 
 }
