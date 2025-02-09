@@ -1,4 +1,5 @@
 select `ID`, 
+`CREATEDAT`,
 `COMPLETED`,
 `BILLEDBILL_ID`,
 `REFERENCEBILL_ID`,
@@ -8,7 +9,6 @@ select `ID`,
 `BILLTYPEATOMIC`, 
 `REFERENCENUMBER`,
 `PAIDAMOUNT`, 
-`SETTLEDAMOUNTBYPATIENT`, `SETTLEDAMOUNTBYSPONSOR`, `PAIDAT`,
 `DEPTID`, 
 `COMMENTS`,
  `CREATEDAT`,
@@ -27,4 +27,4 @@ select `ID`,
 `CREDITCOMPANY_ID`
 from bill 
 order by `ID` desc limit 10;
-select * from billnumber limit 100;
+

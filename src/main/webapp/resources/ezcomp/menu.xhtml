@@ -1634,6 +1634,12 @@
                     </p:menuitem>
                     <p:menuitem  
                         ajax="false"  
+                        action="#{membershipController.navigateToMembershipAdministrationIndex()}"  
+                        value="Membership Administration" 
+                        icon="fa fa-bar-chart"
+                        rendered="#{webUserController.hasPrivilege('MembershipAdministration')}" ></p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
                         action="#{dataAdministrationController.navigateToAdminDataAdministration()}" 
                         value="Manage Data, Workflows &amp; Templates " 
                         icon="fa fa-database"
