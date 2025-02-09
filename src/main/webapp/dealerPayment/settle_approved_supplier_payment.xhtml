@@ -85,12 +85,39 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
 
+                                <p:outputLabel value="Payment Creation"/>
+                                <h:panelGroup>
+                                    <h:outputText value="Created by " />
+                                    <h:outputText value="#{supplierPaymentController.current.creater.webUserPerson.name}" />
+                                    <h:outputText value=" at " />
+                                    <h:outputText value="#{supplierPaymentController.current.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                    <br/>
+                                    <h:outputText value="Comments: " />
+                                    <h:outputText value="#{supplierPaymentController.current.comments}" />
+                                </h:panelGroup>
+
+
+                                <p:outputLabel value="Payment Approval"/>
+                                <h:panelGroup>
+                                    <h:outputText value="Approved by " />
+                                    <h:outputText value="#{supplierPaymentController.current.paymentApprovedBy.webUserPerson.name}" />
+                                    <h:outputText value=" at " />
+                                    <h:outputText value="#{supplierPaymentController.current.paymentApprovedAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                    <br/>
+                                    <h:outputText value="Comments: " />
+                                    <h:outputText value="#{supplierPaymentController.current.paymentApprovalComments}" />
+                                </h:panelGroup>                                                       
+
+
                                 <p:outputLabel 
-                                    value="Description"/>
+                                    value="Settling Comments"/>
                                 <p:inputTextarea 
                                     class="w-100"
-                                    value="#{supplierPaymentController.current.comments}"/>                                                         
-
+                                    value="#{supplierPaymentController.current.paymentGenerationComments}"/>  
 
 
                             </p:panelGrid>
@@ -137,19 +164,19 @@
                                     </p:outputLabel>
                                 </p:column>
 
-                                
+
                             </p:dataTable>
 
 
                         </p:panel>
 
                         <p:panel rendered="#{supplierPaymentController.printPreview}">                                
-                            <p:commandButton value="Print" ajax="false" action="#" >
-                                <p:printer target="gpBillPreview" ></p:printer>
+                            <p:commandButton value="Print" ajax="false" icon="pi pi-print" styleClass="ui-button-secondary m-1">
+                                <p:printer target="gpBillPreview"></p:printer>
                             </p:commandButton>
-                            <p:panel   id="gpBillPreview">
-                                <bi:grn_payment billItems="#{supplierPaymentController.current.billItems}" bill="#{supplierPaymentController.current}"/>
-                                <!--<bi:grnCheque bill="#{supplierPaymentController.current}" billController="#{supplierPaymentController}" dup="false"/>-->
+
+                            <p:panel id="gpBillPreview">
+                                <bi:grn_payment_with_pre_bill billItems="#{supplierPaymentController.current.billItems}" bill="#{supplierPaymentController.current}"/>
                             </p:panel>
                         </p:panel>
                     </h:form>
