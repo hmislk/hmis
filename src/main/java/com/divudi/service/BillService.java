@@ -30,13 +30,18 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.inward.AdmissionType;
+import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.InstitutionFacade;
+import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PaymentFacade;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,6 +51,17 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import java.util.*;
+import java.text.SimpleDateFormat;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -56,6 +72,10 @@ import javax.persistence.TemporalType;
 public class BillService {
 
     @EJB
+    DepartmentFacade departmentFacade;
+    @EJB
+    InstitutionFacade institutionFacade;
+    @EJB
     BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
@@ -65,6 +85,10 @@ public class BillService {
     PaymentFacade paymentFacade;
     @EJB
     DrawerService drawerService;
+    @EJB
+    ItemFacade itemFacade;
+
+    private static final Gson gson = new Gson();
 
     @Deprecated //Please use payment service > createPaymentMethod
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData) {
@@ -841,6 +865,168 @@ public class BillService {
         List<BillItem> fetchedBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         System.out.println("fetchedBillItems = " + fetchedBillItems);
         return fetchedBillItems;
+    }
+
+    public String convertBillToJson(Bill bill) {
+        if (bill == null) {
+            return "{}";
+        }
+        if (bill.getBillTypeAtomic() == null) {
+            return "{}";
+        }
+        switch (bill.getBillTypeAtomic()) {
+            case PHARMACY_GRN:
+                return convertPharmacyGrnBillToJson(bill);
+        }
+        return "{}";
+    }
+
+    public String convertPharmacyGrnBillToJson(Bill bill) {
+        if (bill == null) {
+            return "{}";
+        }
+
+        Map<String, Object> billMap = new LinkedHashMap<>();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        // Extract relevant Bill fields
+        billMap.put("billTypeAtomic", bill.getBillTypeAtomic() != null ? bill.getBillTypeAtomic() : null);
+        billMap.put("referenceBill_DeptId", bill.getReferenceBill() != null ? bill.getReferenceBill().getDeptId() : null);
+        billMap.put("deptId", bill.getDeptId());
+        billMap.put("createdAt", dateFormat.format(bill.getCreatedAt()));
+        billMap.put("invoiceNo", bill.getInvoiceNumber());
+        billMap.put("department_id", bill.getDepartment() != null ? bill.getDepartment().getId() : null);
+        billMap.put("supplier_id", bill.getFromInstitution() != null ? bill.getFromInstitution().getId() : null);
+        billMap.put("paymentMethod", bill.getPaymentMethod());
+
+        List<Map<String, Object>> billItemsList = new ArrayList<>();
+        if (bill.getBillItems() != null) {
+            for (BillItem bip : bill.getBillItems()) {
+                Map<String, Object> itemMap = new LinkedHashMap<>();
+                itemMap.put("item_id", bip.getItem().getId());
+                itemMap.put("expiry", bip.getPharmaceuticalBillItem() != null ? dateFormat.format(bip.getPharmaceuticalBillItem().getDoe()) : null);
+                itemMap.put("batchNo", bip.getPharmaceuticalBillItem() != null ? bip.getPharmaceuticalBillItem().getStringValue() : null);
+                itemMap.put("receivedQty", bip.getPharmaceuticalBillItem() != null ? bip.getPharmaceuticalBillItem().getQty() : null);
+                itemMap.put("receivedFreeQty", bip.getPharmaceuticalBillItem() != null ? bip.getPharmaceuticalBillItem().getFreeQty() : null);
+                itemMap.put("purchasePrice", bip.getPharmaceuticalBillItem() != null ? bip.getPharmaceuticalBillItem().getPurchaseRate() : null);
+                itemMap.put("salePrice", bip.getPharmaceuticalBillItem() != null ? bip.getPharmaceuticalBillItem().getRetailRate() : null);
+                itemMap.put("purchaseValue", bip.getPharmaceuticalBillItem() != null ? bip.getPharmaceuticalBillItem().getPurchaseRate() * bip.getPharmaceuticalBillItem().getQty() : null);
+                itemMap.put("saleValue", bip.getPharmaceuticalBillItem() != null ? bip.getPharmaceuticalBillItem().getRetailRate() * bip.getPharmaceuticalBillItem().getQty() : null);
+                billItemsList.add(itemMap);
+            }
+        }
+        billMap.put("billItems", billItemsList);
+
+        // Extract financial details
+        billMap.put("saleValue", bill.getSaleValue());
+        billMap.put("total", bill.getTotal());
+        billMap.put("tax", bill.getTax());
+        billMap.put("discount", bill.getDiscount());
+        billMap.put("netTotal", bill.getNetTotal());
+
+        // Convert to JSON
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(billMap);
+    }
+
+    public Bill convertJsonToBill(String json) {
+        if (json == null || json.trim().isEmpty()) {
+            return null;
+        }
+
+        JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
+        if (!jsonObject.has("billTypeAtomic")) {
+            return null;
+        }
+
+        String billTypeAtomic = jsonObject.get("billTypeAtomic").getAsString();
+        switch (billTypeAtomic) {
+            case "PHARMACY_GRN":
+                return importPharmacyGrnBillFromJson(jsonObject);
+            default:
+                return null;
+        }
+    }
+
+    public Bill importPharmacyGrnBillFromJson(JsonObject jsonObject) {
+        if (jsonObject == null) {
+            return null;
+        }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        Bill bill = new Bill();
+        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
+        bill.setDeptId(jsonObject.has("deptId") ? jsonObject.get("deptId").getAsString() : null);
+        bill.setInvoiceNumber(jsonObject.has("invoiceNo") ? jsonObject.get("invoiceNo").getAsString() : null);
+
+        String paymentMethodString = jsonObject.has("paymentMethod") ? jsonObject.get("paymentMethod").getAsString() : null;
+        PaymentMethod pm = PaymentMethod.valueOf(paymentMethodString);
+        bill.setPaymentMethod(pm);
+
+        if (jsonObject.has("createdAt")) {
+            try {
+                Date createdAt = dateFormat.parse(jsonObject.get("createdAt").getAsString());
+                bill.setCreatedAt(createdAt);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (jsonObject.has("department_id")) {
+            Department department = departmentFacade.find(jsonObject.get("department_id").getAsLong());
+            bill.setDepartment(department);
+        }
+
+        if (jsonObject.has("supplier_id")) {
+            Institution supplier = institutionFacade.find(jsonObject.get("supplier_id").getAsLong());
+            bill.setFromInstitution(supplier);
+        }
+
+        if (jsonObject.has("billItems")) {
+            List<Map<String, Object>> billItemsList = gson.fromJson(jsonObject.get("billItems"), List.class);
+            for (Map<String, Object> itemMap : billItemsList) {
+                BillItem billItem = new BillItem();
+                Item item = itemFacade.find(Long.valueOf(itemMap.get("item_id").toString()));
+                billItem.setItem(item);
+
+                PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
+
+                if (itemMap.get("expiry") != null) {
+                    try {
+                        pharmaceuticalBillItem.setDoe(dateFormat.parse(itemMap.get("expiry").toString()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                pharmaceuticalBillItem.setStringValue((String) itemMap.get("batchNo"));
+                pharmaceuticalBillItem.setQty(Double.parseDouble(itemMap.get("receivedQty").toString()));
+                pharmaceuticalBillItem.setFreeQty(Double.parseDouble(itemMap.get("receivedFreeQty").toString()));
+                pharmaceuticalBillItem.setPurchaseRate(Double.parseDouble(itemMap.get("purchasePrice").toString()));
+                pharmaceuticalBillItem.setRetailRate(Double.parseDouble(itemMap.get("salePrice").toString()));
+
+                bill.getBillItems().add(billItem);
+            }
+        }
+
+        if (jsonObject.has("saleValue")) {
+            bill.setSaleValue(jsonObject.get("saleValue").getAsDouble());
+        }
+        if (jsonObject.has("total")) {
+            bill.setTotal(jsonObject.get("total").getAsDouble());
+        }
+        if (jsonObject.has("tax")) {
+            bill.setTax(jsonObject.get("tax").getAsDouble());
+        }
+        if (jsonObject.has("discount")) {
+            bill.setDiscount(jsonObject.get("discount").getAsDouble());
+        }
+        if (jsonObject.has("netTotal")) {
+            bill.setNetTotal(jsonObject.get("netTotal").getAsDouble());
+        }
+
+        return bill;
     }
 
 }
