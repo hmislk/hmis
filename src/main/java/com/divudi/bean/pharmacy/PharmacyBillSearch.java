@@ -49,6 +49,7 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.StockBill;
 import com.divudi.java.CommonFunctions;
 import com.divudi.service.BillService;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -72,8 +73,10 @@ import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -3420,10 +3423,10 @@ public class PharmacyBillSearch implements Serializable {
         }
 
         String jsonString;
-        try {
-            jsonString = new Scanner(file.getInputStream(), StandardCharsets.UTF_8)
-                    .useDelimiter("\\A").next();
-        } catch (IOException e) {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+            jsonString = reader.lines().collect(Collectors.joining("\n"));
+        } catch (Exception e) {
             JsfUtil.addErrorMessage("Error reading file: " + e.getMessage());
             return null;
         }
@@ -3442,7 +3445,7 @@ public class PharmacyBillSearch implements Serializable {
                 return null;
         }
     }
-
+    
     public String importGrnBill(Bill importGrnBill) {
         return grnController.navigateToResiveFromImportGrn(importGrnBill);
     }
