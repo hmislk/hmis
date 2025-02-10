@@ -559,8 +559,8 @@ public class GrnController implements Serializable {
         if (getGrnBill().getReferenceInstitution() == null) {
             getGrnBill().setReferenceInstitution(getReferenceInstitution());
         }
-        
-        if(getGrnBill().getPaymentMethod()==null){
+
+        if (getGrnBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a payment method");
             return;
         }
@@ -635,10 +635,10 @@ public class GrnController implements Serializable {
         }
 
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_GRN);
- 
+
         getGrnBill().setDeptId(deptId);
         getGrnBill().setInsId(deptId);
-        
+
         getGrnBill().setToInstitution(getApproveBill().getFromInstitution());
         getGrnBill().setToDepartment(getApproveBill().getFromDepartment());
 
@@ -753,13 +753,18 @@ public class GrnController implements Serializable {
         printPreview = true;
 
     }
-    
-    public double calFreeQuantityPurchaseValue(Bill b){
-       double freeTotal = 0.0;
-       for(BillItem bi : b.getBillItems()){
-           freeTotal = freeTotal + (bi.getPharmaceuticalBillItem().getFreeQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
-       }
-       return freeTotal;
+
+    public double calFreeQuantityPurchaseValue(Bill b) {
+
+        double freeTotal = 0.0;
+
+        if (b == null) {
+            return freeTotal;
+        }
+        for (BillItem bi : b.getBillItems()) {
+            freeTotal = freeTotal + (bi.getPharmaceuticalBillItem().getFreeQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
+        }
+        return freeTotal;
     }
 
     private void updateBalanceForGrn(Bill grn) {
@@ -1105,7 +1110,6 @@ public class GrnController implements Serializable {
     public void onEdit(BillItem tmp) {
         setBatch(tmp);
         double remains = getPharmacyCalculation().getRemainingQty(tmp.getPharmaceuticalBillItem());
-
 
         if (remains < tmp.getPharmaceuticalBillItem().getQtyInUnit()) {
             tmp.setTmpQty(remains);
