@@ -32,7 +32,7 @@
                             id="toDate" 
                             inputStyleClass="form-control"
                             value="#{searchController.toDate}" 
-                            navigator="false" 
+                            navigator="true" 
                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                         </p:calendar>
                         <p:commandButton 
@@ -112,7 +112,7 @@
                                     title="Approve Request" 
                                     icon="fas fa-check-circle"
                                     class="ui-button-success m-1"
-                                    disabled="#{p.approveUser ne null or p.cancelled eq true or not webUserController.hasPrivilege('PurchaseOrdersApprovel')}"
+                                    disabled="#{p.approveUser ne null or p.cancelled eq true or not webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}"
                                     action="#{transferRequestController.navigateToApproveRequest()}">
                                     <f:setPropertyActionListener 
                                         target="#{transferRequestController.transerRequestBillPre}"

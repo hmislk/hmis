@@ -484,6 +484,11 @@ public class TransferRequestController implements Serializable {
         getTranserRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
         getBillFacade().edit(getTranserRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
+        try{
+            Thread.sleep(1000);
+        }catch(Exception e){
+            
+        }
         return "/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true";
     }
 

@@ -673,7 +673,7 @@ public class SearchController implements Serializable {
                 + " and bill.institution = :institution "
                 + " and bill.fromDepartment = :fromDepartment "
                 + " and bill.createdAt between :fromDate and :toDate"
-                + " order by bill.createdAt";
+                + " order by bill.createdAt desc";
 
         Map parametersForSearching = new HashMap();
         parametersForSearching.put("billType", BillType.PharmacyTransferRequest);
@@ -682,7 +682,7 @@ public class SearchController implements Serializable {
         parametersForSearching.put("fromDate", getFromDate());
         parametersForSearching.put("toDate", getToDate());
         
-        bills = getBillFacade().findByJpql(sql, parametersForSearching);
+        bills = getBillFacade().findByJpql(sql, parametersForSearching, TemporalType.TIMESTAMP);
 
     }
 
