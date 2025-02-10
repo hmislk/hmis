@@ -84,8 +84,12 @@
                                         <p:commandButton
                                             value="To Settle the Approved Payment" 
                                             action="#{supplierPaymentController.navigateToSettleSupplierPayment(b)}" 
-                                            ajax="false" >
+                                            ajax="false"
+                                            icon="pi pi-check"
+                                            styleClass="ui-button-success">
+                                            <i class="fa fa-money"></i>
                                         </p:commandButton>
+
                                     </p:column>
                                 </p:dataTable>
 
