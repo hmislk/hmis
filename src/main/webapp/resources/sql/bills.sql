@@ -9,7 +9,6 @@ select `ID`,
 `BILLTYPEATOMIC`, 
 `REFERENCENUMBER`,
 `PAIDAMOUNT`, 
-`SETTLEDAMOUNTBYPATIENT`, `SETTLEDAMOUNTBYSPONSOR`, `PAIDAT`,
 `DEPTID`, 
 `COMMENTS`,
  `CREATEDAT`,
@@ -27,5 +26,6 @@ select `ID`,
 `BACKWARDREFERENCEBILL_ID`,
 `CREDITCOMPANY_ID`
 from bill 
+where id in(708428, 669850)
 order by `ID` desc limit 10;
-select * from billnumber limit 100;
+
