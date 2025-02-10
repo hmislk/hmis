@@ -85,11 +85,11 @@
                                 </f:facet>
 
                                 <!-- Serial -->
-                                <p:column headerText="Serial" width="3em">
+<!--                                <p:column headerText="Serial" width="3em">
                                     <h:outputLabel 
                                         value="#{n+1}">
                                     </h:outputLabel>  
-                                </p:column>
+                                </p:column>-->
 
                                 <!-- Bill No Column -->
                                 <p:column headerText="Bill No" sortBy="#{i.deptId}" filterBy="#{i.deptId}" filterMatchMode="contains">
@@ -132,6 +132,20 @@
                                     </h:outputLabel> 
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{reportsTransfer.netTotalValues}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                
+                                <p:column headerText="Sale Value" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Sale Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.saleValue}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>   
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.totalsValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </f:facet>
