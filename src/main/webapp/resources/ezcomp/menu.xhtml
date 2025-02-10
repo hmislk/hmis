@@ -849,7 +849,7 @@
                                     icon="fas fa-hand-holding-medical"></p:menuitem>
 
                         <p:menuitem ajax="false" 
-                                    action="#{searchController.navigateToCreateTransferRequest}"  
+                                    action="/pharmacy/pharmacy_transfer_request_for_approvel"  
                                     value="Create Transer Request" 
                                     actionListener="#{searchController.makeListNull()}" 
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 

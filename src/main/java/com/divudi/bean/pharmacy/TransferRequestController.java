@@ -427,6 +427,8 @@ public class TransferRequestController implements Serializable {
         if (getTranserRequestBillPre().getBillItems().size() != 0) {
             getTranserRequestBillPre().setBillItems(new ArrayList<>());
         }
+        getTranserRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+        
         for (BillItem b : getBillItems()) {
             b.setBill(getTranserRequestBillPre());
             b.setCreatedAt(new Date());
@@ -446,13 +448,12 @@ public class TransferRequestController implements Serializable {
             b.setPharmaceuticalBillItem(tmpPh);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
             getBillItemFacade().edit(b);
-            getTranserRequestBillPre().getBillItems().add(b);
+            //getTranserRequestBillPre().getBillItems().add(b);
         }
         getTranserRequestBillPre().setEditedAt(new Date());
         getTranserRequestBillPre().setEditor(sessionController.getLoggedUser());
         getTranserRequestBillPre().setCheckeAt(new Date());
-        getTranserRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
-        getTranserRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
+        getTranserRequestBillPre().setCheckedBy(sessionController.getLoggedUser()); 
         getBillFacade().edit(getTranserRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
     }

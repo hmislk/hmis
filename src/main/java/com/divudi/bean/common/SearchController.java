@@ -665,6 +665,10 @@ public class SearchController implements Serializable {
 
         grnBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
+    
+    public void fillSavedTranserRequestBills(){
+        
+    }
 
     public String navigateToPatientLabReports() {
         fillPatientLabReports(patient);
