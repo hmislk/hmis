@@ -2074,9 +2074,11 @@ public class PharmacyReportController implements Serializable {
         if (ids == null) {
             return;
         }
+
         if (ids.isEmpty()) {
             return;
         }
+
         for (Long shid : ids) {
             System.out.println("shid = " + shid);
             PharmacyRow pr = new PharmacyRow();
@@ -2089,9 +2091,7 @@ public class PharmacyReportController implements Serializable {
                 stockTotal += stockHx.getStockQty();
                 rows.add(pr);
             }
-
         }
-
     }
 
     public void processClosingStockItemWiseReport() {

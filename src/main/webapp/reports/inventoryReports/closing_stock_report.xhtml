@@ -249,7 +249,7 @@
                                 <h:outputText value="#{f.stockHistory.itemBatch.item.code}"/>
                             </p:column>
                             <p:column headerText="Item Name">
-                                <h:outputText value="#{f.stockHistory.id}"/>
+                                <h:outputText value="#{f.stockHistory.itemBatch.item.name}"/>
                             </p:column>
                             <p:column headerText="UOM">
                                 <h:outputText value="#{f.stockHistory.itemBatch.item.measurementUnit.name}"/>
@@ -306,7 +306,8 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Sale Value">
-                                <h:outputText value="#{f.stockHistory.stockQty * f.stockHistory.itemBatch.retailsaleRate}">
+                                <h:outputText
+                                        value="#{f.stockHistory.stockQty * f.stockHistory.itemBatch.retailsaleRate}">
                                     <f:convertNumber pattern="#,##0.00"/></h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{pharmacyReportController.stockSaleValue}">
