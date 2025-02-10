@@ -987,7 +987,8 @@ public class BillService {
             List<Map<String, Object>> billItemsList = gson.fromJson(jsonObject.get("billItems"), List.class);
             for (Map<String, Object> itemMap : billItemsList) {
                 BillItem billItem = new BillItem();
-                Item item = itemFacade.find(Long.valueOf(itemMap.get("item_id").toString()));
+                Item item = itemFacade.find(((Number) itemMap.get("item_id")).longValue());
+
                 billItem.setItem(item);
 
                 PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
