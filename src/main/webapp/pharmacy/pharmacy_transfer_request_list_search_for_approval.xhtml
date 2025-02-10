@@ -112,20 +112,21 @@
                                     title="Approve Request" 
                                     icon="fas fa-check-circle"
                                     class="ui-button-success m-1"
-                                    disabled="#{p.checkedBy eq null or p.forwardReferenceBill ne null or p.cancelled eq true or not webUserController.hasPrivilege('PurchaseOrdersApprovel')}"
+                                    disabled="#{p.approveUser ne null or p.cancelled eq true or not webUserController.hasPrivilege('PurchaseOrdersApprovel')}"
                                     action="#{transferRequestController.navigateToApproveRequest()}">
                                     <f:setPropertyActionListener 
                                         target="#{transferRequestController.transerRequestBillPre}"
                                         value="#{p}"/>
                                 </p:commandButton>
+                                <p:outputLabel value="#{sessionController.loggedUser}"></p:outputLabel>
                                 <p:commandButton  
                                     class="m-1"  
                                     icon="fa fa-eye"
                                     title="View Bill" 
                                     ajax="false"
                                     action="/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true" 
-                                    disabled="#{p.checkedBy eq null or p.forwardReferenceBill eq null}">
-                                    <f:setPropertyActionListener target="#{transferRequestController.bill}" value="#{p.forwardReferenceBill}"/>
+                                    disabled="#{p.approveUser eq null}">
+                                    <f:setPropertyActionListener target="#{transferRequestController.bill}" value="#{p}"/>
                                     <f:setPropertyActionListener target="#{transferRequestController.printPreview}" value="true"/>
                                 </p:commandButton>
                             </p:column>
