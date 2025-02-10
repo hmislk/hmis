@@ -92,7 +92,7 @@
                                     </h:outputLabel>
                                 </h:panelGroup> 
                             </p:column>  
-                           
+
                             <p:column width="100px" headerText="Action" >
                                 <p:commandButton 
                                     id="edit"
@@ -112,13 +112,13 @@
                                     title="Approve Request" 
                                     icon="fas fa-check-circle"
                                     class="ui-button-success m-1"
-                                    disabled="#{p.approveUser ne null or p.cancelled eq true or not webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}"
+                                    disabled="#{p.approveUser ne null or p.cancelled eq true and not webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}"
                                     action="#{transferRequestController.navigateToApproveRequest()}">
                                     <f:setPropertyActionListener 
                                         target="#{transferRequestController.transerRequestBillPre}"
                                         value="#{p}"/>
                                 </p:commandButton>
-                               
+
                                 <p:commandButton  
                                     class="m-1"  
                                     icon="fa fa-eye"
@@ -131,6 +131,15 @@
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>
+                        <h:outputScript>
+                            window.addEventListener("pageshow", function(event) {
+                            if (event.persisted) { // Detect if the page is loaded from cache (Back button)
+                                
+                                }
+                            });
+                        </h:outputScript>
+
+
                     </div>
                 </div>
 

@@ -157,10 +157,11 @@
                     <div class="col-6">
                         <p:commandButton 
                             value="Back"
-                            icon="fa-arrow-left "
+                            icon="fas fa-arrow-left "
                             style="float: right"
                             class="ui-button-danger mx-auto"
-                            onclick="window.history.back(); return false;"
+                            action ="/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true"
+                            actionListener="#{searchController.fillSavedTranserRequestBills()}"
                             ajax="false" >
                         </p:commandButton>
                     </div>

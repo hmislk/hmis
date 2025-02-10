@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.NotificationController;
+import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.BillClassType;
@@ -422,6 +423,9 @@ public class TransferRequestController implements Serializable {
         setToDepartment(getTranserRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request_save?faces-redirect=true";
     }
+    
+    @Inject
+    private SearchController searchController;
 
     public String navigateToApproveRequest() {
         Bill tranferRequestBillTemp = transerRequestBillPre;
@@ -442,7 +446,7 @@ public class TransferRequestController implements Serializable {
 
     public String finalizeTranserRequest() {
         if (transerRequestBillPre == null) {
-            JsfUtil.addErrorMessage("No Bill");
+            JsfUtil.addErrorMessage("No Bill! Save the Bill First");
             return "";
         }
         if (transerRequestBillPre.getId() == null) {
@@ -484,11 +488,8 @@ public class TransferRequestController implements Serializable {
         getTranserRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
         getBillFacade().edit(getTranserRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
-        try{
-            Thread.sleep(1000);
-        }catch(Exception e){
-            
-        }
+        
+        searchController.fillSavedTranserRequestBills();
         return "/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true";
     }
 
