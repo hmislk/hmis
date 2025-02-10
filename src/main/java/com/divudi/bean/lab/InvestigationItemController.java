@@ -147,7 +147,7 @@ public class InvestigationItemController implements Serializable {
     private String cssPadding;
     private String cssBorder;
     private String customCss;
-    
+
     private CssVerticalAlign cssVerticalAlign;
 
     Double movePercent;
@@ -680,23 +680,22 @@ public class InvestigationItemController implements Serializable {
                 ri.setRiFontSize(fontSize);
                 riFacade.edit(ri);
             }
-            
-            if(cssVerticalAlign!=null){
+
+            if (cssVerticalAlign != null) {
                 ri.setCssVerticalAlign(cssVerticalAlign);
                 riFacade.edit(ri);
             }
-            
-            if(customCss!=null && !customCss.trim().equals("")){
+
+            if (customCss != null && !customCss.trim().equals("")) {
                 ri.setCustomCss(customCss);
                 riFacade.edit(ri);
             }
-            
-            
-            if(cssBorder!=null){
+
+            if (cssBorder != null) {
                 ri.setCssBorder(cssBorder);
                 riFacade.edit(ri);
             }
-            
+
         }
 
         JsfUtil.addSuccessMessage("Update Success");
@@ -1840,7 +1839,7 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
         return "/admin/lims/investigation_format?faces-redirect=true;";
     }
-    
+
     public String toEditInvestigationFormatPastData() {
         if (currentInvestigation == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
@@ -2171,6 +2170,7 @@ public class InvestigationItemController implements Serializable {
         l.add(InvestigationItemType.Barcode);
         l.add(InvestigationItemType.BarcodeVertical);
         l.add(InvestigationItemType.Image);
+        l.add(InvestigationItemType.ReportImage);
 //            Label,
 //    Value,
 //    Calculation,
@@ -2332,8 +2332,6 @@ public class InvestigationItemController implements Serializable {
     public void setIxXml(String ixXml) {
         this.ixXml = ixXml;
     }
-    
-    
 
     private List<InvestigationItem> userChangableItems;
 
@@ -2379,9 +2377,6 @@ public class InvestigationItemController implements Serializable {
     public void setSelectedItemsToChange(List<InvestigationItem> selectedItemsToChange) {
         this.selectedItemsToChange = selectedItemsToChange;
     }
-    
-    
-    
 
     /**
      *
