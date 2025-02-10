@@ -235,7 +235,7 @@
                                          ajax="false"
                                          value="Download"
                                          rendered="#{pharmacyController.reportType eq 'detail'}"
-                                         action="#{pharmacyController.exportGRNDetailReportToExcel()}" />
+                                         action="#{pharmacyController.exportGRNDetailReportToExcel()}"/>
                         <p:commandButton class="ui-button-danger mx-1"
                                          icon="fas fa-file-pdf"
                                          ajax="false"
@@ -290,17 +290,25 @@
                             <p:column headerText="PO Sub Total" width="5em">
                                 <h:outputText value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or
                                                        bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN'?
-                                                       -1 * bill.referenceBill.netTotal: bill.referenceBill.netTotal}"/>
+                                                       -1 * bill.referenceBill.netTotal: bill.referenceBill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{pharmacyController.calculateTotalPOAmount()}"
-                                                  style="font-weight: bold;"/>
+                                                  style="font-weight: bold;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </f:facet>
                             </p:column>
                             <p:column headerText="GRN Sub Total" width="6em">
-                                <h:outputText value="#{bill.netTotal}"/>
+                                <h:outputText value="#{bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{pharmacyController.calculateTotalGrnAmount()}"
-                                                  style="font-weight: bold;"/>
+                                                  style="font-weight: bold;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </f:facet>
                             </p:column>
                         </p:dataTable>
@@ -452,12 +460,16 @@
                                                 <h:outputText value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or
                                                        bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN'?
                                                        -1 * bill.referenceBill.netTotal: bill.referenceBill.netTotal}"
-                                                              style="font-weight: bold;"/>
+                                                              style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
                                             </f:facet>
                                         </p:column>
                                         <p:column>
                                             <f:facet name="header">
-                                                <h:outputText value="#{bill.netTotal}" style="font-weight: bold;"/>
+                                                <h:outputText value="#{bill.netTotal}" style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
                                             </f:facet>
                                         </p:column>
                                     </p:row>
@@ -522,13 +534,19 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column width="10em">
-                                    <h:outputText value="#{billItem.discount}"/>
+                                    <h:outputText value="#{billItem.discount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:column>
                                 <p:column width="10em">
-                                    <h:outputText value="#{billItem.netValue}"/>
+                                    <h:outputText value="#{billItem.netValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:column>
                                 <p:column width="10em">
-                                    <h:outputText value="#{billItem.bill.netTotal}"/>
+                                    <h:outputText value="#{billItem.bill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:column>
                                 <p:column width="10em">
                                     <h:outputText value="-"/>
