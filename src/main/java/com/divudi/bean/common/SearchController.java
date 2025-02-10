@@ -665,9 +665,25 @@ public class SearchController implements Serializable {
 
         grnBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
-    
-    public void fillSavedTranserRequestBills(){
+
+    public void fillSavedTranserRequestBills() {
+        Bill b = new Bill();
+        b.getFromDepartment();
+        String sql = "Select bill from Bill bill where bill.retired =false "
+                + " and bill.billType = :billType "
+                + " and bill.institution = :institution "
+                + " and bill.fromDepartment = :fromDepartment "
+                + " and bill.createdAt between :fromDate and :toDate";
+
+        Map parametersForSearching = new HashMap();
+        parametersForSearching.put("billType", BillType.PharmacyTransferRequest);
+        parametersForSearching.put("institution", sessionController.getInstitution());
+        parametersForSearching.put("fromDepartment", sessionController.getDepartment());
+        parametersForSearching.put("fromDate", getFromDate());
+        parametersForSearching.put("toDate", getToDate());
         
+        bills = getBillFacade().findByJpql(sql, parametersForSearching);
+
     }
 
     public String navigateToPatientLabReports() {
@@ -4538,17 +4554,16 @@ public class SearchController implements Serializable {
         m.put("bType", btp);
         m.put("ins", getSessionController().getInstitution());
         m.put("class", PreBill.class);
-       
 
         sql = "select bi from BillItem bi"
                 + " where  type(bi.bill)=:class "
                 + " and bi.bill.institution=:ins"
                 + " and bi.bill.billType=:bType and "
                 + " bi.createdAt between :fromDate and :toDate ";
-        
+
         if (getSearchKeyword().getFrmDepartment() != null) {
             sql += " and bi.bill.department=:dep";
-             m.put("dep", getSearchKeyword().getFrmDepartment());
+            m.put("dep", getSearchKeyword().getFrmDepartment());
         }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
