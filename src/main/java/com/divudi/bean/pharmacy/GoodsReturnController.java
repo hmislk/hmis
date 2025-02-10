@@ -308,6 +308,7 @@ public class GoodsReturnController implements Serializable {
         }
 
         saveReturnBill();
+
         Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
 //        saveComponent();
         saveComponent(p);
@@ -315,7 +316,11 @@ public class GoodsReturnController implements Serializable {
         calTotal();
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getReturnBill());
 
+        
+        
         getBillFacade().edit(getReturnBill());
+
+        updateOriginalBill();
 
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Returned");
@@ -583,6 +588,23 @@ public class GoodsReturnController implements Serializable {
 
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
+    }
+
+    private void updateOriginalBill() {
+        if (bill == null) {
+            return;
+        }
+        if (returnBill == null) {
+            return;
+        }
+        returnBill.setBilledBill(bill);
+        billFacade.edit(returnBill);
+        
+        bill.getRefundBills().add(returnBill);
+        bill.setRefundAmount(Math.abs(bill.getRefundAmount()) + Math.abs(returnBill.getNetTotal()));
+        
+        billFacade.edit(bill);
+        
     }
 
 }
