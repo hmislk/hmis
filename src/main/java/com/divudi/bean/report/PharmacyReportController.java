@@ -2213,23 +2213,32 @@ public class PharmacyReportController implements Serializable {
         jpql = "select s"
                 + " from Stock s "
                 + " where s.itemBatch.dateOfExpire between :fd and :td ";
+
         if (institution != null) {
             jpql += " and s.department.institution=:ins ";
             m.put("ins", institution);
         }
+
         if (department != null) {
             jpql += " and s.department=:dep ";
             m.put("dep", department);
         }
+
         if (site != null) {
             jpql += " and s.department.site=:sit ";
             m.put("sit", site);
         }
+
         if (amp != null) {
             item = amp;
             System.out.println("item = " + item);
             jpql += "and s.itemBatch.item=:itm ";
             m.put("itm", item);
+        }
+
+        if (category != null) {
+            jpql += " and s.itemBatch.item.category=:cat ";
+            m.put("cat", category);
         }
 
         jpql += " order by s.id ";
