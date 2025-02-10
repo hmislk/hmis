@@ -218,9 +218,25 @@
                         <p:commandButton class="ui-button- mx-1"
                                          icon="fas fa-print"
                                          ajax="false"
-                                         value="Print All">
-                            <p:printer target="printPanel"/>
+                                         value="Print All"
+                                         onclick="hidePaginatorBeforePrint()">
+                            <p:printer target="printPanel" oncomplete="restorePaginatorAfterPrint()"/>
                         </p:commandButton>
+                        <h:outputScript>
+                            function hidePaginatorBeforePrint() {
+                                let paginators = document.querySelectorAll('.ui-paginator');
+                                paginators.forEach(el => el.style.display = 'none');
+                            }
+
+                            function restorePaginatorAfterPrint() {
+                                let paginators = document.querySelectorAll('.ui-paginator');
+                                paginators.forEach(el => el.style.display = '');
+                            }
+
+                            window.onafterprint = function () {
+                                restorePaginatorAfterPrint();
+                            };
+                        </h:outputScript>
                         <p:commandButton class="ui-button-success mx-1"
                                          icon="fas fa-file-excel"
                                          ajax="false"
