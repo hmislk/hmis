@@ -1819,6 +1819,7 @@ public class PharmacyController implements Serializable {
             JsfUtil.addErrorMessage(e, "Something Went Wrong!");
         }
     }
+
     private List<PharmacySummery> summaries;
 
     public void generateReportAsSummaryWithGiT(BillType billType, Map<String, PharmacySummery> departmentMap) {
@@ -3587,7 +3588,11 @@ public class PharmacyController implements Serializable {
         double total = 0.0;
 
         for (Bill b : bills) {
-            total += b.getReferenceBill().getNetTotal();
+            if (b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)) {
+                total -= b.getNetTotal();
+            } else {
+                total += b.getReferenceBill().getNetTotal();
+            }
         }
         return total;
     }
@@ -3660,7 +3665,9 @@ public class PharmacyController implements Serializable {
                 emptyRow.createCell(16).setCellValue("-");
                 emptyRow.createCell(17).setCellValue("-");
                 emptyRow.createCell(18).setCellValue("-");
-                emptyRow.createCell(19).setCellValue(bill.getReferenceBill().getNetTotal());
+                emptyRow.createCell(19).setCellValue(bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
+                        || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN) ?
+                        -1 * bill.getReferenceBill().getNetTotal() : bill.getReferenceBill().getNetTotal());
                 emptyRow.createCell(20).setCellValue(bill.getNetTotal());
 
                 for (BillItem billItem : bill.getBillItems()) {
@@ -3766,7 +3773,9 @@ public class PharmacyController implements Serializable {
                 table.addCell("-");
                 table.addCell("-");
                 table.addCell("-");
-                table.addCell(String.valueOf(bill.getReferenceBill().getNetTotal()));
+                table.addCell(String.valueOf(bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
+                        || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN) ?
+                        -1 * bill.getReferenceBill().getNetTotal() : bill.getReferenceBill().getNetTotal()));
                 table.addCell(String.valueOf(bill.getNetTotal()));
 
                 for (BillItem billItem : bill.getBillItems()) {
