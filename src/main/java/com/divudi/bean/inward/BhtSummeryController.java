@@ -2371,7 +2371,7 @@ public class BhtSummeryController implements Serializable {
             switch (i.getInwardChargeType()) {
                 case AdmissionFee:
                     if (getPatientEncounter().getAdmissionType() != null) {
-                        i.setTotal(getPatientEncounter().getAdmissionType().getAdmissionFee());
+                        i.setTotal(getInwardBean().getAdmissionCharge(getPatientEncounter()));
                     }
                     break;
                 case RoomCharges:
