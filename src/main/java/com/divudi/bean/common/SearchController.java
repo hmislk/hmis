@@ -667,13 +667,13 @@ public class SearchController implements Serializable {
     }
 
     public void fillSavedTranserRequestBills() {
-        Bill b = new Bill();
-        b.getFromDepartment();
+
         String sql = "Select bill from Bill bill where bill.retired =false "
                 + " and bill.billType = :billType "
                 + " and bill.institution = :institution "
                 + " and bill.fromDepartment = :fromDepartment "
-                + " and bill.createdAt between :fromDate and :toDate";
+                + " and bill.createdAt between :fromDate and :toDate"
+                + " order by bill.createdAt";
 
         Map parametersForSearching = new HashMap();
         parametersForSearching.put("billType", BillType.PharmacyTransferRequest);
