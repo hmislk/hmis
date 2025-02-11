@@ -222,7 +222,7 @@
 
                             <p:columnGroup type="footer">  
                                 <p:row >  
-                                    <p:column colspan="6" style="text-align:left" footerText="Totals:"/>
+                                    <p:column colspan="5" style="text-align:left" footerText="Totals:"/>
 
                                     <p:column style="text-align: right;" footerText="#{commonReport.grnBilled.cash}">
                                         <f:facet name="footer">
@@ -270,10 +270,11 @@
                             </f:facet> 
 
                             <p:column headerText="Cancelled NO" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Cancelled NO"/>
-                                </f:facet> 
-                                <h:outputLabel value="#{b1.deptId}"/>
+                                <p:commandLink 
+                                    value="#{b1.deptId}" 
+                                    action="#{commonReport.navigateToViewCancelGRNBillFromGRNSummary(b1)}" 
+                                    process="@this" >
+                                </p:commandLink>
                             </p:column>
 
                             <p:column headerText="GRN No" >
