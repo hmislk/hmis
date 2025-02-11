@@ -7,6 +7,7 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
@@ -200,6 +201,14 @@ public class PharmacySummaryReportController implements Serializable {
 
     // Numeric variables
     private int maxResult = 50;
+    
+    double purchaseGoodsValueBeforeTheSelectedDate;
+    double purchaseGoodsValueOnSelectedDate;
+    double purchaseGoodsValueAfterSelectedDate;
+    
+    //transferOuts;
+    //adjustments;
+    
 
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigators">
@@ -223,6 +232,18 @@ public class PharmacySummaryReportController implements Serializable {
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="Functions">
 
+    public void processDailyStockBalanceReport(){
+        if(department==null){
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+        if(fromDate==null){
+            JsfUtil.addErrorMessage("Please select a date");
+            return;
+        }
+        
+    }
+    
     public void listBillTypes() {
         bundleReport = new ReportTemplateRowBundle();
         Map<String, Object> params = new HashMap<>();
