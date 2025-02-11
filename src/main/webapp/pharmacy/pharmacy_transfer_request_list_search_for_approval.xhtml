@@ -112,7 +112,7 @@
                                     title="Approve Request" 
                                     icon="fas fa-check-circle"
                                     class="ui-button-success m-1"
-                                    disabled="#{p.approveUser ne null or p.cancelled eq true and not webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}"
+                                    disabled="#{p.checkedBy eq null or p.approveUser ne null or p.cancelled eq true and not webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}"
                                     action="#{transferRequestController.navigateToApproveRequest()}">
                                     <f:setPropertyActionListener 
                                         target="#{transferRequestController.transerRequestBillPre}"
