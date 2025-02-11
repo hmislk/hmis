@@ -437,12 +437,12 @@
                                 </f:facet> 
                                 <h:outputLabel value="#{b.referenceBill.createdAt}"/>
                             </p:column>
-                            <p:column headerText="Referenace Institution" >
+<!--                            <p:column headerText="Referenace Institution" >
                                 <f:facet name="header">  
                                     <h:outputLabel value="Referenace Institution"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b.referenceBill.referenceInstitution.name}"/>
-                            </p:column>
+                            </p:column>-->
 
                             <p:column headerText="Return At"  >
                                 <f:facet name="header">  
@@ -453,10 +453,10 @@
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Suplier Name"  >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Suplier Name"/>
-                                </f:facet> 
+                            <p:column headerText="Suplier Name" 
+                                      sortBy="#{b.toInstitution.name}"
+                                      filterBy="#{b.toInstitution.name}"
+                                      filterMatchMode="contains" >
                                 <h:outputLabel value="#{b.toInstitution.name}"/>
 
                             </p:column>                        
