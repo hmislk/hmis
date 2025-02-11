@@ -211,7 +211,6 @@
                             </p:column>
 
                             <p:column headerText="Remark" exportable="false" >
-                                #{b.deptId}
                                 <p:commandButton value="View" action="#{commonReport.navigateToViewGrnBillFromGRNSummary(b)}" process="@this" >
                                 </p:commandButton>
                             </p:column>
@@ -508,7 +507,7 @@
                             </p:column>
                             <p:columnGroup type="footer">  
                                 <p:row >  
-                                    <p:column colspan="7" style="text-align:left" footerText="Totals:"/>
+                                    <p:column colspan="6" style="text-align:left" footerText="Totals:"/>
 
                                     <p:column style="text-align: right;" footerText="#{commonReport.grnReturn.cash}">
                                         <f:facet name="footer">
