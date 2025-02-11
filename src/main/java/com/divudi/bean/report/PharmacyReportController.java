@@ -2213,23 +2213,32 @@ public class PharmacyReportController implements Serializable {
         jpql = "select s"
                 + " from Stock s "
                 + " where s.itemBatch.dateOfExpire between :fd and :td ";
+
         if (institution != null) {
             jpql += " and s.department.institution=:ins ";
             m.put("ins", institution);
         }
+
         if (department != null) {
             jpql += " and s.department=:dep ";
             m.put("dep", department);
         }
+
         if (site != null) {
             jpql += " and s.department.site=:sit ";
             m.put("sit", site);
         }
+
         if (amp != null) {
             item = amp;
             System.out.println("item = " + item);
             jpql += "and s.itemBatch.item=:itm ";
             m.put("itm", item);
+        }
+
+        if (category != null) {
+            jpql += " and s.itemBatch.item.category=:cat ";
+            m.put("cat", category);
         }
 
         jpql += " order by s.id ";
@@ -2289,7 +2298,7 @@ public class PharmacyReportController implements Serializable {
 
             Row headerRow = sheet.createRow(rowIndex++);
 
-            String[] headers = {"Department", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
+            String[] headers = {"Department/Staff", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
                     "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
                     "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
                     "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
@@ -2309,7 +2318,7 @@ public class PharmacyReportController implements Serializable {
                     for (Stock stock : stockList) {
                         Row row = sheet.createRow(rowIndex++);
 
-                        row.createCell(0).setCellValue(stock.getDepartment() != null ? stock.getDepartment().getName() : "-");
+                        row.createCell(0).setCellValue(stock.getDepartment() != null ? stock.getDepartment().getName() : stock.getStaff().getPerson().getNameWithTitle());
                         row.createCell(1).setCellValue(item.getCategory() != null ? item.getCategory().getCode() : "-");
                         row.createCell(2).setCellValue(item.getCategory() != null ? item.getCategory().getName() : "-");
                         row.createCell(3).setCellValue(item.getCode() != null ? item.getCode() : "-");
@@ -2395,7 +2404,7 @@ public class PharmacyReportController implements Serializable {
             float[] columnWidths = {3f, 2f, 3f, 2f, 3f, 2f, 2f, 2f, 3f, 3f, 3f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f};
             table.setWidths(columnWidths);
 
-            String[] headers = {"Department", "Item Cat Code", "Item Cat Name", "Item Code", "Item Name", "Base UOM",
+            String[] headers = {"Department/Staff", "Item Cat Code", "Item Cat Name", "Item Code", "Item Name", "Base UOM",
                     "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
                     "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
 
@@ -2414,7 +2423,7 @@ public class PharmacyReportController implements Serializable {
                     List<Stock> stockList = batchEntry.getValue();
 
                     for (Stock stock : stockList) {
-                        table.addCell(stock.getDepartment() != null ? stock.getDepartment().getName() : "-");
+                        table.addCell(stock.getDepartment() != null ? stock.getDepartment().getName() : stock.getStaff().getPerson().getNameWithTitle());
                         table.addCell(item.getCategory() != null ? item.getCategory().getCode() : "-");
                         table.addCell(item.getCategory() != null ? item.getCategory().getName() : "-");
                         table.addCell(item.getCode() != null ? item.getCode() : "-");
