@@ -268,37 +268,33 @@ public class CommonReport implements Serializable {
     public String navigateToCashierDetailedReport() {
         return "/store/store_report_cashier_detailed_by_user?faces-redirect=true";
     }
-    
-    public String navigateToViewGrnBillFromGRNSummary(Bill b){
+
+    public String navigateToViewGrnBillFromGRNSummary(Bill b) {
         previewBill = null;
         previewBill = b;
         return "/pharmacy/pharmacy_grn_bill?faces-redirect=true";
     }
-    
-    public String navigateBackToGRNSummaryFromViewGrnBill(){
-        
-        return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";
-    }
-    
-    public String navigateToViewPOBillFromGRNSummary(Bill b){
+
+    public String navigateToViewPOBillFromGRNSummary(Bill b) {
         previewBill = null;
         previewBill = b;
         return "/pharmacy/pharmacy_reprint_po_bill?faces-redirect=true";
     }
-    
-    public String navigateBackToGRNSummaryFromViewPOBill(){
-        
-        return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";
-    }
-    
-    public String navigateToViewCancelGRNBillFromGRNSummary(Bill b){
+
+    public String navigateToViewCancelGRNBillFromGRNSummary(Bill b) {
         previewBill = null;
         previewBill = b;
         return "/pharmacy/pharmacy_cancel_grn_bill?faces-redirect=true";
     }
-    
-    public String navigateBackToGRNSummaryFromViewCancelGRNBill(){
-        
+
+    public String navigateToViewCancelGRNReturnBillFromGRNSummary(Bill b) {
+        previewBill = null;
+        previewBill = b;
+        return "/pharmacy/pharmacy_reprint_grn_return_bill?faces-redirect=true";
+    }
+
+    public String navigateBackToGRNSummary() {
+
         return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";
     }
 
@@ -5523,7 +5519,6 @@ public class CommonReport implements Serializable {
             parameters.put("supplier", institution);
         }
 
-        
         jpql += " order by bi.bill.id";
 
         try {
@@ -6127,7 +6122,7 @@ public class CommonReport implements Serializable {
             m.put("pm", paymentMethod);
         }
 
-        sql +=  " order by b.bill.createdAt , b.id ";
+        sql += " order by b.bill.createdAt , b.id ";
 
         m.put("frm", getFromDate());
         m.put("to", getToDate());
