@@ -202,29 +202,52 @@
                                 value="Process"
                                 action="#{pharmacyReportController.processClosingStockReport()}">
                         </p:commandButton>
-                    </div>
-
-                    <p:panel
-                            id="gpBatchWise"
-                            header="Report Data By Batch Wise"
-                            rendered="#{pharmacyReportController.reportType eq 'batchWise'}">
-                        <!-- Buttons for Batch Wise -->
-                        <p:commandButton
-                                rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
-                                class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
-                            <p:printer target="gpBatchWise"/>
+                        <p:commandButton class="ui-button- mx-1"
+                                         icon="fas fa-print"
+                                         ajax="false"
+                                         value="Print All"
+                                         onclick="hidePaginatorBeforePrint()">
+                            <p:printer target="printPanel" oncomplete="restorePaginatorAfterPrint()"/>
                         </p:commandButton>
                         <p:commandButton
-                                rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
+                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
+                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                            <p:dataExporter type="xlsx" target="itemWise" fileName="Item Wise Report"/>
+                        </p:commandButton>
+                        <p:commandButton
+                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
                                 class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
-                            <p:dataExporter type="pdf" target="batchWise" fileName="Batch Wise Report"/>
+                            <p:dataExporter type="pdf" target="itemWise" fileName="Item Wise Report"/>
                         </p:commandButton>
                         <p:commandButton
                                 rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
                                 class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
                             <p:dataExporter type="xlsx" target="batchWise" fileName="Batch Wise Report"/>
                         </p:commandButton>
+                        <p:commandButton
+                                rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
+                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
+                            <p:dataExporter type="pdf" target="batchWise" fileName="Batch Wise Report"/>
+                        </p:commandButton>
+                    </div>
 
+                    <h:outputScript>
+                        function hidePaginatorBeforePrint() {
+                            let paginators = document.querySelectorAll('.ui-paginator');
+                            paginators.forEach(el => el.style.display = 'none');
+                        }
+
+                        function restorePaginatorAfterPrint() {
+                            let paginators = document.querySelectorAll('.ui-paginator');
+                            paginators.forEach(el => el.style.display = '');
+                        }
+
+                        window.onafterprint = function () {
+                            restorePaginatorAfterPrint();
+                        };
+                    </h:outputScript>
+
+                    <h:panelGroup id="printPanel">
                         <p:dataTable
                                 id="batchWise"
                                 value="#{pharmacyReportController.rows}"
@@ -233,6 +256,7 @@
                                 paginator="true"
                                 paginatorPosition="bottom"
                                 rows="10"
+                                rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                 rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
@@ -316,28 +340,7 @@
                                 </f:facet>
                             </p:column>
                         </p:dataTable>
-                    </p:panel>
 
-                    <p:panel
-                            id="gpItemWise"
-                            header="Report Data By Item Wise"
-                            rendered="#{pharmacyReportController.reportType eq 'itemWise'}">
-                        <!-- Buttons for Item Wise -->
-                        <p:commandButton
-                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
-                                class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
-                            <p:printer target="itemWise"/>
-                        </p:commandButton>
-                        <p:commandButton
-                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
-                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                            <p:dataExporter type="xlsx" target="itemWIse" fileName="Item Wise Report"/>
-                        </p:commandButton>
-                        <p:commandButton
-                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
-                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
-                            <p:dataExporter type="pdf" target="itemWise" fileName="Item Wise Report"/>
-                        </p:commandButton>
                         <p:dataTable
                                 id="itemWise"
                                 value="#{pharmacyReportController.rows}"
@@ -346,6 +349,7 @@
                                 paginator="true"
                                 paginatorPosition="bottom"
                                 rows="10"
+                                rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                 rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
@@ -386,7 +390,7 @@
                                 </f:facet>
                             </p:column>
                         </p:dataTable>
-                    </p:panel>
+                    </h:panelGroup>
                 </p:panel>
             </h:form>
         </ui:define>
