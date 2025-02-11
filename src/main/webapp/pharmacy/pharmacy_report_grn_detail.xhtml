@@ -142,12 +142,11 @@
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Suplier Name"  >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Suplier Name"/>
-                                </f:facet> 
+                            <p:column headerText="Suplier Name" 
+                                      sortBy="#{b.fromInstitution.name}"
+                                      filterBy="#{b.fromInstitution.name}"
+                                      filterMatchMode="contains" >
                                 <h:outputLabel value="#{b.fromInstitution.name}"/>
-
                             </p:column>
 
                             <p:column headerText="Reference Institution"  >
