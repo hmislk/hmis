@@ -149,18 +149,17 @@
                                 <h:outputLabel value="#{b.fromInstitution.name}"/>
                             </p:column>
 
-                            <p:column headerText="Reference Institution"  >
+<!--                            <p:column headerText="Reference Institution"  >
                                 <f:facet name="header">  
                                     <h:outputLabel value="Reference Institution"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b.referenceInstitution.name}"/>
+                            </p:column>-->
 
-                            </p:column>
-
-                            <p:column headerText="Po No" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Po No"/>
-                                </f:facet> 
+                            <p:column headerText="Po No" 
+                                      sortBy="#{b.referenceBill.deptId}"
+                                      filterBy="#{b.referenceBill.deptId}"
+                                      filterMatchMode="contains" >
                                 <h:outputLabel value="#{b.referenceBill.deptId}"/>
                             </p:column>
 
