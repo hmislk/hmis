@@ -306,6 +306,8 @@ public class PharmacyReportController implements Serializable {
     private Map<Item, Map<Long, List<Stock>>> itemStockMap;
     private Double quantity;
 
+    private Double stockQty;
+
     //Constructor
     public PharmacyReportController() {
     }
@@ -2005,22 +2007,12 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processClosingStockReport() {
-        switch (reportType) {
-            case "itemWise":
-                processClosingStockItemWiseReport();
-                break;
-            case "batchWise":
-                processClosingStockBatchWiseReport();
-                break;
-        }
-    }
-
-    public void processClosingStockBatchWiseReport() {
         List<Long> ids;
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
                 + " from StockHistory sh where sh.retired=:ret "
-                + "and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
+                + "and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) "
+                + "and sh.stockQty > 0 ");
 
         params.put("depty", DepartmentType.Pharmacy);
         params.put("ret", false);
@@ -2074,9 +2066,11 @@ public class PharmacyReportController implements Serializable {
         if (ids == null) {
             return;
         }
+
         if (ids.isEmpty()) {
             return;
         }
+
         for (Long shid : ids) {
             System.out.println("shid = " + shid);
             PharmacyRow pr = new PharmacyRow();
@@ -2089,86 +2083,45 @@ public class PharmacyReportController implements Serializable {
                 stockTotal += stockHx.getStockQty();
                 rows.add(pr);
             }
-
         }
 
-    }
+        if (reportType.equalsIgnoreCase("itemWise")) {
+            setStockSaleValue(0.0);
+            setStockQty(0.0);
 
-    public void processClosingStockItemWiseReport() {
-        List<Long> ids;
-        Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
-                + " from StockHistory sh where sh.retired=:ret "
-                + "and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
+            Map<String, PharmacyRow> map = new HashMap<>();
 
-        params.put("depty", DepartmentType.Pharmacy);
-        params.put("ret", false);
+            for (PharmacyRow row : rows) {
+                if (map.containsKey(row.getStockHistory().getItemBatch().getItem().getName())) {
+                    PharmacyRow pr = map.get(row.getStockHistory().getItemBatch().getItem().getName());
 
-        if (institution != null) {
-            jpql.append("and sh.institution = :ins ");
-            params.put("ins", institution);
-        }
+                    if (row.getStockHistory().getStockQty() == 0.0) {
+                        continue;
+                    }
 
-        if (site != null) {
-            jpql.append("and sh.department.site = :sit ");
-            params.put("sit", site);
-        }
+                    pr.getStockHistory().setStockQty(pr.getStockHistory().getStockQty() + row.getStockHistory().getStockQty());
+                    setStockQty(getStockQty() + row.getStockHistory().getStockQty());
 
-        if (department != null) {
-            jpql.append("and sh.department = :dep ");
-            params.put("dep", department);
-        }
+                    pr.getStockHistory().setStockSaleValue(pr.getStockHistory().getStockSaleValue() + row.getStockHistory().getStockQty() *
+                            row.getStockHistory().getItemBatch().getRetailsaleRate());
+                    setStockSaleValue(getStockSaleValue() + row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getRetailsaleRate());
+                } else {
+                    if (row.getStockHistory().getStockQty() == 0.0) {
+                        continue;
+                    }
 
-        if (category != null) {
-            jpql.append("and sh.item.category = :cat ");
-            params.put("cat", category);
-        }
+                    map.put(row.getStockHistory().getItemBatch().getItem().getName(), row);
 
-        System.out.println("amp = " + amp);
-        if (amp != null) {
-            item = amp;
-            System.out.println("item = " + item);
-            jpql.append("and sh.item=:itm ");
-            params.put("itm", item);
-        }
+                    map.get(row.getStockHistory().getItemBatch().getItem().getName()).getStockHistory().setStockSaleValue(
+                            row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getRetailsaleRate());
 
-        jpql.append("and sh.createdAt < :et ");
-        params.put("et", CommonFunctions.getEndOfDay(toDate));
-
-        jpql.append("group by sh.item ");
-        jpql.append("order by sh.item.name");
-
-        System.out.println("jpql.toString() = " + jpql.toString());
-        System.out.println("params = " + params);
-
-        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-        // Calculate purchase and sale values
-        stockPurchaseValue = 0.0;
-        stockSaleValue = 0.0;
-        stockTotal = 0.0;
-
-        rows = new ArrayList<>();
-
-        if (ids == null) {
-            return;
-        }
-        if (ids.isEmpty()) {
-            return;
-        }
-        for (Long shid : ids) {
-            System.out.println("shid = " + shid);
-            PharmacyRow pr = new PharmacyRow();
-            pr.setId(shid);
-            pr.setStockHistory(facade.find(shid));
-            if (pr.getStockHistory() != null) {
-                StockHistory stockHx = pr.getStockHistory();
-                stockPurchaseValue += stockHx.getItemBatch().getPurcahseRate() * stockHx.getStockQty();
-                stockSaleValue += stockHx.getItemBatch().getRetailsaleRate() * stockHx.getStockQty();
-                stockTotal += stockHx.getStockQty();
-                rows.add(pr);
+                    setStockQty(getStockQty() + row.getStockHistory().getStockQty());
+                    setStockSaleValue(getStockSaleValue() + row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getRetailsaleRate());
+                }
             }
 
+            rows.clear();
+            rows.addAll(map.values());
         }
     }
 
@@ -3414,6 +3367,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setDateRange(String dateRange) {
         this.dateRange = dateRange;
+    }
+
+    public Double getStockQty() {
+        return stockQty;
+    }
+
+    public void setStockQty(Double stockQty) {
+        this.stockQty = stockQty;
     }
 
     public BillType[] getBillTypes() {

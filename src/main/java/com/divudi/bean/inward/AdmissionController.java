@@ -625,6 +625,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             j += "  and c.admissionType=:at ";
             m.put("at", admissionTypeForSearch);
         }
+        
+        j += " ORDER BY c.dateOfAdmission DESC ";
 
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
     }
