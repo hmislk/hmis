@@ -279,6 +279,17 @@ public class CommonReport implements Serializable {
         
         return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";
     }
+    
+    public String navigateToViewPOBillFromGRNSummary(Bill b){
+        previewBill = null;
+        previewBill = b;
+        return "/pharmacy/pharmacy_reprint_po_bill?faces-redirect=true";
+    }
+    
+    public String navigateBackToGRNSummaryFromViewPOBill(){
+        
+        return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";
+    }
 
     public String navigateToReportCashierDetailedByUser1() {
         FacesContext context = FacesContext.getCurrentInstance();
