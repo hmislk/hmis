@@ -280,16 +280,16 @@
                                 <h:outputLabel value="#{b1.billedBill.deptId}" >
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Referenace Institution" >
+<!--                            <p:column headerText="Referenace Institution" >
                                 <f:facet name="header">  
                                     <h:outputLabel value="Referenace Institution"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b1.billedBill.referenceInstitution.name}"/>
-                            </p:column>
-                            <p:column headerText="Suplier" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Suplier"/>
-                                </f:facet> 
+                            </p:column>-->
+                            <p:column headerText="Suplier" 
+                                      sortBy="#{b1.fromInstitution.name}"
+                                      filterBy="#{b1.fromInstitution.name}"
+                                      filterMatchMode="contains" >
                                 <h:outputLabel value="#{b1.fromInstitution.name}"/>
                             </p:column>
                             <p:column headerText="Cancelled At">
