@@ -2115,8 +2115,8 @@ public class PharmacyReportController implements Serializable {
                     map.get(row.getStockHistory().getItemBatch().getItem().getName()).getStockHistory().setStockSaleValue(
                             row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getRetailsaleRate());
 
-                    setStockQty(getStockQty()+row.getStockHistory().getStockQty());
-                    setStockSaleValue(getStockSaleValue()+row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getRetailsaleRate());
+                    setStockQty(getStockQty() + row.getStockHistory().getStockQty());
+                    setStockSaleValue(getStockSaleValue() + row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getRetailsaleRate());
                 }
             }
 
