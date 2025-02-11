@@ -1819,6 +1819,7 @@ public class PharmacyController implements Serializable {
             JsfUtil.addErrorMessage(e, "Something Went Wrong!");
         }
     }
+
     private List<PharmacySummery> summaries;
 
     public void generateReportAsSummaryWithGiT(BillType billType, Map<String, PharmacySummery> departmentMap) {
@@ -3587,7 +3588,11 @@ public class PharmacyController implements Serializable {
         double total = 0.0;
 
         for (Bill b : bills) {
-            total += b.getReferenceBill().getNetTotal();
+            if (b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)) {
+                total -= b.getNetTotal();
+            } else {
+                total += b.getReferenceBill().getNetTotal();
+            }
         }
         return total;
     }
@@ -3660,7 +3665,9 @@ public class PharmacyController implements Serializable {
                 emptyRow.createCell(16).setCellValue("-");
                 emptyRow.createCell(17).setCellValue("-");
                 emptyRow.createCell(18).setCellValue("-");
-                emptyRow.createCell(19).setCellValue(bill.getReferenceBill().getNetTotal());
+                emptyRow.createCell(19).setCellValue(bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
+                        || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN) ?
+                        -1 * bill.getReferenceBill().getNetTotal() : bill.getReferenceBill().getNetTotal());
                 emptyRow.createCell(20).setCellValue(bill.getNetTotal());
 
                 for (BillItem billItem : bill.getBillItems()) {
@@ -3701,8 +3708,8 @@ public class PharmacyController implements Serializable {
             }
 
             Row footerRow = sheet.createRow(rowIndex++);
-            footerRow.createCell(19).setCellValue(calculateTotalPOAmount());
-            footerRow.createCell(20).setCellValue(calculateTotalGrnAmount());
+            footerRow.createCell(19).setCellValue(Math.round(calculateTotalPOAmount() * 100.0) / 100.0);
+            footerRow.createCell(20).setCellValue(Math.round(calculateTotalGrnAmount() * 100.0) / 100.0);
 
             workbook.write(out);
             context.responseComplete();
@@ -3766,7 +3773,9 @@ public class PharmacyController implements Serializable {
                 table.addCell("-");
                 table.addCell("-");
                 table.addCell("-");
-                table.addCell(String.valueOf(bill.getReferenceBill().getNetTotal()));
+                table.addCell(String.format("%.2f", bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
+                        || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN) ?
+                        -1 * bill.getReferenceBill().getNetTotal() : bill.getReferenceBill().getNetTotal()));
                 table.addCell(String.valueOf(bill.getNetTotal()));
 
                 for (BillItem billItem : bill.getBillItems()) {
@@ -3787,9 +3796,9 @@ public class PharmacyController implements Serializable {
                     table.addCell(sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()));
                     table.addCell("-");
                     table.addCell(String.valueOf(billItem.getPharmaceuticalBillItem().getRetailRate()));
-                    table.addCell(String.valueOf(billItem.getDiscount()));
-                    table.addCell(String.valueOf(billItem.getNetValue()));
-                    table.addCell(String.valueOf(billItem.getBill().getNetTotal()));
+                    table.addCell(String.format("%.2f", billItem.getDiscount()));
+                    table.addCell(String.format("%.2f", billItem.getNetValue()));
+                    table.addCell(String.format("%.2f", billItem.getBill().getNetTotal()));
                     table.addCell("-");
                     table.addCell("-");
                 }
@@ -3801,8 +3810,8 @@ public class PharmacyController implements Serializable {
             PdfPTable footerTable = new PdfPTable(2);
             footerTable.setWidthPercentage(100);
             footerTable.setWidths(new float[]{1f, 1f});
-            footerTable.addCell(new PdfPCell(new Phrase("Total PO Amount: " + calculateTotalPOAmount(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
-            footerTable.addCell(new PdfPCell(new Phrase("Total GRN Amount: " + calculateTotalGrnAmount(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
+            footerTable.addCell(new PdfPCell(new Phrase("Total PO Amount: " + String.format("%.2f", calculateTotalPOAmount()), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
+            footerTable.addCell(new PdfPCell(new Phrase("Total GRN Amount: " + String.format("%.2f", calculateTotalGrnAmount()), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
             document.add(footerTable);
 
             document.close();
