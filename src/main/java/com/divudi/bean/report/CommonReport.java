@@ -36,12 +36,11 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillFinanceType;
+import com.divudi.bean.pharmacy.GrnController;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
-import com.divudi.entity.Staff;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -94,6 +93,8 @@ public class CommonReport implements Serializable {
     BillSearch billSearch;
     @Inject
     private CommonController commonController;
+    @Inject
+    GrnController grnController;
 
     @Inject
     AuditEventApplicationController auditEventApplicationController;
@@ -254,6 +255,7 @@ public class CommonReport implements Serializable {
     boolean onlyHosFee = false;
     PaymentMethod paymentMethod;
     private String departmentId;
+    private Bill previewBill;
 
     public List<Bill> getBills() {
         return bills;
@@ -265,6 +267,17 @@ public class CommonReport implements Serializable {
 
     public String navigateToCashierDetailedReport() {
         return "/store/store_report_cashier_detailed_by_user?faces-redirect=true";
+    }
+    
+    public String navigateToViewGrnBillFromGRNSummary(Bill b){
+        previewBill = null;
+        previewBill = b;
+        return "/pharmacy/pharmacy_grn_bill?faces-redirect=true";
+    }
+    
+    public String navigateBackToGRNSummaryFromViewGrnBill(){
+        
+        return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";
     }
 
     public String navigateToReportCashierDetailedByUser1() {
@@ -7205,6 +7218,14 @@ public class CommonReport implements Serializable {
 
     public void setBundle(ReportTemplateRowBundle bundle) {
         this.bundle = bundle;
+    }
+
+    public Bill getPreviewBill() {
+        return previewBill;
+    }
+
+    public void setPreviewBill(Bill previewBill) {
+        this.previewBill = previewBill;
     }
 
     public class CollectingCenteRow {
