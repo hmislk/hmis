@@ -441,6 +441,20 @@ public class BillService {
         return fetchingBillComponents;
     }
 
+    public Payment fetchBillPayment(Bill b) {
+        if (b == null) {
+            return null;
+        }
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "SELECT p "
+                + " FROM Payment p "
+                + " WHERE p.bill=:bl "
+                + " order by p.id";
+        params.put("bl", b);
+        return paymentFacade.findFirstByJpql(jpql, params);
+    }
+
     public void calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees(Bill bill) {
         double billStaffFee = 0.0;
         double billCollectingCentreFee = 0.0;

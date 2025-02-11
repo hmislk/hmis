@@ -63,6 +63,9 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.event.SelectEvent;
+import org.primefaces.event.ToggleSelectEvent;
+import org.primefaces.event.UnselectEvent;
 
 /**
  *
@@ -131,6 +134,7 @@ public class SupplierPaymentController implements Serializable {
     private List<BillItem> currentPaymentBillItems;
     private List<Bill> currentPaymentRefundBills;
     private List<BillItem> currentSummeryBillItems;
+    private Payment currentPayment;
     private double currentSummaryPurchaseTotalValue;
     private double currentSummaryPurchaseReturnTotalValue;
     private double currentSummaryPurchaseNetTotalValue;
@@ -285,6 +289,7 @@ public class SupplierPaymentController implements Serializable {
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Functions">
+
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     // </editor-fold>  
@@ -360,8 +365,6 @@ public class SupplierPaymentController implements Serializable {
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
 
-        System.err.println("Sql " + jpql);
-        System.out.println("temMap = " + params);
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
     }
@@ -549,15 +552,12 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void calTotalBySelectedBillTems() {
-        System.out.println("calTotalBySelectedBillTems called.");
 
         if (getCurrent() == null) {
-            System.out.println("Error: current is null.");
             return;
         }
 
         if (selectedBillItems == null || selectedBillItems.isEmpty()) {
-            System.out.println("No selected bill items.");
             getCurrent().setTotal(0);
             getCurrent().setNetTotal(0);
             return;
@@ -567,9 +567,7 @@ public class SupplierPaymentController implements Serializable {
 
         for (BillItem sbi : selectedBillItems) {
             if (sbi != null) {
-                System.out.println("Processing bill item: " + sbi);
                 calculatedTotal += Math.abs(sbi.getNetValue()); // Ensure positive accumulation
-                System.out.println("Updated calculatedTotal: " + calculatedTotal);
             }
         }
 
@@ -578,9 +576,6 @@ public class SupplierPaymentController implements Serializable {
 
         getCurrent().setTotal(-calculatedTotal); // Keep total negative for cash out
         getCurrent().setNetTotal(-calculatedNetTotal); // Keep net total negative
-
-        System.out.println("Final Total: " + getCurrent().getTotal());
-        System.out.println("Final Net Total: " + getCurrent().getNetTotal());
     }
 
     public void calculateTotalByCurrentBillsBillItems() {
@@ -1007,10 +1002,8 @@ public class SupplierPaymentController implements Serializable {
 
         jpql += " AND (b.paymentApproved = false OR b.paymentApproved IS NULL) "
                 + "AND (b.paymentGenerated = 0 OR b.paymentGenerated IS NULL)";
-
         // Logging
-        System.out.println("JPQL Query: " + jpql);
-        System.out.println("Parameters: " + params);
+
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -1037,10 +1030,8 @@ public class SupplierPaymentController implements Serializable {
 
         jpql += " AND (b.billTypeAtomic IN :bts)";
         params.put("bts", billTypesListBilled);
-
         // Logging
-        System.out.println("JPQL Query: " + jpql);
-        System.out.println("Parameters: " + params);
+
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -1068,8 +1059,6 @@ public class SupplierPaymentController implements Serializable {
         jpql += " AND (b.billTypeAtomic IN :bts)";
         params.put("bts", billTypesListBilled);
 
-        System.out.println("JPQL Query: " + jpql);
-        System.out.println("Parameters: " + params);
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -1098,10 +1087,8 @@ public class SupplierPaymentController implements Serializable {
         params.put("bts", billTypesListBilled);
 
         jpql += " AND (b.paymentApproved = true OR b.paymentApproved = 1 ) ";
-
         // Logging
-        System.out.println("JPQL Query: " + jpql);
-        System.out.println("Parameters: " + params);
+
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -1603,10 +1590,7 @@ public class SupplierPaymentController implements Serializable {
             }
         }
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        System.out.println("bills = " + bills);
         netTotal = bills.stream().mapToDouble(Bill::getNetTotal).sum();
     }
 
@@ -1662,10 +1646,7 @@ public class SupplierPaymentController implements Serializable {
             }
         }
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        System.out.println("bills = " + bills);
         netTotal = bills.stream().mapToDouble(Bill::getNetTotal).sum();
     }
 
@@ -2016,12 +1997,10 @@ public class SupplierPaymentController implements Serializable {
         if (current.isRefunded()) {
             currentReturnBills = billService.fetchReturnBills(current);
             if (currentReturnBills == null || currentReturnBills.isEmpty()) {
-                System.err.println("Error in Bill Return Process. Bill marked as Returned, but no return bills found");
             }
         } else {
             currentReturnBills = billService.fetchReturnBills(current);
             if (currentReturnBills != null && !currentReturnBills.isEmpty()) {
-                System.err.println("Error in Bill Return Process. Bill not marked as Returned, but has return bills.");
             }
         }
         currentSummeryBillItems = createSummeryBillItems(current, currentReturnBills);
@@ -2102,11 +2081,12 @@ public class SupplierPaymentController implements Serializable {
 
                     BillItem summaryItem = batchMap.get(batch);
                     summaryItem.getPharmaceuticalBillItem().setQty(
-                            summaryItem.getPharmaceuticalBillItem().getQty() - retPbi.getQty()
+                            Math.abs(summaryItem.getPharmaceuticalBillItem().getQty()) - Math.abs(retPbi.getQty())
                     );
                     summaryItem.getPharmaceuticalBillItem().setFreeQty(
-                            summaryItem.getPharmaceuticalBillItem().getFreeQty() - retPbi.getFreeQty()
+                            Math.abs(summaryItem.getPharmaceuticalBillItem().getFreeQty()) - Math.abs(retPbi.getFreeQty())
                     );
+
                 }
             }
         }
@@ -2232,6 +2212,8 @@ public class SupplierPaymentController implements Serializable {
             return null;
         }
         current = billService.reloadBill(approvedAndSettledPaymentBill);
+        currentPayment = billService.fetchBillPayment(current.getReferenceBill());
+
         if (!current.isPaymentApproved()) {
             JsfUtil.addErrorMessage("Not Approved. Can not complete.");
             return null;
@@ -2259,7 +2241,6 @@ public class SupplierPaymentController implements Serializable {
             } else if (supplierPaymentBill.getBackwardReferenceBill() != null) {
                 current = supplierPaymentBill.getBackwardReferenceBill();
             } else {
-                System.out.println("supplierPaymentBill = " + supplierPaymentBill);
                 JsfUtil.addErrorMessage("Not a supplier bill");
                 return null;
             }
@@ -2505,7 +2486,11 @@ public class SupplierPaymentController implements Serializable {
             }
         }
 
-        List<Payment> ps = paymentService.createPayment(current, paymentMethodData);
+        current.setReferenceBill(newlyCreatedSupplierPaymentBill);
+        current.setBackwardReferenceBill(newlyCreatedSupplierPaymentBill);
+        billFacade.edit(current);
+
+        List<Payment> ps = paymentService.createPayment(newlyCreatedSupplierPaymentBill, paymentMethodData);
 
 //        saveBillItemBySelectedItems(p);
         newlyCreatedSupplierPaymentBill = billService.reloadBill(newlyCreatedSupplierPaymentBill);
@@ -2568,7 +2553,6 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void settleGenerateSupplierPayment() {
-        System.out.println("settlePrepairingSupplierPayment");
         if (errorCheckForPaymentPreperationBill()) {
             return;
         }
@@ -2595,9 +2579,7 @@ public class SupplierPaymentController implements Serializable {
         } else {
             getBillFacade().edit(getCurrent());
         }
-        System.out.println("deptId = " + deptId);
         for (BillItem bi : selectedBillItems) {
-            System.out.println("bi = " + bi);
             bi.setBill(getCurrent());
             if (bi.getId() == null) {
                 bi.setCreatedAt(new Date());
@@ -2633,7 +2615,6 @@ public class SupplierPaymentController implements Serializable {
     }
 
     private void saveBillItem() {
-        System.out.println("save bill item");
         for (BillItem tmp : getBillItems()) {
             tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());
@@ -2668,7 +2649,7 @@ public class SupplierPaymentController implements Serializable {
 //            tmp.setCreater(getSessionController().getLoggedUser());
 //            tmp.setBill(getCurrent());
 //            tmp.setNetValue(0 - tmp.getNetValue());
-//            if (tmp.getId() == null) {
+//            if (tmp.getId() == membershipnull) {
 //                getBillItemFacade().create(tmp);
 //            }
 //            saveBillFee(tmp, p);
@@ -2693,19 +2674,13 @@ public class SupplierPaymentController implements Serializable {
     }
 
     private void updateReferenceBill(BillItem tmp) {
-        System.out.println("updateReferenceBill");
-        System.out.println("tmp = " + tmp);
         double dbl = getCreditBean().getPaidAmount(tmp.getReferenceBill(), BillType.GrnPaymentPre);
-        System.out.println("dbl = " + dbl);
         dbl = Math.abs(dbl);
         tmp.getReferenceBill().setPaidAmount(0 - dbl);
         getBillFacade().edit(tmp.getReferenceBill());
     }
 
     public void saveBillFee(BillItem bi, Payment p) {
-        System.out.println("saveBillFee = ");
-        System.out.println("bi = " + bi);
-        System.out.println("p = " + p);
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());
         bf.setCreater(getSessionController().getLoggedUser());
@@ -3194,6 +3169,14 @@ public class SupplierPaymentController implements Serializable {
 
     public void setCurrentSummaryPurchaseNetTotalValue(double currentSummaryPurchaseNetTotalValue) {
         this.currentSummaryPurchaseNetTotalValue = currentSummaryPurchaseNetTotalValue;
+    }
+
+    public Payment getCurrentPayment() {
+        return currentPayment;
+    }
+
+    public void setCurrentPayment(Payment currentPayment) {
+        this.currentPayment = currentPayment;
     }
 
 }
