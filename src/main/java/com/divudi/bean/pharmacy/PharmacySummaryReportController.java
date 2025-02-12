@@ -202,9 +202,7 @@ public class PharmacySummaryReportController implements Serializable {
     // Numeric variables
     private int maxResult = 50;
     
-    double purchaseGoodsValueBeforeTheSelectedDate;
-    double purchaseGoodsValueOnSelectedDate;
-    double purchaseGoodsValueAfterSelectedDate;
+
     
     //transferOuts;
     //adjustments;
