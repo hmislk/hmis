@@ -255,6 +255,10 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String cancelPharmacyTransferRequestBill() {
+        if(comment == null || comment.isEmpty()){
+            JsfUtil.addErrorMessage("Please Provide a comment to cancel the bill");
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Not Bill Found !");
             return "";
