@@ -75,17 +75,8 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -211,6 +202,9 @@ public class PharmacyController implements Serializable {
 
     private MeasurementUnit issueUnit;
     // </editor-fold>
+
+    private Map<String, Map<String, Double>> departmentTotals = new HashMap<>();
+    private Map<String, Double> pharmacyTotals = new HashMap<>();
 
     // <editor-fold defaultstate="collapsed" desc="Methods - Fill Data">
     private void fillVtms() {
@@ -1380,53 +1374,32 @@ public class PharmacyController implements Serializable {
     }
 
     public void generateConsumptionReportTableAsDepartmentSummary(List<DepartmentCategoryWiseItems> list) {
-        // Initialize department summaries and reset total sales value
         departmentSummaries = new ArrayList<>();
         totalSaleValue = 0.0;
 
-        // Create a map to store net totals grouped by main and consumption departments
-        Map<String, Map<String, Double>> departmentTotals = new HashMap<>();// Populate the map with department-wise data
+        Map<String, Map<String, Double>> departmentTotals = new TreeMap<>();
+        Map<String, Double> pharmacyTotals = new TreeMap<>();
+
         for (DepartmentCategoryWiseItems item : list) {
             String mainDepartmentName = item.getMainDepartment().getName();
             String consumptionDepartmentName = item.getConsumptionDepartment().getName();
             double paidAmount = item.getNetTotal();
 
-            // Initialize nested maps if necessary
-            departmentTotals.putIfAbsent(mainDepartmentName, new HashMap<>());
-            Map<String, Double> consumptionMap = departmentTotals.get(mainDepartmentName);
+            if (paidAmount == 0.0) {
+                continue;
+            }
 
-            // Accumulate paid amounts for consumption departments
-            consumptionMap.put(consumptionDepartmentName,
-                    consumptionMap.getOrDefault(consumptionDepartmentName, 0.0) + paidAmount);
+            pharmacyTotals.merge(mainDepartmentName, paidAmount, Double::sum);
 
-            // Accumulate the total sale value for the main department
+            departmentTotals
+                    .computeIfAbsent(mainDepartmentName, k -> new TreeMap<>())
+                    .merge(consumptionDepartmentName, paidAmount, Double::sum);
+
             totalSaleValue += paidAmount;
         }
 
-        // Build the summaries
-        for (Map.Entry<String, Map<String, Double>> mainEntry : departmentTotals.entrySet()) {
-            String mainDepartmentName = mainEntry.getKey();
-            Map<String, Double> consumptionMap = mainEntry.getValue();
-
-            // Add a header entry for the main department
-            departmentSummaries.add(new PharmacySummery(mainDepartmentName, null, 0.0)); // Main department header
-
-            // Add each consumption department's contribution
-            for (Map.Entry<String, Double> consumptionEntry : consumptionMap.entrySet()) {
-                String consumptionDepartmentName = consumptionEntry.getKey();
-                double netTotal = consumptionEntry.getValue();
-
-                if (netTotal == 0) {
-                    continue;
-                }
-
-                departmentSummaries.add(new PharmacySummery(null, consumptionDepartmentName, netTotal));
-            }
-
-            // Add a total entry for the main department
-            double mainTotal = consumptionMap.values().stream().mapToDouble(Double::doubleValue).sum();
-            departmentSummaries.add(new PharmacySummery("Total", null, mainTotal));
-        }
+        setPharmacyTotals(pharmacyTotals);
+        setDepartmentTotals(departmentTotals);
     }
 
     public List<String1Value1> calculateTotals(List<Bill> billList) {
@@ -4662,4 +4635,19 @@ public class PharmacyController implements Serializable {
         this.summaries = summaries;
     }
 
+    public Map<String, Map<String, Double>> getDepartmentTotals() {
+        return departmentTotals;
+    }
+
+    public Map<String, Double> getPharmacyTotals() {
+        return pharmacyTotals;
+    }
+
+    public void setDepartmentTotals(Map<String, Map<String, Double>> departmentTotals) {
+        this.departmentTotals = departmentTotals;
+    }
+
+    public void setPharmacyTotals(Map<String, Double> pharmacyTotals) {
+        this.pharmacyTotals = pharmacyTotals;
+    }
 }
