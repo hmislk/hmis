@@ -1008,8 +1008,6 @@ public class PharmacyController implements Serializable {
     }
 
     public void generateConsumptionReportTableByBill(BillType billType) {
-//        List<BillType> bt = new ArrayList<>();
-//        bt.add(BillType.PharmacyIssue);
         bills = new ArrayList<>();
 
         String sql = "SELECT b FROM Bill b WHERE b.retired = false"
@@ -1052,19 +1050,18 @@ public class PharmacyController implements Serializable {
             tmp.put("toDept", toDepartment);
         }
 
-        sql += " order by b.id desc";
+        sql += " order by b.createdAt asc";
 
         try {
             bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, " Something Went Worng!");
+            JsfUtil.addErrorMessage(e, " Something Went Wrong!");
         }
         totalPurchase = 0.0;
         for (Bill b : bills) {
             totalPurchase += b.getStockBill().getStockValueAtPurchaseRates();
         }
-
     }
 
     public void generateConsumptionReportTableByBillItems(BillType billType) {
@@ -1111,7 +1108,7 @@ public class PharmacyController implements Serializable {
             parameters.put("toDepartment", toDepartment);
         }
 
-        sql.append("ORDER BY bi.id DESC");
+        sql.append("ORDER BY bi.bill.createdAt ASC");
 
         try {
             billItems = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);

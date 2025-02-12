@@ -143,7 +143,7 @@
                             </p:outputLabel>
                         </h:panelGroup>
                         <p:selectOneMenu class="w-100" id="grnReportType" value="#{pharmacyController.reportType}">
-                            <f:selectItem itemLabel="Summery" itemValue="summeryReport"/>
+                            <f:selectItem itemLabel="Summary" itemValue="summeryReport"/>
                             <f:selectItem itemLabel="Department unit issue by Bill No" itemValue="byBill"/>
                             <f:selectItem itemLabel="Department unit issue by Bill Item" itemValue="byBillItem"/>
                             <f:selectItem itemLabel="Category wise issue details by department"
@@ -245,6 +245,7 @@
                                      rowKey="#{s.id}"
                                      paginator="true"
                                      rows="10"
+                                     paginatorPosition="bottom"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                      rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
@@ -280,6 +281,7 @@
                                      rowIndexVar="n"
                                      paginator="true"
                                      rows="10"
+                                     paginatorPosition="bottom"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                      rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
@@ -334,6 +336,7 @@
                                      rowKey="#{i.id}"
                                      paginator="true"
                                      rows="10"
+                                     paginatorPosition="bottom"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                      rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
@@ -411,6 +414,7 @@
                                      rowKey="#{s.id}"
                                      paginator="true"
                                      rows="10"
+                                     paginatorPosition="bottom"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                      rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
