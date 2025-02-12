@@ -208,6 +208,7 @@ public class PharmacyController implements Serializable {
 
     private Map<String, Map<String, Double>> departmentTotals = new HashMap<>();
     private Map<String, Double> pharmacyTotals = new HashMap<>();
+    private Map<String, Map<String, List<DepartmentCategoryWiseItems>>> departmentCategoryMap = new HashMap<>();
 
     // <editor-fold defaultstate="collapsed" desc="Methods - Fill Data">
     private void fillVtms() {
@@ -1366,6 +1367,8 @@ public class PharmacyController implements Serializable {
             }
             if ("summeryReport".equals(reportType)) {
                 generateConsumptionReportTableAsDepartmentSummary(resultsList);
+            } else if ("categoryWise".equals(reportType)) {
+                generateConsumptionReportTableAsCategoryWise(resultsList);
             }
             return resultsList;
         } catch (Exception e) {
@@ -1376,7 +1379,69 @@ public class PharmacyController implements Serializable {
         }
     }
 
-    public void generateConsumptionReportTableAsDepartmentSummary(List<DepartmentCategoryWiseItems> list) {
+    public void generateConsumptionReportTableAsCategoryWise(final List<DepartmentCategoryWiseItems> list) {
+        // Department Name -> Category Name -> Item List
+        Map<String, Map<String, List<DepartmentCategoryWiseItems>>> departmentCategoryMap = new HashMap<>();
+        // Category Name -> Item List
+        Map<String, List<DepartmentCategoryWiseItems>> categorizedItems = new HashMap<>();
+        // Department Name -> Category Name -> Total Value
+        Map<String, Map<String, Double>> departmentTotals = new TreeMap<>();
+
+        for (DepartmentCategoryWiseItems item : list) {
+            String departmentName = item.getConsumptionDepartment().getName();
+            String categoryName = item.getCategory().getName();
+
+            if (item.getQty() == 0) {
+                continue;
+            }
+
+            if (categoryName == null || categoryName.trim().isEmpty()) {
+                continue;
+            }
+
+            departmentCategoryMap
+                    .computeIfAbsent(departmentName, k -> new TreeMap<>())
+                    .computeIfAbsent(categoryName, k -> new ArrayList<>())
+                    .add(item);
+
+            categorizedItems
+                    .computeIfAbsent(categoryName, k -> new ArrayList<>())
+                    .add(item);
+
+            departmentTotals
+                    .computeIfAbsent(departmentName, k -> new TreeMap<>())
+                    .merge(categoryName, item.getNetTotal(), Double::sum);
+        }
+
+        setDepartmentCategoryMap(departmentCategoryMap);
+        setDepartmentTotals(departmentTotals);
+    }
+
+    public String getCategoryTotalForConsumptionReport(final String departmentName, final String categoryName) {
+        double total = departmentTotals
+                .getOrDefault(departmentName, Collections.emptyMap())
+                .getOrDefault(categoryName, 0.0);
+
+        return formatNumber(total);
+    }
+
+    public String getDepartmentTotalForConsumptionReport(final String departmentName) {
+        double total =  departmentTotals
+                .getOrDefault(departmentName, Collections.emptyMap())
+                .values()
+                .stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
+
+        return formatNumber(total);
+    }
+
+    private String formatNumber(double value) {
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        return df.format(value);
+    }
+
+    public void generateConsumptionReportTableAsDepartmentSummary(final List<DepartmentCategoryWiseItems> list) {
         departmentSummaries = new ArrayList<>();
         totalSaleValue = 0.0;
 
@@ -4798,5 +4863,13 @@ public class PharmacyController implements Serializable {
 
     public void setPharmacyTotals(Map<String, Double> pharmacyTotals) {
         this.pharmacyTotals = pharmacyTotals;
+    }
+
+    public Map<String, Map<String, List<DepartmentCategoryWiseItems>>> getDepartmentCategoryMap() {
+        return departmentCategoryMap;
+    }
+
+    public void setDepartmentCategoryMap(Map<String, Map<String, List<DepartmentCategoryWiseItems>>> departmentCategoryMap) {
+        this.departmentCategoryMap = departmentCategoryMap;
     }
 }
