@@ -105,7 +105,7 @@
                                 value="#{pharmacyController.category}"
                                 filter="true"
                                 class="w-100 ">
-                            <f:selectItem itemLabel="All Categories"></f:selectItem>
+                            <f:selectItem itemLabel="All Categories"/>
                             <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
                                            var="category"
                                            itemLabel="#{category.name}"
@@ -302,11 +302,11 @@
                             </p:column>
 
                             <p:column headerText="Purchase Rate Value" width="4em" style="text-align: right;">
-                                <h:outputText value="#{b.stockBill.stockValueAtPurchaseRates}">
+                                <h:outputText value="#{-1 * b.stockBill.stockValueAtPurchaseRates}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacyController.totalPurchase}">
+                                    <h:outputLabel value="#{-1 * pharmacyController.totalPurchase}">
                                         <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                 </f:facet>
                             </p:column>
