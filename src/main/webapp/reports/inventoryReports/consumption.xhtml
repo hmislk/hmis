@@ -144,9 +144,9 @@
                         </h:panelGroup>
                         <p:selectOneMenu class="w-100" id="grnReportType" value="#{pharmacyController.reportType}">
                             <f:selectItem itemLabel="Summary" itemValue="summeryReport"/>
-                            <f:selectItem itemLabel="Department unit issue by Bill No" itemValue="byBill"/>
-                            <f:selectItem itemLabel="Department unit issue by Bill Item" itemValue="byBillItem"/>
-                            <f:selectItem itemLabel="Category wise issue details by department"
+                            <f:selectItem itemLabel="Department Unit Issue by Bill No" itemValue="byBill"/>
+                            <f:selectItem itemLabel="Department Unit Issue by Bill Item" itemValue="byBillItem"/>
+                            <f:selectItem itemLabel="Category Wise Issue Details by Department"
                                           itemValue="categoryWise"/>
                         </p:selectOneMenu>
 
@@ -228,10 +228,8 @@
                                             fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
                         </p:commandButton>
                         <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
-                                         value="Download" rendered="#{pharmacyController.reportType eq 'categoryWise'}">
-                            <p:dataExporter type="xlsx" target="tbl4"
-                                            fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
-                        </p:commandButton>
+                                         value="Download" rendered="#{pharmacyController.reportType eq 'categoryWise'}"
+                                         action="#{pharmacyController.exportConsumptionReportCategoryWiseToExcel()}"/>
 
                         <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
                                          rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}"
@@ -248,9 +246,8 @@
                                             fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
                         </p:commandButton>
                         <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                         rendered="#{pharmacyController.reportType eq 'categoryWise'}">
-                            <p:dataExporter type="pdf" target="tbl4"
-                                            fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
+                                         rendered="#{pharmacyController.reportType eq 'categoryWise'}"
+                                         action="#{pharmacyController.exportConsumptionReportCategoryWiseToPdf}">
                         </p:commandButton>
                     </div>
 
@@ -532,7 +529,8 @@
 
                     <h:panelGroup rendered="#{pharmacyController.reportType eq 'categoryWise'}" id="tbl4">
                         <h5 class="mt-3">Category Wise Issue Details by Department</h5>
-                        <ui:repeat value="#{pharmacyController.departmentCategoryMap.entrySet()}" var="map">
+                        <ui:repeat value="#{pharmacyController.departmentCategoryMap.entrySet()}" var="map"
+                                   varStatus="status">
                             <p:dataTable id="itbl4"
                                          value="#{map.value.entrySet()}"
                                          var="entry"
@@ -583,6 +581,22 @@
                                         </h:outputText>
                                     </p:column>
                                 </p:subTable>
+                                <p:columnGroup type="footer" rendered="#{status.last}">
+                                    <p:row>
+                                        <p:column colspan="3">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="Total" style="font-weight: bold;"/>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="font-weight: bold;">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{pharmacyController.totalSaleValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
                             </p:dataTable>
                         </ui:repeat>
                     </h:panelGroup>
