@@ -430,6 +430,7 @@ public enum Privileges {
     PharmacyDisbursementDirectIssue("Pharmacy Disbursement Direct Issue"),
     PharmacyDisbursementRecieve("Pharmacy Disbursement Receive"),
     PharmacyDisbursementReports("Pharmacy Disbursement Reports"),
+    PharmacyDisbursementRequestApproval("Pharmacy Disbursement Request Approval"),
     // Pharmacy Inpatient medication management
     InpatientMedicationManagementMenue("Inpatient Medication Management Menu"),
     PharmacyDirectIssueToBht("Pharmacy Direct Issue to BHT"),
