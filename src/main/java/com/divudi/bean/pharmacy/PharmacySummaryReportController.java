@@ -39,6 +39,7 @@ import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Category;
+import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.DrawerFacade;
@@ -162,6 +163,7 @@ public class PharmacySummaryReportController implements Serializable {
     private BillClassType billClassType;
     private PaymentMethod paymentMethod;
     private AdmissionType admissionType;
+    private PaymentScheme paymentScheme;
 
     // Collections
     private List<PaymentMethod> paymentMethods;
@@ -438,7 +440,7 @@ public class PharmacySummaryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE);
 
-        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType);
+        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
         bundle = new IncomeBundle(bills);
         for (IncomeRow r : bundle.getRows()) {
             if (r.getBill() == null) {
@@ -1433,6 +1435,14 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
     }
     
     
