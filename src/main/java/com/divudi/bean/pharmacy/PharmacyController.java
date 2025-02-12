@@ -68,12 +68,15 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
@@ -1400,6 +1403,152 @@ public class PharmacyController implements Serializable {
 
         setPharmacyTotals(pharmacyTotals);
         setDepartmentTotals(departmentTotals);
+    }
+
+    public void exportConsumptionReportSummaryToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Consumption_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Consumption Report");
+            int rowIndex = 0;
+
+            XSSFCellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            Cell headerCell0 = headerRow.createCell(0);
+            headerCell0.setCellValue("Department");
+            headerCell0.setCellStyle(headerStyle);
+
+            Cell headerCell1 = headerRow.createCell(1);
+            headerCell1.setCellValue("Consumption Department");
+            headerCell1.setCellStyle(headerStyle);
+
+            Cell headerCell2 = headerRow.createCell(2);
+            headerCell2.setCellValue("Net Total");
+            headerCell2.setCellStyle(headerStyle);
+
+            for (Map.Entry<String, Map<String, Double>> departmentEntry : getDepartmentTotals().entrySet()) {
+                String departmentName = departmentEntry.getKey();
+                Map<String, Double> consumptionMap = departmentEntry.getValue();
+
+                Row departmentRow = sheet.createRow(rowIndex++);
+                Cell departmentCell = departmentRow.createCell(0);
+                departmentCell.setCellValue(departmentName);
+                departmentCell.setCellStyle(headerStyle);
+
+                for (Map.Entry<String, Double> consumptionEntry : consumptionMap.entrySet()) {
+                    String consumptionDepartment = consumptionEntry.getKey();
+                    Double netTotal = consumptionEntry.getValue();
+
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    dataRow.createCell(0).setCellValue("");
+                    dataRow.createCell(1).setCellValue(consumptionDepartment);
+                    Cell totalCell = dataRow.createCell(2);
+                    totalCell.setCellValue(netTotal);
+                    totalCell.setCellStyle(amountStyle);
+                }
+
+                Row totalRow = sheet.createRow(rowIndex++);
+                totalRow.createCell(1).setCellValue("Total:");
+                Cell totalAmountCell = totalRow.createCell(2);
+                totalAmountCell.setCellValue(getPharmacyTotals().get(departmentName));
+                totalAmountCell.setCellStyle(amountStyle);
+            }
+
+            Row grandTotalRow = sheet.createRow(rowIndex++);
+            grandTotalRow.createCell(1).setCellValue("Grand Total:");
+            Cell grandTotalCell = grandTotalRow.createCell(2);
+            grandTotalCell.setCellValue(getTotalSaleValue());
+            grandTotalCell.setCellStyle(amountStyle);
+
+            for (int i = 0; i < 3; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportConsumptionReportSummaryToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Consumption_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Consumption Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            PdfPTable table = new PdfPTable(3);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{2.5f, 3.5f, 2.5f});
+
+            String[] headers = {"Department", "Consumption Department", "Net Total"};
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+
+            for (Map.Entry<String, Map<String, Double>> departmentEntry : getDepartmentTotals().entrySet()) {
+                String departmentName = departmentEntry.getKey();
+                Map<String, Double> consumptionMap = departmentEntry.getValue();
+
+                PdfPCell departmentCell = new PdfPCell(new Phrase(departmentName, boldFont));
+                departmentCell.setColspan(3);
+                departmentCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(departmentCell);
+
+                for (Map.Entry<String, Double> consumptionEntry : consumptionMap.entrySet()) {
+                    String consumptionDepartment = consumptionEntry.getKey();
+                    Double netTotal = consumptionEntry.getValue();
+
+                    table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(consumptionDepartment, normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(netTotal), normalFont)));
+                }
+
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("Total:", boldFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(getPharmacyTotals().get(departmentName)), boldFont)));
+            }
+
+            table.addCell(new PdfPCell(new Phrase("", normalFont)));
+            table.addCell(new PdfPCell(new Phrase("Grand Total:", boldFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(getTotalSaleValue()), boldFont)));
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public List<String1Value1> calculateTotals(List<Bill> billList) {
