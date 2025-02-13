@@ -19,7 +19,7 @@
                     <f:facet name="header">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h:outputText styleClass="fa fa-hospital"></h:outputText>
+                                <h:outputText styleClass="fa fa-hospital" />
                                 <h:outputText class="mx-4" value="Admit a Patient"/>
                             </div>
                             <div>
@@ -28,6 +28,7 @@
                                     action="#{admissionController.saveSelected}" 
                                     ajax="false" 
                                     class="ui-button-success mx-1"
+                                    immediate="true"
                                     value="Admit"  />
                                 <p:commandButton 
                                     ajax="false" 
@@ -44,7 +45,7 @@
                                     value="Patient Profile" 
                                     action="#{patientController.navigateToOpdPatientProfile()}" 
                                     icon="fa fa-user" > <!-- Font Awesome icon for user -->
-                                    <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                    <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" />
                                 </p:commandButton>
                                 <p:defaultCommand target="admt"/>
                             </div>
@@ -132,7 +133,7 @@
                                                       inputStyleClass="w-100" >                               
                                         </p:datePicker>     
 
-                                        <p:outputLabel value="Consultant*" ></p:outputLabel>
+                                        <p:outputLabel value="Consultant*" />
                                         <p:autoComplete forceSelection="true" 
                                                         value="#{admissionController.current.referringConsultant}" 
                                                         id="refCon"
@@ -141,7 +142,7 @@
                                                         var="mysp" itemLabel="#{mysp.person.name}" itemValue="#{mysp}"
                                                         styleClass="form-control w-100"
                                                         class="w-100" placeholder="Referring Consultant"
-                                                        inputStyleClass="w-100"></p:autoComplete>
+                                                        inputStyleClass="w-100" />
 
                                         <p:outputLabel value="Medical Officer*"/>
                                         <p:autoComplete required="true" 
@@ -246,7 +247,7 @@
                                                                          filterMatchMode="contains"
                                                                          class="w-100 mx-2 w-100">
                                                             <f:selectItems value="#{clinicalEntityController.relationships}" var="r"
-                                                                           itemLabel="#{r.name}" itemValue="#{r}" ></f:selectItems>
+                                                                           itemLabel="#{r.name}" itemValue="#{r}" />
                                                         </p:selectOneMenu>
 
 
@@ -270,9 +271,9 @@
 
                                                     <h:panelGrid id="panSearch2" columns="2">
                                                         <p:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="Name" />
-                                                        <p:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.nameWithTitle}" ></p:outputLabel>
+                                                        <p:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.nameWithTitle}" />
                                                         <p:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="Sex" />
-                                                        <p:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.sex}" ></p:outputLabel>
+                                                        <p:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.sex}" />
                                                         <p:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="DOB"  />
 
                                                         <p:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.dob}">
@@ -280,7 +281,7 @@
                                                         </p:outputLabel>
 
                                                         <p:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="Adress" />
-                                                        <p:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.address}" ></p:outputLabel>
+                                                        <p:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.address}" />
                                                     </h:panelGrid>
                                                 </p:tab>
                                             </p:tabView>
@@ -337,7 +338,7 @@
                 <f:facet name="header">
                     <div class="d-flex justify-content-between">
                         <p:commandButton class="  ui-button-info" icon="fas fa-print" value="Print" ajax="false" >
-                            <p:printer target="gpBillPreview" ></p:printer>
+                            <p:printer target="gpBillPreview" />
                         </p:commandButton>
                         <div class="d-flex gap-2">
                             <p:commandButton 
@@ -355,7 +356,7 @@
                                 value="Patient Profile" 
                                 action="#{patientController.navigateToOpdPatientProfile()}" 
                                 icon="fa fa-user" >
-                                <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" />
                             </p:commandButton>
 
                             <p:commandButton 
@@ -365,7 +366,7 @@
                                 value="Inpatient Profile" 
                                 action="#{admissionController.navigateToAdmissionProfilePage}" 
                                 icon="fa fa-fw fa-bed" > 
-                                <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" />
                             </p:commandButton>
                         </div>
 
