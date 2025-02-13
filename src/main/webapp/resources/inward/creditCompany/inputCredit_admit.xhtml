@@ -31,7 +31,6 @@
                     <h:outputLabel value="Credit Limit  " style="min-width: 100px;"/>
                     <p:inputText class="w-100" id="creditLimit" autocomplete="off"
                                  value="#{admissionController.encounterCreditCompany.creditLimit}">
-                        <f:validateLongRange minimum="1" />
                     </p:inputText>
                     <p:message for="creditLimit" style="color: red;" />
                     <h:outputLabel value="Description " rendered="#{cc.attrs.patientEncounter.creditCompany ne null}"/>
@@ -44,11 +43,11 @@
                     <h:outputLabel value="Referance Number  " style="min-width: 100px;"/>
                     <p:inputText class="w-100" id="rno" autocomplete="off"
                                  value="#{admissionController.encounterCreditCompany.referanceNo}"/>
-
+                    <p:growl id="growl" showDetail="true" />
                     <p:commandButton
                             id="btnAdd"
                             process="btnAdd gpDetails"
-                            update="tblCom gpDetails @all"
+                            update="tblCom gpDetails"
                             value="Add Credit Company"
                             class="w-100 ui-button-success"
                             action="#{admissionController.addCreditCompnay}"
