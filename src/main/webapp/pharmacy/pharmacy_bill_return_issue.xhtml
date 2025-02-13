@@ -20,8 +20,9 @@
                                 <p:outputLabel
                                     class="mx-2 mt-2"
                                     id="total"  
-                                    value="#{issueReturnController.returnBill.total}"
+                                    value="#{issueReturnController.bill.netTotal}"
                                     >
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                 </p:outputLabel>
                             </div>
                             <div class="d-flex align-items-center">
