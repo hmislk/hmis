@@ -127,7 +127,7 @@
                         <h:outputLabel value="#{bip.item.code}"/>
                     </p:column>    
 
-                    <p:column   style="padding: 0px; margin: 0px; " >
+                    <p:column   style="padding: 0px; margin: 0px; width: 15em" >
                         <f:facet name="header">
                             <h:outputLabel value="Item"/>
                         </f:facet>
@@ -198,7 +198,50 @@
                         </h:outputLabel>
                     </p:column>
 
+                    <p:column 
+                        width="5em" 
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Retail Value is required in Pharmacy Disbursement Reports', true)}"
+                        style="padding: 0px; margin: 0px; text-align: right;" >
+                        <f:facet name="header">
+                            <h:outputLabel value="Retail Value"/>
+                        </f:facet>
+                        <h:outputLabel styleClass="retail-value" value="#{bip.pharmaceuticalBillItem.retailRateInUnit*bip.pharmaceuticalBillItem.qtyInUnit}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        
+                        <f:facet name="footer">
+                            <h:outputLabel styleClass="totalRetailValue" value="0.00">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+
                 </p:dataTable>
+
+                <h:outputScript>
+                    function calculateSaleTotalInBill(){
+                    let total = 0;
+                    document.querySelectorAll('.retail-value').forEach(cell=>{
+
+                    let value = cell.innerText.replace(/,/g, ''); 
+                        total += parseFloat(value) || 0
+                    });
+
+                    let footerElement = document.querySelector('.totalRetailValue');
+                    if (footerElement) {
+                        footerElement.innerText = total.toFixed(2); 
+                    }
+
+                    }
+
+                    PrimeFaces.widget.DataTable.prototype.refresh = function() {
+                        setTimeout(calculateSaleTotalInBill, 100); 
+                    };
+
+                    document.addEventListener("DOMContentLoaded", function() {
+                        setTimeout(calculateSaleTotalInBill, 500);
+                    });
+                </h:outputScript>
             </div>
             <div class="w-100" style="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer CSS')}" >
                 <p:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer Text')}" escape="false" ></p:outputLabel>
