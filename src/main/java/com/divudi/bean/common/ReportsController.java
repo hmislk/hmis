@@ -2765,7 +2765,7 @@ public class ReportsController implements Serializable {
         }
 
         if (visitType != null && (visitType.equalsIgnoreCase("IP") && admissionType != null)) {
-            jpql += "AND bill.patientEncounter.admissionType = :type ";
+            jpql += "AND billItem.patientEncounter.admissionType = :type ";
             parameters.put("type", admissionType);
         }
 
