@@ -129,11 +129,11 @@
                     </tr>
                     <tr>
                         <td style="width: 15%; text-align: left;" >
-                            <h:outputLabel value="User" ></h:outputLabel>
+                            <h:outputLabel value="Issued By" ></h:outputLabel>
                         </td>
                         <td>:</td>
-                        <td style="width: 30%" >
-                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" >
+                        <td style="width: 40%" >
+                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.person.name}" >
                             </h:outputLabel>
                         </td>
                     </tr>
@@ -145,7 +145,7 @@
                                 <h:outputLabel value="Name" ></h:outputLabel>
                             </td>
                             <td>:</td>
-                            <td style="width: 30%;" >
+                            <td style="width: 40%;" >
                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  >
                                 </h:outputLabel>
                             </td>

@@ -292,23 +292,74 @@
                                     <h:outputLabel  value="#{bip.searialNo+1} - #{bip.item.name}"  style="font-size: 15px!important; font-family:verdana, Helvetica, sans-serif!important;"  >
                                     </h:outputLabel>
                                 </td>
-                                <td style="width:5%!important;text-align: right; padding-right: 15px!important">
-                                    <h:outputLabel class="itemHeadingsFiveFive" value="#{bip.qty}" >
-                                        <f:convertNumber integerOnly="true" />
-                                    </h:outputLabel>
-                                </td>
-                                <td style="width:10%!important;text-align: right; padding-right: 15px!important">
-                                    <h:outputLabel class="itemHeadingsFiveFive" value="#{bip.rate}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                                <td style="width:10%!important; text-align: right;">
-                                    <h:outputLabel class="itemHeadingsFiveFive" value="#{bip.rate*bip.qty}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Disposal bills shows purchase rate of bill items in the bill', false)}">
+                                    <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                        <h:outputLabel value="#{bip.qty}"    >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
 
+                                    <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px; " >
+                                        <h:outputLabel class="mx-2" value="#{bip.rate}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+
+                                    <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                        <h:outputLabel class="mx-2" styleClass="itemValue" value="#{bip.rate*bip.qty}"    >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+
+                                </h:panelGroup>
+
+
+                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Disposal bills shows purchase rate of bill items in the bill', false)}">
+                                    <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                        <h:outputLabel value="#{bip.qty}"    >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+
+                                    <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px; width: 5em" >
+                                        <h:outputLabel class="mx-2" value="#{bip.pharmaceuticalBillItem.retailRate}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <br></br>
+                                    </td>
+
+                                    <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                        <h:outputLabel class="mx-2" styleClass="itemValue" value="#{bip.pharmaceuticalBillItem.retailRate*bip.qty}"    >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+
+                                </h:panelGroup>
                             </tr>
+
+
+                            <!--                            <tr>
+                                                            <td style="width:75%!important;">
+                                                                <h:outputLabel  value="#{bip.searialNo+1} - #{bip.item.name}"  style="font-size: 15px!important; font-family:verdana, Helvetica, sans-serif!important;"  >
+                                                                </h:outputLabel>
+                                                            </td>
+                                                            <td style="width:5%!important;text-align: right; padding-right: 15px!important">
+                                                                <h:outputLabel class="itemHeadingsFiveFive" value="#{bip.qty}" >
+                                                                    <f:convertNumber integerOnly="true" />
+                                                                </h:outputLabel>
+                                                            </td>
+                                                            <td style="width:10%!important;text-align: right; padding-right: 15px!important">
+                                                                <h:outputLabel class="itemHeadingsFiveFive" value="#{bip.rate}" >
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputLabel>
+                                                            </td>
+                                                            <td style="width:10%!important; text-align: right;">
+                                                                <h:outputLabel class="itemHeadingsFiveFive" value="#{bip.rate*bip.qty}">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputLabel>
+                                                            </td>
+                            
+                                                        </tr>-->
 
                         </ui:repeat>
                     </h:panelGroup>
@@ -414,16 +465,16 @@
                         </td>
                     </tr>
 
-<!--                    <tr>
-                        <td class="totalsBlock" style="text-align: left; width: 60%;">
-                            <h:outputLabel value="Balance" />
-                        </td>
-                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 0px;">
-                            <h:outputLabel value="#{cc.attrs.bill.cashPaid-cc.attrs.bill.netTotal}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>-->
+                    <!--                    <tr>
+                                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                                <h:outputLabel value="Balance" />
+                                            </td>
+                                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 0px;">
+                                                <h:outputLabel value="#{cc.attrs.bill.cashPaid-cc.attrs.bill.netTotal}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>-->
 
                     <!--                    <tr>
                                             <td class="totalsBlock" style="text-align: left; width: 60%;">

@@ -85,11 +85,11 @@
 
                         </td>
                         <td style="width: 15%" >
-                            <h:outputLabel value="User" ></h:outputLabel>
+                            <h:outputLabel value="Issued By" ></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%" >
-                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" >
+                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.person.name}" >
                             </h:outputLabel>
                         </td>
 
@@ -153,10 +153,10 @@
 
                         <tr>
                             <td colspan="4" style="overflow: visible;">
-                                <h:outputLabel value="#{bip.item.code}"  styleClass="itemsBlock" style="text-transform: capitalize;" >
+<!--                                <h:outputLabel value="#{bip.item.code}"  styleClass="itemsBlock" style="text-transform: capitalize;" >
                                 </h:outputLabel>
                                 -
-                                &nbsp;
+                                &nbsp;-->
                                 <h:outputLabel value="#{bip.searialNo+1} - #{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
 
@@ -249,7 +249,7 @@
                         document.querySelector('.billTotal').innerText = total.toFixed(2);
                     }
 
-                    setTimeout(calculateTotal, 1000);
+                    setTimeout(calculateTotal, 100);
                 </script>
             </div>
 
@@ -277,9 +277,9 @@
                     </tr>
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
-                            <h:outputLabel   value="Number of Items Count" />
+                            <h:outputLabel   value="Number of Items Count : " />
                         </td>
-                        <td  class="totalsBlock">
+                        <td class="totalsBlock">
                             <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
