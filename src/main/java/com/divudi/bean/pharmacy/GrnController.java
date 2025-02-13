@@ -157,6 +157,14 @@ public class GrnController implements Serializable {
         return "/pharmacy/pharmacy_grn?faces-redirect=true";
     }
 
+    public String navigateToResiveFromImportGrn(Bill importGrn) {
+        clear();
+        createGrn(importGrn);
+        setFromInstitution(importGrn.getFromInstitution());
+        getGrnBill().setPaymentMethod(importGrn.getPaymentMethod());
+        return "/pharmacy/pharmacy_grn?faces-redirect=true";
+    }
+
     public void clear() {
         billExpenses = null;
         grnBill = null;
@@ -754,14 +762,9 @@ public class GrnController implements Serializable {
 
     }
 
-    public double calFreeQuantityPurchaseValue(Bill b) {
-
+    public double calFreeQuantityPurchaseValue(Bill b){
         double freeTotal = 0.0;
-
-        if (b == null) {
-            return freeTotal;
-        }
-        for (BillItem bi : b.getBillItems()) {
+       for(BillItem bi : b.getBillItems()){
             freeTotal = freeTotal + (bi.getPharmaceuticalBillItem().getFreeQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
         }
         return freeTotal;
@@ -1015,6 +1018,55 @@ public class GrnController implements Serializable {
         }
     }
 
+    public void generateBillComponent(Bill importGrnBill) {
+
+        for (BillItem importBi : importGrnBill.getBillItems()) {
+            PharmaceuticalBillItem i = importBi.getPharmaceuticalBillItem();
+            double remains = i.getQty() - getPharmacyCalculation().calQtyInTwoSql(i);
+            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calFreeQtyInTwoSql(i);
+
+            if (remains > 0 || remainFreeQty > 0) {
+                BillItem bi = new BillItem();
+                bi.setSearialNo(getBillItems().size());
+                bi.setItem(i.getBillItem().getItem());
+                bi.setReferanceBillItem(i.getBillItem());
+                bi.setQty(remains);
+//                bi.setFreeQty(remainFreeQty);
+                bi.setTmpQty(remains);
+                bi.setTmpFreeQty(remainFreeQty);
+                //Set Suggession
+//                bi.setTmpSuggession(getPharmacyCalculation().getSuggessionOnly(bi.getItem()));
+
+                PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
+                ph.setBillItem(bi);
+                double tmpQty = bi.getQty();
+                double tmpFreeQty = remainFreeQty;
+
+                bi.setPreviousRecieveQtyInUnit((double) tmpQty);
+                bi.setPreviousRecieveFreeQtyInUnit((double) tmpFreeQty);
+
+                ph.setQty(tmpQty);
+                ph.setQtyInUnit((double) tmpQty);
+
+                ph.setFreeQtyInUnit((double) tmpFreeQty);
+                ph.setFreeQty((double) tmpFreeQty);
+
+                ph.setPurchaseRate(i.getPurchaseRate());
+                ph.setRetailRate(i.getRetailRate());
+
+                ph.setWholesaleRate((ph.getPurchaseRate() * 1.08) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
+
+                ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
+
+                bi.setPharmaceuticalBillItem(ph);
+
+                getBillItems().add(bi);
+                //  getBillItems().r
+            }
+
+        }
+    }
+
     public void generateBillComponentAll() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
@@ -1059,6 +1111,13 @@ public class GrnController implements Serializable {
         setFromInstitution(getApproveBill().getToInstitution());
         setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
         generateBillComponent();
+        calGrossTotal();
+    }
+
+    public void createGrn(Bill importGrn) {
+        setFromInstitution(importGrn.getToInstitution());
+        setReferenceInstitution(importGrn.getDepartment().getInstitution());
+        generateBillComponent(importGrn);
         calGrossTotal();
     }
 
@@ -1110,6 +1169,7 @@ public class GrnController implements Serializable {
     public void onEdit(BillItem tmp) {
         setBatch(tmp);
         double remains = getPharmacyCalculation().getRemainingQty(tmp.getPharmaceuticalBillItem());
+
 
         if (remains < tmp.getPharmaceuticalBillItem().getQtyInUnit()) {
             tmp.setTmpQty(remains);
