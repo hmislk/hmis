@@ -120,10 +120,11 @@
                             </f:facet>
 
                             <p:column headerText="GRN No" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="GRN No"/>
-                                </f:facet> 
-                                <h:outputLabel value="#{b.deptId}"/>
+                                <p:commandLink 
+                                    value="#{b.deptId}" 
+                                    action="#{commonReport.navigateToViewGrnBillFromGRNSummary(b)}" 
+                                    process="@this" >
+                                </p:commandLink>
                             </p:column>
 
                             <p:column headerText="Invoice No" >
@@ -160,7 +161,11 @@
                                       sortBy="#{b.referenceBill.deptId}"
                                       filterBy="#{b.referenceBill.deptId}"
                                       filterMatchMode="contains" >
-                                <h:outputLabel value="#{b.referenceBill.deptId}"/>
+                                <p:commandLink 
+                                    value="#{b.referenceBill.deptId}" 
+                                    action="#{commonReport.navigateToViewPOBillFromGRNSummary(b.referenceBill)}" 
+                                    process="@this" >
+                                </p:commandLink>
                             </p:column>
 
                             <p:column headerText="Purchase Value Cash" style=" text-align: right"  >
@@ -210,16 +215,14 @@
                                 <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Remark" exportable="false" >
-                                <p:commandButton ajax="false" value="View" action="/pharmacy/pharmacy_grn" >
-                                    <f:setPropertyActionListener value="#{b}" target="#{grnController.grnBill}" ></f:setPropertyActionListener>
-                                    <f:setPropertyActionListener value="true" target="#{grnController.printPreview}" ></f:setPropertyActionListener>
+<!--                            <p:column headerText="Remark" exportable="false" >
+                                <p:commandButton value="View" action="#{commonReport.navigateToViewGrnBillFromGRNSummary(b)}" process="@this" >
                                 </p:commandButton>
-                            </p:column>
+                            </p:column>-->
 
                             <p:columnGroup type="footer">  
                                 <p:row >  
-                                    <p:column colspan="6" style="text-align:left" footerText="Totals:"/>
+                                    <p:column colspan="5" style="text-align:left" footerText="Totals:"/>
 
                                     <p:column style="text-align: right;" footerText="#{commonReport.grnBilled.cash}">
                                         <f:facet name="footer">
@@ -267,16 +270,14 @@
                             </f:facet> 
 
                             <p:column headerText="Cancelled NO" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Cancelled NO"/>
-                                </f:facet> 
-                                <h:outputLabel value="#{b1.deptId}"/>
+                                <p:commandLink 
+                                    value="#{b1.deptId}" 
+                                    action="#{commonReport.navigateToViewCancelGRNBillFromGRNSummary(b1)}" 
+                                    process="@this" >
+                                </p:commandLink>
                             </p:column>
 
                             <p:column headerText="GRN No" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="GRN No"/>
-                                </f:facet> 
                                 <h:outputLabel value="#{b1.billedBill.deptId}" >
                                 </h:outputLabel>
                             </p:column>
@@ -350,9 +351,9 @@
 
                             </p:column>
 
-                            <p:column exportable="false">
+<!--                            <p:column exportable="false">
                                 <p:selectBooleanCheckbox style="border: black 2px solid;"/>
-                            </p:column>
+                            </p:column>-->
 
                             <p:columnGroup type="footer">  
 
@@ -411,10 +412,11 @@
                             </f:facet>
 
                             <p:column headerText="GRN Return No" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="GRN No"/>
-                                </f:facet> 
-                                <h:outputLabel value="#{b.deptId}"/>
+                                <p:commandLink 
+                                    value="#{b.deptId}" 
+                                    action="#{commonReport.navigateToViewCancelGRNReturnBillFromGRNSummary(b)}" 
+                                    process="@this" >
+                                </p:commandLink>
                             </p:column>
 
                             <p:column headerText="GRN No" >
@@ -509,7 +511,7 @@
                             </p:column>
                             <p:columnGroup type="footer">  
                                 <p:row >  
-                                    <p:column colspan="7" style="text-align:left" footerText="Totals:"/>
+                                    <p:column colspan="6" style="text-align:left" footerText="Totals:"/>
 
                                     <p:column style="text-align: right;" footerText="#{commonReport.grnReturn.cash}">
                                         <f:facet name="footer">
