@@ -3210,6 +3210,7 @@ public class BillSearch implements Serializable {
         } else {
             opdBillRefundAllowedSameDay = true;
         }
+        findRefuendedBills(bill);
         paymentMethod = bill.getPaymentMethod();
         printPreview = false;
         return "/opd/bill_reprint?faces-redirect=true;";
@@ -3222,7 +3223,6 @@ public class BillSearch implements Serializable {
     private List<Bill> refuendedBills = new ArrayList();
 
     public void findRefuendedBills(Bill bill) {
-        System.out.println("findRefuendedBills");
         refuendedBills = new ArrayList<>();
         Map p = new HashMap();
         String jpql = "SELECT b"
@@ -3234,7 +3234,6 @@ public class BillSearch implements Serializable {
         p.put("refBill", bill);
 
         refuendedBills = billFacade.findByJpql(jpql, p);
-        System.out.println("refuendedBills = " + refuendedBills);
     }
 
     public List<Bill> getRefuendedBills() {
