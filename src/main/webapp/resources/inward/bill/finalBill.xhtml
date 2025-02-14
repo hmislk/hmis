@@ -387,22 +387,65 @@
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{cc.attrs.showProfessional}">
-                                <h:panelGroup >
+                                <h:panelGroup
+                                        rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountByPatient !=0 }">
+
                                     <tr>
                                         <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
-                                            <h:outputLabel   value="Paid By Patient " rendered="#{cc.attrs.bill.paidAmount !=0}"/>
+                                            <h:outputLabel value="Paid By Patient "
+                                                           rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountByPatient !=0 }"/>
                                         </td>
                                         <td>
                                             <table>
                                                 <ui:repeat value="#{cc.attrs.bill.backwardReferenceBills}" var="b">
-                                                    <h:panelGroup  rendered="#{(b.netTotal ne 0 )                                                                  	 
+                                                    <h:panelGroup rendered="#{(b.netTotal ne 0 )
                                                                                and                                                                   	 
                                                                                ((b.cancelled eq false
                                                                                and b.billClass eq 'class com.divudi.entity.BilledBill')
                                                                                or
                                                                                (b.cancelled eq false
                                                                                and b.refundedBill eq null
-                                                                               and b.billClass eq 'class com.divudi.entity.RefundBill'))}" >                                       	 
+                                                                               and b.billClass eq 'class com.divudi.entity.RefundBill')) and b.billTypeAtomic ne 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
+                                                        <div class="d-flex gap-3" style="font-size: 11px;">
+                                                            <h:outputLabel value="#{b.deptId}"/>
+                                                            <h:outputLabel value="#{b.netTotal}"
+                                                                           style="width: 30px; text-align: right;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputLabel>
+                                                        </div>
+
+                                                    </h:panelGroup>
+                                                </ui:repeat>
+                                            </table>
+                                        </td>
+                                        <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="#{cc.attrs.bill.settledAmountByPatient}"
+                                                           rendered="#{cc.attrs.bill.paidAmount !=0}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+
+                                </h:panelGroup>
+
+                                <h:panelGroup
+                                        rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountBySponsor !=0 }">
+                                    <tr>
+                                        <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="Paid By Company "
+                                                           rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountBySponsor !=0 }"/>
+                                        </td>
+                                        <td>
+                                            <table>
+                                                <ui:repeat value="#{cc.attrs.bill.backwardReferenceBills}" var="b">
+                                                    <h:panelGroup rendered="#{(b.netTotal ne 0 )
+                                                                               and
+                                                                               ((b.cancelled eq false
+                                                                               and b.billClass eq 'class com.divudi.entity.BilledBill')
+                                                                               or
+                                                                               (b.cancelled eq false
+                                                                               and b.refundedBill eq null
+                                                                               and b.billClass eq 'class com.divudi.entity.RefundBill')) and b.billTypeAtomic eq 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
                                                         <div class="d-flex gap-3" style="font-size: 11px;">
                                                             <h:outputLabel  value="#{b.deptId}"/>
                                                             <h:outputLabel value="#{b.netTotal}" style="width: 30px; text-align: right;">
@@ -415,7 +458,34 @@
                                             </table>
                                         </td>
                                         <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
-                                            <h:outputLabel  value="#{cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.paidByCreditCompany}" rendered="#{cc.attrs.bill.paidAmount !=0}" >
+                                            <h:outputLabel value="#{cc.attrs.bill.settledAmountBySponsor}"
+                                                           rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountBySponsor !=0}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+
+                                </h:panelGroup>
+
+                                <h:panelGroup>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td style="text-align: right;"><h:outputLabel value="-------------------"/></td>
+                                    </tr>
+
+                                </h:panelGroup>
+
+                                <h:panelGroup>
+                                    <tr>
+                                        <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="Total Paid "
+                                                           rendered="#{cc.attrs.bill.paidAmount !=0}"/>
+                                        </td>
+                                        <td></td>
+                                        <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="#{cc.attrs.bill.paidAmount}"
+                                                           rendered="#{cc.attrs.bill.paidAmount !=0}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
@@ -432,7 +502,7 @@
                                             &nbsp;
                                         </td>
                                         <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
-                                            <h:outputLabel  value="#{cc.attrs.bill.netTotal-(cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.paidByCreditCompany)}"  >
+                                            <h:outputLabel value="#{cc.attrs.bill.netTotal-(cc.attrs.bill.paidAmount)}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
