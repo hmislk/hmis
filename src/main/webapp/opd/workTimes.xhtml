@@ -4,11 +4,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
-      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+      xmlns="http://www.w3.org/1999/xhtml">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -16,50 +12,205 @@
                     You are NOT authorized
                 </h:panelGroup>
                 <h:panelGroup rendered="#{(webUserController.hasPrivilege('OpdBilling'))}" >
-                    
-                    <h:form class="container-fluid" >
-                        <p:panel >
+                    <h:form  >
+                        <p:panel class="m-1 p-1" >
                             <f:facet name="header" >
                                 <h:outputText value="Currently Working" >
                                 </h:outputText>
                             </f:facet>
-                            
+
+                            <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                    <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:calendar 
+                                    styleClass="w-100" 
+                                    inputStyleClass="w-100 form-control" 
+                                    id="fromDate" 
+                                    value="#{workingTimeController.fromDate}" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    />
+
+                                <p:spacer width="50" ></p:spacer>
+
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                    <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:calendar 
+                                    styleClass="w-100" 
+                                    inputStyleClass="w-100 form-control" 
+                                    id="toDate" 
+                                    value="#{workingTimeController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    />
+
+                                <p:spacer width="50" ></p:spacer>
+                               <p:outputLabel value="Doctor or Staff Member" ></p:outputLabel>
+                                <p:autoComplete 
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    forceSelection="true" 
+                                    placeholder="start typing some letters to list and then select"
+                                    value="#{workingTimeController.staff}" 
+                                    id="scStaff"
+                                    completeMethod="#{doctorController.completeDoctor}" var="mys" 
+                                    itemLabel="#{mys.person.nameWithTitle}" 
+                                    itemValue="#{mys}">
+                                    <p:column headerText="Speciality">
+                                        <h:outputText value="#{mys.speciality.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Doctor">
+                                        <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                    </p:column>
+                                </p:autoComplete>
+
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                    <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:selectOneMenu
+                                    id="cmbIns"
+                                    styleClass="w-100 form-control" 
+                                    value="#{workingTimeController.institution}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Institutions" />
+                                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                    <p:ajax process="cmbIns" update="cmbDept" />
+                                </p:selectOneMenu>
+
+                                <p:spacer ></p:spacer>
+
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                    <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:selectOneMenu
+                                    id="siteMenu"
+                                    styleClass="w-100 form-control"  
+                                    value="#{workingTimeController.site}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Sites" />
+                                    <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                    <p:ajax process="siteMenu" update="cmbDept" />
+                                </p:selectOneMenu>
+
+                                <p:spacer ></p:spacer>
+
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                    <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                                </h:panelGroup>
+                                <h:panelGroup id="cmbDept">
+
+                                    <!-- Component 1: Without Institution and Site -->
+                                    <p:selectOneMenu
+                                        rendered="#{workingTimeController.institution eq null and workingTimeController.site eq null}"
+                                        styleClass="w-100 form-control"
+                                        value="#{workingTimeController.department}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems 
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                            var="d"
+                                            itemLabel="#{d.name}"
+                                            itemValue="#{d}" />
+                                    </p:selectOneMenu>
+
+                                    <!-- Component 2: With Site Only -->
+                                    <p:selectOneMenu
+                                        rendered="#{workingTimeController.institution eq null and workingTimeController.site ne null}"
+                                        styleClass="w-100 form-control"
+                                        value="#{workingTimeController.department}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems 
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(workingTimeController.site)}"
+                                            var="d"
+                                            itemLabel="#{d.name}"
+                                            itemValue="#{d}" />
+                                    </p:selectOneMenu>
+
+                                    <!-- Component 3: With Institution Only -->
+                                    <p:selectOneMenu
+                                        rendered="#{workingTimeController.institution ne null and workingTimeController.site eq null}"
+                                        styleClass="w-100 form-control"
+                                        value="#{workingTimeController.department}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems 
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(workingTimeController.institution)}"
+                                            var="d"
+                                            itemLabel="#{d.name}"
+                                            itemValue="#{d}" />
+                                    </p:selectOneMenu>
+
+                                    <!-- Component 4: With Both Institution and Site -->
+                                    <p:selectOneMenu
+                                        rendered="#{workingTimeController.institution ne null and workingTimeController.site ne null}"
+                                        styleClass="w-100 form-control"
+                                        value="#{workingTimeController.department}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems 
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(workingTimeController.institution, workingTimeController.site)}"
+                                            var="d"
+                                            itemLabel="#{d.name}"
+                                            itemValue="#{d}" />
+                                    </p:selectOneMenu>
+
+                                </h:panelGroup>
+
+                                <p:commandButton ajax="false" value="Process" action="#{workingTimeController.processWorkingTimes()}" ></p:commandButton>
+                            </h:panelGrid>
+
                             <p:dataTable value="#{workingTimeController.items}" var="w" paginator="true" paginatorPosition="bottom" rows="10"
                                          rowKey="#{w.id}" >
                                 <p:column headerText="Name">
                                     <h:outputLabel value="#{w.staffShift.staff.person.nameWithTitle}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="In">
-                                    <h:outputLabel value="#{w.startRecord.recordTimeStamp}" ></h:outputLabel>
+                                <p:column headerText="In at">
+                                    <h:outputLabel value="#{w.startRecord.recordTimeStamp}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Out">
-                                    <h:outputLabel value="#{w.endRecord.recordTimeStamp}" ></h:outputLabel>
+                                <p:column headerText="Out at">
+                                    <h:outputLabel value="#{w.endRecord.recordTimeStamp}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Actions" >
                                     <p:commandButton 
                                         ajax="false" 
-                                        value="Retire" 
+                                        value="Mark Out" 
                                         class="ui-button-danger"
+                                        disabled="#{w.endRecord ne null}"
                                         icon="fas fa-door-open"
                                         action="#{workingTimeController.markOut()}" >
                                         <f:setPropertyActionListener value="#{w}" target="#{workingTimeController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false"
-                                                     value="View"
-                                                     class="ui-button-success mx-2"
-                                                     icon="fas fa-eye"
-                                                     action="#{workingTimeController.navigateToViewWorkTime}" >
-                                        <f:setPropertyActionListener value="#{w}" target="#{workingTimeController.current}" ></f:setPropertyActionListener>
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="View"
+                                        class="ui-button-success mx-2"
+                                        icon="fas fa-eye"
+                                        action="#{workingTimeController.navigateToViewWorkTimeForSelectedStaff(w.staffShift.staff)}" >
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>
-                          
-                            
+
+
                         </p:panel>
-                        
+
                     </h:form>
-                    
-                    
+
+
                 </h:panelGroup>
 
 

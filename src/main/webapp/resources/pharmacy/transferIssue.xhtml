@@ -200,6 +200,7 @@
                             <h:outputLabel value="Sale Value"/>
                         </f:facet>
                         <h:outputLabel styleClass="sale-value" value="#{0-bip.pharmaceuticalBillItem.itemBatch.retailsaleRate*bip.pharmaceuticalBillItem.qty}">
+                        <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel styleClass="totalSaleValue" value="0.00">

@@ -23,7 +23,7 @@
                                 id="fromDate"
                                 value="#{pharmacyReportController.fromDate}"
                                 navigator="false"
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
                         <p:spacer width="20"/>
 
@@ -38,7 +38,7 @@
                                 id="toDate"
                                 value="#{pharmacyReportController.toDate}"
                                 navigator="false"
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
                         <p:spacer width="20"/>
 
@@ -253,7 +253,7 @@
 
                                     <p:columnGroup type="header">
                                         <p:row>
-                                            <p:column headerText="Department" width="5rem"/>
+                                            <p:column headerText="Department/Staff" width="5rem"/>
                                             <p:column headerText="Item Category Code" width="5rem"/>
                                             <p:column headerText="Item Category Name" width="10rem"/>
                                             <p:column headerText="Item Code" width="5rem"/>
@@ -278,7 +278,7 @@
 
                                     <p:subTable value="#{map.value}" var="f">
                                         <p:column width="10em">
-                                            <h:outputText value="#{f.department.name}"/>
+                                            <h:outputText value="#{f.department.name ne null ? f.department.name: f.staff.person.nameWithTitle}"/>
                                             <f:facet name="footer">
                                                 <h:outputText value="Total"/>
                                             </f:facet>

@@ -25,7 +25,8 @@
 
                                 <p:commandButton value="Process"  
                                                  icon="fa-solid fa-arrows-rotate"
-                                                 class="ui-button-warning" action="#{patientInvestigationController.listPatientSamples()}" ajax="false" ></p:commandButton>
+                                                 class="ui-button-warning"
+                                                 action="#{patientInvestigationController.listPatientSamples()}" ajax="false" ></p:commandButton>
                                 <p:commandButton ajax="false" value="Excel" icon="fa-solid fa-file-excel"
                                                  class="mx-1 ui-button-success">
                                     <p:dataExporter target="tbl" fileName="patient_samples" type="xlsx" ></p:dataExporter>
@@ -48,14 +49,23 @@
                                     <p:column headerText="No." width="20">
                                         <p:outputLabel value="#{n+1}" ></p:outputLabel>
                                     </p:column>
-                                    <p:column width="180" headerText="Collected At" sortBy="#{ps.sampledAt}" >
-                                        <p:outputLabel value="#{ps.sampledAt}" >
-                                            <f:convertDateTime pattern="dd-MMM-yyyy"></f:convertDateTime>
-                                        </p:outputLabel>
-                                    </p:column>
                                     <p:column width="90" headerText="ID" filterBy="#{ps.idStr}" sortBy="#{ps.idStr}" filterMatchMode="contains">
                                         <p:outputLabel value="#{ps.idStr}" ></p:outputLabel>
                                     </p:column>
+                                    <p:column headerText="No." width="180">
+                                        <p:outputLabel value="#{ps.sampleId}" ></p:outputLabel>
+                                        <p:commandButton
+                                            value="To Edit"
+                                            ajax="false"
+                                            action="#{patientSampleController.navigateToEditPatientSample(ps)}" >
+                                        </p:commandButton>
+                                    </p:column>
+                                    <p:column width="180" headerText="Collected At" sortBy="#{ps.createdAt}" >
+                                        <p:outputLabel value="#{ps.createdAt}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                                        </p:outputLabel>
+                                    </p:column>
+
                                     <p:column width="120" headerText="Bill No" filterBy="#{ps.bill.deptId}" sortBy="#{ps.bill.deptId}" filterMatchMode="contains">
                                         <p:commandLink id="billNo"  ajax="false" target="_blank"  value="#{ps.bill.deptId}" 
                                                        action="#{searchController.viewOPD(ps.bill)}">
@@ -64,18 +74,6 @@
                                     </p:column>
                                     <p:column headerText="Patient" filterBy="#{ps.bill.patient.person.nameWithTitle}" sortBy="#{ps.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
                                         <p:outputLabel value="#{ps.bill.patient.person.nameWithTitle}" rendered="#{!(webUserController.hasPrivilege('LabEditPatient'))}"></p:outputLabel>
-
-
-                                        <p:commandLink id="colPtDetail" rendered="#{webUserController.hasPrivilege('LabEditPatient')}" 
-                                                       value="#{ps.bill.patient.person.nameWithTitle}, #{ps.bill.patient.age}" 
-                                                       action="#{patientController.navigateToOpdPatientEdit()}" target="_blank" ajax="false"
-                                                       style="text-decoration:underline;"
-                                                       styleClass="#{ps.bill.cancelled or ps.bill.refunded ? 'redtext':''}"
-                                                       >
-                                            <f:setPropertyActionListener value="#{ps.bill.patient}" target="#{patientController.current}"/>
-<!--                                            <f:setPropertyActionListener value="#{ps.bill}" target="#{billController.bill}"/>-->
-                                        </p:commandLink>
-
                                     </p:column>
                                     <p:column headerText="Analyzer" >
                                         <p:outputLabel value="#{ps.machine.name}" ></p:outputLabel>

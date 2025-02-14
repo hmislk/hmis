@@ -21,6 +21,7 @@ public enum InvestigationItemType {
     Image,
     Html,
     MeasurementUnit,
+    ReportImage,
     @Deprecated
     List,
     @Deprecated

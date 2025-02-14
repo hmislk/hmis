@@ -2271,6 +2271,8 @@ public class BillBeanController implements Serializable {
                     patientEncounter.getFinalBill().setSettledAmountByPatient(patientEncounter.getFinalBill().getSettledAmountByPatient() + bill.getNetTotal());
                 }else if(bill.getBillTypeAtomic()== BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED){
                     patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor()+ bill.getNetTotal());
+                }else if(bill.getBillTypeAtomic()== BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION){
+                    patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor() - Math.abs(bill.getNetTotal()));
                 }
                 getBillFacade().edit(patientEncounter.getFinalBill());
             }

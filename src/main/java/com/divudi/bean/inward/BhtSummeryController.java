@@ -1419,7 +1419,7 @@ public class BhtSummeryController implements Serializable {
         getDischargeController().discharge();
 
         if (getPatientEncounter().isDischarged()) {
-            if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getDateOfDischarge() != null) {
+            if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && getPatientEncounter().getDateOfDischarge() != null) {
                 getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
                 roomChangeController.discharge(getPatientEncounter().getCurrentPatientRoom());
             }
@@ -2371,7 +2371,7 @@ public class BhtSummeryController implements Serializable {
             switch (i.getInwardChargeType()) {
                 case AdmissionFee:
                     if (getPatientEncounter().getAdmissionType() != null) {
-                        i.setTotal(getPatientEncounter().getAdmissionType().getAdmissionFee());
+                        i.setTotal(getInwardBean().getAdmissionCharge(getPatientEncounter()));
                     }
                     break;
                 case RoomCharges:
