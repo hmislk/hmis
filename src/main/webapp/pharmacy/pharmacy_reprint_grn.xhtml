@@ -48,6 +48,15 @@
                                     </p:commandButton>
 
                                     <p:commandButton 
+                                        class="ui-button-success"
+                                        icon="fa fa-download"
+                                        value="Export JSON"
+                                        ajax="false">
+                                        <p:fileDownload value="#{pharmacyBillSearch.exportAsJson()}"/>
+                                    </p:commandButton>
+
+
+                                    <p:commandButton 
                                         ajax="false" 
                                         value="To Cancel" 
                                         class="ui-button-danger"
