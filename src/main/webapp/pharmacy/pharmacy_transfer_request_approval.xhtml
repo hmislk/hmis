@@ -10,7 +10,7 @@
     <ui:define name="content">
         <h:form>
             <p:panel rendered="#{!transferRequestController.printPreview}">
-                
+
 
                 <p:panel rendered="#{transferRequestController.toDepartment ne null }">
                     <f:facet name="header" > 
@@ -21,8 +21,8 @@
                             </div>
                             <div>
                                 <p:commandButton  
-                                    value="Finalize" 
-                                    action="#{transferRequestController.request}" 
+                                    value="Approve" 
+                                    action="#{transferRequestController.approveTransferRequestBill}" 
                                     ajax="false"
                                     icon="fas fa-check" 
                                     class="mx-1 ui-button-success">
@@ -48,56 +48,56 @@
                         
                                             </h:panelGrid>-->
                     </f:facet>
-<!--                    <div class="row">
-                        <div class="col-10">
-                            <p:panel >
-                                <f:facet name="header" >  
-                                    <h:outputLabel styleClass="fas fa-cube" />
-                                    <h:outputLabel value="Add Items" class="mx-4" />
-                                </f:facet>
-                                <div class="row">
-                                    <div class="col-7">
-                                        <p:autoComplete  id="items" value="#{transferRequestController.currentBillItem.item}"
-                                                         forceSelection="true"  class="w-100" inputStyleClass="w-100"
-                                                         completeMethod="#{itemController.completeAmpItem}" 
-                                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"
-                                                         >
-                                            <p:column headerText="Item" >
-                                                <h:outputLabel value="#{vt.name}"></h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Code" >
-                                                <h:outputLabel value="#{vt.code}"></h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Pack Size" rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}" >
-                                                <p:outputLabel value=" X #{vt.dblValue}" 
-                                                               rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                                            </p:column>
-                                            <f:ajax execute="@this" event="blur" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{transferRequestController.onEdit()}"/>
-                                            <p:ajax event="itemSelect" update="focusQty" ></p:ajax>
-                                        </p:autoComplete>
-                                    </div>
-                                    <div class="col-2">
-                                        <p:inputText id="txtQty" autocomplete="off" class="w-100" 
-                                                     value="#{transferRequestController.currentBillItem.tmpQty}" 
-                                                     onfocus="this.select();">
-                                            <p:ajax event="change" update="focusItem" />
-                                        </p:inputText>
-                                    </div>
-                                    <div class="col-3">
-                                        <p:commandButton 
-                                            value="Add Item"
-                                            icon="fas fa-plus"
-                                            class="ui-button-success w-100"
-                                            action="#{transferRequestController.addItem}" 
-                                            ajax="false"/>
-                                    </div>
-                                </div>
-                                <p:focus id="focusQty" for="txtQty" ></p:focus>
-                                <p:focus id="focusItem" for="items" ></p:focus>
-                            </p:panel>
-                        </div>
-
-                    </div>-->
+                    <!--                    <div class="row">
+                                            <div class="col-10">
+                                                <p:panel >
+                                                    <f:facet name="header" >  
+                                                        <h:outputLabel styleClass="fas fa-cube" />
+                                                        <h:outputLabel value="Add Items" class="mx-4" />
+                                                    </f:facet>
+                                                    <div class="row">
+                                                        <div class="col-7">
+                                                            <p:autoComplete  id="items" value="#{transferRequestController.currentBillItem.item}"
+                                                                             forceSelection="true"  class="w-100" inputStyleClass="w-100"
+                                                                             completeMethod="#{itemController.completeAmpItem}" 
+                                                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"
+                                                                             >
+                                                                <p:column headerText="Item" >
+                                                                    <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                                                </p:column>
+                                                                <p:column headerText="Code" >
+                                                                    <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                                                </p:column>
+                                                                <p:column headerText="Pack Size" rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}" >
+                                                                    <p:outputLabel value=" X #{vt.dblValue}" 
+                                                                                   rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                                                                </p:column>
+                                                                <f:ajax execute="@this" event="blur" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{transferRequestController.onEdit()}"/>
+                                                                <p:ajax event="itemSelect" update="focusQty" ></p:ajax>
+                                                            </p:autoComplete>
+                                                        </div>
+                                                        <div class="col-2">
+                                                            <p:inputText id="txtQty" autocomplete="off" class="w-100" 
+                                                                         value="#{transferRequestController.currentBillItem.tmpQty}" 
+                                                                         onfocus="this.select();">
+                                                                <p:ajax event="change" update="focusItem" />
+                                                            </p:inputText>
+                                                        </div>
+                                                        <div class="col-3">
+                                                            <p:commandButton 
+                                                                value="Add Item"
+                                                                icon="fas fa-plus"
+                                                                class="ui-button-success w-100"
+                                                                action="#{transferRequestController.addItem}" 
+                                                                ajax="false"/>
+                                                        </div>
+                                                    </div>
+                                                    <p:focus id="focusQty" for="txtQty" ></p:focus>
+                                                    <p:focus id="focusItem" for="items" ></p:focus>
+                                                </p:panel>
+                                            </div>
+                    
+                                        </div>-->
 
                     <p:panel class="my-2">
                         <f:facet name="header" >  
@@ -136,20 +136,36 @@
                 </p:panel>  
             </p:panel>
             <p:panel rendered="#{transferRequestController.printPreview}" >
-<!--                <p:commandButton 
-                    value="New Bill" 
-                    icon="fas fa-plus"
-                    class="ui-button-warning"
-                    ajax="false" 
-                    action="#{transferRequestController.recreate}" >
-                </p:commandButton>-->
-                <p:commandButton 
-                    value="Reprint"
-                    icon="fas fa-print"
-                    class="ui-button-info mx-2"
-                    ajax="false" >
-                    <p:printer target="gpBillPreview"></p:printer>
-                </p:commandButton>
+                <!--                <p:commandButton 
+                                    value="New Bill" 
+                                    icon="fas fa-plus"
+                                    class="ui-button-warning"
+                                    ajax="false" 
+                                    action="#{transferRequestController.recreate}" >
+                                </p:commandButton>-->
+                <div class="row justify-content-end">
+                    <div class="col-6">
+                        <p:commandButton 
+                            value="Reprint"
+                            icon="fas fa-print"
+                            class="ui-button-info mx-2"
+                            ajax="false" >
+                            <p:printer target="gpBillPreview"></p:printer>
+                        </p:commandButton>
+                    </div>
+
+                    <div class="col-6">
+                        <p:commandButton 
+                            value="Back"
+                            icon="fas fa-arrow-left "
+                            style="float: right"
+                            class="ui-button-danger mx-auto"
+                            action ="/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true"
+                            actionListener="#{searchController.fillSavedTranserRequestBills()}"
+                            ajax="false" >
+                        </p:commandButton>
+                    </div>
+                </div>
                 <h:panelGroup id="gpBillPreview">
                     <ph:transferRequest  bill="#{transferRequestController.bill}" />    
                 </h:panelGroup>
