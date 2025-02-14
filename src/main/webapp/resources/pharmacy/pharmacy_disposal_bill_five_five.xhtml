@@ -434,12 +434,19 @@
                                 <h:outputLabel value="Total" style="font-size: 15px; font-weight: bold;"/>
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 0px;">
-                                <h:outputLabel value="#{cc.attrs.bill.total}" style="font-size: 15px; font-weight: bold;">
+                                <h:outputLabel value="#{cc.attrs.bill.total}" styleClass="totalValue" style="font-size: 15px; font-weight: bold;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>
                     </h:panelGroup>
+                    <script>
+                        function calculateTotal(){
+                        
+                        const total = document.querySelectorAll('.itemsBlockRight').map(td => parseFloat(td.innerText) || 0).reduce((sum, value) => sum+value, 0);
+                        document.querySelector('.totalValue').innerText = total;
+                        }
+                    </script>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
                         <tr>
