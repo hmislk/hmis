@@ -65,10 +65,10 @@ jobs:
 
       - name: Deploy to Payara
         env:
-          SERVER_IP: ${{ secrets.RMH_PROD_SERVER_IP }}
-          SERVER_USER: ${{ secrets.RMH_PROD_SERVER_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.RMH_PROD_SSH_PRIVATE_KEY }}
-          PAYARA_ADMIN_PASS: ${{ secrets.RMH_PROD_PAYARA_ADMIN_PASS }}
+          SERVER_IP: ${{ secrets.COOP_PROD_SERVER_IP }}
+          SERVER_USER: ${{ secrets.COOP_PROD_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.COOP_PROD_SSH_PRIVATE_KEY }}
+          PAYARA_ADMIN_PASS: ${{ secrets.COOP_PROD_PAYARA_ADMIN_PASS }}
         run: |
           # Add SSH private key to the SSH agent
           echo "$SSH_PRIVATE_KEY" > private_key.pem
