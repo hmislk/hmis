@@ -6,6 +6,8 @@ package com.divudi.entity.hr;
 
 import com.divudi.data.hr.WorkingType;
 import com.divudi.entity.Bill;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
@@ -67,6 +69,12 @@ public class WorkingTime implements Serializable {
     
     @ManyToOne
     private Bill professinoalPaymentBill;
+    
+    
+    @ManyToOne
+    private Institution institution;
+    @ManyToOne
+    private Department department;
 
     // 7am - 1pm - Normal
     // 1pm - 7pm > OT
@@ -245,4 +253,22 @@ public class WorkingTime implements Serializable {
     public void setProfessinoalPaymentBill(Bill professinoalPaymentBill) {
         this.professinoalPaymentBill = professinoalPaymentBill;
     }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+    
+    
 }

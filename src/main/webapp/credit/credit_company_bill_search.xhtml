@@ -121,7 +121,7 @@
                                     id="billNo" 
                                     ajax="false" 
                                     value="#{bill.deptId}" 
-                                    action="credit_company_bill_reprint?faces-redirect=true">
+                                    action="#{creditCompanyBillSearch.navigateToBillPreview(bill)}">
                                     <f:setPropertyActionListener value="#{bill}" target="#{creditCompanyBillSearch.bill}"/>
                                 </p:commandLink>
                             </p:column>

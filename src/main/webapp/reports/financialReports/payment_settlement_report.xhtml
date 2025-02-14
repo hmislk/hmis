@@ -288,7 +288,7 @@
                                     value="#{bi.billItem.patientEncounter.finalBill.creater.webUserPerson.name}"/>
                         </p:column>
                         <p:column headerText="Payment Method" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.paymentMethod.name()}"/>
+                            <h:outputText value="#{bi.billItem.bill.paymentMethod.name()}"/>
                         </p:column>
                         <p:column headerText="Invoice Value" width="5rem">
                             <h:outputText value="#{bi.billItem.patientEncounter.finalBill.netTotal}">
@@ -301,7 +301,7 @@
                             </f:facet>
                         </p:column>
                         <p:column headerText="Receipt Value" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.paidAmount}">
+                            <h:outputText value="#{bi.billItem.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                         </p:column>
@@ -374,7 +374,7 @@
                                     value="#{bi.billItem.patientEncounter.finalBill.creater.webUserPerson.name}"/>
                         </p:column>
                         <p:column headerText="Payment Method" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.paymentMethod.name()}"/>
+                            <h:outputText value="#{bi.billItem.bill.paymentMethod.name()}"/>
                         </p:column>
                         <p:column headerText="Total Value" width="5rem">
                             <h:outputText value="#{bi.billItem.patientEncounter.finalBill.netTotal}">
