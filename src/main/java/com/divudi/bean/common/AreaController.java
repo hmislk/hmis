@@ -220,7 +220,7 @@ public class AreaController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + AreaController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Area.class.getName());
             }
         }
     }
