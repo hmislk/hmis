@@ -33,6 +33,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
+import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -625,7 +626,7 @@ public class BillService {
             Department department,
             WebUser webUser,
             List<BillTypeAtomic> billTypeAtomics) {
-        return fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null);
+        return fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null, null);
     }
 
     public List<Bill> fetchBills(Date fromDate,
@@ -635,7 +636,8 @@ public class BillService {
             Department department,
             WebUser webUser,
             List<BillTypeAtomic> billTypeAtomics,
-            AdmissionType admissionType) {
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
         String jpql;
         Map params = new HashMap();
 
@@ -670,6 +672,11 @@ public class BillService {
             params.put("admissionType", admissionType);
         }
 
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+        
         jpql += " order by b.createdAt desc  ";
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
