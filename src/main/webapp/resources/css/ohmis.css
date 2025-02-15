@@ -328,6 +328,83 @@ th.align-right-header .ui-column-title {
     padding: 0 !important;
 }
 
+
+.compact-column-borders {
+    --content-padding: 0.0rem; /* Remove padding */
+    --inline-spacing: 0.0rem; /* Remove spacing */
+    --border-radius: 0px; /* No border rounding */
+    border-collapse: collapse; /* Ensures borders align properly */
+    width: 100%;
+}
+
+.compact-column-borders td,
+.compact-column-borders th {
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    padding: 2px !important; /* Minimal padding */
+    margin: 0 !important;
+    line-height: 1; /* Remove extra spacing */
+    text-align: left;
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden; /* Hide overflowing text */
+    text-overflow: ellipsis; /* Show "..." for cut-off text */
+    max-width: 10em; /* Adjust based on column width */
+}
+
+.compact-column-borders th {
+    font-weight: bold;
+    text-align: center;
+    background: #f8f8f8;
+}
+
+.compact-column-borders tr {
+    height: auto !important; /* Prevent row height increase */
+    border-bottom: none !important; /* Remove row borders */
+    border-top: none !important; /* Remove row borders */
+}
+
+.compact-column-borders th:first-child,
+.compact-column-borders td:first-child {
+    border-left: none; /* Remove left border for first column */
+}
+
+.compact-column-borders th:last-child,
+.compact-column-borders td:last-child {
+    border-right: none; /* Remove right border for last column */
+}
+
+/* Bold footer text */
+.compact-column-borders tfoot td {
+    font-weight: bold !important;
+    border-top: 1px solid black !important; /* Add border above footer */
+}
+
+.compact-column-borders .ui-datatable-header,
+.compact-column-borders .ui-datatable-footer {
+    margin: 0 !important;
+    padding: 2px !important;
+    line-height: 1.1;
+}
+
+/* Hide empty footer cells */
+.compact-column-borders .ui-datatable-footer td:empty {
+    display: none;
+}
+
+.compact-column-borders .ui-state-default {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Border below header */
+.compact-column-borders thead {
+    border-bottom: 1px solid black !important;
+}
+
+
+
+
+
 .light-grey-background {
     background-color: #e2e3e5; /* Slightly darker grey than before */
     color: #343a40; /* Dark grey text, ensuring good contrast */
@@ -598,23 +675,13 @@ th.align-right-header .ui-column-title {
     }
 }
 
-@media print {
-    .printingOnly {
-        display: block !important;
-    }
-    .screenOnly {
+@media screen {
+    .printingOnly{
         display: none !important;
+
     }
 }
 
-@media screen {
-    .printingOnly {
-        display: none !important;
-    }
-    .screenOnly {
-        display: block !important;
-    }
-}
 
 
 /* Adjust the size of the autocomplete dropdown panel */
