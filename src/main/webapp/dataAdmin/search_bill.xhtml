@@ -16,45 +16,51 @@
                             <h:outputLabel value="Search Any Bills" class="mx-2"/>
                         </f:facet>
 
-                      
-                            <p:panelGrid columns="3" styleClass="ui-grid ui-grid-responsive" columnClasses="col-4,col-4,col-4">
-                                <!-- First Row -->
-                                <h:outputLabel for="insId" value="Bill No (Ins ID)" />
-                                <p:inputText id="insId" autocomplete="off" value="#{searchController.searchKeyword.deptId}" />
-                                <p:commandButton id="btnSearchInsId" ajax="false" value="Search by Ins ID"
-                                                 action="#{searchController.searchByInsId()}"
-                                                 icon="fa fa-search" styleClass="ui-button-primary" />
 
-                                <!-- Second Row -->
-                                <h:outputLabel for="deptId" value="Bill No (Dept ID)" />
-                                <p:inputText id="deptId" autocomplete="off" value="#{searchController.searchKeyword.deptId}" />
-                                <p:commandButton id="btnSearchDeptId" ajax="false" value="Search by Dept ID"
-                                                 action="#{searchController.searchByDeptId()}"
-                                                 icon="fa fa-search" styleClass="ui-button-primary" />
+                        <p:panelGrid columns="3" styleClass="ui-grid ui-grid-responsive" columnClasses="col-4,col-4,col-4">
 
-                                <!-- Third Row -->
-                                <h:outputLabel for="bhtNo" value="BHT No" />
-                                <p:inputText id="bhtNo" autocomplete="off" value="#{searchController.searchKeyword.bhtNo}" />
-                                <p:commandButton id="btnSearchBhtNo" ajax="false" value="Search by BHT No"
-                                                 action="#{searchController.searchByBhtNo()}"
-                                                 icon="fa fa-search" styleClass="ui-button-primary" />
 
-                                <!-- Fourth Row -->
-                                <h:outputLabel for="refBillNo" value="Bill ID" />
-                                <p:inputText id="refBillNo" autocomplete="off" value="#{searchController.searchKeyword.refBillNo}" />
-                                <p:commandButton id="btnSearchRefBillNo" ajax="false" value="Search by Bill ID"
-                                                 action="#{searchController.searchByRefBillNo()}"
-                                                 icon="fa fa-search" styleClass="ui-button-primary" />
+                            <!-- Second Row -->
+                            <h:outputLabel for="deptId" value="Bill No" />
+                            <p:inputText id="deptId" autocomplete="off" value="#{searchController.searchKeyword.deptId}" />
+                            <p:commandButton id="btnSearchDeptId" ajax="false" value="Search by Dept ID"
+                                             action="#{searchController.searchByDeptId()}"
+                                             icon="fa fa-search" styleClass="ui-button-primary" />
 
-                                <!-- Fifth Row -->
-                                <h:outputLabel for="searchAny" value="Search from Any" />
-                                <!-- Empty column for alignment -->
-                                <h:outputLabel value="" />
-                                <p:commandButton id="btnSearchAny" ajax="false" value="Search"
-                                                 action="#{searchController.createSearchBill()}"
-                                                 icon="fa fa-search" styleClass="ui-button-primary" />
-                            </p:panelGrid>
-                       
+                           
+
+                            <!-- Fourth Row -->
+                            <h:outputLabel for="txtId" value="Bill ID" />
+                            <p:inputText id="txtId" autocomplete="off" value="#{searchController.searchKeyword.id}" />
+                            <p:commandButton id="btnSearchRefBillNo" ajax="false" value="Search by Bill ID"
+                                             action="#{searchController.searchById()}"
+                                             icon="fa fa-search" styleClass="ui-button-primary" />
+
+                             <!-- Third Row -->
+                            <h:outputLabel for="bhtNo" value="BHT No" />
+                            <p:inputText id="bhtNo" autocomplete="off" value="#{searchController.searchKeyword.bhtNo}" />
+                            <p:commandButton id="btnSearchBhtNo" ajax="false" value="Search by BHT No"
+                                             action="#{searchController.searchByBhtNumber()}"
+                                             icon="fa fa-search" styleClass="ui-button-primary" />
+                            
+                            <!-- First Row -->
+                            <h:outputLabel for="insId" value="Bill No (Ins ID)" />
+                            <p:inputText 
+                                class="w-100"
+                                id="insId" autocomplete="off" value="#{searchController.searchKeyword.insId}" />
+                            <p:commandButton id="btnSearchInsId" ajax="false" value="Search by Ins ID"
+                                             action="#{searchController.searchByInsId()}"
+                                             icon="fa fa-search" styleClass="ui-button-primary" />
+
+                            <!-- Fifth Row -->
+                            <h:outputLabel for="searchAny" value="Search from Any" />
+                            <!-- Empty column for alignment -->
+                            <h:outputLabel value="" />
+                            <p:commandButton id="btnSearchAny" ajax="false" value="Search"
+                                             action="#{searchController.createSearchBill()}"
+                                             icon="fa fa-search" styleClass="ui-button-primary" />
+                        </p:panelGrid>
+
 
 
                         <p:commandButton 
