@@ -1511,7 +1511,7 @@ public class BillNumberGenerator {
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
         System.out.println("billSuffix = " + billSuffix);
         if (billSuffix == null || billSuffix.trim().equals("")) {
-            billSuffix = billType.toString();
+            billSuffix = "";
         }
         boolean commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic
                 = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Common Bill Number for All Departments, Institutions and Bill Types", false);
