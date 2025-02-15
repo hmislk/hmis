@@ -729,7 +729,7 @@ public class PharmacyBean {
         return true;
     }
 
-    @Deprecated
+    
     public boolean deductFromStockWithoutHistory(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
         if (stock == null) {
             return false;

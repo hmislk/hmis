@@ -604,7 +604,7 @@ public class TransferIssueController implements Serializable {
             }
 
             //Remove Department Stock
-            boolean returnFlag = pharmacyBean.deductFromStock(i.getPharmaceuticalBillItem().getStock(),
+            boolean returnFlag = pharmacyBean.deductFromStockWithoutHistory(i.getPharmaceuticalBillItem().getStock(),
                     Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()),
                     i.getPharmaceuticalBillItem(),
                     getSessionController().getDepartment());
@@ -612,7 +612,7 @@ public class TransferIssueController implements Serializable {
 
                 //Addinng Staff
                 Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
-                        Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
+                        Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getSessionController().getDepartment());
 
                 i.getPharmaceuticalBillItem().setStaffStock(staffStock);
 
