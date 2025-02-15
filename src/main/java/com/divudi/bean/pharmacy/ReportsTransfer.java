@@ -151,6 +151,10 @@ public class ReportsTransfer implements Serializable {
         return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill?faces-redirect=true";
     }
 
+    public String navigateBackToTransferIssueByBill() {
+        return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill?faces-redirect=true";
+    }
+
     public String navigateToTransferReceiveByBill() {
         transferBills = null;
         pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
@@ -1710,18 +1714,18 @@ public class ReportsTransfer implements Serializable {
 
         jpql.append(" order by b.id");
         transferBills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        
+
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
         for (Bill b : transferBills) {
-            
+
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
-        }      
+        }
         calculatePurachaseValuesOfBillItemsInBill(transferBills);
     }
-  
+
     public void fillTheaterTransfersReceiveWithBHTIssue() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
