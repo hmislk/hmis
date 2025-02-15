@@ -1498,9 +1498,9 @@ public class BillNumberGenerator {
     }
 
     public String departmentBillNumberGeneratorYearly(Department dep, BillTypeAtomic billType) {
-        System.out.println("departmentBillNumberGeneratorYearly = ");
-        System.out.println("billType = " + billType);
-        System.out.println("dep = " + dep);
+//        System.out.println("departmentBillNumberGeneratorYearly = ");
+//        System.out.println("billType = " + billType);
+//        System.out.println("dep = " + dep);
         if (dep == null) {
             return "";
         }
