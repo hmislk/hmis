@@ -487,7 +487,7 @@ public class TransferIssueController implements Serializable {
                 //Addinng Staff
 //                System.out.println("//Addinng Staff = ");
                 System.out.println(i.getPharmaceuticalBillItem() + " 1 " + i.getPharmaceuticalBillItem().getQtyInUnit() + " " + getIssuedBill().getToStaff());
-                Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
+                Stock staffStock = pharmacyBean.addToStockWihtoutStockHistory(i.getPharmaceuticalBillItem(),
                         Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
 
                 i.getPharmaceuticalBillItem().setStaffStock(staffStock);
@@ -604,15 +604,15 @@ public class TransferIssueController implements Serializable {
             }
 
             //Remove Department Stock
-            boolean returnFlag = pharmacyBean.deductFromStockWithoutHistory(i.getPharmaceuticalBillItem().getStock(),
+            boolean returnFlag = pharmacyBean.deductFromStock(i.getPharmaceuticalBillItem().getStock(),
                     Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()),
                     i.getPharmaceuticalBillItem(),
                     getSessionController().getDepartment());
             if (returnFlag) {
 
                 //Addinng Staff
-                Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
-                        Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getSessionController().getDepartment());
+                Stock staffStock = pharmacyBean.addToStockWihtoutStockHistory(i.getPharmaceuticalBillItem(),
+                        Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
 
                 i.getPharmaceuticalBillItem().setStaffStock(staffStock);
 
