@@ -85,11 +85,11 @@
                                 </f:facet>
 
                                 <!-- Serial -->
-                                <p:column headerText="Serial" width="3em">
+<!--                                <p:column headerText="Serial" width="3em">
                                     <h:outputLabel 
                                         value="#{n+1}">
                                     </h:outputLabel>  
-                                </p:column>
+                                </p:column>-->
 
                                 <!-- Bill No Column -->
                                 <p:column headerText="Bill No" sortBy="#{i.deptId}" filterBy="#{i.deptId}" filterMatchMode="contains">
@@ -99,20 +99,20 @@
                                 </p:column>
 
                                 <!-- Received Date Time Column -->
-                                <p:column headerText="Received Date Time" sortBy="#{i.createdAt}" filterBy="#{i.createdAt}" filterMatchMode="equals">
+                                <p:column headerText="Received Date Time">
                                     <h:outputLabel value="#{i.createdAt}">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                     </h:outputLabel>
                                 </p:column>
 
                                 <!-- Received Department Column -->
-                                <p:column headerText="Received By Department" sortBy="#{i.fromDepartment.name}" filterBy="#{i.fromDepartment.name}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{i.fromDepartment != null ? i.fromDepartment.name : 'Not Assigned'}" />
+                                <p:column headerText="Received By Department" >
+                                     <h:outputLabel value="#{i.department != null ? i.department.name : 'Not Assigned'}" />
                                 </p:column>
 
                                 <!-- Sent Department Column -->
-                                <p:column headerText="Sent From Department" sortBy="#{i.department.name}" filterBy="#{i.department.name}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{i.department != null ? i.department.name : 'Not Assigned'}" />
+                                <p:column headerText="Sent From Department" >
+                                    <h:outputLabel value="#{i.fromDepartment != null ? i.fromDepartment.name : 'Not Assigned'}" />             
                                 </p:column>
                                 
                                 <!-- Transporter Column -->
@@ -126,13 +126,32 @@
 
 
                                 <!-- Purchase Total Column -->
-                                <p:column headerText="Purchase Total" style="text-align: right;" sortBy="#{i.netTotal}" filterBy="#{i.netTotal}" filterMatchMode="gte">
+                                <p:column headerText="Purchase Value" >
                                     <h:outputLabel value="#{i.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>                                  
+                                    </h:outputLabel> 
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.netTotalValues}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                
+                                <p:column headerText="Sale Value" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Sale Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.saleValue}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>   
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.totalsValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
-
+                                
                                 <!-- Actions -->
                                 <p:column headerText="Actions" width="5em">
                                     <p:commandButton

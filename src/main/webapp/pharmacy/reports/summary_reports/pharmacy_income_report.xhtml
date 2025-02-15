@@ -142,6 +142,35 @@
                             </p:selectOneMenu>
 
                         </h:panelGroup>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf80d;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                            <h:outputLabel value="Admission Type" for="cmbDept" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu 
+                            id="cmbAdmissionType"
+                            class="w-100"
+                            autoWidth="false"
+                            value="#{pharmacySummaryReportController.admissionType}" 
+                            rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
+                            <f:selectItem itemLabel="All Admission Type"/>
+                            <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
+                                            itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                        </p:selectOneMenu>
+                        <p:spacer ></p:spacer>
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf80d;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                            <h:outputLabel value="Discount Scheme" for="cmbDept" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu 
+                            id="cmdDiscount"
+                            class="w-100"
+                            autoWidth="false"
+                            value="#{pharmacySummaryReportController.paymentScheme}" >
+                            <f:selectItem itemLabel="Select"/>
+                            <f:selectItems value="#{paymentSchemeController.items}" var="ps" itemLabel="#{ps.name}"/>
+                        </p:selectOneMenu>
+
                     </h:panelGrid>
 
                     <p:commandButton 
@@ -179,7 +208,7 @@
                         <p:column headerText="Bill No" >
                             <h:outputText value="#{row.bill.deptId}" />
                         </p:column>
-                        <p:column headerText="Patient" >
+                        <p:column headerText="Patient" width="20em">
                             <h:outputText value="#{row.bill.patient.person.nameWithTitle}" />
                         </p:column>
                         <p:column headerText="Date" >
@@ -274,6 +303,16 @@
                             </f:facet>
 
                         </p:column>
+                        <p:column headerText="Total"  class="text-end">
+                            <h:outputText value="#{row.grossTotal}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.grossTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
                         <p:column headerText="Discount"  class="text-end">
                             <h:outputText value="#{row.discount}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -297,11 +336,11 @@
 
                         </p:column>
                         <p:column headerText="Actual Total"  class="text-end">
-                            <h:outputText value="#{row.netTotal + row.discount}" >
+                            <h:outputText value="#{row.netTotal}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal + pharmacySummaryReportController.bundle.summaryRow.discount}">
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>

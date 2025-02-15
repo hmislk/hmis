@@ -666,6 +666,26 @@ public class SearchController implements Serializable {
         grnBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
+    public void fillSavedTranserRequestBills() {
+
+        String sql = "Select bill from Bill bill where bill.retired =false "
+                + " and bill.billType = :billType "
+                + " and bill.institution = :institution "
+                + " and bill.fromDepartment = :fromDepartment "
+                + " and bill.createdAt between :fromDate and :toDate"
+                + " order by bill.createdAt desc";
+
+        Map parametersForSearching = new HashMap();
+        parametersForSearching.put("billType", BillType.PharmacyTransferRequest);
+        parametersForSearching.put("institution", sessionController.getInstitution());
+        parametersForSearching.put("fromDepartment", sessionController.getDepartment());
+        parametersForSearching.put("fromDate", getFromDate());
+        parametersForSearching.put("toDate", getToDate());
+        
+        bills = getBillFacade().findByJpql(sql, parametersForSearching, TemporalType.TIMESTAMP);
+
+    }
+
     public String navigateToPatientLabReports() {
         fillPatientLabReports(patient);
         return "/lab/patient_lab_reports";
@@ -3767,10 +3787,12 @@ public class SearchController implements Serializable {
         tmp.put("toDep", getSessionController().getDepartment());
         tmp.put("bct", bct);
         tmp.put("bTp", BillType.PharmacyTransferRequest);
+        tmp.put("billTypeAtomic", billTypeAtomic.PHARMACY_TRANSFER_REQUEST);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:toDep"
-                + " and b.billClassType not in :bct"
+                + " and b.billClassType not in :bct "
+                + " and b.billTypeAtomic = :billTypeAtomic"
                 + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
@@ -4534,12 +4556,23 @@ public class SearchController implements Serializable {
         m.put("bType", btp);
         m.put("ins", getSessionController().getInstitution());
         m.put("class", PreBill.class);
+       
 
         sql = "select bi from BillItem bi"
                 + " where  type(bi.bill)=:class "
                 + " and bi.bill.institution=:ins"
                 + " and bi.bill.billType=:bType and "
                 + " bi.createdAt between :fromDate and :toDate ";
+        
+        if (getSearchKeyword().getFrmDepartment() != null) {
+            sql += " and bi.bill.department=:dep";
+             m.put("dep", getSearchKeyword().getFrmDepartment());
+        }
+
+        if (getSearchKeyword().getFrmDepartment() != null) {
+            sql += " and bi.bill.department=:dep";
+            m.put("dep", getSearchKeyword().getFrmDepartment());
+        }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((bi.bill.patient.person.name) like :patientName )";
@@ -4569,6 +4602,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
             sql += " and  ((bi.bill.patientEncounter.bhtNo) like :bht )";
             m.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getAdmissionType() != null) {
+            sql += " and bi.bill.patientEncounter.admissionType=:admissionType ";
+            m.put("admissionType", getSearchKeyword().getAdmissionType());
         }
 
         sql += " order by bi.id desc  ";

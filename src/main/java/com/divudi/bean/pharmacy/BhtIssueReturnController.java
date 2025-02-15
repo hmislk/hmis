@@ -248,6 +248,7 @@ public class BhtIssueReturnController implements Serializable {
         }
 
         bill.setTotal(total);
+        bill.setMargin(netTotal - total);
         bill.setNetTotal(netTotal);
         getBillFacade().edit(bill);
 

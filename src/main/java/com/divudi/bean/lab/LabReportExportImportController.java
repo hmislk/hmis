@@ -75,7 +75,7 @@ public class LabReportExportImportController implements Serializable {
     @Inject
     EnumController enumController;
 // </editor-fold>
-    
+
 // <editor-fold defaultstate="collapsed" desc="Variables">
     private Investigation current;
     private List<InvestigationItem> successItems;
@@ -85,11 +85,8 @@ public class LabReportExportImportController implements Serializable {
     private StreamedContent downloadingExcel;
 
 // </editor-fold>   
-    
 // <editor-fold defaultstate="collapsed" desc="Navigation Method">
-
 // </editor-fold>
-    
 // <editor-fold defaultstate="collapsed" desc="Methods">
     public LabReportExportImportController() {
     }
@@ -116,6 +113,7 @@ public class LabReportExportImportController implements Serializable {
         l.add(InvestigationItemType.Barcode);
         l.add(InvestigationItemType.BarcodeVertical);
         l.add(InvestigationItemType.Image);
+        l.add(InvestigationItemType.ReportImage);
 
         investigationComporent = listInvestigationItemsFilteredByItemTypes(investigation, l);
         return investigationComporent;
@@ -138,18 +136,18 @@ public class LabReportExportImportController implements Serializable {
         return tis;
     }
 
-    public StreamedContent export(){
+    public StreamedContent export() {
         if (getCurrent() == null) {
             JsfUtil.addErrorMessage("Pleace select Investigations ");
             return null;
         }
         List<InvestigationItem> items = investigationItemController.getUserChangableItems();
-        
+
         if (items == null) {
             JsfUtil.addErrorMessage("This Investigation has no InvestigationItem");
             return null;
         }
-        
+
         try {
             downloadingExcel = exportInvestigationItemsToExcel(items);
         } catch (IOException e) {
@@ -157,7 +155,7 @@ public class LabReportExportImportController implements Serializable {
         }
         JsfUtil.addSuccessMessage("Successfuly Download !");
         return downloadingExcel;
-        
+
     }
 
     public void importFormat() {
@@ -198,7 +196,6 @@ public class LabReportExportImportController implements Serializable {
     }
 
 // </editor-fold>
-    
 // <editor-fold defaultstate="collapsed" desc="Export">
     private String defaultIfNullOrEmpty(String value, String defaultValue) {
         return (value == null || value.trim().isEmpty()) ? defaultValue : value;
@@ -218,7 +215,6 @@ public class LabReportExportImportController implements Serializable {
         StreamedContent excelSc;
 
         // Create a new workbook and a sheet
-        
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet sheet = workbook.createSheet("InvestigationItems");
 
@@ -288,14 +284,12 @@ public class LabReportExportImportController implements Serializable {
                 .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .stream(() -> inputStream)
                 .build();
-        
+
         return excelSc;
     }
 
 // </editor-fold>
-    
 // <editor-fold defaultstate="collapsed" desc="Import">
-    
     private List<Item> readAndUploadReportItemFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -371,7 +365,7 @@ public class LabReportExportImportController implements Serializable {
             }
             if (ixItemValueType != null && !ixItemValueType.trim().equals("")) {
                 investigationItemValueType = enumController.getInvestigationItemValueType(ixItemValueType);
-            }else if (ixItemValueType == null) {
+            } else if (ixItemValueType == null) {
                 investigationItemValueType = InvestigationItemValueType.Varchar;
             }
 
@@ -692,7 +686,6 @@ public class LabReportExportImportController implements Serializable {
 //            System.out.println("***************************");
 //
 //            System.out.println("-------------------------");
-
             //Create New InvestigationItem for Current Investigation
             InvestigationItem newItem = new InvestigationItem();
             newItem.setName(name);
@@ -719,7 +712,7 @@ public class LabReportExportImportController implements Serializable {
 
             newItem.setCreatedAt(new Date());
             newItem.setCreater(sessionController.getLoggedUser());
-            
+
             reportItemFacade.edit(newItem);
             System.out.println("Added ---> " + newItem.getName());
             uploadedSuccessItems.add(newItem);
