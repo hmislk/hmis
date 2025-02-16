@@ -487,7 +487,7 @@ public class TransferIssueController implements Serializable {
                 //Addinng Staff
 //                System.out.println("//Addinng Staff = ");
                 System.out.println(i.getPharmaceuticalBillItem() + " 1 " + i.getPharmaceuticalBillItem().getQtyInUnit() + " " + getIssuedBill().getToStaff());
-                Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
+                Stock staffStock = pharmacyBean.addToStockWihtoutStockHistory(i.getPharmaceuticalBillItem(),
                         Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
 
                 i.getPharmaceuticalBillItem().setStaffStock(staffStock);
@@ -611,7 +611,7 @@ public class TransferIssueController implements Serializable {
             if (returnFlag) {
 
                 //Addinng Staff
-                Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
+                Stock staffStock = pharmacyBean.addToStockWihtoutStockHistory(i.getPharmaceuticalBillItem(),
                         Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
 
                 i.getPharmaceuticalBillItem().setStaffStock(staffStock);
