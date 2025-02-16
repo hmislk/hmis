@@ -1181,7 +1181,6 @@ public class GrnController implements Serializable {
         setBatch(tmp);
         double remains = getPharmacyCalculation().getRemainingQty(tmp.getPharmaceuticalBillItem());
 
-
         if (remains < tmp.getPharmaceuticalBillItem().getQtyInUnit()) {
             tmp.setTmpQty(remains);
             JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");

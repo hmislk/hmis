@@ -471,6 +471,28 @@ public class PharmacyBean {
         addToStockHistory(pharmaceuticalBillItem, s, staff);
         return s;
     }
+    
+    public Stock addToStockWihtoutStockHistory(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Staff staff) {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "Select s from Stock s where s.itemBatch=:bc and s.staff=:stf";
+        hm.put("bc", pharmaceuticalBillItem.getItemBatch());
+        hm.put("stf", staff);
+        Stock s = getStockFacade().findFirstByJpql(sql, hm);
+        if (s == null) {
+            s = new Stock();
+            s.setStaff(staff);
+            s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
+        }
+        if (s.getId() == null || s.getId() == 0) {
+            s.setStock(s.getStock() + qty);
+            getStockFacade().create(s);
+        } else {
+            s.setStock(s.getStock() + qty);
+            getStockFacade().edit(s);
+        }
+        return s;
+    }
 
     public Stock addToStock(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Department department) {
         String sql;
@@ -756,7 +778,7 @@ public class PharmacyBean {
         return true;
     }
 
-    @Deprecated
+    
     public boolean deductFromStockWithoutHistory(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
         if (stock == null) {
             return false;
