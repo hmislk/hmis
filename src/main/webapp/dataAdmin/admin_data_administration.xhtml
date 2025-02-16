@@ -139,6 +139,15 @@
                                             action="#{searchController.toSearchBills}" 
                                             rendered="#{webUserController.hasPrivilege('Search')}">
                                         </p:commandButton>
+                                        
+                                        <p:commandButton 
+                                            value="Bills with Errors" 
+                                            ajax="false"
+                                            class="w-100 "
+                                            icon="fa fa-search"
+                                            action="#{searchController.navigateToListBillsWithErrors}" 
+                                            rendered="#{webUserController.hasPrivilege('Search')}">
+                                        </p:commandButton>
 
                                         <p:commandButton 
                                             value="List All Bills"  
