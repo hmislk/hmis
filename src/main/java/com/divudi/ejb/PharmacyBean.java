@@ -556,6 +556,33 @@ public class PharmacyBean {
         return true;
     }
 
+    public boolean deductFromStockWithoutStockHistory(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Staff staff) {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "Select s from Stock s where s.itemBatch=:batch "
+                + "and s.staff=:stf";
+        hm.put("batch", pharmaceuticalBillItem.getItemBatch());
+        hm.put("stf", staff);
+        Stock s = getStockFacade().findFirstByJpql(sql, hm);
+        if (s == null) {
+            s = new Stock();
+            s.setStaff(staff);
+            s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
+        }
+        if (s.getStock() < qty) {
+            return false;
+        }
+
+        if (s.getId() == null || s.getId() == 0) {
+            s.setStock(s.getStock() - qty);
+            getStockFacade().create(s);
+        } else {
+            s.setStock(s.getStock() - qty);
+            getStockFacade().edit(s);
+        }
+        return true;
+    }
+
     public boolean deductFromStock(ItemBatch batch, double qty, Department department, boolean minusAllowed) {
         if (!minusAllowed) {
             return deductFromStock(batch, qty, department);
@@ -800,7 +827,7 @@ public class PharmacyBean {
             return;
         }
 
-        StockHistory sh= new StockHistory();
+        StockHistory sh = new StockHistory();
         sh.setFromDate(Calendar.getInstance().getTime());
         sh.setPbItem(phItem);
         sh.setHxDate(Calendar.getInstance().get(Calendar.DATE));
@@ -1372,7 +1399,7 @@ public class PharmacyBean {
     public Vmp getVmp(Vtm vtm, double strength, MeasurementUnit strengthUnit, PharmaceuticalItemCategory cat) {
         System.out.println("getVmp");
         System.out.println("strength = " + strength);
-        
+
         String sql;
         String vmpName = "";
 
