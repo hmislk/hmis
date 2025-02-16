@@ -675,13 +675,23 @@ th.align-right-header .ui-column-title {
     }
 }
 
-@media screen {
-    .printingOnly{
+@media print {
+    .printingOnly {
+        display: block !important;
+    }
+    .screenOnly {
         display: none !important;
-
     }
 }
 
+@media screen {
+    .printingOnly {
+        display: none !important;
+    }
+    .screenOnly {
+        display: block !important;
+    }
+}
 
 
 /* Adjust the size of the autocomplete dropdown panel */
