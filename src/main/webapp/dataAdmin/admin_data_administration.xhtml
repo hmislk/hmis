@@ -15,7 +15,9 @@
                     <div class="col-md-3">
                         <h:form >
 
-                            <p:accordionPanel class="w-100 m-1" activeIndex="#{investigationCategoryController.manageItemIndex}" >
+                            <p:accordionPanel 
+                                class="w-100 m-1" 
+                                activeIndex="#{investigationCategoryController.manageItemIndex}" >
                                 <p:ajax process="@this" ></p:ajax>
 
                                 <p:tab title="Manage Processes" disabled="false" >
@@ -125,7 +127,7 @@
                                 </p:tab>
 
 
-                                <p:tab title="Lists"  >
+                                <p:tab title="Search &amp; Lists"  >
 
                                     <div class="d-grid gap-2">
 
