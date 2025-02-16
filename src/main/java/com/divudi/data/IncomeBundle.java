@@ -293,9 +293,11 @@ public class IncomeBundle implements Serializable {
             if (b == null) {
                 continue;
             }
+            r.setGrossTotal(b.getTotal());
             r.setNetTotal(b.getNetTotal());
             r.setDiscount(b.getDiscount());
-            r.setActualTotal(b.getNetTotal() - b.getServiceCharge());
+            r.setServiceCharge(b.getMargin());
+            r.setActualTotal(b.getTotal() - b.getServiceCharge());
 
             if (b.getPaymentMethod() == null) {
                 r.setCreditValue(b.getNetTotal());

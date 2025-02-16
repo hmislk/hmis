@@ -137,21 +137,41 @@
                         </h:panelGrid>
 
 
-                        <p:dataTable value="#{reportController.testWiseCounts}" id="tblExport" var="c" rowIndexVar="rowIndex">
-                            <p:column headerText="S. No" >
-                                <h:outputText value="#{rowIndex + 1}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Test Name" >
-                                <h:outputText value="#{c.testName}" ></h:outputText>
-                            </p:column>
+                        <style>
+                            /* Ensure the table respects custom widths */
+                            #tblExport {
+                                table-layout: auto !important;
+                                width: 100%; /* Ensures responsiveness */
+                            }
 
-                            <p:column headerText="Count" >
+                            /* Apply minimum width to the column */
+                            #tblExport .wide-column {
+                                min-width: 50em !important;
+                                width: auto !important;
+                            }
+
+                            /* Ensure table cells respect the column width */
+                            #tblExport td.wide-column {
+                                min-width: 50em !important;
+                                width: auto !important;
+                                white-space: nowrap; /* Prevent wrapping */
+                            }
+                        </style>
+
+                        <p:dataTable value="#{reportController.testWiseCounts}" id="tblExport" var="c" rowIndexVar="rowIndex">
+                            <p:column headerText="No" width="2em">
+                                <h:outputText value="#{rowIndex + 1}" />
+                            </p:column>
+                            <p:column headerText="Test Name" styleClass="wide-column">
+                                <h:outputText value="#{c.testName}" />
+                            </p:column> 
+                            <p:column headerText="Count"  width="3em" styleClass="text-end">
                                 <h:outputText value="#{c.count}" ></h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{reportController.totalCount}" ></h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Hos Fee" >
+                            <p:column headerText="Hos Fee"  width="5em" styleClass="text-end">
                                 <h:outputText value="#{c.hosFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -161,7 +181,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Professional Fee" >
+                            <p:column headerText="Professional Fee"  width="5em" styleClass="text-end">
                                 <h:outputText value="#{c.proFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -171,7 +191,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Net Hos Fee" >
+                            <p:column headerText="Net Hos Fee"  width="5em" styleClass="text-end">
                                 <h:outputText value="#{c.hosFee - c.discount}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -181,7 +201,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Discount" >
+                            <p:column headerText="Discount"  width="5em" styleClass="text-end">
                                 <h:outputText value="#{c.discount}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -192,7 +212,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Total Amount" >
+                            <p:column headerText="Total Amount" width="5em" styleClass="text-end">
                                 <h:outputText value="#{c.total}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>

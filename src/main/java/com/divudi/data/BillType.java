@@ -80,6 +80,7 @@ public enum BillType {
     PharmacyOrder,
     PharmacyOrderApprove,
     PharmacyGrnBill,//Cash out
+    PharmacyGrnBillImport,//Cash out
     PharmacyGrnReturn,
     PharmacyReturnWithoutTraising,
     GrnPayment,

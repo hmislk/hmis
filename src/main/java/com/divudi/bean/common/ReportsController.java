@@ -2765,7 +2765,7 @@ public class ReportsController implements Serializable {
         }
 
         if (visitType != null && (visitType.equalsIgnoreCase("IP") && admissionType != null)) {
-            jpql += "AND bill.patientEncounter.admissionType = :type ";
+            jpql += "AND billItem.patientEncounter.admissionType = :type ";
             parameters.put("type", admissionType);
         }
 
@@ -3207,6 +3207,7 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         }
         if (visitType != null && visitType.equalsIgnoreCase("CC")) {
             opdBts.add(BillTypeAtomic.CC_BILL);
@@ -3229,21 +3230,20 @@ public class ReportsController implements Serializable {
     private ReportTemplateRowBundle generateExternalLaboratoryWorkloadBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
-//                + "FROM BillItem billItem "
-//                + "JOIN billItem.bill bill "
-//                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
-//                + "WHERE bill.billTypeAtomic IN :bts "
-//                + "AND bill.createdAt BETWEEN :fd AND :td ";
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
-                + "FROM PatientInvestigation pi "
-                + "JOIN pi.billItem billItem "
+                + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
-                + "WHERE pi.retired=false "
-                + " and billItem.retired=false "
-                + " and bill.retired=false ";
+                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
+                + "WHERE bill.billTypeAtomic IN :bts ";
+//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+//                + "FROM PatientInvestigation pi "
+//                + "JOIN pi.billItem billItem "
+//                + "JOIN billItem.bill bill "
+//                + "WHERE pi.retired=false "
+//                + " AND billItem.retired=false "
+//                + " AND bill.retired=false "
+//                + " AND bill.billTypeAtomic in :bts ";
 
-        jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
 
         if (visitType != null) {
@@ -3413,6 +3413,7 @@ public class ReportsController implements Serializable {
         System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        rs.removeIf(row -> row.getRowValue() == 0.0);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);

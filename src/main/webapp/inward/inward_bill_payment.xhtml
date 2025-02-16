@@ -246,17 +246,13 @@
                                 action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton 
-                                value="Inpatient Dashboard"
-                                icon="fas fa-id-card"
-                                class="ui-button-secondary " 
-                                ajax="false" 
-                                action="#{patientController.navigateToOpdPatientProfile()}" 
-                                > 
-                                <f:setPropertyActionListener 
-                                    value="#{inwardPaymentController.current.patientEncounter.patient}" 
-                                    target="#{patientController.current}" ></f:setPropertyActionListener>
-                            </p:commandButton>
+                            <p:commandButton
+                                    ajax="false"
+                                    icon="fas fa-id-card"
+                                    value="Inpatient Dashboard"
+                                    class="ui-button-secondary "
+                                    action="#{inwardPaymentController.navigateToInpationDashbord()}"
+                            />
                         </div>
                     </f:facet>
 
