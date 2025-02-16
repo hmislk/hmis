@@ -140,6 +140,18 @@
                             </h:panelGroup>
                         </ui:repeat>
                     </tbody>
+                    <tfoot>
+                        <tr >
+                            <th></th>
+                            <th colspan="4" >Total</th>
+                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
+
+                                <h:outputText value="#{cc.attrs.bill.netTotal}">
+                                    <f:convertNumber pattern="#,###.00" />
+                                </h:outputText>
+                            </th>
+                        </tr>
+                    </tfoot>
                 </table>
 
             </div>

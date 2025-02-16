@@ -192,17 +192,17 @@
                                          rowsPerPageTemplate="5,10,15,50"
                                          >
 
-                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill ID" sortBy="#{bill.id}" filterBy="#{bill.id}" filterMatchMode="contains" >                                
+<!--                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill ID" sortBy="#{bill.id}" filterBy="#{bill.id}" filterMatchMode="contains" >                                
                                     <h:outputLabel value="#{bill.id}"/>
-                                </p:column>
+                                </p:column>-->
                                 <p:column
                                     headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" 
                                     filterMatchMode="contains" >                                
                                     <h:outputLabel value="#{bill.deptId}"/>
                                 </p:column>
-                                <p:column headerText="Bill Class" >                                
+<!--                                <p:column headerText="Bill Class" >                                
                                     <h:outputLabel value="#{bill.billClass}"/>
-                                </p:column>
+                                </p:column>-->
                                 <p:column headerText="Bill Type" >                                
                                     <h:outputLabel value="#{bill.billTypeAtomic.label}"/>
                                 </p:column>
@@ -219,30 +219,27 @@
                                 </p:column>
                                 <p:column headerText="No" exportable="false" styleClass="alignTop">
                                     <p:commandButton 
-                                        value="View" 
+                                        title="View" 
                                         icon="fa fa-eye" 
                                         class="m-1 ui-button-info"
-                                        style="width: 100px;"
                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                         ajax="false">
                                         <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
                                     </p:commandButton>
 
                                     <p:commandButton 
-                                        value="Manage" 
+                                        title="Manage" 
                                         icon="fa fa-tools" 
                                         class="m-1 ui-button-warning" 
-                                        style="width: 100px;"
                                         action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
                                         ajax="false">
                                         <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
                                     </p:commandButton>
 
                                     <p:commandButton 
-                                        value="Admin" 
+                                        title="Admin" 
                                         icon="fa fa-shield-alt" 
                                         class="m-1 ui-button-danger" 
-                                        style="width: 100px;"
                                         action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
                                         ajax="false" 
                                         rendered="#{webUserController.hasPrivilege('Developers')}">
