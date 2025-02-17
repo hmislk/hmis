@@ -1254,10 +1254,19 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void updatePaymentBillList() {
-        for (Bill b : getPaymentBill()) {
-            getBillBean().updateInwardDipositList(getCurrent().getPatientEncounter(), b);
+        for (Bill bill : getPaymentBill()) {
+            //getBillBean().updateInwardDipositList(getCurrent().getPatientEncounter(), b);
+            if (getCurrent().getPatientEncounter() != null && bill != null) {
+                if (getCurrent().getPatientEncounter().isPaymentFinalized() && getCurrent().getPatientEncounter().getFinalBill() != null) {
+                    bill.setForwardReferenceBill(getCurrent().getPatientEncounter().getFinalBill());
+                    getBillFacade().edit(bill);
+                    if (!getCurrent().getPatientEncounter().getFinalBill().getBackwardReferenceBills().contains(bill)) {
+                        getCurrent().getPatientEncounter().getFinalBill().getBackwardReferenceBills().add(bill);
+                    }
+                    getBillFacade().edit(patientEncounter.getFinalBill());
+                }
+            }
         }
-
     }
 
     public void settle() {
@@ -1628,6 +1637,8 @@ public class BhtSummeryController implements Serializable {
         getCurrent().setNetTotal(grantTotal - discount);
         getCurrent().setPaidAmount(paid);
         getCurrent().setClaimableTotal(adjustedTotal);
+        getCurrent().setSettledAmountBySponsor(paidByCompany);
+        getCurrent().setSettledAmountByPatient(paidByPatient);
         getCurrent().setPaymentMethod(getPatientEncounter().getPaymentMethod());
         getCurrent().setCreditCompany(getPatientEncounter().getCreditCompany());
         getCurrent().setInstitution(getSessionController().getInstitution());

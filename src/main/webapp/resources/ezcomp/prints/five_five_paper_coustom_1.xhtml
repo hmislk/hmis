@@ -44,15 +44,6 @@
                     <h:panelGroup >
                         <h:outputLabel value="OPD" />
                     </h:panelGroup>
-                    <h:panelGroup  rendered="#{cc.attrs.bill.refunded}" >
-                        <h:outputLabel value="&nbsp;&nbsp;" />
-                        <h:outputLabel value="Refuned" />
-                    </h:panelGroup>
-
-                    <h:panelGroup  rendered="#{cc.attrs.bill.cancelled}" >
-                        <h:outputLabel value="&nbsp;&nbsp;" />
-                        <h:outputLabel value="Cancelled" />
-                    </h:panelGroup>
 
                     <h:panelGroup>
                         <h:outputLabel value="&nbsp;&nbsp;" />
@@ -147,7 +138,7 @@
                         </td>
                     </tr>
 
-                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="billItem"   >
+                    <ui:repeat value="#{billController.billItemsOfBill(cc.attrs.bill)}" var="billItem"   >
                         <tr class="billDetailsFiveFive">
                             <td  style="width:80%!important;">
                                 <h:outputLabel value="#{billItem.item.printName}"></h:outputLabel> 

@@ -1949,14 +1949,16 @@ public class PharmacyReportController implements Serializable {
             billTypes.add(BillType.PharmacyIssue);
 
         } else if ("transferIssueDoc".equals(documentType)) {
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
+            billTypes.add(BillType.PharmacyTransferIssue);
+//            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+//            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+//            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE);
+//            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
+//            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
         } else if ("transferReceiveDoc".equals(documentType)) {
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
+            billTypes.add(BillType.PharmacyTransferReceive);
+//            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE);
+//            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
         }
 
         stockLedgerHistories = new ArrayList();
@@ -2007,6 +2009,11 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processClosingStockReport() {
+        stockSaleValue = 0.0;
+        stockQty = 0.0;
+        stockPurchaseValue = 0.0;
+        stockTotal = 0.0;
+
         List<Long> ids;
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
@@ -2056,7 +2063,6 @@ public class PharmacyReportController implements Serializable {
 
         ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        // Calculate purchase and sale values
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         stockTotal = 0.0;
@@ -2086,8 +2092,8 @@ public class PharmacyReportController implements Serializable {
         }
 
         if (reportType.equalsIgnoreCase("itemWise")) {
-            setStockSaleValue(0.0);
-            setStockQty(0.0);
+            stockPurchaseValue = 0.0;
+            stockQty = 0.0;
 
             Map<String, PharmacyRow> map = new HashMap<>();
 
@@ -2102,9 +2108,9 @@ public class PharmacyReportController implements Serializable {
                     pr.getStockHistory().setStockQty(pr.getStockHistory().getStockQty() + row.getStockHistory().getStockQty());
                     setStockQty(getStockQty() + row.getStockHistory().getStockQty());
 
-                    pr.getStockHistory().setStockSaleValue(pr.getStockHistory().getStockSaleValue() + row.getStockHistory().getStockQty() *
-                            row.getStockHistory().getItemBatch().getRetailsaleRate());
-                    setStockSaleValue(getStockSaleValue() + row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getRetailsaleRate());
+                    pr.getStockHistory().setStockSaleValue(pr.getStockHistory().getStockSaleValue() + row.getStockHistory().getStockQty()
+                            * row.getStockHistory().getItemBatch().getRetailsaleRate());
+                    setStockPurchaseValue(getStockPurchaseValue() + row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getPurcahseRate());
                 } else {
                     if (row.getStockHistory().getStockQty() == 0.0) {
                         continue;
@@ -2116,7 +2122,7 @@ public class PharmacyReportController implements Serializable {
                             row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getRetailsaleRate());
 
                     setStockQty(getStockQty() + row.getStockHistory().getStockQty());
-                    setStockSaleValue(getStockSaleValue() + row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getRetailsaleRate());
+                    setStockPurchaseValue(getStockPurchaseValue() + row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getPurcahseRate());
                 }
             }
 
@@ -2252,9 +2258,9 @@ public class PharmacyReportController implements Serializable {
             Row headerRow = sheet.createRow(rowIndex++);
 
             String[] headers = {"Department/Staff", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
-                    "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
-                    "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
-                    "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
+                "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
+                "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
+                "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
 
             for (int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
@@ -2279,21 +2285,21 @@ public class PharmacyReportController implements Serializable {
                         row.createCell(5).setCellValue(item.getMeasurementUnit() != null ? item.getMeasurementUnit().getName() : "-");
                         row.createCell(6).setCellValue(item.getCategory() != null ? item.getCategory().getName() : "-");
                         row.createCell(7).setCellValue(stock.getItemBatch().getId());
-                        row.createCell(8).setCellValue(stock.getItemBatch() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt() != null
+                        row.createCell(8).setCellValue(stock.getItemBatch() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt() != null
                                 ? sdf.format(stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt()) : "-");
-                        row.createCell(9).setCellValue(stock.getItemBatch() != null &&
-                                stock.getItemBatch().getDateOfExpire() != null
+                        row.createCell(9).setCellValue(stock.getItemBatch() != null
+                                && stock.getItemBatch().getDateOfExpire() != null
                                 ? sdf.format(stock.getItemBatch().getDateOfExpire()) : "-");
-                        row.createCell(10).setCellValue(stock.getItemBatch() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution() != null
+                        row.createCell(10).setCellValue(stock.getItemBatch() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution() != null
                                 ? stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution().getName() : "-");
-                        row.createCell(11).setCellValue(stock.getItemBatch() != null &&
-                                stock.getItemBatch().getDateOfExpire() != null
+                        row.createCell(11).setCellValue(stock.getItemBatch() != null
+                                && stock.getItemBatch().getDateOfExpire() != null
                                 ? calculateDaysRemaining(stock.getItemBatch().getDateOfExpire()) : 0);
                         row.createCell(12).setCellValue(stock.getItemBatch() != null ? stock.getItemBatch().getPurcahseRate() : 0);
                         row.createCell(13).setCellValue(stock.getItemBatch() != null ? stock.getItemBatch().getRetailsaleRate() : 0);
@@ -2358,8 +2364,8 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"Department/Staff", "Item Cat Code", "Item Cat Name", "Item Code", "Item Name", "Base UOM",
-                    "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
-                    "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
+                "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
+                "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
@@ -2384,15 +2390,15 @@ public class PharmacyReportController implements Serializable {
                         table.addCell(item.getMeasurementUnit() != null ? item.getMeasurementUnit().getName() : "-");
                         table.addCell(item.getCategory() != null ? item.getCategory().getName() : "-");
                         table.addCell(stock.getItemBatch() != null ? String.valueOf(stock.getItemBatch().getId()) : "-");
-                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt() != null
+                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt() != null
                                 ? sdf.format(stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt()) : "-");
                         table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null
                                 ? sdf.format(stock.getItemBatch().getDateOfExpire()) : "-");
-                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution() != null
+                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution() != null
                                 ? stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution().getName() : "-");
                         table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null
                                 ? String.valueOf(calculateDaysRemaining(stock.getItemBatch().getDateOfExpire())) : "0");
@@ -2408,16 +2414,24 @@ public class PharmacyReportController implements Serializable {
                         table.addCell("-");
                         table.addCell("-");
                     }
-                    for (int i = 0; i < 16; i++) table.addCell(" ");
+                    for (int i = 0; i < 16; i++) {
+                        table.addCell(" ");
+                    }
                     table.addCell(String.valueOf(calculateItemWiseTotalOfExpiredItems(item)));
                     table.addCell(String.valueOf(calculateBatchWiseQtyOfExpiredItems(item, batchNumber)));
-                    for (int i = 0; i < 2; i++) table.addCell(" ");
+                    for (int i = 0; i < 2; i++) {
+                        table.addCell(" ");
+                    }
                 }
-                for (int i = 0; i < 18; i++) table.addCell(" ");
+                for (int i = 0; i < 18; i++) {
+                    table.addCell(" ");
+                }
                 table.addCell(String.valueOf(calculateItemWiseTotalOfExpiredItems(item)));
                 table.addCell(String.valueOf(calculateItemWiseQtyOfExpiredItems(item)));
             }
-            for (int i = 0; i < 16; i++) table.addCell(" ");
+            for (int i = 0; i < 16; i++) {
+                table.addCell(" ");
+            }
             table.addCell(String.format("%.2f", stockPurchaseValue));
             table.addCell(String.format("%.2f", quantity));
             table.addCell(String.format("%.2f", stockPurchaseValue));

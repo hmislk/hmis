@@ -3879,7 +3879,6 @@ public class PharmacyController implements Serializable {
 
         String sql = "SELECT b FROM Bill b "
                 + " WHERE b.retired = false"
-                + " and b.cancelled = false"
                 + " and b.billTypeAtomic In :btas"
                 + " and b.createdAt between :fromDate and :toDate";
 
