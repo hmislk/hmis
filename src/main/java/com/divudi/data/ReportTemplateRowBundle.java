@@ -1086,20 +1086,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void calculateTotalByReferenceBills(final boolean isOutpatient) {
         total = 0.0;
-        Set<PatientEncounter> uniqueEncounters = new HashSet<>();
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
                 if (row.getBillItem() == null || row.getBillItem().getPatientEncounter() == null || row.getBillItem().getReferenceBill() == null ) {
                     continue;
                 }
 
-                PatientEncounter encounter = row.getBillItem().getPatientEncounter();
-                if (!uniqueEncounters.add(encounter)) {
-                    continue; // skip if encounter is already in the set
-                }
-
                 Double amount = safeDouble(isOutpatient ? row.getBillItem().getReferenceBill().getNetTotal()
-                        : row.getBillItem().getReferenceBill().getPatientEncounter().getFinalBill().getNetTotal());
+                        : row.getBillItem().getBill().getNetTotal());
                 total += amount;
             }
         }
