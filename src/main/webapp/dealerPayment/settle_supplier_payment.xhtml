@@ -35,7 +35,7 @@
 
                                 <h:outputLabel value="Payment Method" />
                                 <p:selectOneMenu id="cmbPs" value="#{supplierPaymentController.current.paymentMethod}">                                                                     
-                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                    <f:selectItems value="#{enumController.paymentMethodsForSupplierPayments}"  />
                                     <p:ajax 
                                         process="cmbPs"
                                         update="gpPaymentMethodDetails" 
