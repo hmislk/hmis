@@ -2009,6 +2009,11 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processClosingStockReport() {
+        stockSaleValue = 0.0;
+        stockQty = 0.0;
+        stockPurchaseValue = 0.0;
+        stockTotal = 0.0;
+
         List<Long> ids;
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
@@ -2058,7 +2063,6 @@ public class PharmacyReportController implements Serializable {
 
         ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        // Calculate purchase and sale values
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         stockTotal = 0.0;
@@ -2088,8 +2092,8 @@ public class PharmacyReportController implements Serializable {
         }
 
         if (reportType.equalsIgnoreCase("itemWise")) {
-            setStockSaleValue(0.0);
-            setStockQty(0.0);
+            stockPurchaseValue = 0.0;
+            stockQty = 0.0;
 
             Map<String, PharmacyRow> map = new HashMap<>();
 
@@ -2106,7 +2110,7 @@ public class PharmacyReportController implements Serializable {
 
                     pr.getStockHistory().setStockSaleValue(pr.getStockHistory().getStockSaleValue() + row.getStockHistory().getStockQty()
                             * row.getStockHistory().getItemBatch().getRetailsaleRate());
-                    setStockSaleValue(getStockSaleValue() + row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getRetailsaleRate());
+                    setStockPurchaseValue(getStockPurchaseValue() + row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getPurcahseRate());
                 } else {
                     if (row.getStockHistory().getStockQty() == 0.0) {
                         continue;
@@ -2118,7 +2122,7 @@ public class PharmacyReportController implements Serializable {
                             row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getRetailsaleRate());
 
                     setStockQty(getStockQty() + row.getStockHistory().getStockQty());
-                    setStockSaleValue(getStockSaleValue() + row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getRetailsaleRate());
+                    setStockPurchaseValue(getStockPurchaseValue() + row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getPurcahseRate());
                 }
             }
 
