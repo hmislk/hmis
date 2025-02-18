@@ -1093,7 +1093,22 @@ public class ReportTemplateRowBundle implements Serializable {
                 }
 
                 Double amount = safeDouble(isOutpatient ? row.getBillItem().getReferenceBill().getNetTotal()
-                        : row.getBillItem().getBill().getNetTotal());
+                        : row.getBillItem().getNetValue());
+                total += amount;
+            }
+        }
+    }
+    
+    public void calculateTotalByRefBills(final boolean isOutpatient) {
+        total = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+
+                Double amount = safeDouble(isOutpatient ? row.getBillItem().getReferenceBill().getNetTotal()
+                        : row.getBill().getNetTotal());
                 total += amount;
             }
         }
