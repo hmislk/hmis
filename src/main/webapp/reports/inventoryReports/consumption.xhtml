@@ -384,7 +384,7 @@
                                     width="6em"
                                     filterMatchMode="contains"
                                     sortBy="#{b.createdAt}"
-                                    filterBy="#{b.createdAt}">
+                                    filterBy="#{pharmacyController.formatDate(b.createdAt)}">
                                 <h:outputText value="#{b.createdAt}">
                                     <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
@@ -509,7 +509,7 @@
                                     width="8em"
                                     filterMatchMode="contains"
                                     sortBy="#{i.bill.createdAt}"
-                                    filterBy="#{i.bill.createdAt}">
+                                    filterBy="#{pharmacyController.formatDate(i.bill.createdAt)}">
                                 <p:outputLabel value="#{i.bill.createdAt}">
                                     <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
