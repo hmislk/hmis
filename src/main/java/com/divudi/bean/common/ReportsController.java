@@ -3248,8 +3248,11 @@ public class ReportsController implements Serializable {
         parameters.put("bts", bts);
 
         if (visitType != null) {
-            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP") || visitType.equalsIgnoreCase("CC")) {
+            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("CC")) {
                 jpql += "AND bill.ipOpOrCc = :type ";
+                parameters.put("type", visitType);
+            } else if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND (bill.ipOpOrCc = :type OR bill.ipOpOrCc IS NULL) ";
                 parameters.put("type", visitType);
             }
         }
@@ -3344,8 +3347,11 @@ public class ReportsController implements Serializable {
                 + "AND bill.createdAt BETWEEN :fd AND :td ";
 
         if (visitType != null) {
-            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP") || visitType.equalsIgnoreCase("CC")) {
+            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("CC")) {
                 jpql += "AND bill.ipOpOrCc = :type ";
+                parameters.put("type", visitType);
+            } else if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND (bill.ipOpOrCc = :type OR bill.ipOpOrCc IS NULL) ";
                 parameters.put("type", visitType);
             }
         }
