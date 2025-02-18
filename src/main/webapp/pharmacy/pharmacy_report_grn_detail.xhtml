@@ -119,7 +119,7 @@
                                 <h:outputLabel value="GRN"/>
                             </f:facet>
 
-                            <p:column headerText="GRN No" >
+                            <p:column headerText="GRN No" width="20em">
                                 <p:commandLink 
                                     value="#{b.deptId}" 
                                     action="#{commonReport.navigateToViewGrnBillFromGRNSummary(b)}" 
@@ -158,6 +158,7 @@
                             </p:column>-->
 
                             <p:column headerText="Po No" 
+                                      width="20em"
                                       sortBy="#{b.referenceBill.deptId}"
                                       filterBy="#{b.referenceBill.deptId}"
                                       filterMatchMode="contains" >
@@ -222,7 +223,7 @@
 
                             <p:columnGroup type="footer">  
                                 <p:row >  
-                                    <p:column colspan="5" style="text-align:left" footerText="Totals:"/>
+                                    <p:column colspan="4" style="text-align:left" footerText="Totals:"/>
 
                                     <p:column style="text-align: right;" footerText="#{commonReport.grnBilled.cash}">
                                         <f:facet name="footer">
@@ -269,7 +270,7 @@
                                 <h:outputLabel value="Cancelled GRN "/>
                             </f:facet> 
 
-                            <p:column headerText="Cancelled NO" >
+                            <p:column headerText="Cancelled NO" width="20em" >
                                 <p:commandLink 
                                     value="#{b1.deptId}" 
                                     action="#{commonReport.navigateToViewCancelGRNBillFromGRNSummary(b1)}" 
@@ -277,7 +278,7 @@
                                 </p:commandLink>
                             </p:column>
 
-                            <p:column headerText="GRN No" >
+                            <p:column headerText="GRN No" width="20em" >
                                 <h:outputLabel value="#{b1.billedBill.deptId}" >
                                 </h:outputLabel>
                             </p:column>
@@ -411,7 +412,7 @@
                                 <h:outputLabel value="GRN Return"/>
                             </f:facet>
 
-                            <p:column headerText="GRN Return No" >
+                            <p:column headerText="GRN Return No" width="20em" >
                                 <p:commandLink 
                                     value="#{b.deptId}" 
                                     action="#{commonReport.navigateToViewCancelGRNReturnBillFromGRNSummary(b)}" 
@@ -419,19 +420,19 @@
                                 </p:commandLink>
                             </p:column>
 
-                            <p:column headerText="GRN No" >
+                            <p:column headerText="GRN No" width="20em" >
                                 <f:facet name="header">  
                                     <h:outputLabel value="GRN No"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b.referenceBill.deptId}"/>
                             </p:column>
 
-                            <p:column headerText="GRN Invoice No" >
+<!--                            <p:column headerText="GRN Invoice No" >
                                 <f:facet name="header">  
                                     <h:outputLabel value="GRN Invoice No"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b.referenceBill.invoiceNumber}"/>
-                            </p:column>
+                            </p:column>-->
 
                             <p:column headerText="GRN Date" >
                                 <f:facet name="header">  
@@ -557,14 +558,14 @@
                                 <h:outputLabel value="Cancelled GRN Return "/>
                             </f:facet> 
 
-                            <p:column headerText="Cancelled NO" >
+                            <p:column headerText="Cancelled NO" width="20em" >
                                 <f:facet name="header">  
                                     <h:outputLabel value="Cancelled NO"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b1.deptId}"/>
                             </p:column>
 
-                            <p:column headerText="GRN Return No" >
+                            <p:column headerText="GRN Return No" width="20em" >
                                 <f:facet name="header">  
                                     <h:outputLabel value="GRN Return No"/>
                                 </f:facet> 
@@ -757,12 +758,12 @@
                                 </p:commandLink>
                             </p:column>
 
-                            <p:column headerText="Invoice No" style="padding: 0px!important; margin: 0px!important;">
+<!--                            <p:column headerText="Invoice No" style="padding: 0px!important; margin: 0px!important;">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Invoice No" style="padding: 0px!important; margin: 0px!important;"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b.invoiceNumber}"/>
-                            </p:column>
+                            </p:column>-->
 
                             <p:column headerText="Created At" style="padding: 0px!important; margin: 0px!important;" >
                                 <f:facet name="header">  
@@ -855,7 +856,7 @@
 
                             <p:columnGroup type="footer">  
                                 <p:row >  
-                                    <p:column colspan="5" footerText="Totals:" style="padding: 0px!important; margin: 0px!important; text-align:left;"/>
+                                    <p:column colspan="4" footerText="Totals:" style="padding: 0px!important; margin: 0px!important; text-align:left;"/>
 
                                     <p:column style="padding: 0px!important; margin: 0px!important; text-align: right;" footerText="#{commonReport.grnBilled.cash}">
                                         <f:facet name="footer">
