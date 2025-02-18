@@ -35,7 +35,7 @@
 
                                 <h:outputLabel value="Payment Method" />
                                 <p:selectOneMenu id="cmbPs" value="#{supplierPaymentController.current.paymentMethod}">                                                                     
-                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                    <f:selectItems value="#{enumController.paymentMethodsForSupplierPayments}"  />
                                     <p:ajax 
                                         process="cmbPs"
                                         update="gpPaymentMethodDetails" 
@@ -44,17 +44,23 @@
 
                                 <h:outputLabel value="Payment Details" />
                                 <h:panelGroup id="gpPaymentMethodDetails" >
-                                    <h:panelGroup id="creditCard" style="display: #{supplierPaymentController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                    <h:panelGroup id="creditCard" rendered="#{supplierPaymentController.current.paymentMethod eq 'Card'}">
                                         <pa:creditCard paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="cheque" style="display: #{supplierPaymentController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                    <h:panelGroup id="cheque" rendered="#{supplierPaymentController.current.paymentMethod eq 'Cheque'}" >
                                         <pa:cheque paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="slip" style="display: #{supplierPaymentController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                    <h:panelGroup id="slip" rendered="#{supplierPaymentController.current.paymentMethod eq 'Slip'}">
                                         <pa:slip paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                     </h:panelGroup>
+                                    
+                                    
+                                    <h:panelGroup id="iou" rendered="#{supplierPaymentController.current.paymentMethod eq 'IOU'}">
+                                        <pa:iou valueRequired="false" paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
+                                    </h:panelGroup>
+                                    
                                 </h:panelGroup>
 
                                 <p:outputLabel value="Total" />
