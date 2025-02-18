@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
@@ -16,39 +16,23 @@
 
                     <p:panel header="Pharmacy Transfer Issue Bills" >
 
-                        <p:panelGrid columns="5" class="w-100" layout="tabular">
+                        <h:panelGrid columns="4" class="w-100" >
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar
-                                inputStyleClass="w-100"
-                                class="w-100"
-                                value="#{reportsTransfer.fromDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <p:spacer ></p:spacer>
+                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-
-                            <p:calendar 
-                                class="w-100"
-                                inputStyleClass="w-100"
-                                value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Transfer From" ></h:outputLabel>
-                            <p:autoComplete 
-                                class="w-100"
-                                inputStyleClass="w-100"
-                                completeMethod="#{departmentController.completeDept}" var="dept" 
-                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                value="#{reportsTransfer.fromDepartment}"  >
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                            value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
-                            <p:spacer ></p:spacer>
                             <h:outputLabel value="Transfer To" ></h:outputLabel>
-                            <p:autoComplete
-                                class="w-100"
-                                inputStyleClass="w-100"
-                                completeMethod="#{departmentController.completeDept}" var="dept" 
-                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                value="#{reportsTransfer.toDepartment}"  >
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                            value="#{reportsTransfer.toDepartment}"  >
                             </p:autoComplete>
 
-                        </p:panelGrid>
+                        </h:panelGrid>
 
                         <h:panelGrid columns="3" class="my-2">
                             <p:commandButton 
@@ -63,7 +47,7 @@
                                 value="Excel" 
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-2">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"   />
+                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Listing"   />
                             </p:commandButton>
                             <p:commandButton 
                                 value="Print" 
@@ -190,15 +174,12 @@
                                     exportable="false"
                                     headerText="Actions" width="5em" style="padding: 0px!important; margin: 0px!important;" >
                                     <p:commandButton
-                                        ajax="false"
-                                        value="View"
-                                        icon="pi pi-eye"
-                                        styleClass="ui-button-secondary"
+                                        ajax="false" 
+                                        value="View" 
                                         action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferIssue()}">
                                         <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{i}" />
-                                    </p:commandButton>
+                                    </p:commandButton>  
                                 </p:column>
-
 
 
                             </p:dataTable>
