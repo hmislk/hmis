@@ -224,7 +224,7 @@ public class TransferReceiveController implements Serializable {
             double qty = Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit());
 
             //    Deduct Staff Stock
-            boolean returnFlag = getPharmacyBean().deductFromStockWithoutStockHistory(tmpPh, Math.abs(qty), getIssuedBill().getToStaff());
+            boolean returnFlag = getPharmacyBean().deductFromStock(tmpPh, Math.abs(qty), getIssuedBill().getToStaff());
 
             if (returnFlag) {
                 //     Add Stock To Department
