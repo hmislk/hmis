@@ -45,17 +45,12 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PaymentFacade;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.*;
-import java.text.SimpleDateFormat;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -676,7 +671,7 @@ public class BillService {
             jpql += " and b.paymentScheme=:paymentScheme ";
             params.put("paymentScheme", paymentScheme);
         }
-        
+
         jpql += " order by b.createdAt desc  ";
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
@@ -744,10 +739,7 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt, bi.id ";
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         List<BillItem> fetchedBillItems = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("fetchedBillItems = " + fetchedBillItems.size());
         return fetchedBillItems;
     }
 
@@ -807,10 +799,7 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt, bi.id ";
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         List<BillItem> fetchedBillItems = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("fetchedBillItems = " + fetchedBillItems.size());
         return fetchedBillItems;
     }
 
@@ -844,10 +833,50 @@ public class BillService {
         params.put("ret", false);
         params.put("btas", btas);
         params.put("bill", inputBill);
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
+    }
+
+    public List<Bill> fetchAllReferanceBills(Bill inputBill) {
+        if (inputBill == null || inputBill.getBillTypeAtomic() == null) {
+            return null;
+        }
+
+        Set<Bill> allRefBills = new LinkedHashSet<>();
+
+        if (inputBill.getReferenceBill() != null) {
+            allRefBills.add(inputBill.getReferenceBill());
+        }
+        if (inputBill.getBilledBill() != null) {
+            allRefBills.add(inputBill.getBilledBill());
+        }
+        if (inputBill.getBackwardReferenceBill() != null) {
+            allRefBills.add(inputBill.getBackwardReferenceBill());
+        }
+        if (inputBill.getForwardReferenceBill() != null) {
+            allRefBills.add(inputBill.getForwardReferenceBill());
+        }
+        if (inputBill.getPaidBill() != null) {
+            allRefBills.add(inputBill.getPaidBill());
+        }
+
+        String jpql = "select b from Bill b "
+                + "where b.billedBill = :bill "
+                + "or b.referenceBill = :bill "
+                + "or b.backwardReferenceBill = :bill "
+                + "or b.forwardReferenceBill = :bill "
+                + "or b.paidBill = :bill "
+                + "order by b.createdAt";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bill", inputBill);
+
+        List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (fetchedBills != null) {
+            allRefBills.addAll(fetchedBills);
+        }
+
+        return new ArrayList<>(allRefBills);
     }
 
     public List<BillItem> fetchPaymentBillItems(Bill inputBill) {
@@ -881,10 +910,7 @@ public class BillService {
         params.put("ret", false);
         params.put("btas", btas);
         params.put("bill", inputBill);
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         List<BillItem> fetchedBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("fetchedBillItems = " + fetchedBillItems);
         return fetchedBillItems;
     }
 
@@ -1049,6 +1075,51 @@ public class BillService {
         }
 
         return bill;
+    }
+
+    public boolean checkBillForErrors(Bill bill) {
+        if (bill == null) {
+            return true;
+        }
+        if (bill.getBillTypeAtomic() == null) {
+            bill.setTmpComments("No Bill Type Atomic");
+            return true;
+        }
+        boolean hasAtLeatOneError = false;
+        switch (bill.getBillTypeAtomic()) {
+            case PHARMACY_GRN:
+            case PHARMACY_ORDER:
+            case PHARMACY_ORDER_APPROVAL:
+                boolean billNetTotalIsNotEqualToBillItemNetTotalError = billNetTotalIsNotEqualToBillItemNetTotal(bill);
+                System.out.println("billNetTotalIsNotEqualToBillItemNetTotalError = " + billNetTotalIsNotEqualToBillItemNetTotalError);
+                if (billNetTotalIsNotEqualToBillItemNetTotalError) {
+                    hasAtLeatOneError = true;
+                }
+                break;
+            default:
+                hasAtLeatOneError = false;
+
+        }
+        System.out.println("hasAtLeatOneError = " + hasAtLeatOneError);
+        return hasAtLeatOneError;
+    }
+
+    public boolean billNetTotalIsNotEqualToBillItemNetTotal(Bill bill) {
+        if (bill == null || bill.getBillItems() == null) {
+            return true;
+        }
+
+        double billNetTotal = Math.abs(bill.getNetTotal());
+        double billItemNetTotal = 0.0;
+
+        for (BillItem bi : bill.getBillItems()) {
+            if (bi != null) {
+                billItemNetTotal += Math.abs(bi.getNetValue());
+            }
+        }
+        boolean billNetTotalIsNotEqualToBillItemNetTotalError = Math.abs(billNetTotal - billItemNetTotal) >= 0.01;
+        System.out.println("billNetTotalIsNotEqualToBillItemNetTotalError = " + billNetTotalIsNotEqualToBillItemNetTotalError);
+        return billNetTotalIsNotEqualToBillItemNetTotalError;
     }
 
 }

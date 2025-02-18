@@ -1,9 +1,9 @@
-name: RMH-PROD Build & Deployment Pipeline
+name: DIGASIRI-PROD Build & Deployment Pipeline
 
 on:
   push:
     branches:
-      - rmh-prod
+      - digasiri-prod
 
 jobs:
   build:
@@ -29,8 +29,8 @@ jobs:
 
       - name: Update JDBC Data Sources in persistence.xml
         run: |
-          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/rmh</jta-data-source>|' src/main/resources/META-INF/persistence.xml
-          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/rmhAudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/digasiri</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/digasiriAudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
 
       - name: Verify JDBC Data Sources in persistence.xml
         run: |
@@ -65,20 +65,20 @@ jobs:
 
       - name: Deploy to Payara
         env:
-          SERVER_IP: ${{ secrets.RMH_PROD_SERVER_IP }}
-          SERVER_USER: ${{ secrets.RMH_PROD_SERVER_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.RMH_PROD_SSH_PRIVATE_KEY }}
-          PAYARA_ADMIN_PASS: ${{ secrets.RMH_PROD_PAYARA_ADMIN_PASS }}
+          SERVER_IP: ${{ secrets.DIGASIRI_PROD_SERVER_IP }}
+          SERVER_USER: ${{ secrets.DIGASIRI_PROD_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.DIGASIRI_PROD_SSH_PRIVATE_KEY }}
+          PAYARA_ADMIN_PASS: ${{ secrets.DIGASIRI_PROD_PAYARA_ADMIN_PASS }}
         run: |
           # Add SSH private key to the SSH agent
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
           # Variables
-          WAR_NAME="rmh.war"
+          WAR_NAME="digasiri.war"
           WAR_DIR="/home/appuser/app/latest"
-          APP_NAME="rmh"
-          SUBDOMAIN="rmh"
+          APP_NAME="digasiri"
+          SUBDOMAIN="digasiri"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
