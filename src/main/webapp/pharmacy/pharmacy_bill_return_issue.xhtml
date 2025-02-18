@@ -103,8 +103,12 @@
                     </p:column>
 
                     <p:column styleClass="revieveItemPrice" headerText="Recievable Amount" style="width:25px!important;">                       
-                        <h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Disposal bills shows purchase rate of bill items in the bill', false)}" value="#{ph.qty*ph.rate}" />  
-                        <h:outputText rendered="#{!configOptionApplicationController.getBooleanValueByKey('Disposal bills shows purchase rate of bill items in the bill', false)}" value="#{ph.qty*ph.pharmaceuticalBillItem.retailRate}" />  
+                        <h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Disposal bills shows purchase rate of bill items in the bill', false)}" value="#{ph.qty*ph.rate}" >
+                            <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                        </h:outputText> 
+                        <h:outputText rendered="#{!configOptionApplicationController.getBooleanValueByKey('Disposal bills shows purchase rate of bill items in the bill', false)}" value="#{ph.qty*ph.pharmaceuticalBillItem.retailRate}" >
+                            <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                        </h:outputText> 
                     </p:column> 
 
                     <p:column headerText="Returning Qty in Unit" style="width:25px!important;" >                     
@@ -122,13 +126,13 @@
                 </p:dataTable>  
             </h:panelGroup>
             <script>
-                function calculateTotalRecievableAmount(){
+                function calculateTotalRecievableAmount() {
                     const allItemAmount = document.querySelectorAll('.revieveItemPrice');
-                    
-                    const totalAmount = Array.from(allItemAmount).map(td => parseFloat(td.innerText) || 0).reduce((sum, value) => sum+value, 0);
+
+                    const totalAmount = Array.from(allItemAmount).map(td => parseFloat(td.innerText) || 0).reduce((sum, value) => sum + value, 0);
                     console.log('start');
                     document.querySelector('.totalAmount').innerText = totalAmount;
-                                
+
                 }
             </script>
 
