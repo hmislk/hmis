@@ -2740,10 +2740,16 @@ public class ReportsController implements Serializable {
 
         bundle.setName("Bills");
         bundle.setBundleType("billList");
+        
+        if (visitType.equalsIgnoreCase("IP") && reportType.equalsIgnoreCase("summary")) {
+            bundle = generateReportBill(opdBts, null);
+            bundle.calculateTotalByRefBills(visitType.equalsIgnoreCase("OP"));
+        } else {
+            bundle = generateReportBillItems(opdBts, null);
+            bundle.calculateTotalByReferenceBills(visitType.equalsIgnoreCase("OP"));
+        }
 
-        bundle = generateReportBillItems(opdBts, null);
-
-        bundle.calculateTotalByReferenceBills(visitType.equalsIgnoreCase("OP"));
+        
     }
 
     public ReportTemplateRowBundle generateReportBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
@@ -2813,6 +2819,82 @@ public class ReportsController implements Serializable {
         parameters.put("td", toDate);
 
         jpql += "GROUP BY billItem";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+        b.setReportTemplateRows(rs);
+        b.createRowValuesFromBillItems();
+        b.calculateTotalsWithCredit();
+        return b;
+    }
+    
+    public ReportTemplateRowBundle generateReportBill(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "WHERE bill.retired <> :bfr AND bill.retired <> :br ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (billPaymentMethods != null) {
+            jpql += "AND bill.paymentMethod in :bpms ";
+            parameters.put("bpms", billPaymentMethods);
+        }
+
+//        if (visitType != null && (visitType.equalsIgnoreCase("IP") && admissionType != null)) {
+//            jpql += "AND billItem.patientEncounter.admissionType = :type ";
+//            parameters.put("type", admissionType);
+//        }
+//
+//        if (visitType != null && (visitType.equalsIgnoreCase("IP") && roomCategory != null)) {
+//            jpql += "AND bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory = :category ";
+//            parameters.put("category", roomCategory);
+//        }
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND bill.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+
+        if (collectingCentre != null) {
+            jpql += "AND bill.collectingCentre = :cc ";
+            parameters.put("cc", collectingCentre);
+        }
+
+        if (creditCompany != null) {
+            if (visitType != null && visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND bill.creditCompany = :creditC ";
+            } else if (visitType != null && visitType.equalsIgnoreCase("IP")) {
+                jpql += "AND bill.creditCompany = :creditC ";
+            }
+
+            parameters.put("creditC", creditCompany);
+        }
+
+        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill";
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
