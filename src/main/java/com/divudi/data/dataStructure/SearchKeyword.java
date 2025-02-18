@@ -59,6 +59,7 @@ public class SearchKeyword {
     private Item item;
     private Investigation investigation;
     private List<BillType> billTypes;
+    private Long id;
     
     
     
@@ -442,6 +443,15 @@ public class SearchKeyword {
         this.investigation = investigation;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    
 
 
 
