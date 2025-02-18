@@ -387,7 +387,7 @@
                                 </td>
 
                                 <td  >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.netValue}"    >
+                                    <h:outputLabel class="itemsBlockRightFiveFive" styleClass="itemValue"  value="#{bip.netValue}"    >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -396,11 +396,7 @@
                         </ui:repeat>
                     </h:panelGroup>
 
-
-
-
                 </table>
-
 
             </div>
 
@@ -408,8 +404,6 @@
             <div class="billline">
                 <h:outputLabel value="--------------------------------------------------------------------------------"   />                           
             </div>
-
-
 
             <div  >
 
@@ -421,7 +415,7 @@
                                 <h:outputLabel value="Total" style="font-size: 15px; font-weight: bold;"/>
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 0px;">
-                                <h:outputLabel value="#{cc.attrs.bill.total}" style="font-size: 15px; font-weight: bold;">
+                                <h:outputLabel styleClass="totalValue" value="0.00" style="font-size: 15px; font-weight: bold;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
@@ -434,18 +428,21 @@
                                 <h:outputLabel value="Total" style="font-size: 15px; font-weight: bold;"/>
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 0px;">
-                                <h:outputLabel value="#{cc.attrs.bill.total}" styleClass="totalValue" style="font-size: 15px; font-weight: bold;">
+                                <h:outputLabel value="0.00" styleClass="totalValue" style="font-size: 15px; font-weight: bold;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>
                     </h:panelGroup>
                     <script>
-                        function calculateTotal(){
-                        
-                        const total = document.querySelectorAll('.itemsBlockRight').map(td => parseFloat(td.innerText) || 0).reduce((sum, value) => sum+value, 0);
-                        document.querySelector('.totalValue').innerText = total;
+                        function calculateTotal() {
+
+                            const total = Array.from(document.querySelectorAll('.itemValue')).map(td => parseFloat(td.innerText) || 0).reduce((sum, value) => sum + value, 0);
+                            document.querySelector('.totalValue').innerText = total.toFixed(2);
                         }
+
+                        setTimeout(calculateTotal, 100);
+
                     </script>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
