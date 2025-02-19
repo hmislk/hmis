@@ -167,17 +167,17 @@
             <div >
                 <table style="width: 90%; margin-left: 5%" >
                     <tr>
-                        <td style="width: 40%; ">
+                        <td style="width: 30%; ">
                             <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
                         </td>
                         <td  style="width:20%!important;text-align: right; padding-right: 15px!important">
                             <h:outputLabel value="QTY" styleClass="itemHeadings" ></h:outputLabel>
                         </td>
 
-                        <td  style="width:20%!important;text-align: right; padding-right: 15px!important">
+                        <td  style="width:15%!important;text-align: right; padding-right: 15px!important">
                             <h:outputLabel value="RATE" styleClass="itemHeadings" ></h:outputLabel>
                         </td>
-                        <td  style="width:20%;text-align: right; padding-right: 0px;">
+                        <td  style="width:15%;text-align: right; padding-right: 15px;">
                             <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
                         </td>
                     </tr>
@@ -195,22 +195,24 @@
                                 <h:outputLabel value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
                             </td>
-
+                        </tr>
+                        <tr>
+                            <td width="1px"></td>
 
                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Disposal bills shows purchase rate of bill items in the bill', false)}">
-                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 10px;" >
                                     <h:outputLabel value="#{bip.qty}"    >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
 
-                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 10px;" >
                                     <h:outputLabel value="#{bip.rate}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
 
-                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 15px;" >
                                     <h:outputLabel styleClass="itemValue" value="#{bip.rate*bip.qty}"    >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
@@ -220,20 +222,20 @@
 
 
                             <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Disposal bills shows purchase rate of bill items in the bill', false)}">
-                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 10px;" >
                                     <h:outputLabel value="#{bip.qty}"    >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
 
-                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 10px;" >
                                     <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <br></br>
                                 </td>
 
-                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 15px;" >
                                     <h:outputLabel styleClass="itemValue" value="#{bip.pharmaceuticalBillItem.retailRate*bip.qty}"    >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
