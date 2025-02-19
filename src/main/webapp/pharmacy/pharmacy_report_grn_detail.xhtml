@@ -962,7 +962,7 @@
         <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
     </p:column>
 
-    <p:column headerText="Remark" style="font-size: 9px;">
+    <p:column headerText="Remark" style="text-align: right; font-size: 9px;">
         <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" />
     </p:column>
 
@@ -1008,17 +1008,12 @@
                                 <h:outputLabel value="Cancelled GRN "/>
                             </f:facet> 
 
-                            <p:column headerText="Cancelled NO" style="padding: 0px!important; margin: 0px!important;">
-                                <p:commandLink 
-                                    value="#{b1.deptId}" 
-                                    style="padding: 0px!important; margin: 0px!important;"
-                                    action="#{commonReport.navigateToViewCancelGRNBillFromGRNSummary(b1)}" 
-                                    process="@this" >
-                                </p:commandLink>
+                            <p:column headerText="Cancelled NO" style="font-size: 9px; word-break: break-word; white-space: normal;">
+                                <h:outputLabel value="#{b1.deptId}" style="display: block; word-break: break-word; white-space: normal;" />
                             </p:column>
 
-                            <p:column headerText="GRN No" style="padding: 0px!important; margin: 0px!important;" >
-                                <h:outputLabel value="#{b1.billedBill.deptId}" style="padding: 0px!important; margin: 0px!important;">
+                            <p:column headerText="GRN No" style="font-size: 9px; word-break: break-word; white-space: normal;">
+                                <h:outputLabel value="#{b1.billedBill.deptId}" style="display: block; word-break: break-word; white-space: normal;" >
                                 </h:outputLabel>
                             </p:column>
                             <!--                            <p:column headerText="Referenace Institution" >
@@ -1027,69 +1022,40 @@
                                                             </f:facet> 
                                                             <h:outputLabel value="#{b1.billedBill.referenceInstitution.name}"/>
                                                         </p:column>-->
-                            <p:column headerText="Suplier" 
-                                      style="padding: 0px!important; margin: 0px!important;"
-                                      sortBy="#{b1.fromInstitution.name}"
-                                      filterBy="#{b1.fromInstitution.name}"
-                                      filterMatchMode="contains" >
-                                <h:outputLabel value="#{b1.fromInstitution.name}" style="padding: 0px!important; margin: 0px!important;"/>
+                            <p:column headerText="Suplier" style="font-size: 9px;" >
+                                <h:outputLabel value="#{b1.fromInstitution.name}" />
                             </p:column>
-                            <p:column headerText="Cancelled At" style="padding: 0px!important; margin: 0px!important;">
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Cancelled At" style="padding: 0px!important; margin: 0px!important;"/>
-                                </f:facet> 
-                                <h:outputLabel value="#{b1.createdAt}" style="padding: 0px!important; margin: 0px!important;">
+                            <p:column headerText="Cancelled At" style="font-size: 9px;" >
+                                <h:outputLabel value="#{b1.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
-
-                            <p:column headerText="Comment" style="padding: 0px!important; margin: 0px!important;">
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Comment" style="padding: 0px!important; margin: 0px!important;"/>
-                                </f:facet> 
-                                <h:outputLabel value="#{b1.comments}" style="padding: 0px!important; margin: 0px!important;"/>
-
+                            <p:column headerText="Comment" style="font-size: 9px;" >
+                                <h:outputLabel value="#{b1.comments}" />
                             </p:column>
-
-                            <p:column headerText="Purchase Value Cash" style="padding: 0px!important; margin: 0px!important; text-align: right;" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Purchase Value Cash" style="padding: 0px!important; margin: 0px!important;"/>
-                                </f:facet> 
-                                <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.netTotal}" style="padding: 0px!important; margin: 0px!important;" >
+                            <p:column headerText="Purchase Value Cash" style="text-align: right; font-size: 9px;" >
+                                <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                                <h:outputLabel rendered="#{b1.paymentMethod!='Cash'}" value="0.00" style="padding: 0px!important; margin: 0px!important;"/>
+                                <h:outputLabel rendered="#{b1.paymentMethod!='Cash'}" value="0.00" />
                             </p:column>
-
-                            <p:column headerText="Purchase Value Credit" style="padding: 0px!important; margin: 0px!important; text-align: right;" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Purchase Value Credit" style="padding: 0px!important; margin: 0px!important;"/>
-                                </f:facet> 
-                                <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.netTotal}" style="padding: 0px!important; margin: 0px!important;" >
+                            <p:column headerText="Purchase Value Credit" style="text-align: right; font-size: 9px;" >
+                                <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                                <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00" style="padding: 0px!important; margin: 0px!important;"/>
-
+                                <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00" />
                             </p:column>
-
-                            <p:column headerText="Sale Value Cash" style="padding: 0px!important; margin: 0px!important; text-align: right;"  >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Sale Value Cash" style="padding: 0px!important; margin: 0px!important;"/>
-                                </f:facet> 
-                                <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.saleValue}" style="padding: 0px!important; margin: 0px!important;" >
+                            <p:column headerText="Sale Value Cash" style="text-align: right; font-size: 9px;" >
+                                <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.saleValue}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                                <h:outputLabel rendered="#{b1.paymentMethod!='Cash'}" value="0.00" style="padding: 0px!important; margin: 0px!important;"/>
+                                <h:outputLabel rendered="#{b1.paymentMethod!='Cash'}" value="0.00" />
                             </p:column>
-                            <p:column headerText="Sale Value Credit" style="padding: 0px!important; margin: 0px!important; text-align: right;" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Sale Value Credit" style="padding: 0px!important; margin: 0px!important;"/>
-                                </f:facet> 
-                                <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.saleValue}" style="padding: 0px!important; margin: 0px!important;">
+                            <p:column headerText="Sale Value Credit" style="text-align: right; font-size: 9px;" >
+                                <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.saleValue}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                                <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00" style="padding: 0px!important; margin: 0px!important;"/>
-
+                                <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00" />
                             </p:column>
 
                             <!--                            <p:column exportable="false">
@@ -1099,43 +1065,31 @@
                             <p:columnGroup type="footer">  
 
                                 <p:row>  
-                                    <p:column colspan="5" style="padding: 0px!important; margin: 0px!important; text-align:left;" footerText="Totals:">
-
-                                    </p:column>
-                                    <p:column style="padding: 0px!important; margin: 0px!important; text-align: right;" footerText="#{commonReport.grnCancelled.cash}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{commonReport.grnCancelled.cash}" style="padding: 0px!important; margin: 0px!important;">
+                                    <p:column colspan="5" style="text-align:left; font-size: 9px;" footerText="Totals:" />
+                                    <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnCancelled.cash}">
+                                            <h:outputLabel value="#{commonReport.grnCancelled.cash}">
                                                 <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </f:facet>
-
+                                            </h:outputLabel>                                       
                                     </p:column>                                                           
-                                    <p:column style="padding: 0px!important; margin: 0px!important; text-align: right;" footerText="#{commonReport.grnCancelled.credit}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{commonReport.grnCancelled.credit}" style="padding: 0px!important; margin: 0px!important;">
+                                    <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnCancelled.credit}">
+                                            <h:outputLabel value="#{commonReport.grnCancelled.credit}" >
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
-                                        </f:facet>
                                     </p:column>
 
-                                    <p:column style="padding: 0px!important; margin: 0px!important; text-align: right;" footerText="#{commonReport.grnCancelled.saleCash}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{commonReport.grnCancelled.saleCash}" style="padding: 0px!important; margin: 0px!important;">
+                                    <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnCancelled.saleCash}">
+                                            <h:outputLabel value="#{commonReport.grnCancelled.saleCash}" >
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
-                                        </f:facet>
-
                                     </p:column>                                                           
-                                    <p:column style="padding: 0px!important; margin: 0px!important; text-align: right;" footerText="#{commonReport.grnCancelled.saleCredit}">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{commonReport.grnCancelled.saleCredit}" style="padding: 0px!important; margin: 0px!important;">
+                                    <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnCancelled.saleCredit}">
+                                            <h:outputLabel value="#{commonReport.grnCancelled.saleCredit}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
-                                        </f:facet>
                                     </p:column>
 
                                 </p:row>  
-
+                               
                             </p:columnGroup>  
 
                         </p:dataTable>
