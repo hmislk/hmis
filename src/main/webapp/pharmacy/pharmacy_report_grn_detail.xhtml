@@ -1003,22 +1003,22 @@
                                 <p:row >  
                                     <p:column colspan="6" style="text-align:left; font-size: 9px;" footerText="Totals:"/>
                                     <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnReturn.cash}">
-                                            <h:outputLabel value="#{commonReport.grnReturn.cash}" style="padding: 0px!important; margin: 0px!important;">
+                                            <h:outputLabel value="#{commonReport.grnReturn.cash}" >
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                     </p:column>
                                     <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnReturn.credit}">
-                                            <h:outputLabel value="#{commonReport.grnReturn.credit}" style="padding: 0px!important; margin: 0px!important;">
+                                            <h:outputLabel value="#{commonReport.grnReturn.credit}" >
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                     </p:column> 
                                     <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnReturn.saleCash}">
-                                            <h:outputLabel value="#{commonReport.grnReturn.saleCash}" style="padding: 0px!important; margin: 0px!important;">
+                                            <h:outputLabel value="#{commonReport.grnReturn.saleCash}" >
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                     </p:column>
                                     <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnReturn.saleCredit}">
-                                            <h:outputLabel value="#{commonReport.grnReturn.saleCredit}" style="padding: 0px!important; margin: 0px!important;">
+                                            <h:outputLabel value="#{commonReport.grnReturn.saleCredit}" >
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                     </p:column> 
@@ -1081,11 +1081,8 @@
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00" />
                             </p:column>
-                            <p:column exportable="false" style="text-align: right; font-size: 9px;">
-                                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
-                            </p:column>
                             <p:columnGroup type="footer">  
-                                <p:row>  
+<!--                                <p:row>  
                                     <p:column  colspan="6" style="text-align:left; font-size: 9px;" footerText="Totals:">
 
                                     </p:column>
@@ -1112,14 +1109,50 @@
                                             </h:outputLabel>
                                     </p:column> 
 
+                                </p:row>  -->
+                                
+                                
+                                
+                                 <p:row>  
+                                    <p:column colspan="4" style="text-align:left; font-size: 9px;" footerText="Totals:">
+
+                                    </p:column>
+                                    <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnReturnCancel.bills}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.grnReturnCancel.cash}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>                                                           
+                                    <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnReturnCancel.credit}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.grnReturnCancel.credit}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnReturnCancel.bills}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.grnReturnCancel.saleCash}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>                                                           
+                                    <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnReturnCancel.saleCredit}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.grnReturnCancel.saleCredit}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column> 
                                 </p:row>  
-
                             </p:columnGroup>  
-
                         </p:dataTable>
 
+                        
                         <p:spacer height="30"/>
 
+                        
                         <p:dataTable 
                             id="sum2" 
                             style="padding: 0px!important; margin: 0px!important;" 
