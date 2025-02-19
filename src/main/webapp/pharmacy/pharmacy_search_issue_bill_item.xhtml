@@ -74,7 +74,7 @@
                                     <p:column headerText="No" styleClass="alignTop" width="2%">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
-                                    <p:column headerText="Bill No" styleClass="alignTop"  >
+                                    <p:column headerText="Bill No" styleClass="alignTop"  width="10em">
                                         <p:commandLink 
                                             ajax="false" 
                                             value="#{pi.bill.deptId}"
@@ -82,14 +82,14 @@
                                             <f:setPropertyActionListener value="#{pi.bill}" target="#{pharmacyBillSearch.bill}"/>
                                         </p:commandLink>
                                     </p:column>
-                                    <p:column headerText="Item Name"  styleClass="alignTop" width="40%">
+                                    <p:column headerText="Item Name"  styleClass="alignTop" width="20em">
                                         <h:outputLabel value="#{pi.item.code}" ></h:outputLabel>
                                         &nbsp;-&nbsp;
-                                         <h:outputLabel value="#{pi.item.name}" />   
-                                        
+                                        <h:outputLabel value="#{pi.item.name}" />   
+
                                     </p:column>
 
-                                    <p:column headerText="Billed At"   width="10%">
+                                    <p:column headerText="Billed At"   width="15em">
                                         <h:outputLabel value="#{pi.bill.createdAt}" >
                                             <f:convertDateTime pattern="dd MMM yyyy - hh mm ss a"/>
                                         </h:outputLabel>
@@ -110,20 +110,27 @@
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
-                                    </p:column>     
-                                    <p:column headerText="Qty" >
+                                    </p:column>   
+
+                                    <p:column headerText="Billed By" width="10em" >
+                                        <h:outputLabel value="#{pi.bill.creater.name}" style="text-align: left;">
+                                        </h:outputLabel>                             
+                                    </p:column>
+
+
+                                    <p:column headerText="Qty" width="10em">
                                         <h:outputLabel value="#{pi.qty}" >
                                             <f:convertNumber pattern="#0.00"/>
                                         </h:outputLabel>
                                     </p:column>   
 
-                                    <p:column headerText="Bill item Value">
+                                    <p:column headerText="Bill Retail Total" width="15em">
                                         <h:outputLabel value="#{pi.netValue}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Department"  styleClass="alignTop" >
+                                    <p:column headerText="To Department"  styleClass="alignTop" width="10em">
                                         <h:outputLabel value="#{pi.bill.toDepartment.name}" style="text-align: left;">
                                         </h:outputLabel>                             
                                     </p:column>

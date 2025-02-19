@@ -82,7 +82,7 @@
                                         <p:commandLink 
                                             ajax="false" 
                                             value="#{bill.deptId}"
-                                            action="pharmacy_reprint_bill_unit_issue_return">
+                                            action="pharmacy_reprint_bill_unit_issue_return?faces-redirect=true">
                                             <f:setPropertyActionListener value="#{bill}" target="#{pharmacyIssueController.bill}"/>   
                                         </p:commandLink>
                                     </p:column>
@@ -150,9 +150,7 @@
                                         </h:panelGroup>                               
                                     </p:column>    
 
-
-
-                                    <p:column headerText="Value" style="text-align: right"  >
+                                    <p:column headerText="Total Sale Value" style="text-align: right"  >
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
