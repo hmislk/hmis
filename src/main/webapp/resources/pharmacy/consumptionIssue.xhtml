@@ -72,7 +72,6 @@
 
                     </tr>
 
-
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
                             <h:outputLabel value="Bill ID" ></h:outputLabel>
@@ -86,11 +85,11 @@
 
                         </td>
                         <td style="width: 15%" >
-                            <h:outputLabel value="User" ></h:outputLabel>
+                            <h:outputLabel value="Issued By" ></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%" >
-                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" >
+                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.person.name}" >
                             </h:outputLabel>
                         </td>
 
@@ -119,16 +118,11 @@
 
                     </tr>
                 </table>
-
-
             </div>
-
 
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
-
-
             <div >
 
                 <table width="100%" style="width: 100%;" >
@@ -159,10 +153,10 @@
 
                         <tr>
                             <td colspan="4" style="overflow: visible;">
-                                <h:outputLabel value="#{bip.item.code}"  styleClass="itemsBlock" style="text-transform: capitalize;" >
+<!--                                <h:outputLabel value="#{bip.item.code}"  styleClass="itemsBlock" style="text-transform: capitalize;" >
                                 </h:outputLabel>
                                 -
-                                &nbsp;
+                                &nbsp;-->
                                 <h:outputLabel value="#{bip.searialNo+1} - #{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
 
@@ -173,46 +167,97 @@
                             <td>
 
                             </td>
-                            <td>
-                                <h:outputLabel    value="#{bip.qty}"    styleClass="itemsBlock"   style="text-align: right; padding-right: 30px;" >
-                                    <f:convertNumber integerOnly="true" />
-                                </h:outputLabel>
-                            </td>
-                            <td  styleClass="itemsBlockRight"  style="text-align: right; padding-right: 30px;" >
-                                <h:outputLabel    value="#{bip.netRate}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                            <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 30px;" >
-                                <h:outputLabel    value="#{bip.netValue}"    >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Disposal bills shows purchase rate of bill items in the bill', false)}">
+                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                    <h:outputLabel value="#{bip.qty}"    >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+
+                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                    <h:outputLabel value="#{bip.rate}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+
+                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                    <h:outputLabel styleClass="itemValue" value="#{bip.rate*bip.qty}"    >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Disposal bills shows purchase rate of bill items in the bill', false)}">
+                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                    <h:outputLabel value="#{bip.qty}"    >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+
+                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <br></br>
+                                </td>
+
+                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                    <h:outputLabel styleClass="itemValue" value="#{bip.pharmaceuticalBillItem.retailRate*bip.qty}"    >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+
+                            </h:panelGroup>
+                            <!--                            <td>
+                                                            <h:outputLabel    value="#{bip.qty}"    styleClass="itemsBlock"   style="text-align: right; padding-right: 30px;" >
+                                                                <f:convertNumber integerOnly="true" />
+                                                            </h:outputLabel>
+                                                        </td>
+                                                        <td  styleClass="itemsBlockRight"  style="text-align: right; padding-right: 30px;" >
+                                                            <h:outputLabel    value="#{bip.netRate}" >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </td>
+                                                        <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 30px;" >
+                                                            <h:outputLabel    value="#{bip.netValue}"    >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </td>-->
 
                         </tr>
 
-
-
-
                     </ui:repeat>
 
-
-
-
                 </table>
+                <script>
+                    function calculateTotal() {
+                        const allBillValues = document.querySelectorAll('.itemValue');
+                        console.log(allBillValues.size)
 
+                        const total = Array.from(allBillValues)
+                                .map(
+                                        td => {
+                                            const clearText = td.innerText.replace(/,/g, '').trim();
+                                            const value = parseFloat(clearText) || 0;
+                                            //console.log(value); 
+                                            return value
+                                        })
+                                .reduce((sum, value) => sum + value, 0);
+                        //console.log(total);
 
+                        document.querySelector('.billTotal').innerText = total.toFixed(2);
+                    }
+
+                    setTimeout(calculateTotal, 100);
+                </script>
             </div>
-
 
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
-
-
-            <div  >
-
+            <div>
                 <table style="width: 100%;">
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
@@ -225,16 +270,16 @@
                                 <f:convertNumber pattern="#,##0.00" />   
                             </h:outputLabel>
 
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount eq 0.0}"    value="#{cc.attrs.bill.total}">
+                            <h:outputLabel styleClass="billTotal" rendered="#{cc.attrs.bill.discount eq 0.0}"    value="">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
                     </tr>
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
-                            <h:outputLabel   value="Number of Items Count" />
+                            <h:outputLabel   value="Number of Items Count : " />
                         </td>
-                        <td  class="totalsBlock">
+                        <td class="totalsBlock">
                             <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -246,14 +291,11 @@
 
             </div>
 
-
             <div class="footer">
                 <br/>
                 THANK YOU !<br/>
                 Returns Accepted only within 3 days.
             </div>
-
-
 
         </div>
     </cc:implementation>
