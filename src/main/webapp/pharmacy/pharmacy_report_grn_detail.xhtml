@@ -952,8 +952,8 @@
                                 <h:outputLabel value="#{b.referenceBill.invoiceNumber}" style="padding: 0px!important; margin: 0px!important;"/>
                             </p:column>-->
 
-                            <p:column headerText="GRN Date" style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputLabel value="#{b.referenceBill.createdAt}" style="padding: 0px!important; margin: 0px!important;"/>
+                            <p:column headerText="GRN Date" style="text-align: right; font-size: 9px;">
+                                <h:outputLabel value="#{b.referenceBill.createdAt}" />
                             </p:column>
                             <!--                            <p:column headerText="Referenace Institution" >
                                                             <f:facet name="header">  
@@ -962,8 +962,8 @@
                                                             <h:outputLabel value="#{b.referenceBill.referenceInstitution.name}"/>
                                                         </p:column>-->
 
-                            <p:column headerText="Return At" style="padding: 0px!important; margin: 0px!important;" >
-                                <h:outputLabel value="#{b.createdAt}" style="padding: 0px!important; margin: 0px!important;">
+                            <p:column headerText="Return At" style="text-align: right; font-size: 9px;" >
+                                <h:outputLabel value="#{b.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
