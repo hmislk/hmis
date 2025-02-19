@@ -13,14 +13,13 @@ TO_ENV=$2
 declare -A SSH_KEY_FILES
 
 SSH_KEY_FILES=(
-    ["QA"]="/home/azureuser/utils/swap_databases/privateKeys/qa_ssh_key.pem"
-    ["COOP_Dev"]="/home/azureuser/utils/swap_databases/privateKeys/dev_ssh_key.pem"
-    ["COOP_Prod"]="/home/azureuser/utils/swap_databases/privateKeys/coop_prod_ssh_key.pem"
-    ["Ruhunu_Prod"]="/home/azureuser/utils/swap_databases/privateKeys/ruhunu_prod_ssh_key.pem"
-    ["MP_Prod"]="/home/azureuser/utils/swap_databases/privateKeys/mp_prod_ssh_key.pem"
+    ["QA"]="/home/azureuser/utils/db_utils/privateKeys/qa_ssh_key.pem"
+    ["COOP_Prod"]="/home/azureuser/utils/db_utils/privateKeys/coop_prod_ssh_key.pem"
+    ["Ruhunu_Prod"]="/home/azureuser/utils/db_utils/privateKeys/ruhunu_prod_ssh_key.pem"
+    ["MP_Prod"]="/home/azureuser/utils/db_utils/privateKeys/mp_prod_ssh_key.pem"
 )
 
-CONFIG_FILE="/home/azureuser/utils/swap_databases/server_config.json"
+CONFIG_FILE="/home/azureuser/utils/db_utils/server_config.json"
 
 # Ensure the JSON file exists
 if [[ ! -f "$CONFIG_FILE" ]]; then
@@ -30,7 +29,7 @@ fi
 
 # Ensure TO_ENV is QA
 if [[ "$TO_ENV" != "QA" ]]; then
-    echo "Error: TO_ENV must be QA."
+    echo "Error: TO_ENV must be QA for now."
     exit 1
 fi
 
@@ -84,7 +83,7 @@ manage_backup() {
         sudo chown -R azureuser:azureuser /opt/swapDatabases
 EOF
 }
-
+# Log into QA and Dev servers to rename /opt/swapDatabases contents
 restore_database() {
     local SERVER_IP=$1
     local SSH_KEY=$2
