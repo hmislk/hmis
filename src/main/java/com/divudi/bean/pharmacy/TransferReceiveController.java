@@ -126,7 +126,7 @@ public class TransferReceiveController implements Serializable {
         generateBillComponent();
     }
 
-//   public String navigateBackToRecieveList(){    
+//   public String navigateBackToRecieveList(){
 //        return "/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true";
 //    }
     public String navigateToRecieveIssue() {
@@ -183,7 +183,7 @@ public class TransferReceiveController implements Serializable {
         if (bill.getForwardReferenceBills() == null || bill.getForwardReferenceBills().isEmpty()) {
             return false;
         }
-        return true; 
+        return true;
     }
 
     public void settle() {
