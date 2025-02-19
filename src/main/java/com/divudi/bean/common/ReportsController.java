@@ -52,15 +52,13 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.time.YearMonth;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
 import java.util.stream.Collectors;
 import java.text.DecimalFormat;
+
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 
 /**
@@ -1973,20 +1971,33 @@ public class ReportsController implements Serializable {
         }
 
         final YearMonth yearMonth = YearMonth.of(LocalDate.now().getYear(), month);
+        final LocalDate firstDayOfMonth = yearMonth.atDay(1);
 
         List<Integer> daysOfWeek = new ArrayList<>();
 
-        LocalDate firstDayOfMonth = yearMonth.atDay(1);
-        int firstDayOfTargetWeek = (weekOfMonth - 1) * 7 + 1;
+        LocalDate firstSunday = firstDayOfMonth;
+        while (firstSunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            firstSunday = firstSunday.plusDays(1);
+        }
 
-        for (int i = 0; i < 7; i++) {
-            LocalDate day = firstDayOfMonth.plusDays(firstDayOfTargetWeek - 1 + i);
-
-            if (day.getMonth() != yearMonth.getMonth()) {
-                break;
+        if (weekOfMonth == 1) {
+            LocalDate currentDay = firstDayOfMonth;
+            while (currentDay.getDayOfWeek() != DayOfWeek.SUNDAY && currentDay.getMonthValue() == month.getValue()) {
+                daysOfWeek.add(currentDay.getDayOfMonth());
+                currentDay = currentDay.plusDays(1);
             }
+        } else {
+            LocalDate firstDayOfWeek = firstSunday.plusWeeks(weekOfMonth - 2);
 
-            daysOfWeek.add(day.getDayOfMonth());
+            for (int i = 0; i < 7; i++) {
+                LocalDate day = firstDayOfWeek.plusDays(i);
+
+                if (day.getMonthValue() != month.getValue()) {
+                    break;
+                }
+
+                daysOfWeek.add(day.getDayOfMonth());
+            }
         }
 
         return daysOfWeek;
@@ -2096,12 +2107,6 @@ public class ReportsController implements Serializable {
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
 
-//        if (visitType != null) {
-//            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP")) {
-//                jpql += "AND bill.ipOpOrCc = :type ";
-//                parameters.put("type", visitType);
-//            }
-//        }
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
             jpql += "AND ((bill.billPackege.name) like :itemName ) ";
             parameters.put("itemName", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
@@ -2650,7 +2655,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-            boolean onlyDueBills) {
+                                                                    boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -2765,7 +2770,7 @@ public class ReportsController implements Serializable {
         }
 
         if (visitType != null && (visitType.equalsIgnoreCase("IP") && admissionType != null)) {
-            jpql += "AND bill.patientEncounter.admissionType = :type ";
+            jpql += "AND billItem.patientEncounter.admissionType = :type ";
             parameters.put("type", admissionType);
         }
 
@@ -3207,6 +3212,7 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         }
         if (visitType != null && visitType.equalsIgnoreCase("CC")) {
             opdBts.add(BillTypeAtomic.CC_BILL);
@@ -3229,26 +3235,28 @@ public class ReportsController implements Serializable {
     private ReportTemplateRowBundle generateExternalLaboratoryWorkloadBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
-//                + "FROM BillItem billItem "
-//                + "JOIN billItem.bill bill "
-//                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
-//                + "WHERE bill.billTypeAtomic IN :bts "
-//                + "AND bill.createdAt BETWEEN :fd AND :td ";
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
-                + "FROM PatientInvestigation pi "
-                + "JOIN pi.billItem billItem "
+                + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
-                + "WHERE pi.retired=false "
-                + " and billItem.retired=false "
-                + " and bill.retired=false ";
+                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
+                + "WHERE bill.billTypeAtomic IN :bts ";
+//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+//                + "FROM PatientInvestigation pi "
+//                + "JOIN pi.billItem billItem "
+//                + "JOIN billItem.bill bill "
+//                + "WHERE pi.retired=false "
+//                + " AND billItem.retired=false "
+//                + " AND bill.retired=false "
+//                + " AND bill.billTypeAtomic in :bts ";
 
-        jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
 
         if (visitType != null) {
-            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP") || visitType.equalsIgnoreCase("CC")) {
+            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("CC")) {
                 jpql += "AND bill.ipOpOrCc = :type ";
+                parameters.put("type", visitType);
+            } else if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND (bill.ipOpOrCc = :type OR bill.ipOpOrCc IS NULL) ";
                 parameters.put("type", visitType);
             }
         }
@@ -3343,8 +3351,11 @@ public class ReportsController implements Serializable {
                 + "AND bill.createdAt BETWEEN :fd AND :td ";
 
         if (visitType != null) {
-            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP") || visitType.equalsIgnoreCase("CC")) {
+            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("CC")) {
                 jpql += "AND bill.ipOpOrCc = :type ";
+                parameters.put("type", visitType);
+            } else if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND (bill.ipOpOrCc = :type OR bill.ipOpOrCc IS NULL) ";
                 parameters.put("type", visitType);
             }
         }
@@ -3413,6 +3424,7 @@ public class ReportsController implements Serializable {
         System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        rs.removeIf(row -> row.getRowValue() == 0.0);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
@@ -3593,7 +3605,7 @@ public class ReportsController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S. No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -3816,7 +3828,7 @@ public class ReportsController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S. No", "BHT No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -4858,8 +4870,8 @@ public class ReportsController implements Serializable {
     }
 
     private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
-            List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
-            int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
         document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
         document.add(com.itextpdf.text.Chunk.NEWLINE);
 

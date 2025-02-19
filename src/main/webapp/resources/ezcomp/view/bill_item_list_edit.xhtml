@@ -15,17 +15,29 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <h1>Bill Items</h1>
-        <p:dataTable value="#{cc.attrs.billItems}" var="bi" rowKey="#{bi.id}" >
-            <p:column >
-                <h:outputText value="#{bi.id}" class="w-100 m-1"></h:outputText>
-            </p:column>
+        <p:commandButton value="Download" ajax="false">
+            <p:dataExporter fileName="bill_items" target="tblBillItems" type="xlsx" ></p:dataExporter>
+        </p:commandButton>
+
+        <p:dataTable 
+            id="tblBillItems"
+            value="#{cc.attrs.billItems}" var="bi" rowKey="#{bi.id}" >
+            <f:facet name="header" >
+                <h:outputText value="Bill Items" ></h:outputText>
+            </f:facet>
+            <!--            <p:column >
+                            <h:outputText value="#{bi.id}" class="w-100 m-1"></h:outputText>
+                        </p:column>-->
             <p:column >
                 <h:outputText value="#{bi.item.name}" ></h:outputText>
             </p:column>
             <p:column headerText="Quantity" class="text-end">
                 <p:inputText value="#{bi.qty}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
                 <p:outputLabel value="#{bi.qty}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Rate" class="text-end">
+                <p:inputText value="#{bi.netRate}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <p:outputLabel value="#{bi.netRate}" rendered="#{!cc.attrs.editable}" class="text-end" />
             </p:column>
             <p:column headerText="Hospital Fee" class="text-end">
                 <p:inputText value="#{bi.hospitalFee}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />

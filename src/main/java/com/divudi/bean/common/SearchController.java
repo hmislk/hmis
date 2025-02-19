@@ -666,6 +666,26 @@ public class SearchController implements Serializable {
         grnBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
+    public void fillSavedTranserRequestBills() {
+
+        String sql = "Select bill from Bill bill where bill.retired =false "
+                + " and bill.billType = :billType "
+                + " and bill.institution = :institution "
+                + " and bill.fromDepartment = :fromDepartment "
+                + " and bill.createdAt between :fromDate and :toDate"
+                + " order by bill.createdAt desc";
+
+        Map parametersForSearching = new HashMap();
+        parametersForSearching.put("billType", BillType.PharmacyTransferRequest);
+        parametersForSearching.put("institution", sessionController.getInstitution());
+        parametersForSearching.put("fromDepartment", sessionController.getDepartment());
+        parametersForSearching.put("fromDate", getFromDate());
+        parametersForSearching.put("toDate", getToDate());
+
+        bills = getBillFacade().findByJpql(sql, parametersForSearching, TemporalType.TIMESTAMP);
+
+    }
+
     public String navigateToPatientLabReports() {
         fillPatientLabReports(patient);
         return "/lab/patient_lab_reports";
@@ -3767,10 +3787,12 @@ public class SearchController implements Serializable {
         tmp.put("toDep", getSessionController().getDepartment());
         tmp.put("bct", bct);
         tmp.put("bTp", BillType.PharmacyTransferRequest);
+        tmp.put("billTypeAtomic", billTypeAtomic.PHARMACY_TRANSFER_REQUEST);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:toDep"
-                + " and b.billClassType not in :bct"
+                + " and b.billClassType not in :bct "
+                + " and b.billTypeAtomic = :billTypeAtomic"
                 + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
@@ -4541,6 +4563,16 @@ public class SearchController implements Serializable {
                 + " and bi.bill.billType=:bType and "
                 + " bi.createdAt between :fromDate and :toDate ";
 
+        if (getSearchKeyword().getFrmDepartment() != null) {
+            sql += " and bi.bill.department=:dep";
+            m.put("dep", getSearchKeyword().getFrmDepartment());
+        }
+
+        if (getSearchKeyword().getFrmDepartment() != null) {
+            sql += " and bi.bill.department=:dep";
+            m.put("dep", getSearchKeyword().getFrmDepartment());
+        }
+
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((bi.bill.patient.person.name) like :patientName )";
             m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
@@ -4637,9 +4669,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, m);
 
         if (bills == null || bills.isEmpty()) {
-            System.err.println("No bills found");
         } else {
-            System.err.println("Bills found: " + bills.size());
         }
 
     }
@@ -9852,7 +9882,6 @@ public class SearchController implements Serializable {
             if (obj instanceof BillSummaryRow) {
                 billSummaryRows.add((BillSummaryRow) obj);
             } else {
-                System.err.println("Unexpected result type: " + obj.getClass().getName());
             }
         }
 
@@ -10553,6 +10582,99 @@ public class SearchController implements Serializable {
         bundle.calculateTotalByValues();
 
     }
+    
+    public String navigateToListBillsWithErrors(){
+        bills = null;
+        return "/dataAdmin/bills_with_errors?faces-redirect=true;";
+    }
+
+    public void findBillsWithErrors() {
+        bills = new ArrayList<>();
+        List<Bill> allBills;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dept", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        if (billClassType != null) {
+            jpql.append(" and type(b)=:billClassType ");
+            switch (billClassType) {
+                case Bill:
+                    params.put("billClassType", com.divudi.entity.Bill.class);
+                    break;
+                case BilledBill:
+                    params.put("billClassType", com.divudi.entity.BilledBill.class);
+                    break;
+                case CancelledBill:
+                    params.put("billClassType", com.divudi.entity.CancelledBill.class);
+                    break;
+                case OtherBill:
+                    params.put("billClassType", com.divudi.entity.Bill.class);
+                    break;
+                case PreBill:
+                    params.put("billClassType", com.divudi.entity.PreBill.class);
+                    break;
+                case RefundBill:
+                    params.put("billClassType", com.divudi.entity.RefundBill.class);
+                    break;
+
+            }
+        }
+
+        if (billType != null) {
+            jpql.append(" and b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        if (billTypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        // Execute the query
+        allBills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        if (allBills != null) {
+            for (Bill tmpBill : allBills) {
+                boolean billHasErrors;
+                billHasErrors = billService.checkBillForErrors(tmpBill);
+                if (!billHasErrors) {
+                    continue;
+                }
+                bills.add(tmpBill);
+                total += tmpBill.getTotal();
+                netTotal += tmpBill.getNetTotal();
+                discount += tmpBill.getDiscount();
+            }
+        }
+
+    }
 
     public void listBillItems() {
         billItems = null;
@@ -10952,6 +11074,89 @@ public class SearchController implements Serializable {
 
         // Fetch bills using the query
         bills = getBillFacade().findByJpql(sql, m, 5000);
+    }
+
+    public void searchByInsId() {
+        if (getSearchKeyword() == null) {
+            JsfUtil.addErrorMessage("Search keyword is null");
+            return;
+        }
+
+        if (getSearchKeyword().getInsId() == null) {
+            JsfUtil.addErrorMessage("Enter Ins ID");
+            return;
+        }
+        bills = null;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "select b from Bill b where b.id is not null";
+
+        jpql += " and b.insId=:insId ";
+        params.put("insId", getSearchKeyword().getInsId());
+
+        jpql += " order by b.insId";
+
+        bills = getBillFacade().findByJpql(jpql, params, 500);
+    }
+
+    public void searchByDeptId() {
+        if (getSearchKeyword() == null) {
+            JsfUtil.addErrorMessage("Search keyword is null");
+            return;
+        }
+        if (getSearchKeyword().getDeptId() == null) {
+            JsfUtil.addErrorMessage("Enter Ins ID");
+            return;
+        }
+        bills = null;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        jpql = "select b from Bill b where b.id is not null";
+        jpql += " and b.deptId=:deptId ";
+        params.put("deptId", getSearchKeyword().getDeptId());
+
+        jpql += " order by b.deptId";
+
+        bills = getBillFacade().findByJpql(jpql, params, 500);
+    }
+
+    public void searchById() {
+        if (getSearchKeyword() == null) {
+            JsfUtil.addErrorMessage("Search keyword is null");
+            return;
+        }
+        if (getSearchKeyword().getId() == null) {
+            JsfUtil.addErrorMessage("Enter Ins ID");
+            return;
+        }
+        bills = null;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        jpql = "select b from Bill b where b.id is not null";
+        jpql += " and b.id=:id ";
+        params.put("id", getSearchKeyword().getId());
+        jpql += " order by b.id";
+        bills = getBillFacade().findByJpql(jpql, params, 500);
+    }
+
+    public void searchByBhtNumber() {
+        if (getSearchKeyword() == null) {
+            JsfUtil.addErrorMessage("Search keyword is null");
+            return;
+        }
+        if (getSearchKeyword().getBhtNo() == null) {
+            JsfUtil.addErrorMessage("Enter Ins ID");
+            return;
+        }
+        bills = null;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        jpql = "select b from Bill b where b.id is not null";
+        jpql += " and b.patientEncounter.bhtNo=:bhtNo ";
+        params.put("bhtNo", getSearchKeyword().getBhtNo());
+        jpql += " order by b.id";
+        bills = getBillFacade().findByJpql(jpql, params, 500);
     }
 
     public void createSearchAll() {

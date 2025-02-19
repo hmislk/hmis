@@ -406,6 +406,8 @@ public class Bill implements Serializable, RetirableEntity {
     private String ageAtBilledDate;
     @Transient
     private Bill tmpRefBill;
+    @Transient
+    private String tmpComments;
 
     private String agentRefNo;
     private boolean billClosed;
@@ -2652,6 +2654,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setPaymentGenerationComments(String paymentGenerationComments) {
         this.paymentGenerationComments = paymentGenerationComments;
+    }
+
+    public String getTmpComments() {
+        return tmpComments;
+    }
+
+    public void setTmpComments(String tmpComments) {
+        this.tmpComments = tmpComments;
     }
 
     

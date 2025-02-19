@@ -151,6 +151,10 @@ public class ReportsTransfer implements Serializable {
         return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill?faces-redirect=true";
     }
 
+    public String navigateBackToTransferIssueByBill() {
+        return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill?faces-redirect=true";
+    }
+
     public String navigateToTransferReceiveByBill() {
         transferBills = null;
         pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
@@ -162,14 +166,14 @@ public class ReportsTransfer implements Serializable {
         pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return pharmacyController.navigateToPharmacyAnalytics();
     }
-    
-    public String navigateToBillPreview(Bill b){
+
+    public String navigateToBillPreview(Bill b) {
         previewBill = null;
         previewBill = b;
-        return"/inward/pharmacy_reprint_bill_sale_bht_bill?faces-redirect=true";
+        return "/inward/pharmacy_reprint_bill_sale_bht_bill?faces-redirect=true";
     }
-    
-    public String navigateBackFromBillPreview(){
+
+    public String navigateBackFromBillPreview() {
         previewBill = null;
         return "/pharmacy/pharmacy_report_bht_issue_bill?faces-redirect=true";
     }
@@ -558,7 +562,7 @@ public class ReportsTransfer implements Serializable {
             sql += "  and b.patientEncounter.admissionType=:at ";
             m.put("at", admissionType);
         }
-        
+
         sql += " and b.billType=:bt order by b.id";
 
         transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
@@ -1710,6 +1714,16 @@ public class ReportsTransfer implements Serializable {
 
         jpql.append(" order by b.id");
         transferBills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        totalsValue = 0.0;
+        discountsValue = 0.0;
+        netTotalValues = 0.0;
+        for (Bill b : transferBills) {
+
+            discountsValue = discountsValue + b.getDiscount();
+            netTotalValues = netTotalValues + b.getNetTotal();
+        }
+        calculatePurachaseValuesOfBillItemsInBill(transferBills);
     }
 
     public void fillTheaterTransfersReceiveWithBHTIssue() {
