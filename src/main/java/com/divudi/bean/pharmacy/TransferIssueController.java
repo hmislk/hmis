@@ -129,7 +129,7 @@ public class TransferIssueController implements Serializable {
         for (BillItem originalItem : billItems) {
 
             if (originalItem.getPharmaceuticalBillItem().getQty() > 0) {
-                return false; 
+                return false;
             }else if(originalItem.getPharmaceuticalBillItem().getItemBatch() == null){
                 return false;
             }
@@ -487,7 +487,7 @@ public class TransferIssueController implements Serializable {
                 //Addinng Staff
 //                System.out.println("//Addinng Staff = ");
                 System.out.println(i.getPharmaceuticalBillItem() + " 1 " + i.getPharmaceuticalBillItem().getQtyInUnit() + " " + getIssuedBill().getToStaff());
-                Stock staffStock = pharmacyBean.addToStockWihtoutStockHistory(i.getPharmaceuticalBillItem(),
+                Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
                         Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
 
                 i.getPharmaceuticalBillItem().setStaffStock(staffStock);
@@ -611,7 +611,7 @@ public class TransferIssueController implements Serializable {
             if (returnFlag) {
 
                 //Addinng Staff
-                Stock staffStock = pharmacyBean.addToStockWihtoutStockHistory(i.getPharmaceuticalBillItem(),
+                Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
                         Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
 
                 i.getPharmaceuticalBillItem().setStaffStock(staffStock);
@@ -639,7 +639,7 @@ public class TransferIssueController implements Serializable {
 
         getIssuedBill().setFromInstitution(getSessionController().getInstitution());
         getIssuedBill().setFromDepartment(getSessionController().getDepartment());
-        
+
         getIssuedBill().setToInstitution(getRequestedBill().getFromInstitution());
         getIssuedBill().setToDepartment(getRequestedBill().getFromDepartment());
 
