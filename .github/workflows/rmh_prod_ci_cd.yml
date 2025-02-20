@@ -1,9 +1,9 @@
-name: COOP-PROD Build & Deployment Pipeline
+name: RMH-PROD Build & Deployment Pipeline
 
 on:
   push:
     branches:
-      - coop-prod
+      - rmh-prod
 
 jobs:
   build:
@@ -29,8 +29,8 @@ jobs:
 
       - name: Update JDBC Data Sources in persistence.xml
         run: |
-          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coop</jta-data-source>|' src/main/resources/META-INF/persistence.xml
-          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coopaudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/rmh</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/rmhAudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
 
       - name: Verify JDBC Data Sources in persistence.xml
         run: |
@@ -65,20 +65,20 @@ jobs:
 
       - name: Deploy to Payara
         env:
-          SERVER_IP: ${{ secrets.COOP_PROD_SERVER_IP }}
-          SERVER_USER: ${{ secrets.COOP_PROD_SERVER_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.COOP_PROD_SSH_PRIVATE_KEY }}
-          PAYARA_ADMIN_PASS: ${{ secrets.COOP_PROD_PAYARA_ADMIN_PASS }}
+          SERVER_IP: ${{ secrets.RMH_PROD_SERVER_IP }}
+          SERVER_USER: ${{ secrets.RMH_PROD_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.RMH_PROD_SSH_PRIVATE_KEY }}
+          PAYARA_ADMIN_PASS: ${{ secrets.RMH_PROD_PAYARA_ADMIN_PASS }}
         run: |
           # Add SSH private key to the SSH agent
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
           # Variables
-          WAR_NAME="coop.war"
+          WAR_NAME="rmh.war"
           WAR_DIR="/home/appuser/app/latest"
-          APP_NAME="coop"
-          SUBDOMAIN="coop"
+          APP_NAME="rmh"
+          SUBDOMAIN="rmh"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
@@ -139,4 +139,3 @@ jobs:
 
           # Cleanup
           rm -f private_key.pem
-  

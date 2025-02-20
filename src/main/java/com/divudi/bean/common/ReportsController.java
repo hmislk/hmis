@@ -52,10 +52,7 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.time.YearMonth;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
@@ -1974,20 +1971,33 @@ public class ReportsController implements Serializable {
         }
 
         final YearMonth yearMonth = YearMonth.of(LocalDate.now().getYear(), month);
+        final LocalDate firstDayOfMonth = yearMonth.atDay(1);
 
         List<Integer> daysOfWeek = new ArrayList<>();
 
-        LocalDate firstDayOfMonth = yearMonth.atDay(1);
-        int firstDayOfTargetWeek = (weekOfMonth - 1) * 7 + 1;
+        LocalDate firstSunday = firstDayOfMonth;
+        while (firstSunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            firstSunday = firstSunday.plusDays(1);
+        }
 
-        for (int i = 0; i < 7; i++) {
-            LocalDate day = firstDayOfMonth.plusDays(firstDayOfTargetWeek - 1 + i);
-
-            if (day.getMonth() != yearMonth.getMonth()) {
-                break;
+        if (weekOfMonth == 1) {
+            LocalDate currentDay = firstDayOfMonth;
+            while (currentDay.getDayOfWeek() != DayOfWeek.SUNDAY && currentDay.getMonthValue() == month.getValue()) {
+                daysOfWeek.add(currentDay.getDayOfMonth());
+                currentDay = currentDay.plusDays(1);
             }
+        } else {
+            LocalDate firstDayOfWeek = firstSunday.plusWeeks(weekOfMonth - 2);
 
-            daysOfWeek.add(day.getDayOfMonth());
+            for (int i = 0; i < 7; i++) {
+                LocalDate day = firstDayOfWeek.plusDays(i);
+
+                if (day.getMonthValue() != month.getValue()) {
+                    break;
+                }
+
+                daysOfWeek.add(day.getDayOfMonth());
+            }
         }
 
         return daysOfWeek;
@@ -2097,12 +2107,6 @@ public class ReportsController implements Serializable {
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
 
-//        if (visitType != null) {
-//            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP")) {
-//                jpql += "AND bill.ipOpOrCc = :type ";
-//                parameters.put("type", visitType);
-//            }
-//        }
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
             jpql += "AND ((bill.billPackege.name) like :itemName ) ";
             parameters.put("itemName", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
@@ -3248,8 +3252,11 @@ public class ReportsController implements Serializable {
         parameters.put("bts", bts);
 
         if (visitType != null) {
-            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP") || visitType.equalsIgnoreCase("CC")) {
+            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("CC")) {
                 jpql += "AND bill.ipOpOrCc = :type ";
+                parameters.put("type", visitType);
+            } else if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND (bill.ipOpOrCc = :type OR bill.ipOpOrCc IS NULL) ";
                 parameters.put("type", visitType);
             }
         }
@@ -3344,8 +3351,11 @@ public class ReportsController implements Serializable {
                 + "AND bill.createdAt BETWEEN :fd AND :td ";
 
         if (visitType != null) {
-            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("OP") || visitType.equalsIgnoreCase("CC")) {
+            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("CC")) {
                 jpql += "AND bill.ipOpOrCc = :type ";
+                parameters.put("type", visitType);
+            } else if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND (bill.ipOpOrCc = :type OR bill.ipOpOrCc IS NULL) ";
                 parameters.put("type", visitType);
             }
         }
