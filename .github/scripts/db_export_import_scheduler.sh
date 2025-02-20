@@ -9,17 +9,7 @@ fi
 FROM_ENV=$1
 TO_ENV=$2
 
-# Define SSH key file paths
-declare -A SSH_KEY_FILES
-
-SSH_KEY_FILES=(
-    ["QA"]="/home/azureuser/utils/db_utils/privateKeys/qa_ssh_key.pem"
-    ["COOP_Prod"]="/home/azureuser/utils/db_utils/privateKeys/coop_prod_ssh_key.pem"
-    ["Ruhunu_Prod"]="/home/azureuser/utils/db_utils/privateKeys/ruhunu_prod_ssh_key.pem"
-    ["MP_Prod"]="/home/azureuser/utils/db_utils/privateKeys/mp_prod_ssh_key.pem"
-)
-
-CONFIG_FILE="/home/azureuser/utils/db_utils/server_config.json"
+CONFIG_FILE="/home/azureuser/utils/secrets/server_config.json"
 
 # Ensure the JSON file exists
 if [[ ! -f "$CONFIG_FILE" ]]; then
@@ -33,8 +23,8 @@ if [[ "$TO_ENV" != "QA" ]]; then
     exit 1
 fi
 
-FROM_SSH_KEY=${SSH_KEY_FILES[$FROM_ENV]}
-TO_SSH_KEY=${SSH_KEY_FILES[$TO_ENV]}
+FROM_SSH_KEY=$(jq -r ".server_ssh_keys[\"$FROM_ENV\"]" "$CONFIG_FILE")
+TO_SSH_KEY=$(jq -r ".server_ssh_keys[\"$TO_ENV\"]" "$CONFIG_FILE")
 FROM_SERVER_IP=$(jq -r ".server_ips[\"$FROM_ENV\"]" "$CONFIG_FILE")
 TO_SERVER_IP=$(jq -r ".server_ips[\"$TO_ENV\"]" "$CONFIG_FILE")
 FROM_DB_IP=$(jq -r ".db_ips[\"$FROM_ENV\"]" "$CONFIG_FILE")

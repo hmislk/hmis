@@ -45,6 +45,6 @@ jobs:
           UTC_DATE=$(echo "$UTC_TIME" | awk '{print $2}')
           
           ssh -o StrictHostKeyChecking=no -i private_key.pem azureuser@$SERVER_IP "
-            echo '/home/azureuser/utils/swap_databases/db_export_import_scheduler.sh $FROM_ENV $TO_ENV' | at $HOUR:$MINUTE $UTC_DATE
+            echo '/home/azureuser/utils/db_utils/db_export_import_scheduler.sh $FROM_ENV $TO_ENV' | at $HOUR:$MINUTE $UTC_DATE
           "
           rm private_key.pem
