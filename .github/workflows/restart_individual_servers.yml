@@ -45,6 +45,6 @@ jobs:
           chmod 600 private_key.pem
           
           ssh -o StrictHostKeyChecking=no -i private_key.pem azureuser@$SERVER_IP "
-            /home/azureuser/utils/server_utils/restart_servers.sh \"$SELECTED_ACTION\" \"$SELECTED_SERVER\"
+            /home/azureuser/utils/server_utils/restart_individual_servers.sh \"$SELECTED_ACTION\" \"$SELECTED_SERVER\"
           "
           rm private_key.pem
