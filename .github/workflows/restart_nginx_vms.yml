@@ -23,6 +23,15 @@ jobs:
     name: Run Script on Remote Server
     runs-on: ubuntu-latest
     steps:
+      - name: Map Selected Action
+        id: action_map
+        run: |
+          if [[ "${{ inputs.selectedAction }}" == "Reload NGINX" ]]; then
+            echo "SELECTED_ACTION=NGINX" >> $GITHUB_ENV
+          elif [[ "${{ inputs.selectedAction }}" == "Restart VM" ]]; then
+            echo "SELECTED_ACTION=VM" >> $GITHUB_ENV
+          fi
+
       - name: Run Script Remote Server
         env:
           SERVER_IP: ${{ secrets.OBSERVABILITY_SERVER_IP }}
@@ -33,6 +42,6 @@ jobs:
           chmod 600 private_key.pem
           
           ssh -o StrictHostKeyChecking=no -i private_key.pem azureuser@$SERVER_IP "
-            echo '/home/azureuser/utils/server_utils/restart_nginx_vms.sh $SELECTED_SERVER'
+            /home/azureuser/utils/server_utils/restart_nginx_vms.sh \"$SELECTED_ACTION\" \"$SELECTED_SERVER\"
           "
           rm private_key.pem
