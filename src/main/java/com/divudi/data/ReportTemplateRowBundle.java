@@ -1088,11 +1088,10 @@ public class ReportTemplateRowBundle implements Serializable {
         total = 0.0;
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
-                if (row.getBillItem() == null || row.getBillItem().getPatientEncounter() == null || row.getBillItem().getReferenceBill() == null ) {
+                if (row.getBillItem() == null) {
                     continue;
                 }
-
-                Double amount = safeDouble(isOutpatient ? row.getBillItem().getReferenceBill().getNetTotal()
+                Double amount = safeDouble(isOutpatient ? row.getBillItem().getNetValue()
                         : row.getBillItem().getNetValue());
                 total += amount;
             }
