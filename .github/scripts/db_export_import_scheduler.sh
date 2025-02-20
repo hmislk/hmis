@@ -53,7 +53,7 @@ manage_backup() {
     local DB_PASSWORD=$5
     local DB_NAME=$6
 
-    ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" azureuser@$SERVER_IP \
+    ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" azureuser@"$SERVER_IP" \
         DB_IP="$DB_IP" DB_USERNAME="$DB_USERNAME" DB_PASSWORD="$DB_PASSWORD" DB_NAME="$DB_NAME" 'bash -s' << 'EOF'
 
         if [ ! -d /opt/swapDatabases ]; then
@@ -84,7 +84,7 @@ restore_database() {
 
     echo "Restoring database $DB_NAME on $SERVER_IP..."
 
-    ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" azureuser@$SERVER_IP \
+    ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" azureuser@"$SERVER_IP" \
         DB_IP="$DB_IP" DB_USERNAME="$DB_USERNAME" DB_PASSWORD="$DB_PASSWORD" DB_NAME="$DB_NAME" 'bash -s' << 'EOF'
 
         # Drop and recreate the database
@@ -107,8 +107,8 @@ manage_backup "$TO_SERVER_IP" "$TO_SSH_KEY"  "$TO_DB_IP" "$TO_DB_USERNAME" "$TO_
 
 # Copy backup file from source to target
 echo "Transferring backup file..."
-scp -o StrictHostKeyChecking=no -i "$FROM_SSH_KEY" azureuser@$FROM_SERVER_IP:/opt/swapDatabases/myBackup/backup.sql /home/azureuser/backup.sql
-scp -o StrictHostKeyChecking=no -i "$TO_SSH_KEY" /home/azureuser/backup.sql azureuser@$TO_SERVER_IP:/opt/swapDatabases/importedBackup/backup.sql
+scp -o StrictHostKeyChecking=no -i "$FROM_SSH_KEY" azureuser@"$FROM_SERVER_IP":/opt/swapDatabases/myBackup/backup.sql /home/azureuser/backup.sql
+scp -o StrictHostKeyChecking=no -i "$TO_SSH_KEY" /home/azureuser/backup.sql azureuser@"$TO_SERVER_IP":/opt/swapDatabases/importedBackup/backup.sql
 
 # Restore database on target server
 restore_database "$TO_SERVER_IP" "$TO_SSH_KEY" "$TO_DB_IP" "$TO_DB_USERNAME" "$TO_DB_PASSWORD" "$TO_DB_NAME"

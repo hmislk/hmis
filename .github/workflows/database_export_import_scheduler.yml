@@ -1,4 +1,4 @@
-name: Database Export and Import
+name: Database Export and Import Scheduler
 
 on:
   workflow_dispatch:
@@ -19,7 +19,7 @@ on:
           - COOP_Test
           - COOP_Stg
       date:
-        description: 'Select Date (YYYY-MM-DD)'
+        description: 'Select Scheduling Date (YYYY-MM-DD)'
         required: true
 
 jobs:
