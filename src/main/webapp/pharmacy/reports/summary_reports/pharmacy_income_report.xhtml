@@ -201,147 +201,146 @@
 
                     <p:dataTable
                         id="tbl"
-                        style="padding: 0px!important; margin: 0px!important;" 
                         styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                         value="#{pharmacySummaryReportController.bundle.rows}" var="row"
                         paginator="true" rows="10" rowsPerPageTemplate="5,10,15,50,100,500,1000,2000,5000,10000"
                         paginatorPosition="bottom">
-                        <p:column headerText="Bill No" style="padding: 0px!important; margin: 0px!important;" >
-                            <h:outputText value="#{row.bill.deptId}"  style="padding: 0px!important; margin: 0px!important;" />
+                        <p:column headerText="Bill No" >
+                            <h:outputText value="#{row.bill.deptId}" />
                         </p:column>
-                        <p:column headerText="Patient" width="20em" style="padding: 0px!important; margin: 0px!important;" >
-                            <h:outputText value="#{row.bill.patient.person.nameWithTitle}"  style="padding: 0px!important; margin: 0px!important;" />
+                        <p:column headerText="Patient" width="20em">
+                            <h:outputText value="#{row.bill.patient.person.nameWithTitle}" />
                         </p:column>
                         <p:column headerText="Date" >
-                            <h:outputText value="#{row.bill.createdAt}"  style="padding: 0px!important; margin: 0px!important;" >
+                            <h:outputText value="#{row.bill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                             </h:outputText>
                         </p:column>
-                        <p:column headerText="Net Total"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Net Total"  class="text-end">
                             <h:outputText value="#{row.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
                         </p:column>
-                        <p:column headerText="Cash"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Cash"  class="text-end">
                             <h:outputText value="#{row.cashValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cashValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cashValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Card" class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Card" class="text-end">
                             <h:outputText value="#{row.cardValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cardValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cardValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Cheque"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Cheque"  class="text-end">
                             <h:outputText value="#{row.chequeValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.chequeValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.chequeValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Inpatient Credit" class="text-end light-grey-background"  style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Inpatient Credit" class="text-end light-grey-background">
                             <h:outputText value="#{row.inpatientCreditValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.inpatientCreditValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.inpatientCreditValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Outpatient Credit"  class="text-end light-grey-background" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Outpatient Credit"  class="text-end light-grey-background">
                             <h:outputText value="#{row.opdCreditValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.opdCreditValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.opdCreditValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Staff Credit"   class="text-end light-grey-background"  style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Staff Credit"   class="text-end light-grey-background" >
                             <h:outputText value="#{row.staffValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.staffValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.staffValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Agent Credit" class="text-end light-grey-background"  style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Agent Credit" class="text-end light-grey-background" >
                             <h:outputText value="#{row.agentValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.agentValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.agentValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Total"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Total"  class="text-end">
                             <h:outputText value="#{row.grossTotal}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.grossTotal}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.grossTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
                         </p:column>
-                        <p:column headerText="Discount"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Discount"  class="text-end">
                             <h:outputText value="#{row.discount}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.discount}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Service Charge"  class="text-end"  style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Service Charge"  class="text-end" >
                             <h:outputText value="#{row.serviceCharge}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.serviceCharge}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.serviceCharge}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Actual Total"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Actual Total"  class="text-end">
                             <h:outputText value="#{row.netTotal}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -350,8 +349,6 @@
 
 
                     </p:dataTable>
-
-
 
 
                 </h:form>
