@@ -1,4 +1,4 @@
-name: Restart NGINX & VMs
+name: Restart Individual Servers
 
 on:
   workflow_dispatch:
@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - Reload NGINX
+          - Restart Payara Service
           - Restart VM
       selectedServer:
         description: 'Select Server'
@@ -30,6 +31,8 @@ jobs:
             echo "SELECTED_ACTION=NGINX" >> $GITHUB_ENV
           elif [[ "${{ inputs.selectedAction }}" == "Restart VM" ]]; then
             echo "SELECTED_ACTION=VM" >> $GITHUB_ENV
+          elif [[ "${{ inputs.selectedAction }}" == "Restart Payara Service" ]]; then
+            echo "SELECTED_ACTION=PAYARA" >> $GITHUB_ENV
           fi
 
       - name: Run Script Remote Server
@@ -42,6 +45,6 @@ jobs:
           chmod 600 private_key.pem
           
           ssh -o StrictHostKeyChecking=no -i private_key.pem azureuser@$SERVER_IP "
-            /home/azureuser/utils/server_utils/restart_nginx_vms.sh \"$SELECTED_ACTION\" \"$SELECTED_SERVER\"
+            /home/azureuser/utils/server_utils/restart_servers.sh \"$SELECTED_ACTION\" \"$SELECTED_SERVER\"
           "
           rm private_key.pem

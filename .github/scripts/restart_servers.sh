@@ -9,7 +9,7 @@ fi
 SELECTED_ACTION=$1
 SELECTED_SERVER=$2
 
-CONFIG_FILE="/home/azureuser/utils/server_utils/server_config.json"
+CONFIG_FILE="/home/azureuser/utils/secrets/server_config.json"
 
 # Ensure the JSON file exists
 if [[ ! -f "$CONFIG_FILE" ]]; then
@@ -43,10 +43,13 @@ echo "Executing action '$SELECTED_ACTION' on server '$SELECTED_SERVER' ($SERVER_
 ssh -o StrictHostKeyChecking=no -i "$SERVER_SSH_KEY" azureuser@"$SERVER_IP" "
     if [[ '$SELECTED_ACTION' == 'NGINX' ]]; then
         echo 'Reloading NGINX...'
-        sudo systemctl reload nginx
+        sudo systemctl reload nginx && echo 'NGINX reloaded successfully' || echo 'NGINX reload failed'
     elif [[ '$SELECTED_ACTION' == 'VM' ]]; then
         echo 'Restarting VM...'
         sudo reboot
+    elif [[ '$SELECTED_ACTION' == 'PAYARA' ]]; then
+        echo 'Restarting Payara...'
+        sudo systemctl restart payara_domain1.service && echo 'Payara restarted successfully' || echo 'Payara restart failed'
     else
         echo 'Error: Unknown action.'
         exit 1
