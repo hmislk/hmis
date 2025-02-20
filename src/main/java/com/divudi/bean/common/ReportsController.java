@@ -2745,7 +2745,7 @@ public class ReportsController implements Serializable {
         bundle.setName("Bills");
         bundle.setBundleType("billList");
         
-        if (visitType.equalsIgnoreCase("IP") && reportType.equalsIgnoreCase("summary")) {
+        if (reportType.equalsIgnoreCase("summary")) {
             bundle = generateReportBill(opdBts, null);
             bundle.calculateTotalByRefBills(visitType.equalsIgnoreCase("OP"));
         } else {
