@@ -1,8 +1,19 @@
 #!/bin/bash
 
+# Ensure script is executed with one argument
 if [ "$#" -ne 1 ]; then
     echo "Usage: $0 <excludedServers>"
     exit 1
+fi
+
+# Check if logged into Azure
+if ! az account show &> /dev/null; then
+    printf "Not logged into Azure. Attempting to login...\n"
+    if ! az login --identity &> /dev/null; then
+        printf "Azure login failed. Please login manually and retry.\n"
+        exit 1
+    fi
+    printf "Azure login successful.\n"
 fi
 
 EXCLUDED_SERVERS=$1
@@ -39,44 +50,52 @@ for server in "${INCLUDED_ARRAY[@]}"; do
     echo "$server"
 done
 
+SUCCESS_FILE=$(mktemp)
+FAILED_FILE=$(mktemp)
+
 restart_vm() {
     local SERVER_NAME=$1
 
-    local SERVER_IP
-    SERVER_IP=$(jq -r ".vm_ips[\"$SERVER_NAME\"]" "$CONFIG_FILE")
+    local VM_NAME
+    VM_NAME=$(jq -r ".vm_names[\"$SERVER_NAME\"]" "$CONFIG_FILE")
 
-    local SSH_KEY
-    SSH_KEY=$(jq -r ".vm_ssh_keys[\"$SERVER_NAME\"]" "$CONFIG_FILE")
+    local RESOURCE_GROUP
+    RESOURCE_GROUP=$(jq -r ".vm_resource_groups[\"$SERVER_NAME\"]" "$CONFIG_FILE")
 
-    if [[ -z "$SERVER_IP" || "$SERVER_IP" == "null" ]]; then
-        echo "Error: Could not retrieve IP for $SERVER_NAME."
-        echo "VM $SERVER_NAME failed to restart."
+    if [[ -z "$VM_NAME" || "$VM_NAME" == "null" ]]; then
+        echo "Error: Could not retrieve VM name for $SERVER_NAME."
+        echo "$SERVER_NAME" >> "$FAILED_FILE"
         return 1
     fi
 
-    if [[ -z "$SSH_KEY" || "$SSH_KEY" == "null" ]]; then
-        echo "Error: Could not retrieve SSH key for $SERVER_NAME."
-        echo "VM $SERVER_NAME failed to restart."
+    if [[ -z "$RESOURCE_GROUP" || "$RESOURCE_GROUP" == "null" ]]; then
+        echo "Error: Could not retrieve resource group for $SERVER_NAME."
+        echo "$SERVER_NAME" >> "$FAILED_FILE"
         return 1
     fi
 
-    echo "Restarting VM $SERVER_NAME on $SERVER_IP..."
-
-    if ! ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" azureuser@"$SERVER_IP" <<EOF
-        echo 'Restarting VM...'
-        sudo reboot
-EOF
-    then
-        echo "VM $SERVER_NAME failed to restart."
-        return 1
-    fi
-
-    echo "VM $SERVER_NAME restarted successfully."
+    echo "Restarting VM $VM_NAME in resource group $RESOURCE_GROUP..."
+    if az vm restart --name "$VM_NAME" --resource-group "$RESOURCE_GROUP" --no-wait; then
+        echo "$SERVER_NAME" >> "$SUCCESS_FILE"
+    else
+        echo "$SERVER_NAME" >> "$FAILED_FILE"
+    fi &
 }
 
-# Restart each VM in the included servers list
+# Restart each VM in the included servers list in parallel
 for server in "${INCLUDED_ARRAY[@]}"; do
-    restart_vm "$server" || continue
+    restart_vm "$server"
 done
 
-echo "Operation completed successfully."
+wait
+
+printf "\nRestarted VMs:\n"
+cat "$SUCCESS_FILE"
+
+printf "\nFailed to restart VMs:\n"
+cat "$FAILED_FILE"
+
+# Clean up temporary files
+rm -f "$SUCCESS_FILE" "$FAILED_FILE"
+
+printf "\nOperation completed successfully."
