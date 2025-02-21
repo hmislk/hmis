@@ -1046,6 +1046,8 @@ public class DataUploadController implements Serializable {
             Institution institution;
             Department department;
             InwardChargeType iwct = null;
+            Sample smpl = null;
+            InvestigationTube tube = null;
 
             String name = null;
             String comments = null;
@@ -1057,6 +1059,8 @@ public class DataUploadController implements Serializable {
             String departmentName = null;
             String inwardName = null;
             String itemType = "Service";
+            String specimen = null;
+            String container = null;
 
             Double hospitalFee = 0.0;
             Double collectingCentreFee = 0.0;
@@ -1187,6 +1191,28 @@ public class DataUploadController implements Serializable {
             if (iwct == null) {
                 iwct = InwardChargeType.OtherCharges;
             }
+            
+            Cell specimenCell = row.getCell(9);
+            if (specimenCell != null && specimenCell.getCellType() == CellType.STRING) {
+                specimen = specimenCell.getStringCellValue();
+            }
+            if (specimen != null && !specimen.trim().equals("")) {
+                smpl = sampleController.getSpecimen(specimen);
+            }
+            if (smpl == null) {
+                smpl = sampleController.findAndCreateSampleByName("Blood");
+            }
+            
+            Cell tubeCell = row.getCell(10);
+            if (tubeCell != null && tubeCell.getCellType() == CellType.STRING) {
+                container = tubeCell.getStringCellValue();
+            }
+            if (container != null && !container.trim().equals("")) {
+                tube = investigationTubeController.getTube(container);
+            }
+            if (tube == null) {
+                tube = investigationTubeController.findAndCreateInvestigationTubeByName("Plain Tube");
+            }
 
             Cell itemTypeCell = row.getCell(8);
             if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
@@ -1196,20 +1222,6 @@ public class DataUploadController implements Serializable {
                 itemType = "Investigation";
             }
             if (itemType.equals("Service")) {
-                if (masterItem == null) {
-                    masterItem = new Service();
-                    masterItem.setName(name);
-                    masterItem.setPrintName(printingName);
-                    masterItem.setFullName(fullName);
-                    masterItem.setCode(code);
-                    masterItem.setCategory(category);
-                    masterItem.setIsMasterItem(true);
-                    masterItem.setInwardChargeType(iwct);
-                    masterItem.setCreater(sessionController.getLoggedUser());
-                    masterItem.setCreatedAt(new Date());
-                    masterItemsToSave.add(masterItem);
-                }
-
                 Service service = new Service();
                 service.setName(name);
                 service.setPrintName(printingName);
@@ -1224,20 +1236,6 @@ public class DataUploadController implements Serializable {
                 service.setCreatedAt(new Date());
                 item = service;
             } else if (itemType.equals("Investigation")) {
-
-                if (masterItem == null) {
-                    masterItem = new Investigation();
-                    masterItem.setName(name);
-                    masterItem.setPrintName(printingName);
-                    masterItem.setFullName(fullName);
-                    masterItem.setCode(code);
-                    masterItem.setIsMasterItem(true);
-                    masterItem.setCategory(category);
-                    masterItem.setInwardChargeType(iwct);
-                    masterItem.setCreater(sessionController.getLoggedUser());
-                    masterItem.setCreatedAt(new Date());
-                    masterItemsToSave.add(masterItem);
-                }
                 Investigation ix = new Investigation();
                 ix.setName(name);
                 ix.setPrintName(printingName);
@@ -1247,6 +1245,8 @@ public class DataUploadController implements Serializable {
                 ix.setInstitution(institution);
                 ix.setDepartment(department);
                 ix.setInwardChargeType(iwct);
+                ix.setSample(smpl);
+                ix.setInvestigationTube(tube);
                 ix.setMasterItemReference(masterItem);
                 ix.setCreater(sessionController.getLoggedUser());
                 ix.setCreatedAt(new Date());
@@ -1260,7 +1260,7 @@ public class DataUploadController implements Serializable {
             System.out.println("---------------------------------------------");
             System.out.println("item = " + item.getName());
 
-            Cell hospitalFeeTypeCell = row.getCell(9);
+            Cell hospitalFeeTypeCell = row.getCell(11);
             if (hospitalFeeTypeCell != null) {
                 if (hospitalFeeTypeCell.getCellType() == CellType.NUMERIC) {
                     // If it's a numeric value
@@ -1299,7 +1299,7 @@ public class DataUploadController implements Serializable {
                 itemFeesToSave.add(itf);
             }
 
-            Cell collectingCenterFeeTypeCell = row.getCell(10);
+            Cell collectingCenterFeeTypeCell = row.getCell(12);
             if (collectingCenterFeeTypeCell != null) {
                 if (collectingCenterFeeTypeCell.getCellType() == CellType.NUMERIC) {
                     // If it's a numeric value
@@ -1342,7 +1342,7 @@ public class DataUploadController implements Serializable {
             }
 
             //-----------------------------------------------------------------------------------------
-            Cell chemicalFeeTypeCell = row.getCell(11);
+            Cell chemicalFeeTypeCell = row.getCell(13);
             if (chemicalFeeTypeCell != null) {
                 if (chemicalFeeTypeCell.getCellType() == CellType.NUMERIC) {
                     // If it's a numeric value
@@ -1385,7 +1385,7 @@ public class DataUploadController implements Serializable {
             }
 
             //-----------------------------------------------------------------------------------------
-            Cell additionalFeeTypeCell = row.getCell(12);
+            Cell additionalFeeTypeCell = row.getCell(14);
             if (additionalFeeTypeCell != null) {
                 if (additionalFeeTypeCell.getCellType() == CellType.NUMERIC) {
                     // If it's a numeric value
@@ -6823,7 +6823,7 @@ public class DataUploadController implements Serializable {
 
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
-        String[] columnHeaders = {"Name", "Printing Name", "Full Name", "Code", "Category", "Institution", "Department", "Inward Charge Type", "Item Type", "Hospital Fee", "Collecting Centre Fee", "Chemical Fee", "Additional (Other) Fee"};
+        String[] columnHeaders = {"Name", "Printing Name", "Full Name", "Code", "Category", "Institution", "Department", "Inward Charge Type", "Item Type", "Specimen", "Container", "Hospital Fee", "Collecting Centre Fee", "Chemical Fee", "Additional (Other) Fee"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);
