@@ -42,14 +42,14 @@
                         <h:outputLabel value="GRN No"/>
                         <p:inputText  value="#{commonReport.departmentId}"
                                       />
-                        
+
                         <h:outputLabel value="Supplier Name"/>
                         <p:autoComplete  value="#{commonReport.institution}"
                                          completeMethod="#{dealerController.completeDealor}" 
                                          forceSelection="true"
                                          var="sn" itemLabel="#{sn.name}" itemValue="#{sn}"
-                                      />
-                        
+                                         />
+
                         <p:defaultCommand target="btnRefresh"/>
                     </h:panelGrid>
 
@@ -264,17 +264,17 @@
 
                                 </p:row>  
                             </p:columnGroup>  
-                                                                             
-                        </p:dataTable>
-                        
-                                         
 
-                        
+                        </p:dataTable>
+
+
+
+
                         <p:spacer height="30"/>
-                        
-                        
-                        
-                        
+
+
+
+
 
                         <p:dataTable id="cancelled"  value="#{commonReport.grnCancelled.bills}" var="b1"  
                                      rendered="#{commonReport.grnCancelled.bills.size()!=0}" >
@@ -311,7 +311,7 @@
                                                             </f:facet> 
                                                             <h:outputLabel value="#{b1.billedBill.referenceInstitution.name}"/>
                                                         </p:column>-->
-                                                                                   
+
                             <p:column headerText="Purchase Value Cash"  style=" text-align: right"  >
                                 <f:facet name="header">  
                                     <h:outputLabel value="Purchase Value Cash"/>
@@ -407,16 +407,16 @@
                             </p:columnGroup>  
 
                         </p:dataTable>
-                        
-                        
-                        
-                        
+
+
+
+
 
                         <p:spacer height="30"/>
-                        
-                        
-                        
-                        
+
+
+
+
 
 
                         <p:dataTable id="refunded"  value="#{commonReport.grnReturn.bills}" var="b" 
@@ -468,7 +468,7 @@
                                     <h:outputLabel value="GRN Date"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b.referenceBill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
                             <!--                            <p:column headerText="Referenace Institution" >
@@ -478,7 +478,7 @@
                                                             <h:outputLabel value="#{b.referenceBill.referenceInstitution.name}"/>
                                                         </p:column>-->
 
-                                                   
+
 
                             <p:column headerText="Purchase Value Cash" style=" text-align: right"  >
                                 <f:facet name="header">  
@@ -565,22 +565,22 @@
                             </p:columnGroup>  
 
                         </p:dataTable>
-                        
-                        
-                        
-                        
+
+
+
+
 
                         <p:spacer height="30"/>
-                        
-                        
-                        
-                        
-                       
+
+
+
+
+
 
                         <p:dataTable id="returnCancelled"  value="#{commonReport.grnReturnCancel.bills}" var="b1"  
                                      rendered="#{commonReport.grnReturnCancel.bills.size()!=0}" >
                             <f:facet name="header">  
-                                <h:outputLabel value="Cancelled GRN Return "/>
+                                <h:outputLabel value="Cancelled (Returned) GRN "/>
                             </f:facet> 
 
                             <p:column headerText="Cancelled NO" width="20em" >
@@ -598,26 +598,20 @@
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="GRN Return No" width="20em" >
+                            <p:column headerText="Returned No" width="20em" >
                                 <f:facet name="header">  
-                                    <h:outputLabel value="GRN Return No"/>
+                                    <h:outputLabel value="Returned No"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b1.billedBill.deptId}" >
                                 </h:outputLabel>
                             </p:column>
-<!--                            <p:column headerText="Referenace Institution" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Referenace Institution"/>
-                                </f:facet> 
-                                <h:outputLabel value="#{b1.toInstitution.name}"/>
-                            </p:column>                         -->
-                            <p:column headerText="Comment" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Comment"/>
-                                </f:facet> 
-                                <h:outputLabel value="#{b1.comments}"/>
+                            <!--                            <p:column headerText="Referenace Institution" >
+                                                            <f:facet name="header">  
+                                                                <h:outputLabel value="Referenace Institution"/>
+                                                            </f:facet> 
+                                                            <h:outputLabel value="#{b1.toInstitution.name}"/>
+                                                        </p:column>                         -->
 
-                            </p:column>
 
                             <p:column headerText="Purchase Value Cash"  style=" text-align: right"  >
                                 <f:facet name="header">  
@@ -658,15 +652,21 @@
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00"/>
 
                             </p:column>
+                            <p:column headerText="Comment" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Comment"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b1.comments}"/>
+                            </p:column>
 
-<!--                            <p:column exportable="false">
-                                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
-                            </p:column>-->
+                            <!--                            <p:column exportable="false">
+                                                            <p:selectBooleanCheckbox style="border: black 2px solid;"/>
+                                                        </p:column>-->
 
                             <p:columnGroup type="footer">  
 
                                 <p:row>  
-                                    <p:column colspan="4" style="text-align:left" footerText="Totals:">
+                                    <p:column colspan="3" style="text-align:left" footerText="Totals:">
 
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.grnReturnCancel.bills}">
@@ -730,9 +730,9 @@
                         </p:dataTable>
                     </p:panel>
 
-                    
-                    
-<!--                    print-->
+
+
+                    <!--                    print-->
 
                     <p:panel id="reportPrint" class="printingOnly" >
                         <h:panelGrid columns="2" styleClass="printBlock" style="font-size: 11px;">
@@ -848,7 +848,7 @@
 
                         <p:spacer height="30"/>
 
-                        
+
                         <p:dataTable 
                             id="cancelled_print"  
                             style="padding: 0px!important; margin: 0px!important; font-size: 10px;" 
@@ -902,7 +902,7 @@
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00" />
                             </p:column>
-                            
+
                             <p:columnGroup type="footer">  
                                 <p:row>  
                                     <p:column colspan="5" style="text-align:left; font-size: 9px;" footerText="Totals:" />
@@ -930,11 +930,11 @@
                                 </p:row>  
                             </p:columnGroup>  
                         </p:dataTable>
-                        
+
 
                         <p:spacer height="30"/>
 
-                        
+
                         <p:dataTable id="refunded_print"  value="#{commonReport.grnReturn.bills}" 
                                      var="b" 
                                      style="padding: 0px!important; margin: 0px!important; font-size: 10px;" 
@@ -991,7 +991,7 @@
                             <p:column headerText="Remark" style="text-align: right; font-size: 9px;">
                                 <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" />
                             </p:column>
-                            
+
                             <p:columnGroup type="footer">  
                                 <p:row >  
                                     <p:column colspan="5" style="text-align:left; font-size: 9px;" footerText="Totals:"/>
@@ -1072,7 +1072,7 @@
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00" />
                             </p:column>
-                            
+
                             <p:columnGroup type="footer">  
                                 <p:row>  
                                     <p:column colspan="4" style="text-align:left; font-size: 9px;" footerText="Totals:">
