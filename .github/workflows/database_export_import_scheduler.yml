@@ -8,6 +8,7 @@ on:
         required: true
         type: choice
         options:
+          - COOP_Dev
           - COOP_Prod
           - Ruhunu_Prod
           - MP_Prod
@@ -16,8 +17,7 @@ on:
         required: true
         type: choice
         options:
-          - COOP_Test
-          - COOP_Stg
+          - QA
       date:
         description: 'Select Scheduling Date (YYYY-MM-DD)'
         required: true
