@@ -42,6 +42,14 @@
                         <h:outputLabel value="GRN No"/>
                         <p:inputText  value="#{commonReport.departmentId}"
                                       />
+                        
+                        <h:outputLabel value="Supplier Name"/>
+                        <p:autoComplete  value="#{commonReport.institution}"
+                                         completeMethod="#{dealerController.completeDealor}" 
+                                         forceSelection="true"
+                                         var="sn" itemLabel="#{sn.name}" itemValue="#{sn}"
+                                      />
+                        
                         <p:defaultCommand target="btnRefresh"/>
                     </h:panelGrid>
 
