@@ -907,7 +907,7 @@
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00" />
                             </p:column>                                   
-                            <p:column headerText="Comment" style="font-size: 9px;" >
+                            <p:column headerText="Comment" style="text-align: right; font-size: 9px;" >
                                 <h:outputLabel value="#{b1.comments}" />
                             </p:column>
 
@@ -960,13 +960,13 @@
                                      rowKey="#{b.id}" >
 
                             <f:facet name="header">  
-                                <h:outputLabel value="GRN Return"/>
+                                <h:outputLabel value="Returned GRN"/>
                             </f:facet>
 
-                            <p:column headerText="GRN Return No" style="font-size: 9px; word-break: break-word; white-space: normal;">
+                            <p:column headerText="Returned No " style="font-size: 9px; word-break: break-word; white-space: normal;">
                                 <h:outputLabel value="#{b.deptId}"></h:outputLabel>
                             </p:column>
-                            <p:column headerText="Return At" style="text-align: right; font-size: 9px;" >
+                            <p:column headerText="Returned At" style="font-size: 9px;" >
                                 <h:outputLabel value="#{b.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
@@ -1056,18 +1056,18 @@
                                      rendered="#{commonReport.grnReturnCancel.bills.size()!=0}" >
 
                             <f:facet name="header">  
-                                <h:outputLabel value="Cancelled GRN Return "/>
+                                <h:outputLabel value="Cancelled (Returned) GRN "/>
                             </f:facet> 
 
                             <p:column headerText="Cancelled NO" style="font-size: 9px; word-break: break-word; white-space: normal;">
                                 <h:outputLabel value="#{b1.deptId}"/>
                             </p:column>
-                            <p:column headerText="Cancelled At" style="text-align: right; font-size: 9px;" >
+                            <p:column headerText="Cancelled At" style="font-size: 9px;" >
                                 <h:outputLabel value="#{b1.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="GRN Return No" style="font-size: 9px; word-break: break-word; white-space: normal;" >
+                            <p:column headerText="Returned No" style="font-size: 9px; word-break: break-word; white-space: normal;" >
                                 <h:outputLabel value="#{b1.billedBill.deptId}" >
                                 </h:outputLabel>
                             </p:column>
@@ -1101,7 +1101,7 @@
 
                             <p:columnGroup type="footer">  
                                 <p:row>  
-                                    <p:column colspan="4" style="text-align:left; font-size: 9px;" footerText="Totals:">
+                                    <p:column colspan="3" style="text-align:left; font-size: 9px;" footerText="Totals:">
                                     </p:column>
                                     <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnReturnCancel.bills}">
                                         <f:facet name="footer">
