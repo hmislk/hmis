@@ -425,10 +425,10 @@
                                      rowKey="#{b.id}" >
 
                             <f:facet name="header">  
-                                <h:outputLabel value="GRN Return"/>
+                                <h:outputLabel value="Returned GRN"/>
                             </f:facet>
 
-                            <p:column headerText="GRN Return No" width="20em" >
+                            <p:column headerText="Returned No" width="11em" >
                                 <p:commandLink 
                                     value="#{b.deptId}" 
                                     action="#{commonReport.navigateToViewCancelGRNReturnBillFromGRNSummary(b)}" 
@@ -436,10 +436,10 @@
                                 </p:commandLink>
                             </p:column>
 
-                            <p:column headerText="Return At"  >
+                            <p:column headerText="Returned At"  >
                                 <f:facet name="header">  
-                                    <h:outputLabel value="Created At"/>
-                                </f:facet> 
+                                    <h:outputLabel value="Returned At"/>
+                                </f:facet>
                                 <h:outputLabel value="#{b.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
@@ -449,7 +449,7 @@
                                 <h:outputLabel value="#{b.toInstitution.name}"/>
 
                             </p:column> 
-                            <p:column headerText="GRN No" width="20em" >
+                            <p:column headerText="GRN No" width="11em" >
                                 <f:facet name="header">  
                                     <h:outputLabel value="GRN No"/>
                                 </f:facet> 
@@ -467,7 +467,9 @@
                                 <f:facet name="header">  
                                     <h:outputLabel value="GRN Date"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.referenceBill.createdAt}"/>
+                                <h:outputLabel value="#{b.referenceBill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>
                             </p:column>
                             <!--                            <p:column headerText="Referenace Institution" >
                                                             <f:facet name="header">  
