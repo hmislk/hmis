@@ -6,6 +6,16 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
+# Check if logged into Azure
+if ! az account show &> /dev/null; then
+    printf "Not logged into Azure. Attempting to login...\n"
+    if ! az login --identity &> /dev/null; then
+        printf "Azure login failed. Please login manually and retry.\n"
+        exit 1
+    fi
+    printf "Azure login successful.\n"
+fi
+
 EXCLUDED_SERVERS=$1
 
 CONFIG_FILE="/home/azureuser/utils/secrets/server_config.json"
