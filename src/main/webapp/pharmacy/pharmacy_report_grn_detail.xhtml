@@ -311,15 +311,7 @@
                                                             </f:facet> 
                                                             <h:outputLabel value="#{b1.billedBill.referenceInstitution.name}"/>
                                                         </p:column>-->
-                                                        
-                            <p:column headerText="Comment" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Comment"/>
-                                </f:facet> 
-                                <h:outputLabel value="#{b1.comments}"/>
-
-                            </p:column>
-
+                                                                                   
                             <p:column headerText="Purchase Value Cash"  style=" text-align: right"  >
                                 <f:facet name="header">  
                                     <h:outputLabel value="Purchase Value Cash"/>
@@ -358,6 +350,13 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00"/>
+
+                            </p:column>
+                            <p:column headerText="Comment" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Comment"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b1.comments}"/>
 
                             </p:column>
 
