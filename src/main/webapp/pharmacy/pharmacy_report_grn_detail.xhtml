@@ -282,7 +282,7 @@
                                 <h:outputLabel value="Cancelled GRN "/>
                             </f:facet> 
 
-                            <p:column headerText="Cancelled NO" width="20em" >
+                            <p:column headerText="Cancelled NO" width="11em" >
                                 <p:commandLink 
                                     value="#{b1.deptId}" 
                                     action="#{commonReport.navigateToViewCancelGRNBillFromGRNSummary(b1)}" 
@@ -301,7 +301,7 @@
                                 <h:outputLabel value="#{b1.fromInstitution.name}"/>
                             </p:column>
 
-                            <p:column headerText="GRN No" width="20em" >
+                            <p:column headerText="GRN No" width="11em" >
                                 <h:outputLabel value="#{b1.billedBill.deptId}" >
                                 </h:outputLabel>
                             </p:column>
@@ -367,7 +367,7 @@
                             <p:columnGroup type="footer">  
 
                                 <p:row>  
-                                    <p:column colspan="5" style="text-align:left" footerText="Totals:">
+                                    <p:column colspan="4" style="text-align:left" footerText="Totals:">
 
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.grnCancelled.cash}">
