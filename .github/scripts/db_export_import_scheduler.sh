@@ -56,24 +56,24 @@ manage_backup() {
     ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" azureuser@"$SERVER_IP" \
         DB_IP="$DB_IP" DB_USERNAME="$DB_USERNAME" DB_PASSWORD="$DB_PASSWORD" DB_NAME="$DB_NAME" 'bash -s' << 'EOF'
 
-        if [ ! -d /opt/swapDatabases ]; then
-            sudo mkdir -p /opt/swapDatabases
-            sudo chown azureuser:azureuser /opt/swapDatabases
+        if [ ! -d /opt/db_export_import_backups ]; then
+            sudo mkdir -p /opt/db_export_import_backups
+            sudo chown azureuser:azureuser /opt/db_export_import_backups
         fi
-        mkdir -p /opt/swapDatabases/myBackup /opt/swapDatabases/importedBackup
-        if [ -f /opt/swapDatabases/myBackup/backup.sql ]; then
-            mv /opt/swapDatabases/myBackup/backup.sql /opt/swapDatabases/myBackup/backup-old.sql
+        mkdir -p /opt/db_export_import_backups/myBackup /opt/db_export_import_backups/importedBackup
+        if [ -f /opt/db_export_import_backups/myBackup/backup.sql ]; then
+            mv /opt/db_export_import_backups/myBackup/backup.sql /opt/db_export_import_backups/myBackup/backup-old.sql
         fi
 
         # DB dump command
-        mysqldump -h "$DB_IP" -u "$DB_USERNAME" -p"$DB_PASSWORD" "$DB_NAME" > /opt/swapDatabases/myBackup/backup.sql
+        mysqldump -h "$DB_IP" -u "$DB_USERNAME" -p"$DB_PASSWORD" "$DB_NAME" > /opt/db_export_import_backups/myBackup/backup.sql
 
-        sudo chown azureuser:azureuser /opt/swapDatabases/myBackup/backup.sql
-        sudo chmod 644 /opt/swapDatabases/myBackup/backup.sql
-        sudo chown -R azureuser:azureuser /opt/swapDatabases
+        sudo chown azureuser:azureuser /opt/db_export_import_backups/myBackup/backup.sql
+        sudo chmod 644 /opt/db_export_import_backups/myBackup/backup.sql
+        sudo chown -R azureuser:azureuser /opt/db_export_import_backups
 EOF
 }
-# Log into QA and Dev servers to rename /opt/swapDatabases contents
+# Log into QA and Dev servers to rename /opt/db_export_import_backups contents
 restore_database() {
     local SERVER_IP=$1
     local SSH_KEY=$2
@@ -95,7 +95,7 @@ restore_database() {
         mysql -h "$DB_IP" -u "$DB_USERNAME" -p"$DB_PASSWORD" -e "CREATE DATABASE \`$DB_NAME\`;"
 
         echo "Importing backup into $DB_NAME..."
-        mysql -h "$DB_IP" -u "$DB_USERNAME" -p"$DB_PASSWORD" "$DB_NAME" < /opt/swapDatabases/importedBackup/backup.sql
+        mysql -h "$DB_IP" -u "$DB_USERNAME" -p"$DB_PASSWORD" "$DB_NAME" < /opt/db_export_import_backups/importedBackup/backup.sql
 
         echo "Database $DB_NAME restored successfully!"
 EOF
@@ -107,8 +107,8 @@ manage_backup "$TO_SERVER_IP" "$TO_SSH_KEY"  "$TO_DB_IP" "$TO_DB_USERNAME" "$TO_
 
 # Copy backup file from source to target
 echo "Transferring backup file..."
-scp -o StrictHostKeyChecking=no -i "$FROM_SSH_KEY" azureuser@"$FROM_SERVER_IP":/opt/swapDatabases/myBackup/backup.sql /home/azureuser/backup.sql
-scp -o StrictHostKeyChecking=no -i "$TO_SSH_KEY" /home/azureuser/backup.sql azureuser@"$TO_SERVER_IP":/opt/swapDatabases/importedBackup/backup.sql
+scp -o StrictHostKeyChecking=no -i "$FROM_SSH_KEY" azureuser@"$FROM_SERVER_IP":/opt/db_export_import_backups/myBackup/backup.sql /home/azureuser/backup.sql
+scp -o StrictHostKeyChecking=no -i "$TO_SSH_KEY" /home/azureuser/backup.sql azureuser@"$TO_SERVER_IP":/opt/db_export_import_backups/importedBackup/backup.sql
 
 # Restore database on target server
 restore_database "$TO_SERVER_IP" "$TO_SSH_KEY" "$TO_DB_IP" "$TO_DB_USERNAME" "$TO_DB_PASSWORD" "$TO_DB_NAME"
