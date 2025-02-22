@@ -868,46 +868,46 @@
                                 <h:outputLabel value="Cancelled GRN "/>
                             </f:facet> 
 
-                            <p:column headerText="Cancelled NO" style="font-size: 9px; word-break: break-word; white-space: normal; text-align:left">
+                            <p:column headerText="Cancelled NO" style="font-size: 9px; word-break: break-word; white-space: normal; text-align:left;">
                                 <h:outputLabel value="#{b1.deptId}" style="display: block; word-break: break-word; white-space: normal;" />
                             </p:column>
-                            <p:column headerText="Cancelled At" style="font-size: 9px; text-align:left" >
+                            <p:column headerText="Cancelled At" style="font-size: 9px; text-align:left;" >
                                 <h:outputLabel value="#{b1.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Suplier Name" style="font-size: 9px; text-align:left" >
+                            <p:column headerText="Suplier Name" style="font-size: 9px; text-align:left;" >
                                 <h:outputLabel value="#{b1.fromInstitution.name}" />
                             </p:column>                         
-                            <p:column headerText="GRN No" style="font-size: 9px; word-break: break-word; white-space: normal; text-align:left">
+                            <p:column headerText="GRN No" style="font-size: 9px; word-break: break-word; white-space: normal; text-align:left;">
                                 <h:outputLabel value="#{b1.billedBill.deptId}" style="display: block; word-break: break-word; white-space: normal;" >
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Purchase Value Cash" style="text-align: right; font-size: 9px; text-align: right;" >
+                            <p:column headerText="Purchase Value Cash" style="text-align: right; font-size: 9px;" >
                                 <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Cash'}" value="0.00" />
                             </p:column>
-                            <p:column headerText="Purchase Value Credit" style="text-align: right; font-size: 9px; text-align: right;" >
+                            <p:column headerText="Purchase Value Credit" style="text-align: right; font-size: 9px;" >
                                 <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00" />
                             </p:column>
-                            <p:column headerText="Sale Value Cash" style="text-align: right; font-size: 9px; text-align: right;" >
+                            <p:column headerText="Sale Value Cash" style="text-align: right; font-size: 9px;" >
                                 <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.saleValue}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Cash'}" value="0.00" />
                             </p:column>
-                            <p:column headerText="Sale Value Credit" style="text-align: right; font-size: 9px; text-align: right;" >
+                            <p:column headerText="Sale Value Credit" style="text-align: right; font-size: 9px;;" >
                                 <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.saleValue}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00" />
                             </p:column>                                   
-                            <p:column headerText="Comment" style="text-align: right; font-size: 9px; text-align: right;" >
+                            <p:column headerText="Comment" style="text-align: right; font-size: 9px;" >
                                 <h:outputLabel value="#{b1.comments}" />
                             </p:column>
 
@@ -963,21 +963,21 @@
                                 <h:outputLabel value="Returned GRN"/>
                             </f:facet>
 
-                            <p:column headerText="Returned No " style="font-size: 9px; word-break: break-word; white-space: normal;">
+                            <p:column headerText="Returned No " style="font-size: 9px; word-break: break-word; white-space: normal; text-align:left;">
                                 <h:outputLabel value="#{b.deptId}"></h:outputLabel>
                             </p:column>
-                            <p:column headerText="Returned At" style="font-size: 9px;" >
+                            <p:column headerText="Returned At" style="font-size: 9px; text-align:left;" >
                                 <h:outputLabel value="#{b.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Suplier Name" style="font-size: 9px;" >
+                            <p:column headerText="Suplier Name" style="font-size: 9px; text-align:left;" >
                                 <h:outputLabel value="#{b.toInstitution.name}"/>
                             </p:column>
-                            <p:column headerText="GRN No" style="font-size: 9px; word-break: break-word; white-space: normal;">
+                            <p:column headerText="GRN No" style="font-size: 9px; word-break: break-word; white-space: normal; text-align:left;">
                                 <h:outputLabel value="#{b.referenceBill.deptId}" style="padding: 0px!important; margin: 0px!important;"/>
                             </p:column>
-                            <p:column headerText="GRN Date" style="text-align: right; font-size: 9px;">
+                            <p:column headerText="GRN Date" style="font-size: 9px; text-align:left;">
                                 <h:outputLabel value="#{b.referenceBill.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
