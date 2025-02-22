@@ -101,19 +101,69 @@ restore_database() {
 EOF
 }
 
+# Function to send an email
+send_email() {
+    local SUBJECT=$1
+    local BODY=$2
+    shift 2  # Remove first two arguments and keep the rest as recipients
+    local RECIPIENTS=("$@")
+    local EMAIL_API_URL="http://localhost:8081/messenger/api/email/send"
+
+    # Convert recipients array to JSON format
+    local EMAIL_JSON
+    EMAIL_JSON=$(printf '[%s]' "$(printf '"%s",' "${RECIPIENTS[@]}" | sed 's/,$//')")
+
+    echo "Sending email notification..."
+    curl -X POST "$EMAIL_API_URL" \
+         -H "Content-Type: application/json" \
+         -d '{
+                "subject": "'"$SUBJECT"'",
+                "body": "'"$BODY"'",
+                "recipients": '"$EMAIL_JSON"',
+                "isHtml": false
+             }'
+
+    echo "Email sent successfully!"
+}
+
+TRANSFER_SUCCESS=false
+RESTORE_SUCCESS=false
+
 # Manage backups on source and target servers
-manage_backup "$FROM_SERVER_IP" "$FROM_SSH_KEY" "$FROM_DB_IP" "$FROM_DB_USERNAME" "$FROM_DB_PASSWORD" "$FROM_DB_NAME"
-manage_backup "$TO_SERVER_IP" "$TO_SSH_KEY"  "$TO_DB_IP" "$TO_DB_USERNAME" "$TO_DB_PASSWORD" "$TO_DB_NAME"
+if manage_backup "$FROM_SERVER_IP" "$FROM_SSH_KEY" "$FROM_DB_IP" "$FROM_DB_USERNAME" "$FROM_DB_PASSWORD" "$FROM_DB_NAME" &&
+   manage_backup "$TO_SERVER_IP" "$TO_SSH_KEY" "$TO_DB_IP" "$TO_DB_USERNAME" "$TO_DB_PASSWORD" "$TO_DB_NAME"; then
+    echo "Backup management successful."
+else
+    echo "Backup management failed."
+    send_email "Database Restore Failed" "Backup management failed while transferring from $FROM_ENV to $TO_ENV." "imeshranawella00@gmail.com" "geeth.gsm@gmail.com" "deshanipubudu0415@gmail.com" "iranimadushika28@gmail.com"
+    exit 1
+fi
 
 # Copy backup file from source to target
 echo "Transferring backup file..."
-scp -o StrictHostKeyChecking=no -i "$FROM_SSH_KEY" azureuser@"$FROM_SERVER_IP":/opt/db_export_import_backups/myBackup/backup.sql /home/azureuser/backup.sql
-scp -o StrictHostKeyChecking=no -i "$TO_SSH_KEY" /home/azureuser/backup.sql azureuser@"$TO_SERVER_IP":/opt/db_export_import_backups/importedBackup/backup.sql
+if scp -o StrictHostKeyChecking=no -i "$FROM_SSH_KEY" azureuser@"$FROM_SERVER_IP":/opt/db_export_import_backups/myBackup/backup.sql /home/azureuser/backup.sql &&
+   scp -o StrictHostKeyChecking=no -i "$TO_SSH_KEY" /home/azureuser/backup.sql azureuser@"$TO_SERVER_IP":/opt/db_export_import_backups/importedBackup/backup.sql; then
+    TRANSFER_SUCCESS=true
+else
+    send_email "Database Restore Failed" "Backup file transfer from $FROM_ENV to $TO_ENV failed." "imeshranawella00@gmail.com" "geeth.gsm@gmail.com" "deshanipubudu0415@gmail.com" "iranimadushika28@gmail.com"
+    exit 1
+fi
 
 # Restore database on target server
-restore_database "$TO_SERVER_IP" "$TO_SSH_KEY" "$TO_DB_IP" "$TO_DB_USERNAME" "$TO_DB_PASSWORD" "$TO_DB_NAME"
+if restore_database "$TO_SERVER_IP" "$TO_SSH_KEY" "$TO_DB_IP" "$TO_DB_USERNAME" "$TO_DB_PASSWORD" "$TO_DB_NAME"; then
+    RESTORE_SUCCESS=true
+else
+    send_email "Database Restore Failed" "Database restoration on $TO_ENV failed." "imeshranawella00@gmail.com" "geeth.gsm@gmail.com" "deshanipubudu0415@gmail.com" "iranimadushika28@gmail.com"
+    exit 1
+fi
 
 # Cleanup
 rm -f /home/azureuser/backup.sql
 
-echo "Database backup successfully transferred from $FROM_ENV to $TO_ENV on $DATE."
+if $TRANSFER_SUCCESS && $RESTORE_SUCCESS; then
+    send_email "Database Restore Completed" \
+        "Database backup successfully transferred from $FROM_ENV to $TO_ENV." \
+        "imeshranawella00@gmail.com" "geeth.gsm@gmail.com" "deshanipubudu0415@gmail.com" "iranimadushika28@gmail.com"
+fi
+
+echo "Database backup successfully transferred from $FROM_ENV to $TO_ENV."
