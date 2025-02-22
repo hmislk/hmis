@@ -175,7 +175,10 @@ public class ReportController implements Serializable {
     private List<CategoryCount> reportList;
     private List<Institution> collectionCenters;
     private List<AgentHistory> agentHistories;
+    private List<BillTypeAtomic> billTypeAtomics;
 
+    private BillTypeAtomic billTypeAtomic;
+    
     private Date warrentyStartDate;
     private Date warrentyEndDate;
 
@@ -1570,6 +1573,11 @@ public class ReportController implements Serializable {
             jpql += " and bi.item.machine=:machine ";
             m.put("machine", machine);
         }
+        
+        if(billTypeAtomic!=null){
+            jpql += " and bi.bill.billTypeAtomic=:billTypeAtomic ";
+            m.put("billTypeAtomic", billTypeAtomic);
+        }
 
         jpql += " group by bi.item.category.name, bi.item.name ";
         jpql += " order by bi.item.category.name, bi.item.name";
@@ -1701,6 +1709,7 @@ public class ReportController implements Serializable {
         billItems = billItemFacade.findByJpql(jpql, m);
     }
 
+//    Not COrrect
     public void listCcReportPrint() {
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -3721,4 +3730,23 @@ public class ReportController implements Serializable {
         this.reportTemplateFileIndexName = reportTemplateFileIndexName;
     }
 
+    public List<BillTypeAtomic> getBillTypeAtomics() {
+        return billTypeAtomics;
+    }
+
+    public void setBillTypeAtomics(List<BillTypeAtomic> billTypeAtomics) {
+        this.billTypeAtomics = billTypeAtomics;
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
+    }
+
+    
+    
+    
 }

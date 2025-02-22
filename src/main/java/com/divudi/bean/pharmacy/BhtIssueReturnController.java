@@ -67,24 +67,18 @@ public class BhtIssueReturnController implements Serializable {
     @EJB
     private BillItemFacade billItemFacade;
 
-    
-    public String navigateToReturnPharmacyDirectIssueToInpatients(){
-        if(bill==null){
+    public String navigateToReturnPharmacyDirectIssueToInpatients() {
+        if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
-        return "/inward/pharmacy_bill_return_bht_issue?faces-redirect=true";
-    }
-    
-    public Bill getBill() {
-        return bill;
-    }
-
-    public void setBill(Bill bill) {
-        makeNull();
+        returnBill = null;
+        printPreview = false;
+        billItems = null;
 
         if (bill.getDepartment() == null) {
-            return;
+            JsfUtil.addErrorMessage("No Department for the Bill");
+            return null;
         }
 
 //        if (getSessionController().getDepartment().getId() != bill.getDepartment().getId()) {
@@ -93,11 +87,42 @@ public class BhtIssueReturnController implements Serializable {
 //        }
         if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId())) {
             JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
-            return;
+            return null;
         }
-
-        this.bill = bill;
+        returnBill = null;
+        getReturnBill();
+        returnBill.copy(bill);
         generateBillComponent();
+        return "/inward/pharmacy_bill_return_bht_issue?faces-redirect=true";
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+//    public void setBill(Bill bill) {
+//        makeNull();
+//
+//        if (bill.getDepartment() == null) {
+//            return;
+//        }
+//
+////        if (getSessionController().getDepartment().getId() != bill.getDepartment().getId()) {
+////            JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
+////            return;
+////        }
+//        if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId())) {
+//            JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
+//            return;
+//        }
+//
+//        this.bill = bill;
+//        returnBill = null;
+//        returnBill.copy(bill);
+//        generateBillComponent();
+//    }
+    public void setBill(Bill bill) {
+        this.bill = bill;
     }
 
     public Bill getReturnBill() {
@@ -132,7 +157,7 @@ public class BhtIssueReturnController implements Serializable {
             tmp.setQty(0.0);
             calTotal();
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
-        }else{
+        } else {
             calTotal();
         }
 
@@ -149,16 +174,16 @@ public class BhtIssueReturnController implements Serializable {
 
     private void saveReturnBill() {
 
-        getReturnBill().copy(getBill());
-
+//        getReturnBill().copy(getBill());
         getReturnBill().setBillType(getBill().getBillType());
         getReturnBill().setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
         getReturnBill().setBilledBill(getBill());
 
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
 
-        getReturnBill().setTotal(0 - getReturnBill().getTotal());
-        getReturnBill().setNetTotal(getReturnBill().getTotal());
+        getReturnBill().setTotal(0 - Math.abs(getReturnBill().getTotal()));
+        getReturnBill().setNetTotal(0 - Math.abs(getReturnBill().getNetTotal()));
+        getReturnBill().setMargin(0 - Math.abs(getReturnBill().getMargin()));
 
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
@@ -190,9 +215,9 @@ public class BhtIssueReturnController implements Serializable {
             i.setCreater(getSessionController().getLoggedUser());
             i.setQty((double) i.getPharmaceuticalBillItem().getQty());
 
-            double value = i.getRate() * i.getQty();
-            i.setGrossValue(0 - value);
-            i.setNetValue(0 - value);
+//            double value = i.getRate() * i.getQty();
+//            i.setGrossValue(0 - value);
+//            i.setNetValue(0 - value);
 
             PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
@@ -248,6 +273,7 @@ public class BhtIssueReturnController implements Serializable {
         }
 
         bill.setTotal(total);
+        bill.setMargin(netTotal - total);
         bill.setNetTotal(netTotal);
         getBillFacade().edit(bill);
 
@@ -260,12 +286,10 @@ public class BhtIssueReturnController implements Serializable {
 
             for (BillItem bi : billItems) {
 
-
 //                System.out.println("bi = " + bi);
 //                System.out.println("bi.getPharmaceuticalBillItem().getQtyInUnit() = " + bi.getPharmaceuticalBillItem().getQtyInUnit());
 //                System.out.println("bi.getQty() = " + bi.getQty());
 //                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
-
                 if (bi.getPharmaceuticalBillItem().getQtyInUnit() < bi.getQty()) {
 //                    System.out.println("bi.getQty = " + bi.getQty());
                     JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
@@ -277,8 +301,6 @@ public class BhtIssueReturnController implements Serializable {
 //        
 //        System.out.println("returnBill.getTotal() = " + returnBill.getTotal());
 //        System.out.println("getReturnBill().getTotal() = " + getReturnBill().getTotal());
-
-        
         if (returnBill.getTotal() == 0) {
             JsfUtil.addErrorMessage("Add Valied Return Quntity");
             return;
@@ -288,7 +310,6 @@ public class BhtIssueReturnController implements Serializable {
 //            JsfUtil.addErrorMessage("Checked Bill. Can not Return");
 //            return;
 //        }
-        
         if (getBill().getPatientEncounter().isPaymentFinalized()) {
             JsfUtil.addErrorMessage("This Bill Already Discharged");
             return;
@@ -297,8 +318,7 @@ public class BhtIssueReturnController implements Serializable {
         saveReturnBill();
         saveComponent();
 
-        updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(), getBill().getPatientEncounter().getPaymentMethod());
-
+//        updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(), getBill().getPatientEncounter().getPaymentMethod());
         getBillFacade().edit(getReturnBill());
 
         getBill().getReturnBhtIssueBills().add(getReturnBill());
@@ -336,14 +356,23 @@ public class BhtIssueReturnController implements Serializable {
 
     private void calTotal() {
         double grossTotal = 0.0;
+        double netTotal = 0.0;
+        double marginTotal = 0.0;
 
         for (BillItem p : getBillItems()) {
-            grossTotal += p.getNetRate() * p.getQty();
-
+            grossTotal += p.getRate() * p.getQty();
+            marginTotal += p.getMarginRate() * p.getQty();
+            netTotal += p.getNetRate() * p.getQty();
+            
+            p.setNetValue(p.getNetRate() * p.getQty());
+            p.setGrossValue(p.getRate() * p.getQty());
+            p.setMarginValue(p.getMarginRate() * p.getQty());
+            
         }
 
         getReturnBill().setTotal(grossTotal);
-        getReturnBill().setNetTotal(grossTotal);
+        getReturnBill().setMargin(marginTotal);
+        getReturnBill().setNetTotal(netTotal);
 
         //  return grossTotal;
     }

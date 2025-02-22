@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <!-- Include the custom CSS for styling -->
+        <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
+    </h:head>
+
+    <h:body>
+        <!-- Composite Component Interface -->
+        <cc:interface>
+            <!-- Attributes passed to the component -->
+            <cc:attribute name="billItem" required="true" />
+            <cc:attribute name="controller" required="false" />
+        </cc:interface>
+
+        <!-- Composite Component Implementation -->
+        <cc:implementation>
+            <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
+
+
+            <div class="receipt-container align-items-center">
+                <!-- Header Section -->
+                <div class="hospital-name">
+                    <h:outputLabel value="#{sessionController.institution.name}"/> <br></br>
+                    <h:outputLabel style="font-size:  15px" value="#{sessionController.department.name}"  /> <br></br>
+                    <h:outputLabel class="my-2" style="font-size:  12px; font-weight: bold" value="Instruction for use #{cc.attrs.billItem.item.name}"  /> 
+
+                </div>
+
+                <div class="row my-1"> 
+                    <div class="col-6">
+                        <h:outputLabel value="Patient :" ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.controller.billItem.prescription.patient.person.name}" rendered="#{cc.attrs.controller.billItem.prescription.patient ne null}"></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.controller.patient.person.name}" rendered="#{cc.attrs.controller.patient ne null}"></h:outputLabel>
+                        
+                    </div>
+
+                    <div class="col-6">
+                        <h:outputLabel value="Age :" ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.controller.patient.person.ageAsString}" rendered="#{cc.attrs.controller.patient ne null}"></h:outputLabel>
+                        <h:outputLabel value="#{billItem.prescription.patient.person.ageAsString}" rendered="#{cc.attrs.controller.patient eq null}"></h:outputLabel>
+                    </div>
+                </div>
+
+                <!-- Separator Line -->
+                <div class="separator my-1"></div>
+
+                <div class="row align-items-center">
+
+                    <div class="col-3 text-start ms-5">
+                        <h:outputLabel value="Medicine:" ></h:outputLabel>
+                    </div>
+
+                    <div class="col-7 text-start">
+                        <h:outputLabel value="#{cc.attrs.billItem.item.name}" ></h:outputLabel>
+                    </div>
+
+                </div>
+
+                <div class="row align-items-center">
+
+                    <div class="col-3 text-start ms-5 my-3">
+                        <h:outputLabel value="Dose:" ></h:outputLabel>
+                    </div>
+
+                    <div class="col-1 text-start">
+                        <h:outputLabel value="#{cc.attrs.billItem.prescription.dose}" ></h:outputLabel>
+                    </div>
+
+                    <div class="col-2">
+                        <h:outputLabel value="#{cc.attrs.billItem.prescription.doseUnit.name}" ></h:outputLabel>
+                    </div>
+
+                </div>
+
+                <div class="row ">
+
+                    <div class="col-3 text-start ms-5">
+                        <h:outputLabel value="Frequency:" ></h:outputLabel>
+                    </div>
+
+                    <div class="col-2 text-start">
+                        <h:outputLabel value="#{cc.attrs.billItem.prescription.frequencyUnit.name}" ></h:outputLabel>
+                    </div>
+
+
+                </div>
+
+                <div class="row align-items-center">
+
+                    <div class="col-3 text-start ms-5 my-3">
+                        <h:outputLabel value="Duration:" ></h:outputLabel>
+                    </div>
+
+                    <div class="col-1 text-start">
+                        <h:outputLabel value="#{cc.attrs.billItem.prescription.duration}" ></h:outputLabel>
+                    </div>
+
+                    <div class="col-2 text-start">
+                        <h:outputLabel value="#{cc.attrs.billItem.prescription.durationUnit.name}" ></h:outputLabel>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                     <div class="col-3 text-start ms-5">
+                        <h:outputLabel value="Special Note:" ></h:outputLabel>
+                    </div>
+                    
+                    <div class="col-7 text-start">
+                        <h:outputText style="font-weight: bold; word-wrap: break-word" value="#{cc.attrs.billItem.prescription.comment}"></h:outputText>
+                    </div>
+                    
+                </div>
+
+                <!-- Separator Line -->
+                <div class="separator"></div>
+
+                <h:outputLabel class="my-4" style="font-weight: bold" value="Only use for #{cc.attrs.billItem.item.name} for this patient. Do not use without instruction by a health expert."></h:outputLabel>
+
+                <h:panelGroup >
+                    <table >
+                        <tr>
+                            <td  style="width: 4cm;">
+                                <h:outputLabel value="Printed By : " style="font-size: 8pt;"/>
+                                <h:outputLabel style="font-size: 8pt;" value=" #{sessionController.loggedUser.name}"/>
+                            </td>
+                            <td style="width: 2cm;"></td>
+                            <td>
+                                <h:outputLabel style="font-size: 8pt;" value="#{sessionController.currentDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </table> 
+                </h:panelGroup>
+
+            </div>
+
+        </cc:implementation>
+
+    </h:body>
+</html>

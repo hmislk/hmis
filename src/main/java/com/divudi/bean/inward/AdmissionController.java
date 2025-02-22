@@ -52,6 +52,7 @@ import static com.divudi.data.inward.AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_N
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.ClinicalFindingValueFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
@@ -160,6 +161,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Doctor referringDoctorForSearch;
     private Institution institutionForSearch;
     private AdmissionStatus admissionStatusForSearch;
+    private AdmissionType admissionTypeForSearch;
     private Admission perantAddmission;
     private boolean patientDetailsEditable;
     private List<ClinicalFindingValue> patientAllergies;
@@ -618,6 +620,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             j += "  and c.parentEncounter=:pent ";
             m.put("pent", parentAdmission);
         }
+        
+        if (admissionTypeForSearch != null) {
+            j += "  and c.admissionType=:at ";
+            m.put("at", admissionTypeForSearch);
+        }
 
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
     }
@@ -832,6 +839,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         referringDoctorForSearch = null;
         institutionForSearch = null;
         admissionStatusForSearch = null;
+        admissionTypeForSearch = null;
         parentAdmission = null;
     }
 
@@ -842,15 +850,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         clearSearchValues();
         return "/inward/inpatient_search?faces-redirect=true;";
-    }
-    
-    public String navigateToListAdmissionsWithoutRoom() {
-        institutionForSearch = sessionController.getLoggedUser().getInstitution();
-        if (configOptionApplicationController.getBooleanValueByKey("Restirct Inward Admission Search to Logged Department of the User")) {
-            loggedDepartment = sessionController.getLoggedUser().getDepartment();
-        }
-        clearSearchValues();
-        return "/inward/inpatient_search_without_room?faces-redirect=true;";
     }
 
     public String navigateToListChildAdmissions() {
@@ -1941,6 +1940,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.currentNonBht = currentNonBht;
     }
 
+
     public boolean isAdmittingProcessStarted() {
         return admittingProcessStarted;
     }
@@ -1949,7 +1949,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.admittingProcessStarted = admittingProcessStarted;
     }
     
-    
+
+    public AdmissionType getAdmissionTypeForSearch() {
+        return admissionTypeForSearch;
+    }
+
+    public void setAdmissionTypeForSearch(AdmissionType admissionTypeForSearch) {
+        this.admissionTypeForSearch = admissionTypeForSearch;
+    }
+
 
     /**
      *

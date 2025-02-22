@@ -52,25 +52,25 @@
                                     icon="fas fa-file-invoice-dollar"
                                     class="my-1 w-100  ui-button-warning" />
 
-                                
-                                
-<!--                                <p:separator ></p:separator>
 
-                                
-                                <p:commandButton 
-                                    value="List All Paid &amp; Missing Pharmacy Bills"
-                                    action="#{supplierPaymentController.fillAllCreditBills()}"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Missing Supplier Payment Search is enabled')}"
-                                    ajax="false"
-                                    icon="fas fa-file-invoice-dollar"
-                                    class="my-1 w-100  ui-button-success" />
 
-                                <p:commandButton 
-                                    value="List All Canceled Returned Supplier Payments"
-                                    action="#{supplierPaymentController.fillAllCanceledReturnedSupplierPayments()}"
-                                    ajax="false"
-                                    icon="fas fa-file-invoice-dollar"
-                                    class="my-1 w-100  ui-button-danger" />-->
+                                <!--                                <p:separator ></p:separator>
+                                
+                                                                
+                                                                <p:commandButton 
+                                                                    value="List All Paid &amp; Missing Pharmacy Bills"
+                                                                    action="#{supplierPaymentController.fillAllCreditBills()}"
+                                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Missing Supplier Payment Search is enabled')}"
+                                                                    ajax="false"
+                                                                    icon="fas fa-file-invoice-dollar"
+                                                                    class="my-1 w-100  ui-button-success" />
+                                
+                                                                <p:commandButton 
+                                                                    value="List All Canceled Returned Supplier Payments"
+                                                                    action="#{supplierPaymentController.fillAllCanceledReturnedSupplierPayments()}"
+                                                                    ajax="false"
+                                                                    icon="fas fa-file-invoice-dollar"
+                                                                    class="my-1 w-100  ui-button-danger" />-->
 
                                 <p:separator></p:separator>
 
@@ -179,23 +179,25 @@
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column  headerText="Actions" >
+                                    <p:column  headerText="Actions"  >
+                                        <p:commandButton 
+                                            title="View" 
+                                            icon="fa fa-eye"
+                                            styleClass="ui-button-secondary mx-1"
+                                            action="#{supplierPaymentController.navigateToViewProcurementBill(b)}" 
+                                            ajax="false">
+                                        </p:commandButton>
                                         <p:commandButton
-                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Approval is necessary for Procument Payments', false)}"
-                                            value="Pay" 
-                                            update="@form" 
+                                            title="Pay" 
+                                            icon="fa fa-money-bill-wave"
+                                            styleClass="ui-button-success mx-1"
                                             action="#{supplierPaymentController.navigateToStartSupplierPayment(b)}" 
                                             ajax="false" 
-                                            disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}" >
+                                            disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}">
                                         </p:commandButton>
-                                        <p:commandButton
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Approval is necessary for Procument Payments', false)}"
-                                            value="Prepare Payment" 
-                                            update="@form" 
-                                            action="#{supplierPaymentController.navigateToPrepareSupplierPayment(b)}" 
-                                            ajax="false" 
-                                            disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}" >
-                                        </p:commandButton>
+
+
+
                                     </p:column>
                                 </p:dataTable>
 

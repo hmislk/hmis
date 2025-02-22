@@ -21,13 +21,7 @@ import com.divudi.data.dataStructure.ItemQuantityAndValues;
 import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
 import com.divudi.data.dataStructure.StockAverage;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
+import com.divudi.entity.*;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.Atm;
@@ -68,24 +62,19 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -211,6 +200,10 @@ public class PharmacyController implements Serializable {
 
     private MeasurementUnit issueUnit;
     // </editor-fold>
+
+    private Map<String, Map<String, Double>> departmentTotals = new HashMap<>();
+    private Map<String, Double> pharmacyTotals = new HashMap<>();
+    private Map<String, Map<String, List<DepartmentCategoryWiseItems>>> departmentCategoryMap = new HashMap<>();
 
     // <editor-fold defaultstate="collapsed" desc="Methods - Fill Data">
     private void fillVtms() {
@@ -973,6 +966,18 @@ public class PharmacyController implements Serializable {
         calculateTotals(bills);
     }
 
+    public static String formatDate(Date date) {
+        if (date == null) {
+            return "";
+        }
+
+        UserPreference userPreference = new UserPreference();
+        String pattern = userPreference.getLongDateTimeFormat();
+
+        SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+        return sdf.format(date);
+    }
+
     public void createConsumptionReportTable() {
         resetFields();
 
@@ -1004,11 +1009,10 @@ public class PharmacyController implements Serializable {
         totalCreditPurchaseValue = 0.0;
         totalCashPurchaseValue = 0.0;
         totalPurchase = 0.0;
+        grantIssueQty = 0.0;
     }
 
     public void generateConsumptionReportTableByBill(BillType billType) {
-//        List<BillType> bt = new ArrayList<>();
-//        bt.add(BillType.PharmacyIssue);
         bills = new ArrayList<>();
 
         String sql = "SELECT b FROM Bill b WHERE b.retired = false"
@@ -1036,24 +1040,33 @@ public class PharmacyController implements Serializable {
             tmp.put("dept", dept);
         }
 
+        if (category != null) {
+            sql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.category = :category)";
+            tmp.put("category", category);
+        }
+
+        if (item != null) {
+            sql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item)";
+            tmp.put("item", item);
+        }
+
         if (toDepartment != null) {
             sql += " AND b.toDepartment = :toDept";
             tmp.put("toDept", toDepartment);
         }
 
-        sql += " order by b.id desc";
+        sql += " order by b.createdAt asc";
 
         try {
             bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, " Something Went Worng!");
+            JsfUtil.addErrorMessage(e, " Something Went Wrong!");
         }
         totalPurchase = 0.0;
         for (Bill b : bills) {
             totalPurchase += b.getStockBill().getStockValueAtPurchaseRates();
         }
-
     }
 
     public void generateConsumptionReportTableByBillItems(BillType billType) {
@@ -1100,7 +1113,7 @@ public class PharmacyController implements Serializable {
             parameters.put("toDepartment", toDepartment);
         }
 
-        sql.append("ORDER BY bi.id DESC");
+        sql.append("ORDER BY bi.bill.createdAt ASC");
 
         try {
             billItems = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
@@ -1287,6 +1300,9 @@ public class PharmacyController implements Serializable {
     }
 
     public List<DepartmentCategoryWiseItems> generateConsumptionReportTableByDepartmentAndCategoryWise(BillType billType) {
+        totalSaleValue = 0.0;
+        qty = 0.0;
+
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.DepartmentCategoryWiseItems("
                 + "bi.bill.department, "
@@ -1358,6 +1374,8 @@ public class PharmacyController implements Serializable {
             }
             if ("summeryReport".equals(reportType)) {
                 generateConsumptionReportTableAsDepartmentSummary(resultsList);
+            } else if ("categoryWise".equals(reportType)) {
+                generateConsumptionReportTableAsCategoryWise(resultsList);
             }
             return resultsList;
         } catch (Exception e) {
@@ -1368,48 +1386,419 @@ public class PharmacyController implements Serializable {
         }
     }
 
-    public void generateConsumptionReportTableAsDepartmentSummary(List<DepartmentCategoryWiseItems> list) {
-        // Initialize department summaries and reset total sales value
+    public void generateConsumptionReportTableAsCategoryWise(final List<DepartmentCategoryWiseItems> list) {
+        totalSaleValue = 0.0;
+        // Department Name -> Category Name -> Item List
+        Map<String, Map<String, List<DepartmentCategoryWiseItems>>> departmentCategoryMap = new HashMap<>();
+        // Category Name -> Item List
+        Map<String, List<DepartmentCategoryWiseItems>> categorizedItems = new HashMap<>();
+        // Department Name -> Category Name -> Total Value
+        Map<String, Map<String, Double>> departmentTotals = new TreeMap<>();
+
+        for (DepartmentCategoryWiseItems item : list) {
+            String departmentName = item.getConsumptionDepartment().getName();
+            String categoryName = item.getCategory().getName();
+
+            if (item.getQty() == 0) {
+                continue;
+            }
+
+            if (categoryName == null || categoryName.trim().isEmpty()) {
+                continue;
+            }
+
+            departmentCategoryMap
+                    .computeIfAbsent(departmentName, k -> new TreeMap<>())
+                    .computeIfAbsent(categoryName, k -> new ArrayList<>())
+                    .add(item);
+
+            categorizedItems
+                    .computeIfAbsent(categoryName, k -> new ArrayList<>())
+                    .add(item);
+
+            departmentTotals
+                    .computeIfAbsent(departmentName, k -> new TreeMap<>())
+                    .merge(categoryName, item.getNetTotal(), Double::sum);
+
+            totalSaleValue += item.getNetTotal();
+        }
+
+        setDepartmentCategoryMap(departmentCategoryMap);
+        setDepartmentTotals(departmentTotals);
+    }
+
+    public String getCategoryTotalForConsumptionReport(final String departmentName, final String categoryName) {
+        double total = departmentTotals
+                .getOrDefault(departmentName, Collections.emptyMap())
+                .getOrDefault(categoryName, 0.0);
+
+        return formatNumber(total);
+    }
+
+    public String getDepartmentTotalForConsumptionReport(final String departmentName) {
+        double total = departmentTotals
+                .getOrDefault(departmentName, Collections.emptyMap())
+                .values()
+                .stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
+
+        return formatNumber(total);
+    }
+
+    private String formatNumber(double value) {
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        return df.format(value);
+    }
+
+    public void generateConsumptionReportTableAsDepartmentSummary(final List<DepartmentCategoryWiseItems> list) {
         departmentSummaries = new ArrayList<>();
         totalSaleValue = 0.0;
 
-        // Create a map to store net totals grouped by main and consumption departments
-        Map<String, Map<String, Double>> departmentTotals = new HashMap<>();// Populate the map with department-wise data
+        Map<String, Map<String, Double>> departmentTotals = new TreeMap<>();
+        Map<String, Double> pharmacyTotals = new TreeMap<>();
+
         for (DepartmentCategoryWiseItems item : list) {
             String mainDepartmentName = item.getMainDepartment().getName();
             String consumptionDepartmentName = item.getConsumptionDepartment().getName();
             double paidAmount = item.getNetTotal();
 
-            // Initialize nested maps if necessary
-            departmentTotals.putIfAbsent(mainDepartmentName, new HashMap<>());
-            Map<String, Double> consumptionMap = departmentTotals.get(mainDepartmentName);
+            if (paidAmount == 0.0) {
+                continue;
+            }
 
-            // Accumulate paid amounts for consumption departments
-            consumptionMap.put(consumptionDepartmentName,
-                    consumptionMap.getOrDefault(consumptionDepartmentName, 0.0) + paidAmount);
+            pharmacyTotals.merge(mainDepartmentName, paidAmount, Double::sum);
 
-            // Accumulate the total sale value for the main department
+            departmentTotals
+                    .computeIfAbsent(mainDepartmentName, k -> new TreeMap<>())
+                    .merge(consumptionDepartmentName, paidAmount, Double::sum);
+
             totalSaleValue += paidAmount;
         }
 
-        // Build the summaries
-        for (Map.Entry<String, Map<String, Double>> mainEntry : departmentTotals.entrySet()) {
-            String mainDepartmentName = mainEntry.getKey();
-            Map<String, Double> consumptionMap = mainEntry.getValue();
+        setPharmacyTotals(pharmacyTotals);
+        setDepartmentTotals(departmentTotals);
+    }
 
-            // Add a header entry for the main department
-            departmentSummaries.add(new PharmacySummery(mainDepartmentName, null, 0.0)); // Main department header
+    public void exportConsumptionReportCategoryWiseToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
-            // Add each consumption department's contribution
-            for (Map.Entry<String, Double> consumptionEntry : consumptionMap.entrySet()) {
-                String consumptionDepartmentName = consumptionEntry.getKey();
-                double netTotal = consumptionEntry.getValue();
-                departmentSummaries.add(new PharmacySummery(null, consumptionDepartmentName, netTotal));
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Category_Wise_Consumption_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Category Wise Report");
+            int rowIndex = 0;
+
+            XSSFCellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Category Wise Issue Details by Department");
+            titleCell.setCellStyle(headerStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 3));
+
+            for (Map.Entry<String, Map<String, List<DepartmentCategoryWiseItems>>> deptEntry : departmentCategoryMap.entrySet()) {
+                String departmentName = deptEntry.getKey();
+
+                Row deptRow = sheet.createRow(rowIndex++);
+                Cell deptCell = deptRow.createCell(0);
+                deptCell.setCellValue("Department: " + departmentName);
+                deptCell.setCellStyle(headerStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 3));
+
+                Row headerRow = sheet.createRow(rowIndex++);
+                String[] headers = {"Category", "Rate", "Quantity", "Value"};
+                for (int i = 0; i < headers.length; i++) {
+                    Cell cell = headerRow.createCell(i);
+                    cell.setCellValue(headers[i]);
+                    cell.setCellStyle(headerStyle);
+                }
+
+                for (Map.Entry<String, List<DepartmentCategoryWiseItems>> categoryEntry : deptEntry.getValue().entrySet()) {
+                    String categoryName = categoryEntry.getKey();
+                    List<DepartmentCategoryWiseItems> items = categoryEntry.getValue();
+
+                    Row categoryRow = sheet.createRow(rowIndex++);
+                    Cell categoryCell = categoryRow.createCell(0);
+                    categoryCell.setCellValue(categoryName);
+                    categoryCell.setCellStyle(headerStyle);
+                    sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 3));
+
+                    for (DepartmentCategoryWiseItems item : items) {
+                        Row dataRow = sheet.createRow(rowIndex++);
+                        dataRow.createCell(0).setCellValue(item.getItem().getName());
+                        dataRow.createCell(1).setCellValue(item.getPurchaseRate());
+                        dataRow.createCell(2).setCellValue(item.getQty());
+                        Cell valueCell = dataRow.createCell(3);
+                        valueCell.setCellValue(item.getNetTotal());
+                        valueCell.setCellStyle(amountStyle);
+                    }
+
+                    Row categoryTotalRow = sheet.createRow(rowIndex++);
+                    categoryTotalRow.createCell(1).setCellValue("");
+                    categoryTotalRow.createCell(2).setCellValue("Category Total:");
+                    Cell categoryTotalCell = categoryTotalRow.createCell(3);
+                    categoryTotalCell.setCellValue(getCategoryTotalForConsumptionReport(departmentName, categoryName));
+                    categoryTotalCell.setCellStyle(amountStyle);
+                }
+
+                Row departmentTotalRow = sheet.createRow(rowIndex++);
+                departmentTotalRow.createCell(1).setCellValue("");
+                departmentTotalRow.createCell(2).setCellValue("Department Total:");
+                Cell departmentTotalCell = departmentTotalRow.createCell(3);
+                departmentTotalCell.setCellValue(getDepartmentTotalForConsumptionReport(departmentName));
+                departmentTotalCell.setCellStyle(amountStyle);
             }
 
-            // Add a total entry for the main department
-            double mainTotal = consumptionMap.values().stream().mapToDouble(Double::doubleValue).sum();
-            departmentSummaries.add(new PharmacySummery("Total", null, mainTotal));
+            Row finalTotalRow = sheet.createRow(rowIndex++);
+            finalTotalRow.createCell(0).setCellValue("Total");
+            finalTotalRow.createCell(3).setCellValue(String.format("%.2f", totalSaleValue));
+
+            for (int i = 0; i < 4; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportConsumptionReportCategoryWiseToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Category_Wise_Consumption_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Category Wise Issue Details by Department", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+
+            for (Map.Entry<String, Map<String, List<DepartmentCategoryWiseItems>>> deptEntry : departmentCategoryMap.entrySet()) {
+                String departmentName = deptEntry.getKey();
+                document.add(new Paragraph("Department: " + departmentName, boldFont));
+
+                PdfPTable table = new PdfPTable(4);
+                table.setWidthPercentage(100);
+                table.setWidths(new float[]{3, 2, 2, 2});
+
+                String[] headers = {"Category", "Rate", "Quantity", "Value"};
+                for (String header : headers) {
+                    PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                    table.addCell(cell);
+                }
+
+                for (Map.Entry<String, List<DepartmentCategoryWiseItems>> categoryEntry : deptEntry.getValue().entrySet()) {
+                    String categoryName = categoryEntry.getKey();
+                    List<DepartmentCategoryWiseItems> items = categoryEntry.getValue();
+
+                    PdfPCell categoryCell = new PdfPCell(new Phrase(categoryName, boldFont));
+                    categoryCell.setColspan(4);
+                    categoryCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                    table.addCell(categoryCell);
+
+                    for (DepartmentCategoryWiseItems item : items) {
+                        table.addCell(new PdfPCell(new Phrase(item.getItem().getName(), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getPurchaseRate()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(item.getQty()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getNetTotal()), normalFont)));
+                    }
+
+                    table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                    table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                    table.addCell(new PdfPCell(new Phrase("Category Total:", boldFont)));
+                    table.addCell(new PdfPCell(new Phrase(getCategoryTotalForConsumptionReport(departmentName, categoryName), boldFont)));
+                }
+
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("Department Total:", boldFont)));
+                table.addCell(new PdfPCell(new Phrase(getDepartmentTotalForConsumptionReport(departmentName), boldFont)));
+
+                document.add(table);
+            }
+
+            PdfPTable table = new PdfPTable(2);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{7,2});
+            table.addCell(new PdfPCell(new Phrase("Total", normalFont)));
+            table.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalSaleValue), normalFont)));
+
+            document.add(table);
+
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportConsumptionReportSummaryToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Consumption_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Consumption Report");
+            int rowIndex = 0;
+
+            XSSFCellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            Cell headerCell0 = headerRow.createCell(0);
+            headerCell0.setCellValue("Department");
+            headerCell0.setCellStyle(headerStyle);
+
+            Cell headerCell1 = headerRow.createCell(1);
+            headerCell1.setCellValue("Consumption Department");
+            headerCell1.setCellStyle(headerStyle);
+
+            Cell headerCell2 = headerRow.createCell(2);
+            headerCell2.setCellValue("Net Total");
+            headerCell2.setCellStyle(headerStyle);
+
+            for (Map.Entry<String, Map<String, Double>> departmentEntry : getDepartmentTotals().entrySet()) {
+                String departmentName = departmentEntry.getKey();
+                Map<String, Double> consumptionMap = departmentEntry.getValue();
+
+                Row departmentRow = sheet.createRow(rowIndex++);
+                Cell departmentCell = departmentRow.createCell(0);
+                departmentCell.setCellValue(departmentName);
+                departmentCell.setCellStyle(headerStyle);
+
+                for (Map.Entry<String, Double> consumptionEntry : consumptionMap.entrySet()) {
+                    String consumptionDepartment = consumptionEntry.getKey();
+                    Double netTotal = consumptionEntry.getValue();
+
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    dataRow.createCell(0).setCellValue("");
+                    dataRow.createCell(1).setCellValue(consumptionDepartment);
+                    Cell totalCell = dataRow.createCell(2);
+                    totalCell.setCellValue(netTotal);
+                    totalCell.setCellStyle(amountStyle);
+                }
+
+                Row totalRow = sheet.createRow(rowIndex++);
+                totalRow.createCell(1).setCellValue("Total:");
+                Cell totalAmountCell = totalRow.createCell(2);
+                totalAmountCell.setCellValue(getPharmacyTotals().get(departmentName));
+                totalAmountCell.setCellStyle(amountStyle);
+            }
+
+            Row grandTotalRow = sheet.createRow(rowIndex++);
+            grandTotalRow.createCell(1).setCellValue("Grand Total:");
+            Cell grandTotalCell = grandTotalRow.createCell(2);
+            grandTotalCell.setCellValue(getTotalSaleValue());
+            grandTotalCell.setCellStyle(amountStyle);
+
+            for (int i = 0; i < 3; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportConsumptionReportSummaryToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Consumption_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Consumption Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            PdfPTable table = new PdfPTable(3);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{2.5f, 3.5f, 2.5f});
+
+            String[] headers = {"Department", "Consumption Department", "Net Total"};
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+
+            for (Map.Entry<String, Map<String, Double>> departmentEntry : getDepartmentTotals().entrySet()) {
+                String departmentName = departmentEntry.getKey();
+                Map<String, Double> consumptionMap = departmentEntry.getValue();
+
+                PdfPCell departmentCell = new PdfPCell(new Phrase(departmentName, boldFont));
+                departmentCell.setColspan(3);
+                departmentCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(departmentCell);
+
+                for (Map.Entry<String, Double> consumptionEntry : consumptionMap.entrySet()) {
+                    String consumptionDepartment = consumptionEntry.getKey();
+                    Double netTotal = consumptionEntry.getValue();
+
+                    table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(consumptionDepartment, normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(netTotal), normalFont)));
+                }
+
+                table.addCell(new PdfPCell(new Phrase("", normalFont)));
+                table.addCell(new PdfPCell(new Phrase("Total:", boldFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(getPharmacyTotals().get(departmentName)), boldFont)));
+            }
+
+            table.addCell(new PdfPCell(new Phrase("", normalFont)));
+            table.addCell(new PdfPCell(new Phrase("Grand Total:", boldFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(getTotalSaleValue()), boldFont)));
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -1800,6 +2189,7 @@ public class PharmacyController implements Serializable {
             JsfUtil.addErrorMessage(e, "Something Went Wrong!");
         }
     }
+
     private List<PharmacySummery> summaries;
 
     public void generateReportAsSummaryWithGiT(BillType billType, Map<String, PharmacySummery> departmentMap) {
@@ -3495,7 +3885,6 @@ public class PharmacyController implements Serializable {
 
         String sql = "SELECT b FROM Bill b "
                 + " WHERE b.retired = false"
-                + " and b.cancelled = false"
                 + " and b.billTypeAtomic In :btas"
                 + " and b.createdAt between :fromDate and :toDate";
 
@@ -3568,7 +3957,11 @@ public class PharmacyController implements Serializable {
         double total = 0.0;
 
         for (Bill b : bills) {
-            total += b.getReferenceBill().getNetTotal();
+            if (b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)) {
+                total -= b.getNetTotal();
+            } else {
+                total += b.getReferenceBill().getNetTotal();
+            }
         }
         return total;
     }
@@ -3641,7 +4034,9 @@ public class PharmacyController implements Serializable {
                 emptyRow.createCell(16).setCellValue("-");
                 emptyRow.createCell(17).setCellValue("-");
                 emptyRow.createCell(18).setCellValue("-");
-                emptyRow.createCell(19).setCellValue(bill.getReferenceBill().getNetTotal());
+                emptyRow.createCell(19).setCellValue(bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
+                        || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN) ?
+                        -1 * bill.getReferenceBill().getNetTotal() : bill.getReferenceBill().getNetTotal());
                 emptyRow.createCell(20).setCellValue(bill.getNetTotal());
 
                 for (BillItem billItem : bill.getBillItems()) {
@@ -3682,8 +4077,8 @@ public class PharmacyController implements Serializable {
             }
 
             Row footerRow = sheet.createRow(rowIndex++);
-            footerRow.createCell(19).setCellValue(calculateTotalPOAmount());
-            footerRow.createCell(20).setCellValue(calculateTotalGrnAmount());
+            footerRow.createCell(19).setCellValue(Math.round(calculateTotalPOAmount() * 100.0) / 100.0);
+            footerRow.createCell(20).setCellValue(Math.round(calculateTotalGrnAmount() * 100.0) / 100.0);
 
             workbook.write(out);
             context.responseComplete();
@@ -3747,7 +4142,9 @@ public class PharmacyController implements Serializable {
                 table.addCell("-");
                 table.addCell("-");
                 table.addCell("-");
-                table.addCell(String.valueOf(bill.getReferenceBill().getNetTotal()));
+                table.addCell(String.format("%.2f", bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
+                        || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN) ?
+                        -1 * bill.getReferenceBill().getNetTotal() : bill.getReferenceBill().getNetTotal()));
                 table.addCell(String.valueOf(bill.getNetTotal()));
 
                 for (BillItem billItem : bill.getBillItems()) {
@@ -3768,9 +4165,9 @@ public class PharmacyController implements Serializable {
                     table.addCell(sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()));
                     table.addCell("-");
                     table.addCell(String.valueOf(billItem.getPharmaceuticalBillItem().getRetailRate()));
-                    table.addCell(String.valueOf(billItem.getDiscount()));
-                    table.addCell(String.valueOf(billItem.getNetValue()));
-                    table.addCell(String.valueOf(billItem.getBill().getNetTotal()));
+                    table.addCell(String.format("%.2f", billItem.getDiscount()));
+                    table.addCell(String.format("%.2f", billItem.getNetValue()));
+                    table.addCell(String.format("%.2f", billItem.getBill().getNetTotal()));
                     table.addCell("-");
                     table.addCell("-");
                 }
@@ -3782,8 +4179,8 @@ public class PharmacyController implements Serializable {
             PdfPTable footerTable = new PdfPTable(2);
             footerTable.setWidthPercentage(100);
             footerTable.setWidths(new float[]{1f, 1f});
-            footerTable.addCell(new PdfPCell(new Phrase("Total PO Amount: " + calculateTotalPOAmount(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
-            footerTable.addCell(new PdfPCell(new Phrase("Total GRN Amount: " + calculateTotalGrnAmount(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
+            footerTable.addCell(new PdfPCell(new Phrase("Total PO Amount: " + String.format("%.2f", calculateTotalPOAmount()), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
+            footerTable.addCell(new PdfPCell(new Phrase("Total GRN Amount: " + String.format("%.2f", calculateTotalGrnAmount()), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
             document.add(footerTable);
 
             document.close();
@@ -4637,4 +5034,27 @@ public class PharmacyController implements Serializable {
         this.summaries = summaries;
     }
 
+    public Map<String, Map<String, Double>> getDepartmentTotals() {
+        return departmentTotals;
+    }
+
+    public Map<String, Double> getPharmacyTotals() {
+        return pharmacyTotals;
+    }
+
+    public void setDepartmentTotals(Map<String, Map<String, Double>> departmentTotals) {
+        this.departmentTotals = departmentTotals;
+    }
+
+    public void setPharmacyTotals(Map<String, Double> pharmacyTotals) {
+        this.pharmacyTotals = pharmacyTotals;
+    }
+
+    public Map<String, Map<String, List<DepartmentCategoryWiseItems>>> getDepartmentCategoryMap() {
+        return departmentCategoryMap;
+    }
+
+    public void setDepartmentCategoryMap(Map<String, Map<String, List<DepartmentCategoryWiseItems>>> departmentCategoryMap) {
+        this.departmentCategoryMap = departmentCategoryMap;
+    }
 }

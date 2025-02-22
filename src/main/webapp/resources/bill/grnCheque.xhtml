@@ -67,7 +67,7 @@
                                     <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
                                     <h:outputLabel value="Date :"  style="position: relative; left: 70%;" />
                                     <h:outputLabel value="#{cc.attrs.bill.createdAt}"  style="position: relative; left: 70%;" >
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                     </h:outputLabel>
 
                                 </div>

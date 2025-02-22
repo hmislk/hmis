@@ -190,14 +190,28 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void removeItem(BillItem bi) {
-        //System.err.println("5 " + bi.getItem().getName());
-        //System.err.println("6 " + bi.getSearialNo());
+        Bill currentBill = getCurrentBill();
+        if (currentBill == null) {
+            return;
+        }
+
         getBillItems().remove(bi);
+        getPharmaceuticalBillItemFacade().remove(bi.getPharmaceuticalBillItem());
 
         calTotal();
 
         currentBillItem = null;
 
+        if (currentBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_ORDER_PRE) {
+            return;
+        }
+
+        try {
+            currentBill.getBillItems().remove(bi);
+            getBillFacade().edit(currentBill);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Something went wrong");
+        }
     }
 
     @Inject
@@ -213,14 +227,14 @@ public class PurchaseOrderRequestController implements Serializable {
         getPharmacyController().setPharmacyItem(bi.getItem());
         calTotal();
     }
-    
+
     public void saveBill() {
 
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
- 
+
         getCurrentBill().setDeptId(deptId);
         getCurrentBill().setInsId(deptId);
-        
+
         getCurrentBill().setCreater(getSessionController().getLoggedUser());
         getCurrentBill().setCreatedAt(Calendar.getInstance().getTime());
 

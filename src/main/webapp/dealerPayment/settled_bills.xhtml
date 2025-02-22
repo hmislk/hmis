@@ -141,13 +141,10 @@
                                     </p:column>
 
                                     <p:column  headerText="Actions" >
-                                        
-                                        <!--TODO : Add Navigation to view Bill--> 
                                         <p:commandButton 
                                             value="View" 
-                                            action="#{supplierPaymentController.navigateToStartSupplierPayment(b)}" 
-                                            ajax="false" 
-                                            disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}" >
+                                            action="#{supplierPaymentController.navigateToViewProcurementBill(b)}" 
+                                            ajax="false" >
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>

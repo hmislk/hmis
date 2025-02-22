@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/dealerPayment/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel class="m-1">
+                        <f:facet name="header" > 
+                            <h:outputText styleClass="fas fa-file-invoice"/>
+                            <h:outputLabel class="mx-4" value="Complete Supplier Payments"/>  
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-2">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar id="fromDate" value="#{supplierPaymentController.fromDate}" navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                            class="w-100" inputStyleClass="w-100">
+
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{supplierPaymentController.toDate}" navigator="false" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            class="w-100" inputStyleClass="w-100">
+
+                                </p:calendar>
+
+                                <p:commandButton 
+                                    value="Pharmacy Credit Bills to Mark as Complete" 
+                                    action="#{supplierPaymentController.fillApprovedSupplierPaymentsToComplete()}" 
+                                    ajax="false"  
+                                    icon="fas fa-prescription-bottle-alt" 
+                                    class="my-1 w-100 ui-button-warning" />
+
+                            </div>
+                            <div class="col-10">
+                                <p:dataTable 
+                                    value="#{supplierPaymentController.bills}"
+                                    var="b"
+                                    rowKey="#{b.id}"
+                                    paginator="true" 
+                                    selectionMode="multiple"
+                                    selectionRowMode="add"
+                                    selectionPageOnly="false"
+                                    rows="10"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15">
+
+                                    <p:column headerText="Payment No" sortBy="#{b.deptId}" filterBy="#{b.deptId}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.deptId}" />
+                                    </p:column>
+                                    <p:column width="16em" headerText="Supplier" sortBy="#{b.toInstitution.name}" filterBy="#{b.toInstitution.name}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.toInstitution.name}" />
+                                    </p:column>
+                                    <p:column  class="text-end" headerText="Total" sortBy="#{b.netTotal}" filterBy="#{b.netTotal}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{supplierPaymentController.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+
+                                    <p:column headerText="Created At" sortBy="#{b.createdAt}" filterBy="#{b.createdAt}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Created By" sortBy="#{b.creater.webUserPerson.name}" filterBy="#{b.creater.webUserPerson.name}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.creater.webUserPerson.name}">
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Approved At" sortBy="#{b.paymentApprovedAt}" filterBy="#{b.paymentApprovedAt}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.paymentApprovedAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Approved By" sortBy="#{b.creater.webUserPerson.name}" filterBy="#{b.creater.webUserPerson.name}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.creater.webUserPerson.name}">
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Settled At" sortBy="#{b.paymentGeneratedAt}" filterBy="#{b.paymentGeneratedAt}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.paymentGeneratedAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Settled By" sortBy="#{b.creater.webUserPerson.name}" filterBy="#{b.creater.webUserPerson.name}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.paymentGeneratedBy.webUserPerson.name}">
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column width="24em" headerText="Actions">
+                                        <p:commandButton
+                                            value="Complete Payment" 
+                                            style="width: 12em;"
+                                            action="#{supplierPaymentController.navigateToCompleteSupplierPayment(b)}" 
+                                            ajax="false"
+                                            class="ui-button-success mx-1"
+                                            icon="pi pi-check">
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            value="View Voucher" 
+                                            style="width: 10em;"
+                                            action="#{supplierPaymentController.navigateToViewSupplierPaymentVoucher(b)}" 
+                                            ajax="false"
+                                            class="ui-button-info mx-1"
+                                            icon="pi pi-file">
+                                        </p:commandButton>
+                                    </p:column>
+
+                                </p:dataTable>
+
+                            </div>
+
+                        </div>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

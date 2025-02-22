@@ -69,6 +69,7 @@ import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.Token;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.clinical.Prescription;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -84,6 +85,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.PrescriptionFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
 import com.divudi.facade.TokenFacade;
@@ -523,6 +525,30 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         onEditCalculation(tmp);
 
         return false;
+    }
+
+    private Prescription prescription;
+    private boolean enableLabelPrintFromSaleView = false;
+    
+    public void enableLabelPrint(Prescription p){
+        enableLabelPrintFromSaleView = true;
+        this.prescription = p;
+    }
+
+    public void addPrescriptionToBillitem(BillItem billItem) {
+        if (prescription == null) {
+            prescription = new Prescription();
+        }
+
+        if (billItem.getInstructions() != null && !billItem.getInstructions().isEmpty()) {
+            if (billItem.getPrescription().getComment() == null || billItem.getPrescription().getComment().isEmpty()) {
+                billItem.getPrescription().setComment(billItem.getInstructions());
+            } else if (billItem.getInstructions().equalsIgnoreCase(billItem.getPrescription().getComment())) {
+                billItem.getPrescription().setComment(billItem.getInstructions());
+            }
+        }
+        
+
     }
 
     private void onEditCalculation(BillItem tmp) {
@@ -987,6 +1013,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         calculateRates(billItem);
+        pharmacyService.addBillItemInstructions(billItem);
 
         boolean findAlternatives = configOptionApplicationController.getBooleanValueByKey("Show alternative medicines available during retail sale", false);
         if (findAlternatives) {
@@ -1298,6 +1325,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         UserStock us = saveUserStock(billItem);
         billItem.setTransUserStock(us);
+
+        pharmacyService.addBillItemInstructions(billItem);
+
         clearBillItem();
         getBillItem();
         return addedQty;
@@ -1709,6 +1739,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setReferenceBill(getSaleBill());
         getBillFacade().edit(getPreBill());
     }
+    
+    @EJB
+    PrescriptionFacade prescriptionFacade;
 
     private void savePreBillItemsFinally(List<BillItem> list) {
         for (BillItem tbi : list) {
@@ -1716,6 +1749,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //If any issue in Stock Bill Item will not save & not include for total
 //                continue;
             }
+            
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
 
@@ -1724,6 +1758,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
+            
+            if(tbi.getPrescription() != null){
+                if(tbi.getPrescription().getId() == null){
+                    prescriptionFacade.create(tbi.getPrescription());
+                }else{
+                    prescriptionFacade.edit(tbi.getPrescription());
+                }
+            }
 
             if (tbi.getId() == null) {
                 getBillItemFacade().create(tbi);
@@ -1789,6 +1831,23 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
             if (newBil.getId() == null) {
                 getBillItemFacade().create(newBil);
+            }
+            
+            if(tbi.getPrescription() != null){
+                if(tbi.getPrescription().getId() == null){
+                    prescriptionFacade.create(tbi.getPrescription());
+                }else{
+                    prescriptionFacade.edit(tbi.getPrescription());
+                }
+                
+                newBil.setPrescription(tbi.getPrescription());
+                System.out.println(patient);
+                tbi.getPrescription().setPatient(patient);
+                tbi.getPrescription().setCreatedAt(new Date());
+                tbi.getPrescription().setCreater(sessionController.getWebUser());
+                tbi.getPrescription().setInstitution(sessionController.getInstitution());
+                tbi.getPrescription().setDepartment(sessionController.getDepartment());
+                prescriptionFacade.edit(tbi.getPrescription());
             }
 
             PharmaceuticalBillItem newPhar = new PharmaceuticalBillItem();
@@ -3390,6 +3449,25 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         }
         processBillItems();
+    }
+
+    public Prescription getPrescription() {
+        if (prescription == null) {
+            prescription = new Prescription();
+}
+        return prescription;
+    }
+
+    public void setPrescription(Prescription prescription) {
+        this.prescription = prescription;
+    }
+
+    public boolean isEnableLabelPrintFromSaleView() {
+        return enableLabelPrintFromSaleView;
+    }
+
+    public void setEnableLabelPrintFromSaleView(boolean enableLabelPrintFromSaleView) {
+        this.enableLabelPrintFromSaleView = enableLabelPrintFromSaleView;
     }
 
 }

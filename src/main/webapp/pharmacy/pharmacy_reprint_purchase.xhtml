@@ -24,32 +24,23 @@
                         </f:facet>
 
                         <p:commandButton value="Cancel" ajax="false" action="pharmacy_cancel_purchase?faces-redirect=true;" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-                             
+
                         </p:commandButton>     
                         <p:commandButton  value="Return" ajax="false" action="pharmacy_return_purchase" disabled="#{pharmacyBillSearch.bill.cancelled}" >
                             <f:setPropertyActionListener target="#{purchaseReturnController.bill}"  value="#{pharmacyBillSearch.bill}"/>
-                             
+
                         </p:commandButton>
                     </p:panel>
-
-
-
-
                     <h:panelGroup >
 
                         <h:panelGroup id="gpBillPreview" >
                             <ph:purhcase bill="#{pharmacyBillSearch.bill}" />
-                            
-
                         </h:panelGroup>
 
                     </h:panelGroup>
 
-
                 </h:form>
             </ui:define>
-
-
 
         </ui:composition>
 

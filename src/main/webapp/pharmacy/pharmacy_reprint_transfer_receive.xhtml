@@ -30,7 +30,14 @@
                                 class="ui-button-danger mx-2 mb-2"
                                 action="pharmacy_cancel_transfer_receive" 
                                 disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-                            </p:commandButton>     
+                            </p:commandButton>    
+                            <p:commandButton
+                                value="Back"
+                                icon="fas fa-arrow-left"
+                                onclick="window.history.back(); return false"
+                                class="ui-button-danger mb-2"
+                                >
+                            </p:commandButton>
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview" >

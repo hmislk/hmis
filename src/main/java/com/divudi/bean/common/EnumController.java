@@ -223,6 +223,7 @@ public class EnumController implements Serializable {
     }
 
     public List<PaymentMethod> getPaymentMethodsForPharmacyBillCancellations() {
+        List<PaymentMethod> paymentMethodsForPharmacyBillCancellations = new ArrayList<>();
         if (paymentMethodsForPharmacyBilling == null) {
             fillPaymentMethodsForPharmacyBilling();
         }
@@ -233,12 +234,13 @@ public class EnumController implements Serializable {
             paymentMethodsForPharmacyBilling.add(PaymentMethod.Cash);
             paymentMethodsForPharmacyBilling.add(PaymentMethod.Card);
         }
+        paymentMethodsForPharmacyBillCancellations.addAll(paymentMethodsForPharmacyBilling);
         try {
-            paymentMethodsForPharmacyBilling.remove(PaymentMethod.MultiplePaymentMethods);
+            paymentMethodsForPharmacyBillCancellations.remove(PaymentMethod.MultiplePaymentMethods);
         } catch (Exception e) {
             System.err.println("e = " + e);
         }
-        return paymentMethodsForPharmacyBilling;
+        return paymentMethodsForPharmacyBillCancellations;
     }
 
     public void fillPaymentMethodsForPharmacyBilling() {
@@ -463,6 +465,21 @@ public class EnumController implements Serializable {
 
     public BillTypeAtomic[] getBillTypesAtomic() {
         return BillTypeAtomic.values();
+    }
+    
+    public List<BillTypeAtomic> getBillTypesAtomicForLabTests() {
+        List<BillTypeAtomic> btas= new ArrayList<>();
+        btas.add(BillTypeAtomic.CC_BILL);
+        btas.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.CC_BILL_REFUND);
+        btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        return btas;
     }
 
     public List<BillTypeAtomic> getBillTypesAtomic(String query) {
@@ -800,6 +817,15 @@ public class EnumController implements Serializable {
             PaymentMethod.Cheque,
             PaymentMethod.Slip,
             PaymentMethod.ewallet};
+        return p;
+    }
+    
+    public PaymentMethod[] getPaymentMethodsForSupplierPayments() {
+        PaymentMethod[] p = {PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.IOU};
         return p;
     }
 
