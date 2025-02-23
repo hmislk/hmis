@@ -268,17 +268,6 @@ public class UserIconController implements Serializable {
                 .collect(Collectors.toList());
     }
 
-    public static boolean customFilter(Object value, Object filter, Locale locale) {
-        if (filter == null || filter.toString().trim().isEmpty()) {
-            return true;
-        }
-
-        String[] keywords = filter.toString().toLowerCase().split("\\s+");
-        String label = ((Icon) value).getLabel().toLowerCase();
-
-        return Arrays.stream(keywords).allMatch(label::contains);
-    }
-
     public WebUser getUser() {
         return user;
     }
