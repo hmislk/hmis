@@ -21,7 +21,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -244,9 +246,37 @@ public class UserIconController implements Serializable {
 
     public List<Icon> getIcons() {
         if (icons == null) {
-            icons = Arrays.asList(Icon.values());
+            icons = Arrays.stream(Icon.values())
+                    .sorted(Comparator.comparing(Icon::getLabel))
+                    .collect(Collectors.toList());
         }
         return icons;
+    }
+
+    public List<Icon> getFilteredIcons(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return Arrays.asList(Icon.values()); // Return all if no input
+        }
+
+        String[] keywords = query.toLowerCase().split("\\s+"); // Split by spaces
+
+        return Arrays.stream(Icon.values())
+                .filter(icon -> {
+                    String label = icon.getLabel().toLowerCase();
+                    return Arrays.stream(keywords).allMatch(label::contains);
+                })
+                .collect(Collectors.toList());
+    }
+
+    public boolean customFilter(Object value, Object filter, Locale locale) {
+        if (filter == null || filter.toString().trim().isEmpty()) {
+            return true;
+        }
+
+        String[] keywords = filter.toString().toLowerCase().split("\\s+");
+        String label = ((Icon) value).getLabel().toLowerCase();
+
+        return Arrays.stream(keywords).allMatch(label::contains);
     }
 
     public WebUser getUser() {

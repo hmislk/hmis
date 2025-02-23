@@ -12,19 +12,18 @@
         <ui:composition template="/admin/users/user_list.xhtml">
             <ui:define name="users">
                 <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not sessionController.firstLogin}" >
-                   <na:not_authorize />
+                    <na:not_authorize />
                 </h:panelGroup>
-
-                <p:panel>
+                <p:panel class="w-100" rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}" >
                     <f:facet name="header">
                         <i class="fa fa-icons" />
                         <h:outputLabel class="mx-2" value="Manage User Icons"/>
                     </f:facet>
-                    <p:panelGrid 
-                        class="w-100"
+                    <h:panelGrid 
+                        class="w-100 m-1 p-1"
                         columns="3"
+                        columnClasses="custom-col-20, custom-col-40, custom-col-20"
                         rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}">
-
                         <p:outputLabel value="Department" ></p:outputLabel>
                         <p:selectOneMenu 
                             id="cmbDepartment"
@@ -55,15 +54,15 @@
                         </p:commandButton>
 
                         <p:outputLabel value="Icon to add" ></p:outputLabel>
-                        <p:selectOneMenu 
-                            value="#{userIconController.icon}" 
-                            filter="true"
-                            filterMatchMode="contains"
-                            class="w-100">
+                        <p:selectOneMenu value="#{userIconController.icon}" 
+                                         filter="true" 
+                                         filterFunction="#{userIconController.customFilter}"
+                                         filterMatchMode="custom"
+                                         class="w-100">
                             <f:selectItems value="#{userIconController.icons}" 
                                            var="i"
                                            itemLabel="#{i.label}"
-                                           itemValue="#{i}"/>
+                                           itemValue="#{i}" />
                         </p:selectOneMenu>
                         <p:commandButton 
                             value="Add Icon" 
@@ -72,9 +71,9 @@
                             action="#{userIconController.addUserIcon}" 
                             update="tbl" 
                             />
-                    </p:panelGrid>
-                    
-                    
+                    </h:panelGrid>
+
+
                     <p:dataTable 
                         var="userIcon" 
                         value="#{userIconController.userIcons}" 
