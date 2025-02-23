@@ -268,7 +268,7 @@ public class UserIconController implements Serializable {
                 .collect(Collectors.toList());
     }
 
-    public boolean customFilter(Object value, Object filter, Locale locale) {
+    public static boolean customFilter(Object value, Object filter, Locale locale) {
         if (filter == null || filter.toString().trim().isEmpty()) {
             return true;
         }

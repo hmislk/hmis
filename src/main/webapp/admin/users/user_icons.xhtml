@@ -56,7 +56,7 @@
                         <p:outputLabel value="Icon to add" ></p:outputLabel>
                         <p:selectOneMenu value="#{userIconController.icon}" 
                                          filter="true" 
-                                         filterFunction="#{userIconController.customFilter}"
+                                         filterFunction="#{com.divudi.bean.common.UserIconController.customFilter}"
                                          filterMatchMode="custom"
                                          class="w-100">
                             <f:selectItems value="#{userIconController.icons}" 
@@ -64,6 +64,7 @@
                                            itemLabel="#{i.label}"
                                            itemValue="#{i}" />
                         </p:selectOneMenu>
+
                         <p:commandButton 
                             value="Add Icon" 
                             icon="fa fa-plus" 
