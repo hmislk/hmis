@@ -147,6 +147,11 @@ public class PharmacySummaryReportController implements Serializable {
     private String searchType;
     private String reportType;
 
+    Long rowsPerPageForScreen;
+    Long rowsPerPageForPrinting;
+    private String fontSizeForPrinting;
+    private String fontSizeForScreen;
+
     // Date range
     private Date fromDate;
     private Date toDate;
@@ -203,13 +208,9 @@ public class PharmacySummaryReportController implements Serializable {
 
     // Numeric variables
     private int maxResult = 50;
-    
 
-    
     //transferOuts;
     //adjustments;
-    
-
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToPharmacyIncomeReport() {
@@ -232,18 +233,18 @@ public class PharmacySummaryReportController implements Serializable {
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="Functions">
 
-    public void processDailyStockBalanceReport(){
-        if(department==null){
+    public void processDailyStockBalanceReport() {
+        if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
         }
-        if(fromDate==null){
+        if (fromDate == null) {
             JsfUtil.addErrorMessage("Please select a date");
             return;
         }
-        
+
     }
-    
+
     public void listBillTypes() {
         bundleReport = new ReportTemplateRowBundle();
         Map<String, Object> params = new HashMap<>();
@@ -1463,7 +1464,49 @@ public class PharmacySummaryReportController implements Serializable {
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
     }
-    
-    
+
+    public Long getRowsPerPageForScreen() {
+        rowsPerPageForScreen = configOptionApplicationController.getLongValueByKey("Pharmacy Analytics - Rows per Page for Printing", 20l);
+        return rowsPerPageForScreen;
+    }
+
+    public void setRowsPerPageForScreen(Long rowsPerPageForScreen) {
+        this.rowsPerPageForScreen = rowsPerPageForScreen;
+    }
+
+    public Long getRowsPerPageForPrinting() {
+        rowsPerPageForPrinting = configOptionApplicationController.getLongValueByKey("Pharmacy Analytics - Rows per Page for Screen", 20l);
+        return rowsPerPageForPrinting;
+    }
+
+    public void setRowsPerPageForPrinting(Long rowsPerPageForPrinting) {
+        this.rowsPerPageForPrinting = rowsPerPageForPrinting;
+    }
+
+    public String getFontSizeForPrinting() {
+        String value = configOptionApplicationController.getShortTextValueByKey("Pharmacy Analytics - Font Size for Printing", "10pt");
+        if (value.matches("^\\d+$")) {
+            value += "pt";
+        }
+        fontSizeForPrinting = value;
+        return fontSizeForPrinting;
+    }
+
+    public String getFontSizeForScreen() {
+        String value = configOptionApplicationController.getShortTextValueByKey("Pharmacy Analytics - Font Size for Screen", "1em");
+        if (value.matches("^\\d+$")) {
+            value += "em";
+        }
+        fontSizeForScreen = value;
+        return fontSizeForScreen;
+    }
+
+    public void setFontSizeForPrinting(String fontSizeForPrinting) {
+        this.fontSizeForPrinting = fontSizeForPrinting;
+    }
+
+    public void setFontSizeForScreen(String fontSizeForScreen) {
+        this.fontSizeForScreen = fontSizeForScreen;
+    }
 
 }
