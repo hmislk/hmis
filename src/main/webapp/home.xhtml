@@ -40,13 +40,13 @@
                 
                 <h:panelGroup rendered="#{ui.icon eq 'pharmacy_analytics' and webUserController.hasPrivilege('PharmacySummaryViews')}" layout="block" class="col-1 p-1" >
                     <h:form>
-                        <p:tooltip for="cmdPharmacyAnalytics" value="Patient Lookup"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:tooltip for="cmdPharmacyAnalytics" value="Pharmacy Analytics"  showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink 
                             id="cmdPharmacyAnalytics"
                             action="#{pharmacyController.navigateToPharmacyAnalytics()}"
                             ajax="false" 
                             styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/pharmacy_analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/pharmacy_analytics.png" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Pharmacy Analytics"/>
                         </p:commandLink>
                     </h:form>
