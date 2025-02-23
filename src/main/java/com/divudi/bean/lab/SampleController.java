@@ -169,6 +169,15 @@ public class SampleController implements Serializable {
         }
         return items;
     }
+    
+    public Sample getSpecimen(String name) {
+        for (Sample specimen : getItems()) {
+            if (specimen.getName().equalsIgnoreCase(name)) {
+                return specimen;
+            }
+        }
+        return null; // or throw an exception if an unknown name is not acceptable
+    }
 
     /**
      *
