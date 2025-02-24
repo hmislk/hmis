@@ -71,18 +71,7 @@
                                 <p:outputLabel value="Inward Add Services" class="mx-2 mt-1"/>
                             </div>
                             <div class="d-flex justify-content-end align-items-center" >
-                                <h:panelGrid columns="7">
-                                    <p:commandButton 
-                                        class="w-100 ui-button-success" id="btnSettle" 
-                                        value="Settle" 
-                                        style="float: right"
-                                        icon="fa fa-check"
-                                        action="#{billBhtController.settleBill}" 
-                                        ajax="false" >
-                                    </p:commandButton>
-                                    <p:spacer width="5"/>
-                                    <p:defaultCommand target="btnSettle"/>
-
+                                <h:panelGrid columns="4">
                                     <p:commandButton 
                                         class="w-100 ui-button-warning" 
                                         action="#{billBhtController.resetBillData}" 
@@ -204,14 +193,26 @@
                                                             <h:outputText styleClass="fas fa-list-alt"></h:outputText>
                                                             <h:outputLabel value="Item Requests" class="mx-2"></h:outputLabel>
                                                         </div>
-                                                        <p:commandButton 
-                                                            ajax="false" 
-                                                            action="#{billBhtController.reloadItemLights()}" 
-                                                            title="Reload"
-                                                            value="Reload"
-                                                            styleClass="ui-button-warning mx-3" 
-                                                            icon="fa fa-refresh"> 
-                                                        </p:commandButton>
+                                                        <div class="d-flex ms-auto">
+                                                            <p:commandButton 
+                                                                ajax="false" 
+                                                                action="#{billBhtController.reloadItemLights()}" 
+                                                                title="Reload"
+                                                                value="Reload"
+                                                                styleClass="ui-button-warning mx-3" 
+                                                                icon="fa fa-refresh"> 
+                                                            </p:commandButton>
+                                                            <p:commandButton 
+                                                                id="btnSettle" 
+                                                                value="Settle" 
+                                                                styleClass="ui-button-success mx-2"
+                                                                style="width: 150px;"
+                                                                icon="fa fa-check"
+                                                                action="#{billBhtController.settleBill}" 
+                                                                ajax="false" >
+                                                            </p:commandButton>
+                                                            <p:defaultCommand target="btnSettle"/>
+                                                        </div>
                                                     </div>
                                                 </f:facet>
                                                 <div class="row">

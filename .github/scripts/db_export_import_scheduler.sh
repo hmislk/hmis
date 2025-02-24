@@ -17,9 +17,9 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
     exit 1
 fi
 
-# Ensure TO_ENV is QA
-if [[ "$TO_ENV" != "QA" ]]; then
-    echo "Error: TO_ENV must be QA for now."
+# Ensure TO_ENV is either QA or COOP_Test
+if [[ "$TO_ENV" != "QA" && "$TO_ENV" != "COOP_Test" ]]; then
+    echo "Error: TO_ENV must be QA or COOP_Test for now."
     exit 1
 fi
 

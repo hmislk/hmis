@@ -12,12 +12,15 @@ on:
           - COOP_Prod
           - Ruhunu_Prod
           - MP_Prod
+          - RMH_Prod
+          - SLH_Prod
       toEnv:
         description: 'Select Environment to Import'
         required: true
         type: choice
         options:
           - QA
+          - COOP_Test
       date:
         description: 'Select Scheduling Date (YYYY-MM-DD)'
         required: true
