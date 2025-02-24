@@ -37,6 +37,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.GrnController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
@@ -146,6 +147,7 @@ public class CommonReport implements Serializable {
     ////////////////
     private Institution collectingIns;
     Institution institution;
+    private Institution supplier;
     Institution ins;
     private Date fromDate;
     private Date toDate;
@@ -1986,14 +1988,13 @@ public class CommonReport implements Serializable {
             temMap.put("ins", getReferenceInstitution());
         }
 
-        if (getInstitution() != null) {
-            if (billType == BillType.PharmacyGrnReturn) {
+        if (getSupplier()!= null) {
+            if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
                 sql += " AND b.toInstitution = :supplier";
-                temMap.put("supplier", getInstitution());
             } else {
                 sql += " AND b.fromInstitution = :supplier";
-                temMap.put("supplier", getInstitution());
             }
+            temMap.put("supplier", getSupplier());
 
         }
 
@@ -2004,7 +2005,7 @@ public class CommonReport implements Serializable {
         temMap.put("bill", billClass.getClass());
         temMap.put("btp", billType);
         temMap.put("d", dep);
-
+       
         return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -7315,6 +7316,14 @@ public class CommonReport implements Serializable {
 
     public void setPreviewBill(Bill previewBill) {
         this.previewBill = previewBill;
+    }
+
+    public Institution getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(Institution supplier) {
+        this.supplier = supplier;
     }
 
     public class CollectingCenteRow {
