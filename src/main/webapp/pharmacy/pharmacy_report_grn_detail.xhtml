@@ -151,7 +151,7 @@
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Suplier Name">
+                            <p:column headerText="Supplier Name">
                                 <h:outputLabel value="#{b.fromInstitution.name}"/>
                             </p:column>
 
@@ -297,7 +297,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Suplier Name">
+                            <p:column headerText="Supplier Name">
                                 <h:outputLabel value="#{b1.fromInstitution.name}"/>
                             </p:column>
 
@@ -445,7 +445,7 @@
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Suplier Name">
+                            <p:column headerText="Supplier Name">
                                 <h:outputLabel value="#{b.toInstitution.name}"/>
 
                             </p:column> 
@@ -874,7 +874,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Suplier Name" style="font-size: 9px; text-align:left;" >
+                            <p:column headerText="Supplier Name" style="font-size: 9px; text-align:left;" >
                                 <h:outputLabel value="#{b1.fromInstitution.name}" />
                             </p:column>                         
                             <p:column headerText="GRN No" style="font-size: 9px; word-break: break-word; white-space: normal; text-align:left;">
@@ -969,7 +969,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Suplier Name" style="font-size: 9px; text-align:left;" >
+                            <p:column headerText="Supplier Name" style="font-size: 9px; text-align:left;" >
                                 <h:outputLabel value="#{b.toInstitution.name}"/>
                             </p:column>
                             <p:column headerText="GRN No" style="font-size: 9px; word-break: break-word; white-space: normal; text-align:left;">
@@ -1142,15 +1142,15 @@
                                 Summary
                             </f:facet>
                             <p:column style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputLabel value="#{i.string}" style="padding: 0px!important; margin: 0px!important;"/>
+                                <h:outputLabel value="#{i.string}" style="padding: 0px!important; margin: 0px!important;" />
                             </p:column>
                             <p:column style="padding: 0px!important; margin: 0px!important; font-weight: bold;text-align:right;" >
-                                <h:outputLabel value="#{i.value}" style="padding: 0px!important; margin: 0px!important;">
+                                <h:outputLabel value="#{i.value}" style="padding: 0px!important; margin: 0px!important;" rendered="#{i.string ne ''}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column style="padding: 0px!important; margin: 0px!important; font-weight: bold;text-align:right;" >
-                                <h:outputLabel value="#{i.value2}" style="padding: 0px!important; margin: 0px!important;">
+                                <h:outputLabel value="#{i.value2}" style="padding: 0px!important; margin: 0px!important;" rendered="#{i.string ne ''}">
                                     <f:convertNumber pattern="#,##0.00"  />
                                 </h:outputLabel>
                             </p:column>
