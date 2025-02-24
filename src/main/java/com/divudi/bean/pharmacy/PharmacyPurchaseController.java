@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
@@ -24,6 +25,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
@@ -105,6 +107,8 @@ public class PharmacyPurchaseController implements Serializable {
     PharmacyCalculation pharmacyBillBean;
     @Inject
     CommonController commonController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     /**
      * Properties
      */
@@ -521,12 +525,24 @@ public class PharmacyPurchaseController implements Serializable {
             JsfUtil.addErrorMessage("Select Reference Institution");
         }
         if (getBill().getInvoiceNumber() == null || "".equals(getBill().getInvoiceNumber().trim())) {
-            JsfUtil.addErrorMessage("Please Fill Invoice Number");
-            return;
+            boolean autogenerateInvoiceNumber = configOptionApplicationController.getBooleanValueByKey("Autogenerate Invoice Number for Pharmacy Direct Purchase", false);
+            if (autogenerateInvoiceNumber) {
+                BillNumber bn = billNumberBean.fetchLastBillNumberForYear(sessionController.getInstitution(), sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+                String invoiceNumber = configOptionApplicationController.getShortTextValueByKey("Invoice Number Prefix for Pharmacy Direct Purchase", "") + bn.getLastBillNumber();
+                getBill().setInvoiceNumber(invoiceNumber);
+            } else {
+                JsfUtil.addErrorMessage("Please Enter Invoice Number");
+                return;
+            }
         }
         if (getBill().getInvoiceDate() == null) {
-            JsfUtil.addErrorMessage("Please Fill Invoice Date");
-            return;
+            boolean useCurrentDataIfInvoiceDataIsNotProvided = configOptionApplicationController.getBooleanValueByKey("If Invoice Number is not provided for Pharmacy Direct Purchase, use the current date", false);
+            if (useCurrentDataIfInvoiceDataIsNotProvided) {
+                getBill().setInvoiceDate(new Date());
+            } else {
+                JsfUtil.addErrorMessage("Please Fill Invoice Date");
+                return;
+            }
         }
         if (getBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             JsfUtil.addErrorMessage("MultiplePayments Not Allowed.");
