@@ -145,6 +145,16 @@ public class InwardSearch implements Serializable {
 
     private boolean withProfessionalFee = false;
 
+    public String navigateToPaymentBillCancellation() {
+        switch (bill.getBillTypeAtomic()) {
+            case INWARD_DEPOSIT:
+                return "inward_deposit_cancel_bill_payment?faces-redirect=true";
+
+            default:
+                return "inward_cancel_bill_payment?faces-redirect=true";
+        }
+    }
+
     public boolean showProfessionalFee() {
         if (withProfessionalFee == true) {
             withProfessionalFee = false;
@@ -699,6 +709,63 @@ public class InwardSearch implements Serializable {
     CashTransactionBean cashTransactionBean;
 
     public void cancelBillPayment() {
+        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+
+            if (check()) {
+                return;
+            }
+
+            if (getBill().getCheckedBy() != null) {
+                JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
+                return;
+            }
+
+            double dbl = getInwardBean().getPaidValue(getBill().getPatientEncounter());
+
+            if (dbl < getBill().getNetTotal()) {
+                JsfUtil.addErrorMessage("This Bht has No Enough Vallue To Cancel");
+            }
+
+//            if (getBill().getPatientEncounter().isPaymentFinalized()) {
+//                JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
+//                return;
+//            }
+            CancelledBill cb = createCancelDepositBill();
+            //Copy & paste
+
+            getBillFacade().create(cb);
+            cancelBillItems(cb);
+            getBill().setCancelled(true);
+            getBill().setCancelledBill(cb);
+            getBillFacade().edit((BilledBill) getBill());
+
+            getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
+
+            List<Payment> payments = paymentService.createPayment(cb, paymentMethodData);
+            paymentService.updateBalances(payments);
+
+            if (getBill().getPatientEncounter().isPaymentFinalized()) {
+                getInwardBean().updateFinalFill(getBill().getPatientEncounter());
+                if (getBill().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
+                    getInwardBean().updateCreditDetail(getBill().getPatientEncounter(), getBill().getPatientEncounter().getFinalBill().getNetTotal());
+                }
+
+            }
+
+            WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
+            getSessionController().setLoggedUser(wb);
+            JsfUtil.addSuccessMessage("Cancelled");
+
+            printPreview = true;
+
+        } else {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+            return;
+        }
+
+    }
+
+    public void cancelDepositBillPayment() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             if (check()) {
