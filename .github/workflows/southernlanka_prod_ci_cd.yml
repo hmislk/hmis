@@ -65,10 +65,10 @@ jobs:
 
       - name: Deploy to Payara
         env:
-          SERVER_IP: ${{ secrets.southernlanka_PROD_SERVER_IP }}
-          SERVER_USER: ${{ secrets.southernlanka_PROD_SERVER_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.southernlanka_PROD_SSH_PRIVATE_KEY }}
-          PAYARA_ADMIN_PASS: ${{ secrets.southernlanka_PROD_PAYARA_ADMIN_PASS }}
+          SERVER_IP: ${{ secrets.SOUTHERNLANKA_PROD_SERVER_IP }}
+          SERVER_USER: ${{ secrets.SOUTHERNLANKA_PROD_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SOUTHERNLANKA_PROD_SSH_PRIVATE_KEY }}
+          PAYARA_ADMIN_PASS: ${{ secrets.SOUTHERNLANKA_PROD_PAYARA_ADMIN_PASS }}
         run: |
           # Add SSH private key to the SSH agent
           echo "$SSH_PRIVATE_KEY" > private_key.pem
