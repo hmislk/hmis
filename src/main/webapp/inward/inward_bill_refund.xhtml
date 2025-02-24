@@ -74,8 +74,8 @@
                 <h:panelGroup class="row" rendered="#{inwardRefundController.current.patientEncounter.bhtNo ne null}">
                     <p:panel rendered="#{!inwardRefundController.printPreview}">
                         <f:facet name="header">
-                            <p:outputLabel value="Inward Refund Payment"/>
-
+                            <h:outputText styleClass="fa-solid fa-address-card fa-lg" style="margin-left: 8px;"/>
+                            <p:outputLabel value="Inward Refund Payment" class="m-2"/>
                         </f:facet>
                         <div class="row">
                             <div class="col-md-6">
@@ -118,7 +118,7 @@
                                     <h:panelGrid columns="3" class="w-100" rendered="#{!inwardRefundController.current.patientEncounter.paymentFinalized}">
                                         <p:spacer/>
                                         <h:outputLabel value="No Record Found" style="font-size: 1.3em; text-align: center" />
-                                          <h:outputLabel value="" />
+                                        <h:outputLabel value="" />
                                     </h:panelGrid>
                                 </p:panel>
                                 <p:panel id="amount" class="my-2">
@@ -148,9 +148,9 @@
                                         <p:outputLabel class="mt-1" value="Amount"/>
                                         <h:outputLabel class="mt-1" value=":" ></h:outputLabel>
                                         <p:inputText class="w-45 mt-1" autocomplete="off" value="#{inwardRefundController.current.total}" />
-                                        
+
 <!--                                    disabled="#{inwardRefundController.paidAmount gt 0 }"    -->
-                                        
+
                                     </h:panelGrid>
                                     <h:panelGrid columns="6" class="my-2">
                                         <p:commandButton class="ui-button-warning" icon="fas fa-arrow-rotate-left" id="btnRefund" ajax="false" value="Refund" 
@@ -165,7 +165,7 @@
                     </p:panel>
                 </h:panelGroup>    
                 <p:panel rendered="#{inwardRefundController.printPreview}">
-                    <p:commandButton ajax="false" value="New Bill" class="ui-button-success" icon="fas fa-plus" action="#{inwardRefundController.makeNull}" />
+                    <p:commandButton ajax="false" value="New Bill" class="ui-button-success mb-3" icon="fas fa-plus" action="#{inwardRefundController.makeNull}" />
                     <bill:paymentRefund_1 bill="#{inwardRefundController.current}"/>
                 </p:panel>
 
