@@ -183,6 +183,14 @@ public class PharmacyBillSearch implements Serializable {
     public String navigatePharmacyReprintPo() {
         return "pharmacy_reprint_po?faces-redirect=true";
     }
+    
+    public String navigateToViewPharmacyTransferReqest() {
+        if(bill==null){
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_transfer_request?faces-redirect=true";
+    }
 
     public String navigatePharmacyReprintRetailBill() {
         if (bill == null) {
