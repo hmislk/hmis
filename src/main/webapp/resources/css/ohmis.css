@@ -273,7 +273,21 @@ th.align-right-header .ui-column-title {
     width: 58%;
 }
 
+.custom-col-25 {
+    width: 25%;
+}
 
+.custom-col-50 {
+    width: 50%;
+}
+
+.custom-col-20 {
+    width: 20%;
+}
+
+.custom-col-40 {
+    width: 58%;
+}
 
 
 
