@@ -708,8 +708,7 @@
                         </p:dataTable>
 
                         <p:spacer height="30"/>
-
-                        <p:dataTable id="sum" value="#{commonReport.grnTotal}"  var="i" >
+                            <p:dataTable id="sum" value="#{commonReport.grnTotal}"  var="i" >
                             <f:facet name="header">
                                 Summary
                             </f:facet>
@@ -717,16 +716,15 @@
                                 <h:outputLabel value="#{i.string}"/>
                             </p:column>
                             <p:column style="font-weight: bold;text-align:right;" >
-                                <h:outputLabel value="#{i.value}">
+                                <h:outputLabel value="#{i.value}" rendered="#{i.string ne ''}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column style="font-weight: bold;text-align:right;" >
-                                <h:outputLabel value="#{i.value2}">
+                                <h:outputLabel value="#{i.value2}" rendered="#{i.string ne ''}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
-
                         </p:dataTable>
                     </p:panel>
 
