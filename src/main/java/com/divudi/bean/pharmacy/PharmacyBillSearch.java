@@ -191,9 +191,9 @@ public class PharmacyBillSearch implements Serializable {
     public String navigatePharmacyReprintPo() {
         return "pharmacy_reprint_po?faces-redirect=true";
     }
-
+    
     public String navigateToViewPharmacyTransferReqest() {
-        if (bill == null) {
+        if(bill==null){
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
