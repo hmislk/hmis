@@ -171,6 +171,14 @@ public class PharmacyBillSearch implements Serializable {
         return "/pharmacy/admin/import_bill?faces-redirect=true";
     }
 
+    public String navigateToViewPharmacyDirectIssueForInpatientBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Found");
+            return null;
+        }
+        return "/inward/pharmacy_reprint_bill_sale_bht?faces-redirect=true";
+    }
+
     public String navigateToCancelPharmacyRetailSale() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
@@ -192,11 +200,36 @@ public class PharmacyBillSearch implements Serializable {
         return "/pharmacy/pharmacy_reprint_transfer_request?faces-redirect=true";
     }
 
+    public String navigateToViewPharmacyTransferReqest() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_transfer_request?faces-redirect=true";
+    }
+
     public String navigatePharmacyReprintRetailBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
         }
         return "/pharmacy/pharmacy_reprint_bill_sale?faces-redirect=true";
+    }
+
+    public String navigateToViewPharmacyRetailCancellationBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED) {
+            JsfUtil.addErrorMessage("Wrong Bill Type");
+            return null;
+        }
+
+        return "/pharmacy/pharmacy_reprint_retail_cancelltion_bill?faces-redirect=true";
     }
 
     public String navigateToReprintPharmacyTransferIssue() {
@@ -298,7 +331,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String cancelPharmacyTransferRequestBill() {
-        if(comment == null || comment.isEmpty()){
+        if (comment == null || comment.isEmpty()) {
             JsfUtil.addErrorMessage("Please Provide a comment to cancel the bill");
             return "";
         }
@@ -3457,7 +3490,7 @@ public class PharmacyBillSearch implements Serializable {
                 return null;
         }
     }
-    
+
     public String importGrnBill(Bill importGrnBill) {
         return grnController.navigateToResiveFromImportGrn(importGrnBill);
     }
