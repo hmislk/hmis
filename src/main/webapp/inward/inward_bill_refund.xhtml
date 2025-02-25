@@ -76,6 +76,12 @@
                         <f:facet name="header">
                             <h:outputText styleClass="fa-solid fa-address-card fa-lg" style="margin-left: 8px;"/>
                             <p:outputLabel value="Inward Refund Payment" class="m-2"/>
+                            <h:panelGroup style="float: right; padding-right: 10px;">
+                                <p:commandButton class="ui-button-warning" icon="fas fa-arrow-rotate-left" id="btnRefund" 
+                                                 ajax="false" value="Refund" action="#{inwardRefundController.pay}" />
+                                <p:commandButton class="ui-button-danger mx-2" icon="fas fa-ban" ajax="false" 
+                                                 value="Clear" action="#{inwardRefundController.makeNull}" />
+                            </h:panelGroup>
                         </f:facet>
                         <div class="row">
                             <div class="col-md-6">
@@ -165,12 +171,6 @@
 
 <!--                                    disabled="#{inwardRefundController.paidAmount gt 0 }"    -->
 
-                                    </h:panelGrid>
-                                    <h:panelGrid columns="6" class="my-2">
-                                        <p:commandButton class="ui-button-warning" icon="fas fa-arrow-rotate-left" id="btnRefund" ajax="false" value="Refund" 
-                                                         action="#{inwardRefundController.pay}" />
-                                        <p:commandButton class="ui-button-danger mx-2" icon="fas fa-ban" ajax="false" value="Clear" action="#{inwardRefundController.makeNull}" />
-                                        <p:defaultCommand target="btnRefund"/>
                                     </h:panelGrid>
                                 </p:panel>
 
