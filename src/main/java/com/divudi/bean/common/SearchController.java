@@ -14238,6 +14238,7 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> creditCompanyPaymentIpReceive = new ArrayList<>();
         creditCompanyPaymentIpReceive.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT);
         creditCompanyPaymentIpReceive.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
+        creditCompanyPaymentIpReceive.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
         ReportTemplateRowBundle creditCompanyPaymentIpReceiveBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentIpReceive);
         creditCompanyPaymentIpReceiveBundle.setBundleType("CreditCompanyPaymentIPReceive");
         creditCompanyPaymentIpReceiveBundle.setName("Credit Company IP Payment Reception");
