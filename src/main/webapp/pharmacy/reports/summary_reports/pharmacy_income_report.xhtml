@@ -192,6 +192,7 @@
                     <p:commandButton 
                         value="Print" 
                         ajax="false"
+                        rendered="false"
                         styleClass="ui-button-warning m-1"
                         icon="pi pi-print">
                         <p:printer target="tbl" />
@@ -354,6 +355,35 @@
                                 </h:outputText>
                             </f:facet>
 
+                        </p:column>
+                        <p:column headerText="Actions" exportable="false" styleClass="alignTop" width="5em">
+                            <p:commandLink 
+                                value="View" 
+                                style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
+                                class="mx-1"
+                                action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                ajax="false">
+                                <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                            </p:commandLink>
+
+<!--                            <p:commandLink 
+                                value="Manage" 
+                                style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
+                                class="mx-1"
+                                action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
+                                ajax="false">
+                                <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                            </p:commandLink>-->
+
+<!--                            <p:commandLink 
+                                value="Admin" 
+                                style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
+                                class="mx-1"
+                                action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                ajax="false" 
+                                rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                            </p:commandLink>-->
                         </p:column>
 
 
