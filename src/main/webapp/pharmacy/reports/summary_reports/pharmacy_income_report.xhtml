@@ -192,32 +192,41 @@
                     <p:commandButton 
                         value="Print" 
                         ajax="false"
+                        rendered="false"
                         styleClass="ui-button-warning m-1"
                         icon="pi pi-print">
                         <p:printer target="tbl" />
                     </p:commandButton>
 
+                    <p:button 
+                        value="To Print" 
+                        styleClass="ui-button-warning m-1"
+                        icon="pi pi-print"
+                        outcome="pharmacy_income_report_print"
+                        target="_blank"/>
 
 
                     <p:dataTable
                         id="tbl"
-                        style="padding: 0px!important; margin: 0px!important;" 
+                        style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
                         styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                         value="#{pharmacySummaryReportController.bundle.rows}" var="row"
-                        paginator="true" rows="10" rowsPerPageTemplate="5,10,15,50,100,500,1000,2000,5000,10000"
+                        paginator="true" 
+                        rows="#{pharmacySummaryReportController.rowsPerPageForScreen}" 
+                        rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100,500,1000,2000,5000,10000"
                         paginatorPosition="bottom">
-                        <p:column headerText="Bill No" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Bill No" width="16em" style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.bill.deptId}"  style="padding: 0px!important; margin: 0px!important;" />
                         </p:column>
-                        <p:column headerText="Patient" width="20em" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Patient"  style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.bill.patient.person.nameWithTitle}"  style="padding: 0px!important; margin: 0px!important;" />
                         </p:column>
-                        <p:column headerText="Date" >
+                        <p:column headerText="Date"   width="10em" >
                             <h:outputText value="#{row.bill.createdAt}"  style="padding: 0px!important; margin: 0px!important;" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                             </h:outputText>
                         </p:column>
-                        <p:column headerText="Net Total"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Net Total"  width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
@@ -227,7 +236,7 @@
                                 </h:outputText>
                             </f:facet>
                         </p:column>
-                        <p:column headerText="Cash"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Cash"   width="10em"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.cashValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
@@ -238,7 +247,7 @@
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Card" class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Card"   width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.cardValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
@@ -249,7 +258,7 @@
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Cheque"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Cheque"   width="10em"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.chequeValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
@@ -260,7 +269,7 @@
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Inpatient Credit" class="text-end light-grey-background"  style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Inpatient Credit"   width="10em" class="text-end light-grey-background"  style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.inpatientCreditValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
@@ -271,7 +280,7 @@
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Outpatient Credit"  class="text-end light-grey-background" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Outpatient Credit"   width="10em"  class="text-end light-grey-background" style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.opdCreditValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
@@ -282,7 +291,7 @@
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Staff Credit"   class="text-end light-grey-background"  style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Staff Credit"    width="10em"  class="text-end light-grey-background"  style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.staffValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
@@ -293,7 +302,7 @@
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Agent Credit" class="text-end light-grey-background"  style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Agent Credit"   width="10em"  class="text-end light-grey-background"  style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.agentValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
@@ -304,7 +313,7 @@
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Total"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Total"    width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.grossTotal}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
@@ -314,7 +323,7 @@
                                 </h:outputText>
                             </f:facet>
                         </p:column>
-                        <p:column headerText="Discount"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Discount"   width="10em"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.discount}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
@@ -325,7 +334,7 @@
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Service Charge"  class="text-end"  style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Service Charge"  width="10em"   class="text-end"  style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.serviceCharge}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
@@ -336,7 +345,7 @@
                             </f:facet>
 
                         </p:column>
-                        <p:column headerText="Actual Total"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                        <p:column headerText="Actual Total"    width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.netTotal}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
@@ -346,6 +355,35 @@
                                 </h:outputText>
                             </f:facet>
 
+                        </p:column>
+                        <p:column headerText="Actions" exportable="false" styleClass="alignTop" width="5em">
+                            <p:commandLink 
+                                value="View" 
+                                style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
+                                class="mx-1"
+                                action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                ajax="false">
+                                <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                            </p:commandLink>
+
+<!--                            <p:commandLink 
+                                value="Manage" 
+                                style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
+                                class="mx-1"
+                                action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
+                                ajax="false">
+                                <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                            </p:commandLink>-->
+
+<!--                            <p:commandLink 
+                                value="Admin" 
+                                style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
+                                class="mx-1"
+                                action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                ajax="false" 
+                                rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                            </p:commandLink>-->
                         </p:column>
 
 

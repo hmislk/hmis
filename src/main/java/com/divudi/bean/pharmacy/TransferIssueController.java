@@ -103,7 +103,7 @@ public class TransferIssueController implements Serializable {
             return "";
         }
 
-        return "/pharmacy/pharmacy_transfer_issue";
+        return "/pharmacy/pharmacy_transfer_issue?faces-redirect=true";
     }
 
 //    public boolean isFullyIssued() {
@@ -129,7 +129,7 @@ public class TransferIssueController implements Serializable {
         for (BillItem originalItem : billItems) {
 
             if (originalItem.getPharmaceuticalBillItem().getQty() > 0) {
-                return false; 
+                return false;
             }else if(originalItem.getPharmaceuticalBillItem().getItemBatch() == null){
                 return false;
             }
@@ -144,7 +144,7 @@ public class TransferIssueController implements Serializable {
             return "";
         }
         createRequestIssueBillItems(requestedBill);
-        return "/pharmacy/pharmacy_transfer_issue_direct_department";
+        return "/pharmacy/pharmacy_transfer_issue_direct_department?faces-redirect=true";
     }
 
     public String navigateToPharmacyIssueFromGrn() {
@@ -165,7 +165,7 @@ public class TransferIssueController implements Serializable {
         createDirectIssueBillItems();
         getIssuedBill().setFromDepartment(getSessionController().getDepartment());
 
-        return "/pharmacy/pharmacy_transfer_issue_direct_department";
+        return "/pharmacy/pharmacy_transfer_issue_direct_department?faces-redirect=true";
     }
 
     public UserStockContainer getUserStockContainer() {
@@ -639,7 +639,7 @@ public class TransferIssueController implements Serializable {
 
         getIssuedBill().setFromInstitution(getSessionController().getInstitution());
         getIssuedBill().setFromDepartment(getSessionController().getDepartment());
-        
+
         getIssuedBill().setToInstitution(getRequestedBill().getFromInstitution());
         getIssuedBill().setToDepartment(getRequestedBill().getFromDepartment());
 
