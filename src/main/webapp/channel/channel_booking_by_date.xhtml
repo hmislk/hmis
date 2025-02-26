@@ -750,7 +750,7 @@
                                                 <p:panelGrid columns="1" rendered="#{bookingControllerViewScope.paymentMethod eq 'MultiplePaymentMethods'}">
                                                     <p:row>
                                                         <p:column>
-                                                            <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" class="w-100" />
+                                                            <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" paymentMethods="#{enumController.paymentMethodsForChannelSettling}" class="w-100" />
                                                         </p:column>
                                                     </p:row>
                                                 </p:panelGrid>

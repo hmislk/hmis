@@ -145,11 +145,12 @@ public class InwardSearch implements Serializable {
 
     private boolean withProfessionalFee = false;
 
-    public String navigateToPaymentBillCancellation() {
+    public String navigateToPaymentBillCancellation(){
         switch (bill.getBillTypeAtomic()) {
             case INWARD_DEPOSIT:
                 return "inward_deposit_cancel_bill_payment?faces-redirect=true";
-
+            case INWARD_DEPOSIT_REFUND:
+                return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
             default:
                 return "inward_cancel_bill_payment?faces-redirect=true";
         }
@@ -847,12 +848,16 @@ public class InwardSearch implements Serializable {
 //                return;
 //            }
             RefundBill cb = createRefundCancelBill();
+            cb.setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
             //Copy & paste
             getBillFacade().create(cb);
             cancelBillItems(cb);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
+
+            List<Payment> payments = paymentService.createPayment(cb, paymentMethodData);
+            paymentService.updateBalances(payments);
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
 

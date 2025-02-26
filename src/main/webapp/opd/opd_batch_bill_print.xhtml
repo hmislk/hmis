@@ -41,6 +41,16 @@
                                     ajax="false">
                                 </p:commandButton>
 
+                                <p:commandButton 
+                                    value="Pharmacy Retail" 
+                                    class="ui-button-success mx-1"
+                                    icon="fa fa-shopping-cart"
+                                    action="/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true"   
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                                    ajax="false">
+                                    <f:setPropertyActionListener target="#{pharmacySaleController.patient}" value="#{opdBillController.patient}"></f:setPropertyActionListener>
+                                </p:commandButton>
+
                                 <!-- Print Lookup Button -->
                                 <p:commandButton 
                                     value="Patient Lookup" 
@@ -329,7 +339,7 @@
                                     </p:column>
                                     <p:column headerText="Value" class="text-end">
                                         <h:outputText value="#{p.paidValue}" >
-                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
                                 </p:dataTable>
