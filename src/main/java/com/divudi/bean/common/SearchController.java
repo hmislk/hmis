@@ -14248,6 +14248,7 @@ public class SearchController implements Serializable {
 // Generate Credit Company Payment IP - Cancellation and Refunds and add to the main bundle
         List<BillTypeAtomic> creditCompanyPaymentIpCancellation = new ArrayList<>();
         creditCompanyPaymentIpCancellation.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT_CANCELLATION);
+        creditCompanyPaymentIpCancellation.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
         creditCompanyPaymentIpCancellation.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT_REFUND);
         ReportTemplateRowBundle creditCompanyPaymentIpCancellationBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentIpCancellation);
         creditCompanyPaymentIpCancellationBundle.setBundleType("CreditCompanyPaymentIPCancellation");
