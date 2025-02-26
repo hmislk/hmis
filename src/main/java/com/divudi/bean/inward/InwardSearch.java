@@ -1101,7 +1101,7 @@ public class InwardSearch implements Serializable {
     }
 
     public void listnerForPaymentMethodChange(Bill b) {
-        if (b.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+        if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
             getPaymentMethodData().getPatient_deposit().setTotalValue(b.getTotal());
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(b.getPatientEncounter().getPatient(), sessionController.getDepartment());
@@ -1109,10 +1109,10 @@ public class InwardSearch implements Serializable {
                 getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
                 getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
             }
-        } else if (b.getPaymentMethod() == PaymentMethod.Card) {
+        } else if (getPaymentMethod() == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(b.getTotal());
             System.out.println("this = " + this);
-        } else if (b.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+        } else if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
 //            getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(b.getPatientEncounter().getPatient(), sessionController.getDepartment());
