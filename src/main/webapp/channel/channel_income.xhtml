@@ -128,6 +128,21 @@
                                         <f:selectItem itemLabel="Select a user"/>
                                         <f:selectItems value="#{webUserController.items}" var="st" itemLabel="#{st.name}" itemValue="#{st}"/>
                                     </p:selectOneMenu>
+                                    
+                                     <p:spacer width="50" ></p:spacer>
+                                    
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText styleClass="fas fa-user mr-2" />
+                                        <h:outputLabel value="Booking Type" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu 
+                                        class="w-100"
+                                        styleClass="w-100 form-control"   
+                                        value="#{searchController.bookingType}">
+                                        <f:selectItem itemLabel="All Bookings" itemValue="All Bookings" />
+                                        <f:selectItem itemLabel="Online Bookings" itemValue="Online Bookings" />
+                                        <f:selectItem itemLabel="System Bookings" itemValue="System Bookings" />
+                                    </p:selectOneMenu>
 
                                    
 
