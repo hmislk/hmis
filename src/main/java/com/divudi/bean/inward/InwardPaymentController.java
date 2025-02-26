@@ -96,6 +96,11 @@ public class InwardPaymentController implements Serializable {
         return "/inward/admission_profile?faces-redirect=true";
     }
 
+    public String navigateToPatientRefund() {
+        paymentMethodData = new PaymentMethodData();
+        return "inward_cancel_bill_refund?faces-redirect=true";
+    }
+
     private double getFinalBillDue() {
         String sql = "Select b From BilledBill b where"
                 + " b.retired=false "
