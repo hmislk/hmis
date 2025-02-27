@@ -11,7 +11,6 @@
     <ui:define name="item">
 
         <h:form>
-
         </h:form>
 
         <div class="container-fluid">
@@ -27,7 +26,7 @@
                         <p:commandButton 
                             icon="fa fa-upload"
                             value="Upload"
-                            action="#{dataUploadController.uploadItemsAndHospitalFees()}"
+                            action="#{dataUploadController.uploadCorrectItemCodes()}"
                             ajax="false"/>
                     </h:form>
 
@@ -42,73 +41,18 @@
                         <tbody>
                             <tr>
                                 <td>A</td>
-                                <td>Name</td>
-                                <td>Name. Required</td>
+                                <td>Item Name</td>
+                                <td>Required. Exact match needed for correction.</td>
                             </tr>
                             <tr>
                                 <td>B</td>
-                                <td>Printing Name</td>
-                                <td>Printing Name name. Optional.</td>
+                                <td>Institution Name</td>
+                                <td>Required. Exact match needed for correction.</td>
                             </tr>
                             <tr>
                                 <td>C</td>
-                                <td>Full Name</td>
-                                <td>Full Name Optional</td>
-                            </tr>
-                            <tr>
-                                <td>D</td>
-                                <td>Item Code</td>
-                                <td>Item Code Optional</td>
-                            </tr>
-                            <tr>
-                                <td>E</td>
-                                <td>Category</td>
-                                <td>Category name. Required.</td>
-                            </tr>
-                            <tr>
-                                <td>F</td>
-                                <td>Financial Category</td>
-                                <td>Financial Category name. Optional.</td>
-                            </tr>
-                            <tr>
-                                <td>G</td>
-                                <td>Institution</td>
-                                <td>Institution. Optional. If left blank, logged institution is used.</td>
-                            </tr>
-                            <tr>
-                                <td>H</td>
-                                <td>Department</td>
-                                <td>Department. Optional. If left blank, logged department is used.</td>
-                            </tr>
-                            <tr>
-                                <td>I</td>
-                                <td>Inward Charge Category</td>
-                                <td>Inward Charge Category. Optional.</td>
-                            </tr>
-                            <tr>
-                                <td>J</td>
-                                <td>Item Type</td>
-                                <td>Optional. Default is Investigation. Other options include Service, InwardService, Surgery.</td>
-                            </tr>
-                            <tr>
-                                <td>K</td>
-                                <td>Fee Name</td>
-                                <td>Optional. Default is Hospital Fee.</td>
-                            </tr>
-                            <tr>
-                                <td>L</td>
-                                <td>Hospital Fee</td>
-                                <td>Optional. Created for Logged Department and Institution</td>
-                            </tr>
-                            <tr>
-                                <td>M</td>
-                                <td>Site or Collecting Centre</td>
-                                <td>Optional. Refers to the site or Collecting Centre where fee will be created. If left blank, no site is recorded.</td>
-                            </tr>
-                            <tr>
-                                <td>N</td>
-                                <td>Fee List</td>
-                                <td>Optional. Refers to the Set of Fees Bundled under one category.</td>
+                                <td>Correct Code</td>
+                                <td>Required. The corrected item code to be applied.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -118,8 +62,8 @@
 
         <div class="row">
             <div class="col-6">
-                <h1>Uploaded Items</h1>
-                <p:dataTable id="tbl" value="#{dataUploadController.items}" var="item">
+                <h1>Updated Items</h1>
+                <p:dataTable id="tbl" value="#{dataUploadController.itemsUpdated}" var="item">
                     <p:column>
                         #{item.name}
                     </p:column>
@@ -127,21 +71,7 @@
                         #{item.institution.name}
                     </p:column>
                     <p:column>
-                        #{item.department.name}
-                    </p:column>
-                    <p:column>
-                        #{item.total}
-                    </p:column>
-                </p:dataTable>
-            </div>
-            <div class="col-6">
-                <h1>Skipped Items</h1>
-                <p:dataTable id="tbl2" value="#{dataUploadController.itemsSkipped}" var="item">
-                    <p:column>
-                        #{item.name}
-                    </p:column>
-                    <p:column>
-                        #{item.total}
+                        #{item.code}
                     </p:column>
                 </p:dataTable>
             </div>

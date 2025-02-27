@@ -300,6 +300,7 @@ public class DataUploadController implements Serializable {
     List<Item> itemsToSave;
     List<Item> itemsSaved;
     List<Item> itemsSkipped;
+    private List<Item> itemsUpdated;
     List<Item> masterItemsToSave;
     List<ItemFee> itemFeesToSave;
     List<Category> categoriesSaved;
@@ -801,8 +802,8 @@ public class DataUploadController implements Serializable {
         pollActive = false;
         return "/admin/items/opd_items_and_hospital_fee_upload?faces-redirect=true";
     }
-    
-      public String navigateToUploadToCorrectCode() {
+
+    public String navigateToUploadToCorrectCode() {
         pollActive = false;
         return "/admin/items/opd_items_upload_to_correct_code?faces-redirect=true";
     }
@@ -1196,7 +1197,7 @@ public class DataUploadController implements Serializable {
             if (iwct == null) {
                 iwct = InwardChargeType.OtherCharges;
             }
-            
+
             Cell specimenCell = row.getCell(9);
             if (specimenCell != null && specimenCell.getCellType() == CellType.STRING) {
                 specimen = specimenCell.getStringCellValue();
@@ -1207,7 +1208,7 @@ public class DataUploadController implements Serializable {
             if (smpl == null) {
                 smpl = sampleController.findAndCreateSampleByName("Blood");
             }
-            
+
             Cell tubeCell = row.getCell(10);
             if (tubeCell != null && tubeCell.getCellType() == CellType.STRING) {
                 container = tubeCell.getStringCellValue();
@@ -2418,6 +2419,65 @@ public class DataUploadController implements Serializable {
         }
         JsfUtil.addSuccessMessage("Saved");
         departments = new ArrayList<>();
+    }
+
+    public void uploadCorrectItemCodes() {
+        itemsUpdated = new ArrayList<>();
+        itemsSkipped = new ArrayList<>();
+
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                processExcelFile(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void processExcelFile(InputStream inputStream) throws IOException {
+        System.out.println("Processing uploaded Excel file...");
+
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        // Skip header row
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            String itemName = getCellValueAsString(row.getCell(0));
+            System.out.println("itemName = " + itemName);
+            String institutionName = getCellValueAsString(row.getCell(1));
+            String correctCode = getCellValueAsString(row.getCell(2));
+
+            if (itemName.isEmpty() || institutionName.isEmpty() || correctCode.isEmpty()) {
+                System.out.println("Skipping row " + row.getRowNum() + " due to missing data.");
+                continue;
+            }
+
+            // Find the item by exact match of Item Name and Institution Name
+            Item item = itemController.findItemByNameAndInstitution(itemName, institutionName);
+            if (item != null) {
+                System.out.println("Updating item: " + item.getName() + " in " + institutionName + " with new code: " + correctCode);
+                System.out.println("item.getCode() Before= " + item.getCode());
+                item.setCode(correctCode);
+                System.out.println("item = " + item);
+                System.out.println("item.getId() = " + item.getId());
+                itemFacade.edit(item);
+                System.out.println("item.getCode() After= " + item.getCode());
+                itemsUpdated.add(item);
+            } else {
+                System.out.println("Skipping item: " + itemName + " in " + institutionName + " (not found).");
+//                itemsSkipped.add(new SkippedItem(itemName, institutionName));
+            }
+        }
+
+        workbook.close();
+        System.out.println("Excel file processing completed.");
     }
 
     private List<Item> readOpdItemsAndFeesFromExcel(InputStream inputStream) throws IOException {
@@ -7426,5 +7486,15 @@ public class DataUploadController implements Serializable {
     public void setSavedPatients(List<Patient> savedPatients) {
         this.savedPatients = savedPatients;
     }
+
+    public List<Item> getItemsUpdated() {
+        return itemsUpdated;
+    }
+
+    public void setItemsUpdated(List<Item> itemsUpdated) {
+        this.itemsUpdated = itemsUpdated;
+    }
+    
+    
 
 }
