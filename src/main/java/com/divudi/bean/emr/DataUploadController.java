@@ -801,6 +801,11 @@ public class DataUploadController implements Serializable {
         pollActive = false;
         return "/admin/items/opd_items_and_hospital_fee_upload?faces-redirect=true";
     }
+    
+      public String navigateToUploadToCorrectCode() {
+        pollActive = false;
+        return "/admin/items/opd_items_upload_to_correct_code?faces-redirect=true";
+    }
 
     public String navigateToUploadOpdItemsAndDoctorFees() {
         pollActive = false;
