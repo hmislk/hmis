@@ -2307,6 +2307,14 @@ public class SearchController implements Serializable {
         this.OpdPackageBillSelector = OpdPackageBillSelector;
     }
 
+    public String getBookingType() {
+        return bookingType;
+    }
+
+    public void setBookingType(String bookingType) {
+        this.bookingType = bookingType;
+    }
+
     public class billsWithbill {
 
         Bill b;
@@ -10582,8 +10590,8 @@ public class SearchController implements Serializable {
         bundle.calculateTotalByValues();
 
     }
-    
-    public String navigateToListBillsWithErrors(){
+
+    public String navigateToListBillsWithErrors() {
         bills = null;
         return "/dataAdmin/bills_with_errors?faces-redirect=true;";
     }
@@ -17150,6 +17158,8 @@ public class SearchController implements Serializable {
         }
     }
 
+    private String bookingType;
+
     public void generateChannelIncome() {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
@@ -17176,7 +17186,30 @@ public class SearchController implements Serializable {
         parameters.put("bfr", true);
         parameters.put("br", true);
 
-        List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
+        List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);;
+        if (bookingType != null) {
+            switch (bookingType) {                
+                case "System Bookings":
+                    bts.remove(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+                    break;
+                case "Online Bookings":
+                    bts = new ArrayList<BillTypeAtomic>();
+                    bts.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+                    bts.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
+                    break;
+                case "Agent Bookings":
+                    jpql += " And bill.billType = :bt ";
+                    parameters.put("bt", BillType.ChannelAgent);
+                    bts = new ArrayList<BillTypeAtomic>();
+                    bts.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    bts.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        //List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
         jpql += "AND bill.billTypeAtomic IN :bts ";
         parameters.put("bts", bts);
 
