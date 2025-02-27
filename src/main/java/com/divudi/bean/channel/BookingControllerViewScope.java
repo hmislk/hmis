@@ -189,6 +189,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     StaffService staffBean;
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
+    @EJB
+    ChannelService channelService;
     /**
      * Controllers
      */
@@ -2739,9 +2741,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         comment = null;
         printPreviewC = true;
     }
-
-    @EJB
-    ChannelService channelService;
 
     public void cancel(Bill bill, BillItem billItem, BillSession billSession) {
         if (errorCheckCancelling()) {

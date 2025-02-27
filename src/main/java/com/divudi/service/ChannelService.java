@@ -119,6 +119,8 @@ public class ChannelService {
     private ConsultantFacade consultantFacade;
     @EJB
     private StaffFacade staffFacade;
+    @EJB
+    BillService billService;
 
     @Inject
     private BookingControllerViewScope bookingControllerViewScope;
@@ -999,10 +1001,7 @@ public class ChannelService {
         getBillFacade().edit(cb);
         return cb;
     }
-    
-    @EJB
-    BillService billService;
-    
+       
      public List<Payment> createPaymentForChannelAppoinmentCancellation(Bill cancellationBill, PaymentMethod cancelPaymentMethod,PaymentMethodData paymentMethodData, SessionController loggedSession) {
         List<Payment> ps = new ArrayList<>();
         if (cancelPaymentMethod == null) {
