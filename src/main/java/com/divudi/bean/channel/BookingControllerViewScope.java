@@ -3024,7 +3024,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
         getBillFacade().create(cb);
 
-        if (bill.getPaymentMethod() == PaymentMethod.Agent || bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+        if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             //cb.setPaymentMethod(cancelPaymentMethod);
             //this is temp solution
             cb.setPaymentMethod(PaymentMethod.Cash);
