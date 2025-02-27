@@ -98,6 +98,7 @@ import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.data.channel.SessionInstanceEvent;
+import com.divudi.service.ChannelService;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -2725,6 +2726,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         comment = null;
         printPreviewC = true;
     }
+    
+    @EJB
+    ChannelService channelService;
 
     public void cancel(Bill bill, BillItem billItem, BillSession billSession) {
         if (errorCheckCancelling()) {
@@ -2745,9 +2749,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (bill.getPaidBill().equals(bill)) {
             CancelledBill cb = createCancelCashBill(bill);
-            Payment p = createPaymentForCancellationsAndRefunds(cb, cb.getPaymentMethod());
+            List<Payment> payments = channelService.createPaymentForChannelAppoinmentCancellation(cb, cancelPaymentMethod, paymentMethodData, getSessionController());
+            //Payment p = createPaymentForCancellationsAndRefunds(cb, cb.getPaymentMethod());
             if (cancelPaymentMethod != PaymentMethod.Agent) {
-                drawerController.updateDrawerForOuts(p);
+                drawerController.updateDrawerForOuts(payments);
             }
 
             BillItem cItem = cancelBillItems(billItem, cb);
@@ -2768,8 +2773,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         } else {
             CancelledBill cb = createCancelBill(bill);
-            Payment p = createPaymentForCancellationsAndRefunds(cb, bill.getPaidBill().getPaymentMethod());
-            drawerController.updateDrawerForOuts(p);
+            List<Payment> payments = channelService.createPaymentForChannelAppoinmentCancellation(cb, cancelPaymentMethod, paymentMethodData, getSessionController());
+            //Payment p = createPaymentForCancellationsAndRefunds(cb, bill.getPaidBill().getPaymentMethod());
+            drawerController.updateDrawerForOuts(payments);
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
             bill.setCancelled(true);
@@ -3024,18 +3030,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
         getBillFacade().create(cb);
 
-        if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
-            //cb.setPaymentMethod(cancelPaymentMethod);
-            //this is temp solution
-            cb.setPaymentMethod(PaymentMethod.Cash);
-//            if (cancelPaymentMethod == PaymentMethod.Agent) {
-//                updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()), HistoryType.ChannelBooking, cb, selectedBillSession.getBillItem(), selectedBillSession, selectedBillSession.getBill().getReferralNumber());
-//            }
-        } else if (bill.getPaymentMethod() == PaymentMethod.Card) {
-            cb.setPaymentMethod(bill.getPaymentMethod());
-        } else {
-            cb.setPaymentMethod(bill.getPaymentMethod());
-        }
+//        if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+//            //cb.setPaymentMethod(cancelPaymentMethod);
+//            //this is temp solution
+//            cb.setPaymentMethod(PaymentMethod.Cash);
+////            if (cancelPaymentMethod == PaymentMethod.Agent) {
+////                updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()), HistoryType.ChannelBooking, cb, selectedBillSession.getBillItem(), selectedBillSession, selectedBillSession.getBill().getReferralNumber());
+////            }
+//        } else if (bill.getPaymentMethod() == PaymentMethod.Card) {
+//            cb.setPaymentMethod(bill.getPaymentMethod());
+//        } else {
+//            cb.setPaymentMethod(bill.getPaymentMethod());
+//        }
 
         getBillFacade().edit(cb);
         return cb;
