@@ -4071,27 +4071,12 @@ public class DataUploadController implements Serializable {
                 itemType = "Investigation";
             }
             if (itemType.equals("Service")) {
-                if (masterItem == null) {
-                    masterItem = new Service();
-                    masterItem.setName(name);
-                    masterItem.setPrintName(printingName);
-                    masterItem.setFullName(fullName);
-                    masterItem.setCode(code);
-                    masterItem.setCategory(category);
-                    masterItem.setIsMasterItem(true);
-                    masterItem.setInwardChargeType(iwct);
-                    masterItem.setCreater(sessionController.getLoggedUser());
-                    masterItem.setCreatedAt(new Date());
-                    masterItemsToSave.add(masterItem);
-                }
-
                 Service service = new Service();
                 service.setName(name);
                 service.setPrintName(printingName);
                 service.setFullName(fullName);
                 service.setCode(code);
                 service.setCategory(category);
-                service.setMasterItemReference(masterItem);
                 service.setInstitution(institution);
                 service.setDepartment(department);
                 service.setInwardChargeType(iwct);
@@ -4099,20 +4084,6 @@ public class DataUploadController implements Serializable {
                 service.setCreatedAt(new Date());
                 item = service;
             } else if (itemType.equals("Investigation")) {
-
-                if (masterItem == null) {
-                    masterItem = new Investigation();
-                    masterItem.setName(name);
-                    masterItem.setPrintName(printingName);
-                    masterItem.setFullName(fullName);
-                    masterItem.setCode(code);
-                    masterItem.setIsMasterItem(true);
-                    masterItem.setCategory(category);
-                    masterItem.setInwardChargeType(iwct);
-                    masterItem.setCreater(sessionController.getLoggedUser());
-                    masterItem.setCreatedAt(new Date());
-                    masterItemsToSave.add(masterItem);
-                }
                 Investigation ix = new Investigation();
                 ix.setName(name);
                 ix.setPrintName(printingName);
@@ -4122,7 +4093,6 @@ public class DataUploadController implements Serializable {
                 ix.setInstitution(institution);
                 ix.setDepartment(department);
                 ix.setInwardChargeType(iwct);
-                ix.setMasterItemReference(masterItem);
                 ix.setCreater(sessionController.getLoggedUser());
                 ix.setCreatedAt(new Date());
                 item = ix;
