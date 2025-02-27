@@ -14238,6 +14238,7 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> creditCompanyPaymentIpReceive = new ArrayList<>();
         creditCompanyPaymentIpReceive.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT);
         creditCompanyPaymentIpReceive.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
+        creditCompanyPaymentIpReceive.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
         ReportTemplateRowBundle creditCompanyPaymentIpReceiveBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentIpReceive);
         creditCompanyPaymentIpReceiveBundle.setBundleType("CreditCompanyPaymentIPReceive");
         creditCompanyPaymentIpReceiveBundle.setName("Credit Company IP Payment Reception");
@@ -14247,6 +14248,7 @@ public class SearchController implements Serializable {
 // Generate Credit Company Payment IP - Cancellation and Refunds and add to the main bundle
         List<BillTypeAtomic> creditCompanyPaymentIpCancellation = new ArrayList<>();
         creditCompanyPaymentIpCancellation.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT_CANCELLATION);
+        creditCompanyPaymentIpCancellation.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
         creditCompanyPaymentIpCancellation.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT_REFUND);
         ReportTemplateRowBundle creditCompanyPaymentIpCancellationBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentIpCancellation);
         creditCompanyPaymentIpCancellationBundle.setBundleType("CreditCompanyPaymentIPCancellation");

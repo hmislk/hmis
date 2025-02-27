@@ -38,6 +38,7 @@ import com.divudi.data.IncomeBundle;
 import com.divudi.data.IncomeRow;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Category;
 import com.divudi.entity.PaymentScheme;
@@ -47,6 +48,7 @@ import com.divudi.facade.DrawerFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.service.BillService;
+import com.divudi.service.StockHistoryService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -92,6 +94,8 @@ public class PharmacySummaryReportController implements Serializable {
     private DrawerFacade drawerFacade;
     @EJB
     private BillService billService;
+    @EJB
+    StockHistoryService stockHistoryService;
 
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -203,6 +207,8 @@ public class PharmacySummaryReportController implements Serializable {
     private IncomeBundle bundle;
     private ReportTemplateRowBundle bundleReport;
 
+    private DailyStockBalanceReport dailyStockBalanceReport;
+
     private StreamedContent downloadingExcel;
     private UploadedFile file;
 
@@ -242,6 +248,12 @@ public class PharmacySummaryReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a date");
             return;
         }
+        dailyStockBalanceReport = new DailyStockBalanceReport();
+        dailyStockBalanceReport.setDate(fromDate);
+        dailyStockBalanceReport.setDepartment(department);
+
+        dailyStockBalanceReport.setOpeningStock(stockHistoryService.fetchOpeningStockQuantity(department, toDate));
+        dailyStockBalanceReport.setClosingStock(stockHistoryService.fetchClosingStockQuantity(department, toDate));
 
     }
 
@@ -1507,6 +1519,14 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void setFontSizeForScreen(String fontSizeForScreen) {
         this.fontSizeForScreen = fontSizeForScreen;
+    }
+
+    public DailyStockBalanceReport getDailyStockBalanceReport() {
+        return dailyStockBalanceReport;
+    }
+
+    public void setDailyStockBalanceReport(DailyStockBalanceReport dailyStockBalanceReport) {
+        this.dailyStockBalanceReport = dailyStockBalanceReport;
     }
 
 }

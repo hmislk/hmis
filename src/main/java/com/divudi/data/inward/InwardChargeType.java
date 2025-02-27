@@ -58,7 +58,8 @@ public enum InwardChargeType {
     MedicalCare("MedicalCare"),
     BabyCare("BabyCare Charges"),
     LabourCharges("Labour Charges"),
-
+    @Deprecated
+    ConsultantCharges("ConsultantCharges"),
     // New enum values
     Andrology("Andrology"),
     AudiogramTest("Audiogram Test"),
