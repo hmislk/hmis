@@ -455,6 +455,8 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+                            
+                            <p:ajax event="filter" oncomplete="updateTotals();"></p:ajax>
 
                         </p:dataTable>
                         
