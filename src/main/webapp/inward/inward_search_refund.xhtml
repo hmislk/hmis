@@ -107,7 +107,9 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Action">
-                                        <p:commandButton ajax="false" value="View Bill" class="ui-button-primary" icon="fas fa-eye" action="inward_reprint_bill_refund"  >
+                                        <p:commandButton ajax="false" value="View Bill" class="ui-button-primary"
+                                                         icon="fas fa-eye"
+                                                         action="inward_reprint_bill_refund?faces-redirect=true">
                                             <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
                                         </p:commandButton>
                                     </p:column>
