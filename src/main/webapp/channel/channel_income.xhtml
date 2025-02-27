@@ -313,22 +313,22 @@
                                 <f:facet name="header">
                                     <h:outputText value="Cash" />
                                 </f:facet>
-                                <h:outputText value="#{row.cashValue}">
+                                <h:outputText styleClass="cashValue" value="#{row.cashValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.cashValue}">
+                                    <h:outputText styleClass="totalCashValue" value="0.00">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
                             <p:column  class="text-end"  headerText="Card" sortBy="#{row.cardValue}" filterBy="#{row.cardValue}"  rendered="#{searchController.bundle.hasCardTransaction}" >
-                                <h:outputText value="#{row.cardValue}" >
+                                <h:outputText styleClass="cardValue" value="#{row.cardValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.cardValue}">
+                                    <h:outputText styleClass="totalCardValue" value="0.00">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -380,11 +380,11 @@
                             </p:column>
 
                             <p:column  class="text-end"  headerText="Agent" sortBy="#{row.agentValue}" filterBy="#{row.agentValue}"  rendered="#{searchController.bundle.hasAgentTransaction}" >
-                                <h:outputText value="#{row.agentValue}" >
+                                <h:outputText styleClass="agentValue" value="#{row.agentValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.agentValue}">
+                                    <h:outputText styleClass="totalAgentValue" value="0.00">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -457,6 +457,7 @@
                             </p:column>
                             
                             <p:ajax event="filter" oncomplete="updateTotals();"></p:ajax>
+                            <p:ajax event="page" oncomplete="updateTotals();"></p:ajax>
 
                         </p:dataTable>
                         
@@ -482,6 +483,9 @@
                                     calculateTotals('.hosValue', '.totalHosValue');
                                     calculateTotals('.staffValue', '.totalStaffValue');
                                     calculateTotals('.netValue', '.totalNetValue');
+                                    calculateTotals('.cashValue', '.totalCashValue');
+                                    calculateTotals('.cardValue', '.totalCardValue');
+                                    calculateTotals('.agentValue', '.totalAgentValue');
                                 }
                                 
                                 setTimeout(updateTotals, 100);
