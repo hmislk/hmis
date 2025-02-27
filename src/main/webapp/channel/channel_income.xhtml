@@ -240,11 +240,11 @@
                                 <f:facet name="header">
                                     <h:outputText value="Hospital Fee" />
                                 </f:facet>
-                                <h:outputText value="#{row.bill.hospitalFee}">
+                                <h:outputText styleClass="hosValue" value="#{row.bill.hospitalFee}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.hospitalTotal}">
+                                    <h:outputText styleClass="totalHosValue" value="0.00">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -254,11 +254,11 @@
                                 <f:facet name="header">
                                     <h:outputText value="Staff Fee" />
                                 </f:facet>
-                                <h:outputText value="#{row.bill.staffFee}">
+                                <h:outputText styleClass="staffValue" value="#{row.bill.staffFee}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.staffTotal}">
+                                    <h:outputText styleClass="totalStaffValue" value="0.00">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -266,17 +266,19 @@
 
                             <p:column class="text-end">
                                 <f:facet name="header">
-                                    <h:outputText value="Net Total" />
+                                    <h:outputText value="Gross Total" />
                                 </f:facet>
-                                <h:outputText value="#{row.bill.total}">
+                                <h:outputText styleClass="grossValue" value="#{row.bill.total}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.grossTotal}">
+                                    <h:outputText styleClass="totalGrossValue" value="0.00">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+                            
+                            
 
                             <p:column class="text-end">
                                 <f:facet name="header">
@@ -285,22 +287,22 @@
                                 <h:outputText value="#{row.bill.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                                <f:facet name="footer">
+<!--                                <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.discount}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                </f:facet>
+                                </f:facet>-->
                             </p:column>
 
                             <p:column class="text-end">
                                 <f:facet name="header">
                                     <h:outputText value="Net Total" />
                                 </f:facet>
-                                <h:outputText value="#{row.bill.netTotal}">
+                                <h:outputText styleClass="netValue" value="#{row.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.total}">
+                                    <h:outputText styleClass="totalNetValue" value="0.00">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -454,6 +456,34 @@
                             </p:column>
 
                         </p:dataTable>
+                        
+                        <script>
+                                function calculateTotals(selector, targeter){
+                                    const values = Array.from(document.querySelectorAll(selector));
+                                    const totalValue = values
+                                        .map(value => {
+                                            const cleanValue = value.innerText.replace(/,/g ,"");
+                                            return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);                                           
+                                        })
+                                        .reduce((total, value) => total + value, 0);
+                                
+                                    const targetElement = document.querySelector(targeter);
+                                    if(targetElement){
+                                        targetElement.innerText = totalValue.toFixed(2);
+                                    }
+                                    
+                                }
+                                
+                                function updateTotals(){
+                                    calculateTotals('.grossValue', '.totalGrossValue');
+                                    calculateTotals('.hosValue', '.totalHosValue');
+                                    calculateTotals('.staffValue', '.totalStaffValue');
+                                    calculateTotals('.netValue', '.totalNetValue');
+                                }
+                                
+                                setTimeout(updateTotals, 100);
+
+                            </script>
 
                     </p:panel>
                 </h:form>
