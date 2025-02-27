@@ -955,6 +955,7 @@ public class ChannelService {
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
         cb.setCreatedAt(new Date());
+        cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
 
         // cb.setCreater(getSessionController().getLoggedUser());
         // cb.setDepartment(getSessionController().getLoggedUser().getDepartment());

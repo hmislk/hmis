@@ -17195,12 +17195,14 @@ public class SearchController implements Serializable {
                 case "Online Bookings":
                     bts = new ArrayList<BillTypeAtomic>();
                     bts.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+                    bts.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
                     break;
                 case "Agent Bookings":
                     jpql += " And bill.billType = :bt ";
                     parameters.put("bt", BillType.ChannelAgent);
                     bts = new ArrayList<BillTypeAtomic>();
                     bts.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    bts.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
                     break;
                 default:
                     break;
