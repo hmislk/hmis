@@ -979,6 +979,8 @@ public class ChannelService {
         cb.setDeptId(deptId);
         getBillFacade().create(cb);
         cb.setPaymentMethod(bill.getPaymentMethod());
+        
+        createPaymentForCancellations(cb, cb.getPaymentMethod());
 
 //        if (bill.getPaymentMethod() == PaymentMethod.Agent) {
 //            cb.setPaymentMethod(cancelPaymentMethod);
@@ -1278,11 +1280,28 @@ public class ChannelService {
         paidBill.setSingleBillSession(paidBillSession);
         getBillFacade().editAndCommit(paidBill);
 
-        List<Payment> p = createPayment(paidBill, PaymentMethod.OnlineSettlement);
+        List<Payment> p = createPayment(paidBill, paidBill.getPaymentMethod());
         return paidBill;
         // drawerController.updateDrawerForIns(p);
     }
-
+    
+    public Payment createPaymentForCancellations(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        double valueToSet = 0 - Math.abs(bill.getNetTotal());
+        p.setPaidValue(valueToSet);
+        p.setCreatedAt(new Date());
+        p.setPaymentMethod(pm);
+        if (pm == null) {
+            pm = bill.getPaymentMethod();
+        }
+        if(p.getId() == null){
+            paymentFacade.create(p);
+        }
+        return p;
+    }
+    
+   
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         Payment p = new Payment();
