@@ -1303,6 +1303,9 @@ public class BhtSummeryController implements Serializable {
         getPatientEncounter().setPaymentFinalized(true);
         getPatientEncounterFacade().edit(getPatientEncounter());
         getCurrent().setReferenceBill(originalBill);
+        originalBill.setDiscount(discount);
+        originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
+        getBillFacade().edit(originalBill);
         getBillFacade().edit(getCurrent());
 
         updatePaymentBillList();
@@ -2023,18 +2026,18 @@ public class BhtSummeryController implements Serializable {
     public String navigateToIntrimBill() {
         patientEncounter = null;
         makeNull();
-        return "/inward/inward_bill_intrim";
+        return "/inward/inward_bill_intrim?faces-redirect=true";
     }
 
     public String navigateToIntrimBillFromPatientProfile() {
         createTables();
-        return "/inward/inward_bill_intrim";
+        return "/inward/inward_bill_intrim?faces-redirect=true";
     }
 
     public String toIntrimBillclear() {
         patientEncounter = null;
         makeNull();
-        return "/inward/inward_bill_intrim";
+        return "/inward/inward_bill_intrim?faces-redirect=true";
     }
 
     public void updateAdmissionFee(AdmissionType at) {
@@ -2446,9 +2449,9 @@ public class BhtSummeryController implements Serializable {
 
         due = (grantTotal - discount) - paid;
 
-        if (getPatientEncounter().getCreditLimit() != 0) {
-            due -= getPatientEncounter().getCreditLimit();
-        }
+//        if (getPatientEncounter().getCreditLimit() != 0) {
+//            due -= getPatientEncounter().getCreditLimit();
+//        }
 
         changed = false;
 
@@ -2456,6 +2459,10 @@ public class BhtSummeryController implements Serializable {
 
     public void changeIsMade() {
         changed = true;
+    }
+
+    public void listnerDiscontAmmountChanged() {
+        due = (grantTotal - discount) - paid;
     }
 
     public boolean isShowOrginalBill() {
