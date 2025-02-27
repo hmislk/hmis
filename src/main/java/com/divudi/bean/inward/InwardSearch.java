@@ -145,11 +145,12 @@ public class InwardSearch implements Serializable {
 
     private boolean withProfessionalFee = false;
 
-    public String navigateToPaymentBillCancellation() {
+    public String navigateToPaymentBillCancellation(){
         switch (bill.getBillTypeAtomic()) {
             case INWARD_DEPOSIT:
                 return "inward_deposit_cancel_bill_payment?faces-redirect=true";
-
+            case INWARD_DEPOSIT_REFUND:
+                return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
             default:
                 return "inward_cancel_bill_payment?faces-redirect=true";
         }
@@ -847,12 +848,16 @@ public class InwardSearch implements Serializable {
 //                return;
 //            }
             RefundBill cb = createRefundCancelBill();
+            cb.setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
             //Copy & paste
             getBillFacade().create(cb);
             cancelBillItems(cb);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
+
+            List<Payment> payments = paymentService.createPayment(cb, paymentMethodData);
+            paymentService.updateBalances(payments);
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
 
@@ -1096,7 +1101,7 @@ public class InwardSearch implements Serializable {
     }
 
     public void listnerForPaymentMethodChange(Bill b) {
-        if (b.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+        if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
             getPaymentMethodData().getPatient_deposit().setTotalValue(b.getTotal());
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(b.getPatientEncounter().getPatient(), sessionController.getDepartment());
@@ -1104,10 +1109,10 @@ public class InwardSearch implements Serializable {
                 getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
                 getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
             }
-        } else if (b.getPaymentMethod() == PaymentMethod.Card) {
+        } else if (getPaymentMethod() == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(b.getTotal());
             System.out.println("this = " + this);
-        } else if (b.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+        } else if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
 //            getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(b.getPatientEncounter().getPatient(), sessionController.getDepartment());
