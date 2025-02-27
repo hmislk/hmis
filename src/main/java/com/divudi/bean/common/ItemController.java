@@ -286,9 +286,9 @@ public class ItemController implements Serializable {
             itemFee.setFee(feeValue);
             itemFee.setFfee(feeValue);
             itemFeeFacade.edit(itemFee);
-            
+
             itemFeeService.updateFeeValue(itemFee.getItem(), site, feeValue, feeValue);
-            
+
             output += rowNumber + " - Successfully added Fee for Item with Code " + itemCode + "/n<br/>";
 
         }
@@ -3542,6 +3542,21 @@ public class ItemController implements Serializable {
 
     public void setOutput(String output) {
         this.output = output;
+    }
+
+    public Item findItemByNameAndInstitution(String itemName, String institutionName) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.name=:itemName"
+                + " and i.institution.name=:institutionName";
+        m.put("ret", false);
+         m.put("itemName", itemName);
+        m.put("institutionName", institutionName);
+        Item item = getFacade().findFirstByJpql(jpql, m);
+        return item;
     }
 
     @FacesConverter("itemLightConverter")
