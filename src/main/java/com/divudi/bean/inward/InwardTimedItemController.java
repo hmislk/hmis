@@ -346,9 +346,9 @@ public class InwardTimedItemController implements Serializable {
             patientItem.setRetiredAt(new Date());
             patientItem.setRetired(true);
             getPatientItemFacade().edit(patientItem);
-            
+
             createPatientItems();
-            
+
             JsfUtil.addSuccessMessage("Removed successfully.");
         }
     }
@@ -521,21 +521,23 @@ public class InwardTimedItemController implements Serializable {
 
     public String navigateToAddInwardTimedServicesFromMenu() {
         makeNull();
-        return "/inward/inward_timed_service_consume";
+        return "/inward/inward_timed_service_consume?faces-redirect=true";
     }
 
-    public String navigateToAddInwardTimedServicesFromInpatientProfile() {
-        return "/inward/inward_timed_service_consume";
+    public String navigateToAddInwardTimedServicesFromInpatientProfile(PatientEncounter pe) {
+        makeNull();
+        getCurrent().setPatientEncounter(pe);
+        return "/inward/inward_timed_service_consume?faces-redirect=true";
     }
 
     public String navigateToAddInwardTimedServiceForTheatreFromMenu() {
         makeNull();
-        return "/theater/inward_timed_service_consume_surgery";
+        return "/theater/inward_timed_service_consume_surgery?faces-redirect=true";
     }
 
     public String navigateToAddInwardTimedServiceForTheatreFromInpatientProfile() {
         makeNull();
-        return "/theater/inward_timed_service_consume_surgery";
+        return "/theater/inward_timed_service_consume_surgery?faces-redirect=true";
     }
 
     private boolean errorCheck() {
@@ -560,7 +562,14 @@ public class InwardTimedItemController implements Serializable {
         }
         double count = getInwardBean().calCount(timedItemFee, getCurrent().getPatientEncounter().getDateOfAdmission(), getCurrent().getToTime());
 
-        getCurrent().setServiceValue(count * timedItemFee.getFee());
+        System.out.println("getCurrent().getPatientEncounter().isForiegner() = " + getCurrent().getPatientEncounter().isForiegner());
+        
+        if (getCurrent().getPatientEncounter().isForiegner()) {
+            getCurrent().setServiceValue(count * timedItemFee.getFfee());
+        } else {
+            getCurrent().setServiceValue(count * timedItemFee.getFee());
+        }
+
         getCurrent().setCreater(getSessionController().getLoggedUser());
         getCurrent().setCreatedAt(Calendar.getInstance().getTime());
         if (getCurrent().getId() == null) {
@@ -574,7 +583,7 @@ public class InwardTimedItemController implements Serializable {
         current.setItem(null);
 
         createPatientItems();
-        
+
         JsfUtil.addSuccessMessage("Added Successfully.");
 
     }
@@ -607,13 +616,22 @@ public class InwardTimedItemController implements Serializable {
 
         TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) temPi.getItem());
         double count = getInwardBean().calCount(timedItemFee, temPi.getFromTime(), temPi.getToTime());
+        
+        System.out.println("pic.getPatientEncounter().isForiegner() = " + pic.getPatientEncounter().isForiegner());
 
-        pic.setServiceValue(count * timedItemFee.getFee());
+        if(pic.getPatientEncounter().isForiegner()){
+            System.out.println("timedItemFee.getFfee() = " + timedItemFee.getFfee());
+            pic.setServiceValue(count * timedItemFee.getFfee());
+        }else{
+            System.out.println("timedItemFee.getFee() = " + timedItemFee.getFee());
+            pic.setServiceValue(count * timedItemFee.getFee());
+        }
+        System.out.println("pic.getServiceValue() = " + pic.getServiceValue());
 
         getPatientItemFacade().edit(pic);
 
         createPatientItems();
-        
+
         JsfUtil.addSuccessMessage("Updated Successfully.");
 
     }
@@ -632,7 +650,12 @@ public class InwardTimedItemController implements Serializable {
         for (PatientItem pi : items) {
             TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) pi.getItem());
             double count = getInwardBean().calCount(timedItemFee, pi.getFromTime(), pi.getToTime());
-            pi.setServiceValue(count * timedItemFee.getFee());
+            if(getCurrent().getPatientEncounter().isForiegner()){
+                pi.setServiceValue(count * timedItemFee.getFfee());
+            }else{
+                pi.setServiceValue(count * timedItemFee.getFee());
+            }
+            
         }
     }
 
