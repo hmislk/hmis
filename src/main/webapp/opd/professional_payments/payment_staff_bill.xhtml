@@ -315,7 +315,14 @@
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
-                            <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey("OPD Doctor payment bill is A4 paper", true)}">
+                                <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey("OPD Doctor payment bill is five five paper.")}">
+                                <bi:staff_payment_five_five_paper_with_headings controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" />
+                            </h:panelGroup>
+                            
                         </h:panelGroup>
 
                     </p:panel>
