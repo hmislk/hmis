@@ -82,6 +82,20 @@
                                              icon="pi pi-times-circle"  
                                              styleClass="ui-button-danger">
                             </p:commandButton>
+                            
+                            <p:commandButton ajax="false" 
+                                             value="Mark Selected Items for Request for Quantity"
+                                             action="#{itemController.markSelectedItemsForRequestForQuentity()}"
+                                             icon="pi pi-check-square" 
+                                             styleClass="ui-button-success">
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" 
+                                             value="Unmark Selected Items for Request for Quantity"
+                                             action="#{itemController.unMarkSelectedItemsForRequestForQuentity()}"
+                                             icon="pi pi-times-circle"  
+                                             styleClass="ui-button-danger">
+                            </p:commandButton>
 
 
                             <p:commandButton 
