@@ -2403,6 +2403,7 @@ public class DataUploadController implements Serializable {
     }
 
     public void saveDoctors() {
+        System.out.println("saveDoctors");
         for (Doctor doc : doctorsTosave) {
             doctorController.save(doc);
         }
