@@ -2474,12 +2474,17 @@ public class BillBeanController implements Serializable {
 //        hm.put("nm", FeeType.Matrix);
 //        return getFeeFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
 //    }
-    public BillFee createBillFee(BillItem billItem, Fee i) {
+    public BillFee createBillFee(BillItem billItem, Fee i, PatientEncounter patientEncounter) {
         BillFee f;
         f = new BillFee();
         f.setFee(i);
-        f.setFeeValue(i.getFee());
-        f.setFeeGrossValue(i.getFee());
+        if(patientEncounter.isForiegner()){
+            f.setFeeValue(i.getFfee());
+            f.setFeeGrossValue(i.getFfee());
+        }else{
+            f.setFeeValue(i.getFee());
+            f.setFeeGrossValue(i.getFee());
+        }
         f.setDepartment(billItem.getItem().getDepartment());
         f.setBillItem(billItem);
 

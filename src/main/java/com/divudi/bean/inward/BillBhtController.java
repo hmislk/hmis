@@ -780,7 +780,7 @@ public class BillBhtController implements Serializable {
         List<ItemFee> itemFee = getBillBean().getItemFee(billItem);
 
         for (Fee i : itemFee) {
-            BillFee billFee = getBillBean().createBillFee(billItem, i);
+            BillFee billFee = getBillBean().createBillFee(billItem, i, patientEncounter);
 
             PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod);
 
