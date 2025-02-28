@@ -1275,9 +1275,6 @@ public class StaffPaymentBillController implements Serializable {
             withholdingTaxPercentage = configOptionApplicationController.getDoubleValueByKey("Withholding Tax Percentage");
         }
         
-        if(withholdingTaxPercentage == null){
-            withholdingTaxPercentage = 0.0;
-        }
         return withholdingTaxPercentage;
     }
 
