@@ -72,6 +72,15 @@
                                         id="txtFee" 
                                         value="#{timedItemFeeController.currentFee.fee}" 
                                         style="width: 500px;"/>
+                                    
+                                    <h:outputText value="Foreigner Fee"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText 
+                                        class="mt-2 mb-2"
+                                        autocomplete="off" 
+                                        id="txtFfee" 
+                                        value="#{timedItemFeeController.currentFee.ffee}" 
+                                        style="width: 500px;"/>
 
                                     <h:outputLabel value="Duration Hour"/>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
@@ -115,6 +124,9 @@
                                     </p:column>
                                     <p:column headerText="Fee">
                                         <p:inputText value="#{bi.fee}" autocomplete="off" />
+                                    </p:column>
+                                    <p:column headerText="Foreigner Fee">
+                                        <p:inputText value="#{bi.ffee}" autocomplete="off" />
                                     </p:column>
                                     <p:column headerText="Duration Hour">
                                         <p:inputText value="#{bi.durationHours}" autocomplete="off" />
