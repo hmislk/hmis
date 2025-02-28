@@ -14,6 +14,7 @@ import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemMappingController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
@@ -95,6 +96,8 @@ public class BillBhtController implements Serializable {
     ItemApplicationController itemApplicationController;
     @Inject
     PatientInvestigationController patientInvestigationController;
+    @Inject
+    ItemFeeManager itemFeeManager;
     /////////////////
     @EJB
     private ItemFeeFacade itemFeeFacade;
@@ -777,7 +780,7 @@ public class BillBhtController implements Serializable {
     public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment, PaymentMethod paymentMethod) {
 
         List<BillFee> billFeeList = new ArrayList<>();
-        List<ItemFee> itemFee = getBillBean().getItemFee(billItem);
+        List<ItemFee> itemFee = itemFeeManager.fillFees(billItem.getItem());
 
         for (Fee i : itemFee) {
             BillFee billFee = getBillBean().createBillFee(billItem, i, patientEncounter);
