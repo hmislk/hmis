@@ -98,6 +98,7 @@ import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.data.channel.SessionInstanceEvent;
+import com.divudi.service.ChannelService;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -188,6 +189,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     StaffService staffBean;
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
+    @EJB
+    ChannelService channelService;
     /**
      * Controllers
      */
@@ -424,6 +427,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         allBillSessionsWithTemporaryBookings = Stream.concat(billSessions.stream(), temporaryBillSessions.stream())
                 .collect(Collectors.toList());
 
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
     }
 
     public List getReleasedAppoinmentNumbers() {
@@ -2473,19 +2487,21 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //        System.out.println("Payment Method = " + cancelPaymentMethod);
 
 //        System.out.println("getPaymentMethod = " + getCancelPaymentMethod());
-        switch (getCancelPaymentMethod()) {
-            case Cash:
-                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
-                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                    return;
-                }
-                break;
-            case Card:
-                if (financialTransactionController.getLoggedUserDrawer().getCardInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
-                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                    return;
-                }
-                break;
+        if (getCancelPaymentMethod() != null) {
+            switch (getCancelPaymentMethod()) {
+                case Cash:
+                    if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
+                        JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                        return;
+                    }
+                    break;
+                case Card:
+                    if (financialTransactionController.getLoggedUserDrawer().getCardInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
+                        JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                        return;
+                    }
+                    break;
+            }
         }
 
         if (selectedBillSession.getBill().getBillType() == BillType.ChannelAgent) {
@@ -2651,10 +2667,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
-        if (getCancelPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
-            JsfUtil.addErrorMessage("Can't Cancel Bill under Multiple Payment method");
-            return true;
-        }
+//        if (getCancelPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+//            JsfUtil.addErrorMessage("Can't Cancel Bill under Multiple Payment method");
+//            return true;
+//        }
 
         if (getBillSession().getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
@@ -2742,12 +2758,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (bill.getPaidBill() == null) {
             return;
         }
+        
+        if(cancelPaymentMethod == PaymentMethod.MultiplePaymentMethods){
+            cancelPaymentMethod = null;
+        }
 
         if (bill.getPaidBill().equals(bill)) {
             CancelledBill cb = createCancelCashBill(bill);
-            Payment p = createPaymentForCancellationsAndRefunds(cb, cb.getPaymentMethod());
+            List<Payment> payments = channelService.createPaymentForChannelAppoinmentCancellation(cb, cancelPaymentMethod, getPaymentMethodData(), getSessionController());
+            //Payment p = createPaymentForCancellationsAndRefunds(cb, cb.getPaymentMethod());
             if (cancelPaymentMethod != PaymentMethod.Agent) {
-                drawerController.updateDrawerForOuts(p);
+                drawerController.updateDrawerForOuts(payments);
             }
 
             BillItem cItem = cancelBillItems(billItem, cb);
@@ -2768,8 +2789,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         } else {
             CancelledBill cb = createCancelBill(bill);
-            Payment p = createPaymentForCancellationsAndRefunds(cb, bill.getPaidBill().getPaymentMethod());
-            drawerController.updateDrawerForOuts(p);
+            List<Payment> payments = channelService.createPaymentForChannelAppoinmentCancellation(cb, cancelPaymentMethod, getPaymentMethodData(), getSessionController());
+            //Payment p = createPaymentForCancellationsAndRefunds(cb, bill.getPaidBill().getPaymentMethod());
+            drawerController.updateDrawerForOuts(payments);
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
             bill.setCancelled(true);
@@ -3005,7 +3027,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
         cb.setComments(comment);
-        
 
 //        cb.setInsId(billNumberBean.institutionChannelBillNumberGenerator(sessionController.getInstitution(), cb));
         String insId = generateBillNumberInsId(cb);
@@ -3024,19 +3045,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
         getBillFacade().create(cb);
 
-        if (bill.getPaymentMethod() == PaymentMethod.Agent || bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
-            //cb.setPaymentMethod(cancelPaymentMethod);
-            //this is temp solution
-            cb.setPaymentMethod(PaymentMethod.Cash);
-//            if (cancelPaymentMethod == PaymentMethod.Agent) {
-//                updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()), HistoryType.ChannelBooking, cb, selectedBillSession.getBillItem(), selectedBillSession, selectedBillSession.getBill().getReferralNumber());
-//            }
-        } else if (bill.getPaymentMethod() == PaymentMethod.Card) {
-            cb.setPaymentMethod(bill.getPaymentMethod());
-        } else {
-            cb.setPaymentMethod(bill.getPaymentMethod());
-        }
-
+//        if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+//            //cb.setPaymentMethod(cancelPaymentMethod);
+//            //this is temp solution
+//            cb.setPaymentMethod(PaymentMethod.Cash);
+////            if (cancelPaymentMethod == PaymentMethod.Agent) {
+////                updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()), HistoryType.ChannelBooking, cb, selectedBillSession.getBillItem(), selectedBillSession, selectedBillSession.getBill().getReferralNumber());
+////            }
+//        } else if (bill.getPaymentMethod() == PaymentMethod.Card) {
+//            cb.setPaymentMethod(bill.getPaymentMethod());
+//        } else {
+//            cb.setPaymentMethod(bill.getPaymentMethod());
+//        }
         getBillFacade().edit(cb);
         return cb;
     }
@@ -7298,17 +7318,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setPrintingBill(Bill printingBill) {
         this.printingBill = printingBill;
-    }
-
-    public PaymentMethodData getPaymentMethodData() {
-        if (paymentMethodData == null) {
-            paymentMethodData = new PaymentMethodData();
-        }
-        return paymentMethodData;
-    }
-
-    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
-        this.paymentMethodData = paymentMethodData;
     }
 
     public void settleCreditWithCash() {
