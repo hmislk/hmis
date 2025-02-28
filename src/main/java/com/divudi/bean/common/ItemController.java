@@ -1516,6 +1516,30 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Unmarked for Print Separate Fees");
     }
+    
+    public void markSelectedItemsForRequestForQuentity() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setRequestForQuentity(true);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Marked for Request For Quentity");
+    }
+
+    public void unMarkSelectedItemsForRequestForQuentity() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setRequestForQuentity(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Unmarked for Request For Quentity");
+    }
 
     public void addSessionNumberType() {
         if (selectedList == null || selectedList.isEmpty()) {

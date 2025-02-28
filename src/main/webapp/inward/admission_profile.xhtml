@@ -150,7 +150,7 @@
                                 </p:commandButton>
                                 <p:commandButton 
                                     value="Add Professional Fees" 
-                                    action="#{inwardProfessionalBillController.navigateToAddProfessionalFeesFromInpatientProfile()}" 
+                                    action="#{inwardProfessionalBillController.navigateToAddProfessionalFeesFromInpatientProfile(admissionController.current)}" 
                                     icon="fa fa-user-md"
                                     class="w-100">
                                     <f:setPropertyActionListener 
@@ -169,7 +169,7 @@
 
                                 <p:commandButton 
                                     value="Add Timed Services" 
-                                    action="#{inwardTimedItemController.navigateToAddInwardTimedServicesFromInpatientProfile()}" 
+                                    action="#{inwardTimedItemController.navigateToAddInwardTimedServicesFromInpatientProfile(admissionController.current)}" 
                                     icon="fa fa-clock"
                                     class="w-100">
                                     <f:setPropertyActionListener 
