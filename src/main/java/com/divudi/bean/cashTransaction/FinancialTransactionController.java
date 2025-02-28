@@ -5023,7 +5023,11 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
         currentBill.setBillClassType(BillClassType.PreBill);
         currentBill.setReferenceBill(selectedBill);
+        
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
 
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setFromDepartment(cashbookDepartment);
         currentBill.setToDepartment(sessionController.getDepartment());
@@ -5112,6 +5116,8 @@ public class FinancialTransactionController implements Serializable {
 
         billController.save(currentBill);
 
+        bundle.setHandoverBill(currentBill);
+        
         selectedBill.setCompleted(true);
         selectedBill.setCompletedAt(new Date());
         selectedBill.setCompletedBy(sessionController.getLoggedUser());
