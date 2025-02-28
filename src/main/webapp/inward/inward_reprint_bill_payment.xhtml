@@ -108,7 +108,13 @@
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'A4Paper'}" >
                                         <bill:A4PaperPaymentBill bill="#{inwardSearch.bill}" duplicate="true"/>                        
                                     </h:panelGroup>
-
+                                    
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'FiveFivePaper'}" >
+                                    
+                                        <bill:FiveFivePaymentBill bill="#{inwardSearch.bill}" duplicate="true" />                        
+                         
+                                </h:panelGroup> 
+                                    
                                 </h:panelGroup>
                             </div>
                         </p:panel>
