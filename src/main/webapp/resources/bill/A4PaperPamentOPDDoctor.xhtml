@@ -168,7 +168,7 @@
                             <f:facet name="header" >
                                 <h:outputLabel value="Value" ></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="#{bip.netValue}" class="d-flex justify-content-end" 
+                            <h:outputLabel value="#{bip.netValue}" class="d-flex" 
                                            style="font-size:  10pt!important; text-align: right!important;" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -244,6 +244,7 @@
                 <div class="footer" >
                     <div class="row" >
                         <div class="col-4" >
+                            <h:outputLabel value="--------------------------"/>
                             <h:outputLabel value="Cashier :  #{cc.attrs.bill.creater.webUserPerson.name}"/>
                         </div>
                         <div class="col-4" >
@@ -251,6 +252,7 @@
                             <h:outputLabel value="Payment Received  "/>
                         </div>
                         <div class="col-4" >
+                            <h:outputLabel value="--------------------------"/>
                             <h:outputLabel value="Professional :  #{cc.attrs.bill.toStaff.person.nameWithTitle}"/>
                         </div>
                     </div>
