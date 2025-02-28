@@ -136,7 +136,7 @@ public class ItemFeeManager implements Serializable {
     }
 
     public String navigateToUploadFeeListItemFees() {
-        return "";
+        return "/admin/pricing/feelist_item_fees_upload?faces-redirect=true";
     }
 
     public String navigateToDownloadItemFeesForLists() {

@@ -10,6 +10,7 @@ import com.divudi.entity.inward.PatientRoom;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
+import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -24,7 +25,7 @@ import javax.persistence.Transient;
  * @author www.divudi.com
  */
 @Entity
-public class BillFee implements Serializable, RetirableEntity  {
+public class BillFee implements Serializable, RetirableEntity {
 
     static final long serialVersionUID = 1L;
     @Id
@@ -83,6 +84,10 @@ public class BillFee implements Serializable, RetirableEntity  {
     @Transient
     private double absoluteFeeValue;
     private Double feeGrossValue;
+    @Transient
+    private Double feeGrossValueTransient;
+    @Transient
+    private boolean userChangedTheGrossValueTransient;
     double feeDiscount;
     double feeVat;
     double feeVatPlusValue;
@@ -106,7 +111,7 @@ public class BillFee implements Serializable, RetirableEntity  {
     int orderNo;
 
     private boolean returned;
-    
+
     @Transient
     private double transSerial;
     @Transient
@@ -114,8 +119,13 @@ public class BillFee implements Serializable, RetirableEntity  {
     @ManyToOne
     private PatientRoom referencePatientRoom;
 
-    
-    
+    @Transient
+    private final String uuid;
+
+    public BillFee(String uuid) {
+        this.uuid = uuid;
+    }
+
     public PriceMatrix getPriceMatrix() {
         return priceMatrix;
     }
@@ -182,8 +192,7 @@ public class BillFee implements Serializable, RetirableEntity  {
         speciality = billFee.getSpeciality();
         FeeAt = billFee.getFeeAt();
     }
-    
-    
+
     public double getFeeVatPlusValue() {
         return feeVatPlusValue;
     }
@@ -223,6 +232,7 @@ public class BillFee implements Serializable, RetirableEntity  {
     }
 
     public BillFee() {
+        this.uuid = UUID.randomUUID().toString();
     }
 
     @Override
@@ -240,12 +250,11 @@ public class BillFee implements Serializable, RetirableEntity  {
             return false;
         }
         BillFee other = (BillFee) object;
-        // If both objects have ids, compare ids
+
         if (this.id != null && other.id != null) {
             return this.id.equals(other.id);
         }
-        // Otherwise, compare other fields
-        return Objects.equals(this.fee, other.fee) && Objects.equals(this.staff, other.staff);
+        return this.uuid.equals(other.uuid);
     }
 
     @Override
@@ -359,6 +368,8 @@ public class BillFee implements Serializable, RetirableEntity  {
     private Double tmpSettleChangedValue;
 
     public void setFeeValueForCreditCompany(boolean foriegn, double discountPercent) {
+        System.out.println("setFeeValueForCreditCompany" );
+        System.out.println("tmpChangedValue = " + tmpChangedValue);
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {
                 if (foriegn) {
@@ -397,7 +408,8 @@ public class BillFee implements Serializable, RetirableEntity  {
     }
 
     public void setFeeValueForeignAndDiscount(boolean foriegn, double discountPercent) {
-
+        System.out.println("setFeeValueForeignAndDiscount");
+        System.out.println("tmpChangedValue = " + tmpChangedValue);
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {
                 if (foriegn) {
@@ -745,4 +757,26 @@ public class BillFee implements Serializable, RetirableEntity  {
         this.returned = returned;
     }
 
+    public String getUuid() {
+        return uuid;
+    }
+
+    public Double getFeeGrossValueTransient() {
+        return feeGrossValueTransient;
+    }
+
+    public void setFeeGrossValueTransient(Double feeGrossValueTransient) {
+        this.feeGrossValueTransient = feeGrossValueTransient;
+    }
+
+    public boolean isUserChangedTheGrossValueTransient() {
+        return userChangedTheGrossValueTransient;
+    }
+
+    public void setUserChangedTheGrossValueTransient(boolean userChangedTheGrossValueTransient) {
+        this.userChangedTheGrossValueTransient = userChangedTheGrossValueTransient;
+    }
+
+    
+    
 }

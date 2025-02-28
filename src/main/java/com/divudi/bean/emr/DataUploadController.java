@@ -1968,6 +1968,7 @@ public class DataUploadController implements Serializable {
     }
 
     private List<Doctor> readDoctorsFromExcel(InputStream inputStream) throws IOException {
+        System.out.println("readDoctorsFromExcel");
         List<Doctor> docs = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -2049,16 +2050,18 @@ public class DataUploadController implements Serializable {
                 specialityString = specialityCell.getStringCellValue();
             }
 
+            System.out.println("name = " + name);
             if (name == null || name.trim().equals("")) {
                 continue;
             }
-
+            System.out.println("specialityString = " + specialityString);
             if (specialityString == null || specialityString.trim().equals("")) {
                 continue;
             }
 
             speciality = doctorSpecialityController.findDoctorSpeciality(specialityString, true);
 
+            System.out.println("sexString = " + sexString);
             if (sexString != null && sexString.toLowerCase().contains("f")) {
                 sex = Sex.Female;
             } else {
@@ -2066,10 +2069,12 @@ public class DataUploadController implements Serializable {
             }
 
             title = Title.getTitleEnum(titleString);
-
+            System.out.println("title = " + title);
+            
             doctor = doctorController.getDoctorsByName(name);
+            System.out.println("doctor = " + doctor);
             if (doctor == null) {
-                doctor = new Consultant();
+                doctor = new Doctor();
             }
             doctor.getPerson().setName(name);
             doctor.getPerson().setSex(sex);
@@ -2398,6 +2403,7 @@ public class DataUploadController implements Serializable {
     }
 
     public void saveDoctors() {
+        System.out.println("saveDoctors");
         for (Doctor doc : doctorsTosave) {
             doctorController.save(doc);
         }
