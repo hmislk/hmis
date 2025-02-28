@@ -563,7 +563,7 @@ public class InwardTimedItemController implements Serializable {
         double count = getInwardBean().calCount(timedItemFee, getCurrent().getPatientEncounter().getDateOfAdmission(), getCurrent().getToTime());
 
         System.out.println("getCurrent().getPatientEncounter().isForiegner() = " + getCurrent().getPatientEncounter().isForiegner());
-        
+
         if (getCurrent().getPatientEncounter().isForiegner()) {
             getCurrent().setServiceValue(count * timedItemFee.getFfee());
         } else {
@@ -616,13 +616,13 @@ public class InwardTimedItemController implements Serializable {
 
         TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) temPi.getItem());
         double count = getInwardBean().calCount(timedItemFee, temPi.getFromTime(), temPi.getToTime());
-        
+
         System.out.println("pic.getPatientEncounter().isForiegner() = " + pic.getPatientEncounter().isForiegner());
 
-        if(pic.getPatientEncounter().isForiegner()){
+        if (pic.getPatientEncounter().isForiegner()) {
             System.out.println("timedItemFee.getFfee() = " + timedItemFee.getFfee());
             pic.setServiceValue(count * timedItemFee.getFfee());
-        }else{
+        } else {
             System.out.println("timedItemFee.getFee() = " + timedItemFee.getFee());
             pic.setServiceValue(count * timedItemFee.getFee());
         }
@@ -650,12 +650,12 @@ public class InwardTimedItemController implements Serializable {
         for (PatientItem pi : items) {
             TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) pi.getItem());
             double count = getInwardBean().calCount(timedItemFee, pi.getFromTime(), pi.getToTime());
-            if(getCurrent().getPatientEncounter().isForiegner()){
+            if (getCurrent().getPatientEncounter().isForiegner()) {
                 pi.setServiceValue(count * timedItemFee.getFfee());
-            }else{
+            } else {
                 pi.setServiceValue(count * timedItemFee.getFee());
             }
-            
+
         }
     }
 
