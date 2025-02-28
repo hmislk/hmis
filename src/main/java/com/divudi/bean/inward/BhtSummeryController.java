@@ -1498,8 +1498,10 @@ public class BhtSummeryController implements Serializable {
         double different = Math.abs((tot - tot2));
 
         if (different > 0.1) {
-            JsfUtil.addErrorMessage("Please Adjust category amount correctly");
-            return true;
+            if (!getWebUserController().hasPrivilege("InwardSettleFinalBillUnrestricted")) {
+                JsfUtil.addErrorMessage("Please Adjust category amount correctly");
+                return true;
+            }
         }
         return false;
     }
@@ -2442,6 +2444,10 @@ public class BhtSummeryController implements Serializable {
 
     public void updateTotal() {
         calFinalValue();
+
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Final Bill Total Without Restrictions & Price Difference")) {
+            grantTotal = adjustedTotal;
+        }
 
         paid = getInwardBean().getPaidValue(getPatientEncounter());
         paidByPatient = getInwardBean().getPaidByPatientValue(getPatientEncounter());
