@@ -2018,7 +2018,7 @@ public class DataUploadController implements Serializable {
                 return itemFees;
             }
 
-            item = itemController.findItemByNameAndCode(itemName, itemCode);
+            item = itemController.findItemByCode( itemCode);
             if (item == null) {
                 JsfUtil.addErrorMessage("Item cannot be null.");
                 return itemFees;
