@@ -2522,7 +2522,10 @@ public class BhtSummeryController implements Serializable {
                     i.setTotal(getInwardBean().getLinenCharge(getPatientEncounter()));
                     break;
                 case Medicine:
-                    i.setTotal(getInwardBean().calCostOfIssue(getPatientEncounter(), BillType.PharmacyBhtPre));
+                    List<BillTypeAtomic> btas = new ArrayList<>();
+                    btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+                    btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+                    i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas));
                     break;
                 case GeneralIssuing:
                     i.setTotal(getInwardBean().calCostOfIssue(getPatientEncounter(), BillType.StoreBhtPre));
