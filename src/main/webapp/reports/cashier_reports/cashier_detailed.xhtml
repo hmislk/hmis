@@ -211,7 +211,8 @@
 
                             <!-- Credit Company Payments Inpatient -->
                             <ez:creditCompanyPaymentIpReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPReceive'}"/>
-                            <ez:creditCompanyPaymentIpCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPReceive'}"/>
+                            <ez:creditCompanyPaymentIpCancel bundle="#{myBundle}"
+                                                             rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPCancellation'}"/>
 
                             <!-- Patient Deposits -->
                             <ez:patientDeposit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PatientDeposit'}"/>

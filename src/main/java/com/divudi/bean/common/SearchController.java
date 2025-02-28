@@ -2307,6 +2307,14 @@ public class SearchController implements Serializable {
         this.OpdPackageBillSelector = OpdPackageBillSelector;
     }
 
+    public String getBookingType() {
+        return bookingType;
+    }
+
+    public void setBookingType(String bookingType) {
+        this.bookingType = bookingType;
+    }
+
     public class billsWithbill {
 
         Bill b;
@@ -10582,8 +10590,8 @@ public class SearchController implements Serializable {
         bundle.calculateTotalByValues();
 
     }
-    
-    public String navigateToListBillsWithErrors(){
+
+    public String navigateToListBillsWithErrors() {
         bills = null;
         return "/dataAdmin/bills_with_errors?faces-redirect=true;";
     }
@@ -14238,6 +14246,7 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> creditCompanyPaymentIpReceive = new ArrayList<>();
         creditCompanyPaymentIpReceive.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT);
         creditCompanyPaymentIpReceive.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
+        creditCompanyPaymentIpReceive.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
         ReportTemplateRowBundle creditCompanyPaymentIpReceiveBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentIpReceive);
         creditCompanyPaymentIpReceiveBundle.setBundleType("CreditCompanyPaymentIPReceive");
         creditCompanyPaymentIpReceiveBundle.setName("Credit Company IP Payment Reception");
@@ -14247,6 +14256,7 @@ public class SearchController implements Serializable {
 // Generate Credit Company Payment IP - Cancellation and Refunds and add to the main bundle
         List<BillTypeAtomic> creditCompanyPaymentIpCancellation = new ArrayList<>();
         creditCompanyPaymentIpCancellation.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT_CANCELLATION);
+        creditCompanyPaymentIpCancellation.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
         creditCompanyPaymentIpCancellation.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT_REFUND);
         ReportTemplateRowBundle creditCompanyPaymentIpCancellationBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentIpCancellation);
         creditCompanyPaymentIpCancellationBundle.setBundleType("CreditCompanyPaymentIPCancellation");
@@ -17148,6 +17158,8 @@ public class SearchController implements Serializable {
         }
     }
 
+    private String bookingType;
+
     public void generateChannelIncome() {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
@@ -17174,7 +17186,30 @@ public class SearchController implements Serializable {
         parameters.put("bfr", true);
         parameters.put("br", true);
 
-        List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
+        List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);;
+        if (bookingType != null) {
+            switch (bookingType) {                
+                case "System Bookings":
+                    bts.remove(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+                    break;
+                case "Online Bookings":
+                    bts = new ArrayList<BillTypeAtomic>();
+                    bts.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+                    bts.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
+                    break;
+                case "Agent Bookings":
+                    jpql += " And bill.billType = :bt ";
+                    parameters.put("bt", BillType.ChannelAgent);
+                    bts = new ArrayList<BillTypeAtomic>();
+                    bts.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                    bts.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        //List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
         jpql += "AND bill.billTypeAtomic IN :bts ";
         parameters.put("bts", bts);
 

@@ -30,17 +30,9 @@ import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.CreditBean;
 import com.divudi.ejb.EjbApplication;
+import com.divudi.entity.*;
+import com.divudi.service.PaymentService;
 import com.divudi.service.StaffService;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -102,6 +94,8 @@ public class CreditCompanyBillSearch implements Serializable {
     StaffService staffBean;
     @EJB
     PaymentFacade paymentFacade;
+    @EJB
+    PaymentService paymentService;
     @Inject
     CashBookEntryController cashBookEntryController;
     @EJB
@@ -110,6 +104,8 @@ public class CreditCompanyBillSearch implements Serializable {
     SessionController sessionController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    PatientDepositController patientDepositController;
     @EJB
     EjbApplication ejbApplication;
     private List<BillItem> tempbillItems;
@@ -437,8 +433,10 @@ public class CreditCompanyBillSearch implements Serializable {
                     getBillBean().updateInwardDipositList(cancellingBillItem.getPatientEncounter(), cb);
                 }
                 getSessionController().setLoggedUser(wb);
-                createPayment(cb, paymentMethod);
+                paymentService.createPayment(cb, getPaymentMethodData());
+                //createPayment(cb, paymentMethod);
                 printPreview = true;
+                paymentMethodData = null;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
                 JsfUtil.addSuccessMessage("Awaiting Cancellation");
@@ -448,6 +446,41 @@ public class CreditCompanyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill to cancel");
         }
 
+    }
+
+    public void listnerForPaymentMethodChange(Bill b) {
+        if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
+            getPaymentMethodData().getPatient_deposit().setTotalValue(b.getTotal());
+            com.divudi.entity.PatientDeposit pd = patientDepositController.checkDepositOfThePatient(b.getPatientEncounter().getPatient(), sessionController.getDepartment());
+            if (pd != null && pd.getId() != null) {
+                getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+            }
+        } else if (getPaymentMethod() == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(b.getTotal());
+            System.out.println("this = " + this);
+        } else if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
+//            getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(b.getPatientEncounter().getPatient(), sessionController.getDepartment());
+
+            if (pd != null && pd.getId() != null) {
+                System.out.println("pd = " + pd);
+                boolean hasPatientDeposit = false;
+                for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    System.out.println("cd = " + cd);
+                    if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                        System.out.println("cd = " + cd);
+                        hasPatientDeposit = true;
+                        cd.getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
+                        cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+
+                    }
+                }
+            }
+
+        }
     }
 
     List<Bill> billsToApproveCancellation;
@@ -983,6 +1016,9 @@ public class CreditCompanyBillSearch implements Serializable {
     }
 
     public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
         return paymentMethodData;
     }
 
