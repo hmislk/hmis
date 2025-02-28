@@ -4712,6 +4712,7 @@ public class FinancialTransactionController implements Serializable {
         }
 
         billController.save(currentBill);
+        bundle.setHandoverBill(currentBill);
 
         return "/cashier/handover_creation_bill_print?faces-redirect=true";
     }
