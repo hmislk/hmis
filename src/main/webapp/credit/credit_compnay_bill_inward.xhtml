@@ -12,10 +12,10 @@
     <ui:define name="admin">
         <h:panelGroup >
             <h:form  >
-                <p:panel rendered="#{!cashRecieveBillController.printPreview}" >
+                <p:panel rendered="#{!cashRecieveBillController.printPreview}" class="m-1 w-100" >
                     <f:facet name="header" >
                         <div class="d-flex justify-content-between">
-                            <h:outputLabel value="INWARD CREDIT BIll PAYMENT" class="mt-2"/>
+                            <h:outputLabel value="CREDIT COMPANY PAYMENTS FOR INPATIENTS" class="mt-2"/>
                             <div class="d-flex gap-2">
                                 <p:commandButton 
                                     id="btnSettle" 
@@ -45,9 +45,8 @@
                                     <div class="d-flex justify-content-between">
                                         <div class="d-flex align-items-center">
                                             <h:outputText styleClass="fa fa-money-bill-wave" />
-                                            <h:outputText value="Payment" class="mx-4"></h:outputText>
+                                            <h:outputText value="Bills To Pay" class="mx-4"></h:outputText>
                                         </div>
-
                                         <div class="d-flex justify-content-end">
                                             <p:commandButton 
                                                 id="btnAddIx" 
@@ -58,13 +57,10 @@
                                                 class=" ui-button-success"/>
                                         </div>
                                     </div>
-
-
                                 </f:facet>
-                                
-                                 <div class="row my-2 d-flex align-items-center">
+                                <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
-                                        <p:outputLabel value="Select Credit Bill" />      
+                                        <p:outputLabel value="Select Credit Bill by BHT Numbe or Company Name or Patient Name" />      
                                     </div>
                                     <div class="col-md-8">
                                         <p:autoComplete widgetVar="aIx" id="acIx" 
@@ -76,23 +72,23 @@
                                                         itemValue="#{ix}" class="w-100"
                                                         inputStyleClass="w-100"
                                                         >
-                                            <p:column>
+                                            <p:column headerText="Patient Name">
                                                 <h:outputLabel value="#{ix.patient.person.name}"/>
                                             </p:column>                                  
-                                            <p:column>
+                                            <p:column headerText="Credit Company Name">
                                                 <h:outputLabel value="#{ix.creditCompany.name}"/>
                                             </p:column>
-                                            <p:column>
+                                            <p:column headerText="BHT Number">
                                                 <h:outputLabel value="#{ix.bhtNo}">
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column>
+                                            <p:column headerText="Creit Amount" class="text-end">
                                                 <h:outputLabel value="#{ix.creditUsedAmount}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column>
+                                            <p:column headerText="Credit Amount" class="text-end">
                                                 <h:outputLabel value="#{ix.creditPaidAmount}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
@@ -101,7 +97,30 @@
                                         </p:autoComplete>
                                     </div>
                                 </div>
-                                
+                                <div class="row my-2 d-flex align-items-center">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Value" />      
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:inputText class="w-100" autocomplete="off" id="val" value="#{cashRecieveBillController.currentBillItem.netValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </div>
+
+                        <div class="col-md-6">
+                            <p:panel>
+                                <f:facet name="header" >
+                                    <div class="d-flex justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <h:outputText styleClass="fa fa-money-bill-wave" />
+                                            <h:outputText value="Payment Details" class="mx-4"></h:outputText>
+                                        </div>
+                                    </div>
+                                </f:facet>
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Payment Method" />      
@@ -133,27 +152,6 @@
                                     </div>
                                 </div>
 
-<!--                                <div class="row my-2 d-flex align-items-center">
-                                    <div class="col-md-4">
-                                        <p:outputLabel value="Comment" />      
-                                    </div>
-                                    <div class="col-md-8">
-                                        <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
-                                    </div>
-                                </div>-->
-
-                                <div class="row my-2 d-flex align-items-center">
-                                    <div class="col-md-4">
-                                        <p:outputLabel value="Value" />      
-                                    </div>
-                                    <div class="col-md-8">
-                                        <p:inputText class="w-100" autocomplete="off" id="val" value="#{cashRecieveBillController.currentBillItem.netValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:inputText>
-
-                                    </div>
-                                </div>
-
                                 <div class="row my-2">
                                     <div class="col-md-2"></div>
                                 </div>
@@ -179,9 +177,13 @@
                                 </div>
                             </p:panel>
                         </div>
+                    </div>
 
-                        <div class="col-md-6">
-                            <p:panel>
+
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p:panel class="m-1">
                                 <f:facet name="header">
                                     <h:outputLabel value="Items For Billing"/>
                                 </f:facet>       
@@ -213,6 +215,7 @@
                             </p:panel>
                         </div>
                     </div>
+
                 </p:panel>
 
                 <p:panel rendered="#{cashRecieveBillController.printPreview}" >
