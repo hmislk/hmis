@@ -1044,8 +1044,9 @@ public class DataUploadController implements Serializable {
             itemFeesToSave.add(itf);
 
             Double total = item.getTotal() != null ? item.getTotal() : 0.0;
+            Double totalForForeginer = item.getTotalForForeigner() != null ? item.getTotalForForeigner() : 0.0;
             item.setTotal(total + professionalFee);
-            item.setTotalForForeigner(total + foreignerFee);
+            item.setTotalForForeigner(totalForForeginer + foreignerFee);
             item.setDblValue(total + professionalFee);
 
             itemFacade.edit(item);

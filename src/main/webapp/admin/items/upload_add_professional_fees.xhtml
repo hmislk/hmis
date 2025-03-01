@@ -69,12 +69,7 @@
                             </tr>
                             <tr>
                                 <td>F</td>
-                                <td>Fee</td>
-                                <td>Mandatory.</td>
-                            </tr>
-                            <tr>
-                                <td>G</td>
-                                <td>Foreigner Fee</td>
+                                <td>Professional Fee Value for Foreigners</td>
                                 <td>Mandatory.</td>
                             </tr>
                         </tbody>
@@ -85,10 +80,10 @@
 
         <p:dataTable id="tbl" value="#{dataUploadController.itemFees}" var="item">
             <p:column headerText="Item Code">
-                #{item.code}
+                #{item.item.code}
             </p:column>
             <p:column headerText="Name">
-                #{item.name}
+                #{item.item.name}
             </p:column>
             <p:column headerText="Fee">
                 #{item.fee}
