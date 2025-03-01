@@ -187,6 +187,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private Boolean opdBillingAfterShiftStart;
     private Boolean opdBillItemSearchByAutocomplete;
     private Boolean pharmacyBillingAfterShiftStart;
+    private Boolean paymentManagementAfterShiftStart;
     private boolean passwordRequirementsFulfilled = true;
     private boolean enforcedPasswordChange = false;
     private String passwordRequirementMessage;
@@ -1640,6 +1641,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         opdBillingAfterShiftStart = null;
         opdBillItemSearchByAutocomplete = null;
         pharmacyBillingAfterShiftStart = null;
+        paymentManagementAfterShiftStart = null;
     }
 
     public WebUser getCurrent() {
@@ -2382,6 +2384,17 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setPharmacyBillingAfterShiftStart(Boolean pharmacyBillingAfterShiftStart) {
         this.pharmacyBillingAfterShiftStart = pharmacyBillingAfterShiftStart;
+    }
+    
+    public Boolean getPaymentManagementAfterShiftStart() {
+        if (paymentManagementAfterShiftStart == null) {
+            paymentManagementAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Payment Management can be done after shift start", false);
+        }
+        return paymentManagementAfterShiftStart;
+    }
+    
+    public void setPaymentManagementAfterShiftStart(Boolean paymentManagementAfterShiftStart) {
+        this.paymentManagementAfterShiftStart = paymentManagementAfterShiftStart;
     }
 
     public boolean isPasswordRequirementsFulfilled() {
