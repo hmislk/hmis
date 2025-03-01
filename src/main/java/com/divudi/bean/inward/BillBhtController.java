@@ -785,7 +785,12 @@ public class BillBhtController implements Serializable {
         for (Fee i : itemFee) {
             BillFee billFee = getBillBean().createBillFee(billItem, i, patientEncounter);
 
+            System.out.println("billFee = " + billFee);
+            System.out.println("billFee.getFeeGrossValue() = " + billFee.getFeeGrossValue());
+            System.out.println("matrixDepartment = " + billFee);
+            System.out.println("paymentMethod = " + paymentMethod);
             PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod);
+            System.out.println("priceMatrix = " + priceMatrix);
 
             getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix);
 
@@ -917,22 +922,29 @@ public class BillBhtController implements Serializable {
 
     }
 
-    public void removeBillItem() {
+    public void removeBillItem(BillEntry bi) {
 
         //TODO: Need to add Logic
         //////// // System.out.println(getIndex());
-        if (getIndex() != null) {
+     //   if (getIndex() != null) {
             boolean remove;
-            BillEntry temp = getLstBillEntries().get(getIndex());
+      //      BillEntry temp = getLstBillEntries().get(getIndex());
             //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
-            recreateList(temp);
+       //     recreateList(temp);
             // remove = getLstBillEntries().remove(getIndex());
 
             //  getLstBillEntries().remove(index);
             ////////// // System.out.println("Is Removed:" + remove);
-            calTotals();
+      //      calTotals();
 
+      //  }
+        if(bi == null){
+            JsfUtil.addErrorMessage("Error! Please Try Again");
+            return;
         }
+        lstBillEntries.remove(bi);
+        JsfUtil.addSuccessMessage("Successfully Removed");
+        calTotals();
 
     }
 
