@@ -185,32 +185,33 @@
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                     </h:outputText>
 
-                    <h:outputText value="Shift End:" styleClass="handover-label" style="font-weight: normal"/>
-                    <h:panelGroup>
-                        <h:outputText rendered="#{cc.attrs.bundle.endBill eq null}" value="Shift Not Yet Ended" styleClass="handover-value" />
-                        <h:panelGrid columns="2" rendered="#{cc.attrs.bundle.endBill ne null}" styleClass="inner-grid">
-                            <h:outputText value="Shift End Bill ID:" styleClass="handover-label" />
-                            <h:outputText value="#{cc.attrs.bundle.endBill.deptId}" styleClass="handover-value" />
-                            <h:outputText value="Shift Ended At:" styleClass="handover-label" />
-                            <h:outputText value="#{cc.attrs.bundle.endBill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </h:outputText>
-                        </h:panelGrid>
-                    </h:panelGroup>
+                    <h:outputText value="Handover Bill ID:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.deptId}" styleClass="handover-value" />
 
-                    <!-- Total Handover Value -->
+                    <h:outputText value="Handover At:" styleClass="handover-label" style="font-weight: normal" />
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.createdAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </h:outputText>
+
+
+                    <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="Shift End Bill ID:" styleClass="handover-label" />
+                    <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="#{cc.attrs.bundle.endBill.deptId}" styleClass="handover-value" />
+
+                    <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="Shift Ended At:" styleClass="handover-label" />
+                    <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="#{cc.attrs.bundle.endBill.createdAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </h:outputText>
+
                     <h:outputText value="Total Due Handover Value:" styleClass="handover-label" style="font-weight: normal"/>
                     <h:outputText value="#{cc.attrs.bundle.total}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
-                    
-                     <!-- Total Handover Value -->
+
                     <h:outputText value="Handingover Value:" styleClass="handover-label" style="font-weight: normal"/>
                     <h:outputText value="#{cc.attrs.bundle.totalOut}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
 
-                    <!-- Handover To -->
                     <h:outputText value="Handover To:" styleClass="handover-label" style="font-weight: normal"/>
                     <h:outputText value="#{cc.attrs.bundle.toUser.webUserPerson.nameWithTitle}" styleClass="handover-value" />
 
@@ -586,22 +587,17 @@
 
 
                 <p:dataTable 
+                    style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForPrinting}!important;" 
+                    styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                     emptyMessage="No Financial Transactions to Handover"
-                    paginatorAlwaysVisible="false"
                     value="#{cc.attrs.bundle.selectedBundles}" 
-                    var="summary"
-                    paginator="true" 
-                    rows="10" 
-
-                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-                    currentPageReportTemplate="(Page {currentPage} of {totalPages})"
-                    paginatorPosition="top">
+                    var="summary" >
 
                     <p:column headerText="Institution" style="font-weight: normal">
                         <h:outputText value="#{summary.department.institution.name}" />
                     </p:column>
 
-                    <p:column headerText="Site" >
+                    <p:column headerText="Site"  rendered="#{configOptionApplicationController.getBooleanValueByKey('Sites are Managed',true)}" >
                         <h:outputText value="#{summary.department.site.name}" />
                     </p:column>
 
