@@ -145,6 +145,7 @@ public class InwardSearch implements Serializable {
     Sex[] sex;
     private Admission admission;
     private PaymentMethodData paymentMethodData;
+    boolean showOrginalBill;
 
     private boolean withProfessionalFee = false;
 
@@ -1818,6 +1819,14 @@ public class InwardSearch implements Serializable {
 
     public void setWithProfessionalFee(boolean withProfessionalFee) {
         this.withProfessionalFee = withProfessionalFee;
+    }
+    
+    public boolean isShowOrginalBill() {
+        return showOrginalBill;
+    }
+
+    public void setShowOrginalBill(boolean showOrginalBill) {
+        this.showOrginalBill = showOrginalBill;
     }
 
 }
