@@ -156,6 +156,7 @@ public class ReportTemplateRowBundle implements Serializable {
     private List<Department> departments;
     private Bill startBill;
     private Bill endBill;
+    private Bill handoverBill;
 
     private PaymentHandover paymentHandover;
 
@@ -247,6 +248,8 @@ public class ReportTemplateRowBundle implements Serializable {
         hasOnlineSettlementTransaction = false;
     }
 
+    
+    
     public void collectDepartments() {
         Set<Department> uniqueDepartments = new HashSet<>();
         if (bundles != null) {
@@ -773,11 +776,11 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotalsByAddingRowTotals() {
-        total =0.0;
+        total = 0.0;
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             // Aggregate values from each row and update transaction flags
             for (ReportTemplateRow row : this.reportTemplateRows) {
-                if(row.getTotal()!=null){
+                if (row.getTotal() != null) {
                     total += row.getTotal();
                 }
             }
@@ -1097,7 +1100,7 @@ public class ReportTemplateRowBundle implements Serializable {
             }
         }
     }
-    
+
     public void calculateTotalByRefBills(final boolean isOutpatient) {
         total = 0.0;
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
@@ -2955,6 +2958,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setPatientDepositsAreConsideredInHandingover(boolean patientDepositsAreConsideredInHandingover) {
         this.patientDepositsAreConsideredInHandingover = patientDepositsAreConsideredInHandingover;
+    }
+
+    public Bill getHandoverBill() {
+        return handoverBill;
+    }
+
+    public void setHandoverBill(Bill handoverBill) {
+        this.handoverBill = handoverBill;
     }
 
 }

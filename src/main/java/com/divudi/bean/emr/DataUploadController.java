@@ -990,6 +990,93 @@ public class DataUploadController implements Serializable {
         }
     }
 
+    private List<ItemFee> addProfessionalFeesFromExcel(InputStream inputStream) throws IOException {
+        List<ItemFee> itemFeesToSave = new ArrayList<>();
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Item> itemsToSave = new ArrayList<>();
+
+        // The first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            String code = getCellValueAsString(row.getCell(0));
+            String name = getCellValueAsString(row.getCell(1)); // Keeping name but not used for search
+            String specialityName = getCellValueAsString(row.getCell(2));
+            String staffName = getCellValueAsString(row.getCell(3));
+
+            Double professionalFee = getCellValueAsDouble(row.getCell(4));
+            Double foreignerFee = getCellValueAsDouble(row.getCell(5));
+
+            if (code == null || code.trim().isEmpty()) {
+                continue;
+            }
+
+            Item item = itemController.findItemByCode(code);
+            if (item == null) {
+                continue;
+            }
+
+            Speciality speciality = specialityName != null && !specialityName.trim().isEmpty()
+                    ? specialityController.findSpeciality(specialityName, false)
+                    : null;
+
+            Staff staff = staffController.findStaffByName(staffName);
+
+            ItemFee itf = new ItemFee();
+            itf.setName("Professional Fee");
+            itf.setItem(item);
+            itf.setFeeType(FeeType.Staff);
+            itf.setFee(professionalFee);
+            itf.setFfee(foreignerFee); // Setting foreigner fee separately
+            itf.setCreatedAt(new Date());
+            itf.setCreater(sessionController.getLoggedUser());
+            itf.setSpeciality(speciality);
+            itf.setStaff(staff);
+
+            itemFeeFacade.create(itf);
+            itemFeesToSave.add(itf);
+
+            Double total = item.getTotal() != null ? item.getTotal() : 0.0;
+            Double totalForForeginer = item.getTotalForForeigner() != null ? item.getTotalForForeigner() : 0.0;
+            item.setTotal(total + professionalFee);
+            item.setTotalForForeigner(totalForForeginer + foreignerFee);
+            item.setDblValue(total + professionalFee);
+
+            itemFacade.edit(item);
+            itemsToSave.add(item);
+        }
+
+        return itemFeesToSave;
+    }
+
+    // Helper method to safely retrieve numeric values from cells
+    private Double getCellValueAsDouble(Cell cell) {
+        if (cell == null) {
+            return 0.0;
+        }
+        switch (cell.getCellType()) {
+            case NUMERIC:
+                return cell.getNumericCellValue();
+            case STRING:
+                return CommonFunctions.stringToDouble(cell.getStringCellValue());
+            case FORMULA:
+                Workbook wb = cell.getSheet().getWorkbook();
+                CreationHelper createHelper = wb.getCreationHelper();
+                FormulaEvaluator evaluator = createHelper.createFormulaEvaluator();
+                CellValue cellValue = evaluator.evaluate(cell);
+                return cellValue.getCellType() == CellType.NUMERIC ? cellValue.getNumberValue() : 0.0;
+            default:
+                return 0.0;
+        }
+    }
+
     public void uploadAddReplaceFeesFromId() {
         itemFees = new ArrayList<>();
         if (file != null) {
@@ -1349,7 +1436,7 @@ public class DataUploadController implements Serializable {
                 if (hospitalFeeForForeginer > 0.0) {
                     itf.setFfee(hospitalFeeForForeginer);
                 } else {
-                    hospitalFeeForForeginer= hospitalFee;
+                    hospitalFeeForForeginer = hospitalFee;
                     itf.setFfee(hospitalFeeForForeginer);
                 }
 
@@ -1360,7 +1447,7 @@ public class DataUploadController implements Serializable {
             }
 
             item.setTotal(hospitalFee);
-            item.setTotalForForeigner(hospitalFee + hospitalFeeForForeginer );
+            item.setTotalForForeigner(hospitalFee + hospitalFeeForForeginer);
             item.setDblValue(hospitalFee);
 
             System.out.println("Total Fee = " + item.getTotal());
@@ -2018,7 +2105,7 @@ public class DataUploadController implements Serializable {
                 return itemFees;
             }
 
-            item = itemController.findItemByCode( itemCode);
+            item = itemController.findItemByCode(itemCode);
             if (item == null) {
                 JsfUtil.addErrorMessage("Item cannot be null.");
                 return itemFees;
@@ -3420,117 +3507,6 @@ public class DataUploadController implements Serializable {
             }
         }
         return surgeriesToSave;
-    }
-
-    private List<ItemFee> addProfessionalFeesFromExcel(InputStream inputStream) throws IOException {
-        Workbook workbook = new XSSFWorkbook(inputStream);
-        Sheet sheet = workbook.getSheetAt(0);
-        Iterator<Row> rowIterator = sheet.rowIterator();
-
-        itemsToSave = new ArrayList<>();
-
-        itemFeesToSave = new ArrayList<>();
-
-        Item item;
-        Speciality speciality = null;
-        Staff staff;
-
-        // Assuming the first row contains headers, skip it
-        if (rowIterator.hasNext()) {
-            rowIterator.next();
-        }
-
-        while (rowIterator.hasNext()) {
-            Row row = rowIterator.next();
-
-            String name = null;
-            String specialityName = null;
-            String staffName = null;
-
-            Double professionalFee = 0.0;
-
-            Cell nameCell = row.getCell(0);
-            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
-                name = nameCell.getStringCellValue();
-                if (name == null || name.trim().equals("")) {
-                    continue;
-                }
-            }
-
-            item = itemController.findItemByName(name, sessionController.getDepartment());
-
-            if (item == null) {
-                continue;
-            }
-
-            Cell specialityCell = row.getCell(1);
-            if (specialityCell != null && specialityCell.getCellType() == CellType.STRING) {
-                specialityName = specialityCell.getStringCellValue();
-            }
-
-            if (specialityName != null && !specialityName.trim().equals("")) {
-                speciality = specialityController.findSpeciality(specialityName, false);
-            }
-
-            Cell fullNameCell = row.getCell(2);
-            if (fullNameCell != null && fullNameCell.getCellType() == CellType.STRING) {
-                staffName = fullNameCell.getStringCellValue();
-            }
-
-            staff = staffController.findStaffByName(staffName);
-
-            Cell professionalFeeCell = row.getCell(3);
-            if (professionalFeeCell != null) {
-                if (professionalFeeCell.getCellType() == CellType.NUMERIC) {
-                    // If it's a numeric value
-                    professionalFee = professionalFeeCell.getNumericCellValue();
-                } else if (professionalFeeCell.getCellType() == CellType.FORMULA) {
-                    // If it's a formula, evaluate it
-                    Workbook wb = professionalFeeCell.getSheet().getWorkbook();
-                    CreationHelper createHelper = wb.getCreationHelper();
-                    FormulaEvaluator evaluator = createHelper.createFormulaEvaluator();
-                    CellValue cellValue = evaluator.evaluate(professionalFeeCell);
-
-                    // Check the type of the evaluated value
-                    if (cellValue.getCellType() == CellType.NUMERIC) {
-                        professionalFee = cellValue.getNumberValue();
-                    } else {
-                        // Handle other types if needed
-                    }
-                } else if (professionalFeeCell.getCellType() == CellType.STRING) {
-                    // If it's a numeric value
-                    String strhospitalFee = professionalFeeCell.getStringCellValue();
-                    professionalFee = CommonFunctions.stringToDouble(strhospitalFee);
-                }
-
-                // Rest of your code remains the same
-                ItemFee itf = new ItemFee();
-                itf.setName("Professional Fee");
-                itf.setItem(item);
-                itf.setFeeType(FeeType.Staff);
-                itf.setFee(professionalFee);
-                itf.setFfee(professionalFee);
-                itf.setCreatedAt(new Date());
-                itf.setCreater(sessionController.getLoggedUser());
-                itf.setSpeciality(speciality);
-                itf.setStaff(staff);
-                itemFeeFacade.create(itf);
-                itemFeesToSave.add(itf);
-                Double total = item.getTotal();
-                if (total == null) {
-                    total = 0.0;
-                }
-
-                item.setTotal(total + professionalFee);
-                item.setTotalForForeigner((total + professionalFee) * 2);
-                item.setDblValue(total + professionalFee);
-                itemFacade.edit(item);
-                itemsToSave.add(item);
-
-            }
-
-        }
-        return itemFeesToSave;
     }
 
     private List<ItemFee> replaceFeesFromExcel(InputStream inputStream) throws IOException {
