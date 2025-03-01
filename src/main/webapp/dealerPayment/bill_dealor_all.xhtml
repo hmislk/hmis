@@ -115,7 +115,7 @@
                                             listener="#{supplierPaymentController.calTotalBySelectedBillTems()}" />
 
                                         <p:column width="1em" selectionBox="true"></p:column>
-                                        <p:column >  
+                                        <p:column  width="10em" class="text-start" >  
                                             <f:facet name="header">
                                                 <h:outputLabel value="GRN No"/>                                  
                                             </f:facet>     
@@ -123,32 +123,41 @@
                                                 value="#{b.referenceBill.deptId}">
                                             </p:outputLabel>
                                         </p:column> 
-                                        <p:column headerText="GRN Value">
+                                        <p:column width="10em" class="text-start" >  
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Date"/>                                  
+                                            </f:facet>     
+                                            <p:outputLabel 
+                                                value="#{b.referenceBill.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                            </p:outputLabel>
+                                        </p:column>
+                                        <p:column   width="7em" class="text-end" headerText="GRN Value">
                                             <p:outputLabel value="#{b.referenceBill.netTotal}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Return Value">
+                                        <p:column   width="7em" class="text-end" headerText="Return Value">
                                             <p:outputLabel value="#{b.referenceBill.tmpReturnTotal}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Paid">
+                                        <p:column   width="7em" class="text-end" headerText="Paid Value">
                                             <p:outputLabel value="#{b.referenceBill.paidAmount}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Recievable Value">
+                                        <p:column   width="7em" class="text-end" headerText="Recievable Value">
                                             <p:outputLabel value="#{(b.referenceBill.netTotal+
                                                                     b.referenceBill.tmpReturnTotal+
                                                                     b.referenceBill.paidAmount)}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Paying Value">
+                                        <p:column width="7em" class="text-end" headerText="Paying Value">
                                             <p:inputText 
                                                 autocomplete="off" 
-                                                styleClass="w-100"
+                                                styleClass="w-100 text-end"
                                                 value="#{b.netValue}"
                                                 onfocus="this.select();">    
                                                 <f:convertNumber pattern="#,##0.00" />
@@ -160,7 +169,7 @@
                                             </p:inputText>
                                         </p:column>
 
-                                        <p:column headerText="Remove">
+                                        <p:column  width="3em" class="text-center" headerText="Remove">
                                             <p:commandButton 
                                                 ajax="false"
                                                 class="ui-button-danger"
@@ -194,7 +203,7 @@
                                                 id="txtDiscount"
                                                 class="text-end w-100"
                                                 onfocus="this.select();"
-                                                
+
                                                 value="#{supplierPaymentController.current.discount}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                                 <p:ajax 
@@ -251,7 +260,7 @@
                                                 <h:panelGroup id="slip" style="display: #{supplierPaymentController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
                                                     <pa:slipDetailsAsOnlyPayment paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                                 </h:panelGroup>
-                                                
+
                                             </h:panelGroup>
                                         </h:panelGrid>
                                     </p:panel>
