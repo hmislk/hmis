@@ -379,15 +379,15 @@
                                                                     icon="fa fa-times"
                                                                     title="Remove"
                                                                     class="ui-button-danger"
-                                                                    action="#{billBhtController.removeBillItem}" >
+                                                                    action="#{billBhtController.removeBillItem(bi)}" >
                                                                     <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.index}" />
-                                                                    <p:ajax  process="btnRemove" update="@form" />
+                                                                    <p:ajax  process="btnRemove @this" update="@form @all :#{p:resolveFirstComponentWithId('tabBillIx',view).clientId} :#{p:resolveFirstComponentWithId('tabBillFee',view).clientId} :#{p:resolveFirstComponentWithId('tabBillItems',view).clientId} :#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('testTable',view).clientId} :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}"/>
                                                                 </p:commandButton>
                                                             </p:column>
                                                         </p:dataTable>
                                                     </p:tab>
                                                     <p:tab id="tabBillIx" title="Tests" >
-                                                        <p:dataTable rowIndexVar="rowIndex" value="#{billBhtController.lstBillComponents}" var="bix" >
+                                                        <p:dataTable id="testTable" rowIndexVar="rowIndex" value="#{billBhtController.lstBillComponents}" var="bix" >
                                                             <p:column>
                                                                 <f:facet name="header">No</f:facet>
                                                                 <h:outputLabel value="#{rowIndex+1}"/>

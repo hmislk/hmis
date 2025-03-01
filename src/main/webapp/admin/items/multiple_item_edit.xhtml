@@ -161,6 +161,15 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.id}"/>
                                 </p:column>
+                                
+                                <p:column  
+                                    sortBy="#{i.code}" width="80"
+                                    filterMatchMode="contains" filterBy="#{i.code}" >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Code" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.code}"/>
+                                </p:column>
 
                                 <p:column   sortBy="#{i.name}" width="80"
                                             filterMatchMode="contains" filterBy="#{i.name}" >  
@@ -236,6 +245,16 @@
                                         </h:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{i.printFeesForBills?'Yes':'No'}" >
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column sortBy="#{i.requestForQuentity}" width="10"
+                                          filterMatchMode="contains" filterBy="#{i.requestForQuentity}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Need Quantity for Items" >
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.requestForQuentity?'Yes':'No'}" >
                                     </h:outputLabel>
                                 </p:column>
 
