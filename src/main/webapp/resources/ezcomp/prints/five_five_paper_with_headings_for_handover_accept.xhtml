@@ -149,35 +149,31 @@
             <!-- Bill Header -->
             <div class="billHeader col-12" >
                 <div class="institutionName">
-                    <h:outputLabel value="#{cc.attrs.bundle.fromUser.institution.name}" />
+                    <h:outputLabel value="#{cc.attrs.bundle.handoverBill.institution.name}" />
                 </div>
                 <div class="institutionContact">
                     <div>
-                        <h:outputLabel value="#{cc.attrs.bundle.fromUser.institution.address}" />
+                        <h:outputLabel value="#{cc.attrs.bundle.handoverBill.institution.address}" />
                     </div>
                     <div>
-                        <h:outputLabel value="#{cc.attrs.bundle.fromUser.department.name}" />
+                        <h:outputLabel value="#{cc.attrs.bundle.handoverBill.department.name}" />
                     </div>
                 </div>
                 <div class="headingBillFiveFive" style="text-align: center; font-weight: bold;">
-                    <h:outputLabel value="HAND OVER NOTE" />
+                    <h:outputLabel value="HAND OVER ACCEPT RECEIPT" />
                 </div>
             </div>
 
             <!-- Bill Body -->
             <div class="billBody">
 
-
-
-                <h:outputText value="Shift Details" style="font-weight: bold"/>
-
                 <h:panelGrid columns="2" styleClass="handover-grid" columnClasses="labelColumn,valueColumn">
 
 
-                    <h:outputText value="User:" styleClass="handover-label" style="font-weight: normal"/>
-                    <h:outputText value="#{cc.attrs.bundle.user.webUserPerson.nameWithTitle}" styleClass="handover-value" />
+                    <h:outputText value="Haning Over User:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="#{cc.attrs.bundle.startBill.creater.webUserPerson.nameWithTitle}" styleClass="handover-value" />
 
-                    <h:outputText value="Shift Start Bill ID:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="Shift Start Receipt No:" styleClass="handover-label" style="font-weight: normal"/>
                     <h:outputText value="#{cc.attrs.bundle.startBill.deptId}" styleClass="handover-value" />
 
                     <h:outputText value="Shift Started At:" styleClass="handover-label" style="font-weight: normal" />
@@ -185,28 +181,51 @@
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                     </h:outputText>
 
-                    <h:outputText value="Shift End:" styleClass="handover-label" style="font-weight: normal"/>
-                    <h:panelGroup>
-                        <h:outputText rendered="#{cc.attrs.bundle.endBill eq null}" value="Shift Not Yet Ended" styleClass="handover-value" />
-                        <h:panelGrid columns="2" rendered="#{cc.attrs.bundle.endBill ne null}" styleClass="inner-grid">
-                            <h:outputText value="Shift End Bill ID:" styleClass="handover-label" />
-                            <h:outputText value="#{cc.attrs.bundle.endBill.deptId}" styleClass="handover-value" />
-                            <h:outputText value="Shift Ended At:" styleClass="handover-label" />
-                            <h:outputText value="#{cc.attrs.bundle.endBill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </h:outputText>
-                        </h:panelGrid>
-                    </h:panelGroup>
 
-                    <!-- Total Handover Value -->
-                    <h:outputText value="Total Handover Value:" styleClass="handover-label" style="font-weight: normal"/>
-                    <h:outputText value="#{cc.attrs.bundle.total}">
+                    <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="Shift End Bill ID:" styleClass="handover-label" />
+                    <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="#{cc.attrs.bundle.endBill.deptId}" styleClass="handover-value" />
+
+                    <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="Shift Ended At:" styleClass="handover-label" />
+                    <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="#{cc.attrs.bundle.endBill.createdAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </h:outputText>
+
+                    <h:outputText value="Handover Receipt No:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.referenceBill.deptId}" styleClass="handover-value" />
+
+                    <h:outputText value="Handover At:" styleClass="handover-label" style="font-weight: normal" />
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.referenceBill.createdAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </h:outputText>
+
+
+                    <p:splitter ></p:splitter>
+                    <p:splitter ></p:splitter>
+
+
+                    <h:outputText value="Handover Accept Bill ID:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.deptId}" styleClass="handover-value" />
+
+                    <h:outputText value="Handover Accept By:" styleClass="handover-label" style="font-weight: normal" />
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.creater.webUserPerson.nameWithTitle}" styleClass="handover-value" />
+
+                    <h:outputText value="Handover Accept At:" styleClass="handover-label" style="font-weight: normal" />
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.createdAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </h:outputText>
+
+
+
+                    <h:outputText value="Total Due Handover Value:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.total}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
 
-                    <!-- Handover To -->
-                    <h:outputText value="Handover To:" styleClass="handover-label" style="font-weight: normal"/>
-                    <h:outputText value="#{cc.attrs.bundle.toUser.webUserPerson.nameWithTitle}" styleClass="handover-value" />
+                    <h:outputText value="Handingover Value:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.netTotal}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+
 
                 </h:panelGrid>
 
@@ -580,22 +599,17 @@
 
 
                 <p:dataTable 
+                    style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForPrinting}!important;" 
+                    styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                     emptyMessage="No Financial Transactions to Handover"
-                    paginatorAlwaysVisible="false"
                     value="#{cc.attrs.bundle.selectedBundles}" 
-                    var="summary"
-                    paginator="true" 
-                    rows="10" 
-
-                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-                    currentPageReportTemplate="(Page {currentPage} of {totalPages})"
-                    paginatorPosition="top">
+                    var="summary" >
 
                     <p:column headerText="Institution" style="font-weight: normal">
                         <h:outputText value="#{summary.department.institution.name}" />
                     </p:column>
 
-                    <p:column headerText="Site" >
+                    <p:column headerText="Site"  rendered="#{configOptionApplicationController.getBooleanValueByKey('Sites are Managed',true)}" >
                         <h:outputText value="#{summary.department.site.name}" />
                     </p:column>
 
@@ -877,7 +891,6 @@
                         </h:outputText>
                     </p:column>
 
-                    
                     <!-- Patient Points Value Column -->
                     <p:column 
                         headerText="Patient Points Value" 
