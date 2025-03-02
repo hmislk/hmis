@@ -745,6 +745,13 @@
                                                                         </h:panelGroup>
                                                                     </div>
                                                                 </div>
+                                                                <div class="patient-info">
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill No in Sample Stickers', true)}">
+                                                                        <span class="sample-id">
+                                                                            #{psc.patientSample.bill.deptId}&nbsp;&nbsp;
+                                                                        </span>
+                                                                    </h:panelGroup>
+                                                                 </div>
                                                             </h:panelGroup>
 
                                                             <p:badge 
