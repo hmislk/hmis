@@ -45,7 +45,7 @@
                                     <div class="d-flex justify-content-between">
                                         <div class="d-flex align-items-center">
                                             <h:outputText styleClass="fa fa-money-bill-wave" />
-                                            <h:outputText value="Bills To Pay" class="mx-4"></h:outputText>
+                                            <h:outputText value="Select Bills To Pay" class="mx-4"></h:outputText>
                                         </div>
                                         <div class="d-flex justify-content-end">
                                             <p:commandButton 
@@ -93,19 +93,27 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <f:ajax execute="@this" event="itemSelect" render="val" listener="#{cashRecieveBillController.selectBhtListener()}"/>
+                                            <f:ajax execute="@this" event="itemSelect" render="valPaying valToPay" listener="#{cashRecieveBillController.selectBhtListener()}"/>
                                         </p:autoComplete>
                                     </div>
                                 </div>
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
-                                        <p:outputLabel value="Value" />      
+                                        <p:outputLabel value="Total Due Value" />      
                                     </div>
                                     <div class="col-md-8">
-                                        <p:inputText class="w-100" autocomplete="off" id="val" value="#{cashRecieveBillController.currentBillItem.netValue}">
+                                        <p:inputText class="w-100" autocomplete="off" id="valToPay" value="#{cashRecieveBillController.currentBillItem.netValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:inputText>
+                                    </div>
 
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Paying This Time Value" />      
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:inputText class="w-100" autocomplete="off" id="valPaying" value="#{cashRecieveBillController.currentBillItem.netValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
                                     </div>
                                 </div>
                             </p:panel>
@@ -185,7 +193,7 @@
                         <div class="col-md-12">
                             <p:panel class="m-1">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Items For Billing"/>
+                                    <h:outputLabel value="Selected Bills to Pay"/>
                                 </f:facet>       
 
                                 <p:dataTable value="#{cashRecieveBillController.billItems}" rowIndexVar="rowIndex"   var="b" id="items">
