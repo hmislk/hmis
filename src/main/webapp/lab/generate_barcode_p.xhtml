@@ -15,11 +15,11 @@
                 </style>
             </h:head>
 
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleCollecting')}" >
+            <h:panelGroup rendered="#{!(webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving'))}" >
                 <na:not_authorize />
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving')}" >
                 <div class="container-fluid" >
                     <h:form >
 
