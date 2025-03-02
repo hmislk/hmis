@@ -443,6 +443,30 @@ public class OpdMemberShipDiscountController implements Serializable {
             }
         }
     }
+    
+    public void savePharmacyCategoryPaymentSchemeForAllCategoriesAndSelectedPaymentMethod() {
+        if (paymentScheme == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Scheme");
+            return;
+        }
+        if(paymentMethod == null){
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return;
+        }
+            for (Category c : pharmaceuticalItemCategoryController.getItems()) {
+                PaymentSchemeDiscount p = fetchPaymentSchemeDiscount(null,
+                        c,
+                        null,
+                        paymentScheme,
+                        paymentMethod,
+                        null,
+                        null);
+                p.setDiscountPercent(margin);
+                System.out.println("p = " + p);
+                System.out.println("margin = " + margin);
+                paymentSchemeDiscountFacade.edit(p);
+            }
+    }
 
     public void savePharmacyCategoryPaymentMethod() {
         PriceMatrix p = new PaymentSchemeDiscount();

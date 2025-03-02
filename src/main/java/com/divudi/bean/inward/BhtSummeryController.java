@@ -1296,6 +1296,10 @@ public class BhtSummeryController implements Serializable {
             createCreditBillForCreditCompany(getPatientEncounter(), getCurrent().getNetTotal());
         }
 
+        originalBill.setDiscount(discount);
+        originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
+        getBillFacade().edit(originalBill);
+        
         getPatientEncounter().setFinalBill(getCurrent());
         getPatientEncounter().setGrantTotal(getCurrent().getGrantTotal());
         getPatientEncounter().setDiscount(getCurrent().getDiscount());
@@ -1303,9 +1307,6 @@ public class BhtSummeryController implements Serializable {
         getPatientEncounter().setPaymentFinalized(true);
         getPatientEncounterFacade().edit(getPatientEncounter());
         getCurrent().setReferenceBill(originalBill);
-        originalBill.setDiscount(discount);
-        originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
-        getBillFacade().edit(originalBill);
         getBillFacade().edit(getCurrent());
 
         updatePaymentBillList();
