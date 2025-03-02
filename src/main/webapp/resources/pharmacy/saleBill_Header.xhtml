@@ -233,11 +233,11 @@
                     <tr>
 
                         <td  class="totalsBlock1" style="text-align: left;">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
+                            <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0 and cc.attrs.bill.discount ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
                         </td>
 
                         <td  class="totalsBlock1" style="text-align: right!important;font-weight: bold; ; ">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}"    value="#{cc.attrs.bill.discountPercentPharmacy} %">
+                            <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0 and cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.discountPercentPharmacy} %">
                                 <f:convertNumber pattern="#,##0.0" />
                             </h:outputLabel>
 
@@ -245,7 +245,7 @@
                         </td>
                     </tr>
 
-                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Tendered Amount for pharmacy sale for cashier') or cc.attrs.bill.billType eq 'PharmacySale' or cc.attrs.bill.billType eq 'PharmacyWholeSale'}">
+                    <h:panelGroup rendered="#{(configOptionApplicationController.getBooleanValueByKey('Allow Tendered Amount for pharmacy sale for cashier') or cc.attrs.bill.billType eq 'PharmacySale' or cc.attrs.bill.billType eq 'PharmacyWholeSale') and cc.attrs.bill.paymentMethod eq 'Cash'}">
                         <tr >
                             <td  class="totalsItemBlock1" style="text-align: left;">
                                 <h:outputLabel   value="Tendered" />
