@@ -239,13 +239,17 @@
                             <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
                         </h:panelGroup>
                     </h:panelGroup>
-                    
+
                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
                         <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
                             <ph:Pharmacy_department_Issue_pos_bill bill="#{transferIssueController.issuedBill}"/>
                         </h:panelGroup>
                     </h:panelGroup>
-                    
+
+                    <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}"> 
+                        <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}" ></ph:saleBill_Header_Transfer>
+                    </h:panelGroup>
+
 <!--                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>-->
 
                 </h:panelGroup>
