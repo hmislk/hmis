@@ -1987,11 +1987,6 @@ public class CommonReport implements Serializable {
             sql += " and b.referenceInstitution=:ins ";
             temMap.put("ins", getReferenceInstitution());
         }
-        
-        if (getInstitution() != null) {
-            sql += " AND b.fromInstitution = :supplier";
-            temMap.put("supplier", getInstitution());
-        }
 
         if (getSupplier()!= null) {
             if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
