@@ -602,6 +602,7 @@ public class GoodsReturnController implements Serializable {
         
         bill.getRefundBills().add(returnBill);
         bill.setRefundAmount(Math.abs(bill.getRefundAmount()) + Math.abs(returnBill.getNetTotal()));
+        bill.setBalance(Math.abs(bill.getNetTotal()) - Math.abs(bill.getRefundAmount()));
         
         billFacade.edit(bill);
         
