@@ -1995,7 +1995,6 @@ public class CommonReport implements Serializable {
                 sql += " AND b.fromInstitution = :supplier";
             }
             temMap.put("supplier", getSupplier());
-
         }
 
         sql += " order by b.id  ";
