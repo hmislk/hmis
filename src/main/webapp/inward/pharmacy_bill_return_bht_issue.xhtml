@@ -248,6 +248,10 @@
                                         </h:panelGroup>
                                     </div>
                                 </h:panelGroup>
+                                
+                                 <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
+                                     <phi:saleBill_Header_Return bill="#{bhtIssueReturnController.returnBill}" ></phi:saleBill_Header_Return>
+                            </h:panelGroup>
 
                             </h:panelGroup>
                         </p:panel>
