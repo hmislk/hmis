@@ -2967,6 +2967,16 @@ public class CommonReport implements Serializable {
                 sql += " AND b.fromInstitution = :supplier";
             }
             temMap.put("supplier", getSupplier());
+
+        }
+        
+        if (getSupplier()!= null) {
+            if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
+                sql += " AND b.toInstitution = :supplier";
+            } else {
+                sql += " AND b.fromInstitution = :supplier";
+            }
+            temMap.put("supplier", getSupplier());
         }
 
         temMap.put("fromDate", getFromDate());
