@@ -160,7 +160,6 @@ public class InwardReportControllerBht implements Serializable {
             JsfUtil.addErrorMessage("No encounter");
             return;
         }
-        System.out.println("department = " + department);
         patient = patientEncounter.getPatient();
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
