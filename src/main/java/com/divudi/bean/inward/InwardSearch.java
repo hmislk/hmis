@@ -5,17 +5,17 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.SearchController;
-import com.divudi.bean.common.SessionController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
+import com.divudi.bean.common.*;
 
-import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
+import com.divudi.data.dataStructure.ComponentDetail;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.SurgeryBillType;
@@ -23,18 +23,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.ejb.EjbApplication;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Person;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
+import com.divudi.entity.*;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.EncounterComponent;
 import com.divudi.entity.lab.PatientInvestigation;
@@ -48,7 +37,6 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.Payment;
 import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
@@ -110,11 +98,15 @@ public class InwardSearch implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
+    FinancialTransactionController financialTransactionController;
+    @Inject
     private WebUserController webUserController;
     @Inject
     PatientInvestigationController patientInvestigationController;
     @Inject
     SearchController searchController;
+    @Inject
+    PatientDepositController patientDepositController;
     @EJB
     PersonFacade personFacade;
     @EJB
@@ -152,8 +144,21 @@ public class InwardSearch implements Serializable {
     Patient patient;
     Sex[] sex;
     private Admission admission;
+    private PaymentMethodData paymentMethodData;
+    boolean showOrginalBill;
 
     private boolean withProfessionalFee = false;
+
+    public String navigateToPaymentBillCancellation(){
+        switch (bill.getBillTypeAtomic()) {
+            case INWARD_DEPOSIT:
+                return "inward_deposit_cancel_bill_payment?faces-redirect=true";
+            case INWARD_DEPOSIT_REFUND:
+                return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
+            default:
+                return "inward_cancel_bill_payment?faces-redirect=true";
+        }
+    }
 
     public boolean showProfessionalFee() {
         if (withProfessionalFee == true) {
@@ -338,7 +343,17 @@ public class InwardSearch implements Serializable {
     }
 
     public String navigateDoctorPayment() {
-        return "/inward/inward_bill_payment?faces-redirect=true";
+        if (sessionController.getPaymentManagementAfterShiftStart()) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                return "/inward/inward_bill_payment?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            return "/inward/inward_bill_payment?faces-redirect=true";
+        }
     }
 
     public boolean calculateRefundTotal() {
@@ -730,7 +745,7 @@ public class InwardSearch implements Serializable {
 //                JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
 //                return;
 //            }
-            CancelledBill cb = createCancelBill();
+            CancelledBill cb = createCancelDepositBill();
             //Copy & paste
 
             getBillFacade().create(cb);
@@ -740,6 +755,66 @@ public class InwardSearch implements Serializable {
             getBillFacade().edit((BilledBill) getBill());
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
+
+            List<Payment> payments = paymentService.createPayment(cb, paymentMethodData);
+            paymentService.updateBalances(payments);
+
+            if (getBill().getPatientEncounter().isPaymentFinalized()) {
+                getInwardBean().updateFinalFill(getBill().getPatientEncounter());
+                if (getBill().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
+                    getInwardBean().updateCreditDetail(getBill().getPatientEncounter(), getBill().getPatientEncounter().getFinalBill().getNetTotal());
+                }
+
+            }
+
+            WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
+            getSessionController().setLoggedUser(wb);
+            JsfUtil.addSuccessMessage("Cancelled");
+
+            printPreview = true;
+
+        } else {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+            return;
+        }
+
+    }
+
+    public void cancelDepositBillPayment() {
+        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+
+            if (check()) {
+                return;
+            }
+
+            if (getBill().getCheckedBy() != null) {
+                JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
+                return;
+            }
+
+            double dbl = getInwardBean().getPaidValue(getBill().getPatientEncounter());
+
+            if (dbl < getBill().getNetTotal()) {
+                JsfUtil.addErrorMessage("This Bht has No Enough Vallue To Cancel");
+            }
+
+//            if (getBill().getPatientEncounter().isPaymentFinalized()) {
+//                JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
+//                return;
+//            }
+            CancelledBill cb = createCancelDepositBill();
+            //Copy & paste
+
+            getBillFacade().create(cb);
+            cancelBillItems(cb);
+            getBill().setCancelled(true);
+            getBill().setCancelledBill(cb);
+            getBillFacade().edit((BilledBill) getBill());
+
+            getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
+
+            List<Payment> payments = paymentService.createPayment(cb, paymentMethodData);
+            paymentService.updateBalances(payments);
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 getInwardBean().updateFinalFill(getBill().getPatientEncounter());
@@ -787,12 +862,16 @@ public class InwardSearch implements Serializable {
 //                return;
 //            }
             RefundBill cb = createRefundCancelBill();
+            cb.setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
             //Copy & paste
             getBillFacade().create(cb);
             cancelBillItems(cb);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
+
+            List<Payment> payments = paymentService.createPayment(cb, paymentMethodData);
+            paymentService.updateBalances(payments);
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
 
@@ -1008,6 +1087,66 @@ public class InwardSearch implements Serializable {
 //        cb.setBillType(BillType.InwardProfessional);
         cb.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
         return cb;
+    }
+
+    private CancelledBill createCancelDepositBill() {
+        CancelledBill cb = new CancelledBill();
+        cb.copy(getBill());
+        cb.invertAndAssignValuesFromOtherBill(getBill());
+        cb.setBilledBill(getBill());
+
+        ////////////
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
+        cb.setCreater(getSessionController().getLoggedUser());
+        cb.setComments(comment);
+        cb.setPaymentMethod(paymentMethod);
+        //TODO: Find null Point Exception
+
+        cb.setDepartment(getSessionController().getDepartment());
+        cb.setInstitution(getSessionController().getInstitution());
+
+        cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
+        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
+//        cb.setBillType(BillType.InwardProfessional);
+        cb.setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+        return cb;
+    }
+
+    public void listnerForPaymentMethodChange(Bill b) {
+        if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
+            getPaymentMethodData().getPatient_deposit().setTotalValue(b.getTotal());
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(b.getPatientEncounter().getPatient(), sessionController.getDepartment());
+            if (pd != null && pd.getId() != null) {
+                getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+            }
+        } else if (getPaymentMethod() == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(b.getTotal());
+            System.out.println("this = " + this);
+        } else if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
+//            getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(b.getPatientEncounter().getPatient(), sessionController.getDepartment());
+
+            if (pd != null && pd.getId() != null) {
+                System.out.println("pd = " + pd);
+                boolean hasPatientDeposit = false;
+                for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    System.out.println("cd = " + cd);
+                    if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                        System.out.println("cd = " + cd);
+                        hasPatientDeposit = true;
+                        cd.getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
+                        cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+
+                    }
+                }
+            }
+
+        }
     }
 
     private RefundBill createRefundCancelBill() {
@@ -1608,6 +1747,17 @@ public class InwardSearch implements Serializable {
         this.patientInvestigationFacade = patientInvestigationFacade;
     }
 
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+
     public BillFacade getBillFacade() {
         return billFacade;
     }
@@ -1669,6 +1819,14 @@ public class InwardSearch implements Serializable {
 
     public void setWithProfessionalFee(boolean withProfessionalFee) {
         this.withProfessionalFee = withProfessionalFee;
+    }
+    
+    public boolean isShowOrginalBill() {
+        return showOrginalBill;
+    }
+
+    public void setShowOrginalBill(boolean showOrginalBill) {
+        this.showOrginalBill = showOrginalBill;
     }
 
 }

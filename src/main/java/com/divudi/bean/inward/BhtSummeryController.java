@@ -1296,6 +1296,10 @@ public class BhtSummeryController implements Serializable {
             createCreditBillForCreditCompany(getPatientEncounter(), getCurrent().getNetTotal());
         }
 
+        originalBill.setDiscount(discount);
+        originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
+        getBillFacade().edit(originalBill);
+        
         getPatientEncounter().setFinalBill(getCurrent());
         getPatientEncounter().setGrantTotal(getCurrent().getGrantTotal());
         getPatientEncounter().setDiscount(getCurrent().getDiscount());
@@ -1495,8 +1499,10 @@ public class BhtSummeryController implements Serializable {
         double different = Math.abs((tot - tot2));
 
         if (different > 0.1) {
-            JsfUtil.addErrorMessage("Please Adjust category amount correctly");
-            return true;
+            if (!getWebUserController().hasPrivilege("InwardSettleFinalBillUnrestricted")) {
+                JsfUtil.addErrorMessage("Please Adjust category amount correctly");
+                return true;
+            }
         }
         return false;
     }
@@ -2023,18 +2029,18 @@ public class BhtSummeryController implements Serializable {
     public String navigateToIntrimBill() {
         patientEncounter = null;
         makeNull();
-        return "/inward/inward_bill_intrim";
+        return "/inward/inward_bill_intrim?faces-redirect=true";
     }
 
     public String navigateToIntrimBillFromPatientProfile() {
         createTables();
-        return "/inward/inward_bill_intrim";
+        return "/inward/inward_bill_intrim?faces-redirect=true";
     }
 
     public String toIntrimBillclear() {
         patientEncounter = null;
         makeNull();
-        return "/inward/inward_bill_intrim";
+        return "/inward/inward_bill_intrim?faces-redirect=true";
     }
 
     public void updateAdmissionFee(AdmissionType at) {
@@ -2440,15 +2446,19 @@ public class BhtSummeryController implements Serializable {
     public void updateTotal() {
         calFinalValue();
 
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Final Bill Total Without Restrictions & Price Difference")) {
+            grantTotal = adjustedTotal;
+        }
+
         paid = getInwardBean().getPaidValue(getPatientEncounter());
         paidByPatient = getInwardBean().getPaidByPatientValue(getPatientEncounter());
         paidByCompany = getInwardBean().getPaidByCompanyValue(getPatientEncounter());
 
         due = (grantTotal - discount) - paid;
 
-        if (getPatientEncounter().getCreditLimit() != 0) {
-            due -= getPatientEncounter().getCreditLimit();
-        }
+//        if (getPatientEncounter().getCreditLimit() != 0) {
+//            due -= getPatientEncounter().getCreditLimit();
+//        }
 
         changed = false;
 
@@ -2456,6 +2466,10 @@ public class BhtSummeryController implements Serializable {
 
     public void changeIsMade() {
         changed = true;
+    }
+
+    public void listnerDiscontAmmountChanged() {
+        due = (grantTotal - discount) - paid;
     }
 
     public boolean isShowOrginalBill() {
@@ -2509,7 +2523,10 @@ public class BhtSummeryController implements Serializable {
                     i.setTotal(getInwardBean().getLinenCharge(getPatientEncounter()));
                     break;
                 case Medicine:
-                    i.setTotal(getInwardBean().calCostOfIssue(getPatientEncounter(), BillType.PharmacyBhtPre));
+                    List<BillTypeAtomic> btas = new ArrayList<>();
+                    btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+                    btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+                    i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas));
                     break;
                 case GeneralIssuing:
                     i.setTotal(getInwardBean().calCostOfIssue(getPatientEncounter(), BillType.StoreBhtPre));

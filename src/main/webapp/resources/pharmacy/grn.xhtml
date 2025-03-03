@@ -134,7 +134,13 @@
                     <tbody style="font-size: 11px;">
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                             <tr>
-                                <td style="text-align: left;">#{bip.item.name}</td>
+                                <td style="text-align: left;">
+                                    <h:outputText value="#{bip.item.name}">
+                                    </h:outputText>
+                                    
+                                    <h:outputText rendered="#{not empty bip.item.code}" value=" - #{bip.item.code}">
+                                    </h:outputText>
+                                </td>
                                 <!--                                <td style="text-align: right;">
                                                                     <h:outputText value="#{bip.item.code}">
                                                                     </h:outputText>

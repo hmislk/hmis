@@ -974,6 +974,10 @@ public class PharmacyController implements Serializable {
         UserPreference userPreference = new UserPreference();
         String pattern = userPreference.getLongDateTimeFormat();
 
+        if (!pattern.contains("a")) {
+            pattern = pattern.replace("HH", "hh") + " a";
+        }
+
         SimpleDateFormat sdf = new SimpleDateFormat(pattern);
         return sdf.format(date);
     }

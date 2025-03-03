@@ -15,11 +15,11 @@
                 </style>
             </h:head>
 
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleCollecting')}" >
+            <h:panelGroup rendered="#{!(webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving'))}" >
                 <na:not_authorize />
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving')}" >
                 <div class="container-fluid" >
                     <h:form >
 
@@ -743,8 +743,15 @@
                                                                                 width="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Width in Pixles','280')}"
                                                                                 orientation="0"></p:barcode>
                                                                         </h:panelGroup>
-                                                                    </div>
+                                                                    </div> 
                                                                 </div>
+                                                                <div class="patient-info">
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill No in Sample Stickers', true)}">
+                                                                        <span class="sample-id">
+                                                                            #{psc.patientSample.bill.deptId}&nbsp;&nbsp;
+                                                                        </span>
+                                                                    </h:panelGroup>
+                                                                 </div>
                                                             </h:panelGroup>
 
                                                             <p:badge 

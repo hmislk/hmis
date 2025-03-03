@@ -1848,6 +1848,9 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         }
 
         if (visitType == null || visitType.equalsIgnoreCase("IP")) {
@@ -1856,13 +1859,15 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+            opdBts.add(BillTypeAtomic.CANCELLED_INWARD_FINAL_BILL);
+            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
         }
 
-        if (visitType == null) {
-            opdBts.add(BillTypeAtomic.CC_BILL);
-            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
-            opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
-        }
+//        if (visitType == null) {
+//            opdBts.add(BillTypeAtomic.CC_BILL);
+//            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
+//            opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+//        }
 
         System.out.println("bill items");
 
@@ -1906,7 +1911,7 @@ public class ReportsController implements Serializable {
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
                         .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null
-                                ? billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
+                                ? billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + billItem.getQty() : billItem.getQty());
 
                 weeklyBillItemMap7to7.put(weekOfMonth, billItemMap);
             } else if (hourOfDay < 13) {
@@ -1915,7 +1920,7 @@ public class ReportsController implements Serializable {
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
                         .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null
-                                ? billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
+                                ? billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + billItem.getQty() : billItem.getQty());
 
                 weeklyBillItemMap7to1.put(weekOfMonth, billItemMap);
             } else {
@@ -1924,7 +1929,7 @@ public class ReportsController implements Serializable {
 
                 billItemMap.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
                         .put(dayOfMonth, billItemMap.get(billItem.getItem().getName()) != null
-                                ? billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + 1.0 : 1.0);
+                                ? billItemMap.get(billItem.getItem().getName()).getOrDefault(dayOfMonth, 0.0) + billItem.getQty() : billItem.getQty());
 
                 weeklyBillItemMap1to7.put(weekOfMonth, billItemMap);
             }
@@ -2027,17 +2032,17 @@ public class ReportsController implements Serializable {
                 // Between 7 PM to 7 AM
                 billItemMap7to7.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
                         .put(weekOfMonth, billItemMap7to7.get(billItem.getItem().getName()) != null
-                                ? billItemMap7to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
+                                ? billItemMap7to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + billItem.getQty() : billItem.getQty());
             } else if (hourOfDay < 13) {
                 // Between 7 AM to 1 PM
                 billItemMap7to1.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
                         .put(weekOfMonth, billItemMap7to1.get(billItem.getItem().getName()) != null
-                                ? billItemMap7to1.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
+                                ? billItemMap7to1.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + billItem.getQty() : billItem.getQty());
             } else {
                 // Between 1 PM to 7 PM
                 billItemMap1to7.computeIfAbsent(billItem.getItem().getName(), k -> new HashMap<>())
                         .put(weekOfMonth, billItemMap1to7.get(billItem.getItem().getName()) != null
-                                ? billItemMap1to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + 1.0 : 1.0);
+                                ? billItemMap1to7.get(billItem.getItem().getName()).getOrDefault(weekOfMonth, 0.0) + billItem.getQty() : billItem.getQty());
 
             }
         }
@@ -2744,7 +2749,7 @@ public class ReportsController implements Serializable {
 
         bundle.setName("Bills");
         bundle.setBundleType("billList");
-        
+
         if (reportType.equalsIgnoreCase("summary")) {
             bundle = generateReportBill(opdBts, null);
             bundle.calculateTotalByRefBills(visitType.equalsIgnoreCase("OP"));
@@ -2753,7 +2758,7 @@ public class ReportsController implements Serializable {
             bundle.calculateTotalByReferenceBills(visitType.equalsIgnoreCase("OP"));
         }
 
-        
+
     }
 
     public ReportTemplateRowBundle generateReportBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
@@ -2832,7 +2837,7 @@ public class ReportsController implements Serializable {
         b.calculateTotalsWithCredit();
         return b;
     }
-    
+
     public ReportTemplateRowBundle generateReportBill(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
 

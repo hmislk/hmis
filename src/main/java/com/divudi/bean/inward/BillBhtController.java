@@ -14,6 +14,7 @@ import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemMappingController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
@@ -95,6 +96,8 @@ public class BillBhtController implements Serializable {
     ItemApplicationController itemApplicationController;
     @Inject
     PatientInvestigationController patientInvestigationController;
+    @Inject
+    ItemFeeManager itemFeeManager;
     /////////////////
     @EJB
     private ItemFeeFacade itemFeeFacade;
@@ -777,12 +780,17 @@ public class BillBhtController implements Serializable {
     public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment, PaymentMethod paymentMethod) {
 
         List<BillFee> billFeeList = new ArrayList<>();
-        List<ItemFee> itemFee = getBillBean().getItemFee(billItem);
+        List<ItemFee> itemFee = itemFeeManager.fillFees(billItem.getItem());
 
         for (Fee i : itemFee) {
-            BillFee billFee = getBillBean().createBillFee(billItem, i);
+            BillFee billFee = getBillBean().createBillFee(billItem, i, patientEncounter);
 
+            System.out.println("billFee = " + billFee);
+            System.out.println("billFee.getFeeGrossValue() = " + billFee.getFeeGrossValue());
+            System.out.println("matrixDepartment = " + billFee);
+            System.out.println("paymentMethod = " + paymentMethod);
             PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod);
+            System.out.println("priceMatrix = " + priceMatrix);
 
             getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix);
 
@@ -914,22 +922,29 @@ public class BillBhtController implements Serializable {
 
     }
 
-    public void removeBillItem() {
+    public void removeBillItem(BillEntry bi) {
 
         //TODO: Need to add Logic
         //////// // System.out.println(getIndex());
-        if (getIndex() != null) {
+     //   if (getIndex() != null) {
             boolean remove;
-            BillEntry temp = getLstBillEntries().get(getIndex());
+      //      BillEntry temp = getLstBillEntries().get(getIndex());
             //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
-            recreateList(temp);
+       //     recreateList(temp);
             // remove = getLstBillEntries().remove(getIndex());
 
             //  getLstBillEntries().remove(index);
             ////////// // System.out.println("Is Removed:" + remove);
-            calTotals();
+      //      calTotals();
 
+      //  }
+        if(bi == null){
+            JsfUtil.addErrorMessage("Error! Please Try Again");
+            return;
         }
+        lstBillEntries.remove(bi);
+        JsfUtil.addSuccessMessage("Successfully Removed");
+        calTotals();
 
     }
 

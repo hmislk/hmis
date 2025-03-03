@@ -82,6 +82,20 @@
                                              icon="pi pi-times-circle"  
                                              styleClass="ui-button-danger">
                             </p:commandButton>
+                            
+                            <p:commandButton ajax="false" 
+                                             value="Mark Selected Items for Request for Quantity"
+                                             action="#{itemController.markSelectedItemsForRequestForQuentity()}"
+                                             icon="pi pi-check-square" 
+                                             styleClass="ui-button-success">
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" 
+                                             value="Unmark Selected Items for Request for Quantity"
+                                             action="#{itemController.unMarkSelectedItemsForRequestForQuentity()}"
+                                             icon="pi pi-times-circle"  
+                                             styleClass="ui-button-danger">
+                            </p:commandButton>
 
 
                             <p:commandButton 
@@ -146,6 +160,15 @@
                                         <h:outputLabel value="Item Id" />
                                     </f:facet>
                                     <h:outputLabel value="#{i.id}"/>
+                                </p:column>
+                                
+                                <p:column  
+                                    sortBy="#{i.code}" width="80"
+                                    filterMatchMode="contains" filterBy="#{i.code}" >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Code" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.code}"/>
                                 </p:column>
 
                                 <p:column   sortBy="#{i.name}" width="80"
@@ -222,6 +245,16 @@
                                         </h:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{i.printFeesForBills?'Yes':'No'}" >
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column sortBy="#{i.requestForQuentity}" width="10"
+                                          filterMatchMode="contains" filterBy="#{i.requestForQuentity}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Need Quantity for Items" >
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.requestForQuentity?'Yes':'No'}" >
                                     </h:outputLabel>
                                 </p:column>
 

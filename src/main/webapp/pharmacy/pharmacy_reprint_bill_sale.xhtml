@@ -131,10 +131,11 @@
                             <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                                 <ph:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></ph:saleBill_five_five>
                             </h:panelGroup>
-
-                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper'}"> 
-                                <ph:saleBill_Header bill="#{pharmacyBillSearch.bill}"></ph:saleBill_Header>
+                            
+                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
+                                <ph:saleBill_Header bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill_Header>
                             </h:panelGroup>
+
                             <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
                                 <ph:sale_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
                             </h:panelGroup>

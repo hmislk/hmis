@@ -1927,6 +1927,7 @@ public class PharmacyReportController implements Serializable {
         if ("ipSaleDoc".equals(documentType)) {
             billTypes.add(BillType.PharmacyBhtPre);
         } else if ("opSaleDoc".equals(documentType)) {
+            billTypes.add(BillType.PharmacyPre);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
