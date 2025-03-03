@@ -95,7 +95,7 @@
                                                    var="status"
                                                    itemValue="#{status}" itemLabel="#{status.label}" />
                                 </p:selectOneMenu>
-                                
+
                                 <p:outputLabel value="Admission Type" ></p:outputLabel>
                                 <p:selectOneMenu 
                                     class="w-100"
@@ -239,7 +239,7 @@
                                                              action="#{patientController.navigateToOpdPatientProfile()}">
                                                 <f:setPropertyActionListener value="#{a.patient}" target="#{patientController.current}" />
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton ajax="false" 
                                                              class="m-1"
                                                              icon="fa fa-repeat" 
