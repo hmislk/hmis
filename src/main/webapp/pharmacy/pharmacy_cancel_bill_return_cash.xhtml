@@ -76,8 +76,12 @@
 
 
                     <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
-                        <pharmacy:returnBill  bill="#{pharmacyBillSearch.bill.cancelledBill}" />
-
+                        <h:panelGroup id="gpBillPreviewPos" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}">
+                            <pharmacy:returnBill  bill="#{pharmacyBillSearch.bill.cancelledBill}" />
+                        </h:panelGroup>
+                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
+                            <pharmacy:saleBill_Header_Cancel bill="#{pharmacyBillSearch.bill.cancelledBill}"></pharmacy:saleBill_Header_Cancel>
+                        </h:panelGroup>
                     </h:panelGroup>
 
 
