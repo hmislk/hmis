@@ -363,7 +363,7 @@
                                                     <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.discount}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputLabel>
-                                                    <h:outputLabel value="Total" ></h:outputLabel>
+                                                    <h:outputLabel value="Net Total" ></h:outputLabel>
                                                     <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.netTotal}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputLabel>
@@ -491,15 +491,29 @@
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Citizenship" ></p:outputLabel>
-                                                <p:selectBooleanButton offLabel="Local" onLabel="Foreigner"
-                                                                       class="w-75" 
-                                                                       id="f" 
-                                                                       value="#{bookingControllerViewScope.foriegn}">
-                                                    <f:ajax event="change" execute="@this" render="totalsPanel panelBookingDetails"/>
-                                                </p:selectBooleanButton>
+                                                <p:panel>
+                                                    <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                        <p:commandButton
+                                                                value="Mark Foreigner"
+                                                                class="mx-2 my-2"
+                                                                action="#{bookingControllerViewScope.markAsForeignerWithBillUpdate()}"
+                                                                rendered="#{!bookingControllerViewScope.foriegn}"
+                                                                process="@this"
+                                                                update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem"
+                                                        >
+                                                        </p:commandButton>
+                                                        <p:commandButton
+                                                                value="Mark Local"
+                                                                class="mx-2"
+                                                                action="#{bookingControllerViewScope.markAsLocalWithBillUpdate()}"
+                                                                rendered="#{bookingControllerViewScope.foriegn}"
+                                                                process="@this"
+                                                                update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem"
+                                                        >
+                                                        </p:commandButton>
 
-
-
+                                                    </h:panelGroup>
+                                                </p:panel>
 
                                             </h:panelGrid>
                                             <h:panelGroup id="paymentDetails"  >
@@ -776,7 +790,7 @@
                                                     <h:outputText value="#{bi.item.name}" ></h:outputText>
                                                 </p:column>
                                                 <p:column >
-                                                    <h:outputText value="#{bi.netValue}" ></h:outputText>
+                                                    <h:outputText value="#{bookingControllerViewScope.foriegn ? bi.item.totalForForeigner : bi.netValue}" />
                                                 </p:column>
                                                 <p:column >
                                                     <p:commandButton 
@@ -811,8 +825,8 @@
                                                     </h:outputText>
                                                 </p:column>
                                                 <p:column headerText="Value">
-                                                    <p:inputText id="txtFee" value="#{bf.feeValue}" onfocus="this.select()">
-                                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                                    <p:inputText id="txtFee" value="#{bookingControllerViewScope.foriegn ? bf.fee.ffee : bf.fee.fee}" onfocus="this.select()">
+                                                        <f:convertNumber pattern="#,##0.00" />
                                                         <p:ajax event="keyup" 
                                                                 process="txtFee paymentDetails" 
                                                                 update=":#{p:resolveFirstComponentWithId('lstItems',view).clientId} 
@@ -1303,7 +1317,6 @@
                                         <p:outputLabel value="Re-payment Method" class="mt-2"/>
                                         <p:selectOneMenu  id="cmbCancellPs" value="#{bookingControllerViewScope.cancelPaymentMethod}">
                                             <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
-                                            <f:selectItem itemLabel="Same As Billed Bill" itemValue="#{bookingControllerViewScope.billSession ne null ? bookingControllerViewScope.billSession.bill.paymentMethod : null}" ></f:selectItem>
                                             <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
                                         </p:selectOneMenu>
                                     </div>
