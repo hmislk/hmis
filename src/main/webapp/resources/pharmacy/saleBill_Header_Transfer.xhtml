@@ -41,7 +41,7 @@
         
 
             <div class="headingBill1" style="text-align: center">
-                <h:outputLabel class="SaleBillheader" value="SALE BILL"   />   
+                <h:outputLabel class="SaleBillheader" value="TRANSFER ISSUE BILL"   />   
                 <h:outputLabel class="SaleBillheader" value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel class="SaleBillheader" value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
@@ -69,44 +69,62 @@
                 </div>
                 <div>
                     <h:panelGrid columns="3">
-                        <h:outputLabel value="Bill No" class="billDetails1"/>
+                        <h:outputLabel value="Location From" class="billDetails1"/>
                         <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetails1" />
+                        <h:outputLabel value="#{cc.attrs.bill.department.name}" class="billDetails1" />
                     </h:panelGrid>
                 </div>
-                <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
+                <h:panelGroup >
                 <div>
                     <h:panelGrid columns="3">
-                        <h:outputLabel value="Patient" class="billDetails1"/>
-                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" class="billDetails1" />
-                    </h:panelGrid>
-                </div>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{cc.attrs.bill.toStaff ne null}" >
-                <div>
-                    <h:panelGrid columns="3">
-                        <h:outputLabel value="Staff Name" class="billDetails1"/>
-                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}" class="billDetails1" />
-                    </h:panelGrid>
-                </div>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{cc.attrs.bill.toDepartment ne null}" >
-                <div>
-                    <h:panelGrid columns="3">
-                        <h:outputLabel value="To Unit" class="billDetails1"/>
+                        <h:outputLabel value="Location To" class="billDetails1"/>
                         <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
                         <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}" class="billDetails1" />
                     </h:panelGrid>
                 </div>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{cc.attrs.bill.toInstitution ne null}" >
+                <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill.creater ne null}" >
                 <div>
                     <h:panelGrid columns="3">
-                        <h:outputLabel value="Company" class="billDetails1"/>
+                        <h:outputLabel value="Requested Person" class="billDetails1"/>
                         <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}" class="billDetails1" />
+                        <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.creater.webUserPerson.name} - #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}" class="billDetails1" />
+                    </h:panelGrid>
+                </div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill ne null}" >
+                <div>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="Request No" class="billDetails1"/>
+                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                        <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}" class="billDetails1" />
+                    </h:panelGrid>
+                </div>
+                </h:panelGroup>
+                <h:panelGroup  >
+                <div>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="Issued Person" class="billDetails1"/>
+                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" class="billDetails1" />
+                    </h:panelGrid>
+                </div>
+                </h:panelGroup>
+                <h:panelGroup  >
+                <div>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="Issue No" class="billDetails1"/>
+                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetails1" />
+                    </h:panelGrid>
+                </div>
+                </h:panelGroup>
+                 <h:panelGroup  >
+                <div>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="Transporter" class="billDetails1"/>
+                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                        <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}" class="billDetails1" />
                     </h:panelGrid>
                 </div>
                 </h:panelGroup>
