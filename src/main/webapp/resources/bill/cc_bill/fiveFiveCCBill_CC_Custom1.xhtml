@@ -127,6 +127,21 @@
                             </td>
                         </tr>
                     </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{cc.attrs.bill.patient.person.phone ne null}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Patient Age & Sex on Collecting Center Bill Custom 1')}">
+                        <tr>
+                            <td style="text-align: left;" >
+                                <h:outputLabel class="billDetailsFiveFive" value="Age / Sex" ></h:outputLabel>
+                            </td>
+                            <td></td>
+                            <td><h:outputLabel value=":"/></td>
+                            <td></td>
+                            <td colspan="5">                            
+                                <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label} ">
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
 <!--                    <h:panelGroup rendered="#{cc.attrs.bill.referredBy ne null}" >
                         <tr>
