@@ -117,6 +117,13 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
+                    
+                    <p:column>
+                        <f:facet name="header">Profit %</f:facet>
+                        <h:outputText id="profMargin" value="#{((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate ) / bip.pharmaceuticalBillItem.purchaseRate)*100}" >
+                            <f:convertNumber pattern="0.0" ></f:convertNumber>
+                        </h:outputText>
+                    </p:column>
 
                     <p:column rendered="#{webUserController.hasPrivilege('PharmacyPurchaseWh')}">
                         <f:facet name="header">Whole S.P</f:facet>
@@ -142,7 +149,7 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-
+                            <p:column colspan="1"></p:column>
                         </p:row>
                         
                         <p:row rendered="#{cc.attrs.bill.expenseTotal ne null and cc.attrs.bill.expenseTotal != 0}">
@@ -167,7 +174,7 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column colspan="2"></p:column>
+                            <p:column colspan="3"></p:column>
 
                         </p:row>
                         <p:row rendered="#{cc.attrs.bill.discount!=0}">
@@ -179,7 +186,7 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column colspan="2"></p:column>
+                            <p:column colspan="3"></p:column>
 
                         </p:row>
                         <p:row rendered="#{cc.attrs.bill.total!=cc.attrs.bill.netTotal}">
@@ -191,7 +198,7 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column colspan="2"></p:column>
+                            <p:column colspan="3"></p:column>
 
                         </p:row>
                     </p:columnGroup>

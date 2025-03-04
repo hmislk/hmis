@@ -149,7 +149,7 @@
                     <p:dataTable id="dList" value="#{bhtSummeryController.chargeItemTotals}" var="c" scrollable="true"
                                  scrollHeight="300">
                         <p:column headerText="Inward Charge Type">
-                            <h:outputLabel value="#{c.inwardChargeType.label}"/>
+                            <h:outputLabel value="#{c.inwardChargeType.name}"/>
                         </p:column>
                         <p:column headerText="Total">
                             <h:outputLabel value="#{c.total}">
@@ -588,6 +588,11 @@
                                                              class="mx-2">
                                         <p:ajax process="@this" update="@all"/>
                                     </p:selectBooleanCheckbox>
+                                    
+                                    <p:commandButton value="Final Bill" ajax="false"
+                                                         class="ui-button-info mx-1" icon="fas fa-print">
+                                            <p:printer target="finalBillOnly"/>
+                                        </p:commandButton>
 
                                     <h:panelGroup
                                         rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
@@ -667,9 +672,11 @@
                         <h:panelGroup id="professionalAndFinaBill" styleClass="noBorder"
                                       rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">
                             <div style="page-break-before: always;">
-                                <bi:finalBill
+                                <h:panelGroup id="finalBillOnly">
+                                     <bi:finalBill
                                     bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
                                     hosCopy="true"/>
+                                </h:panelGroup>
                             </div>
 
                             <div style="page-break-before: always;">
