@@ -2399,6 +2399,7 @@ public class BhtSummeryController implements Serializable {
         chargeItemTotals = new ArrayList<>();
 
         for (InwardChargeType i : InwardChargeType.values()) {
+            i.setName(configOptionApplicationController.getLongTextValueByKey("Inward Charge Type - Name For " + i.getLabel() , i.getLabel()));
             ChargeItemTotal cit = new ChargeItemTotal();
             cit.setInwardChargeType(i);
 
