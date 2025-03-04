@@ -5,6 +5,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.*;
 
 import com.divudi.bean.lab.PatientInvestigationController;
@@ -97,6 +98,8 @@ public class InwardSearch implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
+    FinancialTransactionController financialTransactionController;
+    @Inject
     private WebUserController webUserController;
     @Inject
     PatientInvestigationController patientInvestigationController;
@@ -142,6 +145,7 @@ public class InwardSearch implements Serializable {
     Sex[] sex;
     private Admission admission;
     private PaymentMethodData paymentMethodData;
+    boolean showOrginalBill;
 
     private boolean withProfessionalFee = false;
 
@@ -339,7 +343,17 @@ public class InwardSearch implements Serializable {
     }
 
     public String navigateDoctorPayment() {
-        return "/inward/inward_bill_payment?faces-redirect=true";
+        if (sessionController.getPaymentManagementAfterShiftStart()) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                return "/inward/inward_bill_payment?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            return "/inward/inward_bill_payment?faces-redirect=true";
+        }
     }
 
     public boolean calculateRefundTotal() {
@@ -1805,6 +1819,14 @@ public class InwardSearch implements Serializable {
 
     public void setWithProfessionalFee(boolean withProfessionalFee) {
         this.withProfessionalFee = withProfessionalFee;
+    }
+    
+    public boolean isShowOrginalBill() {
+        return showOrginalBill;
+    }
+
+    public void setShowOrginalBill(boolean showOrginalBill) {
+        this.showOrginalBill = showOrginalBill;
     }
 
 }

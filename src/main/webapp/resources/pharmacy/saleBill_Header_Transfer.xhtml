@@ -41,7 +41,7 @@
         
 
             <div class="headingBill1" style="text-align: center">
-                <h:outputLabel class="SaleBillheader" value="SALE BILL"   />   
+                <h:outputLabel class="SaleBillheader" value="TRANSFER ISSUE BILL"   />   
                 <h:outputLabel class="SaleBillheader" value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel class="SaleBillheader" value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
@@ -69,62 +69,62 @@
                 </div>
                 <div>
                     <h:panelGrid columns="3">
-                        <h:outputLabel value="Bill No" class="billDetails1"/>
+                        <h:outputLabel value="Location From" class="billDetails1"/>
                         <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetails1" />
+                        <h:outputLabel value="#{cc.attrs.bill.department.name}" class="billDetails1" />
                     </h:panelGrid>
                 </div>
-                <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
+                <h:panelGroup >
                 <div>
                     <h:panelGrid columns="3">
-                        <h:outputLabel value="Patient" class="billDetails1"/>
-                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" class="billDetails1" />
-                    </h:panelGrid>
-                </div>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter ne null}" >
-                <div>
-                    <h:panelGrid columns="3">
-                        <h:outputLabel value=" BHT No" class="billDetails1"/>
-                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" class="billDetails1" />
-                    </h:panelGrid>
-                </div>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom ne null}" >
-                <div>
-                    <h:panelGrid columns="3">
-                        <h:outputLabel value="Room No" class="billDetails1"/>
-                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" class="billDetails1" />
-                    </h:panelGrid>
-                </div>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{cc.attrs.bill.toStaff ne null}" >
-                <div>
-                    <h:panelGrid columns="3">
-                        <h:outputLabel value="Staff Name" class="billDetails1"/>
-                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}" class="billDetails1" />
-                    </h:panelGrid>
-                </div>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{cc.attrs.bill.toDepartment ne null}" >
-                <div>
-                    <h:panelGrid columns="3">
-                        <h:outputLabel value="To Unit" class="billDetails1"/>
+                        <h:outputLabel value="Location To" class="billDetails1"/>
                         <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
                         <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}" class="billDetails1" />
                     </h:panelGrid>
                 </div>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{cc.attrs.bill.toInstitution ne null}" >
+                <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill.creater ne null}" >
                 <div>
                     <h:panelGrid columns="3">
-                        <h:outputLabel value="Company" class="billDetails1"/>
+                        <h:outputLabel value="Requested Person" class="billDetails1"/>
                         <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
-                        <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}" class="billDetails1" />
+                        <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.creater.webUserPerson.name} - #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}" class="billDetails1" />
+                    </h:panelGrid>
+                </div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill ne null}" >
+                <div>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="Request No" class="billDetails1"/>
+                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                        <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}" class="billDetails1" />
+                    </h:panelGrid>
+                </div>
+                </h:panelGroup>
+                <h:panelGroup  >
+                <div>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="Issued Person" class="billDetails1"/>
+                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" class="billDetails1" />
+                    </h:panelGrid>
+                </div>
+                </h:panelGroup>
+                <h:panelGroup  >
+                <div>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="Issue No" class="billDetails1"/>
+                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetails1" />
+                    </h:panelGrid>
+                </div>
+                </h:panelGroup>
+                 <h:panelGroup  >
+                <div>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="Transporter" class="billDetails1"/>
+                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                        <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}" class="billDetails1" />
                     </h:panelGrid>
                 </div>
                 </h:panelGroup>
@@ -181,12 +181,12 @@
                                 </h:outputLabel>
                             </td>
                             <td   style="text-align: right; width: 20%" >
-                                <h:outputLabel  styleClass="itemsBlockRight1"   value="#{bip.netRate}" >
+                                <h:outputLabel  styleClass="itemsBlockRight1"   value="#{bip.rate}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                             <td  style="text-align: right; width: 20%" >
-                                <h:outputLabel styleClass="itemsBlockRight1"   value="#{bip.netValue}"    >
+                                <h:outputLabel styleClass="itemsBlockRight1"   value="#{bip.grossValue}"    >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
@@ -219,10 +219,10 @@
 
                     <tr>
                         <td class="totalsBlock1" style="text-align: left; width: 60%;">
-                            <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}" value="Total" />
+                            <h:outputLabel value="Total" />
                         </td>
                         <td  class="totalsBlock1" style="text-align: right!important; width: 40%;">
-                            <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}" value="#{cc.attrs.bill.total}" >
+                            <h:outputLabel value="#{cc.attrs.bill.total}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
@@ -239,10 +239,10 @@
                     </tr>
                     <tr>
                         <td  class="totalsBlock1" style="text-align: left;">
-                            <h:outputLabel    value="Net Total" />
+                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
                         </td>
                         <td  class="totalsBlock1" style="text-align: right!important;font-weight: bold; ;">
-                            <h:outputLabel    value="#{cc.attrs.bill.netTotal}">
+                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>                          
                         </td>                        
@@ -300,10 +300,10 @@
                     
                     <tr>
                         <td  class="totalsItemBlock1" style="text-align: left;">
-                            <h:outputLabel rendered="#{cc.attrs.bill.paymentMethod ne null}"  value="Payment Method" />
+                            <h:outputLabel   value="Payment Method" />
                         </td>
                         <td  class="totalsItemBlock1" style="text-align: right; ">
-                            <h:outputLabel rendered="#{cc.attrs.bill.paymentMethod ne null}"  value="#{cc.attrs.bill.paymentMethod}">
+                            <h:outputLabel   value="#{cc.attrs.bill.paymentMethod}">
                             </h:outputLabel>
                         </td>
                     </tr>

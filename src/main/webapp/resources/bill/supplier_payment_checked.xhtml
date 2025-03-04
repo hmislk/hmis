@@ -16,8 +16,8 @@
     <cc:implementation>
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
 
-        <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Approval Header CSS')}" >
-            <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Approval Header Text')}" escape="false" ></h:outputText>
+        <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Checking Header CSS')}" >
+            <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Checking Header Text')}" escape="false" ></h:outputText>
         </div>
 
         <div  >
@@ -30,12 +30,12 @@
 
             <div>
                 <h4 style="color: #000000; text-align: center " >
-                    <h:outputLabel value="Supplier Payment Approval" style="text-decoration: underline;"/>
+                    <h:outputLabel value="Supplier Payment Checking" style="text-decoration: underline;"/>
                 </h4>
             </div>
 
             <div class="row" >
-                <div class="col-md-3 p-1" >
+                <div class="col-md-4 p-1" >
                     <h:panelGrid columns="2" columnClasses="text-start, text-end" >
                         <h:outputLabel value="Payee : " />
                         <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
@@ -57,7 +57,7 @@
                         </h:outputLabel>
                     </h:panelGrid>
                 </div>
-                <div class="col-md-3 p-1" >
+                <div class="col-md-4 p-1" >
                     <h:panelGrid columns="2" columnClasses="text-start, text-end" >
                         <h:outputLabel value="Prepaired By : " />
                         <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" >
@@ -71,8 +71,9 @@
                         </h:outputLabel>
                     </h:panelGrid>
                 </div>
+                
 
-                <div class="col-md-3 p-1" >
+                <div class="col-md-4 p-1" >
                     <h:panelGrid columns="2" columnClasses="text-start, text-end" >
                         <h:outputLabel value="Checked By : " />
                         <h:outputLabel value="#{cc.attrs.bill.completedBy.webUserPerson.name}" >
@@ -80,23 +81,8 @@
                         <h:outputLabel value="Comments : " />
                         <h:outputLabel value="#{cc.attrs.bill.comments}" >
                         </h:outputLabel>
-                        <h:outputLabel value="Prepaired at :"  />
+                        <h:outputLabel value="Checked at :"  />
                         <h:outputLabel value="#{cc.attrs.bill.completedAt}"  >
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                        </h:outputLabel>
-                    </h:panelGrid>
-                </div>
-
-                <div class="col-md-3 p-1" >
-                    <h:panelGrid columns="2" columnClasses="text-start, text-end" >
-                        <h:outputLabel value="Approved By : " />
-                        <h:outputLabel value="#{cc.attrs.bill.paymentApprovedBy.webUserPerson.name}" >
-                        </h:outputLabel>
-                        <h:outputLabel value="Comments : " />
-                        <h:outputLabel value="#{cc.attrs.bill.paymentApprovalComments}" >
-                        </h:outputLabel>
-                        <h:outputLabel value="Prepaired at :"  />
-                        <h:outputLabel value="#{cc.attrs.bill.paymentApprovedAt}"  >
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                         </h:outputLabel>
                     </h:panelGrid>
@@ -152,8 +138,8 @@
 
         </div>
 
-        <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Approval Footer CSS')}" >
-            <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Approval Footer Text')}" escape="false" ></h:outputText>
+        <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Checking Footer CSS')}" >
+            <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Checking Footer Text')}" escape="false" ></h:outputText>
         </div>
 
 
