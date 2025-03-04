@@ -439,30 +439,6 @@ public class InwardBeanController implements Serializable {
         return dbl;
 
     }
-    
-    public double calCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas) {
-        String sql;
-        HashMap hm;
-        sql = "SELECT  sum(b.netTotal)"
-                + " FROM Bill b "
-                + " WHERE b.retired=false "
-                + " and b.billTypeAtomic IN :btp "
-                + " and  b.patientEncounter IN :pe";
-        hm = new HashMap();
-        hm.put("btp", btas);
-        List<PatientEncounter> pts = new ArrayList<>();
-        pts.add(patientEncounter);
-        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
-        if(cpts.size() > 0){
-            for(PatientEncounter pt : cpts){
-                pts.add(pt);
-            }
-        }
-        hm.put("pe", pts);
-        return getBillItemFacade().findDoubleByJpql(sql, hm);
-
-    }
 
     public double calculateProfessionalCharges(PatientEncounter patientEncounter) {
 
