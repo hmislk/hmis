@@ -13,7 +13,7 @@
         <cc:attribute name="refunded" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="payments" type="java.lang.Integer"></cc:attribute>
     </cc:interface>
-    
+
     <h:head>
         <!-- Include the custom CSS for styling -->
         <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
@@ -29,10 +29,35 @@
 
         <!-- Composite Component Implementation -->
         <cc:implementation>
-            <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
+            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}" >
+                <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
+            </h:panelGroup>
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}" >
+                <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3_without_header.css" />
+            </h:panelGroup>
+
 
 
             <div class="receipt-container">
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}">
+                    <div class="hospital-name" >
+                        <h:outputLabel value="#{cc.attrs.bill.institution.name}" />
+                    </div>
+                    <div class="hospital-details" >
+                        <div>
+                            <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                        </div>
+                        <div >
+                            <h:outputLabel value="#{cc.attrs.bill.department.telephone2} / #{cc.attrs.bill.department.telephone2}"/>
+                            <!--                    <h:outputLabel value="/" style="width: 10px; text-align: center;"/>
+                                                <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>-->
+                        </div>
+                        <div >
+                            <h:outputLabel value="#{cc.attrs.bill.department.email}" />                                                
+                        </div>
+                    </div>
+                    <div class="separator"></div>
+                </h:panelGroup>
                 <!-- Header Section -->
                 <div class="hospital-name">
                     <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
@@ -61,7 +86,7 @@
                             </h:panelGroup>
                         </tr>
                     </h:panelGroup>
-                    
+
                     <tr>
                         <td  style="padding: 2px;">Bill Date:</td>
                         <td  style="padding: 2px;">
