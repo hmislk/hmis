@@ -73,7 +73,7 @@
 
                                     <p:outputLabel value="Approval Comments"/>
                                     <p:inputTextarea
-                                        required="true"
+                                        required="false"
                                         requiredMessage="Please enter a comment to approve"
                                         class="w-100"
                                         style="min-width: 20em;"
@@ -106,7 +106,6 @@
 
                                 <p:panelGrid layout="tabular" columns="2" class="w-100 mt-1">
                                     <f:facet name="header" >
-                                        #{supplierPaymentController.current.completed}
                                         <p:outputLabel value="Payment Checking"/>
                                     </f:facet>
                                     <p:outputLabel value="Checked at"/>
@@ -161,7 +160,7 @@
                                 </p:outputLabel>
                             </p:column>
                             <p:column class="text-end" headerText="GRN Return Amount">
-                                <p:outputLabel value="#{b.referenceBill.tmpReturnTotal}">
+                                <p:outputLabel value="#{b.referenceBill.refundAmount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>
