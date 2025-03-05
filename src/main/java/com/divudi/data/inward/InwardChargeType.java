@@ -137,6 +137,7 @@ public enum InwardChargeType {
     MRIReporting("MRI Reporting"),
     MRIScan("MRI Scan"),
     Nebulization("Nebulization Charges"),
+    NebulizationWithOxygen("Nebulization With Oxygen"),
     UltrasoundScan("Ultrasound Scan"),
     VaccineHospitalFee("Vaccine Hospital Fee"),
     WardCatheterization("Catheterization Charges"),
