@@ -160,6 +160,12 @@ public class ReportsTransfer implements Serializable {
         pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill?faces-redirect=true";
     }
+    
+    public String navigateToTransferIssueByBillSummary() {
+        transferBills = null;
+        pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
+        return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_summery?faces-redirect=true";
+    }
 
     public String navigateToPharmacyTransferReports() {
         transferBills = null;
