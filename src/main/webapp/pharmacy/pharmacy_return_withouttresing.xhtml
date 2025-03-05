@@ -319,9 +319,10 @@
                                             <p:inputText 
                                                 id="txtBillDiscount"
                                                 class="w-100 text-end"
+                                                onfocus="this.select();"
                                                 value="#{pharmacyReturnwithouttresing.preBill.discount}" >
                                                 <f:convertNumber pattern="#,##0.00" />
-                                                <p:ajax event="keyup" process="txtBillDiscount" update="txtBillNetTotal" ></p:ajax>
+                                                <p:ajax event="keyup" process="txtBillDiscount" listener="#{pharmacyReturnwithouttresing.calTotal()}" update="txtBillNetTotal" ></p:ajax>
                                             </p:inputText>
 
                                             <h:outputLabel value="Return Value" ></h:outputLabel>

@@ -683,7 +683,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
             netTot = netTot + b.getNetValue();
             grossTot = grossTot + b.getGrossValue();
 //            discount = discount + b.getDiscount();
-            retailValue = retailValue + b.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
+            retailValue = retailValue + b.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * b.getPharmaceuticalBillItem().getQty() ;
             //margin += b.getMarginValue();
 
         }
