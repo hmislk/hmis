@@ -835,7 +835,8 @@ public class EnumController implements Serializable {
             PaymentMethod.Cheque,
             PaymentMethod.Slip,
             PaymentMethod.ewallet,
-            PaymentMethod.PatientDeposit};
+            PaymentMethod.PatientDeposit,
+            PaymentMethod.OnlineSettlement};
         return p;
     }
 
