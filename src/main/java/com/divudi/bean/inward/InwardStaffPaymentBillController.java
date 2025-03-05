@@ -368,9 +368,11 @@ public class InwardStaffPaymentBillController implements Serializable {
             double drawerBalance = userDrawer.getCashInHandValue();
             double paymentAmount = getTotalPayingWithoutWht();
 
-            if (drawerBalance < paymentAmount) {
-                JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
-                return;
+            if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                if (drawerBalance < paymentAmount) {
+                    JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                    return;
+                }
             }
         }
         performCalculations();
