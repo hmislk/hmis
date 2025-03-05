@@ -237,10 +237,10 @@
                                         <h:outputText styleClass="fas fa-money-bill" />
                                         <p:outputLabel value="Charges" class="mx-2"/>
                                     </f:facet>
-                                    <p:column headerText="Charge Type" >
-                                        <h:outputLabel value="#{c.inwardChargeType.label}"/>
+                                    <p:column headerText="Charge Type" rendered="#{c.total > 0}">
+                                        <h:outputLabel value="#{c.inwardChargeType.name}"/>
                                     </p:column>
-                                    <p:column  sortBy="#{c.total}"  headerText="Total">
+                                    <p:column  sortBy="#{c.total}"  headerText="Total" rendered="#{c.total > 0}">
                                         <h:outputLabel value="#{c.total}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
