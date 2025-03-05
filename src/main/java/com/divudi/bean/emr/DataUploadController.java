@@ -1233,7 +1233,7 @@ public class DataUploadController implements Serializable {
                 continue;
             }
 
-            Item masterItem = itemController.findMasterItemByName(name);
+//            Item masterItem = itemController.findMasterItemByName(name);
 
             Cell printingNameCell = row.getCell(1);
             if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
@@ -1340,7 +1340,7 @@ public class DataUploadController implements Serializable {
                 service.setFullName(fullName);
                 service.setCode(code);
                 service.setCategory(category);
-                service.setMasterItemReference(masterItem);
+//                service.setMasterItemReference(masterItem);
                 service.setInstitution(institution);
                 service.setDepartment(department);
                 service.setInwardChargeType(iwct);
@@ -1359,7 +1359,7 @@ public class DataUploadController implements Serializable {
                 ix.setInwardChargeType(iwct);
                 ix.setSample(smpl);
                 ix.setInvestigationTube(tube);
-                ix.setMasterItemReference(masterItem);
+//                ix.setMasterItemReference(masterItem);
                 ix.setCreater(sessionController.getLoggedUser());
                 ix.setCreatedAt(new Date());
                 item = ix;
@@ -1568,7 +1568,7 @@ public class DataUploadController implements Serializable {
                 continue;
             }
 
-            Item masterItem = itemController.findMasterItemByName(name);
+//            Item masterItem = itemController.findMasterItemByName(name);
 
             Cell printingNameCell = row.getCell(1);
             if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
@@ -1675,7 +1675,7 @@ public class DataUploadController implements Serializable {
                 service.setFullName(fullName);
                 service.setCode(code);
                 service.setCategory(category);
-                service.setMasterItemReference(masterItem);
+//                service.setMasterItemReference(masterItem);
                 service.setInstitution(institution);
                 service.setDepartment(department);
                 service.setInwardChargeType(iwct);
@@ -1694,7 +1694,7 @@ public class DataUploadController implements Serializable {
                 ix.setInwardChargeType(iwct);
                 ix.setSample(smpl);
                 ix.setInvestigationTube(tube);
-                ix.setMasterItemReference(masterItem);
+//                ix.setMasterItemReference(masterItem);
                 ix.setCreater(sessionController.getLoggedUser());
                 ix.setCreatedAt(new Date());
                 item = ix;
