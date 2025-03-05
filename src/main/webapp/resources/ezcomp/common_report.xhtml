@@ -86,7 +86,14 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledTime' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampledAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="hh:mm a"/>
                 </h:outputText>
-                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'CollectingCenter' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.collectingCentre.chequePrintingName}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+
+                <h:outputText 
+                    rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'CollectingCenter' and myCli.retired eq false}" 
+                    value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.collectingCentre != null ? cc.attrs.patientReport.patientInvestigation.billItem.bill.collectingCentre.chequePrintingName : 'N/A'}" 
+                    style="#{myIi.innerCssStyle};" 
+                    escape="false">
+                </h:outputText>
+
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BilledDate' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.createdAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="dd/MM/yyyy"/>
                 </h:outputText>
@@ -106,7 +113,14 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedTime' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.createdAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="hh:mm a"/>
                 </h:outputText>
-                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringDoctor' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+
+                <h:outputText 
+                    rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringDoctor' and myCli.retired eq false}" 
+                    value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.referredBy != null and cc.attrs.patientReport.patientInvestigation.billItem.bill.referredBy.person != null and cc.attrs.patientReport.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle != null ? cc.attrs.patientReport.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle : 'N/A'}" 
+                    style="#{myIi.innerCssStyle};" 
+                    escape="false">
+                </h:outputText>
+
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledAt' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampledAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
                 </h:outputText>
@@ -145,7 +159,13 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillingInstitution' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.institution.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PerformInstitution' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.toInstitution.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'VisitType' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.ipOpOrCc}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
-                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BHT' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.encounter.bhtNo}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+
+                <h:outputText 
+                    rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BHT' and myCli.retired eq false}" 
+                    value="#{cc.attrs.patientReport.patientInvestigation.encounter.bhtNo != null ? cc.attrs.patientReport.patientInvestigation.encounter.bhtNo : 'N/A'}" 
+                    style="#{myIi.innerCssStyle};" 
+                    escape="false">
+                </h:outputText>
 
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'CollectedOn' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampleCollectedAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
@@ -183,9 +203,9 @@
                         value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" 
                         cache="false"
                         type="code128" height="#{myCli.htPix}" width="#{myCli.wtPix}" />
-                    
+
                 </h:panelGroup>
-                
+
                 <h:panelGroup rendered="#{myCli.ixItemType eq 'BarcodeVertical' and myCli.retired ne true }"  
                               >
                     <div style="height: #{myCli.htPix}px; width:#{myCli.wtPix}px; right: 0px; position: absolute; overflow: hidden; " >
