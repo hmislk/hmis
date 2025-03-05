@@ -25,9 +25,9 @@
                         </p:calendar>
 
                         <h:outputLabel  value="Department"></h:outputLabel>
-                        <p:autoComplete  value="#{commonReport.department}"
+                        <p:autoComplete  value="#{commonReport.department}"  
                                          completeMethod="#{departmentController.completeDept}" var="dept"
-                                         itemValue="#{dept}" itemLabel="#{dept.name}"
+                                         itemValue="#{dept}" itemLabel="#{dept.name}" 
                                          forceSelection="true" rendered="true"
                                          requiredMessage="You must select a department" >
                         </p:autoComplete>
@@ -35,7 +35,7 @@
 
                         <h:outputLabel value="Reference Institution"/>
                         <p:autoComplete  value="#{commonReport.referenceInstitution}"
-                                         completeMethod="#{institutionController.completeCompany}"
+                                         completeMethod="#{institutionController.completeCompany}" 
                                          forceSelection="true"
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
 
@@ -45,7 +45,7 @@
 
                         <h:outputLabel value="Supplier Name"/>
                         <p:autoComplete  value="#{commonReport.supplier}"
-                                         completeMethod="#{dealerController.completeDealor}"
+                                         completeMethod="#{dealerController.completeDealor}" 
                                          forceSelection="true"
                                          var="sn" itemLabel="#{sn.name}" itemValue="#{sn}"
                                          />
@@ -58,33 +58,33 @@
 
 
                     <h:panelGrid columns="3" class="my-2">
-                        <p:commandButton
-                            id="btnRefresh"
-                            ajax="false"
-                            value="Fill"
+                        <p:commandButton 
+                            id="btnRefresh" 
+                            ajax="false" 
+                            value="Fill" 
                             icon="fa-solid fa-fill"
                             class="ui-button-warning"
                             actionListener="#{commonReport.createGrnDetailTable()}"
-                            style="float: right;" />
+                            style="float: right;" />  
 
-                        <p:commandButton
-                            actionListener="#{commonReport.createGrnDetailTable()}"
-                            ajax="false"
-                            value="Excel"
+                        <p:commandButton 
+                            actionListener="#{commonReport.createGrnDetailTable()}" 
+                            ajax="false" 
+                            value="Excel" 
                             icon="fa-solid fa-file-excel"
-                            class="ui-button-success mx-2"
+                            class="ui-button-success mx-2" 
                             style="float: right;" >
                             <p:dataExporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum" fileName="report_grn_detail"  />
                         </p:commandButton>
 
-                        <p:commandButton
-                            ajax="false"
+                        <p:commandButton 
+                            ajax="false" 
                             value="Print"
                             icon="fa-solid fa-print"
                             class="ui-button-info"
                             style="float: right;" >
                             <p:printer target="reportPrint"/>
-                        </p:commandButton>
+                        </p:commandButton>  
                     </h:panelGrid>
 
                     <p:panel id="reportPriview">
@@ -99,7 +99,7 @@
                             <h:outputLabel value="From" />
                             <h:outputLabel  value="#{commonReport.fromDate}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </h:outputLabel>
+                            </h:outputLabel>                          
                             <h:outputLabel value="To"/>
                             <h:outputLabel  value="#{commonReport.toDate}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -107,19 +107,19 @@
                         </h:panelGrid>
 
                         <p:spacer height="5"/>
-                        <p:dataTable
-                            id="billed"
+                        <p:dataTable 
+                            id="billed"  
                             value="#{commonReport.grnBilled.bills}"
-                            var="b"
-                            rendered="#{commonReport.grnBilled.bills ne null}"
+                            var="b" 
+                            rendered="#{commonReport.grnBilled.bills ne null}" 
                             sortBy="#{b.billType}"
                             rowKey="#{b.id}">
 
-                            <f:facet name="header">
+                            <f:facet name="header">  
                                 <h:outputLabel value="From :" />&nbsp;&nbsp;
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                </h:outputLabel>
+                                </h:outputLabel>                          
                                 &nbsp;&nbsp;<h:outputLabel value="To :"/>&nbsp;&nbsp;
                                 <h:outputLabel  value="#{commonReport.toDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -128,24 +128,24 @@
                             </f:facet>
 
                             <p:column headerText="GRN No" width="11em">
-                                <p:commandLink
-                                    value="#{b.deptId}"
-                                    action="#{commonReport.navigateToViewGrnBillFromGRNSummary(b)}"
+                                <p:commandLink 
+                                    value="#{b.deptId}" 
+                                    action="#{commonReport.navigateToViewGrnBillFromGRNSummary(b)}" 
                                     process="@this" >
                                 </p:commandLink>
                             </p:column>
 
                             <!--                            <p:column headerText="Invoice No" >
-                                                            <f:facet name="header">
+                                                            <f:facet name="header">  
                                                                 <h:outputLabel value="Invoice No"/>
-                                                            </f:facet>
+                                                            </f:facet> 
                                                             <h:outputLabel value="#{b.invoiceNumber}"/>
                                                         </p:column>-->
 
                             <p:column headerText="Created At"  >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Created At"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel value="#{b.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
@@ -156,28 +156,28 @@
                             </p:column>
 
                             <!--                            <p:column headerText="Reference Institution"  >
-                                                            <f:facet name="header">
+                                                            <f:facet name="header">  
                                                                 <h:outputLabel value="Reference Institution"/>
-                                                            </f:facet>
+                                                            </f:facet> 
                                                             <h:outputLabel value="#{b.referenceInstitution.name}"/>
                                                         </p:column>-->
 
-                            <p:column headerText="Po No"
+                            <p:column headerText="Po No" 
                                       width="11em"
                                       sortBy="#{b.referenceBill.deptId}"
                                       filterBy="#{b.referenceBill.deptId}"
                                       filterMatchMode="contains" >
-                                <p:commandLink
-                                    value="#{b.referenceBill.deptId}"
-                                    action="#{commonReport.navigateToViewPOBillFromGRNSummary(b.referenceBill)}"
+                                <p:commandLink 
+                                    value="#{b.referenceBill.deptId}" 
+                                    action="#{commonReport.navigateToViewPOBillFromGRNSummary(b.referenceBill)}" 
                                     process="@this" >
                                 </p:commandLink>
                             </p:column>
 
                             <p:column headerText="Purchase Value Cash" style=" text-align: right"  >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Purchase Value Cash"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -185,9 +185,9 @@
                             </p:column>
 
                             <p:column headerText="Purchase Value Credit" style=" text-align: right" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Purchase Value Credit"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -195,9 +195,9 @@
                             </p:column>
 
                             <p:column headerText="Sale Value Cash" style=" text-align: right"  >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Sale Value Cash"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.saleValue}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -205,9 +205,9 @@
                             </p:column>
 
                             <p:column headerText="Sale Value Credit" style=" text-align: right" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Sale Value Credit"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.saleValue}"  >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -215,9 +215,9 @@
                             </p:column>
 
                             <p:column headerText="Remark" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Remark"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
                             </p:column>
 
@@ -226,8 +226,8 @@
                                                             </p:commandButton>
                                                         </p:column>-->
 
-                            <p:columnGroup type="footer">
-                                <p:row >
+                            <p:columnGroup type="footer">  
+                                <p:row >  
                                     <p:column colspan="4" style="text-align:left" footerText="Totals:"/>
 
                                     <p:column style="text-align: right;" footerText="#{commonReport.grnBilled.cash}">
@@ -262,8 +262,8 @@
                                         </f:facet>
                                     </p:column>
 
-                                </p:row>
-                            </p:columnGroup>
+                                </p:row>  
+                            </p:columnGroup>  
 
                         </p:dataTable>
 
@@ -276,23 +276,23 @@
 
 
 
-                        <p:dataTable id="cancelled"  value="#{commonReport.grnCancelled.bills}" var="b1"
+                        <p:dataTable id="cancelled"  value="#{commonReport.grnCancelled.bills}" var="b1"  
                                      rendered="#{commonReport.grnCancelled.bills.size()!=0}" >
-                            <f:facet name="header">
+                            <f:facet name="header">  
                                 <h:outputLabel value="Cancelled GRN "/>
-                            </f:facet>
+                            </f:facet> 
 
                             <p:column headerText="Cancelled NO" width="11em" >
-                                <p:commandLink
-                                    value="#{b1.deptId}"
-                                    action="#{commonReport.navigateToViewCancelGRNBillFromGRNSummary(b1)}"
+                                <p:commandLink 
+                                    value="#{b1.deptId}" 
+                                    action="#{commonReport.navigateToViewCancelGRNBillFromGRNSummary(b1)}" 
                                     process="@this" >
                                 </p:commandLink>
                             </p:column>
                             <p:column headerText="Cancelled At">
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Cancelled At"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel value="#{b1.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
@@ -306,16 +306,16 @@
                                 </h:outputLabel>
                             </p:column>
                             <!--                            <p:column headerText="Referenace Institution" >
-                                                            <f:facet name="header">
+                                                            <f:facet name="header">  
                                                                 <h:outputLabel value="Referenace Institution"/>
-                                                            </f:facet>
+                                                            </f:facet> 
                                                             <h:outputLabel value="#{b1.billedBill.referenceInstitution.name}"/>
                                                         </p:column>-->
 
                             <p:column headerText="Purchase Value Cash"  style=" text-align: right"  >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Purchase Value Cash"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -323,9 +323,9 @@
                             </p:column>
 
                             <p:column headerText="Purchase Value Credit"  style=" text-align: right" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Purchase Value Credit"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -334,18 +334,18 @@
                             </p:column>
 
                             <p:column headerText="Sale Value Cash"  style=" text-align: right"  >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Sale Value Cash"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.saleValue}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Cash'}" value="0.00"/>
                             </p:column>
                             <p:column headerText="Sale Value Credit"  style=" text-align: right" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Sale Value Credit"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.saleValue}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -353,9 +353,9 @@
 
                             </p:column>
                             <p:column headerText="Comment" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Comment"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel value="#{b1.comments}"/>
 
                             </p:column>
@@ -364,9 +364,9 @@
                                                             <p:selectBooleanCheckbox style="border: black 2px solid;"/>
                                                         </p:column>-->
 
-                            <p:columnGroup type="footer">
+                            <p:columnGroup type="footer">  
 
-                                <p:row>
+                                <p:row>  
                                     <p:column colspan="4" style="text-align:left" footerText="Totals:">
 
                                     </p:column>
@@ -377,7 +377,7 @@
                                             </h:outputLabel>
                                         </f:facet>
 
-                                    </p:column>
+                                    </p:column>                                                           
                                     <p:column style="text-align: right;" footerText="#{commonReport.grnCancelled.credit}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.grnCancelled.credit}">
@@ -393,7 +393,7 @@
                                             </h:outputLabel>
                                         </f:facet>
 
-                                    </p:column>
+                                    </p:column>                                                           
                                     <p:column style="text-align: right;" footerText="#{commonReport.grnCancelled.saleCredit}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.grnCancelled.saleCredit}">
@@ -402,9 +402,9 @@
                                         </f:facet>
                                     </p:column>
 
-                                </p:row>
+                                </p:row>  
 
-                            </p:columnGroup>
+                            </p:columnGroup>  
 
                         </p:dataTable>
 
@@ -419,25 +419,25 @@
 
 
 
-                        <p:dataTable id="refunded"  value="#{commonReport.grnReturn.bills}" var="b"
-                                     rendered="#{commonReport.grnReturn.bills.size()!=0}"
-                                     sortBy="#{b.billType}"
+                        <p:dataTable id="refunded"  value="#{commonReport.grnReturn.bills}" var="b" 
+                                     rendered="#{commonReport.grnReturn.bills.size()!=0}" 
+                                     sortBy="#{b.billType}" 
                                      rowKey="#{b.id}" >
 
-                            <f:facet name="header">
+                            <f:facet name="header">  
                                 <h:outputLabel value="Returned GRN"/>
                             </f:facet>
 
                             <p:column headerText="Returned No" width="11em" >
-                                <p:commandLink
-                                    value="#{b.deptId}"
-                                    action="#{commonReport.navigateToViewCancelGRNReturnBillFromGRNSummary(b)}"
+                                <p:commandLink 
+                                    value="#{b.deptId}" 
+                                    action="#{commonReport.navigateToViewCancelGRNReturnBillFromGRNSummary(b)}" 
                                     process="@this" >
                                 </p:commandLink>
                             </p:column>
 
                             <p:column headerText="Returned At"  >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Returned At"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b.createdAt}" >
@@ -448,42 +448,42 @@
                             <p:column headerText="Supplier Name">
                                 <h:outputLabel value="#{b.toInstitution.name}"/>
 
-                            </p:column>
+                            </p:column> 
                             <p:column headerText="GRN No" width="11em" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="GRN No"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel value="#{b.referenceBill.deptId}"/>
                             </p:column>
 
                             <!--                            <p:column headerText="GRN Invoice No" >
-                                                            <f:facet name="header">
+                                                            <f:facet name="header">  
                                                                 <h:outputLabel value="GRN Invoice No"/>
-                                                            </f:facet>
+                                                            </f:facet> 
                                                             <h:outputLabel value="#{b.referenceBill.invoiceNumber}"/>
                                                         </p:column>-->
 
 <!--                            <p:column headerText="GRN Date" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="GRN Date"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel value="#{b.referenceBill.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>-->
                             <!--                            <p:column headerText="Referenace Institution" >
-                                                            <f:facet name="header">
+                                                            <f:facet name="header">  
                                                                 <h:outputLabel value="Referenace Institution"/>
-                                                            </f:facet>
+                                                            </f:facet> 
                                                             <h:outputLabel value="#{b.referenceBill.referenceInstitution.name}"/>
                                                         </p:column>-->
 
 
 
                             <p:column headerText="Purchase Value Cash" style=" text-align: right"  >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Purchase Value Cash"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -491,9 +491,9 @@
                             </p:column>
 
                             <p:column headerText="Purchase Value Credit" style=" text-align: right" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Purchase Value Credit"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -501,9 +501,9 @@
                             </p:column>
 
                             <p:column headerText="Sale Value Cash" style=" text-align: right"  >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Sale Value Cash"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.saleValue}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -511,9 +511,9 @@
                             </p:column>
 
                             <p:column headerText="Sale Value Credit" style=" text-align: right" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Sale Value Credit"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.saleValue}"  >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -521,13 +521,13 @@
                             </p:column>
 
                             <p:column headerText="Remark" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Remark"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
                             </p:column>
-                            <p:columnGroup type="footer">
-                                <p:row >
+                            <p:columnGroup type="footer">  
+                                <p:row >  
                                     <p:column colspan="4" style="text-align:left" footerText="Totals:"/>
 
                                     <p:column style="text-align: right;" footerText="#{commonReport.grnReturn.cash}">
@@ -544,7 +544,7 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
-                                    </p:column>
+                                    </p:column> 
 
                                     <p:column style="text-align: right;" footerText="#{commonReport.grnReturn.saleCash}">
                                         <f:facet name="footer">
@@ -560,9 +560,9 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
+                                    </p:column> 
+                                </p:row>  
+                            </p:columnGroup>  
 
                         </p:dataTable>
 
@@ -577,55 +577,55 @@
 
 
 
-                        <p:dataTable id="returnCancelled"  value="#{commonReport.grnReturnCancel.bills}" var="b1"
+                        <p:dataTable id="returnCancelled"  value="#{commonReport.grnReturnCancel.bills}" var="b1"  
                                      rendered="#{commonReport.grnReturnCancel.bills.size()!=0}" >
-                            <f:facet name="header">
+                            <f:facet name="header">  
                                 <h:outputLabel value="Cancelled (Returned) GRN "/>
-                            </f:facet>
+                            </f:facet> 
 
                             <p:column headerText="Cancelled NO" width="11em" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Cancelled NO"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel value="#{b1.deptId}"/>
                             </p:column>
                             <p:column headerText="Cancelled At">
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Cancelled At"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel value="#{b1.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Returned No" width="11em" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Returned No"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel value="#{b1.billedBill.deptId}" >
                                 </h:outputLabel>
                             </p:column>
                             <!--                            <p:column headerText="Referenace Institution" >
-                                                            <f:facet name="header">
+                                                            <f:facet name="header">  
                                                                 <h:outputLabel value="Referenace Institution"/>
-                                                            </f:facet>
+                                                            </f:facet> 
                                                             <h:outputLabel value="#{b1.toInstitution.name}"/>
                                                         </p:column>                         -->
 
 
                             <p:column headerText="Purchase Value Cash"  style=" text-align: right"  >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Purchase Value Cash"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Cash'}" value="0.00"/>
                             </p:column>
                             <p:column headerText="Purchase Value Credit"  style=" text-align: right" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Purchase Value Credit"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -634,18 +634,18 @@
                             </p:column>
 
                             <p:column headerText="Sale Value Cash"  style=" text-align: right"  >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Sale Value Cash"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.saleValue}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Cash'}" value="0.00"/>
                             </p:column>
                             <p:column headerText="Sale Value Credit"  style=" text-align: right" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Sale Value Credit"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.saleValue}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -653,9 +653,9 @@
 
                             </p:column>
                             <p:column headerText="Comment" >
-                                <f:facet name="header">
+                                <f:facet name="header">  
                                     <h:outputLabel value="Comment"/>
-                                </f:facet>
+                                </f:facet> 
                                 <h:outputLabel value="#{b1.comments}"/>
                             </p:column>
 
@@ -663,9 +663,9 @@
                                                             <p:selectBooleanCheckbox style="border: black 2px solid;"/>
                                                         </p:column>-->
 
-                            <p:columnGroup type="footer">
+                            <p:columnGroup type="footer">  
 
-                                <p:row>
+                                <p:row>  
                                     <p:column colspan="3" style="text-align:left" footerText="Totals:">
 
                                     </p:column>
@@ -676,7 +676,7 @@
                                             </h:outputLabel>
                                         </f:facet>
 
-                                    </p:column>
+                                    </p:column>                                                           
                                     <p:column style="text-align: right;" footerText="#{commonReport.grnReturnCancel.credit}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.grnReturnCancel.credit}">
@@ -692,18 +692,18 @@
                                             </h:outputLabel>
                                         </f:facet>
 
-                                    </p:column>
+                                    </p:column>                                                           
                                     <p:column style="text-align: right;" footerText="#{commonReport.grnReturnCancel.saleCredit}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.grnReturnCancel.saleCredit}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
-                                    </p:column>
+                                    </p:column> 
 
-                                </p:row>
+                                </p:row>  
 
-                            </p:columnGroup>
+                            </p:columnGroup>  
 
                         </p:dataTable>
 
@@ -744,7 +744,7 @@
                             <h:outputLabel value="From" />
                             <h:outputLabel  value="#{commonReport.fromDate}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </h:outputLabel>
+                            </h:outputLabel>                          
                             <h:outputLabel value="To"/>
                             <h:outputLabel  value="#{commonReport.toDate}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -754,19 +754,19 @@
                         <p:spacer height="5"/>
 
 
-                        <p:dataTable
-                            id="billed_print"
-                            style="padding: 0px!important; margin: 0px!important; font-size: 10px;"
+                        <p:dataTable 
+                            id="billed_print"  
+                            style="padding: 0px!important; margin: 0px!important; font-size: 10px;" 
                             styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                             value="#{commonReport.grnBilled.bills}"
-                            var="b"
+                            var="b" 
                             rendered="#{commonReport.grnBilled.bills ne null}">
 
-                            <f:facet name="header">
+                            <f:facet name="header">  
                                 <h:outputLabel value="From :" />&nbsp;&nbsp;
                                 <h:outputLabel value="#{commonReport.fromDate}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                </h:outputLabel>
+                                </h:outputLabel>                           
                                 &nbsp;&nbsp;<h:outputLabel value="To :"/>&nbsp;&nbsp;
                                 <h:outputLabel value="#{commonReport.toDate}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -816,8 +816,8 @@
                                 <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" />
                             </p:column>
 
-                            <p:columnGroup type="footer">
-                                <p:row>
+                            <p:columnGroup type="footer">  
+                                <p:row>  
                                     <p:column colspan="4" footerText="Totals:" style="text-align:left; font-size: 9px;"/>
                                     <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnBilled.cash}">
                                         <f:facet name="footer">
@@ -847,24 +847,24 @@
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                </p:row>
-                            </p:columnGroup>
+                                </p:row>  
+                            </p:columnGroup>  
                         </p:dataTable>
 
 
                         <p:spacer height="30"/>
 
 
-                        <p:dataTable
-                            id="cancelled_print"
-                            style="padding: 0px!important; margin: 0px!important; font-size: 10px;"
+                        <p:dataTable 
+                            id="cancelled_print"  
+                            style="padding: 0px!important; margin: 0px!important; font-size: 10px;" 
                             styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
-                            value="#{commonReport.grnCancelled.bills}"
-                            var="b1"
+                            value="#{commonReport.grnCancelled.bills}" 
+                            var="b1"  
                             rendered="#{commonReport.grnCancelled.bills.size()!=0}" >
-                            <f:facet name="header">
+                            <f:facet name="header">  
                                 <h:outputLabel value="Cancelled GRN "/>
-                            </f:facet>
+                            </f:facet> 
 
                             <p:column headerText="Cancelled NO" style="font-size: 9px; word-break: break-word; white-space: normal; text-align:left;">
                                 <h:outputLabel value="#{b1.deptId}" style="display: block; word-break: break-word; white-space: normal;" />
@@ -876,7 +876,7 @@
                             </p:column>
                             <p:column headerText="Supplier Name" style="font-size: 9px; text-align:left;" >
                                 <h:outputLabel value="#{b1.fromInstitution.name}" />
-                            </p:column>
+                            </p:column>                         
                             <p:column headerText="GRN No" style="font-size: 9px; word-break: break-word; white-space: normal; text-align:left;">
                                 <h:outputLabel value="#{b1.billedBill.deptId}" style="display: block; word-break: break-word; white-space: normal;" >
                                 </h:outputLabel>
@@ -904,13 +904,13 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00" />
-                            </p:column>
+                            </p:column>                                   
                             <p:column headerText="Comment" style="text-align: right; font-size: 9px;" >
                                 <h:outputLabel value="#{b1.comments}" />
                             </p:column>
 
-                            <p:columnGroup type="footer">
-                                <p:row>
+                            <p:columnGroup type="footer">  
+                                <p:row>  
                                     <p:column colspan="4" style="text-align:left; font-size: 9px;" footerText="Totals:" />
                                     <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnCancelled.cash}">
                                         <f:facet name="footer">
@@ -918,7 +918,7 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
-                                    </p:column>
+                                    </p:column>                                                           
                                     <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnCancelled.credit}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.grnCancelled.credit}" >
@@ -933,7 +933,7 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
-                                    </p:column>
+                                    </p:column>                                                           
                                     <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnCancelled.saleCredit}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.grnCancelled.saleCredit}">
@@ -941,23 +941,23 @@
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                </p:row>
-                            </p:columnGroup>
+                                </p:row>  
+                            </p:columnGroup>  
                         </p:dataTable>
 
 
                         <p:spacer height="30"/>
 
 
-                        <p:dataTable id="refunded_print"  value="#{commonReport.grnReturn.bills}"
-                                     var="b"
-                                     style="padding: 0px!important; margin: 0px!important; font-size: 10px;"
+                        <p:dataTable id="refunded_print"  value="#{commonReport.grnReturn.bills}" 
+                                     var="b" 
+                                     style="padding: 0px!important; margin: 0px!important; font-size: 10px;" 
                                      styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
-                                     rendered="#{commonReport.grnReturn.bills.size()!=0}"
-                                     sortBy="#{b.billType}"
+                                     rendered="#{commonReport.grnReturn.bills.size()!=0}" 
+                                     sortBy="#{b.billType}" 
                                      rowKey="#{b.id}" >
 
-                            <f:facet name="header">
+                            <f:facet name="header">  
                                 <h:outputLabel value="Returned GRN"/>
                             </f:facet>
 
@@ -1003,8 +1003,8 @@
                                 <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" />
                             </p:column>
 
-                            <p:columnGroup type="footer">
-                                <p:row >
+                            <p:columnGroup type="footer">  
+                                <p:row >  
                                     <p:column colspan="4" style="text-align:left; font-size: 9px;" footerText="Totals:"/>
                                     <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnReturn.cash}">
                                         <f:facet name="footer">
@@ -1019,7 +1019,7 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
-                                    </p:column>
+                                    </p:column> 
                                     <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnReturn.saleCash}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.grnReturn.saleCash}" >
@@ -1033,24 +1033,24 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
+                                    </p:column> 
+                                </p:row>  
+                            </p:columnGroup>  
                         </p:dataTable>
 
 
                         <p:spacer height="30"/>
 
 
-                        <p:dataTable id="returnCancelled_print"  value="#{commonReport.grnReturnCancel.bills}"
-                                     var="b1"
-                                     style="padding: 0px!important; margin: 0px!important; font-size: 10px;"
+                        <p:dataTable id="returnCancelled_print"  value="#{commonReport.grnReturnCancel.bills}" 
+                                     var="b1"  
+                                     style="padding: 0px!important; margin: 0px!important; font-size: 10px;" 
                                      styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                                      rendered="#{commonReport.grnReturnCancel.bills.size()!=0}" >
 
-                            <f:facet name="header">
+                            <f:facet name="header">  
                                 <h:outputLabel value="Cancelled (Returned) GRN "/>
-                            </f:facet>
+                            </f:facet> 
 
                             <p:column headerText="Cancelled NO" style="font-size: 9px; word-break: break-word; white-space: normal; text-align:left;">
                                 <h:outputLabel value="#{b1.deptId}"/>
@@ -1087,13 +1087,13 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00" />
-                            </p:column>
+                            </p:column>                                                     
                             <p:column headerText="Comment" style="text-align: right; font-size: 9px;" >
                                 <h:outputLabel value="#{b1.comments}" />
                             </p:column>
 
-                            <p:columnGroup type="footer">
-                                <p:row>
+                            <p:columnGroup type="footer">  
+                                <p:row>  
                                     <p:column colspan="3" style="text-align:left; font-size: 9px;" footerText="Totals:">
                                     </p:column>
                                     <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnReturnCancel.bills}">
@@ -1102,7 +1102,7 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
-                                    </p:column>
+                                    </p:column>                                                           
                                     <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnReturnCancel.credit}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.grnReturnCancel.credit}">
@@ -1116,27 +1116,27 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
-                                    </p:column>
+                                    </p:column>                                                           
                                     <p:column style="text-align: right; font-size: 9px;" footerText="#{commonReport.grnReturnCancel.saleCredit}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.grnReturnCancel.saleCredit}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
+                                    </p:column> 
+                                </p:row>  
+                            </p:columnGroup>  
                         </p:dataTable>
 
 
                         <p:spacer height="30"/>
 
 
-                        <p:dataTable
-                            id="sum2"
-                            style="padding: 0px!important; margin: 0px!important; font-size: 11px;"
+                        <p:dataTable 
+                            id="sum2" 
+                            style="padding: 0px!important; margin: 0px!important; font-size: 11px;"  
                             styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
-                            value="#{commonReport.grnTotal}"
+                            value="#{commonReport.grnTotal}"  
                             var="i" >
                             <f:facet name="header">
                                 Summary

@@ -5287,8 +5287,6 @@ public class BillSearch implements Serializable {
         return viewingBill;
     }
 
-    
-    
     public void setViewingBill(Bill viewingBill) {
         this.viewingBill = viewingBill;
     }
