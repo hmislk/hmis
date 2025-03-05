@@ -350,9 +350,9 @@ public class UserPreference implements Serializable {
     }
 
     public void setChannelBillPaperType(PaperType channelBillPaperType) {
-        if (opdBillPaperType == null) {
-            opdBillPaperType = PaperType.Paper24_2x9_3;
-        }
+//        if (opdBillPaperType == null) {
+//            opdBillPaperType = PaperType.Paper24_2x9_3;
+//        }
         this.channelBillPaperType = channelBillPaperType;
     }
 
