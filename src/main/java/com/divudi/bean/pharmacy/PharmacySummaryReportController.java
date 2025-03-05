@@ -38,6 +38,7 @@ import com.divudi.data.IncomeBundle;
 import com.divudi.data.IncomeRow;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Category;
 import com.divudi.entity.PaymentScheme;
@@ -47,6 +48,7 @@ import com.divudi.facade.DrawerFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.service.BillService;
+import com.divudi.service.StockHistoryService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -92,6 +94,8 @@ public class PharmacySummaryReportController implements Serializable {
     private DrawerFacade drawerFacade;
     @EJB
     private BillService billService;
+    @EJB
+    StockHistoryService stockHistoryService;
 
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -147,6 +151,11 @@ public class PharmacySummaryReportController implements Serializable {
     private String searchType;
     private String reportType;
 
+    Long rowsPerPageForScreen;
+    Long rowsPerPageForPrinting;
+    private String fontSizeForPrinting;
+    private String fontSizeForScreen;
+
     // Date range
     private Date fromDate;
     private Date toDate;
@@ -198,18 +207,16 @@ public class PharmacySummaryReportController implements Serializable {
     private IncomeBundle bundle;
     private ReportTemplateRowBundle bundleReport;
 
+    private DailyStockBalanceReport dailyStockBalanceReport;
+
     private StreamedContent downloadingExcel;
     private UploadedFile file;
 
     // Numeric variables
     private int maxResult = 50;
-    
 
-    
     //transferOuts;
     //adjustments;
-    
-
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToPharmacyIncomeReport() {
@@ -232,18 +239,24 @@ public class PharmacySummaryReportController implements Serializable {
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="Functions">
 
-    public void processDailyStockBalanceReport(){
-        if(department==null){
+    public void processDailyStockBalanceReport() {
+        if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
         }
-        if(fromDate==null){
+        if (fromDate == null) {
             JsfUtil.addErrorMessage("Please select a date");
             return;
         }
-        
+        dailyStockBalanceReport = new DailyStockBalanceReport();
+        dailyStockBalanceReport.setDate(fromDate);
+        dailyStockBalanceReport.setDepartment(department);
+
+        dailyStockBalanceReport.setOpeningStock(stockHistoryService.fetchOpeningStockQuantity(department, toDate));
+        dailyStockBalanceReport.setClosingStock(stockHistoryService.fetchClosingStockQuantity(department, toDate));
+
     }
-    
+
     public void listBillTypes() {
         bundleReport = new ReportTemplateRowBundle();
         Map<String, Object> params = new HashMap<>();
@@ -1463,7 +1476,57 @@ public class PharmacySummaryReportController implements Serializable {
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
     }
-    
-    
+
+    public Long getRowsPerPageForScreen() {
+        rowsPerPageForScreen = configOptionApplicationController.getLongValueByKey("Pharmacy Analytics - Rows per Page for Printing", 20l);
+        return rowsPerPageForScreen;
+    }
+
+    public void setRowsPerPageForScreen(Long rowsPerPageForScreen) {
+        this.rowsPerPageForScreen = rowsPerPageForScreen;
+    }
+
+    public Long getRowsPerPageForPrinting() {
+        rowsPerPageForPrinting = configOptionApplicationController.getLongValueByKey("Pharmacy Analytics - Rows per Page for Screen", 20l);
+        return rowsPerPageForPrinting;
+    }
+
+    public void setRowsPerPageForPrinting(Long rowsPerPageForPrinting) {
+        this.rowsPerPageForPrinting = rowsPerPageForPrinting;
+    }
+
+    public String getFontSizeForPrinting() {
+        String value = configOptionApplicationController.getShortTextValueByKey("Pharmacy Analytics - Font Size for Printing", "10pt");
+        if (value.matches("^\\d+$")) {
+            value += "pt";
+        }
+        fontSizeForPrinting = value;
+        return fontSizeForPrinting;
+    }
+
+    public String getFontSizeForScreen() {
+        String value = configOptionApplicationController.getShortTextValueByKey("Pharmacy Analytics - Font Size for Screen", "1em");
+        if (value.matches("^\\d+$")) {
+            value += "em";
+        }
+        fontSizeForScreen = value;
+        return fontSizeForScreen;
+    }
+
+    public void setFontSizeForPrinting(String fontSizeForPrinting) {
+        this.fontSizeForPrinting = fontSizeForPrinting;
+    }
+
+    public void setFontSizeForScreen(String fontSizeForScreen) {
+        this.fontSizeForScreen = fontSizeForScreen;
+    }
+
+    public DailyStockBalanceReport getDailyStockBalanceReport() {
+        return dailyStockBalanceReport;
+    }
+
+    public void setDailyStockBalanceReport(DailyStockBalanceReport dailyStockBalanceReport) {
+        this.dailyStockBalanceReport = dailyStockBalanceReport;
+    }
 
 }

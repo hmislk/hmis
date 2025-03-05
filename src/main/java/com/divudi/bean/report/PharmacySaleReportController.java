@@ -245,6 +245,8 @@ public class PharmacySaleReportController implements Serializable {
     AuditEventApplicationController auditEventApplicationController;
     @Inject
     BillController billController;
+    @Inject
+    CommonReport commonReport;
 
     private CommonFunctions commonFunctions;
     @EJB
@@ -329,7 +331,6 @@ public class PharmacySaleReportController implements Serializable {
         nonMovingItems = itemFacade.findByJpql(j, m);
         ////System.out.println("nonMovingItems = " + nonMovingItems);
 
-        
     }
 
     public void setCategory(Category category) {
@@ -355,7 +356,7 @@ public class PharmacySaleReportController implements Serializable {
         makeNull(); // Execute the logic initially in the actionListener
         return "/pharmacy/pharmacy_report_list_item_with_multiple_dealor?faces-redirect=true";
     }
-    
+
     public void makeNull() {
         fromDate = null;
         category = null;
@@ -471,7 +472,7 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
+
     }
 
     public double getFreeQtyByPurchaseRateTotal(List<BillItem> items) {
@@ -549,7 +550,7 @@ public class PharmacySaleReportController implements Serializable {
     }
 
     private List<Object[]> fetchSaleValueByDepartment() {
-        if(department==null){
+        if (department == null) {
             JsfUtil.addErrorMessage("Please select department");
             return new ArrayList<>();
         }
@@ -575,7 +576,7 @@ public class PharmacySaleReportController implements Serializable {
             sql += " and i.item.category=:cat";
             m.put("cat", category);
         }
-        
+
         if (user != null) {
             sql += " and i.creater=:wu ";
             m.put("wu", user);
@@ -872,6 +873,7 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
+        commonReport.setSupplier(null);
         return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";
     }
 
@@ -1059,8 +1061,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml?faces-redirect=true";
     }
-    
-   
 
     public String navigatePharmacyReportPurchaseDetailBySupplier() {
         FacesContext context = FacesContext.getCurrentInstance();
@@ -3847,7 +3847,6 @@ public class PharmacySaleReportController implements Serializable {
 
         grantNetTotal = calGrantNetTotalByDepartment();
 
-        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -4160,7 +4159,6 @@ public class PharmacySaleReportController implements Serializable {
             totalMargineValue += r.getMarginValue();
         }
 
-        
     }
 
     public void createCategoryMovementReportNew() {
@@ -4303,7 +4301,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
     }
 
     public void createCategoryMovementReportByItemBatch() {
@@ -4601,7 +4598,6 @@ public class PharmacySaleReportController implements Serializable {
             totalMargineValue += r.getMarginValue();
         }
 
-        
     }
 
     public List<Object[]> fetchTransferIssueReciveBills() {
@@ -4731,7 +4727,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
 
     }
 
@@ -4777,7 +4772,6 @@ public class PharmacySaleReportController implements Serializable {
         billedSummery.setCancelledTotal(calGrantHandOverDiscount());
         billedSummery.setRefundedTotal(calGrantHandOverProf());
 
-        
     }
 
     public double calValueSale(BillType billType, PaymentMethod paymentMethod, Department department, Bill bill1, Bill bill2) {
@@ -4953,7 +4947,6 @@ public class PharmacySaleReportController implements Serializable {
         BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill};
         createFeeSummeryWithCounts(btps);
 
-        
     }
 
     public void createDailyOpdFeeSummeryWithoutCounts() {
@@ -4962,7 +4955,6 @@ public class PharmacySaleReportController implements Serializable {
         BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill};
         createFeeSummeryWithoutCounts(btps);
 
-        
     }
 
     public void createDailyInwardFeeSummeryWithCounts() {
@@ -4971,7 +4963,6 @@ public class PharmacySaleReportController implements Serializable {
         BillType[] btps = new BillType[]{BillType.InwardBill};
         createFeeSummeryWithCounts(btps);
 
-        
     }
 
     public void createDailyInwardFeeSummeryWithoutCounts() {
@@ -4980,7 +4971,6 @@ public class PharmacySaleReportController implements Serializable {
         BillType[] btps = new BillType[]{BillType.InwardBill};
         createFeeSummeryWithoutCounts(btps);
 
-        
     }
 
     public void createLabSummeryInward() {
@@ -5132,8 +5122,6 @@ public class PharmacySaleReportController implements Serializable {
         billedSummery.setBilledTotal(hospitalFeeTot);
         billedSummery.setCancelledTotal(profeTotal);
         billedSummery.setRefundedTotal(regentTot);
-
-        
 
     }
 
@@ -5859,7 +5847,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
 
     }
 
@@ -6140,7 +6127,6 @@ public class PharmacySaleReportController implements Serializable {
         grantCashTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit);
 
-        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -6251,8 +6237,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-
-        
 
     }
 
@@ -6474,8 +6458,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
-
     }
 
     public void createSaleReportByDateDetailPaymentScheme() {
@@ -6579,8 +6561,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-
-        
 
     }
 
@@ -6718,8 +6698,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-
-        
 
     }
 
@@ -7075,7 +7053,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
     }
 
     public void createSalePaymentMethodDetailBillItems() {
@@ -7190,7 +7167,6 @@ public class PharmacySaleReportController implements Serializable {
         amps.addAll(allAmps);
         ////System.out.println("amps = " + amps.size());
 
-        
     }
 
     public void createItemsDistributersWithDistributer() {
@@ -7212,7 +7188,6 @@ public class PharmacySaleReportController implements Serializable {
             }
         }
 
-        
     }
 
     public void createItemListOneItemHasGreterThanOneDistributor() {
@@ -7262,7 +7237,6 @@ public class PharmacySaleReportController implements Serializable {
         }
         ////System.out.println("items = " + items.size());
 
-        
     }
 
     public void createItemWithMultipleDistributor() {
@@ -7284,7 +7258,6 @@ public class PharmacySaleReportController implements Serializable {
 
         }
 
-        
     }
 
     public List<Amp> getAllPharmacyItems() {
@@ -8807,6 +8780,4 @@ public class PharmacySaleReportController implements Serializable {
         this.billLights = billLights;
     }
 
-    
-    
 }

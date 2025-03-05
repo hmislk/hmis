@@ -944,7 +944,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         lstBillItems = null;
         getLstBillItems();
-        bf.setTmpChangedValue(bf.getFee().getFee());
+        bf.setTmpChangedValue(bf.getFeeGrossValue());
         calTotals();
         JsfUtil.addSuccessMessage("Fee Changed Successfully");
     }
@@ -3090,6 +3090,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public void calTotals() {
+        System.out.println("calTotals");
         if (paymentMethod == null) {
             return;
         }
@@ -3109,10 +3110,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             BillItem bi = be.getBillItem();
 
             for (BillFee bf : be.getLstBillFees()) {
+//                System.out.println("bf = " + bf);
 
                 boolean needToAdd = billFeeIsThereAsSelectedInBillFeeBundle(bf);
+//                System.out.println("needToAdd = " + needToAdd);
                 if (needToAdd) {
 
+                    System.out.println("bf.getFeeGrossValue() Before Matrix = " + bf.getFeeGrossValue());
+                    
                     Department department = null;
                     Item item = null;
                     PriceMatrix priceMatrix;
@@ -3135,11 +3140,23 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     }
                     bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
 
+                    System.out.println("bf.getFeeGrossValue(): " + bf.getFeeGrossValue());
+//                    System.out.println("bf.getFeeValue(): " + bf.getFeeValue());
+//                    System.out.println("bf.getFeeDiscount(): " + bf.getFeeDiscount());
+//                    System.out.println("bf.getFeeVat(): " + bf.getFeeVat());
+//                    System.out.println("bf.getFeeVatPlusValue(): " + bf.getFeeVatPlusValue());
+
                     entryGross += bf.getFeeGrossValue();
                     entryNet += bf.getFeeValue();
                     entryDis += bf.getFeeDiscount();
                     entryVat += bf.getFeeVat();
                     entryVatPlusNet += bf.getFeeVatPlusValue();
+
+//                    System.out.println("entryGross: " + entryGross);
+//                    System.out.println("entryNet: " + entryNet);
+//                    System.out.println("entryDis: " + entryDis);
+//                    System.out.println("entryVat: " + entryVat);
+//                    System.out.println("entryVatPlusNet: " + entryVatPlusNet);
 
                 }
             }
@@ -3171,18 +3188,27 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf) {
+        System.out.println("billFeeIsThereAsSelectedInBillFeeBundle");
+        System.out.println("bf = " + bf);
         if (bf == null) {
             return false;
         }
         if (bf.getFee() == null) {
             return false;
         }
+        System.out.println("bf.getFee().getId() = " + bf.getFee().getId());
         boolean found = false;
         for (BillFeeBundleEntry bfbe : getBillFeeBundleEntrys()) {
+            System.out.println("bfbe = " + bfbe);
+            System.out.println("bfbe.getSelectedBillFee() = " + bfbe.getSelectedBillFee());
             if (bfbe.getSelectedBillFee().equals(bf)) {
+                System.out.println("bill fees equal");
                 found = true;
+            } else {
+                System.out.println("bills fees NOT equal");
             }
         }
+        System.out.println("found = " + found);
         return found;
     }
 

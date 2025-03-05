@@ -269,6 +269,20 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/index?faces-redirect=true;";
     }
 
+    public String navigateToPaymentManagement() {
+        if (sessionController.getPaymentManagementAfterShiftStart()) {
+            findNonClosedShiftStartFundBillIsAvailable();
+            if (getNonClosedShiftStartFundBill() != null) {
+                return "/payments/pay_index?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            return "/payments/pay_index?faces-redirect=true";
+        }
+    }
+
     public String navigateToNewIncomeBill() {
         resetClassVariables();
         currentBill = new Bill();
@@ -3688,7 +3702,7 @@ public class FinancialTransactionController implements Serializable {
         }
         return finalOtherPayments;
     }
-    
+
     public List<Payment> fetchAllPaymentInMyHold(Date paramFromDate, Date paramToDate, WebUser wu) {
         WebUser paymentUser = wu;
         StringBuilder jpqlBuilder = new StringBuilder("SELECT p ")
@@ -4712,6 +4726,7 @@ public class FinancialTransactionController implements Serializable {
         }
 
         billController.save(currentBill);
+        bundle.setHandoverBill(currentBill);
 
         return "/cashier/handover_creation_bill_print?faces-redirect=true";
     }
@@ -5023,6 +5038,10 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillClassType(BillClassType.PreBill);
         currentBill.setReferenceBill(selectedBill);
 
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
+
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setFromDepartment(cashbookDepartment);
         currentBill.setToDepartment(sessionController.getDepartment());
@@ -5110,6 +5129,8 @@ public class FinancialTransactionController implements Serializable {
         updateDraverForHandover(payments, reciver, sender);
 
         billController.save(currentBill);
+
+        bundle.setHandoverBill(currentBill);
 
         selectedBill.setCompleted(true);
         selectedBill.setCompletedAt(new Date());

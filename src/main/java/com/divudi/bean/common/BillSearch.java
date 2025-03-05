@@ -78,8 +78,10 @@ import static com.divudi.data.BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL;
 import static com.divudi.data.BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN;
 import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT;
 import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT;
+import static com.divudi.data.BillTypeAtomic.PHARMACY_DIRECT_ISSUE;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_RETAIL_SALE;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED;
+import static com.divudi.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE;
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE;
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES;
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN;
@@ -1897,8 +1899,6 @@ public class BillSearch implements Serializable {
         rb.setDeptId(deptId);
         rb.setReferenceBill(bill);
         rb.setBilledBill(bill);
-
-
 
         // Step 3: Persist the Bill last
         billController.save(rb);
@@ -3733,6 +3733,7 @@ public class BillSearch implements Serializable {
             return null;
         }
         BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
+        System.out.println("billTypeAtomic = " + billTypeAtomic);
         loadBillDetails(bill);
         switch (billTypeAtomic) {
             case OPD_BILL_REFUND:
@@ -3793,16 +3794,29 @@ public class BillSearch implements Serializable {
 
             case CHANNEL_REFUND:
                 return "";
+
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
+                return navigateToViewChannelingProfessionalPaymentBill();
+
+            case DIRECT_ISSUE_INWARD_MEDICINE:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyDirectIssueForInpatientBill();
+
+            case PHARMACY_RETAIL_SALE_PRE:
+            case PHARMACY_RETAIL_SALE:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigatePharmacyReprintRetailBill();
+
+            case PHARMACY_RETAIL_SALE_CANCELLED:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyRetailCancellationBill();
+
             case CHANNEL_PAYMENT_FOR_BOOKING_BILL:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
-            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
-                return navigateToViewChannelingProfessionalPaymentBill();
 
-            case PHARMACY_RETAIL_SALE_PRE:
-            case PHARMACY_RETAIL_SALE:
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
             case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
             case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
@@ -3818,6 +3832,7 @@ public class BillSearch implements Serializable {
             case PHARMACY_WHOLESALE_PRE:
             case PHARMACY_WHOLESALE_CANCELLED:
             case PHARMACY_WHOLESALE_REFUND:
+            case PHARMACY_DIRECT_ISSUE:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyBill();
 
@@ -3850,13 +3865,12 @@ public class BillSearch implements Serializable {
             case PHARMACY_TRANSFER_REQUEST_CANCELLED:
             case PHARMACY_ISSUE:
             case PHARMACY_ISSUE_CANCELLED:
-            case PHARMACY_DIRECT_ISSUE:
+
             case PHARMACY_DIRECT_ISSUE_CANCELLED:
             case PHARMACY_RECEIVE_PRE:
             case PHARMACY_RECEIVE_CANCELLED:
             case MULTIPLE_PHARMACY_ORDER_CANCELLED_BILL:
             case PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION:
-            case PHARMACY_RETAIL_SALE_CANCELLED:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyGrn();
             case SUPPLEMENTARY_INCOME:

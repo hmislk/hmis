@@ -105,13 +105,19 @@
                     <h:panelGroup id="gpBillPreviewFiveFiveCustom3Return" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
                         <ph:sale_bill_five_five_custom_3_Return bill="#{preReturnController.returnBill}"/>
                             </h:panelGroup>
-                    <ph:returnBill bill="#{preReturnController.returnBill}"/>                
+<!--                    <ph:returnBill bill="#{preReturnController.returnBill}"/>  -->
+                    <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
+                        <ph:saleBill_Header_Return bill="#{preReturnController.returnBill}"></ph:saleBill_Header_Return>
+                    </h:panelGroup>
                 </p:panel>
                 <p:panel   id="gpBillPreview2">
                      <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
                                 <ph:sale_bill_five_five_custom_3 bill="#{preReturnController.bill}"/>
                             </h:panelGroup>
-                    <ph:saleBill  bill="#{preReturnController.bill}"/>                
+<!--                    <ph:saleBill  bill="#{preReturnController.bill}"/>  -->
+                    <h:panelGroup id="gpBillPreviewPosHeaderReturn" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
+                        <ph:saleBill_Header bill="#{preReturnController.bill}"></ph:saleBill_Header>
+                    </h:panelGroup>
                 </p:panel>
             </p:panel>
 

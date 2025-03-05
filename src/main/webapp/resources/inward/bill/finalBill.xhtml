@@ -17,11 +17,11 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <!--                <h:outputStylesheet library="css" name="printing.css"/>-->
+                        <h:outputStylesheet library="css" name="printing.css"/>
 
 
         <h:panelGroup id="gpBillPreview" >
-            <div  class="container-fluid" style="width: 214mm;"> 
+            <div  class="container-fluid" style="width: 214mm!important; margin-top: 5cm!important; margin-bottom: 3.5cm!important"> 
                 <div style="font-family: verdana ">
 
                     <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') ne ''}">
@@ -81,7 +81,7 @@
                     </table>
 
 
-                    <div style=" font-size: 13px; height: " class="mt-2 mb-4"> 
+                    <div style=" font-size: 13px; margin-left: 1cm; height: " class="mt-2 mb-4 justify-content-center"> 
 
                         <div class="row">
                             <div class="row col-6 d-flex justify-content-between">
@@ -116,7 +116,8 @@
                                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}"/>
                                 </div>
                             </div>
-                            <div class="col-6 W-100 ">
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Address on Final Bill',true)}">
+                                <div class="col-6 W-100 ">
                                 <div class="col-6 d-flex justify-content-between">
                                     <div class="col-5 w-100 d-flex justify-content-between">
                                         <h:outputLabel value="Address" />
@@ -127,6 +128,20 @@
                                     </div>
                                 </div>
                             </div>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient NIC on Final Bill')}">
+                                <div class="col-6 W-100 ">
+                                <div class="col-6 d-flex justify-content-between">
+                                    <div class="col-5 w-100 d-flex justify-content-between">
+                                        <h:outputLabel value="NIC No" />
+                                        <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
+                                    </div>
+                                    <div class="col-7 d-flex w-100">
+                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nic}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            </h:panelGroup>
                         </div>
 
                         <div class="row">
@@ -160,13 +175,15 @@
 
                         <div class="row">
                             <div class="row col-6 d-flex justify-content-between">
-                                <div class="col-5 d-flex justify-content-between">
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Guardian on Final Bill',true)}">
+                                    <div class="col-5 d-flex justify-content-between">
                                     <h:outputLabel value="Guardian" />
                                     <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
                                 </div>
                                 <div class="col-7" >
                                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.guardian.nameWithTitle}" />
                                 </div>
+                                </h:panelGroup>
                             </div>
                             <div class="col-6 W-100 ">
                                 <div class="col-6 d-flex justify-content-between">
@@ -183,13 +200,18 @@
 
                         <div class="row">
                             <div class="row col-6 d-flex justify-content-between">
-                                <div class="col-5 d-flex justify-content-between">
+                                <h:panelGroup rendered="#{cc.attrs.bill.creditCompany ne null}">
+                                    <div class="col-5 d-flex justify-content-between">
                                     <h:outputLabel value="Credit Company " />
                                     <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
                                 </div>
                                 <div class="col-7" >
-
+                                    <div class="col-7 d-flex w-100">
+                                        <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" />
+                                    </div>
                                 </div>
+                                </h:panelGroup>
+                                
                             </div>
                             <!--                            <div class="col-6 W-100 ">
                                                             <div class="col-6 d-flex justify-content-between">
@@ -226,7 +248,7 @@
                                               style="font-size: 12px;">
                                     <tr style="width: 100%; font-weight: 400; line-height: 18px;" >
                                         <td style="text-align: left;font-size: 13px!important; margin-top: -10px;">
-                                            <h:outputLabel   value="#{bip.inwardChargeType.label}" >
+                                            <h:outputLabel   value="#{bip.inwardChargeType.name}" >
                                             </h:outputLabel>
                                         </td>
                                         <td style="margin-top: -10px;">

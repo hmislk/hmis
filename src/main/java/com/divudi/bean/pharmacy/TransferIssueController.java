@@ -103,7 +103,7 @@ public class TransferIssueController implements Serializable {
             return "";
         }
 
-        return "/pharmacy/pharmacy_transfer_issue";
+        return "/pharmacy/pharmacy_transfer_issue?faces-redirect=true";
     }
 
 //    public boolean isFullyIssued() {
@@ -144,7 +144,7 @@ public class TransferIssueController implements Serializable {
             return "";
         }
         createRequestIssueBillItems(requestedBill);
-        return "/pharmacy/pharmacy_transfer_issue_direct_department";
+        return "/pharmacy/pharmacy_transfer_issue_direct_department?faces-redirect=true";
     }
 
     public String navigateToPharmacyIssueFromGrn() {
@@ -165,7 +165,7 @@ public class TransferIssueController implements Serializable {
         createDirectIssueBillItems();
         getIssuedBill().setFromDepartment(getSessionController().getDepartment());
 
-        return "/pharmacy/pharmacy_transfer_issue_direct_department";
+        return "/pharmacy/pharmacy_transfer_issue_direct_department?faces-redirect=true";
     }
 
     public UserStockContainer getUserStockContainer() {

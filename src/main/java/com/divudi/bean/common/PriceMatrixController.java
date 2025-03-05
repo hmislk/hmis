@@ -49,12 +49,18 @@ public class PriceMatrixController implements Serializable {
     PriceMatrixFacade priceMatrixFacade;
     @EJB
     PaymentSchemeDiscountFacade paymentSchemeDiscountFacade;
+    @Inject 
+    ConfigOptionApplicationController configOptionApplicationController;
 
     public PriceMatrix fetchInwardMargin(BillItem billItem, double serviceValue, Department department, PaymentMethod paymentMethod) {
         PriceMatrix inwardPriceAdjustment;
         Category category;
         if (billItem.getItem() instanceof Investigation) {
-            category = ((Investigation) billItem.getItem()).getInvestigationCategory();
+            if(configOptionApplicationController.getBooleanValueByKey("Get Category Instead of Investigation Category In Price Matrix")){
+                category = ((Investigation) billItem.getItem()).getCategory();
+            }else{
+                category = ((Investigation) billItem.getItem()).getInvestigationCategory();
+            }
         } else {
             category = billItem.getItem().getCategory();
         }

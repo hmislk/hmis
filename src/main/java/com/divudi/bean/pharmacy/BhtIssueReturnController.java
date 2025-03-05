@@ -183,6 +183,7 @@ public class BhtIssueReturnController implements Serializable {
 
         getReturnBill().setTotal(0 - Math.abs(getReturnBill().getTotal()));
         getReturnBill().setNetTotal(0 - Math.abs(getReturnBill().getNetTotal()));
+        getReturnBill().setMargin(0 - Math.abs(getReturnBill().getMargin()));
 
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());

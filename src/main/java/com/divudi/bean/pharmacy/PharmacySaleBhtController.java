@@ -653,7 +653,6 @@ public class PharmacySaleBhtController implements Serializable {
             //Deduct Stock
             boolean returnFlag = getPharmacyBean().deductFromStock(tbi.getPharmaceuticalBillItem().getStock(),
                     Math.abs(qtyL), tbi.getPharmaceuticalBillItem(), getPreBill().getDepartment());
-
             if (!returnFlag) {
                 tbi.setTmpQty(0);
                 getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
@@ -1593,7 +1592,7 @@ public class PharmacySaleBhtController implements Serializable {
                     billItem.setNetValue(sq.getQty() * sq.getStock().getItemBatch().getRetailsaleRate());
 
                     billItem.setInwardChargeType(InwardChargeType.Medicine);
-
+                    billItem.getPharmaceuticalBillItem().setBillItem(billItem);
                     billItem.setItem(sq.getStock().getItemBatch().getItem());
                     billItem.setReferanceBillItem(i);
                     billItem.setSearialNo(getBillItems().size() + 1);
@@ -1612,6 +1611,7 @@ public class PharmacySaleBhtController implements Serializable {
                 billItem.setInwardChargeType(InwardChargeType.Medicine);
                 billItem.setReferanceBillItem(i);
                 billItem.setSearialNo(getBillItems().size() + 1);
+                billItem.getPharmaceuticalBillItem().setBillItem(billItem);
                 billItems.add(billItem);
             }
 

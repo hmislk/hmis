@@ -19,6 +19,15 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Add new adjustment"  class="mt-2"/>
                                 <p:commandButton 
+                                    id="btnAddall" 
+                                    value="Add For All Category" 
+                                    ajax="false" 
+                                    class="ui-button-success mx-2"
+                                    icon="fa fa-plus"
+                                    style="float: right;"
+                                    action="#{inwardPriceAdjustmntController.addForAllCategory}"  >
+                                </p:commandButton>
+                                <p:commandButton 
                                     id="btnAdd" 
                                     value="Add" 
                                     ajax="false" 

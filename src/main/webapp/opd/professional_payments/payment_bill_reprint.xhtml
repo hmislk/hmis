@@ -127,7 +127,14 @@
                         <p:printer target="profpaybill" />
                     </p:commandButton>
                     <h:panelGroup id="profpaybill">
-                        <bi:A4PaperPamentOPDDoctor controller="#{billSearch}" bill="#{billSearch.bill}" dup="true"/>
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is A4 paper', true)}">
+                            <bi:A4PaperPamentOPDDoctor controller="#{billSearch}" bill="#{billSearch.bill}" dup="false"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is five five paper.')}">
+                            <bi:staff_payment_five_five_paper_with_headings controller="#{billSearch}" bill="#{billSearch.bill}" />
+                        </h:panelGroup>
+<!--                        <bi:A4PaperPamentOPDDoctor controller="#{billSearch}" bill="#{billSearch.bill}" dup="true"/>-->
                     </h:panelGroup>
                 </h:form>
 
