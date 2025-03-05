@@ -11,7 +11,7 @@
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
         <jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
-        <properties> 
+        <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
         </properties>
     </persistence-unit>
