@@ -4305,6 +4305,7 @@ public class ReportsController implements Serializable {
                 opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
                 opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
                 opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+                opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
             }
         } else if (visitType.equalsIgnoreCase("OP")) {
             if (reportType.equalsIgnoreCase("detail")) {
@@ -4345,7 +4346,7 @@ public class ReportsController implements Serializable {
         }
     }
 
-    public double calculateDiscount(final BillItem billItem, final List<ReportTemplateRow> reportTemplateRows) {
+    public double calculateDiscountForOP(final BillItem billItem, final List<ReportTemplateRow> reportTemplateRows) {
         if (!billItem.getItem().isDiscountAllowed()) {
             return 0.0;
         }
@@ -4364,13 +4365,32 @@ public class ReportsController implements Serializable {
         return billItemCount > 0 ? totalDiscount / billItemCount : 0.0;
     }
 
+    public double calculateDiscountForIP(final BillItem billItem, final List<ReportTemplateRow> reportTemplateRows) {
+        double totalDiscount = billItem.getBill().getDiscount();
+        int billItemCount = 0;
+
+        for (ReportTemplateRow row : reportTemplateRows) {
+            BillItem item = row.getBillItem();
+
+            if (item.getBill().equals(billItem.getBill())) {
+                billItemCount++;
+            }
+        }
+
+        return billItemCount > 0 ? totalDiscount / billItemCount : 0.0;
+    }
+
     public ReportTemplateRowBundle generateDiscountBills(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
+//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+//                + "FROM Bill bill "
+//                + "WHERE bill.retired <> :br "
+//                + "AND bill.paymentScheme is not null ";
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br "
-                + "AND bill.paymentScheme is not null ";
+                + "AND bill.discount > 0 ";
 
         parameters.put("br", true);
 
@@ -4463,11 +4483,17 @@ public class ReportsController implements Serializable {
     public ReportTemplateRowBundle generateDiscountBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
+//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+//                + "FROM BillItem billItem "
+//                + "JOIN billItem.bill bill "
+//                + "WHERE billItem.retired <> :bfr AND bill.retired <> :br "
+//                + "AND billItem.bill.paymentScheme is not null ";
+
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br "
-                + "AND billItem.bill.paymentScheme is not null ";
+                + "AND bill.discount > 0 ";
 
         parameters.put("bfr", true);
         parameters.put("br", true);
@@ -4560,7 +4586,7 @@ public class ReportsController implements Serializable {
         for (ReportTemplateRow row : rs) {
             BillItem billItem = row.getBillItem();
 
-            billItem.setDiscount(calculateDiscount(billItem, rs));
+            billItem.setDiscount(visitType.equalsIgnoreCase("OP") ? calculateDiscountForOP(billItem, rs) : calculateDiscountForIP(billItem, rs));
         }
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();

@@ -1307,7 +1307,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         //System.out.println("userName = " + userName);
         //System.out.println("password = " + password);
-
         // Check if password matches the username
         if (preventMatchingPasswordWithUsername && password.equals(userName)) {
             JsfUtil.addErrorMessage("Password cannot be the same as the username.");
@@ -1974,12 +1973,12 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
 
-        String ip = httpServletRequest.getRemoteAddr();
+        String ipAddr = httpServletRequest.getHeader("X-FORWARDED-FOR");
+        String ipAddress = (ipAddr == null) ? httpServletRequest.getRemoteAddr() : ipAddr;
         String host = httpServletRequest.getRemoteHost();
 
-        thisLogin.setIpaddress(ip);
+        thisLogin.setIpaddress(ipAddress);
         thisLogin.setComputerName(host);
-        // This should print null if the ID is not set.
 
         if (thisLogin.getId() == null) {
             try {
@@ -2385,14 +2384,14 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setPharmacyBillingAfterShiftStart(Boolean pharmacyBillingAfterShiftStart) {
         this.pharmacyBillingAfterShiftStart = pharmacyBillingAfterShiftStart;
     }
-    
+
     public Boolean getPaymentManagementAfterShiftStart() {
         if (paymentManagementAfterShiftStart == null) {
             paymentManagementAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Payment Management can be done after shift start", false);
         }
         return paymentManagementAfterShiftStart;
     }
-    
+
     public void setPaymentManagementAfterShiftStart(Boolean paymentManagementAfterShiftStart) {
         this.paymentManagementAfterShiftStart = paymentManagementAfterShiftStart;
     }

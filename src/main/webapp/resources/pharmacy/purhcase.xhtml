@@ -117,7 +117,7 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column>
                         <f:facet name="header">Profit %</f:facet>
                         <h:outputText id="profMargin" value="#{((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate ) / bip.pharmaceuticalBillItem.purchaseRate)*100}" >
@@ -151,7 +151,7 @@
                             </p:column>
                             <p:column colspan="1"></p:column>
                         </p:row>
-                        
+
                         <p:row rendered="#{cc.attrs.bill.expenseTotal ne null and cc.attrs.bill.expenseTotal != 0}">
                             <p:column colspan="6" footerText="Expense Total"/>
                             <p:column footerText="#{0-cc.attrs.bill.total}" >
@@ -162,9 +162,9 @@
                                 </f:facet>
                             </p:column>
                             <p:column colspan="2"></p:column>
-                            
+
                         </p:row>
-                        
+
                         <p:row rendered="#{cc.attrs.bill.tax!=0}">
                             <p:column colspan="6" footerText="Tax"/>
                             <p:column footerText="#{cc.attrs.bill.tax}">
