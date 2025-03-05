@@ -1987,11 +1987,6 @@ public class CommonReport implements Serializable {
             sql += " and b.referenceInstitution=:ins ";
             temMap.put("ins", getReferenceInstitution());
         }
-        
-        if (getInstitution() != null) {
-            sql += " AND b.fromInstitution = :supplier";
-            temMap.put("supplier", getInstitution());
-        }
 
         if (getSupplier()!= null) {
             if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
@@ -2000,7 +1995,6 @@ public class CommonReport implements Serializable {
                 sql += " AND b.fromInstitution = :supplier";
             }
             temMap.put("supplier", getSupplier());
-
         }
 
         sql += " order by b.id  ";
@@ -2964,6 +2958,25 @@ public class CommonReport implements Serializable {
         if (institution != null) {
             sql += " and b.fromInstitution=:fIns ";
             temMap.put("fIns", institution);
+        }
+        
+        if (getSupplier()!= null) {
+            if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
+                sql += " AND b.toInstitution = :supplier";
+            } else {
+                sql += " AND b.fromInstitution = :supplier";
+            }
+            temMap.put("supplier", getSupplier());
+
+        }
+        
+        if (getSupplier()!= null) {
+            if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
+                sql += " AND b.toInstitution = :supplier";
+            } else {
+                sql += " AND b.fromInstitution = :supplier";
+            }
+            temMap.put("supplier", getSupplier());
         }
 
         temMap.put("fromDate", getFromDate());
