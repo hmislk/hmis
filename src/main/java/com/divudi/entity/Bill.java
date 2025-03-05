@@ -2534,6 +2534,10 @@ public class Bill implements Serializable, RetirableEntity {
     }
 
     public PharmacyBill getPharmacyBill() {
+        if(pharmacyBill==null){
+            pharmacyBill = new PharmacyBill();
+            pharmacyBill.setBill(this);
+        }
         return pharmacyBill;
     }
 
