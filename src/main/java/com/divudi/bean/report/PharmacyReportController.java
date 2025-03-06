@@ -1919,6 +1919,24 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    public void processGoodInTransistReport() {
+        Map<String, Object> m = new HashMap<>();
+        String sql = "select bi from BillItem bi"
+                + " where bi.bill.billType = :bt"
+                + " and bi.retired = :ret"
+                + " and bi.bill.createdAt between :fd and :td"
+                + " and bi.bill.toStaff is not null"
+                + " and bi.bill.fromDepartment is not null"
+                + " and bi.bill.forwardReferenceBills is empty"
+                + " order by bi.bill.id ";
+        m.put("bt", BillType.PharmacyTransferIssue);
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        billItems = billItemFacade.findByJpql(sql, m);
+
+    }
+
     public void processStockLedgerReport() {
 
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
