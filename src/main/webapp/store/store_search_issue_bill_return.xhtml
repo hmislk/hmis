@@ -12,15 +12,29 @@
                 <h:form>
                     <p:panel header="Search Issue Bills" >
                         <f:facet name="header" >                          
-                            <h:outputLabel value="STORE ISSUE Return BILL SEARCH"/>                         
-                            <h:panelGrid columns="5" >
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                            <h:outputLabel value="Store Issue Return Bill Search" style="margin-bottom: 20px"/>
+                            <h:panelGrid columns="5" style="margin-top: 10px; column-gap: 15px; row-gap: 10px;">
+                                <h:outputLabel value="From Date" style="margin-right: 5px;"/>
+                                <p:calendar styleClass="dateTimePicker"
+                                            id="fromDate"
+                                            value="#{searchController.fromDate}"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            style="width: 200px;">
                                 </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                <h:outputLabel value="To Date" style="margin-left: 15px; margin-right: 5px;"/>
+                                <p:calendar id="toDate"
+                                            value="#{searchController.toDate}"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            style="width: 200px;">
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.listStoreReturns}"/>
+                                <p:commandButton id="btnSearch"
+                                                 ajax="false"
+                                                 value="Search"
+                                                 action="#{searchController.listStoreReturns}"
+                                                 icon="pi pi-search"
+                                                 style="background-color: #0000ff; color: white; font-weight: normal; height: 40px; width: 120px; margin-left: 20px"/>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>
