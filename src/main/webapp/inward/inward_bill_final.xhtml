@@ -148,7 +148,7 @@
 
                     <p:dataTable id="dList" value="#{bhtSummeryController.chargeItemTotals}" var="c" scrollable="true"
                                  scrollHeight="300">
-                        <p:column headerText="Inward Charge Type">
+                        <p:column headerText="Inward Charge Type" filterBy="#{c.inwardChargeType.name}" filterMatchMode="contains">
                             <h:outputLabel value="#{c.inwardChargeType.name}"/>
                         </p:column>
                         <p:column headerText="Total">

@@ -46,6 +46,13 @@
                                             value="#{billSearch.bill}" 
                                             target="#{billReturnController.originalBillToReturn}" />
                                     </p:commandButton>
+                                    <p:commandButton 
+                                        value="To Sample Management" 
+                                        icon="fas fa-flask"
+                                        class="ui-button-info mx-1"
+                                        action="#{patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(billSearch.bill)}"
+                                        ajax="false">
+                                    </p:commandButton> 
                                 </div>
                             </div>
                         </f:facet>
@@ -80,13 +87,13 @@
                                                 <bi:fiveFiveCCBill_CC bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
-
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
-
                                             <bi:fiveFiveCCBill_CC_Custom1 bill="#{billSearch.bill}" duplicate="false"/>                        
-
                                         </h:panelGroup>
 
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFiveCustom3 paper')}" >
+                                            <bi:cc_five_five_custom_3 bill="#{billSearch.bill}" duplicate="false"/>                        
+                                        </h:panelGroup>
                                     </h:panelGroup>
 
                                 </p:panel>
