@@ -2253,6 +2253,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void reloadPackages() {
         itemController.reloadItems();
+        itemApplicationController.reloadItems();
+        fillPackages();
     }
 
     private void fillPackages() {

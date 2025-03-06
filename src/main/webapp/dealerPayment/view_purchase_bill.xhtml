@@ -51,7 +51,49 @@
 
 
                     <div class="row ui-message-warn" >
-                        <div class="col-md-12" >
+                        <div class="col-md-4" >
+                            <p:panel class="m-1" >
+                                <f:facet name="header"> 
+                                    <h:outputText styleClass="fas fa-shopping-cart"/>
+                                    <h:outputText class="mx-4" value="Bill Summary"/>  
+                                </f:facet>
+                                <h:panelGrid 
+                                    columns="2"
+                                    styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                                    columnClasses="text-start, text-end"
+                                    class="w-100">
+
+
+                                    <h:outputLabel value="Purchase Total Value"/>
+                                    <h:outputText value="#{supplierPaymentController.currentSummaryPurchaseTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Purchase Return Total Value"/>
+                                    <h:outputText value="#{supplierPaymentController.currentSummaryPurchaseReturnTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Net Purchase Value"/>
+                                    <h:outputText value="#{supplierPaymentController.currentSummaryPurchaseNetTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Total Payment Settled"/>
+                                    <h:outputText value="#{supplierPaymentController.currentTotalPaymentSettledValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Total Payment to Settle"/>
+                                    <h:outputText value="#{supplierPaymentController.currentTotalPaymentToSettleValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                </h:panelGrid>
+
+                            </p:panel>
+                        </div>
+                        <div class="col-md-8" >
 
                             <p:panel class="m-1" >
                                 <f:facet name="header"> 
