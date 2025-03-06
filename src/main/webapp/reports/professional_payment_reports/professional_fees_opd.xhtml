@@ -317,7 +317,7 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column>
+                            <p:column rendered="#{searchController.visitType eq 'OP'}">
                                 <f:facet name="header">
                                     <h:outputText value="Item" />
                                 </f:facet>
@@ -325,7 +325,7 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column>
+                            <p:column rendered="#{searchController.visitType eq 'OP'}">
                                 <f:facet name="header">
                                     <h:outputText value="Fee Name" />
                                 </f:facet>
