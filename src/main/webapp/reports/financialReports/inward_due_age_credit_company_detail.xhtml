@@ -210,21 +210,23 @@
                                         </p:column>
                                         <p:column>
                                             <h:outputLabel value="#{p1.dateOfAdmission}">
-                                                <f:convertDateTime pattern="dd MM yy"/>
+                                                <f:convertDateTime pattern="dd/MM/yy"/>
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column>
                                             <h:outputLabel value="#{p1.dateOfDischarge}">
-                                                <f:convertDateTime pattern="dd MM yy"/>
+                                                <f:convertDateTime pattern="dd/MM/yy"/>
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column>
+<!--                                            <h:outputLabel-->
+<!--                                                value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
                                             <h:outputLabel
-                                                value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">
+                                                    value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                             <f:facet name="footer">
-                                                <h:outputLabel value="#{i.value1}" style="float:  right;">
+                                                <h:outputLabel value="#{i.value1}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
@@ -262,17 +264,19 @@
                                     </p:column>
                                     <p:column>
                                         <h:outputLabel value="#{p1.dateOfAdmission}">
-                                            <f:convertDateTime pattern="dd MM yy"/>
+                                            <f:convertDateTime pattern="dd/MM/yy"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>
                                         <h:outputLabel value="#{p1.dateOfDischarge}">
-                                            <f:convertDateTime pattern="dd MM yy"/>
+                                            <f:convertDateTime pattern="dd/MM/yy"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>
+<!--                                        <h:outputLabel-->
+<!--                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
                                         <h:outputLabel
-                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">
+                                                value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                         <f:facet name="footer">
@@ -311,17 +315,19 @@
                                     </p:column>
                                     <p:column>
                                         <h:outputLabel value="#{p1.dateOfAdmission}">
-                                            <f:convertDateTime pattern="dd MM yy"/>
+                                            <f:convertDateTime pattern="dd/MM/yy"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>
                                         <h:outputLabel value="#{p1.dateOfDischarge}">
-                                            <f:convertDateTime pattern="dd MM yy"/>
+                                            <f:convertDateTime pattern="dd/MM/yy"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>
+<!--                                        <h:outputLabel-->
+<!--                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
                                         <h:outputLabel
-                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">
+                                                value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                         <f:facet name="footer">
@@ -363,17 +369,19 @@
                                     </p:column>
                                     <p:column>
                                         <h:outputLabel value="#{p1.dateOfAdmission}">
-                                            <f:convertDateTime pattern="dd MM yy"/>
+                                            <f:convertDateTime pattern="dd/MM/yy"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>
                                         <h:outputLabel value="#{p1.dateOfDischarge}">
-                                            <f:convertDateTime pattern="dd MM yy"/>
+                                            <f:convertDateTime pattern="dd/MM/yy"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>
+<!--                                        <h:outputLabel-->
+<!--                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
                                         <h:outputLabel
-                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">
+                                                value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                         <f:facet name="footer">
