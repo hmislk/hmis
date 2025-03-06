@@ -307,6 +307,9 @@ public class PharmacyReportController implements Serializable {
     private Double quantity;
 
     private Double stockQty;
+    
+    private Institution fromSite;
+    private Institution toSite;    
 
     //Constructor
     public PharmacyReportController() {
@@ -3518,5 +3521,21 @@ public class PharmacyReportController implements Serializable {
 
     public void setQuantity(Double quantity) {
         this.quantity = quantity;
+    }
+
+    public Institution getFromSite() {
+        return fromSite;
+    }
+
+    public void setFromSite(Institution fromSite) {
+        this.fromSite = fromSite;
+    }
+
+    public Institution getToSite() {
+        return toSite;
+    }
+
+    public void setToSite(Institution toSite) {
+        this.toSite = toSite;
     }
 }
