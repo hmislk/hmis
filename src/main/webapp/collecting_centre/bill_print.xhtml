@@ -88,6 +88,12 @@
                                         <bi:fiveFiveCCBill_CC_Custom1 bill="#{pp}" duplicate="false"/>                           
                                     </ui:repeat>
                                 </h:panelGroup>
+                                
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFiveCustom3 paper')}" >
+                                    <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                        <bi:cc_five_five_custom_3 bill="#{pp}" duplicate="false"/>                        
+                                    </ui:repeat>
+                                </h:panelGroup>
 
                             </h:panelGroup>
 
@@ -177,7 +183,7 @@
                                     class="ui-button-warning mx-1"
                                     action="#{patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(b)}"
                                     ajax="false">
-                                </p:commandButton>
+                                </p:commandButton> 
                             </p:column>
                         </p:dataTable>
                     </div>
