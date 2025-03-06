@@ -43,6 +43,8 @@ public class DrawerService {
     DrawerEntryFacade ejbFacade;
     @EJB
     DrawerFacade drawerFacade;
+    @EJB
+    ConfigurationService configurationService;
     DrawerEntry drawerEntry;
 
     // <editor-fold defaultstate="collapsed" desc="UP">
@@ -537,6 +539,9 @@ public class DrawerService {
                 break;
             default:
                 break;
+        }
+        if (!configurationService.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+            canReturn = true;
         }
         return canReturn;
     }
