@@ -5300,10 +5300,11 @@ public class FinancialTransactionController implements Serializable {
         if (currentPayment.getPaymentMethod() == PaymentMethod.Cash) {
             double drawerBalance = getLoggedUserDrawer().getCashInHandValue();
             double paymentAmount = currentPayment.getPaidValue();
-
-            if (drawerBalance < paymentAmount) {
-                JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
-                return;
+            if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                if (drawerBalance < paymentAmount) {
+                    JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                    return;
+                }
             }
         }
 
@@ -5575,7 +5576,7 @@ public class FinancialTransactionController implements Serializable {
             currentPayment = new Payment();
         }
         if (currentPayment.getCurrencyDenominations() == null) {
-            currentPayment.setCurrencyDenominations(configOptionApplicationController.getDenominations());
+//            currentPayment.setCurrencyDenominations(configOptionApplicationController.getDenominations());
         }
         return currentPayment;
     }
