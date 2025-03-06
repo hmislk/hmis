@@ -1933,7 +1933,7 @@ public class PharmacyReportController implements Serializable {
         m.put("ret", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        billItems = billItemFacade.findByJpql(sql, m);
+        billItems = billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
