@@ -219,8 +219,10 @@
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column>
+<!--                                            <h:outputLabel-->
+<!--                                                value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
                                             <h:outputLabel
-                                                value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">
+                                                    value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                             <f:facet name="footer">
@@ -271,8 +273,10 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>
+<!--                                        <h:outputLabel-->
+<!--                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
                                         <h:outputLabel
-                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">
+                                                value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                         <f:facet name="footer">
@@ -320,8 +324,10 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>
+<!--                                        <h:outputLabel-->
+<!--                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
                                         <h:outputLabel
-                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">
+                                                value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                         <f:facet name="footer">
@@ -372,8 +378,10 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>
+<!--                                        <h:outputLabel-->
+<!--                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
                                         <h:outputLabel
-                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">
+                                                value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                         <f:facet name="footer">
