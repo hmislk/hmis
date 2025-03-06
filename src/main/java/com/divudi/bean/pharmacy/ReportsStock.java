@@ -100,6 +100,16 @@ public class ReportsStock implements Serializable {
     @EJB
     BillItemFacade billItemFacade;
 
+    public String navigateToPharmacyReportDepartmentStockByItem() {
+        pharmacyStockRows = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_item?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyReportDepartmentStockByItemOrderByVmp() {
+        pharmacyStockRows = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_item_order_by_vmp?faces-redirect=true";
+    }
+
     /**
      * Methods
      */
@@ -229,6 +239,37 @@ public class ReportsStock implements Serializable {
                 + "from Stock s where s.stock>:z and s.department=:d "
                 + "group by s.itemBatch.item.name, s.itemBatch.item.code "
                 + "order by s.itemBatch.item.name";
+        m.put("d", department);
+        m.put("z", 0.0);
+        List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        for (PharmacyStockRow r : lsts) {
+            stockPurchaseValue += r.getPurchaseValue();
+            stockSaleValue += r.getSaleValue();
+
+        }
+        pharmacyStockRows = lsts;
+
+    }
+    
+    public void fillDepartmentStockByItemOrderByVmp() {
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+        Map m = new HashMap();
+        String sql;
+        sql = "select new com.divudi.data.dataStructure.PharmacyStockRow"
+                + "(s.itemBatch.item.vmp.name, "
+                + "s.itemBatch.item.code, "
+                + "s.itemBatch.item.name, "
+                + "sum(s.stock), "
+                + "sum(s.itemBatch.purcahseRate * s.stock), "
+                + "sum(s.itemBatch.retailsaleRate * s.stock))  "
+                + "from Stock s where s.stock>:z and s.department=:d "
+                + "group by s.itemBatch.item "
+                + "order by s.itemBatch.item.vmp.name, s.itemBatch.item.name";
         m.put("d", department);
         m.put("z", 0.0);
         List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
@@ -1072,7 +1113,7 @@ public class ReportsStock implements Serializable {
         toDate = c.getTime();
         fillDepartmentExpiaryStocks();;
     }
-    
+
     public void fillThreeMonthsExpiaryOfSupplier() {
         fromDate = Calendar.getInstance().getTime();
         Calendar c = Calendar.getInstance();
