@@ -426,8 +426,18 @@
                         </p:column>
 
                         <p:column class="text-end">
-                            <h:panelGroup rendered="#{row.billFee.referenceBillFee.bill.cancelled}">
-                                <p:badge severity="warning" value="Cancelled"/>
+                            <f:facet name="header">
+                                <h:outputText value="Paid At"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.referenceBillFee.bill.createdAt}">
+                                <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputText>
+                        </p:column>
+
+<!--                        <p:column class="text-end">-->
+<!--                            <h:panelGroup rendered="#{row.billFee.referenceBillFee.bill.cancelled}">-->
+<!--                                <p:badge severity="warning" value="Cancelled"/>-->
                                 <!--                                    <p:commandLink
                                                                         ajax="false"
                                                                         class="m-1 ui-button-danger"
@@ -438,8 +448,8 @@
                                                                             value="#{row.billFee.referenceBillFee.bill.cancelledBill}"
                                                                             target="#{billSearch.bill}" />
                                                                     </p:commandLink>-->
-                            </h:panelGroup>
-                        </p:column>
+<!--                            </h:panelGroup>-->
+<!--                        </p:column>-->
                     </p:dataTable>
                 </p:panel>
             </h:form>
