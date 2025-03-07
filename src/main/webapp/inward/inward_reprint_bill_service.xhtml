@@ -25,6 +25,14 @@
                                     <h:outputLabel value="Service Reprint" />
                                 </div>
                                 <div >
+                                    
+                                     <p:commandButton 
+                                                        value="To Sample Management" 
+                                                        icon="fas fa-flask"
+                                                        class="ui-button-raised mx-1"
+                                                        action="#{patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(inwardSearch.bill)}"
+                                                        ajax="false">
+                                                    </p:commandButton>
 
                                     <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Reprint" ajax="false" action="#"  >
                                         <p:printer target="gpBillPreview" ></p:printer>
@@ -183,7 +191,7 @@
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFiveCustom3'}" >
                                 <ui:repeat value="#{inwardSearch.bill}" var="pp">
-                                    <print:five_five_custom_3 bill="#{pp}" duplicate="true" payments="#{inwardSearch.bill.size()}"/>
+                                    <print:five_five_custom_3_inward bill="#{pp}" duplicate="true" payments="#{inwardSearch.bill.size()}"/>
                                     <br/>
                                 </ui:repeat>
                             </h:panelGroup>
