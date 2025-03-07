@@ -17,35 +17,16 @@
         <h:outputStylesheet library="css" name="fund_bill_five_five.css" ></h:outputStylesheet>
         <div class="fiveinchbill">
 
-            <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
-            </div>
-            <div class="institutionContact">
-                <div>
-                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
-                </div>
-                <div>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
-                    <h:outputLabel value=" /" style="width: 20px; text-align: center;" rendered="#{cc.attrs.bill.department.telephone2 ne null}" />
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
-                </div>
-                <div>
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>
-                </div>
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Header CSS')}" >
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Header Text')}" escape="false" ></h:outputText>
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
                 <h:outputLabel value="Float Transfer Note"/>
                 <h:outputLabel value="**Duplicate**" rendered="#{cc.attrs.duplicate eq true}"/>
-                <h:outputLabel value="**Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}"/>
             </div>
 
             <div class="billline">
-                <hr/>
-            </div>
-            
-            
-             <div class="billline">
                 <hr/>
             </div>
 
@@ -94,13 +75,9 @@
                 </table>
             </div>
 
-            <h:panelGroup rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}">
-                <div class="billline">
-                    <div style="width: 100%;text-align: center;font-size: 10px; margin-top: 10px">
-                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false"/>
-                    </div>
-                </div>
-            </h:panelGroup>
+            <div class="billline">
+                <hr/>
+            </div>
 
             <div class="itemHeadingsFiveFive">
                 <table width="100%">
@@ -178,6 +155,11 @@
             <div class="billline">
                 <hr/>
             </div>
+
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Footer CSS')}" >
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Footer Text')}" escape="false" ></h:outputText>
+            </div>
+
 
         </div>
     </cc:implementation>

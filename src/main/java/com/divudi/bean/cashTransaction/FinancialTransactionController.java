@@ -256,6 +256,8 @@ public class FinancialTransactionController implements Serializable {
     private DenominationTransaction dt;
     private double totalCashFund;
 
+    boolean floatTransferStarted = false;
+
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
     public FinancialTransactionController() {
@@ -1230,6 +1232,7 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToFundTransferBill() {
         resetClassVariables();
         prepareToAddNewFundTransferBill();
+        floatTransferStarted=false;
         return "/cashier/fund_transfer_bill?faces-redirect=true";
     }
 
@@ -2305,18 +2308,28 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String settleFundTransferBill() {
+        if (floatTransferStarted) {
+            JsfUtil.addErrorMessage("Already Started");
+            return "";
+        } else {
+            floatTransferStarted = true;
+        }
         if (currentBill == null) {
+            floatTransferStarted = false;
             JsfUtil.addErrorMessage("Error");
             return "";
         }
         if (currentBill.getBillType() != BillType.FundTransferBill) {
+            floatTransferStarted = false;
             JsfUtil.addErrorMessage("Error");
             return "";
         }
         if (currentBill.getToWebUser() == null) {
+            floatTransferStarted = false;
             JsfUtil.addErrorMessage("Select to whom to transfer");
             return "";
         }
+        String deptId= billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_TRANSFER_BILL);
         currentBill.setToStaff(currentBill.getToWebUser().getStaff());
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
@@ -2325,22 +2338,35 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setFromWebUser(sessionController.getLoggedUser());
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
 
         billController.save(currentBill);
+        double billTotal = 0.0;
         for (Payment p : getCurrentBillPayments()) {
+            System.out.println("p = " + p);
             p.setBill(currentBill);
             p.setCreatedAt(new Date());
             p.setCreater(sessionController.getLoggedUser());
             p.setInstitution(null);
             p.setDepartment(null);
             p.setPaidValue(0 - Math.abs(p.getPaidValue()));
+            billTotal += p.getPaidValue();
             paymentController.save(p);
-
             drawerController.updateDrawerForOuts(p);
         }
 
-        currentBill.getPayments().addAll(currentBillPayments);
+        currentBill.setTotal(billTotal);
+        currentBill.setNetTotal(billTotal);
+        currentBill.setDiscount(0.0);
+        currentBill.setTax(0.0);
+        currentBill.setBalance(billTotal);
         billController.save(currentBill);
+        currentBill.getPayments().addAll(currentBillPayments);
+        System.out.println("currentBillPayments = " + currentBillPayments);
+        billController.save(currentBill);
+        System.out.println("currentBill.getPayments() = " + currentBill.getPayments());
+        floatTransferStarted = false;
         return "/cashier/fund_transfer_bill_print?faces-redirect=true";
     }
 
