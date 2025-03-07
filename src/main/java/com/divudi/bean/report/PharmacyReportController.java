@@ -307,9 +307,9 @@ public class PharmacyReportController implements Serializable {
     private Double quantity;
 
     private Double stockQty;
-    
+
     private Institution fromSite;
-    private Institution toSite;    
+    private Institution toSite;
 
     //Constructor
     public PharmacyReportController() {
@@ -1922,21 +1922,42 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private void addFilter(StringBuilder sql, Map<String, Object> parameters, String sqlField, String paramKey, Object value) {
+        if (value != null) {
+            sql.append(" AND ").append(sqlField).append(" = :").append(paramKey).append(" ");
+            parameters.put(paramKey, value);
+        }
+    }
+
     public void processGoodInTransistReport() {
-        Map<String, Object> m = new HashMap<>();
-        String sql = "select bi from BillItem bi"
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder sql = new StringBuilder();
+        sql.append("select bi from BillItem bi"
                 + " where bi.bill.billType = :bt"
                 + " and bi.retired = :ret"
                 + " and bi.bill.createdAt between :fd and :td"
                 + " and bi.bill.toStaff is not null"
                 + " and bi.bill.fromDepartment is not null"
-                + " and bi.bill.forwardReferenceBills is empty"
-                + " order by bi.bill.id ";
-        m.put("bt", BillType.PharmacyTransferIssue);
-        m.put("ret", false);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        billItems = billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+                + " and bi.bill.forwardReferenceBills is empty ");
+
+        parameters.put("bt", BillType.PharmacyTransferIssue);
+        parameters.put("ret", false);
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
+        addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
+        addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
+        addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
+        addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
+        addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
+        addFilter(sql, parameters, "bi.item", "item", item);
+        addFilter(sql, parameters, "bi.item.category", "cat", category);
+        addFilter(sql, parameters, "bi.bill.toStaff", "user", toStaff);
+
+        sql.append(" order by bi.bill.id ");
+
+        billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
     }
 

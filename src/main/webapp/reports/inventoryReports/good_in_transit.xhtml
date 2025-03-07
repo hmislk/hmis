@@ -323,25 +323,23 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-people-carry ml-5" />
-                                <p:outputLabel value="Transit Store/Staff" class="mx-2" >
+                                <p:outputLabel value="Transit Staff" class="mx-2" >
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:autoComplete
-                                completeMethod="#{webUserController.completeUser}"
+                                completeMethod="#{staffController.completeStaffWithoutDoctors}"
                                 class="w-100"
                                 id="acStaff" 
                                 style="width: 400px!important"
                                 inputStyleClass="w-100"
-                                value="#{pharmacyReportController.webUser}" 
+                                value="#{pharmacyReportController.toStaff}" 
                                 var="user"
                                 scrollHeight="450"
-                                itemLabel="#{user.webUserPerson.name}" 
+                                itemLabel="#{user.person.name}" 
                                 itemValue="#{user}" >
-                                <p:column headerText="Username" >
-                                    <h:outputText value="#{user.name}" ></h:outputText>
-                                </p:column>
+                                
                                 <p:column headerText="Name" >
-                                    <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
+                                    <h:outputText value="#{user.person.name}" ></h:outputText>
                                 </p:column>
                             </p:autoComplete>
 
