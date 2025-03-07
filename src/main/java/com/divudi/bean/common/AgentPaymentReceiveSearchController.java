@@ -5,7 +5,6 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -62,62 +61,63 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     private BillFeeFacade billFeeFacade;
 
     @EJB
-    BillService billService;
-
-    BilledBill bill;
-    List<BillEntry> billEntrys;
-    List<BillItem> billItems;
-    List<BillComponent> billComponents;
-    List<BillFee> billFees;
-    PaymentMethod paymentMethod;
+    private BillService billService;
 
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
-    CancelledBillFacade cancelledBillFacade;
+    private CancelledBillFacade cancelledBillFacade;
     @EJB
     private BillItemFacade billItemFacede;
     @EJB
-    BilledBillFacade billedBillFacade;
+    private BilledBillFacade billedBillFacade;
     @EJB
     private BillComponentFacade billCommponentFacade;
     @EJB
     private RefundBillFacade refundBillFacade;
     @EJB
-    InstitutionFacade institutionFacade;
+    private InstitutionFacade institutionFacade;
     @EJB
-    DrawerFacade drawerFacade;
+    private DrawerFacade drawerFacade;
     @EJB
-    PaymentService paymentService;
+    private PaymentService paymentService;
+    @EJB
+    private BillFacade billFacade;
+    @EJB
+    private EjbApplication ejbApplication;
+    @EJB
+    private PaymentFacade paymentFacade;
 
     @Inject
     private BillBeanController billBean;
-    @EJB
-    private BillFacade billFacade;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     @Inject
-    SessionController sessionController;
+    private SessionController sessionController;
     @Inject
     private WebUserController webUserController;
     @Inject
-    AgentAndCcPaymentController agentAndCcPaymentController;
+    private AgentAndCcPaymentController agentAndCcPaymentController;
     @Inject
-    AgentAndCcApplicationController agentAndCcApplicationController;
+    private AgentAndCcApplicationController agentAndCcApplicationController;
     @Inject
-    DrawerController drawerController;
-    @EJB
-    EjbApplication ejbApplication;
-    @EJB
-    PaymentFacade paymentFacade;
+    private DrawerController drawerController;
 
-    PaymentMethodData paymentMethodData;
+    private BilledBill bill;
+    private List<BillEntry> billEntrys;
+    private List<BillItem> billItems;
+    private List<BillComponent> billComponents;
+    private List<BillFee> billFees;
+    private PaymentMethod paymentMethod;
+    private PaymentMethodData paymentMethodData;
 
     private List<BillItem> tempbillItems;
     private String comment;
-    WebUser user;
+    private WebUser user;
     private CancelledBill cancelledBill;
 
-    boolean agencyDepositCanellationStarted = false;
+    private boolean agencyDepositCanellationStarted = false;
 
     public WebUser getUser() {
         return user;
@@ -414,11 +414,13 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         if (paymentMethod == PaymentMethod.Cash) {
             Drawer userDrawer = drawerFacade.find(sessionController.getLoggedUserDrawer().getId());
             if (userDrawer.getCashInHandValue() < bill.getNetTotal()) {
-                System.out.println(origianlBil.getNetTotal());
-                JsfUtil.addErrorMessage("Drawer cash in hand value is not enough to cancel the bill");
-                printPreview = false;
-                agencyDepositCanellationStarted = false;
-                return;
+                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                    System.out.println(origianlBil.getNetTotal());
+                    JsfUtil.addErrorMessage("Drawer cash in hand value is not enough to cancel the bill");
+                    printPreview = false;
+                    agencyDepositCanellationStarted = false;
+                    return;
+                }
             }
         }
         System.out.println(origianlBil.getNetTotal() + "this");
@@ -493,8 +495,8 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         origianlBil.setCancelledBill(cancelledBill);
         getBillFacade().editAndCommit(origianlBil);
 
-        List<Payment> cancellationPayments=paymentService.createPayment(cancelledBill, getPaymentMethodData());
-        
+        List<Payment> cancellationPayments = paymentService.createPayment(cancelledBill, getPaymentMethodData());
+
 //        drawerController.updateDrawerForOuts(cancellationPayments);
         agentAndCcApplicationController.updateCcBalance(
                 cancelledBill.getFromInstitution(),

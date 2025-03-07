@@ -7,6 +7,13 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">
 
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
+        <cc:attribute name="refunded" type="java.lang.Boolean" default="false"/>
+        <cc:attribute name="payments" type="java.lang.Integer"></cc:attribute>
+    </cc:interface>
+
     <h:head>
         <!-- Include the custom CSS for styling -->
         <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
@@ -22,13 +29,39 @@
 
         <!-- Composite Component Implementation -->
         <cc:implementation>
-            <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
+            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}" >
+                <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
+            </h:panelGroup>
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}" >
+                <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3_without_header.css" />
+            </h:panelGroup>
+
 
 
             <div class="receipt-container">
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}">
+                    <div class="hospital-name" >
+                        <h:outputLabel value="#{cc.attrs.bill.institution.name}" />
+                    </div>
+                    <div class="hospital-details" >
+                        <div>
+                            <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                        </div>
+                        <div >
+                            <h:outputLabel value="#{cc.attrs.bill.department.telephone2} / #{cc.attrs.bill.department.telephone2}"/>
+                            <!--                    <h:outputLabel value="/" style="width: 10px; text-align: center;"/>
+                                                <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>-->
+                        </div>
+                        <div >
+                            <h:outputLabel value="#{cc.attrs.bill.department.email}" />                                                
+                        </div>
+                    </div>
+                    <div class="separator"></div>
+                </h:panelGroup>
                 <!-- Header Section -->
                 <div class="hospital-name">
-                    <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+                    <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+                    <br/>
                     <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                     <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
                 </div>
@@ -53,10 +86,6 @@
                             </h:panelGroup>
                         </tr>
                     </h:panelGroup>
-                    
-                    <h:panelGroup rendered="false" >
-                    #{pharmacySaleController.printBill.patient.person.sex.shortLabel}
-                </h:panelGroup>
 
                     <tr>
                         <td  style="padding: 2px;">Bill Date:</td>
@@ -91,8 +120,6 @@
                         <tr>
                             <th>No</th>
                             <th>Item Name</th>
-                            <th>Rate</th>
-                            <th>Qty</th>
                             <th style="text-align: right">Value</th>
                         </tr>
                     </thead>
@@ -102,18 +129,8 @@
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
                                 <td>#{item.item.name}</td>
-                                <td>
-                                    <h:outputLabel value="#{item.rate}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                                <td>
-                                    <h:outputLabel value="#{item.qty}">
-                                        <f:convertNumber integerOnly="true" />
-                                    </h:outputLabel>
-                                </td>
                                 <td style="text-align: right">
-                                    <h:outputLabel value="#{item.grossValue}">
+                                    <h:outputLabel value="#{item.netValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -127,16 +144,15 @@
 
                 <!-- Totals Table -->
                 <table class="total-table">
-                    <tr>
-                        <td >Total:</td>
-                        <td  style="text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-
                     <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}" >
+                        <tr>
+                            <td >Total:</td>
+                            <td  style="text-align: right;">
+                                <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
                         <tr>
                             <td >Discount:</td>
                             <td  style="text-align: right;">
@@ -145,16 +161,17 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
-                        <tr>
-                            <td >Net Total:</td>
-                            <td style="text-align: right;">
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
 
                     </h:panelGroup>
+
+                    <tr>
+                        <td >Net Total:</td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
 
                     <tr>
                         <td >No of Items:</td>
@@ -175,7 +192,7 @@
                         <td style="width: 2cm;"></td>
                         <td style=" vertical-align: top;">
                             <table >
-                                <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill)}" var="ps">
+                                <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill.backwardReferenceBill)}" var="ps">
                                     <tr>
                                         <td style="width: 4cm;">
                                             <h:outputText style="font-size: 8pt;"  value="#{ps.paymentMethod}"/>
