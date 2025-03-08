@@ -4702,8 +4702,8 @@ public class FinancialTransactionController implements Serializable {
         denos.setTotal(cashHandover);
         denos.setNetTotal(cashHandover);
         billFacade.edit(denos);
-        
-        drawerController.updateDrawerForOuts(currentBill, PaymentMethod.Cash , cashHandover, sessionController.getLoggedUser());
+
+        drawerController.updateDrawerForOuts(currentBill, PaymentMethod.Cash, cashHandover, sessionController.getLoggedUser());
 
         for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
             if (shiftBundle.isSelected()) {
@@ -4760,11 +4760,11 @@ public class FinancialTransactionController implements Serializable {
 
                     p.setHandingOverStarted(true);
                     p.setHandingOverCompleted(false);
-
                     componantTotal += p.getPaidValue();
-
                     paymentController.save(p);
-                    drawerController.updateDrawer(p, p.getPaidValue(), sessionController.getLoggedUser());
+                    if (p.getPaymentMethod() != PaymentMethod.Cash) {
+                        drawerController.updateDrawer(currentBill, 0 - p.getPaidValue(), p.getPaymentMethod(), sessionController.getLoggedUser());
+                    }
                 }
                 shiftHandoverComponantBill.setTotal(componantTotal);
                 shiftHandoverComponantBill.setNetTotal(componantTotal);
@@ -5573,7 +5573,7 @@ public class FinancialTransactionController implements Serializable {
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
-            p.setPaidValue(0-Math.abs(p.getPaidValue()));
+            p.setPaidValue(0 - Math.abs(p.getPaidValue()));
             paymentController.save(p);
             drawerController.updateDrawerForOuts(p);
         }
