@@ -148,7 +148,7 @@
                                             <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
                                         </div>
                                         <div class="col-7 d-flex w-100">
-                                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nic}"/>
+                                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nic ne null and !cc.attrs.bill.patientEncounter.patient.person.nic.equals('') ? cc.attrs.bill.patientEncounter.patient.person.nic : cc.attrs.bill.patientEncounter.guardian.nic}"/>
                                         </div>
                                     </div>
                                 </div>
@@ -174,8 +174,7 @@
                                 </div>
                                 <div class="col-7" >
                                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingAdmissionTime ne null and !cc.attrs.bill.patientEncounter.printingAdmissionTime.equals('') ? cc.attrs.bill.patientEncounter.printingAdmissionTime : cc.attrs.bill.patientEncounter.dateOfAdmission}">
-                                        <f:convertDateTime pattern="dd MM yyyy h:mm a"/>
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                       <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </div>
                             </div>
@@ -187,8 +186,7 @@
                                     </div>
                                     <div class="col-7 d-flex w-100">
                                         <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime ne null and !cc.attrs.bill.patientEncounter.printingDischargeTime.equals('') ? cc.attrs.bill.patientEncounter.printingDischargeTime : cc.attrs.bill.patientEncounter.dateOfDischarge}">
-                                            <f:convertDateTime pattern="dd MM yyyy h:mm a"/>
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </div>
                                 </div>
