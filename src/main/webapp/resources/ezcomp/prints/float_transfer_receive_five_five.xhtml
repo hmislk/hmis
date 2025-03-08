@@ -121,6 +121,11 @@
                                     <h:outputText value=" #{bip.comments}" />
                                 </h:panelGroup>
                             </td>
+                            <td style="text-align: right;">
+                                <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.paidValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </td>
                         </tr>
                     </ui:repeat>
                 </table>
@@ -145,6 +150,14 @@
                         </tr>
                     </h:panelGroup>
                 </table>
+            </div>
+
+            <div class="billline">
+                <hr/>
+            </div>
+
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Footer CSS')}" >
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Footer Text')}" escape="false" ></h:outputText>
             </div>
 
         </div>
